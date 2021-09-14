@@ -43,7 +43,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Information on the range of each dimension of a cell measurement value.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

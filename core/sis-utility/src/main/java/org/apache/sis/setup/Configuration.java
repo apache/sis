@@ -51,7 +51,7 @@ import org.apache.sis.internal.util.MetadataServices;
  */
 public final class Configuration {
     /**
-     * The default configuration instance. We use instances instead than static methods in case we want
+     * The default configuration instance. We use instances instead of static methods in case we want
      * different configuration modes in a future Apache SIS version (for example a "strict" mode versus
      * a "lenient" mode), of for allowing configurations to be saved in a file and restored.
      */

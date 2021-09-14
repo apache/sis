@@ -54,7 +54,7 @@ public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
         assertEquals("valueClass", Integer.class, builder.getValueClass());
         assertSetEquals(Collections.singleton(builder), owner.characteristics());
         /*
-         * Pretend that we changed our mind and now want a Float type instead than Integer.
+         * Pretend that we changed our mind and now want a Float type instead of Integer.
          * In current implementation this requires the creation of a new builder instance,
          * but there is no guarantees that it will always be the case in future versions.
          */

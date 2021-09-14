@@ -185,7 +185,7 @@ public final strictfp class DefaultRecordTest extends TestCase {
                 SerializableRecordSchema.INSTANCE.createRecordType("MyRecordType", members));
         /*
          * As a side effect of the fact that DefaultRecord uses an array of primitive type,
-         * initial values should be zero instead than null. We use this trick as a way to
+         * initial values should be zero instead of null. We use this trick as a way to
          * detect that we really got an array of primitive type.
          */
         assertEquals("baseValueClass", Double.TYPE, record.definition.baseValueClass());

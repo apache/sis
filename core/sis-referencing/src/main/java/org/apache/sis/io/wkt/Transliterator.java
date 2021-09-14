@@ -37,7 +37,7 @@ import org.apache.sis.util.Characters;
  * WKT representations. The mapping is not necessarily one-to-one, for example the replacement of a Unicode
  * character by an ASCII character may not be reversible. The mapping may also depend on the element to transliterate,
  * for example some Greek letters like φ, λ and θ are mapped differently when they are used as mathematical symbols in
- * axis abbreviations rather than texts. Some mappings may also apply to words instead than characters, when the word
+ * axis abbreviations rather than texts. Some mappings may also apply to words instead of characters, when the word
  * come from a controlled vocabulary.
  *
  * <h2>Permitted characters in Well Known Text</h2>

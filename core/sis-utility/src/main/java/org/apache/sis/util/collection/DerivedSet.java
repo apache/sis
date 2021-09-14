@@ -170,7 +170,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     /**
      * A {@link DerivedSet} for invertible converters. Availability of the inverse conversion
      * allows us to delegate the {@link #contains(Object)} and {@linkplain #remove(Object)}
-     * operations to the {@linkplain #storage} set instead than iterating over all elements.
+     * operations to the {@linkplain #storage} set instead of iterating over all elements.
      *
      * @param <S>  the type of elements in the storage set.
      * @param <E>  the type of elements in this set.
@@ -247,7 +247,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     /**
      * A {@link DerivedSet} for converters that are both invertible and bijective.
      * The bijection allows us to query the {@linkplain #storage} set size directly
-     * instead than iterating over all elements.
+     * instead of iterating over all elements.
      *
      * @param <S>  the type of elements in the storage set.
      * @param <E>  the type of elements in this set.

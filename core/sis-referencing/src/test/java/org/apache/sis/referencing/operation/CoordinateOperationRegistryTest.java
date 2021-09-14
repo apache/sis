@@ -390,7 +390,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     /**
      * Tests <cite>"Martinique 1938 to RGAF09 (1)"</cite> operation with a target CRS fixed to EPSG:7086
      * instead of EPSG:5489. Both are <cite>"RGAF09"</cite>, but the former use (longitude, latitude) axis
-     * order instead than the usual (latitude, longitude) order. The source CRS stay fixed to EPSG:4625.
+     * order instead of the usual (latitude, longitude) order. The source CRS stay fixed to EPSG:4625.
      *
      * @throws FactoryException if an error occurred while creating a CRS or operation.
      */

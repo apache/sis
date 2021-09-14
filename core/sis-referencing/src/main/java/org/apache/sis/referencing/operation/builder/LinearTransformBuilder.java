@@ -767,7 +767,7 @@ search: for (int j=numPoints; --j >= 0;) {
         /**
          * Returns the index of the given coordinates in the given data array (source or target coordinates).
          * This method is a copy of {@link LinearTransformBuilder#search(int[])}, but working on real values
-         * instead than integers and capable to work on {@link #targets} as well as {@link #sources}.
+         * instead of integers and capable to work on {@link #targets} as well as {@link #sources}.
          *
          * <p>If the given coordinates contain NaN values, then this method will always return -1 even if the
          * given data contains the same NaN values. We want this behavior because NaN mean that the point has

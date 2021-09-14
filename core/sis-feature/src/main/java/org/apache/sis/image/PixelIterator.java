@@ -541,7 +541,7 @@ public class PixelIterator {
 
     /**
      * Returns {@code true} if this iterator can write pixel values (after cast to {@code WritablePixelIterator}).
-     * This method should be used instead than {@code instanceof} check because, for some implementations, being
+     * This method should be used instead of {@code instanceof} check because, for some implementations, being
      * an instance of {@code WritablePixelIterator} is not a sufficient condition.
      *
      * @return {@code true} if this iterator can safely be casted to {@link WritablePixelIterator} and used for
@@ -751,7 +751,7 @@ public class PixelIterator {
          * They are the two most frequent orders and have in common an iteration over x values of
          * current tile before to make any decision. It is reasonably cheap to implement them in
          * the same method because the cost of checking for iteration order happens only once per
-         * tile row (instead than at every pixel). Providing the two implementations here makes
+         * tile row (instead of at every pixel). Providing the two implementations here makes
          * easier for subclasses such as `BandedIterator` to support those two iteration orders.
          *
          * All other iteration orders (Cantor, Morton, Hilbert, etc.) should have a dedicated
@@ -1320,7 +1320,7 @@ public class PixelIterator {
      * <div class="note"><b>Performance note</b>
      * Java2D has numerous optimizations for the integer cases, with no equivalent for the floating point cases.
      * Consequently if the data buffer is known to use some integer type, it is faster to get integer values and
-     * convert them to {@code double} values instead than to request directly floating-point values. However the
+     * convert them to {@code double} values instead of to request directly floating-point values. However the
      * improvement is not as much as using {@link BandedIterator} as least for small windows. For that reason,
      * we do not provide the "integers converted to doubles" performance workaround for now. Even if we provided
      * it, this {@code DoubleWindow} would still be necessary for the general case (non-integer data buffers).

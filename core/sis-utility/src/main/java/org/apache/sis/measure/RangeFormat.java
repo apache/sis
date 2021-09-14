@@ -52,7 +52,7 @@ import org.apache.sis.internal.util.Numerics;
  * Parses and formats {@link Range} instances according the given locale.
  * This class complies to the format described in the <a href="https://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
  * standard, except that the minimal and maximal values are separated by the "{@code …}" character
- * instead than coma. More specifically, the format is defined as below:
+ * instead of coma. More specifically, the format is defined as below:
  *
  * <ul>
  *   <li>If the range {@linkplain Range#isEmpty() is empty}, then the range is represented by "{@code {}}".</li>
@@ -877,7 +877,7 @@ public class RangeFormat extends Format implements Localized {
             /*
              * We found an opening bracket. Skip the whitespaces. If the next character is a closing bracket,
              * then we have an empty range. The later case is an extension to the standard format since empty
-             * ranges are usually represented by {} instead than [].
+             * ranges are usually represented by {} instead of [].
              */
             isMinIncluded = (c == openInclusive);
             do {                                            // Skip whitespaces.

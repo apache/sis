@@ -124,7 +124,7 @@ public final class FXFinder {
     private Inflater inflater;
 
     /**
-     * Whether to use the relative path {@code $BASE_DIR/opt/javafx-sdk} instead than an absolute path.
+     * Whether to use the relative path {@code $BASE_DIR/opt/javafx-sdk} instead of an absolute path.
      * This is {@code true} if we have decompressed the JavaFX ZIP file with the {@link Inflater}.
      */
     boolean useRelativePath;

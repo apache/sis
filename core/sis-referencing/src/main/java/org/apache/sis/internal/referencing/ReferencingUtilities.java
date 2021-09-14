@@ -354,7 +354,7 @@ public final class ReferencingUtilities extends Static {
              * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
              * If we can let `forConvention` do its job, do that first since it may return a cached
              * instance. If the CRS is a `GeographicCRS` but not a `DefaultGeographicCRS`, create a
-             * CRS in this code instead than invoking `DefaultGeographicCRS.castOrCopy(…)` in order
+             * CRS in this code instead of invoking `DefaultGeographicCRS.castOrCopy(…)` in order
              * to create only one CRS instead of two.
              */
             final CoordinateSystem cs = crs.getCoordinateSystem();

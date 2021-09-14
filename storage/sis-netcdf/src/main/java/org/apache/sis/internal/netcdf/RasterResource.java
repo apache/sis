@@ -460,8 +460,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index) {
         /*
          * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
-         * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
-         * by UCAR because we need the range of packed values instead than the range of converted values.
+         * is used only as a fallback. We give precedence to the range computed by Apache SIS instead of the range given
+         * by UCAR because we need the range of packed values instead of the range of converted values.
          */
         NumberRange<?> range;
         if (!createEnumeration(builder, band) && (range = band.getValidRange()) != null) try {
@@ -641,12 +641,12 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     .rounding(GridRoundingMode.ENCLOSING)
                     .subgrid(domain);
             GridExtent areaOfInterest = targetGeometry.getIntersection();           // Pixel indices of data to read.
-            int[]      subsamplings   = targetGeometry.getSubsampling();            // Slice to read or subsampling to apply.
+            int[]      subsampling    = targetGeometry.getSubsampling();            // Slice to read or subsampling to apply.
             int        numBuffers     = bands.length;                               // By default, one variable per band.
             domain = targetGeometry.build();                                        // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {
                 areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
-                subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
+                subsampling    = rangeIndices.insertSubsampling  (subsampling,    bandDimension);
                 if (bandDimension == 0) {
                     bandOffsets = new int[numBuffers];          // Will be set to non-zero values later.
                 }
@@ -675,7 +675,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     }
                     if (i < numBuffers) try {
                         // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                        sampleValues[indexInRaster] = variable.read(areaOfInterest, subsamplings).buffer().get();
+                        sampleValues[indexInRaster] = variable.read(areaOfInterest, subsampling).buffer().get();
                     } catch (ArithmeticException e) {
                         throw variable.canNotComputePosition(e);
                     }

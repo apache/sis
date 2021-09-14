@@ -134,9 +134,10 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Creates a parameter group from the specified descriptor.
      *
-     * <p><b>Usage note:</b> {@code ParameterValueGroup} are usually not instantiated directly. Instead, consider
-     * invoking <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code>
-     * on a descriptor supplied by a map projection or process provider.</p>
+     * <h4>Usage note</h4>
+     * {@code ParameterValueGroup} are usually not instantiated directly. Instead, consider invoking
+     * <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code>
+     * on a descriptor supplied by a map projection or process provider.
      *
      * @param  descriptor  the descriptor for this group.
      */
@@ -497,7 +498,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      *     return equals(other, ComparisonMode.STRICT);
      * }
      *
-     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
+     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
      * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.

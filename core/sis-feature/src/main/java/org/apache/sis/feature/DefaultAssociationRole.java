@@ -225,7 +225,7 @@ public class DefaultAssociationRole extends FieldType {
                 } else {
                     /*
                      * The feature that we need to resolve is not the one we just created. Maybe we can find
-                     * this desired feature in an association of the 'creating' feature, instead than beeing
+                     * this desired feature in an association of the 'creating' feature, instead of beeing
                      * the 'creating' feature itself. This is a little bit unusual, but not illegal.
                      */
                     final List<DefaultFeatureType> deferred = new ArrayList<>();

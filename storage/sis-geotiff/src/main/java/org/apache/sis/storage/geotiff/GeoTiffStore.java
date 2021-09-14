@@ -313,7 +313,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             /*
              * Add the filename as an identifier only if the input was something convertible to URI (URL, File or Path),
              * otherwise reader.input.filename may not be useful; it may be just the InputStream classname. If the TIFF
-             * file did not specified any ImageDescription tag, then we will add the filename as a title instead than an
+             * file did not specified any ImageDescription tag, then we will add the filename as a title instead of an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
@@ -366,7 +366,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * The components returned by {@link #components}. Defined as a named class instead than an anonymous
+     * The components returned by {@link #components}. Defined as a named class instead of an anonymous
      * class for more readable stack trace. This is especially useful since {@link BackingStoreException}
      * may happen in any method.
      */

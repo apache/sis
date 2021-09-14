@@ -429,8 +429,8 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
 
     /**
      * Returns the minimum and maximum values as determined by UCAR library, or inferred from the integer type otherwise.
-     * This method is invoked only as a fallback; we give precedence to the range computed by Apache SIS instead than the
-     * range provided by UCAR because we need the range of packed values instead than the range of converted values. Only
+     * This method is invoked only as a fallback; we give precedence to the range computed by Apache SIS instead of the
+     * range provided by UCAR because we need the range of packed values instead of the range of converted values. Only
      * if Apache SIS can not determine that range, that method is invoked.
      */
     @Override

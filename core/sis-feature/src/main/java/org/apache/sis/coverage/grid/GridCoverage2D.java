@@ -576,7 +576,7 @@ public class GridCoverage2D extends GridCoverage {
                      * Result of `ix + width` requires at most 33 bits for any `ix` value (same for y axis).
                      * Subtractions by `xmin` and `ymin` never overflow if `ix` and `iy` are zero or positive,
                      * which should always be the case with BufferedImage. The +1 is applied after subtraction
-                     * instead than on `xmax` and `ymax` for avoiding overflow, since the result of `min(…)`
+                     * instead of on `xmax` and `ymax` for avoiding overflow, since the result of `min(…)`
                      * uses at most 33 bits.
                      */
                     final int nx = toIntExact(min(xmax, ix + width  - 1) - xmin + 1);

@@ -35,7 +35,7 @@ import org.opengis.geometry.DirectPosition;
  * <div class="note"><b>Comparison with ISO 19123:</b>
  * by contrast an ISO {@code Coverage} does not restrict sample values to primitive types,
  * does not require all sample dimensions to use the same type,
- * and sample values are accessed by field names instead than band indices.
+ * and sample values are accessed by field names instead of band indices.
  * Said otherwise, an ISO {@code Coverage} can provide a complex structure (a {@link org.opengis.util.Record})
  * at every location while this {@code BandedCoverage} class provides only primitive arrays such as {@code float[]}.
  * </div>
@@ -105,7 +105,7 @@ public abstract class BandedCoverage {
         BandedCoverage getCoverage();
 
         /**
-         * Returns whether to return {@code null} instead than throwing an exception if a point is outside coverage bounds.
+         * Returns whether to return {@code null} instead of throwing an exception if a point is outside coverage bounds.
          * The default value is {@code false}, which means that the default {@link #apply(DirectPosition)} behavior is to
          * throw {@link PointOutsideCoverageException} for points outside bounds.
          *
@@ -114,11 +114,11 @@ public abstract class BandedCoverage {
         boolean isNullIfOutside();
 
         /**
-         * Sets whether to return {@code null} instead than throwing an exception if a point is outside coverage bounds.
+         * Sets whether to return {@code null} instead of throwing an exception if a point is outside coverage bounds.
          * The default value is {@code false}. Setting this flag to {@code true} may improve performances if the caller
          * expects that many points will be outside coverage bounds, since it reduces the amount of exceptions to be thrown.
          *
-         * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead than
+         * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead of
          *               {@link PointOutsideCoverageException} for signaling that a point is outside coverage bounds.
          */
         void setNullIfOutside(boolean flag);

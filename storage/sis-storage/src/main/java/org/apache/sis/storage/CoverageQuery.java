@@ -79,7 +79,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
     private int[] range;
 
     /**
-     * The {@linkplain #range} specified by names instead than indices.
+     * The {@linkplain #range} specified by names instead of indices.
      * At most one of {@code range} and {@code rangeNames} shall be non-null.
      */
     private String[] rangeNames;

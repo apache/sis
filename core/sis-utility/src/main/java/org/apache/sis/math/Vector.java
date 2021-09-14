@@ -173,7 +173,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     /**
      * Wraps the given {@code float[]} array in a vector that preserve the string representations in base 10.
      * For example the 0.1 {@code float} value casted to {@code double} normally produces 0.10000000149011612
-     * because of the way IEEE 754 arithmetic represents numbers (in base 2 instead than base 10). But the
+     * because of the way IEEE 754 arithmetic represents numbers (in base 2 instead of base 10). But the
      * vector returned by this method will convert the 0.1 {@code float} value into the 0.1 {@code double} value.
      * Note that despite the appearance, this is <strong>not</strong> more accurate than the normal cast,
      * because base 10 is not more privileged in nature than base 2.

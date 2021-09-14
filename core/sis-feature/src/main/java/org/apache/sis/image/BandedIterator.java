@@ -31,7 +31,7 @@ import java.awt.image.WritableRenderedImage;
 
 
 /**
- * A pixel iterator reading values directly from a {@link DataBuffer} instead than using {@link Raster} API.
+ * A pixel iterator reading values directly from a {@link DataBuffer} instead of using {@link Raster} API.
  * This iterator has the same behavior than the default implementation and is provided only for performance reasons.
  * It can bring performance benefits when reading values as {@code float} or {@code double} values, but the benefits
  * are more dubious for {@code int} values because Java2D has optimizations for that specific type.

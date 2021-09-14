@@ -321,7 +321,7 @@ public final class Equirectangular extends AbstractProvider {
     /**
      * Creates an Equirectangular projection from the specified group of parameter values. This method is an
      * adaptation of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} constructor,
-     * reproduced in this method because we will create an affine transform instead than the usual projection
+     * reproduced in this method because we will create an affine transform instead of the usual projection
      * classes.
      *
      * @param  factory     the factory to use if this constructor needs to create other math transforms.

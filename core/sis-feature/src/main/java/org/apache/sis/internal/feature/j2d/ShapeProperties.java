@@ -139,7 +139,7 @@ final class ShapeProperties {
             switch (it.currentSegment(coords)) {
                 case PathIterator.SEG_MOVETO: {
                     if (i > 2) {
-                        isPolygon = false;          // MOVETO without CLOSE: this is a linestring instead than a polygon.
+                        isPolygon = false;          // MOVETO without CLOSE: this is a linestring instead of a polygon.
                         polylines.add(Arrays.copyOf(polyline, i));
                     }
                     System.arraycopy(coords, 0, polyline, 0, 2);
@@ -167,7 +167,7 @@ final class ShapeProperties {
             it.next();
         }
         if (i > 2) {
-            isPolygon = false;          // LINETO without CLOSE: this is a linestring instead than a polygon.
+            isPolygon = false;          // LINETO without CLOSE: this is a linestring instead of a polygon.
             polylines.add(Arrays.copyOf(polyline, i));
         }
         return polylines;
@@ -195,7 +195,7 @@ final class ShapeProperties {
             switch (it.currentSegment(coords)) {
                 case PathIterator.SEG_MOVETO: {
                     if (i > 2) {
-                        isPolygon = false;          // MOVETO without CLOSE: this is a linestring instead than a polygon.
+                        isPolygon = false;          // MOVETO without CLOSE: this is a linestring instead of a polygon.
                         polylines.add(Arrays.copyOf(polyline, i));
                     }
                     System.arraycopy(coords, 0, polyline, 0, 2);
@@ -223,7 +223,7 @@ final class ShapeProperties {
             it.next();
         }
         if (i > 2) {
-            isPolygon = false;          // LINETO without CLOSE: this is a linestring instead than a polygon.
+            isPolygon = false;          // LINETO without CLOSE: this is a linestring instead of a polygon.
             polylines.add(Arrays.copyOf(polyline, i));
         }
         return polylines;

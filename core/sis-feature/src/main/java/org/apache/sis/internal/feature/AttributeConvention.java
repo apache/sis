@@ -343,7 +343,7 @@ public final class AttributeConvention extends Static {
      * @return {@code true} if a characteristic for maximal length has been found.
      */
     public static boolean characterizedByMaximalLength(final AbstractIdentifiedType type) {
-        return hasCharacteristic(type, MAXIMAL_LENGTH_CHARACTERISTIC.toString(), Integer.class);
+        return hasCharacteristic(type, MAXIMAL_LENGTH, Integer.class);
     }
 
     /**

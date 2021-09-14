@@ -240,7 +240,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Creates a new {@code WeakValueHashMap}, optionally using reference-equality in place of object-equality.
      * If {@code identity} is {@code true}, then two keys {@code k1} and {@code k2} are considered equal if and
-     * only if {@code (k1 == k2)} instead than if {@code k1.equals(k2)}.
+     * only if {@code (k1 == k2)} instead of if {@code k1.equals(k2)}.
      *
      * <p>Reference-equality semantic is rarely used. See the {@link java.util.IdentityHashMap} class javadoc
      * for a discussion about drawbacks and use cases when reference-equality semantic is useful.</p>

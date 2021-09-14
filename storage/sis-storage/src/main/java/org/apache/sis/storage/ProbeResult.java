@@ -64,7 +64,7 @@ public class ProbeResult implements Serializable {
      * and {@linkplain #getVersion() version} properties are {@code null}.
      *
      * <p>{@link DataStoreProvider#probeContent(StorageConnector)} implementations should consider returning a
-     * {@linkplain #ProbeResult(boolean, String, Version) new instance} instead than this constant
+     * {@linkplain #ProbeResult(boolean, String, Version) new instance} instead of this constant
      * if they can provide the file MIME type or the format version number.</p>
      */
     public static final ProbeResult SUPPORTED = new Constant(true, "SUPPORTED");
@@ -82,7 +82,7 @@ public class ProbeResult implements Serializable {
      * </ul>
      *
      * {@link DataStoreProvider#probeContent(StorageConnector)} implementations should consider returning a
-     * {@linkplain #ProbeResult(boolean, String, Version) new instance} instead than this constant
+     * {@linkplain #ProbeResult(boolean, String, Version) new instance} instead of this constant
      * if the {@code DataStoreProvider} recognizes the given storage, but the data are structured
      * according a file or schema version not yet supported by the current implementation.
      */

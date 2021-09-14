@@ -400,7 +400,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             }
             buffer.setLength(0);
             buffer.append("SELECT OBJECT_CODE FROM [Alias] WHERE OBJECT_TABLE_NAME='").append(table.unquoted()).append("' AND ");
-            // PostgreSQL does not require explicit cast when the value is a literal instead than "?".
+            // PostgreSQL does not require explicit cast when the value is a literal instead of "?".
             appendFilterByName(namePatterns, "ALIAS", buffer);
             aliasSQL = dao.translator.apply(buffer.toString());
             buffer.setLength(0);

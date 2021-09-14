@@ -363,7 +363,7 @@ public abstract class Variable extends Node {
      * particular conventions, for example {@link HYCOM}.
      *
      * @param  other      the variable from which to copy unit and epoch, or {@code null} if none.
-     * @param  overwrite  if non-null, set to the given unit instead than the unit of {@code other}.
+     * @param  overwrite  if non-null, set to the given unit instead of the unit of {@code other}.
      * @return the epoch (may be {@code null}).
      *
      * @see #getUnit()

@@ -500,7 +500,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * This method is invoked before to fallback on {@link #createCS(CSFactory, Map, CoordinateSystemAxis[])}.
      *
      * <p>This method may opportunistically set the {@link #datum} and {@link #referenceSystem} fields if it
-     * can propose a CRS candidate instead than only a CS candidate.</p>
+     * can propose a CRS candidate instead of only a CS candidate.</p>
      */
     abstract void setPredefinedComponents(Decoder decoder) throws FactoryException;
 

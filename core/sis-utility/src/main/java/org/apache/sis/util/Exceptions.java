@@ -162,7 +162,7 @@ public final class Exceptions extends Static {
      * and the process is repeated for the whole cause chain, omitting duplicated messages.
      *
      * <p>{@link SQLException} is handled especially in order to process the
-     * {@linkplain SQLException#getNextException() next exception} instead than the cause.</p>
+     * {@linkplain SQLException#getNextException() next exception} instead of the cause.</p>
      *
      * <p>This method does not format the stack trace.</p>
      *

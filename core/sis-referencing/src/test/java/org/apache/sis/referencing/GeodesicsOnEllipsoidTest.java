@@ -68,7 +68,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     private Map<String,double[]> localVariables;
 
     /**
-     * {@code true} if {@link GeodesicsOnEllipsoid#store(String, double)} shall verify consistency instead than
+     * {@code true} if {@link GeodesicsOnEllipsoid#store(String, double)} shall verify consistency instead of
      * storing local variables.
      */
     private boolean verifyConsistency;

@@ -675,7 +675,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * }
      *
      * The value class can not be {@code Feature.class} since features shall be handled
-     * as {@linkplain #addAssociation(DefaultFeatureType) associations} instead than attributes.
+     * as {@linkplain #addAssociation(DefaultFeatureType) associations} instead of attributes.
      *
      * @param  <V>         the compile-time value of {@code valueClass} argument.
      * @param  valueClass  the class of attribute values (can not be {@code Feature.class}).
@@ -686,7 +686,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     public <V> AttributeTypeBuilder<V> addAttribute(final Class<V> valueClass) {
         ensureNonNull("valueClass", valueClass);
         if (AbstractFeature.class.isAssignableFrom(valueClass)) {
-            // We disallow Feature.class because that type shall be handled as association instead than attribute.
+            // We disallow Feature.class because that type shall be handled as association instead of attribute.
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "valueClass", valueClass));
         }
         final AttributeTypeBuilder<V> property = new AttributeTypeBuilder<>(this, Numbers.primitiveToWrapper(valueClass));
@@ -744,7 +744,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *          .addRole(AttributeRole.DEFAULT_GEOMETRY);
      * }
      *
-     * If the library in use is JTS or ESRI instead than Java2D,
+     * If the library in use is JTS or ESRI instead of Java2D,
      * then the {@code Point} class of those libraries will be used instead of {@code Point2D}.
      * The fully-qualified class names are given in the {@link GeometryLibrary} javadoc.</div>
      *

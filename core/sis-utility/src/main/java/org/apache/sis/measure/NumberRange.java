@@ -668,7 +668,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         } else if (type.equals(Double.class)) {
             value = up ? Math.nextUp(value) : Math.nextDown(value);
         } else {
-            // Thrown IllegalStateException instead than IllegalArgumentException because
+            // Thrown IllegalStateException instead of IllegalArgumentException because
             // the `type` argument given to this method come from a NumberRange field.
             throw new IllegalStateException(Errors.format(Errors.Keys.NotAPrimitiveWrapper_1, type));
         }

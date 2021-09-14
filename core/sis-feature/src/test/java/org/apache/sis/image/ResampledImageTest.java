@@ -103,7 +103,7 @@ public final strictfp class ResampledImageTest extends TestCase {
     /**
      * Creates an interpolated image in the simple case where the image is scaled by a factor 2.
      * The {@link #source} and {@link #interpolation} fields must be initialized before this method is invoked.
-     * This method uses processor instead than instantiating {@link ResampledImage} directly for opportunistic
+     * This method uses processor instead of instantiating {@link ResampledImage} directly for opportunistic
      * testing of {@link ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)} method.
      *
      * @param  minX  minimal X coordinate to give to the resampled image.

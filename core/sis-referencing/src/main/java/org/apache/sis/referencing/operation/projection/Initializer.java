@@ -100,12 +100,12 @@ final class Initializer {
     final byte variant;
 
     /**
-     * A {@link #variant} value telling the constructor to computing the authalic radius instead than using
+     * A {@link #variant} value telling the constructor to computing the authalic radius instead of using
      * the semi-major and semi-minor axis lengths directly.
      *
      * <p>Note that this value is not necessarily equivalent to the {@code SPHERICAL} value defined in some
      * map projection, because EPSG guidance notes recommend different approaches for spherical implementations.
-     * For example the Mercator projection will use the radius of conformal sphere instead than the authalic radius.</p>
+     * For example the Mercator projection will use the radius of conformal sphere instead of the authalic radius.</p>
      */
     static final byte AUTHALIC_RADIUS = (byte) 128;
 

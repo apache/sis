@@ -164,7 +164,7 @@ public final strictfp class SystemUnitTest extends TestCase {
 
     /**
      * Verifies that the test for equality between two units produce the expected result.
-     * This method expects {@link Unit} instances instead than {@link Unit} for convenience,
+     * This method expects {@link Unit} instances instead of {@link Unit} for convenience,
      * but only the units will be compared.
      *
      * @param message   the message to show in case of failure.

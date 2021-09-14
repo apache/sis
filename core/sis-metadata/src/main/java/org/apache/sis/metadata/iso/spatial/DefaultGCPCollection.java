@@ -38,7 +38,7 @@ import org.apache.sis.metadata.TitleProperty;
  * {@code   └─gcp………………………………………………………………} Ground control point(s) used in the collection.
  * {@code       └─geographicCoordinates……} Geographic or map position of the control point, in either two or three dimensions.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

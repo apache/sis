@@ -123,7 +123,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * </ol>
      *
      * <div class="note"><b>Note:</b>
-     * this code is defined in this {@code CC_OperationParameterGroup} class instead than in the
+     * this code is defined in this {@code CC_OperationParameterGroup} class instead of in the
      * {@link DefaultParameterDescriptorGroup} class in the hope to reduce the amount of code
      * processed by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *
@@ -174,7 +174,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
                     if (valueClass != null) {
                         /*
                          * This may happen if the 'descriptors' argument contain the parameters of a pre-defined
-                         * method from the 'org.apache.sis.internal.referencing.provider' package instead than a
+                         * method from the 'org.apache.sis.internal.referencing.provider' package instead of a
                          * descriptor from the GML file.  In such case, presume that 'previous' is actually more
                          * complete than 'complete'.
                          *

@@ -137,7 +137,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      * Returns the datum.
      *
      * This method is overridden is subclasses for documentation purpose only, mostly for showing
-     * this method in the appropriate position in javadoc (instead than at the bottom of the page).
+     * this method in the appropriate position in javadoc (instead of at the bottom of the page).
      * If {@code DefaultGeodeticCRS} is made public in a future SIS version, then we could remove
      * the overridden methods.
      *
@@ -326,7 +326,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *
      * However our attempts to apply this approach worked for {@link DefaultEngineeringCRS} but not for this class:
      * for an unknown reason, the unmarshalled CS object is empty. Maybe this is because the covariant return type
-     * in the {@link DefaultGeographicCRS} ({@code EllipsoidCS} instead than {@code CoordinateSystem} in above code)
+     * in the {@link DefaultGeographicCRS} ({@code EllipsoidCS} instead of {@code CoordinateSystem} in above code)
      * is causing confusion.</div>
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>

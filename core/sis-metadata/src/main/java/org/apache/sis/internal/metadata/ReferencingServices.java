@@ -134,7 +134,7 @@ public class ReferencingServices extends OptionalDependency {
      * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
      * <p>If {@code findOpCaller} is non-null, then this method will be executed in optional mode:
-     * some failures will cause this method to return {@code null} instead than throwing an exception.
+     * some failures will cause this method to return {@code null} instead of throwing an exception.
      * Note that {@link TransformException} may still be thrown but not directly by this method.
      * Warning may be logged, but in such case this method presumes that public caller is the named method from
      * {@code Envelopes} — typically {@link org.apache.sis.geometry.Envelopes#findOperation(Envelope, Envelope)}.</p>

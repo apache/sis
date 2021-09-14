@@ -81,7 +81,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * <p>This constructor is for sub-classing only. Users should invoke the {@link #wrap(Object[])}
      * static method instead.</p>
      *
-     * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
+     * <p>The argument type is intentionally {@code E[]} instead of {@code E...} in order to force
      * the caller to instantiate the array explicitly, in order to make sure that the array type is
      * the intended one.</p>
      *
@@ -106,7 +106,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
      *
-     * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
+     * <p>The argument type is intentionally {@code E[]} instead of {@code E...} in order to force
      * the caller to instantiate the array explicitly, in order to make sure that the array type is
      * the intended one.</p>
      *

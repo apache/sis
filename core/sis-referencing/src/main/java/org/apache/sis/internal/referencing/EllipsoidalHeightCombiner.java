@@ -101,7 +101,7 @@ public final class EllipsoidalHeightCombiner {
 
     /**
      * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tuples.
-     * If any such tuple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
+     * If any such tuple is found, a three-dimensional geographic CRS is created instead of the compound CRS.
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.

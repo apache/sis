@@ -866,7 +866,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Returns a hash value for this transform. This method invokes {@link #computeHashCode()}
      * when first needed and caches the value for future invocations. Subclasses shall override
-     * {@code computeHashCode()} instead than this method.
+     * {@code computeHashCode()} instead of this method.
      *
      * @return the hash code value. This value may change between different execution of the Apache SIS library.
      */

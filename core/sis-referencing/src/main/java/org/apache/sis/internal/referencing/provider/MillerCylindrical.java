@@ -36,7 +36,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * supports also the ellipsoidal formulas. If spherical formulas are desired, then the parameters shall contains
  * semi-major and semi-minor axis lengths of equal length.
  *
- * <h2>Additional identifiers:</h2>
+ * <h2>Additional identifiers</h2>
  * This projection has the following identifiers from the French mapping agency (IGNF),
  * which have not yet been declared in this class:
  *

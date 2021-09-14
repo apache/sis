@@ -310,7 +310,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests a projected CRS fetched by its name instead than its code.
+     * Tests a projected CRS fetched by its name instead of its code.
      * Tests also {@link EPSGDataAccess#createObject(String)}.
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -938,7 +938,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
         final DefaultGeographicCRS crs = (DefaultGeographicCRS) CRS.fromWKT(
                 "GEOGCS[“WGS 84”,\n" +
-                "  DATUM[“WGS 84”,\n" +     // Use the alias instead than primary name for forcing a deeper search.
+                "  DATUM[“WGS 84”,\n" +     // Use the alias instead of primary name for forcing a deeper search.
                 "    SPHEROID[“WGS 1984”, 6378137.0, 298.257223563]],\n" +  // Different name for forcing a deeper search.
                 "  PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +

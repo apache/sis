@@ -375,7 +375,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * The envelope CRS is ignored, except for identifying dimension names for information purpose.
      * The way floating point values are rounded to integers may be adjusted in any future version.
      *
-     * <p><b>NOTE:</b> this constructor is not public because its contract is a bit approximate.</p>
+     * <p><b>API note:</b> this constructor is not public because its contract is a bit approximate.</p>
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
@@ -489,7 +489,7 @@ public class GridExtent implements Serializable, LenientComparable {
             }
             /*
              * If caller requested to clip only the user Area Of Interest (AOI) without constraining the
-             * margin or chunk size, then we need to do clipping now instead than at the end of this loop.
+             * margin or chunk size, then we need to do clipping now instead of at the end of this loop.
              */
             if (enclosing != null && clipping == GridClippingMode.BORDER_EXPANSION) {
                 final int  lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
@@ -1252,7 +1252,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  periods  the subsamplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @param  periods  the subsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *

@@ -48,7 +48,7 @@ public final class Registration {
     }
 
     /**
-     * Logs the given exception before to abort installation. We use logging service instead than
+     * Logs the given exception before to abort installation. We use logging service instead of
      * propagating the exception because OpenOffice does not report the exception message.
      */
     private static void fatalException(final String method, final String message, final Throwable exception) {

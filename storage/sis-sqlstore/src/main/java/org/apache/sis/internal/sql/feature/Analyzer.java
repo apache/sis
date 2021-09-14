@@ -254,7 +254,7 @@ final class Analyzer {
 
     /**
      * Returns a message for unexpected errors. Those errors are caused by a bug in this
-     * {@code org.apache.sis.internal.sql.feature} package instead than a database issue.
+     * {@code org.apache.sis.internal.sql.feature} package instead of a database issue.
      */
     final String internalError() {
         return resources().getString(Resources.Keys.InternalError);
@@ -541,7 +541,7 @@ final class Analyzer {
                             /*
                              * If the column is also used in the primary key, then we have a name clash.
                              * Rename the primary key column with the addition of a "pk:" scope. We rename
-                             * the primary key column instead than this association because the primary key
+                             * the primary key column instead of this association because the primary key
                              * column should rarely be used directly.
                              */
                             if (attribute != null) {

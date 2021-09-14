@@ -562,7 +562,7 @@ public final strictfp class ReaderTest extends TestCase {
     }
 
     /**
-     * Creates a data store for the {@code "1.1/route.xml"} test files using its URL instead than the input stream.
+     * Creates a data store for the {@code "1.1/route.xml"} test files using its URL instead of the input stream.
      * Using the URL makes easier for the data store to read the same data more than once.
      */
     private static Store createFromURL() throws DataStoreException {
@@ -573,8 +573,8 @@ public final strictfp class ReaderTest extends TestCase {
 
     /**
      * Tests reading the same data more than once. For this test, the XML resource needs to be obtained
-     * as a URL instead than as an input stream.  But Apache SIS implementation will still tries to use
-     * mark/reset instead than re-opening a new stream if it can.
+     * as a URL instead of as an input stream.  But Apache SIS implementation will still tries to use
+     * mark/reset instead of re-opening a new stream if it can.
      *
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */

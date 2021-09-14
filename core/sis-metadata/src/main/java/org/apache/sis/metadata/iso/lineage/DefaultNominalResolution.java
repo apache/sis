@@ -34,7 +34,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * {@code   ├─scanningResolution……} Distance between consistent parts of (centre, left side, right side) adjacent pixels in the scan plane.
  * {@code   └─groundResolution…………} Distance between consistent parts of (centre, left side, right side) adjacent pixels in the object space.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -690,7 +690,7 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * Takes a snapshot of the <cite>objective to display</cite> conversion. This method needs
-     * to be overridden only by subclasses that use their own specialized class instead than
+     * to be overridden only by subclasses that use their own specialized class instead of
      * {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
      *
      * @return snapshot of objective to display conversion, never null.
@@ -1194,7 +1194,7 @@ public class Canvas extends Observable implements Localized {
      * Returns the transform from the given source CRS to the given target CRS with precedence for an operation
      * valid for the geographic area of this canvas. The transform returned by this method for the same pair of
      * CRS may differ depending on which area is currently visible in the canvas. All requests for a coordinate
-     * operation should invoke this method instead than {@link CRS#findOperation(CoordinateReferenceSystem,
+     * operation should invoke this method instead of {@link CRS#findOperation(CoordinateReferenceSystem,
      * CoordinateReferenceSystem, GeographicBoundingBox)}.
      *
      * @param  allowDisplayCRS  whether the {@code sourceCRS} can be {@link #getDisplayCRS()}.

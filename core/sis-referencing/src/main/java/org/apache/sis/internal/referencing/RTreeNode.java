@@ -181,7 +181,7 @@ detach: for (RTreeNode next; node != null; node = next) {
                 do {
                     lastChild = child;
                     if (child.tryAddChild(candidate)) {
-                        return true;                        // Given node added to a child instead than to this node.
+                        return true;                        // Given node added to a child instead of to this node.
                     }
                     child = child.sibling;
                 } while (child != null);

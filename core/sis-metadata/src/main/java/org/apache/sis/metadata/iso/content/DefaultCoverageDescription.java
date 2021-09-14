@@ -51,7 +51,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
  * <div class="preformat">{@code MD_CoverageDescription}
  * {@code   └─attributeDescription……} Description of the attribute described by the measurement value.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

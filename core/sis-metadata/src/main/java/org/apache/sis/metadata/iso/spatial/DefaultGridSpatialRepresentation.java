@@ -43,7 +43,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
  * {@code   └─transformationParameterAvailability……} Indication of whether or not parameters for transformation exists.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

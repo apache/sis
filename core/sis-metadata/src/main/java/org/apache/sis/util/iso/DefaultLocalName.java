@@ -135,7 +135,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
             if (name.getClass() == SimpleInternationalString.class) {
                 /*
                  * In the special case of SimpleInternationalString, we will retain the String
-                 * flavor instead than InternationalString (this is done by name.toString() at
+                 * flavor instead of InternationalString (this is done by name.toString() at
                  * the end of this constructor). It will not cause any lost of information since
                  * SimpleInternationalString contains only one String. This simplification allows
                  * the equals(Object) method to return "true" for DefaultLocalName that would

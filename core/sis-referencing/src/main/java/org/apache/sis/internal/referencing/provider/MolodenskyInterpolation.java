@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTran
 
 /**
  * An approximation of geocentric interpolations which uses {@link InterpolatedMolodenskyTransform}
- * instead than {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform}.
+ * instead of {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform}.
  *
  * <p>This operation method is not standard, and as of SIS 0.7 not yet registered in the operation methods
  * provided by {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.

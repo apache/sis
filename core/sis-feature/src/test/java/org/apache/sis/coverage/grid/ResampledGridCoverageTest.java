@@ -243,7 +243,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
 
     /**
      * Returns a resampled coverage using processor with default configuration.
-     * We use processor instead than instantiating {@link ResampledGridCoverage} directly in order
+     * We use processor instead of instantiating {@link ResampledGridCoverage} directly in order
      * to test {@link GridCoverageProcessor#resample(GridCoverage, GridGeometry)} method as well.
      */
     private static GridCoverage resample(final GridCoverage source, final GridGeometry target) throws TransformException {
@@ -658,9 +658,10 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * This is an helper tools which can be invoked during debugging
      * session in IDE capable to display images.
      *
-     * <p><b>Usage:</b> Add a new watch calling this method on wanted image.</p>
+     * <h4>Usage</h4>
+     * Add a new watch calling this method on wanted image.
      *
-     * <p><b>Limitations:</b>
+     * <h4>Limitations</h4>
      * <ul>
      *   <li>If given image color-model is null, this method assumes 3 byte/RGB image.</li>
      *   <li>Works only with single-tile images.</li>

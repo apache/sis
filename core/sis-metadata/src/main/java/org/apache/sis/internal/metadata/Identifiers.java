@@ -87,7 +87,8 @@ public final class Identifiers extends Static {
      * This method removes leading and trailing {@linkplain Character#isWhitespace(int) whitespaces}.
      * See {@link Citations#getIdentifier(Citation)} for the public documentation of this method.
      *
-     * <p><b>Which method to use:</b></p>
+     * <h4>Which method to use</h4>
+     * Guidelines:
      * <ul>
      *   <li>For information purpose (e.g. some {@code toString()} methods), use {@code getIdentifier(…, false)}.</li>
      *   <li>For WKT formatting, use {@code getIdentifier(…, true)} in order to preserve formatting characters.</li>

@@ -63,7 +63,7 @@ public enum ComparisonMode {
      *
      * <ul>
      *   <li>The objects being compared need to be the same implementation class.</li>
-     *   <li>Private fields are compared directly instead than invoking public getter methods.</li>
+     *   <li>Private fields are compared directly instead of invoking public getter methods.</li>
      * </ul>
      *
      * @see Object#equals(Object)

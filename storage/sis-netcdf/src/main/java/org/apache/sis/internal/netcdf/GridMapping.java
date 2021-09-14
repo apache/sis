@@ -221,7 +221,7 @@ final class GridMapping {
                     } else if (value instanceof String && !name.endsWith(Convention.NAME_SUFFIX)) {
                         /*
                          * In principle we should ignore non-numeric parameters. But in practice, some badly encoded
-                         * netCDF files store parameters as strings instead than numbers. If the parameter name is
+                         * netCDF files store parameters as strings instead of numbers. If the parameter name is
                          * known to the projection method, try to parse the character string.
                          */
                         final ParameterValue<?> parameter;
@@ -453,7 +453,7 @@ final class GridMapping {
         }
         /*
          * The Coordinate Reference System stored in those attributes often use the GeoTIFF flavor of EPSG codes,
-         * with (longitude, latitude) axis order instead than the authoritative order specified in EPSG database.
+         * with (longitude, latitude) axis order instead of the authoritative order specified in EPSG database.
          * Likewise, the "WKT 1" flavor used by ESRI is different than WKT 1 defined by OGC 01-009 specification.
          * The CRS parsings below need to take those differences in account, except axis order which is tested in
          * the `adaptGridCRS(…)` method.

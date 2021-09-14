@@ -39,7 +39,7 @@ import org.apache.sis.internal.system.Semaphores;
  * </ul>
  *
  * This {@code ParameterizedAffine} class can be used when we want to describe this affine transform
- * by the Equirectangular set of parameters instead than the generic Affine set of parameters.
+ * by the Equirectangular set of parameters instead of the generic Affine set of parameters.
  * In such case, we must give a reference to an object able to provide those parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)

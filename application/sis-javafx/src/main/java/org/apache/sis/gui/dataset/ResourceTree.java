@@ -197,7 +197,7 @@ public class ResourceTree extends TreeView<Resource> {
      * Loads in a background thread the resources from the given source,
      * then {@linkplain #addResource(Resource) adds the resource} to this tree.
      * If the resource has already been loaded, then this method will use the
-     * existing instance instead than loading the data again.
+     * existing instance instead of loading the data again.
      *
      * @param  source  the source of the resource to load. This is usually
      *                 a {@link java.io.File} or {@link java.nio.file.Path}.
@@ -382,7 +382,7 @@ public class ResourceTree extends TreeView<Resource> {
             try {
                 /*
                  * The data store display name is typically the file name. We give precedence to that name
-                 * instead than the citation title because the citation may be the same for many files of
+                 * instead of the citation title because the citation may be the same for many files of
                  * the same product, while the display name have better chances to be distinct for each file.
                  */
                 if (resource instanceof DataStore) {

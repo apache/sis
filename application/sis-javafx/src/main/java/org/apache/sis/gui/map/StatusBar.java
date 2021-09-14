@@ -1097,7 +1097,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             /*
              * Estimate the precision by looking at the maximal displacement in the CRS caused by
              * a displacement of one cell (i.e. when moving by one row or column).  We search for
-             * maximal displacement instead than minimal because we expect the displacement to be
+             * maximal displacement instead of minimal because we expect the displacement to be
              * zero along some axes (e.g. one row down does not change longitude value in a Plate
              * Carrée projection).
              */

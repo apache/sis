@@ -183,7 +183,7 @@ public class Mercator extends ConformalProjection {
                  *   - The standard parallel is not an EPSG parameter for Spherical case.
                  *   - Users who set the standard parallel anyway may expect that latitude to be used for radius
                  *     calculation, since standard parallels are also known as "latitude of true scale".
-                 *   - Using the standard parallel instead than the latitude of origin would be consistent
+                 *   - Using the standard parallel instead of the latitude of origin would be consistent
                  *     with what EPSG does for the Equirectangular projection.
                  *
                  * Anyway, this choice matters only when the user request explicitly spherical formulas applied

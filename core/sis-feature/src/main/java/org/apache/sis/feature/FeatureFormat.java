@@ -71,7 +71,7 @@ import org.apache.sis.math.MathFunctions;
  *   └────────────┴─────────┴──────────────┴───────────┘
  * }</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
  *   <li>{@code FeatureFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
@@ -114,7 +114,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      * If a value is longer than this length, it will be truncated.
      *
      * <p>This is defined as a static final variable for now because its value is approximate:
-     * it is a number of characters instead than a number of code points, and that length may be
+     * it is a number of characters instead of a number of code points, and that length may be
      * exceeded by a few characters if the overflow happen while appending the list separator.</p>
      */
     private static final int MAXIMAL_VALUE_LENGTH = 40;
@@ -496,7 +496,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                     }
                     /*
                      * Minimum and maximum number of occurrences allowed for this property.
-                     * If we are formatting a Feature instead than a FeatureType, then the
+                     * If we are formatting a Feature instead of a FeatureType, then the
                      * actual number of values is also formatted. Example: 42 ∈ [0 … ∞]
                      */
                     case CARDINALITY: {
@@ -566,7 +566,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 final int n = MathFunctions.toNanOrdinal(f);
                                                 if (n > 0) t.append(" #").append(n);
                                             } catch (IllegalArgumentException e) {
-                                                // May happen if the NaN is a signaling NaN instead than a quiet NaN.
+                                                // May happen if the NaN is a signaling NaN instead of a quiet NaN.
                                                 final int bits = Float.floatToRawIntBits(f);
                                                 if (bits != illegalNaN) {
                                                     illegalNaN = bits;

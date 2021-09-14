@@ -67,7 +67,7 @@ import org.apache.sis.storage.event.WarningEvent;
  * This approach allows to discover the content of a folder or archive without
  * testing each file one by one.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Current version is read-only.</li>
  *   <li>Current version does not watch for external modifications in directory content.</li>

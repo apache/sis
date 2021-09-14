@@ -246,7 +246,7 @@ final class FeatureSet extends DiscreteSampling {
         this.timeCRS = timeCRS;
         /*
          * Dynamic properties (many values by feature instances).
-         * Use `Number` type instead than a more specialized subclass because values
+         * Use `Number` type instead of a more specialized subclass because values
          * will be stored in `Vector` objects and that class implements `List<Number>`.
          */
         for (int i = getReferencingDimension(true); i < dynamicProperties.length; i++) {
@@ -342,7 +342,7 @@ final class FeatureSet extends DiscreteSampling {
          * Above loop handled all features which seem to be trajectories (i.e. having a `counts` variable allowing
          * each feature instance to contain an arbitrary number of points). If there is other feature variables not
          * handled by above loop (i.e. feature properties without `counts` variable), the features are assumed to be
-         * "simple features" with only points instead than trajectories.
+         * "simple features" with only points instead of trajectories.
          */
         for (final Map.Entry<Dimension,Boolean> entry : done.entrySet()) {
             if (!entry.getValue()) {
@@ -670,7 +670,7 @@ skip:           for (final Variable v : properties) {
 
         /**
          * Index of the first {@link #propertyValues} list which is not a coordinate vector.
-         * Lists before that index will be stored in the geometry instead than as feature property.
+         * Lists before that index will be stored in the geometry instead of as feature property.
          */
         private final int propertyIndexOffset;
 

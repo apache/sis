@@ -221,8 +221,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
 
     /**
      * The converter for replacing the keys in the {@link SystemUnit#getBaseUnits()} map from {@link UnitDimension}
-     * instances to {@link SystemUnit} instances. We apply conversions on the fly instead than extracting the data in
-     * a new map once for all because the copy may fail if an entry contains a rational instead than an integer power.
+     * instances to {@link SystemUnit} instances. We apply conversions on the fly instead of extracting the data in
+     * a new map once for all because the copy may fail if an entry contains a rational instead of an integer power.
      * With on-the-fly conversions, the operation will not fail if the user never ask for that particular value.
      */
     private static final class DimToUnit extends SurjectiveConverter<UnitDimension, SystemUnit<?>> implements Serializable {
@@ -363,7 +363,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         }
         /*
          * At this point we know that the given units is not a system unit. Ask the conversion
-         * FROM the given units (before to inverse it) instead than TO the given units because
+         * FROM the given units (before to inverse it) instead of TO the given units because
          * in Apache SIS implementation, the former returns directly ConventionalUnit.toTarget
          * while the later implies a recursive call to this method.
          */
@@ -457,7 +457,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     @Override
     public Unit<?> multiply(final Unit<?> multiplier) {
         ArgumentChecks.ensureNonNull("multiplier", multiplier);
-        if (multiplier == this) return pow(2);                      // For formating e.g. "K²" instead than "K⋅K".
+        if (multiplier == this) return pow(2);                      // For formating e.g. "K²" instead of "K⋅K".
         return product(multiplier, false);
     }
 

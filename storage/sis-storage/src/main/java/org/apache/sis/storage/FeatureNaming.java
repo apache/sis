@@ -58,7 +58,7 @@ import org.apache.sis.internal.storage.Resources;
  * </div>
  *
  * Note that contrarily to the standard {@link java.util.Map#get(Object)} method contract, the {@link #get get(…)}
- * method defined in this class throws an exception instead than returning {@code null} if no unambiguous mapping
+ * method defined in this class throws an exception instead of returning {@code null} if no unambiguous mapping
  * can be established for the given name. This behavior allows {@code FeatureNaming} to produce an error message
  * telling why the operation can not succeed.
  *

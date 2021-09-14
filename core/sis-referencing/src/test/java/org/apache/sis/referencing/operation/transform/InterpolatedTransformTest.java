@@ -73,7 +73,7 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
 
     /**
      * Creates the same transformation than <cite>"France geocentric interpolation"</cite> transform
-     * (approximately), but using shifts in geographic domain instead than in geocentric domain.
+     * (approximately), but using shifts in geographic domain instead of in geocentric domain.
      *
      * @throws FactoryException if an error occurred while loading the grid.
      */
@@ -213,7 +213,7 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
 
     /**
      * Performs the tests using the same transformation than <cite>"France geocentric interpolation"</cite>
-     * transform (approximately), but using shifts in geographic domain instead than in geocentric domain.
+     * transform (approximately), but using shifts in geographic domain instead of in geocentric domain.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if an error occurred while transforming a coordinate.

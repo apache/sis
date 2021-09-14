@@ -135,7 +135,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      * to ensure that the given envelope is two-dimensional.
      *
      * <p>If {@code findOpCaller} is non-null, then this method will be executed in optional mode:
-     * some failures will cause this method to return {@code null} instead than throwing an exception.
+     * some failures will cause this method to return {@code null} instead of throwing an exception.
      * Note that {@link TransformException} may still be thrown but not directly by this method.
      * Warning may be logged, but in such case this method presumes that public caller is the named
      * method from {@link Envelopes} — typically {@link Envelopes#findOperation(Envelope, Envelope)}.</p>
@@ -259,7 +259,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      * If the envelope has no CRS, then (<var>longitude</var>, <var>latitude</var>) axis order is assumed.
      * If the envelope CRS is not geographic, then the envelope will be transformed to a geographic CRS.
      * If {@code findOpCaller} is {@code true}, then some failures will cause this method to return {@code null}
-     * instead than throwing an exception, and warning may be logged with assumption that caller is the named
+     * instead of throwing an exception, and warning may be logged with assumption that caller is the named
      * method from {@link Envelopes} — typically {@link Envelopes#findOperation(Envelope, Envelope)}.
      *
      * @param  envelope      the source envelope.

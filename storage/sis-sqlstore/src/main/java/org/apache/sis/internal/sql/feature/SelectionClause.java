@@ -18,6 +18,7 @@ package org.apache.sis.internal.sql.feature;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.feature.Geometries;
@@ -28,7 +29,6 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.internal.geoapi.filter.ValueReference;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 
 
 /**

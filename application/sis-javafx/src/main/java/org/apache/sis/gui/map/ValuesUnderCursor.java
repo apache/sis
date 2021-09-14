@@ -489,7 +489,7 @@ public abstract class ValuesUnderCursor {
             }
             if (point != null) {
                 /*
-                 * Take lock once instead than at each StringBuffer method call. It makes this method thread-safe,
+                 * Take lock once instead of at each StringBuffer method call. It makes this method thread-safe,
                  * but this is a side effect of the fact that `NumberFormat` accepts only `StringBuffer` argument.
                  * We do not document this thread-safety in method contract since it is not guaranteed to apply in
                  * future SIS versions if a future `NumberFormat` version accepts non-synchronized `StringBuilder`.
@@ -540,7 +540,7 @@ public abstract class ValuesUnderCursor {
          * and reused for all sample value formatting as long as the sample dimensions do not change.
          */
         private String format(final UnitFormat format, final Unit<?> unit) {
-            synchronized (buffer) {         // Take lock once instead than at each StringBuffer method call.
+            synchronized (buffer) {         // Take lock once instead of at each StringBuffer method call.
                 buffer.setLength(0);
                 format.format(unit, buffer, field);
                 if (buffer.length() != 0 && Character.isLetterOrDigit(buffer.codePointAt(0))) {

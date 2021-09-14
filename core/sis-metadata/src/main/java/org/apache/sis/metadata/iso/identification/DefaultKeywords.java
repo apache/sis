@@ -42,7 +42,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * <div class="preformat">{@code MD_Keywords}
  * {@code   └─keyword……} Commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

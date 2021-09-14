@@ -44,7 +44,7 @@
  * of implementation classes are the name of the implemented interfaces prefixed with {@code Abstract}
  * or {@code Default}.</p>
  *
- * <p><b>Notes:</b></p>
+ * <h3>Notes</h3>
  * <ul class="verbose">
  *   <li>The {@code Abstract} prefix means that the class is abstract in the sense of the implemented standard.
  *       It it not necessarily abstract in the sense of Java. Because incomplete metadata are common in practice,

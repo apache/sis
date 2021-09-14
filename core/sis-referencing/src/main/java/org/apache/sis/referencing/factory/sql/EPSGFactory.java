@@ -368,11 +368,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     provided that there is no ambiguity.</li>
      * </ul>
      *
-     * <p><b>Legal constraint:</b>
-     * the EPSG dataset can not be distributed with Apache SIS at this time for licensing reasons.
+     * <h4>Legal constraint</h4>
+     * The EPSG dataset can not be distributed with Apache SIS at this time for licensing reasons.
      * Users need to either install the dataset manually (for example with the help of this method),
      * or add on the classpath to a separated bundle like {@code org.apache.sis:non-free:sis-epsg.jar}.
-     * See <a href="http://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.</p>
+     * See <a href="http://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.
      *
      * @param  connection  connection to the database where to create the EPSG schema.
      * @throws UnavailableFactoryException if installation failed. The exception will have a

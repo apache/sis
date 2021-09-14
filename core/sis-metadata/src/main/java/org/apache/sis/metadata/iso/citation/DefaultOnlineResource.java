@@ -42,7 +42,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * <div class="preformat">{@code CI_OnlineResource}
  * {@code   └─linkage………………} Location (address) for on-line access using a Uniform Resource Locator address or similar addressing scheme.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

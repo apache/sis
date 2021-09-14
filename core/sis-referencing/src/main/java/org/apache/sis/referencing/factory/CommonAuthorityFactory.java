@@ -172,7 +172,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *
  * Codes in the {@code "AUTO"} namespace are the same than codes in the {@code "AUTO2"} namespace, except that
  * the {@linkplain org.apache.sis.measure.Units#valueOfEPSG(int) EPSG code} of the desired unit of measurement
- * was used instead than the unit factor.
+ * was used instead of the unit factor.
  * The {@code "AUTO"} namespace was defined in the <cite>Web Map Service</cite> (WMS) 1.1.1 specification
  * while the {@code "AUTO2"} namespace is defined in WMS 1.3.0.
  * In Apache SIS implementation, the unit parameter (either as factor or as EPSG code) is optional and defaults to metres.

@@ -338,7 +338,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             }
             /*
              * Apply previous transformations. This part is equivalent to the following code,
-             * but using double-double arithmetic instead than the primitive 'double' type:
+             * but using double-double arithmetic instead of the primitive 'double' type:
              *
              *     double sum = 0;
              *     for (int k=0; k<kmax; k++) {
@@ -380,7 +380,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             }
             /*
              * Compute multipliers. This part is equivalent to the following code, but
-             * using double-double arithmetic instead than the primitive 'double' type:
+             * using double-double arithmetic instead of the primitive 'double' type:
              *
              *     final double sum = LU[i*size + i];
              *     if (sum != 0.0) {

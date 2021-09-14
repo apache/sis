@@ -37,7 +37,7 @@ import org.apache.sis.util.iso.Types;
  * {@code   ├─explanation…………………} Explanation of the meaning of conformance for this result.
  * {@code   └─pass……………………………………} Indication of the conformance result.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

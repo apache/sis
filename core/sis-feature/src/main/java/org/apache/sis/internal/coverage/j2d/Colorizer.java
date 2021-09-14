@@ -342,7 +342,7 @@ public final class Colorizer {
         }
         /*
          * If a source SampleDimension has been specified, verify if it provides a transfer function that we can
-         * use directly. If this is the case, use the existing transfer function instead than inventing our own.
+         * use directly. If this is the case, use the existing transfer function instead of inventing our own.
          */
 reuse:  if (source != null) {
             target = source.forConvertedValues(false);

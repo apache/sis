@@ -67,7 +67,7 @@ import org.opengis.util.InternationalString;
  * Subclasses are encouraged to override the following methods (typically with hard-coded values):
  *
  * <ul>
- *   <li>{@link #getSpatialRepresentationTypes()} if the metadata describe gridded data instead than vector data.</li>
+ *   <li>{@link #getSpatialRepresentationTypes()} if the metadata describe gridded data instead of vector data.</li>
  *   <li>{@link #getTopicCategories()} if the data represent something else than locations.</li>
  *   <li>{@link #getResourceFormats()} with a hard-coded value provided by the data store implementation.</li>
  *   <li>{@link #getPresentationForms()} if the data represent something else than tabular data.</li>
@@ -377,7 +377,7 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * Methods used to spatially represent geographic information.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * Default implementation returns {@link SpatialRepresentationType#VECTOR}.
-     * Subclasses should override this method if they represent gridded data instead than vector data.
+     * Subclasses should override this method if they represent gridded data instead of vector data.
      */
     @Override
     public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {

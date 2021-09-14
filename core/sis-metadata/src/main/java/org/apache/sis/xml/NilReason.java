@@ -120,7 +120,7 @@ public final class NilReason implements Serializable {
      * The explanation property is an empty string, and the URI is {@code null}.
      *
      * <h4>Providing an explanation</h4>
-     * Users are encouraged to use the {@link #valueOf(String)} method instead than this constant,
+     * Users are encouraged to use the {@link #valueOf(String)} method instead of this constant,
      * in order to provide a brief explanation. The string representation for {@code valueOf(…)}
      * is <code>"other:<var>explanation</var>"</code> where <var>explanation</var> is a string of
      * two or more characters with no included spaces.
@@ -433,7 +433,7 @@ public final class NilReason implements Serializable {
      * {@link Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
      *
-     * <p><b>REMINDER:</b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
+     * <p><b>Reminder:</b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
      * <div class="note"><b>Implementation note:</b>

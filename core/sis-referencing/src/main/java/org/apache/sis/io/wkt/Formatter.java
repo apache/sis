@@ -1717,7 +1717,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the unit to use instead than the given one, or {@code unit} if there is no replacement.
+     * Returns the unit to use instead of the given one, or {@code unit} if there is no replacement.
      * This method searches for a unit specified by {@link #addContextualUnit(Unit)}
      * which {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.
      *

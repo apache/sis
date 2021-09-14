@@ -228,7 +228,7 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Same conversion than {@link #gridToCRS} but from {@linkplain PixelInCell#CELL_CORNER cell corner}
-     * instead than center. This transform is preferable to {@code gridToCRS} for transforming envelopes.
+     * instead of center. This transform is preferable to {@code gridToCRS} for transforming envelopes.
      *
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
@@ -351,7 +351,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             /*
              * The `toOther` transform applies on `cornerToCRS` because the corner of upper-left pixel before scaling
              * is still the corner of upper-left pixel after scaling, while "pixel center" is no longer the center of
-             * the same pixel. We adjust `toOther` instead than invoking `PixelTranslation.translate(cornerToCRS, …)`
+             * the same pixel. We adjust `toOther` instead of invoking `PixelTranslation.translate(cornerToCRS, …)`
              * because we do not know which of `cornerToCRS` or `gridToCRS` has less NaN values.
              */
             if (other.gridToCRS != null) {

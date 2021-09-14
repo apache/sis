@@ -633,7 +633,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Returns the CRS components to marshal. We use this private methods instead than annotating
+     * Returns the CRS components to marshal. We use this private methods instead of annotating
      * {@link #getSingleComponents()} directly for two reasons:
      *
      * <ul>

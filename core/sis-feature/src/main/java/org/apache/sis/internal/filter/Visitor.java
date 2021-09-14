@@ -42,7 +42,7 @@ import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
  *
  * <div class="note"><b>Relationship with the visitor pattern</b><br>
  * This class provides similar functionalities than the "visitor pattern".
- * The actions are defined by lambda functions in a {@link HashMap} instead than by overriding methods,
+ * The actions are defined by lambda functions in a {@link HashMap} instead of by overriding methods,
  * but the results are similar.</div>
  *
  * <h2>Thread-safety</h2>

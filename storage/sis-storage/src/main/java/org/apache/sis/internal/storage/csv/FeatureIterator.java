@@ -202,11 +202,11 @@ class FeatureIterator implements Spliterator<AbstractFeature> {
      * The features are assumed static, with one feature per line.
      * This method is for {@link #tryAdvance(Consumer)} and {@link #forEachRemaining(Consumer)} implementations.
      *
-     * <p><b>Multi-threading:</b>
+     * <h4>Multi-threading</h4>
      * {@code Iter} does not need to be thread-safe, so we do not perform synchronization for its {@link #values}.
      * Accesses to {@code Store} fields need to be thread-safe, but this method uses only immutable or thread-safe
      * objects from {@link Store}, so there is no need for {@code synchronize(Store.this)} statement.
-     * The only object that need synchronization is {@link Store#source}, which is already synchronized.</p>
+     * The only object that need synchronization is {@link Store#source}, which is already synchronized.
      *
      * @param  action  the action to execute.
      * @param  all     {@code true} for executing the given action on all remaining features.

@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
 public final strictfp class CodeTest extends TestCase {
     /**
      * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:4326"} identifier.
-     * This test intentionally uses an identifier with the {@code IOGP} authority instead than
+     * This test intentionally uses an identifier with the {@code IOGP} authority instead of
      * EPSG in order to make sure that the {@code codeSpace} attribute is set from
      * {@code Identifier.getCodeSpace()}, not from {@code Identifier.getAuthority()}.
      */
@@ -66,7 +66,7 @@ public final strictfp class CodeTest extends TestCase {
 
     /**
      * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:8.3:4326"} identifier.
-     * This test intentionally uses an identifier with the {@code IOGP} authority instead than EPSG
+     * This test intentionally uses an identifier with the {@code IOGP} authority instead of EPSG
      * for the same reason than {@link #testSimple()}.
      */
     @Test

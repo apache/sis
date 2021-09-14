@@ -92,13 +92,13 @@ public strictfp class PixelIteratorTest extends TestCase {
 
     /**
      * Number of pixels along the <var>x</var> axis of each tile in image tiles.
-     * This is zero if the tests are performed on a raster instead than a tiled image.
+     * This is zero if the tests are performed on a raster instead of a tiled image.
      */
     private int tileWidth;
 
     /**
      * Number of pixels along the <var>y</var> axis of each tile in image tiles.
-     * This is zero if the tests are performed on a raster instead than a tiled image.
+     * This is zero if the tests are performed on a raster instead of a tiled image.
      */
     private int tileHeight;
 
@@ -152,9 +152,9 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Creates a {@code WritableRaster} to use as the source of test data.
      * The raster is filled with arbitrary sample values.
      *
-     * <p><b>Pre-conditions:</b>
-     * before invocation, the {@link #xmin}, {@link #ymin}, {@link #width}, {@link #height} and {@link #numBands}
-     * fields must be initialized.</p>
+     * <h4>Pre-conditions</h4>
+     * Before invocation, the {@link #xmin}, {@link #ymin}, {@link #width}, {@link #height} and {@link #numBands}
+     * fields must be initialized.
      *
      * @param  subArea  the raster subarea on which to perform iteration, or {@code null} for the whole area.
      * @return a raster filled with arbitrary sample values.
@@ -211,9 +211,9 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Creates a {@code RenderedImage} to use as the source of test data.
      * The image is filled with arbitrary sample values.
      *
-     * <p><b>Pre-conditions:</b>
-     * before invocation, the {@link #xmin}, {@link #ymin}, {@link #width}, {@link #height},
-     * {@link #tileWidth}, {@link #tileHeight} and {@link #numBands} fields must be initialized.</p>
+     * <h4>Pre-conditions</h4>
+     * Before invocation, the {@link #xmin}, {@link #ymin}, {@link #width}, {@link #height},
+     * {@link #tileWidth}, {@link #tileHeight} and {@link #numBands} fields must be initialized.
      *
      * @param  subArea  the image subarea on which to perform iteration, or {@code null} for the whole area.
      * @return an image filled with arbitrary sample values.
@@ -1103,7 +1103,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         int i = getIndexOf(x, y) * numBands;
         /*
          * Iteration verification happens here. Note that contrarily to 'verifyIteration(boolean)' method,
-         * we use a do … while loop instead than a while loop because the call to 'moveTo(x, y)' should be
+         * we use a do … while loop instead of a while loop because the call to 'moveTo(x, y)' should be
          * understood as an implicit 'next()' method call.
          */
         do {

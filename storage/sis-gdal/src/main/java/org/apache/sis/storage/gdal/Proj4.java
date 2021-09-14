@@ -342,7 +342,7 @@ public final class Proj4 extends Static {
      *       This method fails if it can not map the given CRS to Proj.4 data structures.</li>
      * </ul>
      *
-     * <p><b>Recommended alternative</b></p>
+     * <h4>Recommended alternative</h4>
      * Provided that an <a href="http://sis.apache.org/epsg.html">EPSG database is available</a>,
      * Apache SIS {@link CRS#findOperation CRS.findOperation(…)} method produces results that are closer
      * to the authoritative definitions of coordinate operations (technically, Apache SIS referencing

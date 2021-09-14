@@ -132,7 +132,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * {@code true} if we determined that this feature type does not have, directly or indirectly,
      * any unresolved name (i.e. a {@link DefaultAssociationRole#valueType} specified only be the
-     * feature type name instead than its actual instance). A value of {@code true} means that all
+     * feature type name instead of its actual instance). A value of {@code true} means that all
      * names have been resolved. However a value of {@code false} only means that we are not sure,
      * and that {@code resolve(FeatureType, Map)} should check again.
      *
@@ -652,7 +652,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * However as a safety, this method also checks that all properties in this feature type is assignable
      * from a property of the same name in the given type.
      *
-     * <h4>Constraints:</h4>
+     * <h4>Constraints</h4>
      * <ul>
      *   <li>If <var>A</var> is assignable from <var>B</var> and <var>B</var> is assignable from <var>C</var>,
      *       then <var>A</var> is assignable from <var>C</var>.</li>

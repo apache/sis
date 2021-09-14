@@ -126,7 +126,7 @@ public class Merger {
      * Implementation of {@link #copy(Object, ModifiableMetadata)} method,
      * to be invoked recursively for all child properties to merge.
      *
-     * @param  dryRun  {@code true} for executing the merge operation in "dry run" mode instead than performing the
+     * @param  dryRun  {@code true} for executing the merge operation in "dry run" mode instead of performing the
      *                 actual merge. This mode is used for verifying if there is a merge conflict before to perform
      *                 the actual operation.
      * @return {@code true} if the merge operation is valid, or {@code false} if the given arguments are valid
@@ -241,7 +241,7 @@ distribute:                 while (it.hasNext()) {
                     }
                     /*
                      * Add remaining elements one-by-one. In such case, the Apache SIS metadata implementation
-                     * shall add the elements to the collection instead than replacing the whole collection by
+                     * shall add the elements to the collection instead of replacing the whole collection by
                      * a singleton. As a partial safety check, we verify that the collection instance contains
                      * all the previous values.
                      */

@@ -1168,7 +1168,7 @@ public class GridDerivation {
          *   • x = (h₁ + 1) × c
          *   • x = (h₂ + f) × c⋅s      which implies       h₂ = h₁/s      and       f = 1/s
          *
-         * If we modify the later equation for integer division instead than real numbers, we have:
+         * If we modify the later equation for integer division instead of real numbers, we have:
          *
          *   • x = (h₂ + f) × c⋅s      where        h₂ = floor(h₁/s)      and       f = ((h₁ mod s) + 1)/s
          *

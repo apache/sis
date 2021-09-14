@@ -47,7 +47,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * <div class="preformat">{@code MD_Band}
  * {@code   └─units……} Units of data in each dimension included in the resource.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

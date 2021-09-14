@@ -47,7 +47,7 @@ import org.apache.sis.util.ArraysExt;
  * }
  *
  * If there is more than one locale, the whole {@code <lan:textGroup>} block is repeated for each
- * locale, instead than repeating {@code <lan:LocalisedCharacterString>} inside the same group as
+ * locale, instead of repeating {@code <lan:LocalisedCharacterString>} inside the same group as
  * we could expect. However at unmarshalling time, both forms are accepted.
  *
  * <p>The {@code <gco:CharacterString>} element is inherited from the {@link GO_CharacterString}
@@ -118,8 +118,8 @@ public final class PT_FreeText extends GO_CharacterString {
             }
             if (n != 0) {
                 /*
-                 * Invoke toString(Locale) instead than toString() even if the locale is null,
-                 * since the desired fallback is typically Locale.ROOT instead than the system
+                 * Invoke toString(Locale) instead of toString() even if the locale is null,
+                 * since the desired fallback is typically Locale.ROOT instead of the system
                  * default. It is usually safer to avoid null value, but in this particular case
                  * the implementation (DefaultInternationalString) is known to support null.
                  */
@@ -179,7 +179,7 @@ public final class PT_FreeText extends GO_CharacterString {
         /*
          * Create the international string with all locales found in the <gml:textGroup>
          * element. If the <gml:textGroup> element is missing or empty, then we will use
-         * an instance of SimpleInternationalString instead than the more heavy
+         * an instance of SimpleInternationalString instead of the more heavy
          * DefaultInternationalString.
          */
         DefaultInternationalString i18n = null;

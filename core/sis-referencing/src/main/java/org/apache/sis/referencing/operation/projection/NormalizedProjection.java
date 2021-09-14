@@ -279,7 +279,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         /**
          * Maps the parameter for the latitude where to compute the <cite>radius of conformal sphere</cite>
          * (symbol: <var>R</var><sub>c</sub>). If this parameter is provided, then the radius of the conformal
-         * sphere at latitude φ will be used instead than the semi-major axis length in the denormalisation matrix.
+         * sphere at latitude φ will be used instead of the semi-major axis length in the denormalisation matrix.
          * In other words, if provided then <var>a</var> is replaced by <var>R</var><sub>c</sub> below:
          *
          * <div style="text-align:center">{@include ../transform/formulas.html#DenormalizeCartesian}</div>
@@ -455,7 +455,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * Creates a new projection initialized to the values of the given one. This constructor may be invoked after
      * we determined that the default implementation can be replaced by an other one, for example using spherical
-     * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
+     * formulas instead of the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
     NormalizedProjection(final NormalizedProjection other) {
@@ -958,7 +958,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * <p>Default implementation returns {@code null}. Subclasses should override if applicable.</p>
      *
-     * @param  projectedSpace  {@code true} if affine transform is applied in projected instead than geographic space.
+     * @param  projectedSpace  {@code true} if affine transform is applied in projected instead of geographic space.
      * @param  affine          the affine transform in the middle of (inverse) → (affine) → (this) transform sequence.
      * @param  factory         the factory to use for creating new transform, or {@code null}.
      * @return the optimized concatenation, or {@code null} if none.

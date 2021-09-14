@@ -544,7 +544,7 @@ public class IdentifiedObjectFinder {
      * @param  code  the authority code for which to create an object.
      * @return the identified object for the given code, or {@code null} to stop attempts.
      * @throws NoSuchAuthorityCodeException if no object is found for the given code. It may happen if {@code code}
-     *         was a name or alias instead than an identifier and the factory supports only search by identifier.
+     *         was a name or alias instead of an identifier and the factory supports only search by identifier.
      * @throws FactoryException if an error occurred while creating the object.
      */
     private IdentifiedObject create(final String code) throws FactoryException {

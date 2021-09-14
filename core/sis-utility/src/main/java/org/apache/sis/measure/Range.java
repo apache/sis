@@ -407,7 +407,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
          * ([max(L₁, L₂) … min(H₁, H₂)]). Only two comparisons is needed.
          *
          * There is a small complication since we shall also handle the inclusive states.
-         * so instead than extracting the minimal and maximal values directly, we will
+         * so instead of extracting the minimal and maximal values directly, we will
          * find which range contains the highest minimal value, and which range contains
          * the smallest maximal value. If we find the same range in both case (which can
          * be either 'this' or 'range), return that range. Otherwise we need to create a
@@ -660,7 +660,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Returns a unlocalized string representation of this range. This method complies to the format
      * described in the <a href="https://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a> standard,
      * except that the minimal and maximal values are separated by the "{@code …}" character
-     * instead than coma. More specifically, the string representation is defined as below:
+     * instead of coma. More specifically, the string representation is defined as below:
      *
      * <ul>
      *   <li>If the range {@linkplain #isEmpty() is empty}, then this method returns "{@code {}}".</li>

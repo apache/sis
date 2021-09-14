@@ -181,7 +181,6 @@ is divided into following sections:
         <condition property="have.tests">
             <or>
                 <available file="${test.javafx.dir}"/>
-                <available file="${test.webapp.dir}"/>
                 <available file="${test.console.dir}"/>
                 <available file="${test.portrayal.dir}"/>
                 <available file="${test.earth-obs.dir}"/>
@@ -348,7 +347,6 @@ is divided into following sections:
         <fail unless="src.gdal.dir">Must set src.gdal.dir</fail>
         <fail unless="src.c.gdal.dir">Must set src.c.gdal.dir</fail>
         <fail unless="test.javafx.dir">Must set test.javafx.dir</fail>
-        <fail unless="test.webapp.dir">Must set test.webapp.dir</fail>
         <fail unless="test.console.dir">Must set test.console.dir</fail>
         <fail unless="test.portrayal.dir">Must set test.portrayal.dir</fail>
         <fail unless="test.earth-obs.dir">Must set test.earth-obs.dir</fail>
@@ -667,9 +665,6 @@ is divided into following sections:
                             <fileset dir="${test.javafx.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                                 <filename name="@{testincludes}"/>
                             </fileset>
-                            <fileset dir="${test.webapp.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
-                                <filename name="@{testincludes}"/>
-                            </fileset>
                             <fileset dir="${test.console.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                                 <filename name="@{testincludes}"/>
                             </fileset>
@@ -745,9 +740,6 @@ is divided into following sections:
                 </condition>
                 <union id="test.set">
                     <fileset dir="${test.javafx.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
-                        <filename name="@{testincludes}"/>
-                    </fileset>
-                    <fileset dir="${test.webapp.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${test.console.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
@@ -1868,14 +1860,14 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target depends="-init-source-module-properties" if="named.module.internal" name="-init-test-javac-module-properties-with-module">
-        <j2seproject3:modulename property="test.module.name" sourcepath="${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}"/>
-        <condition else="${empty.dir}" property="javac.test.sourcepath" value="${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}">
+        <j2seproject3:modulename property="test.module.name" sourcepath="${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}"/>
+        <condition else="${empty.dir}" property="javac.test.sourcepath" value="${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}">
             <and>
                 <isset property="test.module.name"/>
                 <length length="0" string="${test.module.name}" when="greater"/>
             </and>
         </condition>
-        <condition else="--patch-module ${module.name}=${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir} --add-reads ${module.name}=ALL-UNNAMED" property="javac.test.compilerargs" value="--add-reads ${test.module.name}=ALL-UNNAMED">
+        <condition else="--patch-module ${module.name}=${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir} --add-reads ${module.name}=ALL-UNNAMED" property="javac.test.compilerargs" value="--add-reads ${test.module.name}=ALL-UNNAMED">
             <and>
                 <isset property="test.module.name"/>
                 <length length="0" string="${test.module.name}" when="greater"/>
@@ -1916,17 +1908,16 @@ is divided into following sections:
     </target>
     <target depends="-init-test-javac-module-properties-with-module,-init-test-module-properties-without-module" name="-init-test-module-properties"/>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}"/>
+        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}"/>
     </target>
     <target depends="init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${javac.test.sourcepath}" srcdir="${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}">
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${javac.test.sourcepath}" srcdir="${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}">
             <customize>
                 <compilerarg line="${javac.test.compilerargs}"/>
             </customize>
         </j2seproject3:javac>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.javafx.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${test.webapp.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.console.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.portrayal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.earth-obs.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1958,14 +1949,13 @@ is divided into following sections:
     <target depends="init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}, module-info.java" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}" srcdir="${test.javafx.dir}:${test.webapp.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}">
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}, module-info.java" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}" srcdir="${test.javafx.dir}:${test.console.dir}:${test.portrayal.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.sql.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.jpn-profile.dir}:${test.gdal.dir}">
             <customize>
                 <compilerarg line="${javac.test.compilerargs}"/>
             </customize>
         </j2seproject3:javac>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.javafx.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${test.webapp.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.console.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.portrayal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.earth-obs.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>

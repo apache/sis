@@ -112,7 +112,7 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
     /**
      * Tests <cite>Lambert Cylindrical Equal Area (Spherical)</cite> projection.
      * The difference between this test and {@link #testSpherical()} is that this case shall
-     * compute the radius of the conformal sphere instead than using the semi-major axis length.
+     * compute the radius of the conformal sphere instead of using the semi-major axis length.
      * The result near the equator are almost the same however.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

@@ -133,7 +133,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Same as {@link #unmarshal(XMLEventReader, TransformVersion)}, but delegating to the unmarshaller
-     * methods returning a JAXB element instead than the one returning the object.
+     * methods returning a JAXB element instead of the one returning the object.
      */
     private <T> JAXBElement<T> unmarshal(XMLEventReader input, final TransformVersion version, final Class<T> declaredType)
             throws XMLStreamException, JAXBException

@@ -920,7 +920,7 @@ appPow: if (unit == null) {
 
     /**
      * Returns {@code 0} or {@code 1} if the {@code '*'} character at the given index stands for exponentiation
-     * instead than multiplication, or a negative value if the character stands for multiplication. This check
+     * instead of multiplication, or a negative value if the character stands for multiplication. This check
      * is used for heuristic rules at parsing time. Current implementation applies the following rules:
      *
      * <ul>
@@ -1023,7 +1023,7 @@ appPow: if (unit == null) {
 
     /**
      * Reports that the parsing is finished and no more content should be parsed.
-     * This method is invoked when the last parsed term is possibly one or more words instead than unit symbols.
+     * This method is invoked when the last parsed term is possibly one or more words instead of unit symbols.
      * The intent is to avoid trying to parse "degree minute" as "degree × minute". By contrast, this method is
      * not invoked if the string to parse is "m kg**-2" because it can be interpreted as "m × kg**-2".
      */

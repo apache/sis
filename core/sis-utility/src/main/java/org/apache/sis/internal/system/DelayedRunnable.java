@@ -41,7 +41,7 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * modified: it is rather an ordinal value used for preserving task order.
      *
      * <div class="note"><b>Note:</b>
-     * we use {@link System#nanoTime()} instead than {@link System#currentTimeMillis()} because
+     * we use {@link System#nanoTime()} instead of {@link System#currentTimeMillis()} because
      * the later is not guaranteed to be monotonic: {@code currentTimeMillis} may change abruptly
      * for example if the user adjusts the clock of his operating system.
      * </div>

@@ -56,7 +56,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
  * <div class="preformat">{@code DQ_Element}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

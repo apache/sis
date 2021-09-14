@@ -63,7 +63,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * {@code       ├─temporalElement…………} Temporal component of the extent of the referring object.
  * {@code       └─verticalElement…………} Vertical component of the extent of the referring object.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

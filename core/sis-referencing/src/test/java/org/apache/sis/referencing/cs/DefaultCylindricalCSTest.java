@@ -55,7 +55,7 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
 
     /**
      * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)} with a change of axis order.
-     * This test uses a (r) axis oriented toward South instead than "awayFrom".
+     * This test uses a (r) axis oriented toward South instead of "awayFrom".
      */
     @Test
     public void testChangeAxisOrder() {

@@ -101,7 +101,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
     }
 
     /**
-     * Creates a transform for the given values. This method returns an affine transform instead than an
+     * Creates a transform for the given values. This method returns an affine transform instead of an
      * interpolator if the given values form a series with a constant increment. The given array shall
      * contain at least two values.
      *
@@ -114,7 +114,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         final double as = Math.abs(slope);
         /*
          * If the increment between values is constant (with a small tolerance factor),
-         * return a one-dimensional affine transform instead than an interpolator.
+         * return a one-dimensional affine transform instead of an interpolator.
          * We need to perform this check before the sign reversal applied after this loop.
          */
         double value;

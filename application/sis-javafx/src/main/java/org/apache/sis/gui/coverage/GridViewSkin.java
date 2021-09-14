@@ -563,7 +563,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
 
     /**
      * If an error exists somewhere, computes as estimation of the visible region
-     * as zero-based column and row indices. We use an AWT rectangle instead than
+     * as zero-based column and row indices. We use an AWT rectangle instead of
      * JavaFX object because this rectangle will be intersected with AWT rectangle.
      */
     private void computeErrorBounds(final Flow flow) {

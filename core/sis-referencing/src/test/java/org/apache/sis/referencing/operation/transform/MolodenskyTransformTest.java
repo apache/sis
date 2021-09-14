@@ -187,7 +187,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
 
     /**
      * Tests the point used in {@link FranceGeocentricInterpolationTest}. We use this test for measuring the
-     * errors induced by the use of the Molodensky approximation instead than a real geocentric translation.
+     * errors induced by the use of the Molodensky approximation instead of a real geocentric translation.
      * The error is approximately 1 centimetre, which is about 6 times more than the accuracy of the point
      * given in {@code FranceGeocentricInterpolationTest}.
      *

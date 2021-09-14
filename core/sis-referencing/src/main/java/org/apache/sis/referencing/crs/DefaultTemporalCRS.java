@@ -97,7 +97,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
 
     /**
      * Conversion factor from values in this CRS to values in seconds. We use {@link UnitConverter}
-     * instead than {@code double} because the SIS implementation of {@code UnitConverter} performs
+     * instead of {@code double} because the SIS implementation of {@code UnitConverter} performs
      * some extra steps against rounding errors.
      *
      * @see #initializeConverter()
@@ -227,7 +227,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         if (t != 0) {
             /*
              * The origin is usually an integer amount of days or hours. It rarely has a fractional amount of seconds.
-             * If it happens anyway, put the fractional amount of seconds in the converter instead than adding another
+             * If it happens anyway, put the fractional amount of seconds in the converter instead of adding another
              * field in this class for such very rare situation. Accuracy should be okay since the offset is small.
              */
             UnitConverter c = Units.converter(null, new Fraction((int) t, MILLIS_PER_SECOND).simplify());

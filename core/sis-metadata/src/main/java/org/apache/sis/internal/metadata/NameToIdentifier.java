@@ -39,8 +39,8 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * This class also implements the {@link #isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}
  * method since that method involves a mix of names and identifiers.
  *
- * <p><b>Limitation:</b>
- * Current version does not yet work with URN or HTTP syntax.</p>
+ * <h2>Limitations</h2>
+ * Current version does not yet work with URN or HTTP syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -270,7 +270,7 @@ public final class NameToIdentifier implements ReferenceIdentifier {
                          * Note: a previous version compared also the scoped names. We removed that part,
                          * because experience has shown that this method is used only for the "code" part
                          * of an object name. If we really want to compare scoped name, it would probably
-                         * be better to take a GenericName argument instead than String.
+                         * be better to take a GenericName argument instead of String.
                          */
                     }
                 }

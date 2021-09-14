@@ -45,7 +45,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * be replaced be references to the {@code MetadataScope} interface.
  * </div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

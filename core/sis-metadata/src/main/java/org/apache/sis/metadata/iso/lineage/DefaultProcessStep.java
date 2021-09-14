@@ -55,7 +55,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * <div class="preformat">{@code LI_ProcessStep}
  * {@code   └─description……} Description of the event, including related parameters or tolerances.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

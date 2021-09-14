@@ -36,7 +36,7 @@ public enum TypeValuePolicy {
      * {@linkplain java.lang.reflect.Method#getReturnType() return type} of the property method
      * defined in the interface.
      *
-     * <p><b>Notes:</b></p>
+     * <h4>Notes</h4>
      * <ul>
      *   <li>Collections are not handled in any special way: if the return type is a collection,
      *       then the property type is {@code Collection.class} or any other declared return type.</li>
@@ -72,7 +72,7 @@ public enum TypeValuePolicy {
     /**
      * The type of the class that declares the method. This is similar to
      * {@link #DECLARING_INTERFACE}, except that the implementation class
-     * from the metadata standard is returned instead than the interface.
+     * from the metadata standard is returned instead of the interface.
      */
     DECLARING_CLASS
 }

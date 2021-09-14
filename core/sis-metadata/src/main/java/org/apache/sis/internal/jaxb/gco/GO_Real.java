@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlType;
  *
  * <h2>Relationship with {@code GO_Decimal}</h2>
  * This adapter is identical to {@link GO_Decimal} except for the element name, which is {@code "Real"}
- * instead than {@code "Decimal"}. This adapter is the most widely used one in IS 19139 XML schema.
+ * instead of {@code "Decimal"}. This adapter is the most widely used one in IS 19139 XML schema.
  * The few exceptions are documented in {@link GO_Decimal}.
  *
  * @author  Cédric Briançon (Geomatys)

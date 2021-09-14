@@ -87,7 +87,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * }
  * </div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
  *   <li>{@code LocationFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
@@ -297,7 +297,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
          * At this point we got the final geographic bounding box and/or envelope to write.
          * Since we will write the projected and geographic coordinates side-by-side in the same cells,
          * we need to format them in advance so we can compute their width for internal right-alignment.
-         * We do the alignment ourselves instead than using TableAppender.setCellAlignment(ALIGN_RIGHT)
+         * We do the alignment ourselves instead of using TableAppender.setCellAlignment(ALIGN_RIGHT)
          * because we do not want (projected geographic) tuple to appear far on the right side if other
          * cells have long texts.
          */

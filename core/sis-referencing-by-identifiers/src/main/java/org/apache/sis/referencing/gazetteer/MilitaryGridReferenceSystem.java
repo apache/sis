@@ -217,7 +217,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
     /**
      * Whether {@link MilitaryGridReferenceSystem.Encoder} should infer the datum from the given coordinates
-     * instead than using {@link #datum}.
+     * instead of using {@link #datum}.
      */
     final boolean avoidDatumChange;
 
@@ -1488,7 +1488,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             /*
              * If the DirectPosition given to this method is not in the expected Coordinate Reference System,
              * transform it now. This may happen because the UTM zone computed above is not the same UTM zone
-             * than the coordinate one, or because the coordinate is geographic instead than projected.
+             * than the coordinate one, or because the coordinate is geographic instead of projected.
              */
             if (signedZone != crsZone) {
                 if (!reproject) {

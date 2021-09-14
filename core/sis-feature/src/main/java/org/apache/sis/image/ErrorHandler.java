@@ -49,7 +49,7 @@ public interface ErrorHandler {
      * A partial result may be available.
      *
      * <p>Users are encouraged to use {@link #THROW} or to specify their own {@link ErrorHandler}
-     * instead than using this error action, because not everyone read logging records.</p>
+     * instead of using this error action, because not everyone read logging records.</p>
      */
     ErrorHandler LOG = ErrorAction.LOG;
 

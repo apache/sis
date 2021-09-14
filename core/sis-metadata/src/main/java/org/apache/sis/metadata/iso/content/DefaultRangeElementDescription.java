@@ -36,7 +36,7 @@ import org.apache.sis.metadata.TitleProperty;
  * {@code   ├─definition………………………………} Description of a set of specific range elements.
  * {@code   └─rangeElement…………………………} Specific range elements, i.e. range elements associated with a name and their definition.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -307,7 +307,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
 
         /**
          * Whether this operator is the unary operator. In that case exactly one operand is expected
-         * and the keyword will be written before the operand instead than between the operands.
+         * and the keyword will be written before the operand instead of between the operands.
          */
         private final boolean unary;
 

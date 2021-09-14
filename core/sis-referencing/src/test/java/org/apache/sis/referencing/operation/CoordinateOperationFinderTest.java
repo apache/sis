@@ -214,7 +214,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     @DependsOnMethod("testIdentityTransform")
     public void testGeocentricTranslationInGeographic2D() throws ParseException, FactoryException, TransformException {
         /*
-         * NAD27 (EPSG:4267) defined in WKT instead than relying on the CommonCRS.NAD27 constant in order to fix
+         * NAD27 (EPSG:4267) defined in WKT instead of relying on the CommonCRS.NAD27 constant in order to fix
          * the TOWGS84[…] parameter to values that we control. Note that TOWGS84[…] is not a legal WKT 2 element.
          * We could mix WKT 1 and WKT 2 elements (SIS allows that), but we nevertheless use WKT 1 for the whole
          * string as a matter of principle.
