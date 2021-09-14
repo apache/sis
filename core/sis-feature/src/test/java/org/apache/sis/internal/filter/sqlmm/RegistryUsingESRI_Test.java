@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import org.locationtech.jts.geom.Geometry;
+import com.esri.core.geometry.Geometry;
+import org.junit.Ignore;
+import org.junit.Test;
 
 
 /**
@@ -28,11 +30,47 @@ import org.locationtech.jts.geom.Geometry;
  * @since   1.1
  * @module
  */
-public final strictfp class RegistryUsingJTS_Test extends RegistryTestCase<Geometry> {
+public final strictfp class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
     /**
      * Creates a new test.
      */
-    public RegistryUsingJTS_Test() {
-        super(Geometry.class, true);
+    public RegistryUsingESRI_Test() {
+        super(Geometry.class, false);
+    }
+
+    @Test
+    @Override
+    @Ignore("Current implementation ignores the distance parameter.")
+    public void testSimplify() {
+    }
+
+    @Test
+    @Override
+    @Ignore("Reprojection not yet implemented.")
+    public void testTransform() {
+    }
+
+    @Test
+    @Override
+    @Ignore("Reprojection not yet implemented.")
+    public void testOptimization() {
+    }
+
+    @Test
+    @Override
+    @Ignore("Reprojection not yet implemented.")
+    public void testFeatureOptimization() {
+    }
+
+    @Test
+    @Override
+    @Ignore("Reprojection not yet implemented.")
+    public void testIntersectsWithReprojection() {
+    }
+
+    @Test
+    @Override
+    @Ignore("Operation not yet implemented.")
+    public void testSimplifyPreserveTopology() {
     }
 }
