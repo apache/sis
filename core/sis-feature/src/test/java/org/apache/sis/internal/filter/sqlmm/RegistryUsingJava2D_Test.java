@@ -16,13 +16,13 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import com.esri.core.geometry.Geometry;
+import java.awt.Shape;
 import org.junit.Ignore;
 import org.junit.Test;
 
 
 /**
- * Tests {@link SpatialFunction} implementations using JTS library.
+ * Tests {@link SpatialFunction} implementations using Java2D.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -30,12 +30,12 @@ import org.junit.Test;
  * @since   1.1
  * @module
  */
-public final strictfp class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
+public final strictfp class RegistryUsingJava2D_Test extends RegistryTestCase<Shape> {
     /**
      * Creates a new test.
      */
-    public RegistryUsingESRI_Test() {
-        super(Geometry.class, false);
+    public RegistryUsingJava2D_Test() {
+        super(Shape.class, false);
     }
 
     @Test
@@ -64,7 +64,13 @@ public final strictfp class RegistryUsingESRI_Test extends RegistryTestCase<Geom
 
     @Test
     @Override
-    @Ignore("Current implementation ignores the distance parameter.")
+    @Ignore("Operation not yet implemented.")
+    public void testBuffer() {
+    }
+
+    @Test
+    @Override
+    @Ignore("Operation not yet implemented.")
     public void testSimplify() {
     }
 

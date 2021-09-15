@@ -356,7 +356,7 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
         // Border should intersect. Also use Feature instead of Literal as a source.
         final Feature feature = createFeatureWithGeometry(library.polygonClass);
         final ValueReference<Feature,?> ref = factory.property(P_NAME, library.polygonClass);
-        point = library.createPoint(1.2, 0.2);
+        point = library.createPoint(0.2, 0.3);
         function = factory.function("ST_Intersects", ref, factory.literal(point));
         assertEquals(Boolean.TRUE, function.apply(feature));
 

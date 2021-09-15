@@ -212,7 +212,7 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * All predicates recognized by {@link #predicate(SpatialOperatorName, Geometry)}.
+     * All predicates recognized by {@link #predicateSameCRS(SpatialOperatorName, GeometryWrapper)}.
      * Array indices are {@link SpatialOperatorName#ordinal()} values.
      */
     @SuppressWarnings({"unchecked","rawtypes"})

@@ -191,7 +191,6 @@ public final class Factory extends Geometries<Geometry> {
      * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public GeometryWrapper<Geometry> createFromComponents(final GeometryType type, final Object components) {
         /*
          * No exhaustive `if (x instanceof y)` checks in this method.
