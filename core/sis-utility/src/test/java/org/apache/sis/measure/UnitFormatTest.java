@@ -499,6 +499,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.CUBIC_METRE,       f.parse("m⋅m⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m²⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m2.m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m^3"));
         assertSame(Units.METRES_PER_SECOND, f.parse("m∕s"));
         assertSame(Units.HERTZ,             f.parse("1/s"));
     }

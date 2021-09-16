@@ -142,6 +142,8 @@ public final strictfp class QuantitiesTest extends TestCase {
 
     /**
      * Tests {@link Quantities#min(Quantity, Quantity)} and {@link Quantities#max(Quantity, Quantity)}.
+     *
+     * @since 1.1
      */
     @Test
     public void testMinAndMax() {
