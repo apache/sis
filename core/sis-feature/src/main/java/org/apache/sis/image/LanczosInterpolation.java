@@ -77,7 +77,11 @@ final class LanczosInterpolation implements Interpolation {
     }
 
     /**
-     * Applies Lanczos interpolation.
+     * Applies Lanczos interpolation. Interpolation results may be outside
+     * the expected range of pixel values; caller may need to clamp.
+     *
+     * @param  xfrac  the X subsample position, in the [0 … 1) range except on image border.
+     * @param  yfrac  the Y subsample position, in the [0 … 1) range except on image border.
      */
     @Override
     public void interpolate(final DoubleBuffer source, final int numBands,
@@ -87,13 +91,22 @@ final class LanczosInterpolation implements Interpolation {
         final double[] kx = new double[span];
         final double[] ky = new double[span];
         for (int i=0; i<span; i++) {
-            final double offset = i - a;
-            kx[i] = kernel(offset + xfrac);
-            ky[i] = kernel(offset + yfrac);
+            /*
+             * kernel(x) must be invoked with −a ≤ x ≤ +a.
+             *
+             *   Given   x  =  xfrac − (i+1 - a)
+             *   with    i  ∈  [0 … 2a-1]
+             *   we get  x  ∈  [xfrac − a  …  xfrac + a-1]
+             *
+             * The condition is met for xfrac ∈ [0 … 1].
+             */
+            final double offset = i+1 - a;
+            kx[i] = kernel(xfrac - offset);
+            ky[i] = kernel(yfrac - offset);
         }
         source.mark();
-        for (int y=0; y<span; y++) {
-            for (int x=0; x<span; x++) {
+        for (int y=0; y<ky.length; y++) {
+            for (int x=0; x<kx.length; x++) {
                 final double k = kx[x] * ky[y];
                 for (int b=0; b<numBands; b++) {
                     writeTo[writeToOffset + b] += k * source.get();
@@ -105,9 +118,19 @@ final class LanczosInterpolation implements Interpolation {
 
     /**
      * Computes a value of the Lanczos reconstruction kernel L(x).
+     * This is a component of Lanczos filter's kernel in two dimensions,
+     * which is L(x,y) = L(x)L(y).
+     *
+     * @param  x  must be between −{@link #a} and +{@link #a} inclusive.
      */
     private double kernel(double x) {
+        /*
+         * Formula is  sin(x)/x * sin(x/a)/(x/a)  rewritten below for one less division.
+         * The multiplication by π is a normalization that causes the definite integral
+         * of the function over the real numbers to equal 1.
+         */
         x *= Math.PI;
-        return (x != 0) ? Math.sin(x) * Math.sin(x/a)*a / (x*x) : 1;
+        final double y = Math.sin(x) * Math.sin(x/a)*a / (x*x);
+        return (y <= 1) ? y : 1;    // Do not use Math.min(…) because we want to replace NaN by 1.
     }
 }
