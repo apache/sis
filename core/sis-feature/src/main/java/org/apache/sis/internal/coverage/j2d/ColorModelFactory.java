@@ -522,6 +522,13 @@ public final class ColorModelFactory {
             subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
         } else if (cm instanceof ScaledColorModel) {
             subset = ((ScaledColorModel) cm).createSubsetColorModel(bands);
+        } else if (bands.length == 1 && cm instanceof ComponentColorModel) {
+            final int dataType = cm.getTransferType();
+            if (dataType < DataBuffer.TYPE_BYTE || dataType > DataBuffer.TYPE_USHORT) {
+                return Colorizer.NULL_COLOR_MODEL;
+            }
+            final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            subset = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
         } else {
             // TODO: handle other color models.
             return Colorizer.NULL_COLOR_MODEL;

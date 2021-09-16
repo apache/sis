@@ -388,7 +388,7 @@ public class ResourceExplorer extends WindowManager {
                 BackgroundThreads.execute(builder);
                 return;
             }
-            grid  = new ImageRequest((GridCoverageResource) resource, null, 0);
+            grid  = new ImageRequest((GridCoverageResource) resource, null, null);
             image = coverage.getDataView(CoverageExplorer.View.IMAGE);
             table = coverage.getDataView(CoverageExplorer.View.TABLE);
             type  = viewTab.isSelected() ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
@@ -476,11 +476,7 @@ public class ResourceExplorer extends WindowManager {
         FeatureTable table = null;
         if (resource instanceof GridCoverageResource) {
             /*
-             * Want the full coverage in all bands (sample dimensions). This is different than
-             * the ImageRequest created by `updateDataTab(…)` which requested only an overview
-             * (i.e. potentially with subsampling) and only the first band.
-             *
-             * TODO: check if we can still share the coverage in some situations.
+             * Want the full coverage in all bands (sample dimensions).
              */
             grid = new ImageRequest((GridCoverageResource) resource, null, null);
         } else if (resource instanceof FeatureSet) {
