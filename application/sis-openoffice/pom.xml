@@ -100,6 +100,11 @@
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
 
     <!-- Following dependencies are included in LibreOffice runtime environment. -->
     <dependency>
