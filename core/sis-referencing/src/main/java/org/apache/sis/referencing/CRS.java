@@ -221,7 +221,6 @@ public final class CRS extends Static {
      * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
      * as a converse of this method: from a CRS object, it tries to find a URN that describes it.
      * More codes may also be supported depending on which extension modules are available.
-     * See for example the {@linkplain org.apache.sis.storage.gdal bindings to PROJ library}.
      * </div>
      *
      * @param  code  the authority code.
