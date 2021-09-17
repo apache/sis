@@ -283,7 +283,7 @@ public final class CoordinateOperations extends SystemListener {
             }
         }
         /*
-         * No existing instance found. Expand the 'changes' bit mask in an array of integers in order to create an
+         * No existing instance found. Expand the `changes` bit mask in an array of integers in order to create an
          * unmodifiable List<Integer>. The list is for public API; internally, Apache SIS will use toBitMask(…).
          */
         long r = changes;

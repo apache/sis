@@ -99,7 +99,6 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
@@ -2967,15 +2966,8 @@ next:               while (r.next()) {
                          * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
                          */
                         opProperties = new HashMap<>(opProperties);             // Because this class uses a shared map.
-                        final MathTransform mt;
                         final MathTransformFactory mtFactory = owner.mtFactory;
-                        if (mtFactory instanceof DefaultMathTransformFactory) {
-                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(parameters,
-                                    ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
-                        } else {
-                            // Fallback for non-SIS implementations. Work for map projections but not for Molodensky.
-                            mt = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
-                        }
+                        final MathTransform mt = ReferencingUtilities.createBaseToDerived(mtFactory, sourceCRS, parameters, targetCRS);
                         /*
                          * Give a hint to the factory about the type of the coordinate operation. ISO 19111 defines
                          * Conversion and Transformation, but SIS also have more specific sub-types.  We begin with

@@ -16,8 +16,10 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.referencing.CRS;
@@ -35,7 +37,7 @@ import static org.junit.Assume.assumeNotNull;
  * Compares the result of some WKT parsing with the expected result from EPSG database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -67,7 +69,7 @@ public final strictfp class ComparisonWithEPSG extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the CRS.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377 on issues tracker</a>
      */
     @Test
     public void testLatitudeAtPole() throws FactoryException {
@@ -95,7 +97,7 @@ public final strictfp class ComparisonWithEPSG extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the CRS.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377 on issues tracker</a>
      */
     @Test
     public void testLongitudeAtAntiMeridian() throws FactoryException {
@@ -123,7 +125,7 @@ public final strictfp class ComparisonWithEPSG extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the CRS.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377 on issues tracker</a>
      */
     @Test
     public void testLambert() throws FactoryException {
@@ -157,5 +159,26 @@ public final strictfp class ComparisonWithEPSG extends TestCase {
         assumeNotNull(factory);
         final CoordinateReferenceSystem reference = factory.createProjectedCRS(Integer.toString(epsg));
         assertEqualsIgnoreMetadata(reference, crs);
+    }
+
+    /**
+     * Tests formatting a coordinate operation from an EPSG code and parsing it back.
+     *
+     * @throws FactoryException if an error occurred while creating the coordinate operation.
+     * @throws ParseException if the WKT can not be parsed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-512">SIS-512 on issues tracker</a>
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testCoordinateOperation() throws FactoryException, ParseException {
+        final EPSGFactory factory = TestFactorySource.factory;
+        assumeNotNull(factory);
+        CoordinateOperation opFromCode = factory.createCoordinateOperation("5630");
+        String wkt = opFromCode.toWKT();
+        WKTFormat parser = new WKTFormat(null, null);
+        CoordinateOperation opFromWKT = (CoordinateOperation) parser.parseObject(wkt);
+        assertEqualsIgnoreMetadata(opFromCode, opFromWKT);
     }
 }
