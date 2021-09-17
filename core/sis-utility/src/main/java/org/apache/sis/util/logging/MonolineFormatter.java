@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.logging.*;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AutoMessageFormat;
@@ -345,7 +344,7 @@ public class MonolineFormatter extends Formatter {
         if (handler instanceof ConsoleHandler && X364.isAnsiSupported()) {
             resetLevelColors();
         }
-        faintSupported = OS.current() != OS.MAC_OS;
+        faintSupported = System.getProperty("os.name", "").contains("Mac OS");
         /*
          * Creates the buffer and the printer. We will expand the tabulations with 4 characters.
          * This apply to the stack trace formatted by Throwable.printStackTrace(PrintWriter);

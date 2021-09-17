@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -36,11 +35,9 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.referencing.CoordinateOperations;
-import org.apache.sis.internal.referencing.SpecializedOperationFactory;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -128,17 +125,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @see #getMathTransformFactory()
      */
     private volatile MathTransformFactory mtFactory;
-
-    /**
-     * Factories specialized to some particular pair of CRS. For example a module doing the bindings between
-     * Apache SIS and another map projection library may create wrappers around the transformation method of
-     * that other library when {@code SpecializedOperationFactory.tryCreateOperation(…)} recognizes the given
-     * CRS as wrappers around their data structures.
-     *
-     * <p>This array is created when first needed. After creation, the array shall not be modified anymore.</p>
-     */
-    @SuppressWarnings("VolatileArrayField")
-    private volatile SpecializedOperationFactory[] specializedFactories;
 
     /**
      * Weak references to existing objects.
@@ -274,20 +260,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             return (DefaultMathTransformFactory) factory;
         }
         return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
-    }
-
-    /**
-     * Returns all known factories specialized in the creation of coordinate operations between some particular
-     * pairs of CRS.
-     */
-    final SpecializedOperationFactory[] getSpecializedFactories() {
-        SpecializedOperationFactory[] factories = specializedFactories;
-        if (factories == null) {
-            final LazySet<SpecializedOperationFactory> set =
-                    new LazySet<>(ServiceLoader.load(SpecializedOperationFactory.class).iterator());
-            specializedFactories = factories = set.toArray(new SpecializedOperationFactory[set.size()]);
-        }
-        return factories;
     }
 
     /**
