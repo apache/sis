@@ -86,6 +86,7 @@ final class LanczosInterpolation implements Interpolation {
     public void interpolate(final DoubleBuffer source, final int numBands,
             final double xfrac, final double yfrac, final double[] writeTo, final int writeToOffset)
     {
+        source.mark();
         /*
          * Lanczos kernel coefficients, pre-computed because reused many times. We store them in a temporary array
          * created in this method; we do not reuse a cached array because this method will be invoked concurrently
@@ -112,6 +113,15 @@ final class LanczosInterpolation implements Interpolation {
             siny = Math.sin(yp);
             kx[0] = kernel(xp, sinx);
             ky    = kernel(yp, siny);
+            /*
+             * Multiply pixel values by Lanczos kernel coefficients. This is the first
+             * iteration of the loop after this block, unrolled for using the existing
+             * `ky` value and for overwritten existing values in the destination array.
+             */
+            double k = kx[0] * ky;
+            for (int b=0; b<numBands; b++) {
+                writeTo[writeToOffset + b] = k * source.get();
+            }
             for (int i=1; i<span;) {
                 /*
                  * kernel(x) must be invoked with −a ≤ x ≤ +a.
@@ -122,21 +132,21 @@ final class LanczosInterpolation implements Interpolation {
                  *
                  * The condition is met for xfrac ∈ [0 … 1].
                  */
-                kx[i] = kernel((xfrac - (++i - a)) * Math.PI, sinx = -sinx);
+                kx[i] = k = kernel((xfrac - (++i - a)) * Math.PI, sinx = -sinx);
+                /*
+                 * Multiply pixel values by Lanczos kernel coefficients
+                 * (continuing the unrollled first iteration over `j`).
+                 */
+                k *= ky;
+                for (int b=0; b<numBands; b++) {
+                    writeTo[writeToOffset + b] += k * source.get();
+                }
             }
         }
         /*
-         * Now multiply pixel values by Lanczos kernel coefficients.
-         * The first loop over `i` is unrolled for using the existing `ky` value
-         * and for overwritten existing values in the destination array.
+         * Multiply pixel values by Lanczos kernel coefficients,
+         * continuing the iteration for all rows after `j = 0`.
          */
-        source.mark();
-        for (int i=0; i<span; i++) {
-            final double k = kx[i] * ky;
-            for (int b=0; b<numBands; b++) {
-                writeTo[writeToOffset + b] = k * source.get();
-            }
-        }
         for (int j=1; j<span;) {
             ky = kernel((yfrac - (++j - a)) * Math.PI, siny = -siny);
             for (int i=0; i<span; i++) {

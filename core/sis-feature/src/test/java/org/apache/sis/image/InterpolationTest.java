@@ -45,7 +45,7 @@ public final strictfp class InterpolationTest extends TestCase {
     private static final int XMIN = -1, YMIN = -1;
 
     /**
-     * Minimal pixel X and Y coordinates used in this test, exclusive.
+     * Maximal pixel X and Y coordinates used in this test, exclusive.
      */
     private static final int XUP = 2, YUP = 2;
 
@@ -145,6 +145,22 @@ public final strictfp class InterpolationTest extends TestCase {
     }
 
     /**
+     * Tests Lanczos interpolation. The Lanczos kernel has value 1 at the interpolated position
+     * and 0 at distances that are an integer amount of pixels from the interpolated position.
+     * Consequently when interpolating exactly at pixel center, we expect the exact pixel value.
+     */
+    @Test
+    public void testLanczos() {
+        createImage(2);
+        interpolation = new LanczosInterpolation(1);
+        assertResultEquals(-1.0, -1.0,  0.0);
+        assertResultEquals( 0.0,  0.0,  4.0);
+        assertResultEquals( 1.0,  1.0,  8.0);
+        assertResultEquals( 0.0,  1.0,  7.0);
+        assertResultEquals(-1.0,  1.0,  6.0);
+    }
+
+    /**
      * Simulate the behavior of the special case done by {@link ResampledImage}
      * for nearest-neighbor interpolation.
      */
@@ -155,8 +171,8 @@ public final strictfp class InterpolationTest extends TestCase {
     /**
      * Verifies that a pixel value interpolated in the source image is equals to the expected value.
      *
-     * @param x         <var>x</var> coordinate in the source image.
-     * @param y         <var>y</var> coordinate in the source image.
+     * @param x         <var>x</var> coordinate in the source image, from {@value #XMIN} to {@value #XUP} (exclusive).
+     * @param y         <var>y</var> coordinate in the source image, from {@value #YMIN} to {@value #YUP} (exclusive).
      * @param expected  the expected value.
      */
     private void assertResultEquals(double x, double y, final double expected) {
