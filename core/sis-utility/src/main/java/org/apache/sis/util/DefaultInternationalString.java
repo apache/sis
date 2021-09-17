@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.iso;
+package org.apache.sis.util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -27,16 +27,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Locales;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -51,11 +44,11 @@ import org.apache.sis.internal.system.Modules;
  * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.1
  *
- * @see Types#toInternationalString(Map, String)
+ * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
  *
- * @since 0.3
+ * @since 1.1
  * @module
  */
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
@@ -106,7 +99,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *
      * @param strings  the strings in various locales, or {@code null} if none.
      *
-     * @see Types#toInternationalString(Map, String)
+     * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
     public DefaultInternationalString(final Map<Locale,String> strings) {
         if (Containers.isNullOrEmpty(strings)) {
@@ -162,32 +155,6 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                     Errors.Keys.ValueAlreadyDefined_1, locale));
         }
         defaultValue = null;                                        // Will be recomputed when first needed.
-    }
-
-    /**
-     * Adds the given character sequence. If the given sequence is an other {@link InternationalString} instance,
-     * then only the string for the given locale is added. This method is for {@link Types} internal usage only.
-     *
-     * @param  locale  the locale for the {@code string} value.
-     * @param  string  the character sequence to add.
-     * @throws IllegalArgumentException if a different string value was already set for the given locale.
-     */
-    final void add(final Locale locale, final CharSequence string) throws IllegalArgumentException {
-        final boolean i18n = (string instanceof InternationalString);
-        add(locale, i18n ? ((InternationalString) string).toString(locale) : string.toString());
-        if (i18n && !(string instanceof SimpleInternationalString)) {
-            /*
-             * If the string may have more than one locale, log a warning telling that some locales
-             * may have been ignored. We declare Types.toInternationalString(…) as the source since
-             * it is the public facade invoking this method. We declare the source class using only
-             * its name rather than Types.class in order to avoid unnecessary real dependency.
-             */
-            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
-            record.setSourceClassName("org.apache.sis.util.iso.Types");
-            record.setSourceMethodName("toInternationalString");
-            record.setLoggerName(Modules.UTILITIES);
-            Logging.getLogger(Modules.UTILITIES).log(record);
-        }
     }
 
     /**

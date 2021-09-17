@@ -24,7 +24,7 @@ import java.text.ParseException;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.util.collection.TreeTables.*;

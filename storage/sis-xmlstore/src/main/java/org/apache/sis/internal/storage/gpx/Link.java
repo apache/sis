@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.iso.Types;
 

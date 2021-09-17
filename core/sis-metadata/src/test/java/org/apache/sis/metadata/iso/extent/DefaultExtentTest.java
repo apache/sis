@@ -20,7 +20,7 @@ import java.util.Arrays;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilObject;

@@ -89,8 +89,8 @@ import org.junit.BeforeClass;
     // GeoAPI most basic types.
     org.apache.sis.internal.util.DefinitionURITest.class,
     org.apache.sis.internal.util.XPathsTest.class,
-    org.apache.sis.util.iso.SimpleInternationalStringTest.class,
-    org.apache.sis.util.iso.DefaultInternationalStringTest.class,
+    org.apache.sis.util.SimpleInternationalStringTest.class,
+    org.apache.sis.util.DefaultInternationalStringTest.class,
     org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
 
     // Measurements and formatting.

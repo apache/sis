@@ -29,7 +29,7 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.util.iso.AbstractInternationalString;
+import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.CharSequences;
 
 

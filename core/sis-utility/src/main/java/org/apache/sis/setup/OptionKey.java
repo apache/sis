@@ -76,7 +76,7 @@ public class OptionKey<T> implements Serializable {
 
     /**
      * The locale to use for locale-sensitive data. This option determines the language to use for writing
-     * {@link org.apache.sis.util.iso.AbstractInternationalString international strings} when the target
+     * {@link org.apache.sis.util.AbstractInternationalString international strings} when the target
      * storage support only one language. It may also control number and date patterns in some file formats
      * like Comma Separated Values (CSV). However most data formats will ignore this locale.
      *

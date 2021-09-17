@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;

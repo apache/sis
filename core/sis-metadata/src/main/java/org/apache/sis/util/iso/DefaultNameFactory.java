@@ -30,6 +30,8 @@ import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;

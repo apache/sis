@@ -18,6 +18,7 @@ package org.apache.sis.util.iso;
 
 import java.util.Arrays;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;

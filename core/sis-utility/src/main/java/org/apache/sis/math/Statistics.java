@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.function.LongConsumer;
 import java.util.function.DoubleConsumer;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.*;

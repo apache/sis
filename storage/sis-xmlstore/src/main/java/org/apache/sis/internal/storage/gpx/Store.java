@@ -41,7 +41,7 @@ import org.apache.sis.util.Version;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 

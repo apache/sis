@@ -57,7 +57,7 @@ public abstract class MarshalContext {
      *
      * @return the locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
      *
-     * @see org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)
+     * @see org.apache.sis.util.DefaultInternationalString#toString(Locale)
      */
     public abstract Locale getLocale();
 

@@ -52,7 +52,7 @@ import org.opengis.util.GenericName;
 import org.opengis.temporal.Duration;
 
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
