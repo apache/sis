@@ -80,10 +80,6 @@
            We must declare transitive dependencies explicitly,
            otherwise they will not be included by sis-unopkg.
        =========================================================== -->
-  <properties>
-    <openoffice.version>4.1.2</openoffice.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.opengis</groupId>
@@ -105,29 +101,11 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- Following dependencies are included in OpenOffice runtime environment. -->
+    <!-- Following dependencies are included in LibreOffice runtime environment. -->
     <dependency>
-      <groupId>org.openoffice</groupId>
-      <artifactId>juh</artifactId>
-      <version>${openoffice.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openoffice</groupId>
-      <artifactId>jurt</artifactId>
-      <version>${openoffice.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openoffice</groupId>
-      <artifactId>ridl</artifactId>
-      <version>${openoffice.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openoffice</groupId>
-      <artifactId>unoil</artifactId>
-      <version>${openoffice.version}</version>
+      <groupId>org.libreoffice</groupId>
+      <artifactId>libreoffice</artifactId>
+      <version>7.2.1</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
