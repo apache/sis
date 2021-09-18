@@ -6,6 +6,7 @@
 http://www.isotc211.org/2005/gmd
  MD_Georectified
   centrePoint/centerPoint
+ MD_Scope/DQ_Scope !ignore namespace
  DQ_QuantitativeResult
   valueRecordType/valueType
 http://www.isotc211.org/2005/srv
@@ -112,8 +113,7 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
   definition
   rangeElement
  MI_BandDefinition
- MI_PolarisationOrientationCode !renamed
-  MI_PolarisationOrientationCode/MI_PolarizationOrientationCode
+ MI_PolarisationOrientationCode/MI_PolarizationOrientationCode
  MI_TransferFunctionTypeCode
  LE_Algorithm
   citation

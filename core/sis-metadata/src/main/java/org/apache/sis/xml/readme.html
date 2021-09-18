@@ -47,10 +47,6 @@
       and the <code>Georectified.centrePoint</code> property is defined in the <b><code>msr</code></b> namespace.
       Those information are required when reading a file encoded by the old standards
       because almost all properties where in the single <code>gmd</code> namespace.
-      In general those information are used for converting only the <em>namespaces</em>; the class and property names are unchanged.
-      But in the special case where the "<var>before</var>/<var>after</var>" syntax is used, then class and/or property names are also changed.
-      For example in the following example, <code>Georectified.centerPoint</code> (from the old standard)
-      is renamed as <code>Georectified.centrePoint</code> (new standard).
     </p>
     <blockquote><pre># Legacy namespace containing elements to rename:
 * http://www.isotc211.org/2005/gmd
@@ -64,10 +60,25 @@ http://standards.iso.org/iso/19115/-3/<b>cit</b>/1.0
   country
 http://standards.iso.org/iso/19115/-3/<b>gex</b>/1.0
  EX_Extent
-  description
+  description</pre></blockquote>
+
+    <p>
+      In general those information are used for converting only the <em>namespaces</em>; the class and property names are unchanged.
+      But in the special case where the "<var>before</var>/<var>after</var>" syntax is used, then class and/or property names are also changed.
+      In the following example, the <code>DQ_Scope</code> type is renamed <code>MD_Scope</code> but with attributes of the same name.
+      Then the <code>Georectified.centerPoint</code> attribute (from the old standard)
+      is renamed as <code>Georectified.centrePoint</code> (new standard).
+    </p>
+
+    <blockquote><pre>http://standards.iso.org/iso/19115/-3/<b>mcc</b>/1.0
+ DQ_Scope/MD_Scope
+  extent
+  level
+  levelDescription
 http://standards.iso.org/iso/19115/-3/<b>msr</b>/1.0
  MI_Georectified
   centerPoint/centrePoint</pre></blockquote>
+
     <p>
       Conversely, when writing a file, some additional renaming can be applied <em>after</em> the namespaces have been renamed to <code>gmd</code>.
       The following snippet from <code>RenameOnExport.lst</code> performs the converse of the property renaming shown in previous example:

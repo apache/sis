@@ -113,9 +113,9 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
         m.put(new QName(Namespaces.SRV, "couplingType",  "srv"), Collections.singleton(new QName(Namespaces.SRV, "coupledResource", "srv")));
         m.put(new QName(Namespaces.SRV, "connectPoint",  "srv"), Collections.singleton(new QName(Namespaces.SRV, "parameter",       "srv")));
         /*
-         * ISO 19139:2997 declared 'topicCategory' and 'extent' in MD_DataIdentification subclass, while ISO 19115-3
+         * ISO 19139:2997 declared `topicCategory` and `extent` in MD_DataIdentification subclass, while ISO 19115-3
          * moves them to the MD_Identification parent class. In order to write topicCategory at location expected by
-         * legacy metadata, we need to skip all properties declared after 'topicCategory' in that parent class.
+         * legacy metadata, we need to skip all properties declared after `topicCategory` in that parent class.
          */
         QName first;
         HashSet<QName> toSkip = new HashSet<>(Arrays.asList(
@@ -135,9 +135,9 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                     new QName(      Namespaces.MRI, "defaultLocale",           "mri"),
                     new QName(      Namespaces.MRI, "otherLocale",             "mri")));
         /*
-         * The 'extent' element is right after 'topicCategory' in ISO 19115-3:2016, but there was an
-         * 'environmentDescription' between them in legacy ISO 19139:2007. So we add the later in the
-         * list of elements to skip for 'extent'.
+         * The `extent` element is right after `topicCategory` in ISO 19115-3:2016, but there was an
+         * `environmentDescription` between them in legacy ISO 19139:2007. So we add the later in the
+         * list of elements to skip for `extent`.
          */
         m.put(new QName(Namespaces.MRI, "topicCategory", "mri"), CollectionsExt.clone(toSkip));
         toSkip.remove(first);
@@ -248,7 +248,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
         /*
          * The wrapped XMLEventWriter maintains a mapping from prefixes to namespace URIs.
          * Arguments are exported URIs (e.g. from legacy ISO 19139:2007) and return values
-         * are prefixes computed by 'Namespaces.getPreferredPrefix(…)' or any other means.
+         * are prefixes computed by `Namespaces.getPreferredPrefix(…)` or any other means.
          * We fetch those prefixes for performance reasons and for improving the guarantees
          * that the URI → prefix mapping is stable, since JAXB seems to require them for
          * writing namespaces in XML.
@@ -258,10 +258,10 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
             prefix = Namespaces.getPreferredPrefix(namespace, previous);
             out.setPrefix(prefix, namespace);
             /*
-             * The above call for 'getPreferredPrefix' above is required: JAXB seems to need the prefixes
-             * for recognizing namespaces. The prefix shall be computed in the same way than 'exportIfNew'.
-             * We enter in this block only for the root element, before to parse 'xmlns' attributes. For
-             * all other elements after the root elements, above call to 'out.getPrefix(uri)' should succeed.
+             * The above call for `getPreferredPrefix` above is required: JAXB seems to need the prefixes
+             * for recognizing namespaces. The prefix shall be computed in the same way than `exportIfNew`.
+             * We enter in this block only for the root element, before to parse `xmlns` attributes. For
+             * all other elements after the root elements, above call to `out.getPrefix(uri)` should succeed.
              */
         }
         return prefix;
@@ -367,14 +367,14 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                         writeDeferred(null);                    // About to exit the parent element containing deferred element.
                     }
                 }
-                close(originalName);                            // Must be invoked only after 'convert(QName)'
+                close(originalName);                            // Must be invoked only after `convert(QName)`
                 break;
             }
             case START_ELEMENT: {
                 uniqueNamespaces.clear();                       // Discard entries created by NAMESPACE events.
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                open(originalName);                             // Must be invoked before 'convert(QName)'.
+                open(originalName);                             // Must be invoked before `convert(QName)`.
                 final QName name = convert(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
@@ -405,18 +405,18 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                 } else if (subtreeNesting == 0) {
                     /*
                      * If the current element should not be skipped (toSkip.contains(…) = false), then
-                     * we need to write all deferred elements. Usually 'writeDeferred(…) returns false,
-                     * so the block inside the 'if' is executed only if 'toSkip.contains(…)' is true.
-                     * But in few cases, we still need to be in "skipping" state after 'writeDeferred'.
+                     * we need to write all deferred elements. Usually `writeDeferred(…)` returns false,
+                     * so the block inside the `if` is executed only if `toSkip.contains(…)` is true.
+                     * But in few cases, we still need to be in "skipping" state after `writeDeferred`.
                      */
                     if (toSkip.contains(originalName) || writeDeferred(originalName)) {
                         /*
                          * Found an element to skip. That element will be written immediately (except if
                          * it is another element which needs reordering), and the elements currently in
-                         * the 'deferred' list will continue to be deferred at least until we reached the
+                         * the `deferred` list will continue to be deferred at least until we reached the
                          * end of the current element. It may happen that the current element is itself
                          * an element that needs reordering (i.e. we may have nested reordered elements),
-                         * in which case we reset the 'isDeferring' flag to 'true'.
+                         * in which case we reset the `isDeferring` flag to `true`.
                          */
                         subtreeRootName = originalName;
                         subtreeNesting = 1;

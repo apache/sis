@@ -244,7 +244,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
             case START_ELEMENT: {
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                open(originalName);                             // Must be invoked before 'convert(QName)'.
+                open(originalName);                             // Must be invoked before `convert(QName)`.
                 final QName name  = convert(originalName);      // Name in the transformed XML document.
                 boolean changed   = name != originalName;       // Whether the name or an attribute changed.
                 Namespace localNS = null;                       // Additional namespace required by "xsi:type".
@@ -293,7 +293,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 if (namespaces != null) {
                     event = new TransformedEvent.End(e, name, namespaces);
                 }
-                close(originalName);                    // Must be invoked only after 'convert(QName)'
+                close(originalName);                    // Must be invoked only after `convert(QName)`.
                 break;
             }
         }

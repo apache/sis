@@ -311,6 +311,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
             name(out.append('<'));
             final int n = attributes.size();
             for (int i=0; i<n; i++) {
+                out.append(' ');
                 Attr.castOrWrap(attributes.get(i)).write(out);
             }
             out.append('>');
