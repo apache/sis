@@ -42,6 +42,7 @@ import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.Containers;
@@ -246,9 +247,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             }
         }
         /*
-         * We consider the operation method as metadata. One could argue that OperationMethod's 'sourceDimension' and
-         * 'targetDimension' are not metadata, but their values should be identical to the 'sourceCRS' and 'targetCRS'
-         * dimensions, already checked above. We could also argue that 'OperationMethod.parameters' are not metadata,
+         * We consider the operation method as metadata. One could argue that OperationMethod's `sourceDimension` and
+         * `targetDimension` are not metadata, but their values should be identical to the `sourceCRS` and `targetCRS`
+         * dimensions, already checked above. We could also argue that `OperationMethod.parameters` are not metadata,
          * but their values should have been taken in account for the MathTransform creation, compared above.
          *
          * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
@@ -294,7 +295,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     AbstractSingleOperation() {
         /*
          * The method is mandatory for SIS working. We do not verify its presence here because the verification
-         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes
+         * would have to be done in an `afterMarshal(…)` method and throwing an exception in that method causes
          * the whole unmarshalling to fail. But the CC_CoordinateOperation adapter does some verifications.
          */
     }
@@ -351,7 +352,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
              * The descriptors in the <gml:method> element do not know the class of parameter value
              * (String, Integer, Double, double[], etc.) because this information is not part of GML.
              * But this information is available to descriptors in the <gml:parameterValue> elements
-             * because Apache SIS infers the type from the actual parameter value. The 'merge' method
+             * because Apache SIS infers the type from the actual parameter value. The `merge` method
              * below puts those information together.
              */
             final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
@@ -362,7 +363,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             /*
              * Sometime Apache SIS recognizes the OperationMethod as one of its build-in methods and use the
              * build-in parameters. In such cases the unmarshalled ParameterDescriptorGroup can be used as-in.
-             * But if the above 'merge' method has changed any parameter descriptor, then we will need to create
+             * But if the above `merge` method has changed any parameter descriptor, then we will need to create
              * a new ParameterDescriptorGroup with the new descriptors.
              */
             for (int i=0; i<merged.length; i++) {
@@ -376,7 +377,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
              * Sometime the descriptors associated to ParameterValues need to be updated, for example because
              * the descriptors in OperationMethod contain more information (remarks, etc.). Those updates, if
              * needed, are applied on-the-fly by the copy operation below, using the information provided by
-             * the 'replacements' map.
+             * the `replacements` map.
              */
             parameters = new DefaultParameterValueGroup(method.getParameters());
             CC_OperationMethod.store(values, parameters.values(), replacements);
@@ -403,8 +404,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
-            transform = DefaultFactories.forBuildin(MathTransformFactory.class)
-                    .createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+            transform = ReferencingUtilities.createBaseToDerived(DefaultFactories.forBuildin(MathTransformFactory.class),
+                                                                 sourceCRS, parameters, targetCRS);
         } catch (FactoryException e) {
             Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);
         }

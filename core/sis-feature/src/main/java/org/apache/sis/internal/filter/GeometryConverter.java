@@ -138,7 +138,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      *       If we can not do that, check how to propagate the wrap-around policy from some context.
      *
      * @param  input  the geometry to evaluate with this expression.
-     * @return the geometry boundary.
+     * @return the geometry wrapper, or {@code null} if the evaluated value is null.
      * @throws InvalidFilterValueException if the expression result is not an instance of a supported type.
      */
     @Override

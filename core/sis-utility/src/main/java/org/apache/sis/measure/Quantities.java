@@ -93,12 +93,24 @@ public final class Quantities extends Static {
                  * even if we skip the conversion to system unit.  Since the vast majority of units fall in this
                  * category, it is worth to do this optimization.
                  *
-                 * (Note: despite its name, above 'isLinear()' method actually has an 'isScale()' behavior).
+                 * (Note: despite its name, above `isLinear()` method actually has an `isScale()` behavior).
                  */
                 if (factory != null) {
                     return factory.create(value, unit);
                 } else {
-                    return ScalarFallback.factory(value, unit, ((SystemUnit<Q>) system).quantity);
+                    final Class<Q> type = ((SystemUnit<Q>) system).quantity;
+                    if (type != null) {
+                        return ScalarFallback.factory(value, unit, type);
+                    } else {
+                        /*
+                         * This cast should be safe because `type` should be null only in contexts where the user
+                         * can not expect a more specific type. For example it may be the result of an arithmetic
+                         * operation, in which case the return value in method signature is `Quantity<?>`.
+                         */
+                        @SuppressWarnings("unchecked")
+                        final Q quantity = (Q) new Scalar<>(value, unit);
+                        return quantity;
+                    }
                 }
             }
             /*
@@ -112,7 +124,14 @@ public final class Quantities extends Static {
                     return quantity;
                 }
             }
-            return DerivedScalar.Fallback.factory(value, unit, system, c, ((SystemUnit<Q>) system).quantity);
+            final Class<Q> type = ((SystemUnit<Q>) system).quantity;
+            if (type != null) {
+                return DerivedScalar.Fallback.factory(value, unit, system, c, type);
+            } else {
+                @SuppressWarnings("unchecked")  // Same reason than for `new Scalar(…)`.
+                final Q quantity = (Q) new DerivedScalar<>(value, unit, system, c);
+                return quantity;
+            }
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedImplementation_1, unit.getClass()));
         }

@@ -56,7 +56,7 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;

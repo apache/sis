@@ -106,10 +106,6 @@
       <fileset dir="${project.root}/storage/sis-xmlstore/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>
-      <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
-        <include name="**/*.dll"/>
-        <include name="**/*.so"/>
-      </fileset>
       <fileset dir="${project.root}/application/sis-javafx/src/main/resources">
         <include name="**/*.fxml"/>
         <include name="**/*.png"/>
@@ -230,13 +226,6 @@
     <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.metadata.sql.Initializer" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
         <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.metadata.sql.Initializer"/>
-      </fileset>
-    </concat>
-
-    <!-- SpecializedOperationFactory implementations to be loaded by ServiceLoader. -->
-    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.referencing.SpecializedOperationFactory" encoding="UTF-8" fixlastline="yes">
-      <fileset dir="${project.root}">
-        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.referencing.SpecializedOperationFactory"/>
       </fileset>
     </concat>
 

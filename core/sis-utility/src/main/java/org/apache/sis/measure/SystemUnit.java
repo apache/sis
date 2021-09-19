@@ -43,7 +43,7 @@ import org.apache.sis.math.Fraction;
  * without scale factor or offset.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
@@ -63,6 +63,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
 
     /**
      * The type of quantity that uses this unit, or {@code null} if unknown.
+     * This field should be null only when this unit is the result of an arithmetic
+     * operation and that result can not be mapped to a known {@link Quantity} subtype.
      */
     final Class<Q> quantity;
 
@@ -140,7 +142,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         }
         /*
          * Try to create a unit symbol as the concatenation of the symbols of the two units,
-         * with the operation symbol between them. If we can not, 'symbol' will stay null.
+         * with the operation symbol between them. If we can not, `symbol` will stay null.
          */
         String symbol = null;
         if (operation != 0) {
@@ -425,7 +427,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         if (quantity != null) {
             /*
              * Use the cache only if this unit has a non-null quantity type. Do not use the cache even
-             * in read-only mode when 'quantity' is null because we would be unable to guarantee that
+             * in read-only mode when `quantity` is null because we would be unable to guarantee that
              * the parameterized type <Q> is correct.
              */
             final Object existing = UnitRegistry.putIfAbsent(symbol, alt);
@@ -439,7 +441,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, symbol));
             }
             /*
-             * This method may be invoked for a new quantity, after a call to 'asType(Class)'.
+             * This method may be invoked for a new quantity, after a call to `asType(Class)`.
              * Try to register the new unit for that Quantity. But if another unit is already
              * registered for that Quantity, this is not necessarily an error.
              */
@@ -502,7 +504,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
                 result = result.transform(c);
                 /*
                  * If the system unit product is an Apache SIS implementation, try to infer a unit symbol
-                 * to be given to our customized 'transform' method. Otherwise fallback on standard API.
+                 * to be given to our customized `transform` method. Otherwise fallback on standard API.
                  */
                 result = inferSymbol(result, operation, other);
             }
@@ -621,11 +623,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public Quantity<Q> create(final Number value, final Unit<Q> unit) {
+        ArgumentChecks.ensureNonNull("value", value);
+        ArgumentChecks.ensureNonNull("unit", unit);
         final double v = AbstractConverter.doubleValue(value);
         if (factory != null) {
             return factory.create(v, unit);
-        } else {
+        } else if (quantity != null) {
             return ScalarFallback.factory(v, unit, quantity);
+        } else {
+            return new Scalar<>(v, unit);
         }
     }
 }

@@ -20,15 +20,6 @@
  * The main content of this package are:
  *
  * <ul>
- *   <li>Implementations of {@link org.opengis.util.InternationalString}
- *       (related to the {@code <lan:textGroup>} XML element found in ISO specifications):
- *     <ul>
- *       <li>{@link org.apache.sis.util.iso.SimpleInternationalString}   for wrapping a single {@link java.lang.String};</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultInternationalString}  for providing many localizations in a {@link java.util.Map};</li>
- *       <li>{@link org.apache.sis.util.iso.ResourceInternationalString} for providing localizations from a {@link java.util.ResourceBundle}.</li>
- *       <li>{@link org.apache.sis.util.iso.Types#getCodeTitle Types.getCodeTitle(ControlledVocabulary)} for wrapping a {@link org.opengis.util.CodeList} value.</li>
- *     </ul>
- *   </li>
  *   <li>Implementations of {@link org.opengis.util.GenericName} (derived from ISO 19103):
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.DefaultLocalName}  for identifier within a {@linkplain org.apache.sis.util.iso.DefaultNameSpace name space}.</li>

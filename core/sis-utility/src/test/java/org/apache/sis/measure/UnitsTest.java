@@ -367,24 +367,24 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(METRE,  valueOf("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
         assertSame(METRE,  valueOf("gmxUom.xml#m"));
 
-        assertSame(TROPICAL_YEAR,                   valueOfEPSG(1029));
-        assertSame(SECOND,                          valueOfEPSG(1040));
-        assertSame(FOOT,                            valueOfEPSG(9002));
-        assertSame(US_SURVEY_FOOT,                  valueOfEPSG(9003));
-        assertSame(NAUTICAL_MILE,                   valueOfEPSG(9030));
-        assertSame(KILOMETRE,                       valueOfEPSG(9036));
-        assertSame(RADIAN,                          valueOfEPSG(9101));
-        assertSame(ARC_MINUTE,                      valueOfEPSG(9103));
-        assertSame(ARC_SECOND,                      valueOfEPSG(9104));
-        assertSame(GRAD,                            valueOfEPSG(9105));
-        assertSame(MICRORADIAN,                     valueOfEPSG(9109));
-        assertSame(SexagesimalConverter.DMS_SCALED, valueOfEPSG(9107));
-        assertSame(SexagesimalConverter.DMS_SCALED, valueOfEPSG(9108));
-        assertSame(SexagesimalConverter.DMS,        valueOfEPSG(9110));
-        assertSame(SexagesimalConverter.DM,         valueOfEPSG(9111));
-        assertSame(UNITY,                           valueOfEPSG(9203));
-        assertSame(UNITY,                           valueOfEPSG(9201));
-        assertSame(PPM,                             valueOfEPSG(9202));
+        assertSame(TROPICAL_YEAR,  valueOfEPSG(1029));
+        assertSame(SECOND,         valueOfEPSG(1040));
+        assertSame(FOOT,           valueOfEPSG(9002));
+        assertSame(US_SURVEY_FOOT, valueOfEPSG(9003));
+        assertSame(NAUTICAL_MILE,  valueOfEPSG(9030));
+        assertSame(KILOMETRE,      valueOfEPSG(9036));
+        assertSame(RADIAN,         valueOfEPSG(9101));
+        assertSame(ARC_MINUTE,     valueOfEPSG(9103));
+        assertSame(ARC_SECOND,     valueOfEPSG(9104));
+        assertSame(GRAD,           valueOfEPSG(9105));
+        assertSame(MICRORADIAN,    valueOfEPSG(9109));
+        assertSame(DMS_SCALED,     valueOfEPSG(9107));
+        assertSame(DMS_SCALED,     valueOfEPSG(9108));
+        assertSame(DMS,            valueOfEPSG(9110));
+        assertSame(DM,             valueOfEPSG(9111));
+        assertSame(UNITY,          valueOfEPSG(9203));
+        assertSame(UNITY,          valueOfEPSG(9201));
+        assertSame(PPM,            valueOfEPSG(9202));
     }
 
     /**

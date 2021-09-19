@@ -101,6 +101,17 @@ public enum GeometryType {
     }
 
     /**
+     * Returns {@code true} if this geometry type is some sort of collection.
+     * Those types are {@link #MULTI_POINT}, {@link #MULTI_LINESTRING},
+     * {@link #MULTI_POLYGON} or {@link #GEOMETRY_COLLECTION}.
+     *
+     * @return whether this geometry type is some kind of collections.
+     */
+    public final boolean isCollection() {
+        return ordinal() >= MULTI_POINT.ordinal();
+    }
+
+    /**
      * Returns the enumeration value for the given name.
      * This method is case-insensitive.
      *

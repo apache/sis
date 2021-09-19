@@ -19,7 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.Locale;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import org.apache.sis.util.iso.AbstractInternationalString;
+import org.apache.sis.util.AbstractInternationalString;
 
 
 /**

@@ -24,12 +24,10 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.NoSuchElementException;
 import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.util.function.Function;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -254,19 +252,19 @@ abstract class Transformer {
         for (final Class<?> loader : renameLoaders) {
             try (LineNumberReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
                 Map<String,String> attributes = null;               // All attributes for a given type.
-                String namespace = null;                            // Value to store in 'attributes' map.
+                String namespace = null;                            // Value to store in `attributes` map.
                 String line;
                 while ((line = in.readLine()) != null) {
                     final int length = line.length();
-                    final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
-                    final char startChar;
-                    if (start < length && (startChar = line.charAt(start)) != '#') {
-                        if (startChar == TARGET_PREFIX) {
-                            targets.add(CharSequences.trimWhitespaces(line, start+1, line.length()).toString());
+                    final int indentation = CharSequences.skipLeadingWhitespaces(line, 0, length);
+                    final char firstChar;
+                    if (indentation < length && (firstChar = line.charAt(indentation)) != '#') {
+                        if (firstChar == TARGET_PREFIX) {
+                            targets.add(CharSequences.trimWhitespaces(line, indentation+1, line.length()).toString());
                             continue;
                         }
-                        String element = line.substring(start).trim();
-                        switch (start) {
+                        String element = line.substring(indentation).trim();
+                        switch (indentation) {
                             /*
                              * Begin a new namespace. Must be before any class or property.
                              * All classes and properties read below this point will be associated
@@ -287,32 +285,51 @@ abstract class Transformer {
                                 if (namespace == null) break;                           // Report illegal format.
                                 final int noNS = element.indexOf(NO_NAMESPACE);
                                 if (noNS >= 0) {
+                                    // Ignore text starting at `!` (considered as comment).
                                     element = CharSequences.trimWhitespaces(element, 0, noNS).toString();
                                 }
-                                final Function<String, Map<String,String>> init;
-                                final int s = element.indexOf(EXTENDS);
+                                /*
+                                 * Verify if new type extends an existing type. The "Child : Parent" syntax
+                                 * shall be used on the first occurrence of `Child`, otherwise parsing fails.
+                                 * We currently do not support mixes of ":" and "/" symbols on the same line.
+                                 */
+                                int s = element.indexOf(EXTENDS);
                                 if (s >= 0) {
                                     final String parent;
                                     parent  = CharSequences.trimWhitespaces(element, s+1, element.length()).toString();
-                                    element = CharSequences.trimWhitespaces(element, 0, s).toString();
-                                    init = (k) -> {
-                                        // Inherit properties from another class.
-                                        Map<String,String> properties = m.get(parent);
-                                        if (properties != null) {
-                                            properties = new HashMap<>(properties);
-                                            properties.remove(parent);
-                                            return properties;
-                                        }
-                                        throw new NoSuchElementException(parent);
-                                    };
+                                    element = CharSequences.trimWhitespaces(element, 0, s).toString().intern();
+                                    attributes = m.get(parent);
+                                    if (attributes == null) break;                      // Report illegal format.
+                                    attributes = new HashMap<>(attributes);
+                                    attributes.remove(parent);
+                                    if (m.put(element, attributes) != null) break;      // Report illegal format.
                                 } else {
-                                    // No property inheritance.
-                                    init = (k) -> new HashMap<>();
+                                    /*
+                                     * No inheritance. Verify if the type is renamed using "Old/New" syntax
+                                     * Note that "old" and "new" are names in the old and new ISO standards
+                                     * respectively on import, but are the converse on export. Then store:
+                                     *
+                                     *   [map for old name]
+                                     *    ├─ [old name] → [new name]
+                                     *    └─ [new name] → [namespace]
+                                     */
+                                    s = element.indexOf(RENAME_SEPARATOR);
+                                    String alias = null;
+                                    if (s >= 0) {
+                                        alias   = element.substring(s+1).trim().intern();
+                                        element = element.substring(0,s).trim();        // Old name.
+                                        if (!isTypeElement(element)) break;             // Report illegal format.
+                                    }
+                                    element = element.intern();
+                                    attributes = m.computeIfAbsent(element, (k) -> new HashMap<>());
+                                    if (alias != null) {
+                                        if (attributes.put(element, alias) != null) break;
+                                        element = alias;                                // New name.
+                                    }
                                 }
-                                element = element.intern();
-                                attributes = m.computeIfAbsent(element, init);
+                                if (!isTypeElement(element)) break;                     // Report illegal format.
                                 if (noNS < 0) {
-                                    // Record namespace for this type only if '!' is not present.
+                                    // Record namespace for this type only if `!` is not present.
                                     if (attributes.put(element, namespace) != null) break;
                                 }
                                 continue;
@@ -328,10 +345,12 @@ abstract class Transformer {
                                 if (s >= 0) {
                                     final String old = element.substring(0, s).trim().intern();
                                     element = element.substring(s+1).trim().intern();
+                                    if (isTypeElement(old)) break;                      // Report illegal format.
                                     if (attributes.put(old, element) != null) break;    // Report an error if duplicated values.
                                 } else {
                                     element = element.intern();
                                 }
+                                if (isTypeElement(element)) break;                      // Report illegal format.
                                 if (attributes.put(element, namespace) != null) break;  // Report an error if duplicated values.
                                 continue;
                             }
@@ -449,13 +468,20 @@ abstract class Transformer {
      *   </cit:CI_Citation>
      * }
      *
-     * This method is based on simple heuristic applicable to OGC/ISO conventions, and may change in any future SIS
-     * version depending on new formats to support.
+     * This method is based on simple heuristic applicable to OGC/ISO conventions,
+     * and may change in any future SIS version depending on new formats to support.
+     *
+     * <p>Other examples to keep in mind:</p>
+     * <ul>
+     *   <li>{@code "AbstractCI_Party"} (a type).</li>
+     *   <li>{@code "ISBN"} and {@code "ISSN"} (properties).</li>
+     *   <li>{@code "MI_GCP"} (a type).</li>
+     * </ul>
      */
     private static boolean isTypeElement(final String localPart) {
         if (localPart.length() < 4) return false;
         final char c = localPart.charAt(0);
-        return (c >= 'A' && c <= 'Z');
+        return (c >= 'A' && c <= 'Z') && (localPart.charAt(2) == '_' || !CharSequences.isUpperCase(localPart));
     }
 
     /**
@@ -515,8 +541,8 @@ abstract class Transformer {
      * The new namespace depends on both the old namespace and the element name.
      * The prefix is computed by {@link #prefixReplacement(String, String)}.
      *
-     * @param   name   the name of the element or attribute currently being read or written.
-     * @return  a name with potentially the namespace and the local part replaced.
+     * @param  name   the name of the element or attribute currently being read or written.
+     * @return a name with potentially the namespace and the local part replaced.
      */
     final QName convert(QName name) throws XMLStreamException {
         String localPart = name.getLocalPart();

@@ -82,6 +82,11 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
     private final Geometries<G> library;
 
     /**
+     * Whether the geometry object can stores CRS information.
+     */
+    private final boolean supportCRS;
+
+    /**
      * The geometry object used as an input for the function to test.
      * Usually an instance of {@code <G>} unless the geometry is a point.
      *
@@ -113,12 +118,14 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
      * Creates a new test case.
      *
      * @param  rootGeometry  the root geometry class as on of JTS, ESRI or Java2D root class.
+     * @param  supportCRS    whether the geometry object can stores CRS information.
      */
     @SuppressWarnings("unchecked")
-    protected RegistryTestCase(final Class<G> rootGeometry) {
+    protected RegistryTestCase(final Class<G> rootGeometry, final boolean supportCRS) {
         factory = new DefaultFilterFactory.Features<>(rootGeometry, Object.class, WraparoundMethod.SPLIT);
         library = (Geometries<G>) Geometries.implementation(rootGeometry);
         assertEquals(rootGeometry, library.rootClass);
+        this.supportCRS = supportCRS;
     }
 
     /**
@@ -197,7 +204,9 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
     private void assertPointEquals(final Object result, final CoordinateReferenceSystem crs, double x, double y) {
         assertInstanceOf("Expected a point.", library.pointClass, result);
         final GeometryWrapper<G> wrapped = library.castOrWrap(result);
-        assertEquals(crs, wrapped.getCoordinateReferenceSystem());
+        if (supportCRS) {
+            assertEquals(crs, wrapped.getCoordinateReferenceSystem());
+        }
         assertArrayEquals(new double[] {x, y}, wrapped.getPointCoordinates(), tolerance);
     }
 
@@ -215,13 +224,17 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
         if (isPolygon) {
             assertInstanceOf("Expected a polygon.", library.polygonClass, result);
             final GeometryWrapper<G> wrapped = library.castOrWrap(result);
-            assertEquals(crs, wrapped.getCoordinateReferenceSystem());
+            if (supportCRS) {
+                assertEquals(crs, wrapped.getCoordinateReferenceSystem());
+            }
             env = wrapped.getEnvelope();
         } else {
             env = (GeneralEnvelope) result;
         }
+        if (supportCRS) {
+            assertEquals(crs, env.getCoordinateReferenceSystem());
+        }
         assertEquals(   2, env.getDimension());
-        assertEquals(crs,  env.getCoordinateReferenceSystem());
         assertEquals(xmin, env.getLower(0), tolerance);
         assertEquals(xmax, env.getUpper(0), tolerance);
         assertEquals(ymin, env.getLower(1), tolerance);
@@ -238,7 +251,9 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
     private void assertPolylineEquals(final Object result, final CoordinateReferenceSystem crs, final double... coordinates) {
         assertInstanceOf("Expected a line string.", library.polylineClass, result);
         final GeometryWrapper<G> wrapped = library.castOrWrap(result);
-        assertEquals(crs, wrapped.getCoordinateReferenceSystem());
+        if (supportCRS) {
+            assertEquals(crs, wrapped.getCoordinateReferenceSystem());
+        }
         assertArrayEquals(coordinates, wrapped.getAllCoordinates(), tolerance);
     }
 
@@ -341,7 +356,7 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
         // Border should intersect. Also use Feature instead of Literal as a source.
         final Feature feature = createFeatureWithGeometry(library.polygonClass);
         final ValueReference<Feature,?> ref = factory.property(P_NAME, library.polygonClass);
-        point = library.createPoint(1.2, 0.2);
+        point = library.createPoint(0.2, 0.3);
         function = factory.function("ST_Intersects", ref, factory.literal(point));
         assertEquals(Boolean.TRUE, function.apply(feature));
 

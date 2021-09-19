@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.iso;
+package org.apache.sis.util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -32,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
  * <h2>Instantiation</h2>
  * If the characters sequence to wrap is known to be a {@code String} instance, then
  * the {@link #SimpleInternationalString(String)} constructor is okay. Otherwise use
- * the {@link Types#toInternationalString(CharSequence)} method.
+ * the {@link org.apache.sis.util.iso.Types#toInternationalString(CharSequence)} method.
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe.
@@ -40,8 +39,8 @@ import org.apache.sis.util.ArgumentChecks;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
- * @since   0.3
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {
@@ -52,8 +51,8 @@ public class SimpleInternationalString extends AbstractInternationalString imple
 
     /**
      * Creates a new instance from the given string. If the type of the text
-     * to wrap is the more generic {@code CharSequence} interface, then use
-     * the {@link Types#toInternationalString(CharSequence)} method instead.
+     * to wrap is the more generic {@code CharSequence} interface, then use the
+     * {@link org.apache.sis.util.iso.Types#toInternationalString(CharSequence)} method instead.
      *
      * @param text the string for all locales.
      */

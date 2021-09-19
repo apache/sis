@@ -140,12 +140,6 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.sis.storage</groupId>
-      <artifactId>sis-gdal</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
     </dependency>

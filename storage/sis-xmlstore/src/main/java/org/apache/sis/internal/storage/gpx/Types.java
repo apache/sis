@@ -44,7 +44,7 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.storage.FeatureCatalogBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.util.iso.ResourceInternationalString;
+import org.apache.sis.util.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Branch-dependent imports

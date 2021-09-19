@@ -19,6 +19,7 @@ package org.apache.sis.internal.feature.esri;
 import java.util.Iterator;
 import java.util.function.Supplier;
 import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Envelope2D;
 import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.MultiVertexGeometry;
@@ -26,9 +27,11 @@ import com.esri.core.geometry.Operator;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Point2D;
+import com.esri.core.geometry.WktImportFlags;
 import com.esri.core.geometry.WktExportFlags;
 import com.esri.core.geometry.OperatorExportToWkt;
 import com.esri.core.geometry.OperatorCentroid2D;
+import com.esri.core.geometry.OperatorIntersects;
 import com.esri.core.geometry.OperatorSimpleRelation;
 import com.esri.core.geometry.ProgressTracker;
 import com.esri.core.geometry.SpatialReference;
@@ -66,14 +69,6 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
      */
     Wrapper(final Geometry geometry) {
         this.geometry = geometry;
-    }
-
-    /**
-     * Returns the given geometry in new wrapper,
-     * or {@code this} if {@code g} is same as current geometry.
-     */
-    private Wrapper rewrap(final Geometry g) {
-        return (g != geometry) ? new Wrapper(g) : this;
     }
 
     /**
@@ -126,13 +121,12 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
             return null;
         }
         final Point pt = (Point) geometry;
-        final double z = pt.getZ();
         final double[] coord;
-        if (Double.isNaN(z)) {
-            coord = new double[Factory.BIDIMENSIONAL];
-        } else {
+        if (pt.hasZ()) {
             coord = new double[Factory.TRIDIMENSIONAL];
-            coord[2] = z;
+            coord[2] = pt.getZ();
+        } else {
+            coord = new double[Factory.BIDIMENSIONAL];
         }
         coord[1] = pt.getY();
         coord[0] = pt.getX();
@@ -211,14 +205,14 @@ add:    for (Geometry next = geometry;;) {
         if (ordinal >= 0 && ordinal < PREDICATES.length) {
             final Supplier<OperatorSimpleRelation> op = PREDICATES[ordinal];
             if (op != null) {
-                return op.get().execute(geometry, ((Wrapper) other).geometry, null, null);
+                return op.get().execute(geometry, ((Wrapper) other).geometry, srs(), null);
             }
         }
         return super.predicateSameCRS(type, other);
     }
 
     /**
-     * All predicates recognized by {@link #predicate(SpatialOperatorName, Geometry)}.
+     * All predicates recognized by {@link #predicateSameCRS(SpatialOperatorName, GeometryWrapper)}.
      * Array indices are {@link SpatialOperatorName#ordinal()} values.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -240,8 +234,8 @@ add:    for (Geometry next = geometry;;) {
     private static final class BBOX extends OperatorSimpleRelation implements Supplier<OperatorSimpleRelation> {
         @Override public OperatorSimpleRelation get() {return this;}
         @Override public Operator.Type getType() {return Operator.Type.Intersects;}
-        @Override public boolean execute(Geometry g1, Geometry g2, SpatialReference sr, ProgressTracker pt) {
-            return !com.esri.core.geometry.OperatorDisjoint.local().execute(g1, g2, sr, pt);
+        @Override public boolean execute(Geometry g1, Geometry g2, SpatialReference srs, ProgressTracker pt) {
+            return !com.esri.core.geometry.OperatorDisjoint.local().execute(g1, g2, srs, pt);
         }
     }
 
@@ -255,12 +249,54 @@ add:    for (Geometry next = geometry;;) {
      */
     @Override
     protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Geometry> other, final Object argument) {
+        final Geometry result;
         switch (operation) {
-            case ST_Centroid: {
-                return OperatorCentroid2D.local().execute(geometry, null);
-            }
-            default: return super.operationSameCRS(operation, other, argument);
+            case ST_Dimension:        return geometry.getDimension();
+            case ST_CoordDim:         return geometry.hasZ() ? 3 : 2;
+            case ST_GeometryType:     return geometry.getType().name();
+            case ST_IsEmpty:          return geometry.isEmpty();
+            case ST_Is3D:             return geometry.hasZ();
+            case ST_IsMeasured:       return geometry.hasM();
+            case ST_X:                return ((Point) geometry).getX();
+            case ST_Y:                return ((Point) geometry).getY();
+            case ST_Z:                return ((Point) geometry).getZ();
+            case ST_Envelope:         return getEnvelope();
+            case ST_Boundary:         result = geometry.getBoundary(); break;
+            case ST_Simplify:         result = GeometryEngine.simplify             (geometry, srs()); break;
+            case ST_ConvexHull:       result = GeometryEngine.convexHull           (geometry); break;
+            case ST_Buffer:           result = GeometryEngine.buffer               (geometry, srs(), ((Number) argument).doubleValue()); break;
+            case ST_Intersection:     result = GeometryEngine.intersect            (geometry, ((Wrapper) other).geometry,  srs()); break;
+            case ST_Union:            result = GeometryEngine.union(new Geometry[] {geometry, ((Wrapper) other).geometry}, srs()); break;
+            case ST_Difference:       result = GeometryEngine.difference           (geometry, ((Wrapper) other).geometry,  srs()); break;
+            case ST_SymDifference:    result = GeometryEngine.symmetricDifference  (geometry, ((Wrapper) other).geometry,  srs()); break;
+            case ST_Distance:         return   GeometryEngine.distance             (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Equals:           return   GeometryEngine.equals               (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Disjoint:         return   GeometryEngine.disjoint             (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Touches:          return   GeometryEngine.touches              (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Crosses:          return   GeometryEngine.crosses              (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Within:           return   GeometryEngine.within               (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Contains:         return   GeometryEngine.contains             (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_Overlaps:         return   GeometryEngine.overlaps             (geometry, ((Wrapper) other).geometry,  srs());
+            case ST_AsText:           return   GeometryEngine.geometryToWkt        (geometry, WktExportFlags.wktExportDefaults);
+            case ST_GeomFromText:     return   GeometryEngine.geometryFromWkt((String) argument, WktImportFlags.wktImportDefaults, Geometry.Type.Unknown);
+            case ST_PointFromText:    return   GeometryEngine.geometryFromWkt((String) argument, WktImportFlags.wktImportDefaults, Geometry.Type.Point);
+            case ST_MPointFromText:   return   GeometryEngine.geometryFromWkt((String) argument, WktImportFlags.wktImportDefaults, Geometry.Type.MultiPoint);
+            case ST_LineFromText:     return   GeometryEngine.geometryFromWkt((String) argument, WktImportFlags.wktImportDefaults, Geometry.Type.Line);
+            case ST_PolyFromText:     return   GeometryEngine.geometryFromWkt((String) argument, WktImportFlags.wktImportDefaults, Geometry.Type.Polygon);
+            case ST_Intersects:       return OperatorIntersects.local().execute(geometry, ((Wrapper) other).geometry, srs(), null);
+            case ST_Centroid:         result = new Point(OperatorCentroid2D.local().execute(geometry, null)); break;
+            default:                  return super.operationSameCRS(operation, other, argument);
         }
+        // Current version does not have metadata to copy, but it may be added in the future.
+        return result;
+    }
+
+    /**
+     * Returns the spatial reference system of this geometrY.
+     * This is currently only a placeholder for future development.
+     */
+    private static SpatialReference srs() {
+        return null;
     }
 
     /**

@@ -35,7 +35,7 @@ import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports

@@ -25,7 +25,7 @@ import org.opengis.metadata.citation.Individual;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;

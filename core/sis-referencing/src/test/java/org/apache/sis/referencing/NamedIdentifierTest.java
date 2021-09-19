@@ -25,7 +25,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

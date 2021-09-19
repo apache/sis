@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.lan;
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.TestCase;

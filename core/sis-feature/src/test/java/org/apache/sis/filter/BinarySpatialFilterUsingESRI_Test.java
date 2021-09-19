@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.filter.sqlmm;
+package org.apache.sis.filter;
 
-import org.locationtech.jts.geom.Geometry;
+import com.esri.core.geometry.Geometry;
+import org.junit.Ignore;
+import org.junit.Test;
 
 
 /**
- * Tests {@link SpatialFunction} implementations using JTS library.
+ * Tests {@link BinarySpatialFilter} implementations using ESRI library.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -28,11 +30,38 @@ import org.locationtech.jts.geom.Geometry;
  * @since   1.1
  * @module
  */
-public final strictfp class RegistryUsingJTS_Test extends RegistryTestCase<Geometry> {
+public final strictfp class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**
      * Creates a new test.
      */
-    public RegistryUsingJTS_Test() {
-        super(Geometry.class, true);
+    public BinarySpatialFilterUsingESRI_Test() {
+        super(Geometry.class);
+    }
+
+    /**
+     * Test ignored for now (not yet mapped to an ESRI operation).
+     */
+    @Test
+    @Override
+    @Ignore("Not yet mapped to an ESRI operation.")
+    public void testDWithin() {
+    }
+
+    /**
+     * Test ignored for now (not yet mapped to an ESRI operation).
+     */
+    @Test
+    @Override
+    @Ignore("Not yet mapped to an ESRI operation.")
+    public void testBeyond() {
+    }
+
+    /**
+     * Test ignored for now (not yet mapped to an ESRI operation).
+     */
+    @Test
+    @Override
+    @Ignore("Not yet mapped to an ESRI operation.")
+    public void testWithReprojection() {
     }
 }

@@ -34,7 +34,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
 
 

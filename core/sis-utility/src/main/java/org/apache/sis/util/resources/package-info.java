@@ -87,7 +87,7 @@
  *
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat
- * @see org.apache.sis.util.iso.ResourceInternationalString
+ * @see org.apache.sis.util.ResourceInternationalString
  *
  * @since 0.3
  * @module

@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.UUID;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.IdentifierSpace;

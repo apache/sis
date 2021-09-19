@@ -170,7 +170,6 @@
     <module>sis-netcdf</module>
     <module>sis-geotiff</module>
     <module>sis-earth-observation</module>
-    <module>sis-gdal</module>
   </modules>
 
 </project>

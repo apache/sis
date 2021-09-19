@@ -23,7 +23,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;

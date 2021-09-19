@@ -21,7 +21,7 @@ import java.util.Collections;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.distribution.DefaultMedium;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

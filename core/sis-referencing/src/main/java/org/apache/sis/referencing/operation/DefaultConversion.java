@@ -242,7 +242,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * If the user did not specified explicitly a MathTransform, we will need to create it from the parameters.
              * This case happen when creating a ProjectedCRS because the length of semi-major and semi-minor axes are
              * often missing at defining conversion creation time. Since this constructor know those semi-axis lengths
-             * thanks to the 'sourceCRS' argument, we can complete the parameters.
+             * thanks to the `sourceCRS` argument, we can complete the parameters.
              */
             if (parameters == null) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
@@ -257,7 +257,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                 final DefaultMathTransformFactory.Context context;
                 if (target instanceof GeneralDerivedCRS) {
                     context = ReferencingUtilities.createTransformContext(source, null, null);
-                    context.setTarget(target.getCoordinateSystem());    // Using 'target' would be unsafe here.
+                    context.setTarget(target.getCoordinateSystem());    // Using `target` would be unsafe here.
                 } else {
                     context = ReferencingUtilities.createTransformContext(source, target, null);
                 }
@@ -417,9 +417,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             /*
              * Special case for derived and projected CRS: we can not check directly the datum of the target CRS
              * of a derived CRS, because this method is invoked indirectly by SIS AbstractDerivedCRS constructor
-             * before its 'conversionFromBase' field is set. Since the Apache SIS implementations of derived CRS
+             * before its `conversionFromBase` field is set. Since the Apache SIS implementations of derived CRS
              * map the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking targetCRS.getDatum()
-             * below may result in a NullPointerException. Instead we verify that 'this' conversion use the same
+             * below may result in a NullPointerException. Instead we verify that `this` conversion use the same
              * datum for source and target CRS, since DerivedCRS and ProjectedCRS are expected to have the same
              * datum than their source CRS.
              */
