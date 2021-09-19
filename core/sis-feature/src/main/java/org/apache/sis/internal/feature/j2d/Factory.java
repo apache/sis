@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.feature.j2d;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Collection;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -24,8 +27,10 @@ import java.nio.ByteBuffer;
 import java.io.ObjectStreamException;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.UnsupportedImplementationException;
 
@@ -247,7 +252,66 @@ public final class Factory extends Geometries<Shape> {
         for (final Shape geometry : shapes) {
             path.append(geometry, false);
         }
+        // path.trimToSize();       // TODO: uncomment with JDK10.
         return new Wrapper(path);
+    }
+
+    /**
+     * Creates a geometry from components.
+     * The expected {@code components} type depend on the target geometry type:
+     * <ul>
+     *   <li>If {@code type} is a multi-geometry, then the components shall be an array of {@link Shape} elements.</li>
+     *   <li>Otherwise the components shall be an array or collection of {@link Point2D} instances.</li>
+     * </ul>
+     *
+     * @param  type        type of geometry to create.
+     * @param  components  the components. Valid classes depend on the type of geometry to create.
+     * @return geometry built from the given components.
+     * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public GeometryWrapper<Shape> createFromComponents(final GeometryType type, final Object components) {
+        /*
+         * No exhaustive `if (x instanceof y)` checks in this method.
+         * `ClassCastException` shall be handled by the caller.
+         */
+        final Collection<?> data = (components instanceof Collection<?>)
+                ? (Collection<?>) components : Arrays.asList((Object[]) components);
+        /*
+         * Java2D API does not distinguish between single geometry and geometry collection.
+         * So if the number of components is 1, there is no reason to create a new geometry object.
+         */
+        Shape geometry = (Shape) CollectionsExt.singletonOrNull(data);
+        if (geometry == null) {
+            boolean isFloat = true;
+            for (final Object component : data) {
+                isFloat = ShapeUtilities.isFloat(component);
+                if (!isFloat) break;
+            }
+            final Path2D path = createPath(isFloat, 20);
+            if (type.isCollection()) {
+                for (final Object component : data) {
+                    path.append((Shape) component, false);
+                }
+            } else {
+                final Iterator<?> it = data.iterator();
+                if (it.hasNext()) {
+                    Point2D p = (Point2D) it.next();
+                    path.moveTo(p.getX(), p.getY());
+                    while (it.hasNext()) {
+                        p = (Point2D) it.next();
+                        path.lineTo(p.getX(), p.getY());
+                    }
+                    if (type == GeometryType.POLYGON) {
+                        path.closePath();
+                    }
+                }
+            }
+            // path.trimToSize();       // TODO: uncomment with JDK10.
+            geometry = path;
+        }
+        return new Wrapper(geometry);
     }
 
     /**

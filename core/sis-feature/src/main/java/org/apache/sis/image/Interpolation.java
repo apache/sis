@@ -164,14 +164,8 @@ public interface Interpolation {
     /**
      * Lanczos interpolation for photographic images.
      * This interpolation is not recommended for images that may contain NaN values.
-     * The Lanczos reconstruction kernel is:
-     *
-     * <blockquote>
-     * <var>L</var>(<var>x</var>) = <var>a</var>⋅sin(π⋅<var>x</var>)⋅sin(π⋅<var>x</var>/<var>a</var>)/(π⋅<var>x</var>)²
-     * for |<var>x</var>| ≤ lanczos window size
-     * </blockquote>
      *
      * @see <a href="https://en.wikipedia.org/wiki/Lanczos_resampling">Lanczos resampling on Wikipedia</a>
      */
-    Interpolation LANCZOS = new LanczosInterpolation(2);
+    Interpolation LANCZOS = new LanczosInterpolation(3);
 }

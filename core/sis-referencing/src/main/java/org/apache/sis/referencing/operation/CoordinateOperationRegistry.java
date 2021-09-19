@@ -626,7 +626,7 @@ class CoordinateOperationRegistry {
              * FactoryException propagate.
              */
             operation = complete(operation, sourceCRS, targetCRS);
-            if (filter(operation)) {
+            if (filter == null || filter.test(operation)) {
                 if (stopAtFirst) {
                     operations.clear();
                     operations.add(operation);
@@ -638,13 +638,6 @@ class CoordinateOperationRegistry {
             }
         }
         return operations;
-    }
-
-    /**
-     * Returns {@code true} if the given operation can be accepted.
-     */
-    final boolean filter(final CoordinateOperation op) {
-        return filter == null || filter.test(op);
     }
 
     /**

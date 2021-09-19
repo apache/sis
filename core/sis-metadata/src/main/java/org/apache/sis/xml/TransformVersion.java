@@ -74,7 +74,7 @@ final class TransformVersion {
             }, LegacyNamespaces.GMD);
         /*
          * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on TransformingReader
-         * (do NOT declare entries in 'imports', because some namespaces must be left unchanged). An exception to
+         * (do NOT declare entries in `imports`, because some namespaces must be left unchanged). An exception to
          * this rule is the "gco" namespace, because our reader renames only element namespaces while we need to
          * rename also attributes in "gco" namespace (e.g. "gco:nilReason").
          */

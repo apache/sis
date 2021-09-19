@@ -18,11 +18,14 @@ package org.apache.sis.internal.feature.j2d;
 
 import java.util.List;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 import java.awt.Shape;
+import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
+import java.awt.geom.PathIterator;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -31,8 +34,12 @@ import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
+import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
 
 
 /**
@@ -49,7 +56,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
     /**
      * The wrapped implementation.
      */
-    private final Shape geometry;
+    final Shape geometry;
 
     /**
      * Creates a new wrapper around the given geometry.
@@ -72,6 +79,14 @@ final class Wrapper extends GeometryWithCRS<Shape> {
     @Override
     public Object implementation() {
         return geometry;
+    }
+
+    /**
+     * Returns the geometry as an {@link Area} object, creating it on the fly if necessary.
+     * The returned area shall not be modified because it may be the {@link #geometry} instance.
+     */
+    private Area area() {
+        return (geometry instanceof Area) ? (Area) geometry : new Area(geometry);
     }
 
     /**
@@ -185,6 +200,39 @@ add:    for (;;) {
     }
 
     /**
+     * Applies a filter predicate between this geometry and another geometry.
+     * This method assumes that the two geometries are in the same CRS (this is not verified).
+     */
+    @Override
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Shape> other) {
+        final int ordinal = type.ordinal();
+        if (ordinal >= 0 && ordinal < PREDICATES.length) {
+            final BiPredicate<Wrapper,Object> op = PREDICATES[ordinal];
+            if (op != null) {
+                return op.test(this, other);
+            }
+        }
+        return super.predicateSameCRS(type, other);
+    }
+
+    /**
+     * All predicates recognized by {@link #predicateSameCRS(SpatialOperatorName, GeometryWrapper)}.
+     * Array indices are {@link SpatialOperatorName#ordinal()} values.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static final BiPredicate<Wrapper,Object>[] PREDICATES =
+            new BiPredicate[SpatialOperatorName.OVERLAPS.ordinal() + 1];
+    static {
+        PREDICATES[SpatialOperatorName.OVERLAPS  .ordinal()] = // Fallback on intersects.
+        PREDICATES[SpatialOperatorName.INTERSECTS.ordinal()] = Wrapper::intersect;
+        PREDICATES[SpatialOperatorName.CONTAINS  .ordinal()] = Wrapper::contain;
+        PREDICATES[SpatialOperatorName.WITHIN    .ordinal()] = Wrapper::within;
+        PREDICATES[SpatialOperatorName.BBOX      .ordinal()] = Wrapper::bbox;
+        PREDICATES[SpatialOperatorName.EQUALS    .ordinal()] = Wrapper::equal;
+        PREDICATES[SpatialOperatorName.DISJOINT  .ordinal()] = (w,o) -> !w.intersect(o);
+    }
+
+    /**
      * Applies a SQLMM operation on this geometry.
      *
      * @param  operation  the SQLMM operation to apply.
@@ -194,14 +242,163 @@ add:    for (;;) {
      */
     @Override
     protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Shape> other, final Object argument) {
+        final Shape result;
         switch (operation) {
+            case ST_Dimension:
+            case ST_CoordDim:   return 2;
+            case ST_Is3D:
+            case ST_IsMeasured: return Boolean.FALSE;
+            case ST_IsEmpty: {
+                if (geometry instanceof RectangularShape) {
+                    return ((RectangularShape) geometry).isEmpty();
+                } else {
+                    return geometry.getPathIterator(null).isDone();
+                }
+            }
+            case ST_Overlaps:   // Our approximate algorithm can not distinguish with intersects.
+            case ST_Intersects: return  intersect(other);
+            case ST_Disjoint:   return !intersect(other);
+            case ST_Contains:   return  contain  (other);
+            case ST_Within:     return  within   (other);
+            case ST_Equals:     return  equal    (other);
+            case ST_Envelope:   return getEnvelope();
+            case ST_Boundary:   result = geometry.getBounds2D(); break;
             case ST_Centroid: {
                 final RectangularShape frame = (geometry instanceof RectangularShape)
                                 ? (RectangularShape) geometry : geometry.getBounds2D();
                 return new Point2D.Double(frame.getCenterX(), frame.getCenterY());
             }
+            case ST_Intersection: {
+                final Area area = new Area(geometry);
+                area.intersect(((Wrapper) other).area());
+                result = area;
+                break;
+            }
+            case ST_Union: {
+                final Area area = new Area(geometry);
+                area.add(((Wrapper) other).area());
+                result = area;
+                break;
+            }
+            case ST_Difference: {
+                final Area area = new Area(geometry);
+                area.subtract(((Wrapper) other).area());
+                result = area;
+                break;
+            }
+            case ST_SymDifference: {
+                final Area area = new Area(geometry);
+                area.exclusiveOr(((Wrapper) other).area());
+                result = area;
+                break;
+            }
             default: return super.operationSameCRS(operation, other, argument);
         }
+        // No metadata to copy in current version.
+        return result;
+    }
+
+    /**
+     * Estimates whether the wrapped geometry is equal to the geometry of the given wrapper.
+     *
+     * @param  wrapper  instance of {@link Wrapper}.
+     */
+    private boolean equal(final Object wrapper) {       // "s" omitted for avoiding confusion with super.equals(…).
+        if (wrapper instanceof Wrapper) {
+            final Shape other = ((Wrapper) wrapper).geometry;
+            final PathIterator it1 = geometry.getPathIterator(null);
+            final PathIterator it2 = other.getPathIterator(null);
+            if (it1.getWindingRule() == it2.getWindingRule()) {
+                final double[] p1 = new double[6];
+                final double[] p2 = new double[6];
+                while (!it1.isDone()) {
+                    if (it2.isDone()) return false;
+                    final int c = it1.currentSegment(p1);
+                    if (c != it2.currentSegment(p2)) {
+                        return false;
+                    }
+                    it1.next();
+                    it2.next();
+                    final int n;
+                    switch (c) {
+                        case PathIterator.SEG_CLOSE: continue;
+                        case PathIterator.SEG_MOVETO:
+                        case PathIterator.SEG_LINETO: n=2; break;
+                        case PathIterator.SEG_QUADTO: n=4; break;
+                        default: n=6; break;
+                    }
+                    if (!JDK9.equals(p1, 0, n, p2, 0, n)) {
+                        return false;
+                    }
+                }
+                return it2.isDone();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Estimates whether the wrapped geometry is contained by the geometry of the given wrapper.
+     * This method may conservatively returns {@code false} if an accurate computation would be
+     * too expansive.
+     *
+     * @param  wrapper  instance of {@link Wrapper}.
+     */
+    private boolean within(final Object wrapper) {
+        if (wrapper instanceof Wrapper) {
+            final Shape other = ((Wrapper) wrapper).geometry;
+            return other.contains(geometry.getBounds2D());
+        }
+        return false;
+    }
+
+    /**
+     * Estimates whether the wrapped geometry contains the geometry of the given wrapper.
+     * This method may conservatively returns {@code false} if an accurate computation would
+     * be too expansive.
+     *
+     * @param  wrapper  instance of {@link Wrapper} or {@link PointWrapper}.
+     * @throws ClassCastException if the given object is not a recognized wrapper.
+     */
+    private boolean contain(final Object wrapper) {     // "s" omitted for avoiding confusion with super.contains(…).
+        if (wrapper instanceof PointWrapper) {
+            return geometry.contains(((PointWrapper) wrapper).point);
+        }
+        final Shape other = ((Wrapper) wrapper).geometry;
+        return geometry.contains(other.getBounds2D());
+    }
+
+    /**
+     * Estimates whether the wrapped geometry intersects the geometry of the given wrapper.
+     * This method may conservatively returns {@code true} if an accurate computation would
+     * be too expansive.
+     *
+     * @param  wrapper  instance of {@link Wrapper} or {@link PointWrapper}.
+     * @throws ClassCastException if the given object is not a recognized wrapper.
+     */
+    private boolean intersect(final Object wrapper) {   // "s" omitted for avoiding confusion with super.intersects(…).
+        if (wrapper instanceof PointWrapper) {
+            return geometry.contains(((PointWrapper) wrapper).point);
+        }
+        final Shape other = ((Wrapper) wrapper).geometry;
+        return geometry.intersects(other.getBounds2D()) && other.intersects(geometry.getBounds2D());
+    }
+
+    /**
+     * Estimates whether the wrapped geometry intersects the geometry of the given wrapper, testing only
+     * the bounding box of the {@code wrapper} argument. This method may be more accurate than required
+     * by OGC Filter Encoding specification in that this geometry is not simplified to a bounding box.
+     * But Java2D implementations sometime use bounding box approximation, so the result may be the same.
+     *
+     * @param  wrapper  instance of {@link Wrapper} or {@link PointWrapper}.
+     * @throws ClassCastException if the given object is not a recognized wrapper.
+     */
+    private boolean bbox(final Object wrapper) {
+        if (wrapper instanceof PointWrapper) {
+            return geometry.contains(((PointWrapper) wrapper).point);
+        }
+        final Shape other = ((Wrapper) wrapper).geometry;
+        return geometry.intersects(other.getBounds2D());
     }
 
     /**

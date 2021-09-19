@@ -175,7 +175,7 @@ public final class CodeListUID {
      * {@code null}. If a value is provided in this field, then {@link #value} should be
      * set as well.
      *
-     * <p>This attribute is set to the 3-letters language code of the {@link #value} attribute,
+     * <p>This attribute is set to the 3-letters language code of the {@linkplain #value},
      * as returned by {@link Locale#getISO3Language()}.</p>
      */
     @XmlAttribute

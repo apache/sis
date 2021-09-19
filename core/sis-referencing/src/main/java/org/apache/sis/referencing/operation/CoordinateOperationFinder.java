@@ -48,7 +48,6 @@ import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
-import org.apache.sis.internal.referencing.SpecializedOperationFactory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
@@ -264,24 +263,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             bbox = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
                                         CRS.getGeographicBoundingBox(targetCRS));
             areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(areaOfInterest, bbox);
-        }
-        /*
-         * Verify if some extension module handles this pair of CRS in a special way. For example it may
-         * be the "sis-gdal" module checking if the given CRS are wrappers around Proj.4 data structure.
-         */
-        {   // For keeping `operations` list locale.
-            final List<CoordinateOperation> operations = new ArrayList<>();
-            for (final SpecializedOperationFactory sp : factorySIS.getSpecializedFactories()) {
-                for (final CoordinateOperation op : sp.findOperations(sourceCRS, targetCRS)) {
-                    if (filter(op)) {
-                        operations.add(op);
-                    }
-                }
-            }
-            if (!operations.isEmpty()) {
-                CoordinateOperationSorter.sort(operations, bbox);
-                return operations;
-            }
         }
         /*
          * Verify in the EPSG dataset if the operation is explicitly defined by an authority.

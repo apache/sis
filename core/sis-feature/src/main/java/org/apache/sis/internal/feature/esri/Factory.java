@@ -16,20 +16,28 @@
  */
 package org.apache.sis.internal.feature.esri;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.nio.ByteBuffer;
 import java.io.ObjectStreamException;
 import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.MultiPath;
-import com.esri.core.geometry.OperatorImportFromWkb;
-import com.esri.core.geometry.OperatorImportFromWkt;
+import com.esri.core.geometry.Line;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
+import com.esri.core.geometry.MultiPath;
+import com.esri.core.geometry.MultiPoint;
+import com.esri.core.geometry.OperatorCentroid2D;
+import com.esri.core.geometry.OperatorImportFromWkb;
+import com.esri.core.geometry.OperatorImportFromWkt;
 import com.esri.core.geometry.WkbImportFlags;
 import com.esri.core.geometry.WktImportFlags;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.math.Vector;
 
 
@@ -100,8 +108,7 @@ public final class Factory extends Geometries<Geometry> {
      */
     @Override
     public Object createPoint(final double x, final double y) {
-        // Need to explicitly set z to NaN because default value is 0.
-        return new Point(x, y, Double.NaN);
+        return new Point(x, y);
     }
 
     /**
@@ -167,6 +174,86 @@ public final class Factory extends Geometries<Geometry> {
             polygon.add((MultiPath) unwrap(geometry), false);
         }
         return new Wrapper(polygon);
+    }
+
+    /**
+     * Creates a geometry from components.
+     * The expected {@code components} type depend on the target geometry type:
+     * <ul>
+     *   <li>If {@code type} is a multi-geometry, then the components shall be an array of {@link Point},
+     *       {@link Geometry}, {@link Polyline} or {@link Polygon} elements, depending on the desired target type.</li>
+     *   <li>Otherwise the components shall be an array or collection of {@link Point} instances.</li>
+     * </ul>
+     *
+     * @param  type        type of geometry to create.
+     * @param  components  the components. Valid classes depend on the type of geometry to create.
+     * @return geometry built from the given components.
+     * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
+     */
+    @Override
+    public GeometryWrapper<Geometry> createFromComponents(final GeometryType type, final Object components) {
+        /*
+         * No exhaustive `if (x instanceof y)` checks in this method.
+         * `ClassCastException` shall be handled by the caller.
+         */
+        final Collection<?> data = (components instanceof Collection<?>)
+                ? (Collection<?>) components : Arrays.asList((Object[]) components);
+        /*
+         * ESRI API does not distinguish between single geometry and geometry collection, except MultiPoint.
+         * So if the number of components is 1, there is no reason to create a new geometry object.
+         */
+        Geometry geometry = (Geometry) CollectionsExt.singletonOrNull(data);
+        if (geometry == null) {
+            boolean isPolygon = false;
+            switch (type) {
+                case MULTI_LINESTRING:
+                case LINESTRING: break;
+                case MULTI_POLYGON:
+                case POLYGON: isPolygon=true; break;
+                case GEOMETRY_COLLECTION: {
+                    for (final Object component : data) {
+                        isPolygon = (((Geometry) component).getType() == Geometry.Type.Polygon);
+                        if (!isPolygon) break;
+                    }
+                    break;
+                }
+                case GEOMETRY:      // Default to multi-points for now.
+                case POINT:
+                case MULTI_POINT: {
+                    final MultiPoint points = new MultiPoint();
+                    for (final Object p : data) {
+                        points.add((Point) p);
+                    }
+                    geometry = points;
+                    if (type == GeometryType.POINT) {
+                        geometry = new Point(OperatorCentroid2D.local().execute(geometry, null));
+                    }
+                    break;
+                }
+                default: throw new AssertionError(type);
+            }
+            if (geometry == null) {
+                final MultiPath path = isPolygon ? new Polygon() : new Polyline();
+                if (type.isCollection()) {
+                    for (final Object component : data) {
+                        path.add((MultiPath) component, false);
+                    }
+                } else {
+                    final Iterator<?> it = data.iterator();
+                    if (it.hasNext()) {
+                        final Line segment = new Line();
+                        segment.setEnd((Point) it.next());
+                        while (it.hasNext()) {
+                            segment.setStartXY(segment.getEndX(), segment.getEndY());
+                            segment.setEnd((Point) it.next());
+                            path.addSegment(segment, false);
+                        }
+                    }
+                }
+                geometry = path;
+            }
+        }
+        return new Wrapper(geometry);
     }
 
     /**

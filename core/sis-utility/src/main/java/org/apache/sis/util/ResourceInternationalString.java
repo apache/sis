@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.iso;
+package org.apache.sis.util;
 
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -78,11 +77,11 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.3
+ * @version 1.1
  *
  * @see ResourceBundle#getBundle(String, Locale)
  *
- * @since 0.3
+ * @since 1.1
  * @module
  */
 public class ResourceInternationalString extends AbstractInternationalString implements Serializable {

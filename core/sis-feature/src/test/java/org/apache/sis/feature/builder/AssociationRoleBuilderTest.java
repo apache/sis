@@ -17,7 +17,7 @@
 package org.apache.sis.feature.builder;
 
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

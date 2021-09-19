@@ -54,7 +54,7 @@ class SexagesimalConverter extends AbstractConverter {
      * Small tolerance factor when comparing numbers close to 1.
      * For comparing numbers other than 1, multiply by the number magnitude.
      */
-    static final double EPS = 1E-10;
+    private static final double EPS = 1E-10;
 
     /**
      * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:

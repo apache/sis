@@ -29,8 +29,9 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**

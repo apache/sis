@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-metadata} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -118,6 +118,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultServiceIdentificationTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
     org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
+    org.apache.sis.metadata.iso.quality.ScopeCodeTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultLineageTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultProcessStepTest.class,
     org.apache.sis.metadata.iso.constraint.DefaultLegalConstraintsTest.class,

@@ -27,11 +27,11 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.iso.AbstractInternationalString;
+import org.apache.sis.util.AbstractInternationalString;
 
 
 /**
- * A copy of {@link org.apache.sis.util.iso.ResourceInternationalString} specialized for
+ * A copy of {@link org.apache.sis.util.ResourceInternationalString} specialized for
  * {@link IndexedResourceBundle}. Compared to the public class, this specialization works
  * with integer resource keys and accepts arguments.
  *

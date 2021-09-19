@@ -24,21 +24,28 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.IllformedLocaleException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.io.InputStream;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.DefaultInternationalString;
+import org.apache.sis.util.ResourceInternationalString;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CodeLists;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -741,14 +748,37 @@ public final class Types extends Static {
                 } else {
                     if (dis == null) {
                         dis = new DefaultInternationalString();
-                        dis.add(firstLocale, i18n);
+                        add(dis, firstLocale, i18n);
                         i18n = dis;
                     }
-                    dis.add(locale, (CharSequence) value);
+                    add(dis, locale, (CharSequence) value);
                 }
             }
         }
         return toInternationalString(i18n);
+    }
+
+    /**
+     * Adds the given character sequence. If the given sequence is another {@link InternationalString} instance,
+     * then only the string for the given locale is added.
+     *
+     * @param  locale  the locale for the {@code string} value.
+     * @param  string  the character sequence to add.
+     * @throws IllegalArgumentException if a different string value was already set for the given locale.
+     */
+    private static void add(final DefaultInternationalString dis, final Locale locale, final CharSequence string) {
+        final boolean i18n = (string instanceof InternationalString);
+        dis.add(locale, i18n ? ((InternationalString) string).toString(locale) : string.toString());
+        if (i18n && !(string instanceof SimpleInternationalString)) {
+            /*
+             * If the string may have more than one locale, log a warning telling that some locales
+             * may have been ignored. We declare Types.toInternationalString(…) as the source since
+             * it is the public facade invoking this method.
+             */
+            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
+            record.setLoggerName(Modules.METADATA);
+            Logging.log(Types.class, "toInternationalString", record);
+        }
     }
 
     /**

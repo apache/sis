@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -36,12 +35,11 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.referencing.CoordinateOperations;
-import org.apache.sis.internal.referencing.SpecializedOperationFactory;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
@@ -127,17 +125,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @see #getMathTransformFactory()
      */
     private volatile MathTransformFactory mtFactory;
-
-    /**
-     * Factories specialized to some particular pair of CRS. For example a module doing the bindings between
-     * Apache SIS and another map projection library may create wrappers around the transformation method of
-     * that other library when {@code SpecializedOperationFactory.tryCreateOperation(…)} recognizes the given
-     * CRS as wrappers around their data structures.
-     *
-     * <p>This array is created when first needed. After creation, the array shall not be modified anymore.</p>
-     */
-    @SuppressWarnings("VolatileArrayField")
-    private volatile SpecializedOperationFactory[] specializedFactories;
 
     /**
      * Weak references to existing objects.
@@ -273,20 +260,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             return (DefaultMathTransformFactory) factory;
         }
         return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
-    }
-
-    /**
-     * Returns all known factories specialized in the creation of coordinate operations between some particular
-     * pairs of CRS.
-     */
-    final SpecializedOperationFactory[] getSpecializedFactories() {
-        SpecializedOperationFactory[] factories = specializedFactories;
-        if (factories == null) {
-            final LazySet<SpecializedOperationFactory> set =
-                    new LazySet<>(ServiceLoader.load(SpecializedOperationFactory.class).iterator());
-            specializedFactories = factories = set.toArray(new SpecializedOperationFactory[set.size()]);
-        }
-        return factories;
     }
 
     /**
@@ -471,7 +444,7 @@ next:   for (int i=components.size(); --i >= 0;) {
                     continue next;
                 }
             }
-            return false;                               // Datum from 'targetCRS' not found in 'sourceCRS'.
+            return false;                               // Datum from `targetCRS` not found in `sourceCRS`.
         }
         return true;
     }
@@ -537,7 +510,7 @@ next:   for (int i=components.size(); --i >= 0;) {
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         ArgumentChecks.ensureNonNull("method",    method);
         /*
-         * Undocumented (for now) feature: if the 'transform' argument is null but parameters are
+         * Undocumented (for now) feature: if the `transform` argument is null but parameters are
          * found in the given properties, create the MathTransform instance from those parameters.
          * This is needed for WKT parsing of CoordinateOperation[…] among others.
          */
@@ -547,7 +520,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (parameters == null) {
                 throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
-            transform = getMathTransformFactory().createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+            transform = ReferencingUtilities.createBaseToDerived(getMathTransformFactory(), sourceCRS, parameters, targetCRS);
         }
         /*
          * The "operationType" property is currently undocumented. The intent is to help this factory method in
@@ -555,7 +528,7 @@ next:   for (int i=components.size(); --i >= 0;) {
          * getOperationType(), or the method is ambiguous (e.g. "Affine" can be used for both a transformation
          * or a conversion).
          *
-         * If we have both a 'baseType' and a Method.getOperationType(), take the most specific type.
+         * If we have both a `baseType` and a `Method.getOperationType()`, take the most specific type.
          * An exception will be thrown if the two types are incompatible.
          */
         Class<?> baseType = Containers.property(properties, CoordinateOperations.OPERATION_TYPE_KEY, Class.class);
@@ -602,10 +575,10 @@ next:   for (int i=components.size(); --i >= 0;) {
         /*
          * Now create the coordinate operation of the requested type. If we can not find a concrete class for the
          * requested type, we will instantiate a SingleOperation in last resort.  The later action is a departure
-         * from ISO 19111 since 'SingleOperation' is conceptually abstract.  But we do that as a way to said that
+         * from ISO 19111 since `SingleOperation` is conceptually abstract.  But we do that as a way to said that
          * we are missing this important piece of information but still go ahead.
          *
-         * It is inconvenient to guarantee that the created operation is an instance of 'baseType' since the user
+         * It is inconvenient to guarantee that the created operation is an instance of `baseType` since the user
          * could have specified an implementation class or a custom sub-interface. We will perform the type check
          * only after object creation.
          */
@@ -805,7 +778,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             }
             handler = cache.lock(key);
         } else {
-            // We currently do not cache the operation when the result may depend on the context (see 'this.cache' javadoc).
+            // We currently do not cache the operation when the result may depend on the context (see `this.cache` javadoc).
             handler = null;
             op = null;
         }

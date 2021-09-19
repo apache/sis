@@ -26,9 +26,6 @@
   </head>
   <body>
     <h1>OpenOffice add-in build instructions</h1>
-    <p style="font-size:smaller">
-      This page is adapted from the <a href="http://www.geoapi.org/geoapi-openoffice/build.html">GeoAPI build page</a>.
-    </p>
     <p>
       All <code>XFoo</code> Java interfaces are generated from IDL files with the same name.
       As long as <code>XFoo</code> Java/IDL interfaces are not modified, there is no need for the OpenOffice SDK.
@@ -101,9 +98,22 @@ mvn install</pre></blockquote>
 
 
 <h2>Test in Apache OpenOffice:</h2>
+<p>Launch:</p>
 <blockquote><pre>cd target
 unopkg add apache-sis-1.1-SNAPSHOT.oxt --log-file log.txt
-scalc -Xdebug -env:RTL_LOGFILE=log.txt</pre></blockquote>
+scalc -env:RTL_LOGFILE=log.txt</pre></blockquote>
+
+<p>If not already done, configure Java runtime with
+  <i>Tools</i> → <i>Options…</i> → <i>Advanced</i> → <i>Java options</i> → <i>Parameters</i>
+  and specify the following parameters:
+</p>
+<blockquote><pre>-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n</pre></blockquote>
+
+<p>
+  It allows to attach the IDE debugger to the Java virtual machine running in LibreOffice.
+  For example with NetBeans, use <i>Debug</i> → <i>Attach debugger…</i>,
+  select "Socket attach" as the transport and 8000 as the port number.
+</p>
 
   </body>
 </html>

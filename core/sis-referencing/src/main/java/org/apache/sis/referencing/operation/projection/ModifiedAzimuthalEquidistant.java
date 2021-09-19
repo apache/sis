@@ -37,6 +37,12 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * This is an approximation of the oblique form of the <cite>Azimuthal Equidistant</cite> projection.
  * For distances under 800 kilometres this modification introduces no significant error.
  *
+ * <h2>Limitation</h2>
+ * This class does not support derivative (Jacobian matrix) yet.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-237">SIS-237 on issues tracker</a>.
+ *
+ * @todo Add Jacobian matrix formulas.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *

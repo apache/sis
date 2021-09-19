@@ -22,7 +22,7 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.util.Constants;

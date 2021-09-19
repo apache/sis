@@ -241,7 +241,7 @@ http://standards.iso.org/iso/19115/-3/mcc/1.0
   description
   version
  MD_ProgressCode
- MD_Scope
+ DQ_Scope/MD_Scope
   extent
   level
   levelDescription

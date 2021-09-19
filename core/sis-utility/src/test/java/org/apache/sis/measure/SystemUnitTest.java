@@ -330,7 +330,7 @@ public final strictfp class SystemUnitTest extends TestCase {
     public void testAsTypeForNewQuantity() {
         /*
          * Tests with a new quantity type unknown to Apache SIS.
-         * SIS can not proof that the type is wrong, so it should accept it.
+         * SIS can not prove that the type is wrong, so it should accept it.
          */
         final Unit<Strange> strange = Units.METRE.asType(Strange.class);
         final Unit<Strange> named   = strange.alternate("strange");

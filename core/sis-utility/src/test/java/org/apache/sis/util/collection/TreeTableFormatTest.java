@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import org.opengis.metadata.citation.Role;
-import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;

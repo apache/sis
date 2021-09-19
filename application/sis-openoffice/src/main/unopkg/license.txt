@@ -1,13 +1,26 @@
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific
+language governing permissions and limitations under the
+License.
 
 ───────────────────────────────────────────────────────
 
-This software may contain geodetic dataset distributed under EPSG terms of use. You may not use the EPSG Facilities or any of them in whole or in part unless you agree to these Terms of Use. You may obtain a copy of EPSG terms of use at
+This software may contain geodetic dataset distributed under
+EPSG terms of use. You may not use the EPSG Facilities or any of
+them in whole or in part unless you agree to these Terms of Use.
+You may obtain a copy of EPSG terms of use at
 
     https://epsg.org/terms-of-use.html
 
-Data and information provided in the EPSG facilities are provided "as is" without warranty of any kind, either expressed or implied, including but not limited to the implied warranties of merchantability and/or fitness for a particular purpose.
+Data and information provided in the EPSG facilities are provided
+"as is" without warranty of any kind, either expressed or implied,
+including but not limited to the implied warranties of
+merchantability and/or fitness for a particular purpose.

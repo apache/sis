@@ -499,6 +499,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.CUBIC_METRE,       f.parse("m⋅m⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m²⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m2.m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m^3"));
         assertSame(Units.METRES_PER_SECOND, f.parse("m∕s"));
         assertSame(Units.HERTZ,             f.parse("1/s"));
     }
@@ -643,6 +644,8 @@ public final strictfp class UnitFormatTest extends TestCase {
     /**
      * Tests parsing of miscellaneous symbols, followed by formatting.
      * This test uses some units defined by World Meteorological Organisation (WMO).
+     * The lines with <cite>"Too aggressive simplification bug (SIS-378)"</cite> comment are actually bugs,
+     * but they are tested anyway (despite the bogus "expected" value) for tracking progresses on SIS-378.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-378">SIS-378</a>
      */
@@ -667,23 +670,31 @@ public final strictfp class UnitFormatTest extends TestCase {
         roundtrip(f, "μg.m-2",           "µg∕m²");
         roundtrip(f, "K.m-1",            "K∕m");
         roundtrip(f, "W.m-2",            "W∕m²");
+        roundtrip(f, "W.m-2.Hz-1",       "kg∕s²");          // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "W.sr-1.m-2",       "kg∕s³");          // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "W.m-1.sr-1",       "W∕m");            // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "W.m-3.sr-1",       "W∕m³");           // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "N.m-1",            "N∕m");
         roundtrip(f, "N.m-2",            "Pa");
         roundtrip(f, "kg.m-2",           "kg∕m²");
         roundtrip(f, "kg.m-3",           "kg∕m³");
         roundtrip(f, "K*m.s-1",          "K⋅m∕s");
         roundtrip(f, "N.m-2.s",          "Pa⋅s");
         roundtrip(f, "K*m/s",            "K⋅m∕s");
-        roundtrip(f, "kg/kg*Pa/s",       "Pa∕s");
-        roundtrip(f, "kg/kg*m/s",        "m∕s");
+        roundtrip(f, "kg/kg*Pa/s",       "Pa∕s");           // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "kg/kg*m/s",        "m∕s");            // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "kg.kg-1.m.s-1",    "m∕s");            // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "kg/kg*kg/kg",      "kg∕kg");          // Too aggressive simplification bug (SIS-378)
         roundtrip(f, "day",              "d");
         roundtrip(f, "µg.m-3",           "µg∕m³");
         roundtrip(f, "Pa*Pa",            "Pa²");
-        roundtrip(f, "N.m-1",            "N∕m");
         roundtrip(f, "m-2.s-1",          "1∕(m²⋅s)");
+        roundtrip(f, "m-2.s.rad-1",      "s∕m²");           // Too aggressive simplification bug (SIS-378)
         roundtrip(f, "°",                "°");
         roundtrip(f, "K*Pa/s",           "K⋅Pa∕s");
         roundtrip(f, "kg.kg-1",          "kg∕kg");
         roundtrip(f, "m3.m-3",           "m³∕m³");
+        roundtrip(f, "m3.s-1.m-1",       "m²∕s");           // Too aggressive simplification bug (SIS-378)
         roundtrip(f, "s.m-1",            "s∕m");
         roundtrip(f, "V.m-1",            "V∕m");
         roundtrip(f, "m2.s-2",           "m²∕s²");
@@ -698,7 +709,10 @@ public final strictfp class UnitFormatTest extends TestCase {
         roundtrip(f, "rad.s-1",          "rad∕s");
         roundtrip(f, "(m2.s)^-1",        "1∕(m²⋅s)");
         roundtrip(f, "(m2.s)-1",         "1∕(m²⋅s)");
+        roundtrip(f, "(m2.s.sr)-1",      "1∕(m²⋅s)");       // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "(kg.m-3).(m.s-1)", "kg∕(m²⋅s)");      // Too aggressive simplification bug (SIS-378)
         roundtrip(f, "cm/day",           "cm∕d");
+        roundtrip(f, "W.m-2.nm-1",       "10⁹⋅kg∕(m⋅s³)");  // Too aggressive simplification bug (SIS-378)
     }
 
     /**

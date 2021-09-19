@@ -40,6 +40,7 @@ final class ScalarFallback<Q extends Quantity<Q>> extends Scalar<Q> implements I
 
     /**
      * Creates a new scalar for the given value and unit of measurement.
+     * Callers should ensure that all the arguments are non-null.
      */
     private ScalarFallback(final double value, final Unit<Q> unit, final Class<Q> type) {
         super(value, unit);
@@ -56,6 +57,11 @@ final class ScalarFallback<Q extends Quantity<Q>> extends Scalar<Q> implements I
 
     /**
      * Creates a new {@link ScalarFallback} instance implementing the given quantity type.
+     * Callers should ensure that all the arguments are non-null.
+     *
+     * @param  value  the numerical value.
+     * @param  unit   unit of measurement.
+     * @param  type   interface implemented by proxy instances.
      */
     @SuppressWarnings("unchecked")
     static <Q extends Quantity<Q>> Q factory(final double value, final Unit<Q> unit, final Class<Q> type) {

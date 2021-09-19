@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.iso;
+package org.apache.sis.util;
 
 import java.util.Locale;
 import java.util.Formatter;
@@ -22,7 +22,6 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -39,15 +38,15 @@ import org.apache.sis.util.CharSequences;
  * by a {@link org.opengis.util.CodeList} value. This can be done with:
  *
  * <ul>
- *   <li>{@link Types#getCodeTitle(CodeList)} for getting the {@link InternationalString}
- *       instance to store in a metadata property.</li>
- *   <li>{@link Types#forCodeTitle(CharSequence)} for retrieving the {@link org.opengis.util.CodeList}
- *       previously stored as an {@code InternationalString}.</li>
+ *   <li>{@link org.apache.sis.util.iso.Types#getCodeTitle(CodeList)} for getting
+ *       the {@link InternationalString} instance to store in a metadata property.</li>
+ *   <li>{@link org.apache.sis.util.iso.Types#forCodeTitle(CharSequence)} for retrieving the
+ *       {@link org.opengis.util.CodeList} previously stored as an {@code InternationalString}.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
- * @since   0.3
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public abstract class AbstractInternationalString implements InternationalString, Formattable {

@@ -379,9 +379,7 @@ public abstract class Geometries<G> implements Serializable {
      * @return geometry built from the given components.
      * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
      */
-    public GeometryWrapper<G> createFromComponents(GeometryType type, Object components) {
-        throw new UnsupportedOperationException();
-    }
+    public abstract GeometryWrapper<G> createFromComponents(GeometryType type, Object components);
 
     /**
      * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.

@@ -63,7 +63,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * The shift to apply on {@code index} in order to produce a result equivalent to {@code index} / {@value #VALUE_SIZE}.
-     * The following relation must hold: {@code (1 <<< BASE_SHIFT) == VALUE_SIZE}.
+     * The following relation must hold: {@code (1 << BASE_SHIFT) == VALUE_SIZE}.
      */
     private static final int BASE_SHIFT = 6;
 

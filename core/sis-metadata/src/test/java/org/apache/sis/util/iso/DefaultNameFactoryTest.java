@@ -18,6 +18,7 @@ package org.apache.sis.util.iso;
 
 import org.opengis.util.GenericName;
 import org.opengis.test.util.NameTest;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestRunner;
 import org.junit.runner.RunWith;

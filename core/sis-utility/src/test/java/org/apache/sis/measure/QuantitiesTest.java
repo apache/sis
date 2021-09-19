@@ -112,6 +112,18 @@ public final strictfp class QuantitiesTest extends TestCase {
     }
 
     /**
+     * Tests a multiply operation that result in a quantity for which we have no specialized sub-interface.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testUnspecialized() {
+        final Quantity<?> quantity = Quantities.create(3, Units.CENTIMETRE).multiply(Quantities.create(4, Units.SECOND));
+        assertEquals("value", 12, quantity.getValue().doubleValue(), STRICT);
+        assertEquals("unit", "cm⋅s", quantity.getUnit().toString());
+    }
+
+    /**
      * Tests {@link Scalar#equals(Object)} and {@link Scalar#hashCode()}.
      * This test uses a unit without specific {@link Scalar} subclass, in order to
      * verify that tested methods work even though the {@link ScalarFallback} proxy.
@@ -130,6 +142,8 @@ public final strictfp class QuantitiesTest extends TestCase {
 
     /**
      * Tests {@link Quantities#min(Quantity, Quantity)} and {@link Quantities#max(Quantity, Quantity)}.
+     *
+     * @since 1.1
      */
     @Test
     public void testMinAndMax() {

@@ -17,8 +17,12 @@
 package org.apache.sis.internal.feature.j2d;
 
 import java.awt.Shape;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -27,6 +31,9 @@ import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
+import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
 
 
 /**
@@ -42,7 +49,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     /**
      * The wrapped implementation.
      */
-    private final Point2D point;
+    final Point2D point;
 
     /**
      * Creates a new wrapper around the given point.
@@ -120,6 +127,39 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     }
 
     /**
+     * Applies a filter predicate between this geometry and another geometry.
+     * This method assumes that the two geometries are in the same CRS (this is not verified).
+     */
+    @Override
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Shape> other) {
+        final int ordinal = type.ordinal();
+        if (ordinal >= 0 && ordinal < PREDICATES.length) {
+            final BiPredicate<PointWrapper,Object> op = PREDICATES[ordinal];
+            if (op != null) {
+                return op.test(this, other);
+            }
+        }
+        return super.predicateSameCRS(type, other);
+    }
+
+    /**
+     * All predicates recognized by {@link #predicateSameCRS(SpatialOperatorName, GeometryWrapper)}.
+     * Array indices are {@link SpatialOperatorName#ordinal()} values.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static final BiPredicate<PointWrapper,Object>[] PREDICATES =
+            new BiPredicate[SpatialOperatorName.OVERLAPS.ordinal() + 1];
+    static {
+        PREDICATES[SpatialOperatorName.BBOX      .ordinal()] = // Fallback on intersects.
+        PREDICATES[SpatialOperatorName.OVERLAPS  .ordinal()] = // Fallback on intersects.
+        PREDICATES[SpatialOperatorName.INTERSECTS.ordinal()] = PointWrapper::intersect;
+        PREDICATES[SpatialOperatorName.WITHIN    .ordinal()] = PointWrapper::within;
+        PREDICATES[SpatialOperatorName.CONTAINS  .ordinal()] = // Fallback on equals.
+        PREDICATES[SpatialOperatorName.EQUALS    .ordinal()] = PointWrapper::equal;
+        PREDICATES[SpatialOperatorName.DISJOINT  .ordinal()] = (w,o) -> !w.intersect(o);
+    }
+
+    /**
      * Applies a SQLMM operation on this geometry.
      *
      * @param  operation  the SQLMM operation to apply.
@@ -128,10 +168,83 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      * @return result of the specified operation.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Shape> other, final Object argument) {
         switch (operation) {
-            case ST_Centroid: return point.clone();
+            case ST_Dimension:
+            case ST_CoordDim:   return 2;
+            case ST_Is3D:
+            case ST_IsMeasured: return Boolean.FALSE;
+            case ST_Centroid:   return point.clone();
+            case ST_Envelope:   return getEnvelope();
+            case ST_Boundary: {
+                if (point instanceof Point) {
+                    final Point p = (Point) point;
+                    final Rectangle r = new Rectangle();
+                    r.x = p.x;
+                    r.y = p.y;
+                    return r;
+                } else if (point instanceof Point2D.Float) {
+                    final Point2D.Float p = (Point2D.Float) point;
+                    final Rectangle2D.Float r = new Rectangle2D.Float();
+                    r.x = p.x;
+                    r.y = p.y;
+                    return r;
+                } else {
+                    final Rectangle2D.Double r = new Rectangle2D.Double();
+                    r.x = point.getX();
+                    r.y = point.getY();
+                    return r;
+                }
+            }
+            case ST_Overlaps:   // Falback on "within".
+            case ST_Within:     return  within(other);
+            case ST_Intersects: return  intersect(other);
+            case ST_Disjoint:   return !intersect(other);
+            case ST_Contains:   // Fallback on "equals".
+            case ST_Equals:     return  equal(other);
             default: return super.operationSameCRS(operation, other, argument);
+        }
+    }
+
+    /**
+     * Estimates whether the wrapped geometry is equal to the geometry of the given wrapper.
+     *
+     * @param  wrapper  instance of {@link PointWrapper}.
+     */
+    private boolean equal(final Object wrapper) {       // "s" omitted for avoiding confusion with super.equals(…).
+        if (wrapper instanceof PointWrapper) {
+            final Point2D p = ((PointWrapper) wrapper).point;
+            return Double.doubleToLongBits(point.getX()) == Double.doubleToLongBits(p.getX())
+                && Double.doubleToLongBits(point.getY()) == Double.doubleToLongBits(p.getY());
+        }
+        return false;
+    }
+
+    /**
+     * Estimates whether the wrapped geometry is contained by the geometry of the given wrapper.
+     * This method may conservatively returns {@code false} if an accurate computation would be
+     * too expansive.
+     *
+     * @param  wrapper  instance of {@link Wrapper}.
+     */
+    private boolean within(final Object wrapper) {
+        return (wrapper instanceof Wrapper) && (((Wrapper) wrapper).geometry).contains(point);
+    }
+
+    /**
+     * Estimates whether the wrapped geometry intersects the geometry of the given wrapper.
+     * This method may conservatively returns {@code true} if an accurate computation would
+     * be too expansive.
+     *
+     * @param  wrapper  instance of {@link Wrapper} or {@link PointWrapper}.
+     * @throws ClassCastException if the given object is not a recognized wrapper.
+     */
+    private boolean intersect(final Object wrapper) {   // "s" omitted for avoiding confusion with super.intersects(…).
+        if (wrapper instanceof PointWrapper) {
+            return point.equals(((PointWrapper) wrapper).point);
+        } else {
+            return within(wrapper);
         }
     }
 

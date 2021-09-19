@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.XmlUtilities;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.util.TemporalUtilities;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.SimpleInternationalString;
 
 
 /**
