@@ -70,7 +70,6 @@ public final strictfp class ScopeCodeTest extends TestCase {
      * @throws JAXBException if an error occurred during XML unmarshalling.
      */
     @Test
-    @org.junit.Ignore("Pass on geoapi-4.0 branch but not on geoapi-3.1 branch")
     public void testUnmarshallingLegacy() throws JAXBException {
         final DefaultDataQuality metadata = unmarshal(DefaultDataQuality.class, XML);
         final Scope scope = metadata.getScope();

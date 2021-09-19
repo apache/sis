@@ -583,7 +583,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @throws URISyntaxException if a URI can not be parsed.
      */
     @Override
-    public final BoundType unmarshal(final ValueType value) throws URISyntaxException {
+    // Overridden by `MD_Scope` on the geoapi-3.x branches only.
+    public BoundType unmarshal(final ValueType value) throws URISyntaxException {
         return (value != null) ? value.resolve(Context.current()) : null;
     }
 

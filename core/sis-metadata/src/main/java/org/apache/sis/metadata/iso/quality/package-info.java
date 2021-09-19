@@ -141,7 +141,7 @@
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
-    @XmlJavaTypeAdapter(MD_Scope.class),
+    @XmlJavaTypeAdapter(MD_Scope.Legacy.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentationTypeCode.class),
     @XmlJavaTypeAdapter(MX_DataFile.class),

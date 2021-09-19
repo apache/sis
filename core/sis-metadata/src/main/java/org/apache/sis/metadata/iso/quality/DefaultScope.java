@@ -40,7 +40,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  *
@@ -79,7 +79,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      *
      * @see #castOrCopy(Scope)
      */
-    public DefaultScope(final Scope object) {
+    public DefaultScope(final org.opengis.metadata.maintenance.Scope object) {
         super(object);
     }
 
@@ -101,7 +101,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultScope castOrCopy(final Scope object) {
+    public static DefaultScope castOrCopy(final org.opengis.metadata.maintenance.Scope object) {
         if (object == null || object instanceof DefaultScope) {
             return (DefaultScope) object;
         }

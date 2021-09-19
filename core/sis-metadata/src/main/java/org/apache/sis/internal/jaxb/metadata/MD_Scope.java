@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
+import java.net.URISyntaxException;
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.maintenance.Scope;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
@@ -89,6 +90,21 @@ public class MD_Scope extends PropertyType<MD_Scope, Scope> {
      */
     public final void setElement(final DefaultScope metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * On unmarshalling, creates an instance of the deprecated
+     * {@link org.apache.sis.metadata.iso.quality.DefaultScope} subclass.
+     */
+    public static final class Legacy extends MD_Scope {
+        /** Empty constructor used only by JAXB. */
+        public Legacy() {
+        }
+
+        /** Converts an adapter read from an XML stream. */
+        @Override public Scope unmarshal(final MD_Scope value) throws URISyntaxException {
+            return org.apache.sis.metadata.iso.quality.DefaultScope.castOrCopy( super.unmarshal(value));
+        }
     }
 
     /**
