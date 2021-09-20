@@ -54,20 +54,20 @@ public final class CI_Series extends PropertyType<CI_Series, Series> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Series(final Series metadata) {
-        super(metadata);
+    private CI_Series(final Series value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Series>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Series wrap(final Series metadata) {
-        return new CI_Series(metadata);
+    protected CI_Series wrap(final Series value) {
+        return new CI_Series(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CI_Series extends PropertyType<CI_Series, Series> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultSeries metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultSeries value) {
+        metadata = value;
     }
 }

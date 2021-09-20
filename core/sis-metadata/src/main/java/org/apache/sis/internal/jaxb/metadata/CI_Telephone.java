@@ -54,20 +54,20 @@ public final class CI_Telephone extends PropertyType<CI_Telephone, Telephone> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Telephone(final Telephone metadata) {
-        super(metadata);
+    private CI_Telephone(final Telephone value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Telephone>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Telephone wrap(final Telephone metadata) {
-        return new CI_Telephone(metadata);
+    protected CI_Telephone wrap(final Telephone value) {
+        return new CI_Telephone(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CI_Telephone extends PropertyType<CI_Telephone, Telephone> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultTelephone metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultTelephone value) {
+        metadata = value;
     }
 }

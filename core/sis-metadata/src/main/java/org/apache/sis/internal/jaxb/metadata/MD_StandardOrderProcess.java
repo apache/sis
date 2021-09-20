@@ -56,20 +56,20 @@ public final class MD_StandardOrderProcess extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_StandardOrderProcess(final StandardOrderProcess metadata) {
-        super(metadata);
+    private MD_StandardOrderProcess(final StandardOrderProcess value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrd:MD_StandardOrderProcess>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_StandardOrderProcess wrap(final StandardOrderProcess metadata) {
-        return new MD_StandardOrderProcess(metadata);
+    protected MD_StandardOrderProcess wrap(final StandardOrderProcess value) {
+        return new MD_StandardOrderProcess(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_StandardOrderProcess extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultStandardOrderProcess metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultStandardOrderProcess value) {
+        metadata = value;
     }
 }

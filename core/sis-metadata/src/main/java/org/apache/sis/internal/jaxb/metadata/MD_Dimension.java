@@ -54,20 +54,20 @@ public final class MD_Dimension extends PropertyType<MD_Dimension, Dimension> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Dimension(final Dimension metadata) {
-        super(metadata);
+    private MD_Dimension(final Dimension value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <msr:MD_Dimension>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Dimension wrap(final Dimension metadata) {
-        return new MD_Dimension(metadata);
+    protected MD_Dimension wrap(final Dimension value) {
+        return new MD_Dimension(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_Dimension extends PropertyType<MD_Dimension, Dimension> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDimension metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultDimension value) {
+        metadata = value;
     }
 }

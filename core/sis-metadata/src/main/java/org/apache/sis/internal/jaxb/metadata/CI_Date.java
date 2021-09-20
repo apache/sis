@@ -54,20 +54,20 @@ public final class CI_Date extends PropertyType<CI_Date, CitationDate> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Date(final CitationDate metadata) {
-        super(metadata);
+    private CI_Date(final CitationDate value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Date>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Date wrap(final CitationDate metadata) {
-        return new CI_Date(metadata);
+    protected CI_Date wrap(final CitationDate value) {
+        return new CI_Date(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CI_Date extends PropertyType<CI_Date, CitationDate> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultCitationDate metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultCitationDate value) {
+        metadata = value;
     }
 }

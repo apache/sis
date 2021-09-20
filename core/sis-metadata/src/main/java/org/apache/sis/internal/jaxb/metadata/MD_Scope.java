@@ -54,20 +54,20 @@ public class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Scope(final Scope metadata) {
-        super(metadata);
+    private MD_Scope(final Scope value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mcc:MD_Scope>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Scope wrap(final Scope metadata) {
-        return new MD_Scope(metadata);
+    protected MD_Scope wrap(final Scope value) {
+        return new MD_Scope(value);
     }
 
     /**
@@ -85,10 +85,10 @@ public class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultScope metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultScope value) {
+        metadata = value;
     }
 
     /**

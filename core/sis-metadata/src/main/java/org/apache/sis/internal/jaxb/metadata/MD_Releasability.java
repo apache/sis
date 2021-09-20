@@ -54,20 +54,20 @@ public class MD_Releasability extends PropertyType<MD_Releasability, Releasabili
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Releasability(final Releasability metadata) {
-        super(metadata);
+    private MD_Releasability(final Releasability value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mco:MD_Releasability>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Releasability wrap(final Releasability metadata) {
-        return new MD_Releasability(metadata);
+    protected MD_Releasability wrap(final Releasability value) {
+        return new MD_Releasability(value);
     }
 
     /**
@@ -85,10 +85,10 @@ public class MD_Releasability extends PropertyType<MD_Releasability, Releasabili
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultReleasability metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultReleasability value) {
+        metadata = value;
     }
 
     /**

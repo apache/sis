@@ -54,20 +54,20 @@ public final class MD_Keywords extends PropertyType<MD_Keywords, Keywords> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Keywords(final Keywords metadata) {
-        super(metadata);
+    private MD_Keywords(final Keywords value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mri:MD_Keywords>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Keywords wrap(final Keywords metadata) {
-        return new MD_Keywords(metadata);
+    protected MD_Keywords wrap(final Keywords value) {
+        return new MD_Keywords(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_Keywords extends PropertyType<MD_Keywords, Keywords> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultKeywords metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultKeywords value) {
+        metadata = value;
     }
 }

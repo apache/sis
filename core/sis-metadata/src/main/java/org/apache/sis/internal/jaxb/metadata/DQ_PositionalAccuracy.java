@@ -53,20 +53,20 @@ public final class DQ_PositionalAccuracy extends PropertyType<DQ_PositionalAccur
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQ_PositionalAccuracy(final PositionalAccuracy metadata) {
-        super(metadata);
+    private DQ_PositionalAccuracy(final PositionalAccuracy value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mdq:DQ_PositionalAccuracy>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected DQ_PositionalAccuracy wrap(final PositionalAccuracy metadata) {
-        return new DQ_PositionalAccuracy(metadata);
+    protected DQ_PositionalAccuracy wrap(final PositionalAccuracy value) {
+        return new DQ_PositionalAccuracy(value);
     }
 
     /**
@@ -84,9 +84,9 @@ public final class DQ_PositionalAccuracy extends PropertyType<DQ_PositionalAccur
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final AbstractPositionalAccuracy metadata) {
-        this.metadata = metadata;
+    public void setElement(final AbstractPositionalAccuracy value) {
+        metadata = value;
     }
 }

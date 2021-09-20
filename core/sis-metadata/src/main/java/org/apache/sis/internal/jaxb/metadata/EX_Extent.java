@@ -54,20 +54,20 @@ public final class EX_Extent extends PropertyType<EX_Extent, Extent> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private EX_Extent(final Extent metadata) {
-        super(metadata);
+    private EX_Extent(final Extent value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gex:EX_Extent>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected EX_Extent wrap(final Extent metadata) {
-        return new EX_Extent(metadata);
+    protected EX_Extent wrap(final Extent value) {
+        return new EX_Extent(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class EX_Extent extends PropertyType<EX_Extent, Extent> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultExtent metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultExtent value) {
+        metadata = value;
     }
 }

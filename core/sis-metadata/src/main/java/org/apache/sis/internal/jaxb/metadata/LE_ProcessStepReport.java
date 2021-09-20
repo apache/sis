@@ -54,20 +54,20 @@ public final class LE_ProcessStepReport extends PropertyType<LE_ProcessStepRepor
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private LE_ProcessStepReport(final ProcessStepReport metadata) {
-        super(metadata);
+    private LE_ProcessStepReport(final ProcessStepReport value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LE_ProcessStepReport>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected LE_ProcessStepReport wrap(final ProcessStepReport metadata) {
-        return new LE_ProcessStepReport(metadata);
+    protected LE_ProcessStepReport wrap(final ProcessStepReport value) {
+        return new LE_ProcessStepReport(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class LE_ProcessStepReport extends PropertyType<LE_ProcessStepRepor
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultProcessStepReport metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultProcessStepReport value) {
+        metadata = value;
     }
 }

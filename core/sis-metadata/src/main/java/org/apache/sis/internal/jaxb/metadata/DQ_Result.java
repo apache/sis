@@ -54,20 +54,20 @@ public final class DQ_Result extends PropertyType<DQ_Result, Result> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQ_Result(final Result metadata) {
-        super(metadata);
+    private DQ_Result(final Result value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mdq:DQ_Result>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected DQ_Result wrap(final Result metadata) {
-        return new DQ_Result(metadata);
+    protected DQ_Result wrap(final Result value) {
+        return new DQ_Result(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class DQ_Result extends PropertyType<DQ_Result, Result> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final AbstractResult metadata) {
-        this.metadata = metadata;
+    public void setElement(final AbstractResult value) {
+        metadata = value;
     }
 }

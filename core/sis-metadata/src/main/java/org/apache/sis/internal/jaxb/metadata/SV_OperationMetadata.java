@@ -53,20 +53,20 @@ public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, Ope
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SV_OperationMetadata(final OperationMetadata metadata) {
-        super(metadata);
+    private SV_OperationMetadata(final OperationMetadata value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <srv:SV_OperationMetadata>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected SV_OperationMetadata wrap(final OperationMetadata metadata) {
-        return new SV_OperationMetadata(metadata);
+    protected SV_OperationMetadata wrap(final OperationMetadata value) {
+        return new SV_OperationMetadata(value);
     }
 
     /**
@@ -84,10 +84,10 @@ public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, Ope
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultOperationMetadata metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultOperationMetadata value) {
+        metadata = value;
     }
 
     /**

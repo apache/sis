@@ -53,20 +53,20 @@ public final class SV_CoupledResource extends PropertyType<SV_CoupledResource, C
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SV_CoupledResource(final CoupledResource metadata) {
-        super(metadata);
+    private SV_CoupledResource(final CoupledResource value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <srv:SV_CoupledResource>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected SV_CoupledResource wrap(final CoupledResource metadata) {
-        return new SV_CoupledResource(metadata);
+    protected SV_CoupledResource wrap(final CoupledResource value) {
+        return new SV_CoupledResource(value);
     }
 
     /**
@@ -84,9 +84,9 @@ public final class SV_CoupledResource extends PropertyType<SV_CoupledResource, C
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultCoupledResource metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultCoupledResource value) {
+        metadata = value;
     }
 }

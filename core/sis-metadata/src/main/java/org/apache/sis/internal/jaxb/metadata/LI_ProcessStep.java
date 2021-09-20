@@ -55,20 +55,20 @@ public final class LI_ProcessStep extends PropertyType<LI_ProcessStep, ProcessSt
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private LI_ProcessStep(final ProcessStep metadata) {
-        super(metadata);
+    private LI_ProcessStep(final ProcessStep value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LI_ProcessStep>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected LI_ProcessStep wrap(final ProcessStep metadata) {
-        return new LI_ProcessStep(metadata);
+    protected LI_ProcessStep wrap(final ProcessStep value) {
+        return new LI_ProcessStep(value);
     }
 
     /**
@@ -86,9 +86,9 @@ public final class LI_ProcessStep extends PropertyType<LI_ProcessStep, ProcessSt
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultProcessStep metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultProcessStep value) {
+        metadata = value;
     }
 }

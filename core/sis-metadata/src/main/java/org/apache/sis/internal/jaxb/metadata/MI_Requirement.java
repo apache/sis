@@ -54,20 +54,20 @@ public final class MI_Requirement extends PropertyType<MI_Requirement, Requireme
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_Requirement(final Requirement metadata) {
-        super(metadata);
+    private MI_Requirement(final Requirement value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Requirement>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_Requirement wrap(final Requirement metadata) {
-        return new MI_Requirement(metadata);
+    protected MI_Requirement wrap(final Requirement value) {
+        return new MI_Requirement(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_Requirement extends PropertyType<MI_Requirement, Requireme
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRequirement metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultRequirement value) {
+        metadata = value;
     }
 }

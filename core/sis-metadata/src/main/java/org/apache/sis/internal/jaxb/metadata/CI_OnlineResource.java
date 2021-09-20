@@ -54,20 +54,20 @@ public class CI_OnlineResource extends PropertyType<CI_OnlineResource, OnlineRes
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_OnlineResource(final OnlineResource metadata) {
-        super(metadata);
+    private CI_OnlineResource(final OnlineResource value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_OnlineResource>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_OnlineResource wrap(final OnlineResource metadata) {
-        return new CI_OnlineResource(metadata);
+    protected CI_OnlineResource wrap(final OnlineResource value) {
+        return new CI_OnlineResource(value);
     }
 
     /**
@@ -85,10 +85,10 @@ public class CI_OnlineResource extends PropertyType<CI_OnlineResource, OnlineRes
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultOnlineResource metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultOnlineResource value) {
+        metadata = value;
     }
 
     /**

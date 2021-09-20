@@ -56,20 +56,20 @@ public final class MI_RangeElementDescription extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_RangeElementDescription(final RangeElementDescription metadata) {
-        super(metadata);
+    private MI_RangeElementDescription(final RangeElementDescription value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrc:MI_RangeElementDescription>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_RangeElementDescription wrap(final RangeElementDescription metadata) {
-        return new MI_RangeElementDescription(metadata);
+    protected MI_RangeElementDescription wrap(final RangeElementDescription value) {
+        return new MI_RangeElementDescription(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MI_RangeElementDescription extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRangeElementDescription metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultRangeElementDescription value) {
+        metadata = value;
     }
 }
