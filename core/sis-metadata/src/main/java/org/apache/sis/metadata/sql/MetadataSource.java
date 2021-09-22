@@ -752,7 +752,7 @@ public class MetadataSource implements AutoCloseable {
             } else {
                 helper.append(" AND ");
             }
-            helper.appendIdentifier(column).appendCondition(toStorableValue(value));
+            helper.appendIdentifier(column).appendEqualsValue(toStorableValue(value));
         }
         /*
          * The SQL statement is ready, with metadata dependency (if any) resolved. We can now execute it.
