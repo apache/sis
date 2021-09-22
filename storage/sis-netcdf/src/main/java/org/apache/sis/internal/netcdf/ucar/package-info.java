@@ -21,10 +21,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
- *
- * @see <a href="https://docs.unidata.ucar.edu/netcdf-java/current/javadoc/index.html">UCAR javadoc</a>
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
 package org.apache.sis.internal.netcdf.ucar;
