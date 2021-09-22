@@ -105,6 +105,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.SampleDimensionTest.class,
     org.apache.sis.coverage.SampleRangeFormatTest.class,
     org.apache.sis.coverage.grid.PixelTranslationTest.class,
+    org.apache.sis.coverage.grid.WraparoundAdjustmentTest.class,
     org.apache.sis.coverage.grid.GridOrientationTest.class,
     org.apache.sis.coverage.grid.GridExtentTest.class,
     org.apache.sis.coverage.grid.GridGeometryTest.class,

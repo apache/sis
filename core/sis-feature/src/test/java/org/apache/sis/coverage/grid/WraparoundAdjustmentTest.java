@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.cs.*;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,21 +35,11 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests {@link WraparoundAdjustment}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 public final strictfp class WraparoundAdjustmentTest extends TestCase {
-    /**
-     * Tests {@link WraparoundAdjustment#range(CoordinateSystem, int)}.
-     */
-    @Test
-    public void testRange() {
-        assertTrue  (Double.isNaN(WraparoundAdjustment.range(HardCodedCS.GEODETIC_φλ, 0)));
-        assertEquals(360, WraparoundAdjustment.range(HardCodedCS.GEODETIC_φλ, 1), STRICT);
-        assertEquals(400, WraparoundAdjustment.range(HardCodedCS.ELLIPSOIDAL_gon, 0), STRICT);
-    }
-
     /**
      * Convenience method for the tests.
      */
@@ -113,7 +101,6 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
      * @throws TransformException should never happen since this test does not transform coordinates.
      */
     @Test
-    @DependsOnMethod("testRange")
     public void testWithShiftedAOI() throws TransformException {
         final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
         domainOfValidity.setRange(0,  80, 100);
