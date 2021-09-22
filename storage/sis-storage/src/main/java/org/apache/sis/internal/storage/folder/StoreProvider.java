@@ -62,11 +62,11 @@ import org.apache.sis.setup.OptionKey;
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName    = FolderStoreProvider.NAME,
+@StoreMetadata(formatName    = StoreProvider.NAME,
                capabilities  = {Capability.READ, Capability.WRITE},
                resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
                yieldPriority = true)
-public final class FolderStoreProvider extends DataStoreProvider {
+public final class StoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
      */
@@ -119,7 +119,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * Creates a new provider.
      */
-    public FolderStoreProvider() {
+    public StoreProvider() {
     }
 
     /**
@@ -159,7 +159,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
                 return ProbeResult.SUPPORTED;
             }
         } catch (FileSystemNotFoundException e) {
-            Logging.recoverableException(getLogger(), FolderStoreProvider.class, "probeContent", e);
+            Logging.recoverableException(getLogger(), StoreProvider.class, "probeContent", e);
             // Nothing we can do, may happen often.
         }
         return ProbeResult.UNSUPPORTED_STORAGE;
