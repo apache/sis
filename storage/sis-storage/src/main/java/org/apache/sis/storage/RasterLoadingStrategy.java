@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.storage;
 
 import java.lang.ref.SoftReference;
 import java.awt.image.RenderedImage;
@@ -23,8 +23,6 @@ import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -39,8 +37,6 @@ import org.apache.sis.storage.DataStoreException;
  * The eager strategy is fastest when all pixels are used, at the cost of largest memory consumption.
  * The lazy strategy is more efficient when only a few tiles will be used and those tiles are not known in advance.
  * The lazy strategy is also the only applicable one if the image is too large for holding in memory.</p>
- *
- * @todo This enumeration is internal for now, but may move to public API in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

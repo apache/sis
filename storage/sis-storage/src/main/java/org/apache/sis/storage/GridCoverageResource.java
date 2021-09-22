@@ -160,4 +160,36 @@ public interface GridCoverageResource extends DataSet {
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     GridCoverage read(GridGeometry domain, int... range) throws DataStoreException;
+
+    /**
+     * Returns an indication about when the "physical" loading of raster data will happen.
+     * This is the strategy actually applied by this resource implementation, not necessarily
+     * the strategy given in the last call to {@link #setLoadingStrategy(RasterLoadingStrategy)
+     * setLoadingStrategy(…)}.
+     *
+     * <p>The default strategy is to load raster data at {@link #read read(…)} method invocation time.</p>
+     *
+     * @return current raster data loading strategy for this resource.
+     *
+     * @since 1.1
+     */
+    default RasterLoadingStrategy getLoadingStrategy() {
+        return RasterLoadingStrategy.AT_READ_TIME;
+    }
+
+    /**
+     * Sets the preferred strategy about when to do the "physical" loading of raster data.
+     * Implementations are free to ignore this parameter or to replace the given strategy
+     * by the closest alternative that this resource can support.
+     *
+     * @param  strategy  the desired strategy for loading raster data.
+     * @return {@code true} if the given strategy has been accepted, or {@code false}
+     *         if this implementation replaced the given strategy by an alternative.
+     *
+     * @since 1.1
+     */
+    default boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+        ArgumentChecks.ensureNonNull("strategy", strategy);
+        return strategy == getLoadingStrategy();
+    }
 }

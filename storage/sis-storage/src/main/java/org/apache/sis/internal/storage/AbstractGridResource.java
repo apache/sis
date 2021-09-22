@@ -484,34 +484,6 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     }
 
     /**
-     * Returns an indication about when the "physical" loading of raster data will happen.
-     * This is the strategy actually applied by this resource implementation, not necessarily
-     * the strategy given in the last call to {@link #setLoadingStrategy(RasterLoadingStrategy)
-     * setLoadingStrategy(…)}.
-     *
-     * <p>The default strategy is to load raster data at {@link #read read(…)} method invocation time.</p>
-     *
-     * @return current raster data loading strategy for this resource.
-     */
-    public RasterLoadingStrategy getLoadingStrategy() {
-        return RasterLoadingStrategy.AT_READ_TIME;
-    }
-
-    /**
-     * Sets the preferred strategy about when to do the "physical" loading of raster data.
-     * Implementations are free to ignore this parameter or to replace the given strategy
-     * by the closest alternative that this resource can support.
-     *
-     * @param  strategy  the desired strategy for loading raster data.
-     * @return {@code true} if the given strategy has been accepted, or {@code false}
-     *         if this implementation replaced the given strategy by an alternative.
-     */
-    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
-        ArgumentChecks.ensureNonNull("strategy", strategy);
-        return strategy == getLoadingStrategy();
-    }
-
-    /**
      * Logs the execution of a {@link #read(GridGeometry, int...)} operation.
      * The log level will be {@link Level#FINE} if the operation was quick enough,
      * or {@link PerformanceLevel#SLOW} or higher level otherwise.
