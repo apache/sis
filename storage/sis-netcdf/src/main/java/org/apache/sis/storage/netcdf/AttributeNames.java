@@ -59,7 +59,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  *
  * <blockquote><table class="compact">
  * <caption>List of all netCDF attributes</caption>
- * <tr valign="top"><td style="width: 25%">
+ * <tr style="vertical-align:top"><td style="width: 25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
  * {@value     #ACKNOWLEDGEMENT}<br>
  * {@value     #COMMENT}<br>
