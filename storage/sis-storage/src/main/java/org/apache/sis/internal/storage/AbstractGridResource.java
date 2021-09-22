@@ -350,7 +350,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         public GridExtent insertBandDimension(final GridExtent areaOfInterest, final int bandDimension) {
             first = getSourceIndex(0);
             last  = getSourceIndex(packed.length - 1);
-            return areaOfInterest.insert(bandDimension, DimensionNameType.valueOf("BAND"), first, last, true);
+            return areaOfInterest.insertDimension(bandDimension, DimensionNameType.valueOf("BAND"), first, last, true);
         }
 
         /**
