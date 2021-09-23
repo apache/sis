@@ -54,20 +54,20 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Def
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Responsibility(final DefaultResponsibility metadata) {
-        super(metadata);
+    private CI_Responsibility(final DefaultResponsibility value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Responsibility>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Responsibility wrap(final DefaultResponsibility metadata) {
-        return new CI_Responsibility(metadata);
+    protected CI_Responsibility wrap(final DefaultResponsibility value) {
+        return new CI_Responsibility(value);
     }
 
     /**
@@ -100,9 +100,9 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Def
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultResponsibility metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultResponsibility value) {
+        metadata = value;
     }
 }

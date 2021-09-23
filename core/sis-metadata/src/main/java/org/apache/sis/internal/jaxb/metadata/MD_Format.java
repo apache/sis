@@ -54,20 +54,20 @@ public final class MD_Format extends PropertyType<MD_Format, Format> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Format(final Format metadata) {
-        super(metadata);
+    private MD_Format(final Format value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrd:MD_Format>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Format wrap(final Format metadata) {
-        return new MD_Format(metadata);
+    protected MD_Format wrap(final Format value) {
+        return new MD_Format(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_Format extends PropertyType<MD_Format, Format> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultFormat metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultFormat value) {
+        metadata = value;
     }
 }

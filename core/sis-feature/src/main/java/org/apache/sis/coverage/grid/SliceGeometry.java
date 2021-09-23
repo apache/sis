@@ -176,7 +176,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             extent = sliceExtent;
         }
         if (extent != null) {
-            extent = extent.reduce(gridDimensions);
+            extent = extent.reduceDimension(gridDimensions);
         }
         GeneralEnvelope subArea = null;
         if (useSubExtent && cornerToCRS != null) try {

@@ -56,20 +56,20 @@ public final class MD_MetadataExtensionInformation extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_MetadataExtensionInformation(final MetadataExtensionInformation metadata) {
-        super(metadata);
+    private MD_MetadataExtensionInformation(final MetadataExtensionInformation value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mex:MD_MetadataExtensionInformation>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_MetadataExtensionInformation wrap(final MetadataExtensionInformation metadata) {
-        return new MD_MetadataExtensionInformation(metadata);
+    protected MD_MetadataExtensionInformation wrap(final MetadataExtensionInformation value) {
+        return new MD_MetadataExtensionInformation(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_MetadataExtensionInformation extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultMetadataExtensionInformation metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultMetadataExtensionInformation value) {
+        metadata = value;
     }
 }

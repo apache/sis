@@ -50,20 +50,20 @@ public final class MD_AttributeGroup extends PropertyType<MD_AttributeGroup, Def
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_AttributeGroup(final DefaultAttributeGroup metadata) {
-        super(metadata);
+    private MD_AttributeGroup(final DefaultAttributeGroup value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrc:MD_AttributeGroup>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_AttributeGroup wrap(final DefaultAttributeGroup metadata) {
-        return new MD_AttributeGroup(metadata);
+    protected MD_AttributeGroup wrap(final DefaultAttributeGroup value) {
+        return new MD_AttributeGroup(value);
     }
 
     /**
@@ -81,9 +81,9 @@ public final class MD_AttributeGroup extends PropertyType<MD_AttributeGroup, Def
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultAttributeGroup metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultAttributeGroup value) {
+        metadata = value;
     }
 }

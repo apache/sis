@@ -72,22 +72,22 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
     /**
      * Wraps a Reference System value in a {@code MD_ReferenceSystem} element at marshalling-time.
      *
-     * @param  metadata  the metadata value to marshal.
+     * @param  value  the metadata element to marshal.
      */
-    protected RS_ReferenceSystem(final ReferenceSystem metadata) {
-        super(metadata);
+    protected RS_ReferenceSystem(final ReferenceSystem value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:RS_ReferenceSystem>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected RS_ReferenceSystem wrap(ReferenceSystem metadata) {
-        return new RS_ReferenceSystem(metadata);
+    protected RS_ReferenceSystem wrap(ReferenceSystem value) {
+        return new RS_ReferenceSystem(value);
     }
 
     /**
@@ -112,10 +112,10 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final ReferenceSystemMetadata metadata) {
-        this.metadata = metadata;
+    public final void setElement(final ReferenceSystemMetadata value) {
+        metadata = value;
     }
 
     /**

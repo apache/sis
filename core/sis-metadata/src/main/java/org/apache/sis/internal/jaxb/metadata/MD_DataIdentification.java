@@ -56,20 +56,20 @@ public final class MD_DataIdentification extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_DataIdentification(final DataIdentification metadata) {
-        super(metadata);
+    private MD_DataIdentification(final DataIdentification value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mri:MD_DataIdentification>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_DataIdentification wrap(final DataIdentification metadata) {
-        return new MD_DataIdentification(metadata);
+    protected MD_DataIdentification wrap(final DataIdentification value) {
+        return new MD_DataIdentification(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_DataIdentification extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDataIdentification metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultDataIdentification value) {
+        metadata = value;
     }
 }

@@ -50,20 +50,20 @@ public final class CI_Party extends PropertyType<CI_Party, AbstractParty> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Party(final AbstractParty metadata) {
-        super(metadata);
+    private CI_Party(final AbstractParty value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Party>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Party wrap(final AbstractParty metadata) {
-        return new CI_Party(metadata);
+    protected CI_Party wrap(final AbstractParty value) {
+        return new CI_Party(value);
     }
 
     /**
@@ -81,9 +81,9 @@ public final class CI_Party extends PropertyType<CI_Party, AbstractParty> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final AbstractParty metadata) {
-        this.metadata = metadata;
+    public void setElement(final AbstractParty value) {
+        metadata = value;
     }
 }

@@ -115,7 +115,7 @@ final class IdentifierGenerator implements AutoCloseable {
      * @throws SQLException if an error occurred while searching for an identifier.
      */
     final String identifier(String proposal) throws SQLException {
-        statement.setString(1, buffer.clear().appendEscaped(proposal).append('%').toString());
+        statement.setString(1, buffer.clear().appendWildcardEscaped(proposal).append('%').toString());
         try (ResultSet rs = statement.executeQuery()) {
             if (rs.next()) {
                 String current = rs.getString(1);

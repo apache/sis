@@ -52,20 +52,20 @@ public class MD_KeywordClass extends PropertyType<MD_KeywordClass, DefaultKeywor
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_KeywordClass(final DefaultKeywordClass metadata) {
-        super(metadata);
+    private MD_KeywordClass(final DefaultKeywordClass value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mri:MD_KeywordClass>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_KeywordClass wrap(final DefaultKeywordClass metadata) {
-        return new MD_KeywordClass(metadata);
+    protected MD_KeywordClass wrap(final DefaultKeywordClass value) {
+        return new MD_KeywordClass(value);
     }
 
     /**
@@ -83,10 +83,10 @@ public class MD_KeywordClass extends PropertyType<MD_KeywordClass, DefaultKeywor
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultKeywordClass metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultKeywordClass value) {
+        metadata = value;
     }
 
     /**

@@ -56,20 +56,20 @@ public final class MD_ApplicationSchemaInformation extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_ApplicationSchemaInformation(final ApplicationSchemaInformation metadata) {
-        super(metadata);
+    private MD_ApplicationSchemaInformation(final ApplicationSchemaInformation value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mas:MD_ApplicationSchemaInformation>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_ApplicationSchemaInformation wrap(final ApplicationSchemaInformation metadata) {
-        return new MD_ApplicationSchemaInformation(metadata);
+    protected MD_ApplicationSchemaInformation wrap(final ApplicationSchemaInformation value) {
+        return new MD_ApplicationSchemaInformation(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_ApplicationSchemaInformation extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultApplicationSchemaInformation metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultApplicationSchemaInformation value) {
+        metadata = value;
     }
 }

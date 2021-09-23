@@ -57,20 +57,20 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Identifier(final Identifier metadata) {
-        super(metadata);
+    private MD_Identifier(final Identifier value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mcc:MD_Identifier>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Identifier wrap(final Identifier metadata) {
-        return new MD_Identifier(metadata);
+    protected MD_Identifier wrap(final Identifier value) {
+        return new MD_Identifier(value);
     }
 
     /**
@@ -99,10 +99,10 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultIdentifier metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultIdentifier value) {
+        metadata = value;
     }
 
     /**

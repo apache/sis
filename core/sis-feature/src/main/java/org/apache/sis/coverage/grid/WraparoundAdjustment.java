@@ -14,27 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.coverage.grid;
 
-import javax.measure.Unit;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.measure.Longitude;
-import org.apache.sis.measure.Units;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.internal.referencing.WraparoundApplicator;
 
 
 /**
@@ -43,11 +37,11 @@ import org.apache.sis.geometry.GeneralDirectPosition;
  * to move an envelope or a position inside a given domain of validity.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public final class WraparoundAdjustment {
+final class WraparoundAdjustment {
     /**
      * The region inside which a given Area Of Interest (AOI) or Point Of Interest (POI) should be located.
      * This envelope may be initially in a projected CRS and converted later to geographic CRS in order to
@@ -113,35 +107,6 @@ public final class WraparoundAdjustment {
         this.domainOfValidity = domainOfValidity;
         this.domainToAOI      = domainToAOI;
         this.domainToAny      = domainToAny;
-    }
-
-    /**
-     * Returns the range (maximum - minimum) of axis in specified dimension if it has wraparound meaning,
-     * or {@link Double#NaN} otherwise. This method implements a fallback for longitude axis if it does
-     * not declare the minimum and maximum values as expected.
-     *
-     * @param  cs         the coordinate system for which to get wraparound range.
-     * @param  dimension  dimension of the axis to test.
-     * @return the wraparound range, or {@link Double#NaN} if none.
-     */
-    static double range(final CoordinateSystem cs, final int dimension) {
-        final CoordinateSystemAxis axis = cs.getAxis(dimension);
-        if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
-            double period = axis.getMaximumValue() - axis.getMinimumValue();
-            if (period > 0 && period != Double.POSITIVE_INFINITY) {
-                return period;
-            }
-            final AxisDirection dir = AxisDirections.absolute(axis.getDirection());
-            if (AxisDirection.EAST.equals(dir) && cs instanceof EllipsoidalCS) {
-                period = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
-                final Unit<?> unit = axis.getUnit();
-                if (unit != null) {
-                    period = Units.DEGREE.getConverterTo(Units.ensureAngular(unit)).convert(period);
-                }
-                return period;
-            }
-        }
-        return Double.NaN;
     }
 
     /**
@@ -257,7 +222,7 @@ public final class WraparoundAdjustment {
              */
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=cs.getDimension(); --i >= 0;) {
-                final double period = range(cs, i);
+                final double period = WraparoundApplicator.range(cs, i);
                 if (period > 0) {
                     /*
                      * Found an axis (typically the longitude axis) with wraparound range meaning.
@@ -421,7 +386,7 @@ public final class WraparoundAdjustment {
             }
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=cs.getDimension(); --i >= 0;) {
-                final double period = range(cs, i);
+                final double period = WraparoundApplicator.range(cs, i);
                 if (period > 0) {
                     transformDomainToAOI();
                     final double x = shifted.getOrdinate(i);

@@ -90,7 +90,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     private final Store originator;
 
     /**
-     * The {@link FolderStoreProvider#LOCATION} parameter value.
+     * The {@link StoreProvider#LOCATION} parameter value.
      */
     protected final Path location;
 
@@ -213,7 +213,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
         final String format = StoreUtilities.getFormatName(componentProvider);
-        final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : FolderStoreProvider.PARAMETERS).createValue();
+        final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : StoreProvider.PARAMETERS).createValue();
         pg.parameter(DataStoreProvider.LOCATION).setValue(location);
         if (locale   != null) pg.parameter("locale"  ).setValue(locale  );
         if (timezone != null) pg.parameter("timezone").setValue(timezone);

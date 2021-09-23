@@ -54,20 +54,20 @@ public final class LE_NominalResolution extends PropertyType<LE_NominalResolutio
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private LE_NominalResolution(final NominalResolution metadata) {
-        super(metadata);
+    private LE_NominalResolution(final NominalResolution value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LE_NominalResolution>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected LE_NominalResolution wrap(final NominalResolution metadata) {
-        return new LE_NominalResolution(metadata);
+    protected LE_NominalResolution wrap(final NominalResolution value) {
+        return new LE_NominalResolution(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class LE_NominalResolution extends PropertyType<LE_NominalResolutio
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultNominalResolution metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultNominalResolution value) {
+        metadata = value;
     }
 }

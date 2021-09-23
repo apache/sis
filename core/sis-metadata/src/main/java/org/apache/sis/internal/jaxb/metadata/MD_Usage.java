@@ -54,20 +54,20 @@ public final class MD_Usage extends PropertyType<MD_Usage, Usage> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Usage(final Usage metadata) {
-        super(metadata);
+    private MD_Usage(final Usage value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mri:MD_Usage>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Usage wrap(final Usage metadata) {
-        return new MD_Usage(metadata);
+    protected MD_Usage wrap(final Usage value) {
+        return new MD_Usage(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_Usage extends PropertyType<MD_Usage, Usage> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultUsage metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultUsage value) {
+        metadata = value;
     }
 }

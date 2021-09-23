@@ -54,20 +54,20 @@ public final class MI_Objective extends PropertyType<MI_Objective, Objective> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_Objective(final Objective metadata) {
-        super(metadata);
+    private MI_Objective(final Objective value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Objective>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_Objective wrap(final Objective metadata) {
-        return new MI_Objective(metadata);
+    protected MI_Objective wrap(final Objective value) {
+        return new MI_Objective(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_Objective extends PropertyType<MI_Objective, Objective> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultObjective metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultObjective value) {
+        metadata = value;
     }
 }

@@ -54,20 +54,20 @@ public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MX_DataFile(final DataFile metadata) {
-        super(metadata);
+    private MX_DataFile(final DataFile value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gcx:MX_DataFile>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MX_DataFile wrap(final DataFile metadata) {
-        return new MX_DataFile(metadata);
+    protected MX_DataFile wrap(final DataFile value) {
+        return new MX_DataFile(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDataFile metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultDataFile value) {
+        metadata = value;
     }
 }

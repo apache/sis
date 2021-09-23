@@ -16,7 +16,11 @@
  */
 package org.apache.sis.internal.referencing;
 
+import javax.measure.Unit;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.RangeMeaning;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -25,6 +29,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -123,7 +129,7 @@ public final class WraparoundApplicator {
      * @throws TransformException if a coordinate can not be computed.
      */
     private MathTransform concatenate(final MathTransform tr, final int wraparoundDimension) throws TransformException {
-        final double period = WraparoundAdjustment.range(targetCS, wraparoundDimension);
+        final double period = range(targetCS, wraparoundDimension);
         if (!(period > 0 && period != Double.POSITIVE_INFINITY)) {
             return tr;
         }
@@ -152,5 +158,34 @@ public final class WraparoundApplicator {
         final MathTransform wraparound = WraparoundTransform.create(tr.getTargetDimensions(), wraparoundDimension,
                 period, (sourceMedian == null) ? Double.NaN : sourceMedian.getOrdinate(wraparoundDimension), m);
         return MathTransforms.concatenate(tr, wraparound);
+    }
+
+    /**
+     * Returns the range (maximum - minimum) of axis in specified dimension if it has wraparound meaning,
+     * or {@link Double#NaN} otherwise. This method implements a fallback for longitude axis if it does
+     * not declare the minimum and maximum values as expected.
+     *
+     * @param  cs         the coordinate system for which to get wraparound range.
+     * @param  dimension  dimension of the axis to test.
+     * @return the wraparound range, or {@link Double#NaN} if none.
+     */
+    public static double range(final CoordinateSystem cs, final int dimension) {
+        final CoordinateSystemAxis axis = cs.getAxis(dimension);
+        if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+            double period = axis.getMaximumValue() - axis.getMinimumValue();
+            if (period > 0 && period != Double.POSITIVE_INFINITY) {
+                return period;
+            }
+            final AxisDirection dir = AxisDirections.absolute(axis.getDirection());
+            if (AxisDirection.EAST.equals(dir) && cs instanceof EllipsoidalCS) {
+                period = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
+                final Unit<?> unit = axis.getUnit();
+                if (unit != null) {
+                    period = Units.DEGREE.getConverterTo(Units.ensureAngular(unit)).convert(period);
+                }
+                return period;
+            }
+        }
+        return Double.NaN;
     }
 }

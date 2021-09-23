@@ -54,20 +54,20 @@ public final class LI_Lineage extends PropertyType<LI_Lineage, Lineage> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private LI_Lineage(final Lineage metadata) {
-        super(metadata);
+    private LI_Lineage(final Lineage value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LI_Lineage>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected LI_Lineage wrap(final Lineage metadata) {
-        return new LI_Lineage(metadata);
+    protected LI_Lineage wrap(final Lineage value) {
+        return new LI_Lineage(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class LI_Lineage extends PropertyType<LI_Lineage, Lineage> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultLineage metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultLineage value) {
+        metadata = value;
     }
 }

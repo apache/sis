@@ -36,6 +36,7 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.ArraysExt;

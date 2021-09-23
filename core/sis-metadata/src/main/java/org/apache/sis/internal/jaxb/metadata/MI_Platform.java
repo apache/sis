@@ -54,20 +54,20 @@ public final class MI_Platform extends PropertyType<MI_Platform, Platform> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_Platform(final Platform metadata) {
-        super(metadata);
+    private MI_Platform(final Platform value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Platform>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_Platform wrap(final Platform metadata) {
-        return new MI_Platform(metadata);
+    protected MI_Platform wrap(final Platform value) {
+        return new MI_Platform(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_Platform extends PropertyType<MI_Platform, Platform> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultPlatform metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultPlatform value) {
+        metadata = value;
     }
 }

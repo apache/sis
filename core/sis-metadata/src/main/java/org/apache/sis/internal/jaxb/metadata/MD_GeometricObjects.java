@@ -54,20 +54,20 @@ public final class MD_GeometricObjects extends PropertyType<MD_GeometricObjects,
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_GeometricObjects(final GeometricObjects metadata) {
-        super(metadata);
+    private MD_GeometricObjects(final GeometricObjects value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <msr:MD_GeometricObjects>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_GeometricObjects wrap(final GeometricObjects metadata) {
-        return new MD_GeometricObjects(metadata);
+    protected MD_GeometricObjects wrap(final GeometricObjects value) {
+        return new MD_GeometricObjects(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_GeometricObjects extends PropertyType<MD_GeometricObjects,
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultGeometricObjects metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultGeometricObjects value) {
+        metadata = value;
     }
 }

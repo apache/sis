@@ -53,20 +53,20 @@ public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Metadata(final Metadata metadata) {
-        super(metadata);
+    private MD_Metadata(final Metadata value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mdb:MD_Metadata>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Metadata wrap(final Metadata metadata) {
-        return new MD_Metadata(metadata);
+    protected MD_Metadata wrap(final Metadata value) {
+        return new MD_Metadata(value);
     }
 
     /**
@@ -84,9 +84,9 @@ public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultMetadata metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultMetadata value) {
+        metadata = value;
     }
 }

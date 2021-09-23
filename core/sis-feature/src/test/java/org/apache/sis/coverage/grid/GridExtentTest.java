@@ -133,7 +133,7 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#insert(int, DimensionNameType, long, long, boolean)}
+     * Tests {@link GridExtent#insertDimension(int, DimensionNameType, long, long, boolean)}
      * with {@code offset} set to {@link GridExtent#getDimension()}.
      */
     @Test
@@ -142,10 +142,10 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#insert(int, DimensionNameType, long, long, boolean)}.
+     * Tests {@link GridExtent#insertDimension(int, DimensionNameType, long, long, boolean)}.
      */
     @Test
-    public void testInsert() {
+    public void testInsertDimension() {
         appendOrInsert(1, 2);
     }
 
@@ -155,7 +155,7 @@ public final strictfp class GridExtentTest extends TestCase {
     private void appendOrInsert(final int offset, final int rowIndex) {
         GridExtent extent = new GridExtent(new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
                                            new long[] {100, 200}, new long[] {500, 800}, true);
-        extent = extent.insert(offset, DimensionNameType.TIME, 40, 50, false);
+        extent = extent.insertDimension(offset, DimensionNameType.TIME, 40, 50, false);
         assertEquals("dimension", 3, extent.getDimension());
         assertExtentEquals(extent, 0,        100, 500);
         assertExtentEquals(extent, rowIndex, 200, 800);
@@ -219,19 +219,19 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#reduce(int...)}.
+     * Tests {@link GridExtent#reduceDimension(int[])}.
      */
     @Test
-    public void testReduce() {
+    public void testReduceDimension() {
         final GridExtent extent = create3D();
-        GridExtent reduced = extent.reduce(0, 1);
+        GridExtent reduced = extent.reduceDimension(0, 1);
         assertEquals("dimension", 2, reduced.getDimension());
         assertExtentEquals(reduced, 0, 100, 499);
         assertExtentEquals(reduced, 1, 200, 799);
         assertEquals(DimensionNameType.COLUMN, reduced.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    reduced.getAxisType(1).get());
 
-        reduced = extent.reduce(2);
+        reduced = extent.reduceDimension(2);
         assertEquals("dimension", 1, reduced.getDimension());
         assertExtentEquals(reduced, 0, 40, 49);
         assertEquals(DimensionNameType.TIME, reduced.getAxisType(0).get());

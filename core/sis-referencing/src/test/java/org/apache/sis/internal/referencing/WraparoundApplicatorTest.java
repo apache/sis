@@ -14,14 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.referencing;
+
+import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.apache.sis.test.ReferencingAssert.*;
+
 
 /**
- * Implementation of the {@link org.apache.sis.internal.netcdf} API
- * as wrappers around the UCAR netCDF library.
+ * Tests {@link WraparoundApplicator}.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   0.3
+ * @since   1.1
  * @module
  */
-package org.apache.sis.internal.netcdf.ucar;
+public final strictfp class WraparoundApplicatorTest extends TestCase {
+    /**
+     * Tests {@link WraparoundApplicator#range(CoordinateSystem, int)}.
+     */
+    @Test
+    public void testRange() {
+        assertTrue  (Double.isNaN(WraparoundApplicator.range(HardCodedCS.GEODETIC_φλ, 0)));
+        assertEquals(360, WraparoundApplicator.range(HardCodedCS.GEODETIC_φλ, 1), STRICT);
+        assertEquals(400, WraparoundApplicator.range(HardCodedCS.ELLIPSOIDAL_gon, 0), STRICT);
+    }
+}

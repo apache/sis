@@ -54,20 +54,20 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Address(final Address metadata) {
-        super(metadata);
+    private CI_Address(final Address value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Address>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Address wrap(final Address metadata) {
-        return new CI_Address(metadata);
+    protected CI_Address wrap(final Address value) {
+        return new CI_Address(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultAddress metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultAddress value) {
+        metadata = value;
     }
 }

@@ -56,20 +56,20 @@ public final class MD_PortrayalCatalogueReference extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_PortrayalCatalogueReference(final PortrayalCatalogueReference metadata) {
-        super(metadata);
+    private MD_PortrayalCatalogueReference(final PortrayalCatalogueReference value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mpc:MD_PortrayalCatalogueReference>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_PortrayalCatalogueReference wrap(final PortrayalCatalogueReference metadata) {
-        return new MD_PortrayalCatalogueReference(metadata);
+    protected MD_PortrayalCatalogueReference wrap(final PortrayalCatalogueReference value) {
+        return new MD_PortrayalCatalogueReference(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_PortrayalCatalogueReference extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultPortrayalCatalogueReference metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultPortrayalCatalogueReference value) {
+        metadata = value;
     }
 }

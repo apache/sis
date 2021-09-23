@@ -55,20 +55,20 @@ public final class LI_Source extends PropertyType<LI_Source, Source> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private LI_Source(final Source metadata) {
-        super(metadata);
+    private LI_Source(final Source value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LI_Source>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected LI_Source wrap(final Source metadata) {
-        return new LI_Source(metadata);
+    protected LI_Source wrap(final Source value) {
+        return new LI_Source(value);
     }
 
     /**
@@ -86,9 +86,9 @@ public final class LI_Source extends PropertyType<LI_Source, Source> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultSource metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultSource value) {
+        metadata = value;
     }
 }

@@ -54,20 +54,20 @@ public final class MD_ScopeDescription extends PropertyType<MD_ScopeDescription,
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_ScopeDescription(final ScopeDescription metadata) {
-        super(metadata);
+    private MD_ScopeDescription(final ScopeDescription value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mcc:MD_ScopeDescription>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_ScopeDescription wrap(final ScopeDescription metadata) {
-        return new MD_ScopeDescription(metadata);
+    protected MD_ScopeDescription wrap(final ScopeDescription value) {
+        return new MD_ScopeDescription(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_ScopeDescription extends PropertyType<MD_ScopeDescription,
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultScopeDescription metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultScopeDescription value) {
+        metadata = value;
     }
 }

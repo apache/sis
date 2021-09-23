@@ -62,20 +62,20 @@ public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty,
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_ResponsibleParty(final ResponsibleParty metadata) {
-        super(metadata);
+    private CI_ResponsibleParty(final ResponsibleParty value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:CI_ResponsibleParty>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_ResponsibleParty wrap(final ResponsibleParty metadata) {
-        return new CI_ResponsibleParty(metadata);
+    protected CI_ResponsibleParty wrap(final ResponsibleParty value) {
+        return new CI_ResponsibleParty(value);
     }
 
     /**
@@ -116,13 +116,13 @@ public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty,
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  md  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultResponsibility md) {
-        if (md instanceof DefaultResponsibleParty) {
-            metadata = (DefaultResponsibleParty) md;
-        } else if (md != null) {
-            metadata = new DefaultResponsibleParty(md);
+    public void setElement(final DefaultResponsibility value) {
+        if (value instanceof DefaultResponsibleParty) {
+            metadata = (DefaultResponsibleParty) value;
+        } else if (value != null) {
+            metadata = new DefaultResponsibleParty(value);
         }
     }
 }

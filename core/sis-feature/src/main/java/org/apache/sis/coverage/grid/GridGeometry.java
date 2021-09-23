@@ -1353,7 +1353,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
      * @see GridExtent#getSubspaceDimensions(int)
-     * @see GridExtent#reduce(int...)
+     * @see GridExtent#reduceDimension(int[])
      * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
      */
     public GridGeometry reduce(int... dimensions) {
