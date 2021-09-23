@@ -35,7 +35,9 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.provider.AlbersEqualArea;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
+import org.apache.sis.internal.referencing.provider.ObliqueMercator;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -65,7 +67,7 @@ import org.opengis.metadata.Identifier;
  * first, no HTML characters to escape in non-EPSG identifiers, etc.).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -106,33 +108,27 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Parameters to default to the latitude of origin. We can hardly detect those cases
      * automatically, since the behavior for the default value is hard-coded in Java.
-     *
-     * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToLatitudeOfOrigin[] = {
-//      AlbersEqualArea    .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
+        AlbersEqualArea    .STANDARD_PARALLEL_1,
         LambertConformal2SP.STANDARD_PARALLEL_1
     };
 
     /**
      * Parameters to default to the first standard parallel. We can hardly detect those
      * cases automatically, since the behavior for the default value is hard-coded in Java.
-     *
-     * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToStandardParallel1[] = {
-//      AlbersEqualArea    .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
+        AlbersEqualArea    .STANDARD_PARALLEL_2,
         LambertConformal2SP.STANDARD_PARALLEL_2
     };
 
     /**
      * Parameters to default to the azimuth. We can hardly detect those cases automatically,
      * since the behavior for the default value is hard-coded in Java.
-     *
-     * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToAzimuth[] = {
-//      ObliqueMercator      .PARAMETERS.descriptor("Angle from Rectified to Skew Grid"),
+        ObliqueMercator      .RECTIFIED_GRID_ANGLE,
 //      HotineObliqueMercator.PARAMETERS.descriptor("Angle from Rectified to Skew Grid")
     };
 
