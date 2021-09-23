@@ -56,20 +56,20 @@ public final class MD_RepresentativeFraction extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_RepresentativeFraction(final RepresentativeFraction metadata) {
-        super(metadata);
+    private MD_RepresentativeFraction(final RepresentativeFraction value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mri:MD_RepresentativeFraction>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_RepresentativeFraction wrap(final RepresentativeFraction metadata) {
-        return new MD_RepresentativeFraction(metadata);
+    protected MD_RepresentativeFraction wrap(final RepresentativeFraction value) {
+        return new MD_RepresentativeFraction(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_RepresentativeFraction extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRepresentativeFraction metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultRepresentativeFraction value) {
+        metadata = value;
     }
 }

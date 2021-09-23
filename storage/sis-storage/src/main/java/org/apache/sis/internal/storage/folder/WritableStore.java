@@ -62,7 +62,7 @@ final class WritableStore extends Store implements WritableAggregate {
     /**
      * Creates a new folder store from the given file, path or URI.
      * Contrarily to the {@link Store} parent class, the {@code format} is mandatory for writable stores.
-     * This is not verified by this constructor; it should be verified by {@link FolderStoreProvider} instead.
+     * This is not verified by this constructor; it should be verified by {@link StoreProvider} instead.
      */
     WritableStore(DataStoreProvider provider, StorageConnector connector, Path path, DataStoreProvider format)
             throws DataStoreException, IOException
@@ -79,7 +79,7 @@ final class WritableStore extends Store implements WritableAggregate {
         ArgumentChecks.ensureNonNull("resource", resource);
         if (!(resource instanceof FeatureSet)) {
             throw new DataStoreException(message(Resources.Keys.CanNotStoreResourceType_2, new Object[] {
-                FolderStoreProvider.NAME, StoreUtilities.getInterface(resource.getClass())
+                StoreProvider.NAME, StoreUtilities.getInterface(resource.getClass())
             }));
         }
         /*

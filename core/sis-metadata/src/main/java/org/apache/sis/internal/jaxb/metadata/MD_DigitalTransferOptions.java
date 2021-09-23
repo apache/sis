@@ -56,20 +56,20 @@ public final class MD_DigitalTransferOptions extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_DigitalTransferOptions(final DigitalTransferOptions metadata) {
-        super(metadata);
+    private MD_DigitalTransferOptions(final DigitalTransferOptions value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrd:MD_DigitalTransferOptions>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_DigitalTransferOptions wrap(final DigitalTransferOptions metadata) {
-        return new MD_DigitalTransferOptions(metadata);
+    protected MD_DigitalTransferOptions wrap(final DigitalTransferOptions value) {
+        return new MD_DigitalTransferOptions(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MD_DigitalTransferOptions extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDigitalTransferOptions metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultDigitalTransferOptions value) {
+        metadata = value;
     }
 }

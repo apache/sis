@@ -53,20 +53,20 @@ public final class MD_AssociatedResource extends PropertyType<MD_AssociatedResou
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_AssociatedResource(final AssociatedResource metadata) {
-        super(metadata);
+    private MD_AssociatedResource(final AssociatedResource value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mri:MD_AssociatedResource>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_AssociatedResource wrap(final AssociatedResource metadata) {
-        return new MD_AssociatedResource(metadata);
+    protected MD_AssociatedResource wrap(final AssociatedResource value) {
+        return new MD_AssociatedResource(value);
     }
 
     /**
@@ -84,9 +84,9 @@ public final class MD_AssociatedResource extends PropertyType<MD_AssociatedResou
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultAssociatedResource metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultAssociatedResource value) {
+        metadata = value;
     }
 }

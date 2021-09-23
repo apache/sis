@@ -107,6 +107,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     org.apache.sis.metadata.iso.extent.DefaultExtentTest.class,
     org.apache.sis.metadata.iso.extent.ExtentsTest.class,
+    org.apache.sis.metadata.iso.content.DefaultBandTest.class,
     org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
     org.apache.sis.metadata.iso.identification.DefaultKeywordsTest.class,
     org.apache.sis.metadata.iso.identification.DefaultRepresentativeFractionTest.class,

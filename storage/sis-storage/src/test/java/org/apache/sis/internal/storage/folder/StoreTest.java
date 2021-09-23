@@ -89,9 +89,9 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
-        final FolderStoreProvider provider = new FolderStoreProvider();
+        final StoreProvider provider = new StoreProvider();
         final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
-        final ParameterValueGroup params = FolderStoreProvider.PARAMETERS.createValue();
+        final ParameterValueGroup params = StoreProvider.PARAMETERS.createValue();
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");
         try (Store store = (Store) provider.open(params)) {

@@ -114,7 +114,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
         if (distinct || filter != null || sort != null || offset > 0 || count > 0) {
             final SQLBuilder builder = new SQLBuilder(table.database).append(sql);
             if (distinct) {
-                builder.insertDistinct();
+                builder.insertDistinctAfterSelect();
             }
             if (filter != null) {
                 builder.append(" WHERE ").append(filter);

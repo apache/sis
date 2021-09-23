@@ -19,8 +19,8 @@ See http://sis.apache.org/epsg.html#command-line
 
 Unix
 ----
-1) Unzip 'apache-sis-1.0-bin.zip' in any directory.
-2) Add the 'apache-sis-1.0/bin' directory to the path.
+1) Unzip 'apache-sis-1.1-bin.zip' in any directory.
+2) Add the 'apache-sis-1.1/bin' directory to the path.
 3) Invoke 'sis' on the command line.
 
 Windows
@@ -28,7 +28,7 @@ Windows
 There is not yet 'sis.bat' file for Windows.
 The following steps need to be done manually:
 
-1) Unzip 'apache-sis-1.0-bin.zip' in any directory.
+1) Unzip 'apache-sis-1.1-bin.zip' in any directory.
 2) Invoke 'java -jar lib/sis.jar' on the command line.
 
 

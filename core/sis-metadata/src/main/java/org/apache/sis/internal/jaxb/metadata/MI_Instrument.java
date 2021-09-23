@@ -54,20 +54,20 @@ public final class MI_Instrument extends PropertyType<MI_Instrument, Instrument>
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_Instrument(final Instrument metadata) {
-        super(metadata);
+    private MI_Instrument(final Instrument value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Instrument>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_Instrument wrap(final Instrument metadata) {
-        return new MI_Instrument(metadata);
+    protected MI_Instrument wrap(final Instrument value) {
+        return new MI_Instrument(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_Instrument extends PropertyType<MI_Instrument, Instrument>
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultInstrument metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultInstrument value) {
+        metadata = value;
     }
 }

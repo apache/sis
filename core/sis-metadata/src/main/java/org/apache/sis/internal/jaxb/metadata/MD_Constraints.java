@@ -54,20 +54,20 @@ public final class MD_Constraints extends PropertyType<MD_Constraints, Constrain
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Constraints(final Constraints metadata) {
-        super(metadata);
+    private MD_Constraints(final Constraints value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mco:MD_Constraints>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Constraints wrap(final Constraints metadata) {
-        return new MD_Constraints(metadata);
+    protected MD_Constraints wrap(final Constraints value) {
+        return new MD_Constraints(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_Constraints extends PropertyType<MD_Constraints, Constrain
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultConstraints metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultConstraints value) {
+        metadata = value;
     }
 }

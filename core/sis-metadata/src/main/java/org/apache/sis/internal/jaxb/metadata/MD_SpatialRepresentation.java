@@ -60,20 +60,20 @@ public final class MD_SpatialRepresentation extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_SpatialRepresentation(final SpatialRepresentation metadata) {
-        super(metadata);
+    private MD_SpatialRepresentation(final SpatialRepresentation value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <msr:MD_SpatialRepresentation>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_SpatialRepresentation wrap(final SpatialRepresentation metadata) {
-        return new MD_SpatialRepresentation(metadata);
+    protected MD_SpatialRepresentation wrap(final SpatialRepresentation value) {
+        return new MD_SpatialRepresentation(value);
     }
 
     /**
@@ -98,9 +98,9 @@ public final class MD_SpatialRepresentation extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final AbstractSpatialRepresentation metadata) {
-        this.metadata = metadata;
+    public void setElement(final AbstractSpatialRepresentation value) {
+        metadata = value;
     }
 }

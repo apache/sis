@@ -54,20 +54,20 @@ public final class MD_Distribution extends PropertyType<MD_Distribution, Distrib
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_Distribution(final Distribution metadata) {
-        super(metadata);
+    private MD_Distribution(final Distribution value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrd:MD_Distribution>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_Distribution wrap(final Distribution metadata) {
-        return new MD_Distribution(metadata);
+    protected MD_Distribution wrap(final Distribution value) {
+        return new MD_Distribution(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MD_Distribution extends PropertyType<MD_Distribution, Distrib
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDistribution metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultDistribution value) {
+        metadata = value;
     }
 }

@@ -54,20 +54,20 @@ public final class EX_VerticalExtent extends PropertyType<EX_VerticalExtent, Ver
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private EX_VerticalExtent(final VerticalExtent metadata) {
-        super(metadata);
+    private EX_VerticalExtent(final VerticalExtent value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gex:EX_VerticalExtent>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected EX_VerticalExtent wrap(final VerticalExtent metadata) {
-        return new EX_VerticalExtent(metadata);
+    protected EX_VerticalExtent wrap(final VerticalExtent value) {
+        return new EX_VerticalExtent(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class EX_VerticalExtent extends PropertyType<EX_VerticalExtent, Ver
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultVerticalExtent metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultVerticalExtent value) {
+        metadata = value;
     }
 }

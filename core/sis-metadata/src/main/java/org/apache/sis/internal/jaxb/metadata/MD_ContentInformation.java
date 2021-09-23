@@ -60,20 +60,20 @@ public final class MD_ContentInformation extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_ContentInformation(final ContentInformation metadata) {
-        super(metadata);
+    private MD_ContentInformation(final ContentInformation value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrc:MD_ContentInformation>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_ContentInformation wrap(final ContentInformation metadata) {
-        return new MD_ContentInformation(metadata);
+    protected MD_ContentInformation wrap(final ContentInformation value) {
+        return new MD_ContentInformation(value);
     }
 
     /**
@@ -98,9 +98,9 @@ public final class MD_ContentInformation extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final AbstractContentInformation metadata) {
-        this.metadata = metadata;
+    public void setElement(final AbstractContentInformation value) {
+        metadata = value;
     }
 }

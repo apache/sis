@@ -54,20 +54,20 @@ public final class MI_PlatformPass extends PropertyType<MI_PlatformPass, Platfor
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_PlatformPass(final PlatformPass metadata) {
-        super(metadata);
+    private MI_PlatformPass(final PlatformPass value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_PlatformPass>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_PlatformPass wrap(final PlatformPass metadata) {
-        return new MI_PlatformPass(metadata);
+    protected MI_PlatformPass wrap(final PlatformPass value) {
+        return new MI_PlatformPass(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_PlatformPass extends PropertyType<MI_PlatformPass, Platfor
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultPlatformPass metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultPlatformPass value) {
+        metadata = value;
     }
 }

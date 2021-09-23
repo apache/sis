@@ -54,20 +54,20 @@ public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_Plan(final Plan metadata) {
-        super(metadata);
+    private MI_Plan(final Plan value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Plan>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_Plan wrap(final Plan metadata) {
-        return new MI_Plan(metadata);
+    protected MI_Plan wrap(final Plan value) {
+        return new MI_Plan(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultPlan metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultPlan value) {
+        metadata = value;
     }
 }

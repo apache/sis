@@ -53,20 +53,20 @@ public final class MD_MetadataScope extends PropertyType<MD_MetadataScope, Metad
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_MetadataScope(final MetadataScope metadata) {
-        super(metadata);
+    private MD_MetadataScope(final MetadataScope value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mdb:MD_MetadataScope>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_MetadataScope wrap(final MetadataScope metadata) {
-        return new MD_MetadataScope(metadata);
+    protected MD_MetadataScope wrap(final MetadataScope value) {
+        return new MD_MetadataScope(value);
     }
 
     /**
@@ -84,9 +84,9 @@ public final class MD_MetadataScope extends PropertyType<MD_MetadataScope, Metad
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultMetadataScope metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultMetadataScope value) {
+        metadata = value;
     }
 }

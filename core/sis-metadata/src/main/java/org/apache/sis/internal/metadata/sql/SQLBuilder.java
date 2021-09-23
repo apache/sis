@@ -183,13 +183,13 @@ public class SQLBuilder extends Syntax {
     }
 
     /**
-     * Appends a value in a {@code SELECT} statement.
-     * The {@code "="} string will be inserted before the value.
+     * Appends a {@code "= <value>"} string in a {@code SELECT} statement.
+     * The value is written between quotes, except if it is a number or a boolean.
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendCondition(final Object value) {
+    public final SQLBuilder appendEqualsValue(final Object value) {
         if (value == null) {
             buffer.append(" IS NULL");
             return this;
@@ -243,7 +243,7 @@ public class SQLBuilder extends Syntax {
      * @param  value  the value to append.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendEscaped(final String value) {
+    public final SQLBuilder appendWildcardEscaped(final String value) {
         final StringTokenizer tokens = new StringTokenizer(value, "_%", true);
         while (tokens.hasMoreTokens()) {
             buffer.append(tokens.nextToken());
@@ -283,7 +283,7 @@ public class SQLBuilder extends Syntax {
      *
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder insertDistinct() {
+    public final SQLBuilder insertDistinctAfterSelect() {
         assert CharSequences.startsWith(buffer, SELECT, false) : buffer;
         buffer.insert(SELECT.length(), "DISTINCT ");
         return this;

@@ -469,7 +469,6 @@
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
         <version>${jaxb.version}</version>
-        <scope>provided</scope>             <!-- Because available in JDK8. -->
       </dependency>
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
@@ -532,11 +531,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>   <!-- To be removed after https://issues.apache.org/jira/browse/SIS-469 is done. -->
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -878,7 +872,6 @@
             <link>https://docs.oracle.com/javase/8/docs/api</link>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/snapshot/javadoc</link>
-            <link>https://docs.unidata.ucar.edu/netcdf-java/current/javadoc</link>
           </links>
 
           <additionalOptions>

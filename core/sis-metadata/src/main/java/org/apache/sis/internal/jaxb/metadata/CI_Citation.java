@@ -54,20 +54,20 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Citation(final Citation metadata) {
-        super(metadata);
+    private CI_Citation(final Citation value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Citation>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Citation wrap(final Citation metadata) {
-        return new CI_Citation(metadata);
+    protected CI_Citation wrap(final Citation value) {
+        return new CI_Citation(value);
     }
 
     /**
@@ -85,10 +85,10 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public final void setElement(final DefaultCitation metadata) {
-        this.metadata = metadata;
+    public final void setElement(final DefaultCitation value) {
+        metadata = value;
     }
 
     /**

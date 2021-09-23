@@ -54,20 +54,20 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDesc
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SV_Parameter(final ParameterDescriptor<?> metadata) {
-        super(metadata);
+    private SV_Parameter(final ParameterDescriptor<?> value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <srv:SV_Parameter>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected SV_Parameter wrap(final ParameterDescriptor<?> metadata) {
-        return new SV_Parameter(metadata);
+    protected SV_Parameter wrap(final ParameterDescriptor<?> value) {
+        return new SV_Parameter(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDesc
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final ServiceParameter metadata) {
-        this.metadata = metadata;
+    public void setElement(final ServiceParameter value) {
+        metadata = value;
     }
 }

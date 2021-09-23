@@ -56,20 +56,20 @@ public final class MI_EnvironmentalRecord extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_EnvironmentalRecord(final EnvironmentalRecord metadata) {
-        super(metadata);
+    private MI_EnvironmentalRecord(final EnvironmentalRecord value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_EnvironmentalRecord>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_EnvironmentalRecord wrap(final EnvironmentalRecord metadata) {
-        return new MI_EnvironmentalRecord(metadata);
+    protected MI_EnvironmentalRecord wrap(final EnvironmentalRecord value) {
+        return new MI_EnvironmentalRecord(value);
     }
 
     /**
@@ -87,9 +87,9 @@ public final class MI_EnvironmentalRecord extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultEnvironmentalRecord metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultEnvironmentalRecord value) {
+        metadata = value;
     }
 }

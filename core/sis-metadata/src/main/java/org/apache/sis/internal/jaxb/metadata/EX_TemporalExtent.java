@@ -54,20 +54,20 @@ public final class EX_TemporalExtent extends PropertyType<EX_TemporalExtent, Tem
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private EX_TemporalExtent(final TemporalExtent metadata) {
-        super(metadata);
+    private EX_TemporalExtent(final TemporalExtent value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gex:EX_TemporalExtent>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected EX_TemporalExtent wrap(final TemporalExtent metadata) {
-        return new EX_TemporalExtent(metadata);
+    protected EX_TemporalExtent wrap(final TemporalExtent value) {
+        return new EX_TemporalExtent(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class EX_TemporalExtent extends PropertyType<EX_TemporalExtent, Tem
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultTemporalExtent metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultTemporalExtent value) {
+        metadata = value;
     }
 }

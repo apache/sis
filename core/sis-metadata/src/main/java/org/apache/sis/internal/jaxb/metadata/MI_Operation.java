@@ -54,20 +54,20 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MI_Operation(final Operation metadata) {
-        super(metadata);
+    private MI_Operation(final Operation value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Operation>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MI_Operation wrap(final Operation metadata) {
-        return new MI_Operation(metadata);
+    protected MI_Operation wrap(final Operation value) {
+        return new MI_Operation(value);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultOperation metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultOperation value) {
+        metadata = value;
     }
 }

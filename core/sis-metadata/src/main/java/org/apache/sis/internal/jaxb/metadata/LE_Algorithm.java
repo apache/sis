@@ -55,20 +55,20 @@ public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private LE_Algorithm(final Algorithm metadata) {
-        super(metadata);
+    private LE_Algorithm(final Algorithm value) {
+        super(value);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LE_Algorithm>} XML element.
      *
-     * @param  metadata  the metadata element to marshal.
+     * @param  value  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected LE_Algorithm wrap(final Algorithm metadata) {
-        return new LE_Algorithm(metadata);
+    protected LE_Algorithm wrap(final Algorithm value) {
+        return new LE_Algorithm(value);
     }
 
     /**
@@ -86,9 +86,9 @@ public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultAlgorithm metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultAlgorithm value) {
+        metadata = value;
     }
 }

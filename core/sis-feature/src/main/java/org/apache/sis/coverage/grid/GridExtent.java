@@ -314,7 +314,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getLow()
      * @see #getHigh()
-     * @see #insert(int, DimensionNameType, long, long, boolean)
+     * @see #insertDimension(int, DimensionNameType, long, long, boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
         ArgumentChecks.ensureNonNull("high", high);
@@ -625,7 +625,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @return the number of dimensions.
      *
-     * @see #reduce(int...)
+     * @see #reduceDimension(int[])
      */
     @Override
     public final int getDimension() {
@@ -1049,6 +1049,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * @deprecated Renamed {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
+     */
+    @Deprecated
+    public GridExtent insert(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+        return insertDimension(offset, axisType, low, high, isHighIncluded);
+    }
+
+    /**
      * Returns a new grid envelope with the specified dimension inserted at the given index in this grid envelope.
      * To append a new dimension after all existing dimensions, set {@code offset} to {@link #getDimension()}.
      *
@@ -1061,8 +1069,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *                         This argument does not apply to {@code low} value, which is always inclusive.
      * @return a new grid envelope with the specified dimension added.
      * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
+     *
+     * @since 1.1
      */
-    public GridExtent insert(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+    public GridExtent insertDimension(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
         final int dimension = getDimension();
         ArgumentChecks.ensureBetween("offset", 0, dimension, offset);
         if (!isHighIncluded) {
@@ -1231,13 +1241,21 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * @deprecated Renamed {@link #reduceDimension(int...)}.
+     */
+    @Deprecated
+    public GridExtent reduce(int... dimensions) {
+        return reduceDimension(dimensions);
+    }
+
+    /**
      * Returns a grid extent that encompass only some dimensions of this grid extent.
      * This method copies the specified dimensions of this grid extent into a new grid extent.
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
-     * converse of {@link #insert(int, DimensionNameType, long, long, boolean)}.
+     * converse of {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
      * This method can not be used for changing dimension order.</p>
      *
      * @param  dimensions  the dimensions to select, in strictly increasing order.
@@ -1246,8 +1264,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getSubspaceDimensions(int)
      * @see GridGeometry#reduce(int...)
+     *
+     * @since 1.1
      */
-    public GridExtent reduce(int... dimensions) {
+    public GridExtent reduceDimension(int... dimensions) {
         dimensions = verifyDimensions(dimensions, getDimension());
         return (dimensions != null) ? reorder(dimensions) : this;
     }
@@ -1289,7 +1309,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * grid borders.</div>
      *
      * This method does not reduce the number of dimensions of the grid extent.
-     * For dimensionality reduction, see {@link #reduce(int...)}.
+     * For dimensionality reduction, see {@link #reduceDimension(int[])}.
      *
      * <h4>Number of arguments</h4>
      * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
@@ -1352,7 +1372,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * in the given point will be rounded to nearest integer.
      *
      * <p>This method does not reduce the number of dimensions of the grid extent.
-     * For dimensionality reduction, see {@link #reduce(int...)}.</p>
+     * For dimensionality reduction, see {@link #reduceDimension(int[])}.</p>
      *
      * @param  slicePoint           where to take a slice. NaN values are handled as if their dimensions were absent.
      * @param  modifiedDimensions   mapping from {@code slicePoint} dimensions to this {@code GridExtent} dimensions,
