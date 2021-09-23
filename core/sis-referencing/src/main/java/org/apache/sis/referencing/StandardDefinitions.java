@@ -338,10 +338,10 @@ final class StandardDefinitions {
         int dim = 2;                    // Number of dimension, default to 2.
         short axisCode;                 // Code of first axis + dim (or code after the last axis).
         switch (code) {
-            case ELLIPSOIDAL_2D: name = "Ellipsoidal 2D"; type = 2;          axisCode =  108; break;
-            case ELLIPSOIDAL_3D: name = "Ellipsoidal 3D"; type = 2; dim = 3; axisCode =  111; break;
-            case SPHERICAL:      name = "Spherical";      type = 1; dim = 3; axisCode =   63; break;
-            case EARTH_CENTRED:  name = "Earth centred";            dim = 3; axisCode =  118; break;
+            case ELLIPSOIDAL_2D: name = "Ellipsoidal 2D";  type = 2;          axisCode =  108; break;
+            case ELLIPSOIDAL_3D: name = "Ellipsoidal 3D";  type = 2; dim = 3; axisCode =  111; break;
+            case SPHERICAL:      name = "Spherical";       type = 1; dim = 3; axisCode =   63; break;
+            case EARTH_CENTRED:  name = "Cartesian 3D (geocentric)"; dim = 3; axisCode =  118; break;
             case CARTESIAN_2D:   name = "Cartesian 2D";                      axisCode =    3; break;
             case UPS_NORTH:      name = "Cartesian 2D for UPS north";        axisCode = 1067; break;
             case UPS_SOUTH:      name = "Cartesian 2D for UPS south";        axisCode = 1059; break;

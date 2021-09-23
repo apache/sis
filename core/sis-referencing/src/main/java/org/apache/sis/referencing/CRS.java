@@ -164,7 +164,6 @@ public final class CRS extends Static {
      *   <tr><td>CRS:27</td>    <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:83</td>    <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:84</td>    <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>EPSG:4047</td> <td>{@link CommonCRS#SPHERE SPHERE}</td> <td>Geographic</td>      <td>GRS 1980 Authalic Sphere</td></tr>
      *   <tr><td>EPSG:4230</td> <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
      *   <tr><td>EPSG:4258</td> <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
      *   <tr><td>EPSG:4267</td> <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>

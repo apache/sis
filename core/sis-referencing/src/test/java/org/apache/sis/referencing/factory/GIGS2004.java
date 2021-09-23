@@ -45,7 +45,7 @@ import org.apache.sis.test.LoggingWatcher;
  * package-private methods in {@link ConcurrentAuthorityFactory}, and for keeping all GIGS tests together.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -128,6 +128,32 @@ public final strictfp class GIGS2004 extends org.opengis.test.referencing.gigs.G
         loggings.assertNextLogContains("EPSG:6055");
         loggings.skipNextLogIfContains("EPSG:7059");    // Ellipsoid may have been created by GIGS2002.
         loggings.assertNextLogContains("EPSG:4055");
+    }
+
+    /**
+     * Overrides the GeoAPI test for verifying the log messages emitted during the construction of deprecated objects.
+     *
+     * @throws FactoryException if an error occurred while creating the object.
+     */
+    @Test
+    @Override
+    public void testPadang() throws FactoryException {
+        super.testPadang();
+        loggings.assertNextLogContains("EPSG:6280");        // Datum
+        loggings.assertNextLogContains("EPSG:4280");        // CRS
+    }
+
+    /**
+     * Overrides the GeoAPI test for verifying the log messages emitted during the construction of deprecated objects.
+     *
+     * @throws FactoryException if an error occurred while creating the object.
+     */
+    @Test
+    @Override
+    public void testPadang_Jakarta() throws FactoryException {
+        super.testPadang_Jakarta();
+        loggings.assertNextLogContains("EPSG:6808");        // Datum
+        loggings.assertNextLogContains("EPSG:4808");        // CRS
     }
 
     /**

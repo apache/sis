@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import org.apache.sis.internal.system.Loggers;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -38,9 +39,12 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -60,6 +64,21 @@ import static org.apache.sis.test.Assert.*;
     AuthorityFactoriesTest.class
 })
 public final strictfp class CRSTest extends TestCase {
+    /**
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
+     */
+    @Rule
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
     /**
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
@@ -100,6 +119,8 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.WGS84 .universal(-40, 2),      "EPSG:32731");
         verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), "EPSG:5714");
         verifyForCode(CommonCRS.Vertical.DEPTH.crs(),          "EPSG:5715");
+
+        loggings.skipNextLogIfContains("EPSG:4047");    // No longer supported by EPSG.
     }
 
     /**
