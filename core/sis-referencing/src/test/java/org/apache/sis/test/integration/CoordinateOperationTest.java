@@ -18,21 +18,29 @@ package org.apache.sis.test.integration;
 
 import java.util.Random;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -40,6 +48,7 @@ import static org.junit.Assert.*;
  * orthodromic distances, <i>etc</i>.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Olivier Lhemann (OSDU)
  * @version 1.1
  * @since   0.8
  * @module
@@ -101,7 +110,7 @@ public final strictfp class CoordinateOperationTest extends MathTransformTestCas
         array0[9]=180;                                          // Antipodes; distance should be 2*6378.137 km
         distance[1] = ellipsoid.getSemiMajorAxis() * 2;
 
-                       array0[13]=-90;
+        array0[12]=  0; array0[13]=-90;
         array0[15]=180; array0[16]=+90;                         // Antipodes; distance should be 2*6356.752 km
         distance[2] = ellipsoid.getSemiMinorAxis() * 2;
 
@@ -147,5 +156,72 @@ public final strictfp class CoordinateOperationTest extends MathTransformTestCas
                 assertEquals("Cartesian distance", distance[i], cartesian, 0.1);
             }
         }
+    }
+
+    /**
+     * Tests manual concatenation of transforms for MGI Ferro.
+     * The transformation tested here involve an unusual case where the coordinate operation (EPSG:3966)
+     * explicitly declares a <var>Longitude rotation</var> parameter value slightly different than the
+     * <var>Greenwich longitude</var> value defined by the prime meridian, even if the target meridian
+     * is Greenwich in both cases. Apache SIS follows exactly the steps described by the coordinate operation,
+     * i.e. it applies a rotation of 17°39′46.02″W, even if it disagree with the Greenwich longitude value
+     * declared in the prime meridian (which is 17°40′00″ W). The following table summarizes the values
+     * computed by SIS depending on which longitude rotation is applied:
+     *
+     * <table class="sis">
+     *   <caption>Transformation results for different longitude rotations</caption>
+     *   <tr><th>Axis</th><th>Source coordinates</th><th>17°39′46.02″W rotation</th><th>17°40′00″W rotation</th></tr>
+     *   <tr><td><var>X</var></td> <td>16°E</td>    <td>-25394.59</td> <td>-25097.74</td></tr>
+     *   <tr><td><var>Y</var></td> <td>46.72°N</td> <td>175688.20</td> <td>175686.95</td></tr>
+     * </table>
+     *
+     * Current implementation assumes that the column for 17°39′46.02″W longitude rotation
+     * (as declared by EPSG:3966) is the correct one.
+     *
+     * @throws FactoryException if an error occurred while creating a test CRS.
+     * @throws TransformException if an error occurred while testing a coordinate conversion.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-489">SIS-489 on issue tracker</a>
+     */
+    @Test
+    public void testMGIFerro() throws FactoryException, TransformException {
+        final double latitude  = 46.72;
+        final double longitude = 16.00;
+        final double expectedX = -25394.59;
+        final double expectedY = 175688.20;
+
+        CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
+        CoordinateOperationAuthorityFactory opFactory = (CoordinateOperationAuthorityFactory) crsFactory;
+
+        // MGI (Ferro) to WGS 84 (1)
+        CoordinateOperation datumOperation = opFactory.createCoordinateOperation("3966");
+
+        // MGI (Ferro) / Austria GK East Zone
+        CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("31253");
+
+        // Normalize the axis for the target
+        targetCRS = AbstractCRS.castOrCopy(targetCRS).forConvention(AxesConvention.DISPLAY_ORIENTED);
+        assertSame(datumOperation.getSourceCRS(), ((ProjectedCRS) targetCRS).getBaseCRS());
+
+        CoordinateOperation targetOperation = CRS.findOperation(datumOperation.getSourceCRS(), targetCRS, null);
+        assertEqualsIgnoreMetadata(targetOperation, ((ProjectedCRS) targetCRS).getConversionFromBase());
+        /*
+         * We have two operations to concatenate. The first operation is itself
+         * a concatenation of a datum shift followed by a longitude rotation.
+         *
+         *   step1: "WGS 84" → "MGI 1901" → "MGI (Ferro)"
+         *   step2: a Transverse Mercator projection.
+         */
+        MathTransform step1 = datumOperation.getMathTransform().inverse();
+        MathTransform step2 = targetOperation.getMathTransform();
+        MathTransform completeTransform = MathTransforms.concatenate(step1, step2);
+        /*
+         * Transform to x,y in one step.
+         */
+        DirectPosition source = new DirectPosition2D(latitude, longitude);
+        DirectPosition target = completeTransform.transform(source, null);
+        final double[] coordinate = target.getCoordinate();
+        assertEquals("x", expectedX, coordinate[0], 0.01);
+        assertEquals("y", expectedY, coordinate[1], 0.01);
     }
 }
