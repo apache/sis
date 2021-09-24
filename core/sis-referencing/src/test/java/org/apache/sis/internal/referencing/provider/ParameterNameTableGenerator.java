@@ -29,6 +29,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.test.ProjectDirectories;
 import org.apache.sis.internal.jdk9.JDK9;
@@ -202,7 +203,7 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
                 write(insertAt++, "  <caption>Parameter names</caption>");
                 write(insertAt++, descriptor.getName());
                 for (final GenericName alias : descriptor.getAlias()) {
-                    write(insertAt++, (Identifier) alias);
+                    write(insertAt++, (alias instanceof Identifier) ? (Identifier) alias : new NamedIdentifier(alias));
                 }
                 write(insertAt++, "</table>");
                 /*
