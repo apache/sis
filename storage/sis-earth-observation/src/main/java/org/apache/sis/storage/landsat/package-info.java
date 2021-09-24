@@ -16,21 +16,13 @@
  */
 
 /**
- * Metadata readers for some format used in Earth observation (Landsat, MODIS).
- * This package includes mapping from the following formats to ISO 19115 metadata:
- *
- * <table class="sis">
- *   <caption>Earth observation formats</caption>
- *   <tr>
- *     <th>Format</th>
- *     <th>Provider</th>
- *     <th>Apache SIS notes</th>
- *   </tr><tr>
- *     <td>Landsat 8 level 1</td>
- *     <td>U.S. Geological Survey (USGS)</td>
- *     <td><a href="../landsat/doc-files/MetadataMapping.html">Mapping from/to ISO 19115</a></td>
- *   </tr>
- * </table>
+ * Reader of Landsat 8 level 1-2 data.
+ * Those data are produced by the U.S. Geological Survey (USGS).
+ * This reader takes in input the directory containing the files for a Landsat scene.
+ * Such directory is made of metadata files in text or XML formal and GeoTIFF files.
+ * The text file is parsed and <a href="doc-files/MetadataMapping.html">mapped to ISO 19115 metadata</a>.
+ * The GeoTIFF files are read using {@link org.apache.sis.storage.geotiff.GeoTiffStore}
+ * with each band offered as a Landsat resource.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)
@@ -38,8 +30,5 @@
  * @version 1.1
  * @since   1.1
  * @module
- *
- * @deprecated Moved to {@link org.apache.sis.storage.landsat}.
  */
-@Deprecated
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;

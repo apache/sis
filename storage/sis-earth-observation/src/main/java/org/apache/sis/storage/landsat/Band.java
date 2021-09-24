@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,7 +52,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @since   1.1
  * @module
  */
-final class LandsatResource extends GridResourceWrapper implements SchemaModifier {
+final class Band extends GridResourceWrapper implements SchemaModifier {
     /**
      * The data store that contains this band.
      * Also the object on which to perform synchronization locks.
@@ -62,7 +62,7 @@ final class LandsatResource extends GridResourceWrapper implements SchemaModifie
     /**
      * The band for which this instance provides data.
      */
-    final LandsatBand band;
+    final BandName band;
 
     /**
      * Identifier of the band for which this instance provides data.
@@ -88,7 +88,7 @@ final class LandsatResource extends GridResourceWrapper implements SchemaModifie
     /**
      * Creates a new resource for the specified band.
      */
-    LandsatResource(final LandsatStore parent, final LandsatBand band) {
+    Band(final LandsatStore parent, final BandName band) {
         this.parent = parent;
         this.band   = band;
         if (band.wavelength != 0) {
@@ -132,7 +132,7 @@ final class LandsatResource extends GridResourceWrapper implements SchemaModifie
     }
 
     /**
-     * Returns the resource persistent identifier. The name is the {@link LandsatBand#name()}
+     * Returns the resource persistent identifier. The name is the {@link BandName#name()}
      * and the scope (namespace) is the name of the directory that contains this band.
      */
     @Override
@@ -142,7 +142,7 @@ final class LandsatResource extends GridResourceWrapper implements SchemaModifie
 
     /**
      * Invoked when the GeoTIFF reader creates the resource identifier.
-     * We use the identifier of the enclosing {@link LandsatResource}.
+     * We use the identifier of the enclosing {@link Band}.
      */
     @Override
     public GenericName customize(final int image, final GenericName fallback) {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;
 
 import java.util.List;
 import java.util.Arrays;
@@ -33,8 +33,8 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * An aggregate of {@link LandsatResource}.
- * Each aggregate is for one {@link LandsatBandGroup}.
+ * An aggregate of {@link Band}.
+ * Each aggregate is for one {@link BandGroupName}.
  *
  * @todo Future implementation should implement {@code GridCoverageResource}
  *       and provides an aggregated coverage view where each Landsat band is
@@ -45,11 +45,11 @@ import org.apache.sis.util.ArraysExt;
  * @since   1.1
  * @module
  */
-final class LandsatAggregate extends AbstractResource implements Aggregate {
+final class BandGroup extends AbstractResource implements Aggregate {
     /**
      * The group of bands that this aggregate represents.
      */
-    final LandsatBandGroup group;
+    final BandGroupName group;
 
     /**
      * Name of the band group.
@@ -60,21 +60,21 @@ final class LandsatAggregate extends AbstractResource implements Aggregate {
     /**
      * The array of images for each Landsat band.
      */
-    private final LandsatResource[] components;
+    private final Band[] components;
 
     /**
      * Creates a new aggregate for the specified group.
      * This constructor will copy only the resources for that group from the given array.
      */
-    private LandsatAggregate(final StoreListeners parent, final LandsatBandGroup group,
-                             final LandsatResource[] resources, final int count)
+    private BandGroup(final StoreListeners parent, final BandGroupName group,
+                             final Band[] resources, final int count)
     {
         super(parent);
         this.group = group;
         int n = 0;
-        LandsatResource[] components = new LandsatResource[resources.length];
+        Band[] components = new Band[resources.length];
         for (int i=0; i<count; i++) {
-            final LandsatResource r = resources[i];
+            final Band r = resources[i];
             if (r.band.group == group) {
                 components[n++] = r;
             }
@@ -85,12 +85,12 @@ final class LandsatAggregate extends AbstractResource implements Aggregate {
     /**
      * Creates aggregates for the given bands.
      */
-    static LandsatAggregate[] group(final StoreListeners parent, final LandsatResource[] resources, final int count) {
-        final LandsatBandGroup[] groups = LandsatBandGroup.values();
-        final LandsatAggregate[] aggregates = new LandsatAggregate[groups.length];
+    static BandGroup[] group(final StoreListeners parent, final Band[] resources, final int count) {
+        final BandGroupName[] groups = BandGroupName.values();
+        final BandGroup[] aggregates = new BandGroup[groups.length];
         int n = 0;
-        for (final LandsatBandGroup group : groups) {
-            final LandsatAggregate c = new LandsatAggregate(parent, group, resources, count);
+        for (final BandGroupName group : groups) {
+            final BandGroup c = new BandGroup(parent, group, resources, count);
             if (c.components.length != 0) {
                 aggregates[n++] = c;
             }
@@ -126,10 +126,10 @@ final class LandsatAggregate extends AbstractResource implements Aggregate {
     /**
      * Returns all bands in the given array of aggregates.
      */
-    static final List<LandsatResource> bands(final LandsatAggregate[] components) {
-        final List<LandsatResource> bands = new ArrayList<>();
+    static final List<Band> bands(final BandGroup[] components) {
+        final List<Band> bands = new ArrayList<>();
         if (components != null) {
-            for (final LandsatAggregate c : components) {
+            for (final BandGroup c : components) {
                 bands.addAll(Arrays.asList(c.components));
             }
         }
