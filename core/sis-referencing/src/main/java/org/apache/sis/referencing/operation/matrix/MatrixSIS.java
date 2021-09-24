@@ -441,11 +441,25 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             }
             sum.sqrt();
             if (!sum.isZero()) {
+                int rowOfOne = -1;
                 for (int j=0; j<numRow; j++) {
                     get(j, i, tmp);
                     dot.setFrom(sum);
                     dot.inverseDivide(tmp);
                     set(j, i, dot);
+                    if (Math.abs(dot.doubleValue()) == 1) {
+                        rowOfOne = j;
+                    }
+                }
+                /*
+                 * If a value is exactly 1, then all other values should be exactly zero.
+                 * We observe that the other values are sometime close to 0.5 ULP of 1.
+                 * Forcing those values to 0 can help the caller to apply optimizations.
+                 */
+                if (rowOfOne >= 0) {
+                    for (int j=0; j<numRow; j++) {
+                        setElement(j, i, Math.copySign((j == rowOfOne) ? 1 : 0, getElement(j, i)));
+                    }
                 }
                 magnitudes.setNumber(0, i, sum);
             }
