@@ -28,6 +28,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.Containers;
@@ -76,8 +77,18 @@ final class Table extends AbstractFeatureSet {
     final FeatureType featureType;
 
     /**
+     * The SQL query to execute for fetching data, or {@code null} for querying the table identified by {@link #name}.
+     * This is non-null only if the user explicitly specified a SQL query to execute.
+     *
+     * @see #appendFromClause(SQLBuilder)
+     */
+    private final String query;
+
+    /**
      * The name in the database of this {@code Table} object, together with its schema and catalog.
      * The catalog and schema parts are optional and can be null, but the table name is mandatory.
+     *
+     * @see #appendFromClause(SQLBuilder)
      */
     final TableReference name;
 
@@ -144,10 +155,13 @@ final class Table extends AbstractFeatureSet {
      *
      * @param  database  information about the database (syntax for building SQL statements, …).
      * @param  analyzer  helper functions, e.g. for converting SQL types to Java types.
+     * @param  query     the SQL query to use for fetching data, or {@code null} for querying
+     *                   the table identified by {@link #name}.
      */
-    Table(final Database<?> database, final TableAnalyzer analyzer) throws Exception {
+    Table(final Database<?> database, final FeatureAnalyzer analyzer, final String query) throws Exception {
         super(database.listeners);
         this.database = database;
+        this.query    = query;
         name          = analyzer.id;
         importedKeys  = analyzer.getForeignerKeys(Relation.Direction.IMPORT);
         exportedKeys  = analyzer.getForeignerKeys(Relation.Direction.EXPORT);
@@ -162,11 +176,12 @@ final class Table extends AbstractFeatureSet {
      *
      * @todo This constructor is not yet used because it is an unfinished work.
      *       We need to invent some mechanism for using a subset of the columns.
-     *       A starting point is {@link org.apache.sis.internal.storage.query.FeatureQuery#expectedType(FeatureType)}.
+     *       A starting point is {@link org.apache.sis.storage.FeatureQuery#expectedType(FeatureType)}.
      */
     Table(final Table parent) {
         super(parent);
         database = parent.database;
+        query    = parent.query;
         name     = parent.name;
 
         // TODO: filter the columns.
@@ -349,6 +364,18 @@ final class Table extends AbstractFeatureSet {
             instanceForPrimaryKeys = new WeakValueHashMap<>(primaryKey.valueClass);
         }
         return instanceForPrimaryKeys;
+    }
+
+    /**
+     * Appends the catalog, schema and table name to the given builder after the {@code "FROM"} keyword.
+     */
+    final void appendFromClause(final SQLBuilder sql) {
+        sql.append(" FROM ");
+        if (query != null) {
+            sql.append('(').append(query).append(") AS USER_QUERY");
+        } else {
+            sql.appendIdentifier(name.catalog, name.schema, name.table);
+        }
     }
 
     /**

@@ -241,7 +241,7 @@ final class FeatureAdapter {
          * if we need to add a `WHERE` clause. In the later case, we will cache the features already
          * created if there is a possibility that many rows reference the same feature instance.
          */
-        table.name.appendFromClause(sql);
+        table.appendFromClause(sql);
         if (following.isEmpty()) {
             instances = null;       // A future SIS version could use the map opportunistically if it exists.
         } else {

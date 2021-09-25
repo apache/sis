@@ -17,18 +17,14 @@
 package org.apache.sis.storage.sql;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
-import org.opengis.util.NameSpace;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.sql.feature.Resources;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
@@ -73,14 +69,37 @@ public class SQLStoreProvider extends DataStoreProvider {
     static final String TABLES = "tables";
 
     /**
-     * Description of the {@value #LOCATION} parameter.
+     * Name of the parameter for the list of queries.
+     * Values of this parameter are {@code Map<GenericName,String>}.
+     * Strings are also accepted as keys for convenience.
      */
-    private static final ParameterDescriptor<DataSource> SOURCE_PARAM;
+    static final String QUERIES = "queries";
 
     /**
-     * Description of the {@code "tables"} parameter.
+     * Description of the {@value #LOCATION} parameter.
+     * This parameter is mandatory.
+     *
+     * @since 1.1
      */
-    private static final ParameterDescriptor<GenericName[]> TABLES_PARAM;
+    public static final ParameterDescriptor<DataSource> SOURCE_PARAM;
+
+    /**
+     * Description of the parameter providing the list of tables or views to include as resources in the
+     * {@link SQLStore}. At least one of {@code TABLES_PARAM} or {@link #QUERIES_PARAM} must be provided.
+     *
+     * @since 1.1
+     */
+    public static final ParameterDescriptor<GenericName[]> TABLES_PARAM;
+
+    /**
+     * Description of the parameter providing the queries to include as resources in the {@link SQLStore}.
+     * Map keys are the resource names as {@link GenericName} or {@link String} instances.
+     * Values are SQL statements (as {@link String} instances) to execute when the associated resource is requested.
+     * At least one of {@link #TABLES_PARAM} or {@code QUERIES_PARAM} must be provided.
+     *
+     * @since 1.1
+     */
+    public static final ParameterDescriptor<Map> QUERIES_PARAM;
 
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
@@ -91,17 +110,14 @@ public class SQLStoreProvider extends DataStoreProvider {
         SOURCE_PARAM = builder.addName(LOCATION).setRequired(true)
                               .setDescription(Resources.formatInternational(Resources.Keys.DataSource))
                               .create(DataSource.class, null);
-        TABLES_PARAM = builder.addName(TABLES).setRequired(true)
+        TABLES_PARAM = builder.addName(TABLES).setRequired(false)
                               .setDescription(Resources.formatInternational(Resources.Keys.QualifiedTableNames))
                               .create(GenericName[].class, null);
-        OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(SOURCE_PARAM, TABLES_PARAM);
+        QUERIES_PARAM = builder.addName(QUERIES)
+                              .setDescription(Resources.formatInternational(Resources.Keys.MappedSQLQueries))
+                              .create(Map.class, null);
+        OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(SOURCE_PARAM, TABLES_PARAM, QUERIES_PARAM);
     }
-
-    /**
-     * The namespace for table names, created when first needed.
-     * Used for specifying the name separator, which is {@code '.'}.
-     */
-    private static volatile NameSpace tableNS;
 
     /**
      * Creates a new provider.
@@ -126,37 +142,8 @@ public class SQLStoreProvider extends DataStoreProvider {
      * @param  tablePattern   pattern (with {@code '_'} and {@code '%'} wildcards) of a table.
      * @return the fully qualified name.
      */
-    @SuppressWarnings("fallthrough")
     public static GenericName createTableName(final String catalog, String schemaPattern, final String tablePattern) {
-        ArgumentChecks.ensureNonNull("tablePattern", tablePattern);
-        final int numParts;
-        if (catalog != null) {
-            numParts = 3;
-            if (schemaPattern == null) {
-                schemaPattern = WILDCARD;
-            }
-        } else if (schemaPattern != null && !schemaPattern.equals(WILDCARD)) {
-            numParts = 2;
-        } else {
-            numParts = 1;
-        }
-        final String[] names = new String[numParts];
-        int i = 0;
-        switch (numParts) {
-            default: throw new AssertionError(numParts);
-            case 3: names[i++] = catalog;           // Fall through
-            case 2: names[i++] = schemaPattern;     // Fall through
-            case 1: names[i]   = tablePattern;
-        }
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        NameSpace ns = tableNS;
-        if (ns == null) {
-            final Map<String,String> properties = new HashMap<>(4);     // TODO: use Map.of with JDK9.
-            properties.put("separator",      ".");
-            properties.put("separator.head", ":");
-            tableNS = ns = factory.createNameSpace(factory.createLocalName(null, "database"), properties);
-        }
-        return factory.createGenericName(ns, names);
+        return ResourceDefinition.table(catalog, schemaPattern, tablePattern).getName();
     }
 
     /**
@@ -171,6 +158,7 @@ public class SQLStoreProvider extends DataStoreProvider {
 
     /**
      * Returns a description of all parameters accepted by this provider for opening a connection to the database.
+     * The group contains {@link #SOURCE_PARAM}, {@link #TABLES_PARAM} and {@link #QUERIES_PARAM}.
      *
      * @return description of available parameters for opening a connection to a database.
      */
@@ -206,6 +194,7 @@ public class SQLStoreProvider extends DataStoreProvider {
 
     /**
      * Returns a {@link SQLStore} implementation associated with this provider.
+     * The store will provide resources for all tables and views in all schemas and catalogs.
      *
      * @param  connector  information about the storage (data source).
      * @return a data store implementation associated with this provider for the given storage.
@@ -213,7 +202,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new SQLStore(this, connector, createTableName(null, null, WILDCARD));
+        return new SQLStore(this, connector, ResourceDefinition.table(WILDCARD));
     }
 
     /**
@@ -230,7 +219,8 @@ public class SQLStoreProvider extends DataStoreProvider {
             final Parameters p = Parameters.castOrWrap(parameters);
             final StorageConnector connector = new StorageConnector(p.getValue(SOURCE_PARAM));
             final GenericName[] tableNames = p.getValue(TABLES_PARAM);
-            return new SQLStore(this, connector, tableNames);
+            final Map<?,?> queries = p.getValue(QUERIES_PARAM);
+            return new SQLStore(this, connector, ResourceDefinition.wrap(tableNames, queries));
         } catch (ParameterNotFoundException | UnconvertibleObjectException e) {
             throw new IllegalOpenParameterException(e.getMessage(), e);
         }

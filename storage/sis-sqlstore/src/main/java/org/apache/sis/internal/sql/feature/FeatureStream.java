@@ -324,7 +324,7 @@ final class FeatureStream extends DeferredStream<Feature> {
             // If we want a count and no distinct clause is specified, a single column is sufficient.
             table.attributes[0].append(sql);
         }
-        table.name.appendFromClause(sql.append(')'));
+        table.appendFromClause(sql.append(')'));
         if (selection != null) {
             sql.append(" WHERE ").append(selection.toString());
         }

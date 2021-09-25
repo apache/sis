@@ -43,6 +43,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.sql.postgis.Postgres;
 import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -225,6 +226,7 @@ public class Database<G> extends Syntax  {
      * @param  connection   connection to the database. Sometime the caller already has a connection at hand.
      * @param  geomLibrary  the factory to use for creating geometric objects.
      * @param  tableNames   qualified name of the tables. Specified by users at construction time.
+     * @param  queries      additional resources associated to SQL queries. Specified by users at construction time.
      * @param  customizer   user-specified modification to the features, or {@code null} if none.
      * @param  listeners    where to send warnings.
      * @return handler for the spatial database.
@@ -232,8 +234,8 @@ public class Database<G> extends Syntax  {
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
     public static Database<?> create(final SQLStore store, final DataSource source, final Connection connection,
-            final GeometryLibrary geomLibrary, final GenericName[] tableNames, final SchemaModifier customizer,
-            final StoreListeners listeners)
+            final GeometryLibrary geomLibrary, final GenericName[] tableNames, final ResourceDefinition[] queries,
+            final SchemaModifier customizer, final StoreListeners listeners)
             throws Exception
     {
         final DatabaseMetaData metadata = connection.getMetaData();
@@ -246,7 +248,7 @@ public class Database<G> extends Syntax  {
                 break;
             }
         }
-        db.analyze(store, connection, tableNames, customizer);
+        db.analyze(store, connection, tableNames, queries, customizer);
         return db;
     }
 
@@ -270,12 +272,13 @@ public class Database<G> extends Syntax  {
      * @param  store       the data store for which we are creating a model. Used only in case of error.
      * @param  connection  connection to the database. Sometime the caller already has a connection at hand.
      * @param  tableNames  qualified name of the tables. Specified by users at construction time.
+     * @param  queries     additional resources associated to SQL queries. Specified by users at construction time.
      * @param  customizer  user-specified modification to the features, or {@code null} if none.
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
     private void analyze(final SQLStore store, final Connection connection, final GenericName[] tableNames,
-                         final SchemaModifier customizer) throws Exception
+                         final ResourceDefinition[] queries, final SchemaModifier customizer) throws Exception
     {
         final DatabaseMetaData metadata = connection.getMetaData();
         final String[] tableTypes = getTableTypes(metadata);
@@ -329,7 +332,14 @@ public class Database<G> extends Syntax  {
             tableList.add(analyzer.table(reference, reference.getName(analyzer), null));
         }
         /*
-         * At this point we finished to create the table explicitly requested by the users.
+         * Add queries if any.
+         */
+        for (final ResourceDefinition resource : queries) {
+            // Optional value should always be present in this context.
+            tableList.add(analyzer.query(resource.getName(), resource.getQuery().get()));
+        }
+        /*
+         * At this point we finished to create the tables explicitly requested by the user.
          * Register all tables only at this point, because other tables (dependencies) may
          * have been analyzed as a side-effect of above loop.
          */

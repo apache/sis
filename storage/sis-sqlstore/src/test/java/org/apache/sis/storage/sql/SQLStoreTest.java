@@ -85,11 +85,6 @@ public final strictfp class SQLStoreTest extends TestCase {
     };
 
     /**
-     * Number of time that the each country has been seen while iterating over the cities.
-     */
-    private final Map<String,Integer> countryCount = new HashMap<>();
-
-    /**
      * The {@code Country} value for Canada, or {@code null} if not yet visited.
      * This feature should appear twice, and all those occurrences should use the exact same instance.
      * We use that for verifying the {@code Table.instanceForPrimaryKeys} caching.
@@ -139,11 +134,12 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     /**
-     * Tests reading an existing schema. The schema is created and populated by the {@code Features.sql} script.
+     * Runs all tests on a single database software. A temporary schema is created at the beginning of this method
+     * and deleted after all tests finished. The schema is created and populated by the {@code Features.sql} script.
      *
-     * @param  inMemory  whether the test database is in memory. If {@code true}, then the database is presumed
-     *                   initially empty: a schema will be created, and we assume that there is no ambiguity
-     *                   if we don't specify the schema in {@link SQLStore} constructor.
+     * @param  inMemory  whether the test database is in memory. If {@code true}, then the schema will be created
+     *                   and will be the only schema to exist (ignoring system schema); i.e. we assume that there
+     *                   is no ambiguity if we do not specify the schema in {@link SQLStore} constructor.
      */
     private void test(final TestDatabase database, final boolean inMemory) throws Exception {
         final String[] scripts = {
@@ -155,8 +151,9 @@ public final strictfp class SQLStoreTest extends TestCase {
         }
         try (TestDatabase tmp = database) {                 // TODO: omit `tmp` with JDK16.
             tmp.executeSQL(SQLStoreTest.class, scripts);
-            try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
-                    SQLStoreProvider.createTableName(null, inMemory ? null : SCHEMA, "Cities")))
+            final StorageConnector connector = new StorageConnector(tmp.source);
+            try (SQLStore store = new SQLStore(new SQLStoreProvider(), connector,
+                    ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities")))
             {
                 final FeatureSet cities = store.findResource("Cities");
                 /*
@@ -175,20 +172,26 @@ public final strictfp class SQLStoreTest extends TestCase {
                         new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"},
                         new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class});
 
+                final Map<String,Integer> countryCount = new HashMap<>();
                 try (Stream<Feature> features = cities.features(false)) {
-                    features.forEach((f) -> verifyContent(f));
+                    features.forEach((f) -> verifyContent(f, countryCount, true));
                 }
+                assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
+                assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
+                assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
+                assertTrue(countryCount.isEmpty());
                 /*
                  * Verify overloaded stream operations (sorting, etc.).
                  */
                 verifySimpleQuerySorting(store);
                 verifySimpleWhere(store);
+                canada = null;
             }
+            /*
+             * Verify using SQL statements instead of tables.
+             */
+            verifyFetchCityTableAsQuery(connector);
         }
-        assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
-        assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
-        assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
-        assertTrue  (countryCount.isEmpty());
     }
 
     /**
@@ -222,8 +225,12 @@ public final strictfp class SQLStoreTest extends TestCase {
     /**
      * Verifies the content of the {@code Cities} table.
      * The features are in no particular order.
+     *
+     * @param  feature       a feature returned by the stream.
+     * @param  countryCount  number of time that the each country has been seen while iterating over the cities.
+     * @param  hasExport     whether the feature is expected to have associations for "export" foreigner keys.
      */
-    private void verifyContent(final Feature feature) {
+    private void verifyContent(final Feature feature, final Map<String,Integer> countryCount, final boolean hasExport) {
         final String city = feature.getPropertyValue("native_name").toString();
         final City c;
         boolean isCanada = false;
@@ -259,23 +266,25 @@ public final strictfp class SQLStoreTest extends TestCase {
          * Associations using Relation.Direction.EXPORT.
          * Contrarily to the IMPORT case, those associations can contain many values.
          */
-        final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
-        assertNotNull("parks", actualParks);
-        assertEquals("parks.length", c.parks.length, actualParks.size());
-        final Collection<String> expectedParks = new HashSet<>(Arrays.asList(c.parks));
-        for (final Object park : actualParks) {
-            final Feature pf = (Feature) park;
-            final String npn = (String) pf.getPropertyValue("native_name");
-            final String epn = (String) pf.getPropertyValue("english_name");
-            assertNotNull("park.native_name",  npn);
-            assertNotNull("park.english_name", epn);
-            assertNotEquals("park.names", npn, epn);
-            assertTrue("park.english_name", expectedParks.remove(epn));
-            /*
-             * Verify the reverse association form Parks to Cities.
-             * This create a cyclic graph, but SQLStore is capable to handle it.
-             */
-            assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+        if (hasExport) {
+            final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
+            assertNotNull("parks", actualParks);
+            assertEquals("parks.length", c.parks.length, actualParks.size());
+            final Collection<String> expectedParks = new HashSet<>(Arrays.asList(c.parks));
+            for (final Object park : actualParks) {
+                final Feature pf = (Feature) park;
+                final String npn = (String) pf.getPropertyValue("native_name");
+                final String epn = (String) pf.getPropertyValue("english_name");
+                assertNotNull("park.native_name",  npn);
+                assertNotNull("park.english_name", epn);
+                assertNotEquals("park.names", npn, epn);
+                assertTrue("park.english_name", expectedParks.remove(epn));
+                /*
+                 * Verify the reverse association form Parks to Cities.
+                 * This create a cyclic graph, but SQLStore is capable to handle it.
+                 */
+                assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+            }
         }
     }
 
@@ -357,5 +366,24 @@ public final strictfp class SQLStoreTest extends TestCase {
             names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
         }
         assertSetEquals(Arrays.asList(expectedValues), Arrays.asList(names));
+    }
+
+    /**
+     * Tests fetching the content of the Cities table, but using a user-supplied SQL query.
+     */
+    private void verifyFetchCityTableAsQuery(final StorageConnector connector) throws Exception {
+        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("MyQuery",
+                "SELECT * FROM " + SCHEMA + ".\"Cities\" WHERE \"population\" >= 1000000")))
+        {
+            final FeatureSet cities = store.findResource("MyQuery");
+            final Map<String,Integer> countryCount = new HashMap<>();
+            try (Stream<Feature> features = cities.features(false)) {
+                features.forEach((f) -> verifyContent(f, countryCount, false));
+            }
+            assertEquals(Integer.valueOf(1), countryCount.remove("CAN"));
+            assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
+            assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
+            assertTrue(countryCount.isEmpty());
+        }
     }
 }
