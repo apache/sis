@@ -16,6 +16,7 @@ CREATE TYPE epsg_cs_kind    AS ENUM ('ellipsoidal', 'spherical', 'Cartesian', 'v
 CREATE TYPE epsg_table_name AS ENUM
    ('Alias',
     'Area',
+    'AxisName',
     'Change',
     'Coordinate Axis',
     'Coordinate Axis Name',

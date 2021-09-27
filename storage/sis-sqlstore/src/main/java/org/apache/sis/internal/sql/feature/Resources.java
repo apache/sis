@@ -94,6 +94,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MalformedForeignerKey_2 = 7;
 
         /**
+         * Resource names mapped to SQL queries.
+         */
+        public static final short MappedSQLQueries = 14;
+
+        /**
+         * Name “{0}” is already used by another table, view or query.
+         */
+        public static final short NameAlreadyUsed_1 = 13;
+
+        /**
          * Table names, optionally with their schemas and catalogs.
          */
         public static final short QualifiedTableNames = 2;

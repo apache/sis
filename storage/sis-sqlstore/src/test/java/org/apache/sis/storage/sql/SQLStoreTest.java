@@ -22,10 +22,12 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
@@ -85,11 +87,6 @@ public final strictfp class SQLStoreTest extends TestCase {
     };
 
     /**
-     * Number of time that the each country has been seen while iterating over the cities.
-     */
-    private final Map<String,Integer> countryCount = new HashMap<>();
-
-    /**
      * The {@code Country} value for Canada, or {@code null} if not yet visited.
      * This feature should appear twice, and all those occurrences should use the exact same instance.
      * We use that for verifying the {@code Table.instanceForPrimaryKeys} caching.
@@ -139,11 +136,12 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     /**
-     * Tests reading an existing schema. The schema is created and populated by the {@code Features.sql} script.
+     * Runs all tests on a single database software. A temporary schema is created at the beginning of this method
+     * and deleted after all tests finished. The schema is created and populated by the {@code Features.sql} script.
      *
-     * @param  inMemory  whether the test database is in memory. If {@code true}, then the database is presumed
-     *                   initially empty: a schema will be created, and we assume that there is no ambiguity
-     *                   if we don't specify the schema in {@link SQLStore} constructor.
+     * @param  inMemory  whether the test database is in memory. If {@code true}, then the schema will be created
+     *                   and will be the only schema to exist (ignoring system schema); i.e. we assume that there
+     *                   is no ambiguity if we do not specify the schema in {@link SQLStore} constructor.
      */
     private void test(final TestDatabase database, final boolean inMemory) throws Exception {
         final String[] scripts = {
@@ -155,8 +153,9 @@ public final strictfp class SQLStoreTest extends TestCase {
         }
         try (TestDatabase tmp = database) {                 // TODO: omit `tmp` with JDK16.
             tmp.executeSQL(SQLStoreTest.class, scripts);
-            try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
-                    SQLStoreProvider.createTableName(null, inMemory ? null : SCHEMA, "Cities")))
+            final StorageConnector connector = new StorageConnector(tmp.source);
+            try (SQLStore store = new SQLStore(new SQLStoreProvider(), connector,
+                    ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities")))
             {
                 final FeatureSet cities = store.findResource("Cities");
                 /*
@@ -175,20 +174,30 @@ public final strictfp class SQLStoreTest extends TestCase {
                         new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"},
                         new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class});
 
+                final Map<String,Integer> countryCount = new HashMap<>();
                 try (Stream<Feature> features = cities.features(false)) {
-                    features.forEach((f) -> verifyContent(f));
+                    features.forEach((f) -> verifyContent(f, countryCount, true));
                 }
+                assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
+                assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
+                assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
+                assertTrue(countryCount.isEmpty());
                 /*
                  * Verify overloaded stream operations (sorting, etc.).
                  */
                 verifySimpleQuerySorting(store);
                 verifySimpleWhere(store);
+                verifyStreamOperations(store.findResource("Cities"));
+                canada = null;
             }
+            /*
+             * Verify using SQL statements instead of tables.
+             */
+            verifyFetchCityTableAsQuery(connector);
+            verifyNestedSQLQuery(connector);
+            verifyLimitOffsetAndColumnSelectionFromQuery(connector);
+            verifyDistinctQuery(connector);
         }
-        assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
-        assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
-        assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
-        assertTrue  (countryCount.isEmpty());
     }
 
     /**
@@ -222,8 +231,12 @@ public final strictfp class SQLStoreTest extends TestCase {
     /**
      * Verifies the content of the {@code Cities} table.
      * The features are in no particular order.
+     *
+     * @param  feature       a feature returned by the stream.
+     * @param  countryCount  number of time that the each country has been seen while iterating over the cities.
+     * @param  isTable       {@code true} if the resource is from a table, or {@code false} if from a query.
      */
-    private void verifyContent(final Feature feature) {
+    private void verifyContent(final Feature feature, final Map<String,Integer> countryCount, final boolean isTable) {
         final String city = feature.getPropertyValue("native_name").toString();
         final City c;
         boolean isCanada = false;
@@ -275,7 +288,9 @@ public final strictfp class SQLStoreTest extends TestCase {
              * Verify the reverse association form Parks to Cities.
              * This create a cyclic graph, but SQLStore is capable to handle it.
              */
-            assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+            if (isTable) {
+                assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+            }
         }
     }
 
@@ -357,5 +372,157 @@ public final strictfp class SQLStoreTest extends TestCase {
             names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
         }
         assertSetEquals(Arrays.asList(expectedValues), Arrays.asList(names));
+    }
+
+    /**
+     * Checks that operations stacked on feature stream are well executed.
+     * This test focuses on mapping and peeking actions overloaded by SQL streams.
+     * Operations used here are meaningless; we just want to ensure that the pipeline does not skip any operation.
+     *
+     * @param  cities  a feature set containing all cities defined for the test class.
+     */
+    private void verifyStreamOperations(final FeatureSet cities) throws DataStoreException {
+        try (Stream<Feature> features = cities.features(false)) {
+            final AtomicInteger peekCount = new AtomicInteger();
+            final AtomicInteger mapCount  = new AtomicInteger();
+            final long actualPopulations = features.peek(f -> peekCount.incrementAndGet())
+                    .peek(f -> peekCount.incrementAndGet())
+                    .map (f -> {mapCount.incrementAndGet(); return f;})
+                    .peek(f -> peekCount.incrementAndGet())
+                    .map (f -> {mapCount.incrementAndGet(); return f;})
+                    .map (f -> f.getPropertyValue("population"))
+                    .mapToDouble(obj -> ((Number) obj).doubleValue())
+                    .peek(f -> peekCount.incrementAndGet())
+                    .peek(f -> peekCount.incrementAndGet())
+                    .boxed()
+                    .mapToDouble(d -> {mapCount.incrementAndGet(); return d;})
+                    .mapToObj   (d -> {mapCount.incrementAndGet(); return d;})
+                    .mapToDouble(d -> {mapCount.incrementAndGet(); return d;})
+                    .map        (d -> {mapCount.incrementAndGet(); return d;})
+                    .mapToLong  (d -> (long) d)
+                    .sum();
+
+            long expectedPopulations = 0;
+            for (City city : City.values()) expectedPopulations += city.population;
+            assertEquals("Overall population count via Stream pipeline", expectedPopulations, actualPopulations);
+            assertEquals("Number of mapping (by element in the stream)", 24, mapCount.get());
+            assertEquals("Number of peeking (by element in the stream)", 20, peekCount.get());
+        }
+    }
+
+    /**
+     * Tests fetching the content of the Cities table, but using a user-supplied SQL query.
+     */
+    private void verifyFetchCityTableAsQuery(final StorageConnector connector) throws Exception {
+        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("LargeCities",
+                "SELECT * FROM " + SCHEMA + ".\"Cities\" WHERE \"population\" >= 1000000")))
+        {
+            final FeatureSet cities = store.findResource("LargeCities");
+            final Map<String,Integer> countryCount = new HashMap<>();
+            try (Stream<Feature> features = cities.features(false)) {
+                features.forEach((f) -> verifyContent(f, countryCount, false));
+            }
+            assertEquals(Integer.valueOf(1), countryCount.remove("CAN"));
+            assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
+            assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
+            assertTrue(countryCount.isEmpty());
+        }
+    }
+
+    /**
+     * Tests a user-supplied query followed by another query built from filters.
+     */
+    private void verifyNestedSQLQuery(final StorageConnector connector) throws Exception {
+        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("MyParks",
+                "SELECT * FROM " + SCHEMA + ".\"Parks\"")))
+        {
+            final FeatureSet parks = store.findResource("MyParks");
+            /*
+             * Add a filter for parks in France.
+             */
+            final FeatureQuery query = new FeatureQuery();
+            query.setSortBy(FF.sort(FF.property("native_name"), SortOrder.DESCENDING));
+            query.setSelection(FF.equal(FF.property("country"), FF.literal("FRA")));
+            query.setProjection(new FeatureQuery.NamedExpression(FF.property("native_name")));
+            final FeatureSet frenchParks = parks.subset(query);
+            /*
+             * Verify the feature type.
+             */
+            final PropertyType property = TestUtilities.getSingleton(frenchParks.getType().getProperties(true));
+            assertEquals("native_name", property.getName().toString());
+            assertEquals(String.class, ((AttributeType<?>) property).getValueClass());
+            /*
+             * Verify the values.
+             */
+            final Object[] result;
+            try (Stream<Feature> fs = frenchParks.features(false)) {
+                result = fs.map(f -> f.getPropertyValue("native_name")).toArray();
+            }
+            assertArrayEquals(new String[] {"Jardin du Luxembourg", "Jardin des Tuileries"}, result);
+        }
+    }
+
+    /**
+     * Tests a query having limit, offset, filtering of columns and label usage.
+     * When user provides an offset, stream {@linkplain Stream#skip(long) skip operator} should not override it,
+     * but stack on it (i.e. the feature set provide user defined result, and the stream navigate through it).
+     */
+    private void verifyLimitOffsetAndColumnSelectionFromQuery(final StorageConnector connector) throws Exception {
+        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("MyQuery",
+                "SELECT \"english_name\" AS \"title\" " +
+                "FROM " + SCHEMA + ".\"Parks\"\n" +             // Test that multiline text is accepted.
+                "ORDER BY \"english_name\" ASC " +
+                "OFFSET 2 ROWS FETCH NEXT 3 ROWS ONLY")))
+        {
+            final FeatureSet parks = store.findResource("MyQuery");
+            final FeatureType type = parks.getType();
+            final AttributeType<?> property = (AttributeType<?>) TestUtilities.getSingleton(type.getProperties(true));
+            assertEquals("Property name should be label defined in query", "title", property.getName().toString());
+            assertEquals("Attribute should be a string", String.class, property.getValueClass());
+            assertEquals("Column should be nullable.", 0, property.getMinimumOccurs());
+            final Integer precision = AttributeConvention.getMaximalLengthCharacteristic(type, property);
+            assertEquals("Column length constraint should be visible from attribute type.", Integer.valueOf(20), precision);
+            /*
+             * Get third row in the table, as query starts on second one, and we want to skip one entry from there.
+             * Tries to increase limit. The test will ensure it's not possible.
+             */
+            assertArrayEquals(
+                    "Should get fourth and fifth park names from ascending order",
+                    new String[] {"Tuileries Garden", "Yoyogi-kōen"},
+                    getTitles(parks, 1, 4));
+            /*
+             * Get first row only.
+             */
+            assertArrayEquals("Only second third name should be returned",
+                    new String[] {"Shinjuku Gyoen"},
+                    getTitles(parks, 0, 1));
+        }
+    }
+
+    /**
+     * Applies an offset and limit on the given feature set,
+     * then returns the values of the "title" property of all features.
+     */
+    private static String[] getTitles(final FeatureSet parks, final long skip, final long limit) throws DataStoreException {
+        try (Stream<Feature> in = parks.features(false).skip(skip).limit(limit)) {
+            return in.map(f -> f.getPropertyValue("title").toString()).toArray(String[]::new);
+        }
+    }
+
+    /**
+     * Tests a query with a call to {@link Stream#distinct()} on the stream.
+     */
+    private void verifyDistinctQuery(final StorageConnector connector) throws Exception {
+        final Object[] expected;
+        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("Countries",
+                "SELECT \"country\" FROM " + SCHEMA + ".\"Parks\" ORDER BY \"country\"")))
+        {
+            final FeatureSet countries = store.findResource("Countries");
+            try (Stream<Feature> features = countries.features(false).distinct()) {
+                expected = features.map(f -> f.getPropertyValue("country")).toArray();
+            }
+        }
+        assertArrayEquals("Distinct country names, sorted in ascending order",
+                new String[] {"CAN", "FRA", "JPN"}, expected);
     }
 }

@@ -16,19 +16,7 @@
  */
 package org.apache.sis.storage.earthobservation;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreProvider;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.ProbeResult;
-import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
 
 
 /**
@@ -43,177 +31,14 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @version 1.1
  * @since   0.8
  * @module
+ *
+ * @deprecated Moved to the {@link org.apache.sis.storage.landsat} package.
  */
-@StoreMetadata(formatName   = LandsatStoreProvider.NAME,
-               fileSuffixes = "txt",
-               capabilities = Capability.READ)
-public class LandsatStoreProvider extends DataStoreProvider {
-    /**
-     * The format name.
-     */
-    static final String NAME = "Landsat";
-
-    /**
-     * The parameter descriptor to be returned by {@link #getOpenParameters()}.
-     */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(NAME);
-
-    /**
-     * The object to use for verifying if the first keyword is the expected one.
-     */
-    private static final class Peek extends FirstKeywordPeek {
-        /**
-         * The expected keyword after spaces removal.
-         */
-        private static final String KEYWORD = "GROUP=LANDSAT_METADATA_FILE",
-                                 L1_KEYWORD = "GROUP=L1_METADATA_FILE";
-
-        /**
-         * The part in process of being parsed:
-         * <ul>
-         *   <li>{@code KEY} (0) for the {@code "GROUP"} keyword,</li>
-         *   <li>{@code SEPARATOR} (1) for the {@code '='} symbol,</li>
-         *   <li>{@code VALUE} (2) for the {@code "L1_METADATA_FILE"} value.</li>
-         * </ul>
-         */
-        private static final int KEY = 0, SEPARATOR = 1, VALUE = 2;
-
-        /**
-         * {@value #SEPARATOR} if parsing the characters after the {@code =} symbol,
-         * {@value #VALUE} if parsing the non-white characters after {@code =}.
-         */
-        private int part = KEY;
-
-        /**
-         * Creates a new instance.
-         */
-        Peek() {
-            super(KEYWORD.length());
-        }
-
-        /**
-         * Returns the path to the metadata file relative to the directory specified by user.
-         * This method is invoked if the user gave us the directory containing all Landsat files
-         * instead of the path to the metadata file.
-         */
-        @Override
-        protected Path getAuxiliaryPath(final StorageConnector connector) throws DataStoreException {
-            return getMetadataFile(connector.getStorageAs(Path.class));
-        }
-
-        /**
-         * Returns {@code ACCEPT} if the given character is valid for a keyword.
-         */
-        @Override
-        protected int isKeywordChar(final int c) {
-            final int s = super.isKeywordChar(c);
-            if (s == REJECT) {
-                if (c >= '0' && c <= '9' && part == VALUE) {
-                    return ACCEPT;
-                }
-                switch (c) {
-                    case '\t':
-                    case ' ' : if (part < VALUE) {                  return IGNORE;} else break;
-                    case '=' : if (part == KEY)  {part = SEPARATOR; return ACCEPT;} else break;
-                }
-            } else {
-                if (part == SEPARATOR) {
-                    part = VALUE;
-                }
-            }
-            return s;
-        }
-
-        /**
-         * Returns {@code true} if the given first non-white character after the keyword is one of the expected
-         * characters. This implementation expects the first letter of the {@code "GROUP"} keyword for the first
-         * sub-group (unless there is a comment line between them).
-         */
-        @Override
-        protected boolean isPostKeyword(final int c) {
-            return c == 'G' || c == 'g' || c == COMMENT;
-        }
-
-        /**
-         * Returns the value to be returned by {@link LandsatStoreProvider#probeContent(StorageConnector)}
-         * for the given keyword.
-         */
-        @Override
-        protected ProbeResult forKeyword(final char[] keyword, final int length) {
-            final String ks = new String(keyword, 0, length);
-            if (KEYWORD.equalsIgnoreCase(ks) || L1_KEYWORD.equalsIgnoreCase(ks)) {
-                return ProbeResult.SUPPORTED;
-            }
-            return ProbeResult.UNSUPPORTED_STORAGE;
-        }
-    }
-
+@Deprecated
+public class LandsatStoreProvider extends org.apache.sis.storage.landsat.LandsatStoreProvider {
     /**
      * Creates a new provider.
      */
     public LandsatStoreProvider() {
-    }
-
-    /**
-     * Returns a generic name for this data store, used mostly in warnings or error messages.
-     *
-     * @return a short name or abbreviation for the data format.
-     */
-    @Override
-    public String getShortName() {
-        return NAME;
-    }
-
-    /**
-     * Returns a description of all parameters accepted by this provider for opening a Landsat file.
-     *
-     * @return description of available parameters for opening a Landsat file.
-     *
-     * @since 0.8
-     */
-    @Override
-    public ParameterDescriptorGroup getOpenParameters() {
-        return OPEN_DESCRIPTOR;
-    }
-
-    /**
-     * Returns the metadata file inside the given directory if the file exists, or {@code null} otherwise.
-     *
-     * @param  directory  directory to test, or {@code null} if unknown.
-     * @return metadata file, or {@code null} if it does not exist.
-     */
-    static Path getMetadataFile(final Path directory) {
-        if (directory != null) {
-            final Path file = directory.resolve(Paths.get(directory.getFileName().toString().concat("_MTL.txt")));
-            if (Files.isRegularFile(file)) {
-                return file;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link LandsatStore}.
-     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed, only
-     * that there appears to be a reasonable chance of success based on a brief inspection of the storage header.
-     *
-     * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable as a Landsat file.
-     * @throws DataStoreException if an I/O or SQL error occurred.
-     */
-    @Override
-    public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        return new Peek().probeContent(connector);
-    }
-
-    /**
-     * Returns a {@link LandsatStore} implementation associated with this provider.
-     *
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @return a data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException if an error occurred while creating the data store instance.
-     */
-    @Override
-    public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new LandsatStore(this, connector);
     }
 }

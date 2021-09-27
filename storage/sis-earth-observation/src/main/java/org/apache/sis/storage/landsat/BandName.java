@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;
 
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
@@ -32,23 +32,23 @@ import org.apache.sis.util.SimpleInternationalString;
  * @since   1.1
  * @module
  */
-enum LandsatBand {
-    COASTAL_AEROSOL(LandsatBandGroup.REFLECTIVE,   "Coastal Aerosol",                    (short)   433),
-    BLUE           (LandsatBandGroup.REFLECTIVE,   "Blue",                               (short)   482),
-    GREEN          (LandsatBandGroup.REFLECTIVE,   "Green",                              (short)   562),
-    RED            (LandsatBandGroup.REFLECTIVE,   "Red",                                (short)   655),
-    NEAR_INFRARED  (LandsatBandGroup.REFLECTIVE,   "Near-Infrared",                      (short)   865),
-    SWIR1          (LandsatBandGroup.REFLECTIVE,   "Short Wavelength Infrared (SWIR) 1", (short)  1610),
-    SWIR2          (LandsatBandGroup.REFLECTIVE,   "Short Wavelength Infrared (SWIR) 2", (short)  2200),
-    PANCHROMATIC   (LandsatBandGroup.PANCHROMATIC, "Panchromatic",                       (short)   590),
-    CIRRUS         (LandsatBandGroup.REFLECTIVE,   "Cirrus",                             (short)  1375),
-    TIRS1          (LandsatBandGroup.THERMAL,      "Thermal Infrared Sensor (TIRS) 1",   (short) 10800),
-    TIRS2          (LandsatBandGroup.THERMAL,      "Thermal Infrared Sensor (TIRS) 2",   (short) 12000);
+enum BandName {
+    COASTAL_AEROSOL(BandGroupName.REFLECTIVE,   "Coastal Aerosol",                    (short)   433),
+    BLUE           (BandGroupName.REFLECTIVE,   "Blue",                               (short)   482),
+    GREEN          (BandGroupName.REFLECTIVE,   "Green",                              (short)   562),
+    RED            (BandGroupName.REFLECTIVE,   "Red",                                (short)   655),
+    NEAR_INFRARED  (BandGroupName.REFLECTIVE,   "Near-Infrared",                      (short)   865),
+    SWIR1          (BandGroupName.REFLECTIVE,   "Short Wavelength Infrared (SWIR) 1", (short)  1610),
+    SWIR2          (BandGroupName.REFLECTIVE,   "Short Wavelength Infrared (SWIR) 2", (short)  2200),
+    PANCHROMATIC   (BandGroupName.PANCHROMATIC, "Panchromatic",                       (short)   590),
+    CIRRUS         (BandGroupName.REFLECTIVE,   "Cirrus",                             (short)  1375),
+    TIRS1          (BandGroupName.THERMAL,      "Thermal Infrared Sensor (TIRS) 1",   (short) 10800),
+    TIRS2          (BandGroupName.THERMAL,      "Thermal Infrared Sensor (TIRS) 2",   (short) 12000);
 
     /**
      * Group in which this band belong.
      */
-    final LandsatBandGroup group;
+    final BandGroupName group;
 
     /**
      * Localized name of Landsat band.
@@ -65,7 +65,7 @@ enum LandsatBand {
     /**
      * Creates a new enumeration value.
      */
-    private LandsatBand(final LandsatBandGroup group, final String name, final short wavelength) {
+    private BandName(final BandGroupName group, final String name, final short wavelength) {
         this.group      = group;
         this.title      = new SimpleInternationalString(name);
         this.wavelength = wavelength;

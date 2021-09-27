@@ -74,7 +74,7 @@ import static org.junit.Assert.*;
  * after any upgrade of the EPSG dataset.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -118,7 +118,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Chatham Islands Datum",                                   "Chatham Islands Datum");
         rd("Corrego Alegre",                                          "Corrego Alegre");
         rd("Croatian Terrestrial Reference System",                   "Croatian Reference System");
-        rd("Croatian Vertical Reference System",                      "Croatian Reference System");
+        rd("Croatian Vertical Reference Datum",                       "Croatian Reference System");
         rd("Danger 1950",                                             "Saint Pierre et Miquelon 1950");
         rd("Dansk",                                                   "Dansk");
         rd("Dealul Piscului",                                         "Dealul Piscului");
@@ -152,7 +152,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Helsinki",                                                "Helsinki");
         rd("High Water",                                              "High Water");
         rd("Higher High Water",                                       "High Water");
-        rd("Highest Astronomic Tide",                                 "High Water");
+        rd("Highest Astronomical Tide",                               "High Water");
         rd("Hong Kong",                                               "Hong Kong");
         rd("Hungarian",                                               "Hungarian Datum");
         rd("IG05",                                                    "Israeli Grid");
@@ -180,7 +180,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Latvia",                                                  "Latvia");
         rd("Lisbon",                                                  "Lisbon");
         rd("Lower Low Water Large Tide",                              "Low Water");
-        rd("Lowest Astronomic Tide",                                  "Low Water");
+        rd("Lowest Astronomical Tide",                                "Low Water");
         rd("Macao",                                                   "Macao");
         rd("Makassar",                                                "Makassar");
         rd("Manoca",                                                  "Manoca");
@@ -222,7 +222,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Norway Normal Null",                                      "Norway Normal Null");
         rd("Ordnance Datum Newlyn",                                   "Ordnance Datum Newlyn");
         rd("OSGB",                                                    "OSGB");
-        rd("Padang 1884",                                             "Padang 1884");
         rd("Parametry Zemli 1990",                                    "Parametry Zemli 1990");
         rd("PDO Height Datum 1993",                                   "PDO Survey / Height Datum 1993");
         rd("PDO Survey Datum 1993",                                   "PDO Survey / Height Datum 1993");
@@ -356,7 +355,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "9.7");
+        properties.setProperty("FACTORY.VERSION", "9.9.1");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"http://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +

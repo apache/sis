@@ -278,7 +278,7 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>GRS1980 properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td>4019 &nbsp;(<i>datum:</i> 6019, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
+     *   <tr><th>EPSG identifiers:</th>        <td><del>4019</del> &nbsp;(<i>datum:</i> 6019, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"Unknown datum based upon the GRS 1980 ellipsoid."</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
@@ -297,7 +297,7 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>Sphere properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td>4047 &nbsp;(<i>datum:</i> 6047, &nbsp;<i>ellipsoid:</i> 7048)</td></tr>
+     *   <tr><th>EPSG identifiers:</th>        <td><del>4047</del> &nbsp;(<i>datum:</i> 6047, &nbsp;<i>ellipsoid:</i> 7048)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"Unspecified datum based upon the GRS 1980 Authalic Sphere"</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6371007</td></tr>
@@ -622,8 +622,8 @@ public enum CommonCRS {
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4258</td></tr>
      *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td>4267</td></tr>
      *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td>4269</td></tr>
-     *   <tr><td>GRS 1980</td>                 <td>{@link #GRS1980}</td><td>4019</td></tr>
-     *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td>4047</td></tr>
+     *   <tr><td>GRS 1980</td>                 <td>{@link #GRS1980}</td><td><del>4019</del></td></tr>
+     *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td><del>4047</del></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td>4322</td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4326</td></tr>
      * </table></blockquote>

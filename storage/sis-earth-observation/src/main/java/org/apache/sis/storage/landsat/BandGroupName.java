@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;
 
 import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.util.InternationalString;
@@ -29,7 +29,7 @@ import org.opengis.util.InternationalString;
  * @since   1.1
  * @module
  */
-enum LandsatBandGroup {
+enum BandGroupName {
     /**
      * Group for bands 1, 2, 3, 4, 5, 6, 7, 9.
      */
@@ -64,7 +64,7 @@ enum LandsatBandGroup {
     /**
      * Creates a new enumeration value.
      */
-    private LandsatBandGroup(final short name, final InternationalString measurement, final boolean reflectance) {
+    private BandGroupName(final short name, final InternationalString measurement, final boolean reflectance) {
         this.title = Vocabulary.formatInternational(name);
         this.measurement = measurement;
         this.reflectance = reflectance;

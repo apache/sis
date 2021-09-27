@@ -76,7 +76,7 @@ public final strictfp class CartesianToSphericalTest extends TransformTestCase {
     public void testConsistency() throws FactoryException, TransformException {
         transform = CartesianToSpherical.INSTANCE.completeTransform(SphericalToCartesianTest.factory());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
-        tolerance = 2E-6;
+        tolerance = 3E-6;
         verifyInDomain(new double[] {-100, -100, -100},      // Minimal coordinates
                        new double[] {+100, +100, +100},      // Maximal coordinates
                        new int[]    {  10,   10,   10},

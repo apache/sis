@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;
 
 import java.util.regex.Matcher;
 import java.io.BufferedReader;
@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
- * Tests {@link LandsatReader}.
+ * Tests {@link MetadataReader}.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -50,23 +50,23 @@ import static org.apache.sis.test.TestUtilities.date;
  * @since   0.8
  * @module
  */
-public class LandsatReaderTest extends TestCase {
+public class MetadataReaderTest extends TestCase {
     /**
      * Tests the regular expression used for detecting the
      * “Image courtesy of the U.S. Geological Survey” credit.
      */
     @Test
     public void testCreditPattern() {
-        final Matcher m = LandsatReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
+        final Matcher m = MetadataReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
         assertTrue("matches", m.find());
         assertEquals("end", 22, m.end());
     }
 
     /**
-     * Tests {@link LandsatReader#read(BufferedReader)}.
+     * Tests {@link MetadataReader#read(BufferedReader)}.
      *
      * <p><b>Note for maintainer:</b> if the result of this test changes, consider updating
-     * <a href="./doc-files/LandsatMetadata.html">./doc-files/LandsatMetadata.html</a> accordingly.</p>
+     * <a href="./doc-files/MetadataMapping.html">./doc-files/MetadataMapping.html</a> accordingly.</p>
      *
      * @throws IOException if an error occurred while reading the test file.
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
@@ -76,9 +76,9 @@ public class LandsatReaderTest extends TestCase {
     public void testRead() throws IOException, DataStoreException, FactoryException {
         final Metadata actual;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
-                LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
+                MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final LandsatReader reader = new LandsatReader(null, "LandsatTest.txt", new AbstractResource(null));
+            final MetadataReader reader = new MetadataReader(null, "LandsatTest.txt", new AbstractResource(null));
             reader.read(in);
             actual = reader.getMetadata();
         }
