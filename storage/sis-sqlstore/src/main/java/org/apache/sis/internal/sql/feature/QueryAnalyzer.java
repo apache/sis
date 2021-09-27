@@ -108,53 +108,53 @@ final class QueryAnalyzer extends FeatureAnalyzer {
      */
     @Override
     Relation[] getForeignerKeys(final Relation.Direction direction) throws SQLException, DataStoreException {
-        if (Relation.Direction.IMPORT.equals(direction)) {
-            List<String> primaryKeyColumns = new ArrayList<>();
-            final List<Relation> relations = new ArrayList<>();
-            for (final Map.Entry<TableReference, Map<String,Column>> entry : columnsPerTable.entrySet()) {
-                final Set<String> columnNames = entry.getValue().keySet();
-                final TableReference src = entry.getKey();
-                /*
-                 * Search for foreigner keys in the table where the query columns come from.
-                 * Foreigner keys can be handled as such only if all required columns are in the query.
-                 * Otherwise we will handle those columns as ordinary attributes.
-                 */
-                try (ResultSet reflect = analyzer.metadata.getImportedKeys(src.catalog, src.schema, src.table)) {
-                    if (reflect.next()) do {
-                        final Relation relation = new Relation(analyzer, direction, reflect);
-                        if (columnNames.containsAll(relation.getForeignerKeys())) {
+        final boolean isImport = (direction == Relation.Direction.IMPORT);
+        List<String> primaryKeyColumns = isImport ? new ArrayList<>() : null;
+        final List<Relation> relations = new ArrayList<>();
+        for (final Map.Entry<TableReference, Map<String,Column>> entry : columnsPerTable.entrySet()) {
+            final Set<String> columnNames = entry.getValue().keySet();
+            final TableReference src = entry.getKey();
+            /*
+             * Search for foreigner keys in the table where the query columns come from.
+             * Foreigner keys can be handled as such only if all required columns are in the query.
+             * Otherwise we will handle those columns as ordinary attributes.
+             */
+            try (ResultSet reflect = isImport ? analyzer.metadata.getImportedKeys(src.catalog, src.schema, src.table)
+                                              : analyzer.metadata.getExportedKeys(src.catalog, src.schema, src.table))
+            {
+                if (reflect.next()) do {
+                    final Relation relation = new Relation(analyzer, direction, reflect);
+                    if (columnNames.containsAll(relation.getForeignerKeys())) {
+                        if (isImport) {
                             addForeignerKeys(relation);
-                            relations.add(relation);
                         }
-                    } while (!reflect.isClosed());
-                }
-                /*
-                 * Opportunistically search for primary keys. They are not needed by this method,
-                 * but will be needed later by `createAttributes(…)` and other methods.
-                 * This is a "all or nothing" operations: if some primary key columns are missing
-                 * from the query, then we can not have primary key at all for this query.
-                 */
-                if (primaryKeyColumns != null) {
-                    try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(src.catalog, src.schema, src.table)) {
-                        while (reflect.next()) {
-                            primaryKeyColumns.add(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME));
-                        }
-                        if (columnNames.containsAll(primaryKeyColumns)) {
-                            primaryKey.addAll(primaryKeyColumns);
-                            primaryKeyColumns.clear();
-                        } else {
-                            primaryKey.clear();
-                            primaryKeyColumns = null;       // Means to not search anymore.
-                        }
+                        relations.add(relation);
+                    }
+                } while (!reflect.isClosed());
+            }
+            /*
+             * Opportunistically search for primary keys. They are not needed by this method,
+             * but will be needed later by `createAttributes(…)` and other methods.
+             * This is a "all or nothing" operations: if some primary key columns are missing
+             * from the query, then we can not have primary key at all for this query.
+             */
+            if (primaryKeyColumns != null) {
+                try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(src.catalog, src.schema, src.table)) {
+                    while (reflect.next()) {
+                        primaryKeyColumns.add(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME));
+                    }
+                    if (columnNames.containsAll(primaryKeyColumns)) {
+                        primaryKey.addAll(primaryKeyColumns);
+                        primaryKeyColumns.clear();
+                    } else {
+                        primaryKey.clear();
+                        primaryKeyColumns = null;       // Means to not search anymore.
                     }
                 }
             }
-            final int size = relations.size();
-            if (size != 0) {
-                return relations.toArray(new Relation[size]);
-            }
         }
-        return Relation.EMPTY;
+        final int size = relations.size();
+        return (size != 0) ? relations.toArray(new Relation[size]) : Relation.EMPTY;
     }
 
     /**

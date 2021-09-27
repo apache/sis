@@ -297,14 +297,38 @@ abstract class FeatureAnalyzer {
      * @throws DataStoreException if a logical error occurred while analyzing the relations.
      * @throws Exception for WKB parsing error or other kinds of errors.
      */
-    PrimaryKey createAssociations(Relation[] exportedKeys) throws Exception {
+    final PrimaryKey createAssociations(Relation[] exportedKeys) throws Exception {
         if (primaryKey.size() > 1) {
             if (!primaryKeyNullable) {
                 primaryKeyClass = Numbers.wrapperToPrimitive(primaryKeyClass);
             }
             primaryKeyClass = Classes.changeArrayDimension(primaryKeyClass, 1);
         }
-        return PrimaryKey.create(primaryKeyClass, primaryKey);
+        final PrimaryKey pk = PrimaryKey.create(primaryKeyClass, primaryKey);
+        int count = 0;
+        for (final Relation dependency : exportedKeys) {
+            if (dependency != null) {
+                final GenericName typeName = dependency.getName(analyzer);
+                String propertyName = toHeuristicLabel(typeName.tip().toString());
+                final String base = propertyName;
+                while (feature.isNameUsed(propertyName)) {
+                    propertyName = base + '-' + ++count;
+                }
+                dependency.propertyName = propertyName;
+                final Table table = analyzer.table(dependency, typeName, null);   // `null` because exported, not imported.
+                final AssociationRoleBuilder association;
+                if (table != null) {
+                    dependency.setSearchTable(analyzer, table, pk, Relation.Direction.EXPORT);
+                    association = feature.addAssociation(table.featureType);
+                } else {
+                    association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
+                }
+                association.setName(propertyName)
+                           .setMinimumOccurs(0)
+                           .setMaximumOccurs(Integer.MAX_VALUE);
+            }
+        }
+        return pk;
     }
 
     /**
@@ -330,7 +354,7 @@ abstract class FeatureAnalyzer {
      * @param  propertyName  name of the property to rewrite.
      * @return proposed human-readable property name.
      */
-    final String toHeuristicLabel(String propertyName) {
+    private String toHeuristicLabel(String propertyName) {
         if (countLowerCaseStarts > 0) {
             final CharSequence words = CharSequences.camelCaseToWords(propertyName, true);
             final int first = Character.codePointAt(words, 0);

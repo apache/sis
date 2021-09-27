@@ -228,9 +228,9 @@ public final strictfp class SQLStoreTest extends TestCase {
      *
      * @param  feature       a feature returned by the stream.
      * @param  countryCount  number of time that the each country has been seen while iterating over the cities.
-     * @param  hasExport     whether the feature is expected to have associations for "export" foreigner keys.
+     * @param  isTable       {@code true} if the resource is from a table, or {@code false} if from a query.
      */
-    private void verifyContent(final Feature feature, final Map<String,Integer> countryCount, final boolean hasExport) {
+    private void verifyContent(final Feature feature, final Map<String,Integer> countryCount, final boolean isTable) {
         final String city = feature.getPropertyValue("native_name").toString();
         final City c;
         boolean isCanada = false;
@@ -266,23 +266,23 @@ public final strictfp class SQLStoreTest extends TestCase {
          * Associations using Relation.Direction.EXPORT.
          * Contrarily to the IMPORT case, those associations can contain many values.
          */
-        if (hasExport) {
-            final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
-            assertNotNull("parks", actualParks);
-            assertEquals("parks.length", c.parks.length, actualParks.size());
-            final Collection<String> expectedParks = new HashSet<>(Arrays.asList(c.parks));
-            for (final Object park : actualParks) {
-                final Feature pf = (Feature) park;
-                final String npn = (String) pf.getPropertyValue("native_name");
-                final String epn = (String) pf.getPropertyValue("english_name");
-                assertNotNull("park.native_name",  npn);
-                assertNotNull("park.english_name", epn);
-                assertNotEquals("park.names", npn, epn);
-                assertTrue("park.english_name", expectedParks.remove(epn));
-                /*
-                 * Verify the reverse association form Parks to Cities.
-                 * This create a cyclic graph, but SQLStore is capable to handle it.
-                 */
+        final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
+        assertNotNull("parks", actualParks);
+        assertEquals("parks.length", c.parks.length, actualParks.size());
+        final Collection<String> expectedParks = new HashSet<>(Arrays.asList(c.parks));
+        for (final Object park : actualParks) {
+            final Feature pf = (Feature) park;
+            final String npn = (String) pf.getPropertyValue("native_name");
+            final String epn = (String) pf.getPropertyValue("english_name");
+            assertNotNull("park.native_name",  npn);
+            assertNotNull("park.english_name", epn);
+            assertNotEquals("park.names", npn, epn);
+            assertTrue("park.english_name", expectedParks.remove(epn));
+            /*
+             * Verify the reverse association form Parks to Cities.
+             * This create a cyclic graph, but SQLStore is capable to handle it.
+             */
+            if (isTable) {
                 assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
             }
         }

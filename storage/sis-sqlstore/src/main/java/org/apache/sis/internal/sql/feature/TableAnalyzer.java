@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.util.Strings;
@@ -170,46 +168,6 @@ final class TableAnalyzer extends FeatureAnalyzer {
             }
         }
         return attributes.toArray(new Column[attributes.size()]);
-    }
-
-    /**
-     * Adds the associations created by other tables having foreigner keys to this table.
-     * We infer the column name from the target type. We may have a name clash with other columns,
-     * in which case an arbitrary name change is applied.
-     *
-     * <h4>Side effects</h4>
-     * <p><b>Required by this method:</b> {@link #primaryKeyClass}.</p>
-     * <p><b>Computed by this method:</b> none.</p>
-     *
-     * @eturn the components of the primary key, or {@code null} if there is no primary key.
-     */
-    @Override
-    final PrimaryKey createAssociations(final Relation[] exportedKeys) throws Exception {
-        final PrimaryKey pk = super.createAssociations(exportedKeys);
-        int count = 0;
-        for (final Relation dependency : exportedKeys) {
-            if (dependency != null) {
-                final GenericName typeName = dependency.getName(analyzer);
-                String propertyName = toHeuristicLabel(typeName.tip().toString());
-                final String base = propertyName;
-                while (feature.isNameUsed(propertyName)) {
-                    propertyName = base + '-' + ++count;
-                }
-                dependency.propertyName = propertyName;
-                final Table table = analyzer.table(dependency, typeName, null);   // `null` because exported, not imported.
-                final AssociationRoleBuilder association;
-                if (table != null) {
-                    dependency.setSearchTable(analyzer, table, pk, Relation.Direction.EXPORT);
-                    association = feature.addAssociation(table.featureType);
-                } else {
-                    association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
-                }
-                association.setName(propertyName)
-                           .setMinimumOccurs(0)
-                           .setMaximumOccurs(Integer.MAX_VALUE);
-            }
-        }
-        return pk;
     }
 
     /**
