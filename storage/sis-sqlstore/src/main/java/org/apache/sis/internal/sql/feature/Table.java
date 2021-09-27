@@ -98,7 +98,7 @@ final class Table extends AbstractFeatureSet {
      * This array shall not be modified after construction.
      *
      * <p>Columns may have alias if it was necessary to avoid name collisions.
-     * The alias is given by {@link Column#label} and will be the name used in {@link FeatureType}.</p>
+     * The alias is given by {@link Column#propertyName} and will be the name used in {@link FeatureType}.</p>
      */
     final Column[] attributes;
 
@@ -266,7 +266,7 @@ final class Table extends AbstractFeatureSet {
     final void appendTo(TreeTable.Node parent) {
         parent = Relation.newChild(parent, featureType.getName().toString());
         for (final Column attribute : attributes) {
-            TableReference.newChild(parent, attribute.label);
+            TableReference.newChild(parent, attribute.propertyName);
         }
         appendAll(parent, importedKeys, " → ");
         appendAll(parent, exportedKeys, " ← ");
@@ -320,7 +320,7 @@ final class Table extends AbstractFeatureSet {
             if (m == null) {
                 m = new HashMap<>(Containers.hashMapCapacity(attributes.length));
                 for (final Column c : attributes) {
-                    String label = c.label;
+                    String label = c.propertyName;
                     m.put(label, c);
                     final int s = label.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
                     if (s >= 0) {

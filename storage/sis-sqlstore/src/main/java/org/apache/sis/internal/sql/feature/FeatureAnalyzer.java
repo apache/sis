@@ -253,7 +253,7 @@ abstract class FeatureAnalyzer {
                      * do not know which column describes better the association (often there is none).
                      * In such case we use the foreigner key name as a fallback.
                      */
-                    dependency.setPropertyName(column.label, count++);
+                    dependency.setPropertyName(column.propertyName, count++);
                     final AssociationRoleBuilder association;
                     if (table != null) {
                         dependency.setSearchTable(analyzer, table, table.primaryKey, Relation.Direction.IMPORT);
@@ -272,8 +272,8 @@ abstract class FeatureAnalyzer {
                      * column should rarely be used directly.
                      */
                     if (attribute != null) {
-                        attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column.label));
-                        column.label = attribute.getName().toString();
+                        attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column.propertyName));
+                        column.propertyName = attribute.getName().toString();
                         attribute = null;
                     }
                 }

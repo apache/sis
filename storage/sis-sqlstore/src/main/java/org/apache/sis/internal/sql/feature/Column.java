@@ -23,7 +23,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.sql.Reflection;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.util.Strings;
@@ -62,7 +61,13 @@ public final class Column {
      * Title to use for displays. This is the name specified by the {@code AS} keyword in a {@code SELECT} clause.
      * This is never null but may be identical to {@link #name} if no label was specified.
      */
-    String label;
+    public final String label;
+
+    /**
+     * Name to use for feature property. This is the same as {@link #label} unless there is a name collision.
+     * In that case the property name is modified for avoiding the collision.
+     */
+    String propertyName;
 
     /**
      * Type of values as one of the constant enumerated in {@link Types} class.
@@ -130,6 +135,7 @@ public final class Column {
         typeName     = metadata.getString(Reflection.TYPE_NAME);
         precision    = metadata.getInt(Reflection.COLUMN_SIZE);
         isNullable   = Boolean.TRUE.equals(SQLUtilities.parseBoolean(metadata.getString(Reflection.IS_NULLABLE)));
+        propertyName = label;
     }
 
     /**
@@ -141,12 +147,13 @@ public final class Column {
      * @see ResultSet#getMetaData()
      */
     Column(final ResultSetMetaData metadata, final int column) throws SQLException {
-        name        = metadata.getColumnName(column);
-        label       = metadata.getColumnLabel(column);
-        type        = metadata.getColumnType(column);
-        typeName    = metadata.getColumnTypeName(column);
-        precision   = metadata.getPrecision(column);
-        isNullable  = metadata.isNullable(column) == ResultSetMetaData.columnNullable;
+        name         = metadata.getColumnName(column);
+        label        = metadata.getColumnLabel(column);
+        type         = metadata.getColumnType(column);
+        typeName     = metadata.getColumnTypeName(column);
+        precision    = metadata.getPrecision(column);
+        isNullable   = metadata.isNullable(column) == ResultSetMetaData.columnNullable;
+        propertyName = label;
     }
 
     /**
@@ -203,7 +210,7 @@ public final class Column {
      */
     final AttributeTypeBuilder<?> createAttribute(final FeatureTypeBuilder feature) {
         final Class<?> type = valueGetter.valueType;
-        final AttributeTypeBuilder<?> attribute = feature.addAttribute(type).setName(label);
+        final AttributeTypeBuilder<?> attribute = feature.addAttribute(type).setName(propertyName);
         if (precision > 0 && CharSequence.class.isAssignableFrom(type)) {
             attribute.setMaximalLength(precision);
         }
@@ -215,27 +222,14 @@ public final class Column {
     }
 
     /**
-     * Appends the name and label of this column in a SQL statement.
-     *
-     * @param  target  builder of SQL statement where to append this column name.
-     * @return {@code target} for invocation chaining.
-     */
-    final SQLBuilder append(final SQLBuilder target) {
-        target.appendIdentifier(name);
-        if (!name.equals(label)) {
-            target.append(" AS ").appendIdentifier(label);
-        }
-        return target;
-    }
-
-    /**
      * Returns a string representation for debugging purposes.
      *
      * @return a string representation of this column.
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "name", name, "label", label, "type", type, "typeName", typeName,
+        return Strings.toString(getClass(),
+                "name", name, "propertyName", propertyName, "type", type, "typeName", typeName,
                 "geometryType", geometryType, "precision", precision, "isNullable", isNullable);
     }
 }

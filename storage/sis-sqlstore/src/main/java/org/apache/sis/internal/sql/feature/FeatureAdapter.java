@@ -172,7 +172,7 @@ final class FeatureAdapter {
          */
         final SQLBuilder sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT);
         for (final Column column : attributes) {
-            appendColumn(sql, column.name, columnIndices);
+            appendColumn(sql, column.label, columnIndices);
         }
         /*
          * Collect information about associations in local arrays before to assign
@@ -326,7 +326,7 @@ final class FeatureAdapter {
             final Column column = attributes[i];
             final Object value = column.valueGetter.getValue(result, i+1);
             if (value != null) {
-                feature.setPropertyValue(column.label, value);
+                feature.setPropertyValue(column.propertyName, value);
             }
         }
         return feature;

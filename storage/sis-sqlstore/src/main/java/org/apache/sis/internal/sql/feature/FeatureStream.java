@@ -317,12 +317,12 @@ final class FeatureStream extends DeferredStream<Feature> {
         if (distinct) {
             String separator = "DISTINCT ";
             for (final Column attribute : table.attributes) {
-                attribute.append(sql.append(separator));
+                sql.append(separator).appendIdentifier(attribute.label);
                 separator = ", ";
             }
         } else {
             // If we want a count and no distinct clause is specified, a single column is sufficient.
-            table.attributes[0].append(sql);
+            sql.appendIdentifier(table.attributes[0].label);
         }
         table.appendFromClause(sql.append(')'));
         if (selection != null) {
