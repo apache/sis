@@ -162,7 +162,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * <div class="note"><b>Example:</b>
      * A Landsat data set is a collection of files in a directory or ZIP file,
      * which includes more than 10 GeoTIFF files (one image per band or product for a scene).
-     * {@link org.apache.sis.storage.earthobservation.LandsatStore} is a data store opening the Landsat
+     * {@link org.apache.sis.storage.landsat.LandsatStore} is a data store opening the Landsat
      * metadata file as the main file, then opening each band/product using a GeoTIFF data store.
      * Those bands/products are components of the Landsat data store.</div>
      *

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
+package org.apache.sis.storage.landsat;
 
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.setup.OptionKey;
@@ -43,7 +43,7 @@ public final strictfp class LandsatStoreProviderTest extends TestCase {
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
-        final StorageConnector connector = new StorageConnector(LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"));
+        final StorageConnector connector = new StorageConnector(MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"));
         connector.setOption(OptionKey.ENCODING, StandardCharsets.UTF_8);
         final LandsatStoreProvider provider = new LandsatStoreProvider();
         assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector));

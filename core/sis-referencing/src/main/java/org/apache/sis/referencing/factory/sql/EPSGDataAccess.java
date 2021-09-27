@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
@@ -175,6 +176,16 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Note that vertical datum type is no longer part of ISO 19111:2007.
      */
     static final VerticalDatumType VERTICAL_DATUM_TYPE = VerticalDatumType.GEOIDAL;
+
+    /**
+     * EPSG codes of parameters containing the EPSG code of another object.
+     * Those parameters are integers (stored as {@code double} in the database)
+     * without unit (associated to {@link Units#UNITY} in the database).
+     */
+    private static final int[] EPSG_CODE_PARAMETERS = {
+        1048,       // EPSG code for Interpolation CRS
+        1062        // EPSG code for "standard" CT
+    };
 
     /**
      * The deprecated ellipsoidal coordinate systems and their replacements. Those coordinate systems are deprecated
@@ -2532,48 +2543,58 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String  name        = getString   (code, result, 2);
                 final String  description = getOptionalString (result, 3);
                 final boolean deprecated  = getOptionalBoolean(result, 4);
-                Class<?> type = Double.class;
                 /*
-                 * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
-                 * then the type is assumed to be URI as a string. Otherwise, the type is a floating point number.
+                 * If the parameter is an integer code, the type is integer and there is no unit.
                  */
-                try (ResultSet r = executeQuery("ParameterType",
-                        "SELECT PARAM_VALUE_FILE_REF FROM [Coordinate_Operation Parameter Value]" +
-                        " WHERE (PARAMETER_CODE = ?) AND PARAM_VALUE_FILE_REF IS NOT NULL", epsg))
-                {
-                    while (r.next()) {
-                        String element = getOptionalString(r, 1);
-                        if (element != null && !element.isEmpty()) {
-                            type = String.class;
-                            break;
+                Class<?> type;
+                final Set<Unit<?>> units;
+                if (epsg != null && Arrays.binarySearch(EPSG_CODE_PARAMETERS, epsg) >= 0) {
+                    type  = Integer.class;
+                    units = Collections.emptySet();
+                } else {
+                    /*
+                     * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
+                     * then the type is assumed to be URI as a string. Otherwise, the type is a floating point number.
+                     */
+                    type = Double.class;
+                    try (ResultSet r = executeQuery("ParameterType",
+                            "SELECT PARAM_VALUE_FILE_REF FROM [Coordinate_Operation Parameter Value]" +
+                            " WHERE (PARAMETER_CODE = ?) AND PARAM_VALUE_FILE_REF IS NOT NULL", epsg))
+                    {
+                        while (r.next()) {
+                            String element = getOptionalString(r, 1);
+                            if (element != null && !element.isEmpty()) {
+                                type = String.class;
+                                break;
+                            }
                         }
                     }
-                }
-                /*
-                 * Search for units.   We typically have many different units but all of the same dimension
-                 * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
-                 * one element and that element will be the most frequently used unit.  But some parameters
-                 * accept units of different dimensions. For example the "Coordinate 1 of evaluation point"
-                 * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
-                 * will have two elements.
-                 */
-                final Set<Unit<?>> units = new LinkedHashSet<>();
-                try (ResultSet r = executeQuery("ParameterUnit",
-                        "SELECT UOM_CODE FROM [Coordinate_Operation Parameter Value]" +
-                        " WHERE (PARAMETER_CODE = ?)" +
-                        " GROUP BY UOM_CODE" +
-                        " ORDER BY COUNT(UOM_CODE) DESC", epsg))
-                {
-next:               while (r.next()) {
-                        final String c = getOptionalString(r, 1);
-                        if (c != null) {
-                            final Unit<?> candidate = owner.createUnit(c);
-                            for (final Unit<?> e : units) {
-                                if (candidate.isCompatible(e)) {
-                                    continue next;
+                    /*
+                     * Search for units.   We typically have many different units but all of the same dimension
+                     * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
+                     * one element and that element will be the most frequently used unit.  But some parameters
+                     * accept units of different dimensions. For example the "Coordinate 1 of evaluation point"
+                     * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
+                     * will have two elements.
+                     */
+                    units = new LinkedHashSet<>();
+                    try (ResultSet r = executeQuery("ParameterUnit",
+                            "SELECT UOM_CODE FROM [Coordinate_Operation Parameter Value]" +
+                            " WHERE (PARAMETER_CODE = ?)" +
+                            " GROUP BY UOM_CODE" +
+                            " ORDER BY COUNT(UOM_CODE) DESC", epsg))
+                    {
+next:                   while (r.next()) {
+                            final String c = getOptionalString(r, 1);
+                            if (c != null) {
+                                final Unit<?> candidate = owner.createUnit(c);
+                                for (final Unit<?> e : units) {
+                                    if (candidate.isCompatible(e)) {
+                                        continue next;
+                                    }
                                 }
+                                units.add(candidate);
                             }
-                            units.add(candidate);
                         }
                     }
                 }
@@ -2680,22 +2701,7 @@ next:               while (r.next()) {
              " ORDER BY CU.SORT_ORDER", method, operation))
         {
             while (result.next()) {
-                final String name  = getString(operation, result, 1);
-                final double value = getOptionalDouble(result, 2);
-                final Unit<?> unit;
-                String reference;
-                if (Double.isNaN(value)) {
-                    /*
-                     * If no numeric values were provided in the database, then the values should be
-                     * in some external file. It may be a file in the $SIS_DATA/DatumChanges directory.
-                     */
-                    reference = getString(operation, result, 3);
-                    unit = null;
-                } else {
-                    reference = null;
-                    final String unitCode = getOptionalString(result, 4);
-                    unit = (unitCode != null) ? owner.createUnit(unitCode) : null;
-                }
+                final String name = getString(operation, result, 1);
                 final ParameterValue<?> param;
                 try {
                     param = parameters.parameter(name);
@@ -2712,6 +2718,25 @@ next:               while (r.next()) {
                      */
                     throw (NoSuchIdentifierException) new NoSuchIdentifierException(error().getString(
                             Errors.Keys.CanNotSetParameterValue_1, name), name).initCause(exception);
+                }
+                final double value = getOptionalDouble(result, 2);
+                Unit<?> unit = null;
+                String reference;
+                if (Double.isNaN(value)) {
+                    /*
+                     * If no numeric values were provided in the database, then the values should be
+                     * in some external file. It may be a file in the $SIS_DATA/DatumChanges directory.
+                     */
+                    reference = getString(operation, result, 3);
+                } else {
+                    reference = null;
+                    final String unitCode = getOptionalString(result, 4);
+                    if (unitCode != null) {
+                        unit = owner.createUnit(unitCode);
+                        if (Units.UNITY.equals(unit) && param.getUnit() == null) {
+                            unit = null;
+                        }
+                    }
                 }
                 try {
                     if (reference != null) {

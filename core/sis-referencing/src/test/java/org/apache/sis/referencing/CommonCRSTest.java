@@ -186,7 +186,7 @@ public final strictfp class CommonCRSTest extends TestCase {
 
         final CoordinateSystem cs = crs.getCoordinateSystem();
         final String name = cs.getName().getCode();
-        assertTrue(name, name.startsWith("Earth centred"));
+        assertTrue(name, name.startsWith("Cartesian 3D"));
         assertEquals("dimension", 3, cs.getDimension());
         assertAxisDirectionsEqual(name, cs, AxisDirection.GEOCENTRIC_X,
                 AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);

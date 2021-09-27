@@ -14,32 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.landsat;
+
+import java.util.regex.Matcher;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
- * Metadata readers for some format used in Earth observation (Landsat, MODIS).
- * This package includes mapping from the following formats to ISO 19115 metadata:
- *
- * <table class="sis">
- *   <caption>Earth observation formats</caption>
- *   <tr>
- *     <th>Format</th>
- *     <th>Provider</th>
- *     <th>Apache SIS notes</th>
- *   </tr><tr>
- *     <td>Landsat 8 level 1</td>
- *     <td>U.S. Geological Survey (USGS)</td>
- *     <td><a href="../landsat/doc-files/MetadataMapping.html">Mapping from/to ISO 19115</a></td>
- *   </tr>
- * </table>
+ * Tests {@link MetadataReader}.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ * @since   0.8
  * @module
- *
- * @deprecated Moved to {@link org.apache.sis.storage.landsat}.
  */
-@Deprecated
-package org.apache.sis.storage.earthobservation;
+public class MetadataReaderTest extends TestCase {
+    /**
+     * Tests the regular expression used for detecting the
+     * “Image courtesy of the U.S. Geological Survey” credit.
+     */
+    @Test
+    public void testCreditPattern() {
+        final Matcher m = MetadataReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
+        assertTrue("matches", m.find());
+        assertEquals("end", 22, m.end());
+    }
+}

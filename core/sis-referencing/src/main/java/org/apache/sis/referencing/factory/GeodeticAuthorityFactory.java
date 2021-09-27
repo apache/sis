@@ -262,7 +262,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:4230</td> <td>Geographic</td>    <td>European Datum 1950</td></tr>
      *   <tr><td>EPSG:4258</td> <td>Geographic</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
      *   <tr><td>EPSG:4937</td> <td>Geographic 3D</td> <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG:4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
      * </table></div>
      *
      * <h4>Default implementation</h4>

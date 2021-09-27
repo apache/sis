@@ -14,33 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.earthobservation;
-
-import java.util.regex.Matcher;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 
 /**
- * Tests {@link LandsatReader}.
+ * Reader of Landsat 8 level 1-2 data.
+ * Those data are produced by the U.S. Geological Survey (USGS).
+ * This reader takes in input the directory containing the files for a Landsat scene.
+ * Such directory is made of metadata files in text or XML formal and GeoTIFF files.
+ * The text file is parsed and <a href="doc-files/MetadataMapping.html">mapped to ISO 19115 metadata</a>.
+ * The GeoTIFF files are read using {@link org.apache.sis.storage.geotiff.GeoTiffStore}
+ * with each band offered as a Landsat resource.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   0.8
+ * @since   1.1
  * @module
  */
-public class LandsatReaderTest extends TestCase {
-    /**
-     * Tests the regular expression used for detecting the
-     * “Image courtesy of the U.S. Geological Survey” credit.
-     */
-    @Test
-    public void testCreditPattern() {
-        final Matcher m = LandsatReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
-        assertTrue("matches", m.find());
-        assertEquals("end", 22, m.end());
-    }
-}
+package org.apache.sis.storage.landsat;

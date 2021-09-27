@@ -21,7 +21,6 @@ import java.util.function.Consumer;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.sql.SQLStoreProvider;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -63,13 +62,24 @@ public class TableReference {
     final String freeText;
 
     /**
-     * Creates a new tuple with the give names.
+     * Creates a new tuple with the given names.
      */
     TableReference(final String catalog, final String schema, final String table, final String freeText) {
         this.catalog  = catalog;
         this.schema   = schema;
         this.table    = table;
         this.freeText = trimOrNull(freeText);
+    }
+
+    /**
+     * Creates a new tuple with the components of the given name.
+     */
+    TableReference(final GenericName name, final String comments) {
+        final String[] names = splitName(name);
+        catalog  = names[2];
+        schema   = names[1];
+        table    = names[0];
+        freeText = trimOrNull(comments);
     }
 
     /**
@@ -92,13 +102,6 @@ public class TableReference {
     final GenericName getName(final Analyzer analyzer) {
         return analyzer.nameFactory.createLocalName(
                analyzer.namespace(trimOrNull(catalog), trimOrNull(schema)), table);
-    }
-
-    /**
-     * Appends the catalog, schema and table name to the given builder after the {@code "FROM"} keyword.
-     */
-    final void appendFromClause(final SQLBuilder sql) {
-        sql.append(" FROM ").appendIdentifier(catalog, schema, table);
     }
 
     /**

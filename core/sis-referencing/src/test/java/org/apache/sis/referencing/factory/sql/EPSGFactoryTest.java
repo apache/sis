@@ -79,7 +79,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -533,6 +533,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 4088, replacement);
         assertEpsgNameAndIdentifierEqual("Equidistant Cylindrical (Spherical)", 1029, replacement.getConversionFromBase().getMethod());
 
+        loggings.assertNextLogContains("EPSG:4088", "4087");     // Coordinate Reference System 4088 has been replaced by 4087
+
         assertSame("Base CRS", crs.getBaseCRS(), replacement.getBaseCRS());
         assertSame("Coordinate system", crs.getCoordinateSystem(), replacement.getCoordinateSystem());
 
@@ -730,10 +732,10 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         // Tests the fusion of all types
         if (RUN_EXTENSIVE_TESTS) {
             final Set<String> all = factory.getAuthorityCodes(IdentifiedObject.class);
-            assertTrue (all.containsAll(crs));
-            assertTrue (all.containsAll(datum));
-            assertTrue (all.containsAll(operations));
-            assertFalse(all.containsAll(units));                // They are not IdentifiedObjects.
+            assertTrue(all.containsAll(crs));
+            assertTrue(all.containsAll(datum));
+            assertTrue(all.containsAll(operations));
+            assertTrue(all.containsAll(units));
         }
 
         // Try a dummy type.

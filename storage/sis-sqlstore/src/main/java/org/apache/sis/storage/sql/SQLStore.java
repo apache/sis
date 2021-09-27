@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Collection;
 import javax.sql.DataSource;
@@ -42,6 +44,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 
 
@@ -87,8 +90,25 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * Fully qualified names (including catalog and schema) of the tables to include in this store.
+     * The names shall be qualified names of 1, 2 or 3 components.
+     * The name components can be {@code <catalog>.<schema pattern>.<table pattern>} where:
+     *
+     * <ul>
+     *   <li>{@code <catalog>}, if present, is the name of a catalog as stored in the database.</li>
+     *   <li>{@code <schema pattern>}, if present, is the pattern of a schema.
+     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
+     *   <li>{@code <table pattern>} (mandatory) is the pattern of a table.
+     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
+     * </ul>
+     *
+     * Only the main tables need to be specified; dependencies will be followed automatically.
      */
     private final GenericName[] tableNames;
+
+    /**
+     * Queries to expose as resources, or an empty array if none.
+     */
+    private final ResourceDefinition[] queries;
 
     /**
      * The metadata, created when first requested.
@@ -122,25 +142,57 @@ public class SQLStore extends DataStore implements Aggregate {
      * @param  connector   information about the storage (JDBC data source, <i>etc</i>).
      * @param  tableNames  fully qualified names (including catalog and schema) of the tables to include in this store.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     *
+     * @deprecated Replaced by {@link #SQLStore(SQLStoreProvider, StorageConnector, ResourceDefinition...)}.
      */
+    @Deprecated
     public SQLStore(final SQLStoreProvider provider, final StorageConnector connector, GenericName... tableNames)
             throws DataStoreException
     {
+        this(provider, connector, ResourceDefinition.wrap(tableNames, null));
+    }
+
+    /**
+     * Creates a new {@code SQLStore} for the given data source and tables, views or queries.
+     * The given {@code connector} shall contain a {@link DataSource} instance.
+     * Tables or views to include in the store are specified by the {@code resources} argument.
+     * Only the main tables need to be specified; dependencies will be followed automatically.
+     *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (JDBC data source, <i>etc</i>).
+     * @param  resources  tables, views or queries to include in this store.
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     *
+     * @since 1.1
+     */
+    public SQLStore(final SQLStoreProvider provider, final StorageConnector connector, final ResourceDefinition... resources)
+            throws DataStoreException
+    {
         super(provider, connector);
-        ArgumentChecks.ensureNonEmpty("tableNames", tableNames);
+        ArgumentChecks.ensureNonEmpty("resources", resources);
         source      = connector.getStorageAs(DataSource.class);
         geomLibrary = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
-        tableNames  = tableNames.clone();
-        for (int i=0; i<tableNames.length; i++) {
-            final GenericName name = tableNames[i];
-            ArgumentChecks.ensureNonNullElement("tableNames", i, tableNames);
+        customizer  = connector.getOption(SchemaModifier.OPTION);
+        final GenericName[] tableNames = new GenericName[resources.length];
+        final ResourceDefinition[] queries = new ResourceDefinition[resources.length];
+        int tableCount = 0;
+        int queryCount = 0;
+        for (int i=0; i<resources.length; i++) {
+            final ResourceDefinition resource = resources[i];
+            ArgumentChecks.ensureNonNullElement("resources", i, resource);
+            final GenericName name = resource.getName();
             final int depth = name.depth();
             if (depth < 1 || depth > 3) {
                 throw new IllegalNameException(Resources.format(Resources.Keys.IllegalQualifiedName_1, name));
             }
+            if (resource.query == null) {
+                tableNames[tableCount++] = name;
+            } else {
+                queries[queryCount++] = resource;
+            }
         }
-        this.tableNames = tableNames;
-        this.customizer = connector.getOption(SchemaModifier.OPTION);
+        this.tableNames = ArraysExt.resize(tableNames, tableCount);
+        this.queries    = ArraysExt.resize(queries,    queryCount);
     }
 
     /**
@@ -157,7 +209,16 @@ public class SQLStore extends DataStore implements Aggregate {
         }
         final ParameterValueGroup pg = provider.getOpenParameters().createValue();
         pg.parameter(SQLStoreProvider.LOCATION).setValue(source);
-        pg.parameter(SQLStoreProvider.TABLES).setValue(tableNames);
+        if (tableNames != null) {
+            pg.parameter(SQLStoreProvider.TABLES).setValue(tableNames);
+        }
+        if (queries != null) {
+            final Map<GenericName,String> m = new LinkedHashMap<>();
+            for (final ResourceDefinition query : queries) {
+                m.put(query.getName(), query.query);
+            }
+            pg.parameter(SQLStoreProvider.QUERIES).setValue(m);
+        }
         return Optional.of(pg);
     }
 
@@ -177,7 +238,7 @@ public class SQLStore extends DataStore implements Aggregate {
     private synchronized Database<?> model() throws DataStoreException {
         if (model == null) {
             try (Connection c = source.getConnection()) {
-                model = Database.create(this, source, c, geomLibrary, tableNames, customizer, listeners);
+                model = Database.create(this, source, c, geomLibrary, tableNames, queries, customizer, listeners);
             } catch (DataStoreException e) {
                 throw e;
             } catch (Exception e) {
@@ -196,7 +257,7 @@ public class SQLStore extends DataStore implements Aggregate {
      */
     private Database<?> model(final Connection c) throws Exception {
         if (model == null) {
-            model = Database.create(this, source, c, geomLibrary, tableNames, customizer, listeners);
+            model = Database.create(this, source, c, geomLibrary, tableNames, queries, customizer, listeners);
         }
         return model;
     }
