@@ -28,6 +28,8 @@ import org.opengis.feature.FeatureType;
  * Modifies the feature types inferred from database analysis.
  *
  * @todo May move to public API (in revised form) in a future version.
+ *       It could be specified for each {@code ResourceDefinition},
+ *       in which case the {@link TableReference} argument is no longer necessary.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -38,7 +40,8 @@ public interface SchemaModifier {
     /**
      * Invoked after analysis of a table for allowing modifications of the inferred feature type.
      * The given builder is initialized with all properties inferred from the table definition.
-     * Implementation of this method can add, remove or modify properties.
+     * Implementation of this method can add properties (e.g. operations) but should not remove
+     * or rename properties. It is okay to add or remove characteristics on properties.
      *
      * <p>The default implementation returns {@code feature.build()} without making any change.</p>
      *
