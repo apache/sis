@@ -153,7 +153,8 @@ public abstract class InstallationResources {
     /**
      * Returns an installation resource for the given authority, or {@code null} if not available.
      * The return value may be an instance of any type, at implementation choice.
-     * This may be for example a {@link java.net.URL} referencing the actual resource.
+     * This may be for example a {@link java.net.URL} referencing the actual resource,
+     * or a {@link javax.sql.DataSource} for an embedded database.
      *
      * <p>The default implementation returns {@code null}. A null value means that the resource is fetched by
      * {@link #openScript(String, int)} instead of this method. We do not return {@link java.net.URL} to text

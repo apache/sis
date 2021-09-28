@@ -37,7 +37,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.Fallback;
+import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
