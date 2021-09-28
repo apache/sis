@@ -1,2 +1,0 @@
-Placeholder for Linux "*.so" files to be copied by the
-org.apache.sis.core:sis-build-helper:dist Maven plugin.
