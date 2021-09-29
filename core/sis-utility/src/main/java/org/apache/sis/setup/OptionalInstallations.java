@@ -54,7 +54,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
-    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.0/sis-epsg-1.0.jar";
+    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.1/sis-epsg-1.1.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.
