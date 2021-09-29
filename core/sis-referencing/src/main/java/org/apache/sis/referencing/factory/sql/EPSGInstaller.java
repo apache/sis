@@ -31,7 +31,7 @@ import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.referencing.Fallback;
+import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;

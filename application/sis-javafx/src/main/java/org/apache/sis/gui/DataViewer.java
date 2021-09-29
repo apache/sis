@@ -65,6 +65,11 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public class DataViewer extends Application {
     /**
+     * The application being executed, or {@code null} if none.
+     */
+    private static volatile DataViewer running;
+
+    /**
      * Starts the Apache SIS application.
      *
      * @param args  ignored.
@@ -195,6 +200,7 @@ public class DataViewer extends Application {
         if (sp != null) {
             sp.close();
         }
+        running = this;
     }
 
     /**
@@ -300,9 +306,20 @@ public class DataViewer extends Application {
      */
     @Override
     public void stop() throws Exception {
+        running = null;
         LogHandler.register(false);
         BackgroundThreads.stop();
         RecentChoices.saveReferenceSystems();
         super.stop();
+    }
+
+    /**
+     * Returns the window in which the application is running, or {@code null} if the application is not running.
+     *
+     * @return the window in which the application is running, or {@code null}.
+     */
+    public static Stage getCurrentStage() {
+        final DataViewer r = running;
+        return (r != null) ? r.window : null;
     }
 }

@@ -22,23 +22,11 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.ServiceLoader;
-import java.net.URLClassLoader;
-import java.net.URL;
 import java.io.Console;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Path;
-import java.sql.Connection;                             // For javadoc.
-import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
-import org.apache.sis.internal.referencing.Fallback;
-import org.apache.sis.setup.InstallationResources;
+import org.apache.sis.internal.system.Fallback;
+import org.apache.sis.setup.OptionalInstallations;
 
-import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**
@@ -51,23 +39,12 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.7
  * @module
  */
 @Fallback
-public class ResourcesDownloader extends InstallationResources {
-    /**
-     * Where to download the EPSG scripts after user has approved the terms of use.
-     */
-    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.0/sis-epsg-1.0.jar";
-
-    /**
-     * Estimation of the EPSG database size after installation, in mega-bytes.
-     * This is for information purpose only.
-     */
-    private static final int DATABASE_SIZE = 20;
-
+public class ResourcesDownloader extends OptionalInstallations {
     /**
      * The console to use for printing EPSG terms of use and asking for agreement, or {@code null} if none.
      */
@@ -84,31 +61,16 @@ public class ResourcesDownloader extends InstallationResources {
     private final boolean colors;
 
     /**
-     * The provider to use for fetching the actual licensed data after we got user's agreement.
-     */
-    private InstallationResources provider;
-
-    /**
-     * The target directory where to install the database.
-     */
-    private final Path directory;
-
-    /**
      * The localized answers expected from the users. Keys are words like "Yes" or "No"
      * and boolean values are the meaning of the keys.
      */
     private final Map<String,Boolean> answers = new HashMap<>();
 
     /**
-     * {@code true} if the user has accepted the EPSG terms of use, {@code false} if (s)he refused,
-     * or {@code null} if (s)he did not yet answered that question.
-     */
-    private Boolean accepted;
-
-    /**
      * Creates a new installation scripts provider.
      */
     public ResourcesDownloader() {
+        super("text/plain");
         final CommandRunner command = CommandRunner.instance;
         if (command != null) {
             locale = command.locale;
@@ -117,8 +79,17 @@ public class ResourcesDownloader extends InstallationResources {
             locale = Locale.getDefault();
             colors = false;
         }
-        console   = System.console();
-        directory = DataDirectory.DATABASES.getDirectory();
+        console = System.console();
+    }
+
+    /**
+     * Returns the locale to use for messages shown to the user.
+     *
+     * @return the locale of messages shown to the user.
+     */
+    @Override
+    public Locale getLocale() {
+        return locale;
     }
 
     /**
@@ -131,38 +102,21 @@ public class ResourcesDownloader extends InstallationResources {
      */
     @Override
     public Set<String> getAuthorities() {
-        return (console != null && directory != null) ? Collections.singleton(EPSG) : Collections.emptySet();
+        return (console != null) ? super.getAuthorities() : Collections.emptySet();
     }
 
     /**
-     * Downloads the provider to use for fetching the actual licensed data after we got user's agreement.
+     * Asks to the user if (s)he agree to download and install the resource for the given authority.
+     * This method may be invoked twice for the same {@code authority} argument:
+     * first with a null {@code license} argument for asking if the user agrees to download the data,
+     * then with a non-null {@code license} argument for asking if the user agrees with the license terms.
      */
-    private static InstallationResources download() throws IOException {
-        for (final InstallationResources c : ServiceLoader.load(InstallationResources.class,
-                new URLClassLoader(new URL[] {new URL(DOWNLOAD_URL)})))
-        {
-            if (!c.getClass().isAnnotationPresent(Fallback.class) && c.getAuthorities().contains(EPSG)) {
-                return c;
-            }
+    @Override
+    protected boolean askUserAgreement(final String authority, final String license) {
+        if (console == null) {
+            return false;
         }
-        throw new FileNotFoundException();      // Should not happen.
-    }
-
-    /**
-     * Returns the provider to use for fetching the actual licensed data after we got user's agreement.
-     * This method asks for user's agreement when first invoked.
-     *
-     * @param  requireAgreement  {@code true} if license agreement is required.
-     * @throws AccessDeniedException if the user does not accept to install the EPSG dataset.
-     * @throws IOException if an error occurred while reading the {@link #DOWNLOAD_URL}.
-     */
-    private synchronized InstallationResources provider(final String authority, final boolean requireAgreement)
-            throws IOException
-    {
-        if (!EPSG.equals(authority)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "authority", authority));
-        }
-        final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.Messages", locale);
+        final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.Messages", getLocale());
         if (answers.isEmpty()) {
             for (final String r : resources.getString("yes").split("\\|")) answers.put(r, Boolean.TRUE);
             for (final String r : resources.getString("no" ).split("\\|")) answers.put(r, Boolean.FALSE);
@@ -178,130 +132,32 @@ public class ResourcesDownloader extends InstallationResources {
             textColor = linkColor = linkOff = actionColor = resetColor = "";
         }
         /*
-         * Start the download if the user accepts. We need to begin the download in order to get the
-         * license text bundled in the JAR file. We will not necessarily ask for user agreement here.
+         * Show the question.
          */
-        if (provider == null) {
-            if (console == null) {
-                throw new IllegalStateException();
-            }
-            console.format(resources.getString("install"), textColor, DATABASE_SIZE, linkColor, directory, linkOff, resetColor);
-            if (!accept(resources.getString("download"), textColor, resetColor)) {
-                console.format("%n");
-                throw new AccessDeniedException(null);
-            }
-            console.format(resources.getString("downloading"), actionColor, resetColor);
-            provider = download();
+        final String prompt, action;
+        if (license == null) {
+            prompt = "download";
+            action = "downloading";
+            console.format(resources.getString("install"), textColor, getSpaceRequirement(authority),
+                           linkColor, destinationDirectory, linkOff, resetColor);
+        } else {
+            prompt = "accept";
+            action = "installing";
+            console.format("%n").writer().write(license);
+            console.format("%n");
         }
         /*
-         * If there is a need to ask for user agreement and we didn't asked yet, ask now.
+         * Ask user agreement.
          */
-        if (requireAgreement && accepted == null) {
-            final String license = getLicense(authority, locale, "text/plain");
-            if (license == null) {
-                accepted = Boolean.TRUE;
-            } else {
-                console.format("%n").writer().write(license);
-                console.format("%n");
-                accepted = accept(resources.getString("accept"), textColor, resetColor);
-                if (accepted) {
-                    console.format(resources.getString("installing"), actionColor, resetColor);
-                }
-            }
-        }
-        if (accepted != null && !accepted) {
-            throw new AccessDeniedException(null);
-        }
-        return provider;
-    }
-
-    /**
-     * Asks the user to answer by "Yes" or "No". Callers is responsible for ensuring
-     * that the {@link #answers} map is non-empty before to invoke this method.
-     *
-     * @param  prompt  message to show to the user.
-     * @return the user's answer.
-     */
-    private boolean accept(final String prompt, final Object... arguments) {
         Boolean answer;
         do {
-            answer = answers.get(console.readLine(prompt, arguments).toLowerCase(locale));
+            answer = answers.get(console.readLine(resources.getString(prompt), textColor, resetColor).toLowerCase(getLocale()));
         } while (answer == null);
+        if (answer) {
+            console.format(resources.getString(action), actionColor, resetColor);
+        } else {
+            console.format("%n");
+        }
         return answer;
-    }
-
-    /**
-     * Returns the terms of use of the dataset provided by the given authority, or {@code null} if none.
-     * The terms of use can be returned in either plain text or HTML.
-     *
-     * @param  authority  one of the values returned by {@link #getAuthorities()}.
-     * @param  mimeType   either {@code "text/plain"} or {@code "text/html"}.
-     * @return the terms of use in plain text or HTML, or {@code null} if none.
-     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
-     * @throws IOException if an error occurred while reading the license file.
-     */
-    @Override
-    public String getLicense(String authority, Locale locale, String mimeType) throws IOException {
-        return provider(authority, false).getLicense(authority, locale, mimeType);
-    }
-
-    /**
-     * Returns the names of installation scripts provided by the given authority.
-     * This method is invoked by {@link org.apache.sis.referencing.factory.sql.EPSGFactory#install(Connection)}
-     * for listing the SQL scripts to execute during EPSG dataset installation.
-     *
-     * <p>If that question has not already been asked, this method asks to the user if (s)he accepts
-     * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.</p>
-     *
-     * @param  authority  one of the values returned by {@link #getAuthorities()}.
-     * @return the names of all SQL scripts to execute.
-     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
-     * @throws IOException if an error occurred while fetching the script names.
-     */
-    @Override
-    public String[] getResourceNames(final String authority) throws IOException {
-        return provider(authority, true).getResourceNames(authority);
-    }
-
-    /**
-     * Returns an installation resource for the given authority.
-     * If that question has not already been asked, this method asks to the user if (s)he accepts
-     * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.
-     *
-     * @param  authority  one of the values returned by {@link #getAuthorities()}.
-     * @param  index      index of the resource to get, from 0 inclusive to
-     *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
-     * @return the resource as an URL or any other type, at implementation choice.
-     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
-     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
-     * @throws IOException if an error occurred while fetching the resource.
-     *
-     * @since 0.8
-     */
-    @Override
-    public Object getResource(final String authority, final int index) throws IOException {
-        return provider(authority, true).getResource(authority, index);
-    }
-
-    /**
-     * Returns a reader for the installation script at the given index.
-     * This method is invoked by {@link org.apache.sis.referencing.factory.sql.EPSGFactory#install(Connection)}
-     * for getting the SQL scripts to execute during EPSG dataset installation.
-     *
-     * <p>If that question has not already been asked, this method asks to the user if (s)he accepts
-     * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.</p>
-     *
-     * @param  authority  one of the values returned by {@link #getAuthorities()}.
-     * @param  resource   index of the script to open, from 0 inclusive to
-     *                    <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
-     * @return a reader for the installation script content.
-     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
-     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
-     * @throws FileNotFoundException if the SQL script of the given name has not been found.
-     * @throws IOException if an error occurred while creating the reader.
-     */
-    @Override
-    public BufferedReader openScript(final String authority, final int resource) throws IOException {
-        return provider(authority, true).openScript(authority, resource);
     }
 }
