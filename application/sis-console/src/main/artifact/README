@@ -13,9 +13,7 @@ project logo are trademarks of The Apache Software Foundation.
 Installation
 ============
 
-SIS requires Java 8 or later. If running on Java 9 or later,
-then the Derby JAR file should be added in the bin/ directory.
-See http://sis.apache.org/epsg.html#command-line
+SIS requires Java 8 or later.
 
 Unix
 ----
