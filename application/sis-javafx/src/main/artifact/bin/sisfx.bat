@@ -27,7 +27,7 @@ IF "%PATH_TO_FX%"=="" (
 )
 
 java -splash:"%BASE_DIR%\lib\logo.jpg"^
- --add-modules javafx.graphics,javafx.controls^
+ --add-modules javafx.graphics,javafx.controls,javafx.web^
  --module-path "%PATH_TO_FX%"^
  --class-path "%BASE_DIR%\lib\*"^
  -Djava.util.logging.config.class=org.apache.sis.internal.setup.LoggingConfiguration^

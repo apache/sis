@@ -40,6 +40,7 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static org.junit.Assume.assumeTrue;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -191,6 +192,8 @@ public final strictfp class CoordinateOperationTest extends MathTransformTestCas
         final double expectedY = 175688.20;
 
         CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
+        assumeTrue("EPSG authority factory is required for this test.",
+                   crsFactory instanceof CoordinateOperationAuthorityFactory);
         CoordinateOperationAuthorityFactory opFactory = (CoordinateOperationAuthorityFactory) crsFactory;
 
         // MGI (Ferro) to WGS 84 (1)

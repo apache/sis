@@ -16,14 +16,18 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
+import org.apache.sis.gui.DataViewer;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Threads;
 import org.apache.sis.util.logging.Logging;
@@ -112,6 +116,28 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
                 interrupted("execute", e);
             }
         }
+    }
+
+    /**
+     * Runs the given task in JavaFX thread and wait for completion before to return.
+     * This method should <em>not</em> be invoked from JavaFX application thread.
+     * This method can be used for showing a dialog box during a background operation.
+     *
+     * @param  <V>   type of result that will be returned.
+     * @param  task  the task to execute in JavaFX thread.
+     * @return the task result, or {@code null} if an error occurred.
+     */
+    public static <V> V runAndWait(final Callable<V> task) {
+        final FutureTask<V> f = new FutureTask<>(task);
+        Platform.runLater(f);
+        try {
+            return f.get();
+        } catch (ExecutionException e) {
+            ExceptionReporter.show(DataViewer.getCurrentStage(), null, null, e.getCause());
+        } catch (InterruptedException e) {
+            interrupted("runAndWait", e);
+        }
+        return null;
     }
 
     /**

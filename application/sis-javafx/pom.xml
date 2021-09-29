@@ -212,6 +212,12 @@
           <version>${javafx.version}</version>
           <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-web</artifactId>
+          <version>${javafx.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
 
@@ -230,7 +236,7 @@
             <configuration>
               <compilerArgs>
                 <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
-                <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls</arg>
+                <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls,javafx.web</arg>
               </compilerArgs>
             </configuration>
           </plugin>
@@ -238,7 +244,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>
-                --module-path ${env.PATH_TO_FX} --add-modules javafx.graphics,javafx.controls
+                --module-path ${env.PATH_TO_FX} --add-modules javafx.graphics,javafx.controls,javafx.web
               </argLine>
             </configuration>
           </plugin>
@@ -249,7 +255,7 @@
                 <additionalJOption>--module-path</additionalJOption>
                 <additionalJOption>${env.PATH_TO_FX}</additionalJOption>
                 <additionalJOption>--add-modules</additionalJOption>
-                <additionalJOption>javafx.graphics,javafx.controls</additionalJOption>
+                <additionalJOption>javafx.graphics,javafx.controls,javafx.web</additionalJOption>
               </additionalJOptions>
             </configuration>
           </plugin>

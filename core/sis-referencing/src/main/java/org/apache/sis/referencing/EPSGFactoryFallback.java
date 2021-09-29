@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.Fallback;
+import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
