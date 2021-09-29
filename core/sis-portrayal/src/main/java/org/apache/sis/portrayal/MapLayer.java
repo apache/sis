@@ -39,8 +39,8 @@ import org.opengis.style.Style;
  * but the fundamentals aspect of each {@link Feature} or {@link Coverage} should be unchanged.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 public class MapLayer extends MapItem {

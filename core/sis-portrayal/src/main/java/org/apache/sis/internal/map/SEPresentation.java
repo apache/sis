@@ -30,8 +30,8 @@ import org.opengis.style.Symbolizer;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 public final class SEPresentation extends Presentation {

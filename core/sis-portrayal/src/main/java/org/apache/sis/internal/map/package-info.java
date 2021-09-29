@@ -28,8 +28,8 @@
  * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 package org.apache.sis.internal.map;

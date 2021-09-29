@@ -48,8 +48,8 @@ import org.opengis.util.InternationalString;
  *       of layers and not a tree of arbitrary objects.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 public abstract class MapItem extends Observable {
