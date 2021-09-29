@@ -68,8 +68,8 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 public abstract class SymbologyVisitor {

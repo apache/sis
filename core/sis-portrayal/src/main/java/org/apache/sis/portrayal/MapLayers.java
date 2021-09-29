@@ -47,8 +47,8 @@ import org.opengis.referencing.operation.TransformException;
  * which should be zoomed by default when the map is rendered.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 public class MapLayers extends MapItem {
