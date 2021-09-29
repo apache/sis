@@ -166,6 +166,17 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DoesNotCoverAOI = 13;
 
         /**
+         * Download and install {0} database?
+         */
+        public static final short DownloadAndInstall_1 = 58;
+
+        /**
+         * This geodetic dataset is required for the support of Coordinate Reference Systems defined by
+         * {0} codes. The database will use {1} Mb in directory {2}.
+         */
+        public static final short DownloadDetails_3 = 59;
+
+        /**
          * An error occurred at the following location:
          */
         public static final short ErrorAt = 53;
@@ -211,6 +222,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FullScreen = 22;
 
         /**
+         * {0} geodetic dataset
+         */
+        public static final short GeodeticDataset_1 = 60;
+
+        /**
          * Geospatial data files
          */
         public static final short GeospatialFiles = 23;
@@ -235,6 +251,11 @@ public final class Resources extends IndexedResourceBundle {
          * starting from given minimum.
          */
         public static final short IsolinesInRange = 57;
+
+        /**
+         * Do you accept the license shown below?
+         */
+        public static final short LicenseAgreement = 61;
 
         /**
          * Loading…
