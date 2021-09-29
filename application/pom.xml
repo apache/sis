@@ -118,7 +118,6 @@
        =========================================================== -->
   <modules>
     <module>sis-console</module>
-    <module>sis-webapp</module>
     <module>sis-openoffice</module>
   </modules>
   <profiles>

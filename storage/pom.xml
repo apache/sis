@@ -164,7 +164,6 @@
        =========================================================== -->
   <modules>
     <module>sis-storage</module>
-    <module>sis-shapefile</module>
     <module>sis-xmlstore</module>
     <module>sis-sqlstore</module>
     <module>sis-netcdf</module>
