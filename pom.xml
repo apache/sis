@@ -670,7 +670,6 @@
           <compilerArgs>
             <arg>-Xlint:all</arg>
             <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>
-            <arg>-h</arg> <arg>${project.build.sourceDirectory}/../c</arg>
           </compilerArgs>
         </configuration>
       </plugin>
