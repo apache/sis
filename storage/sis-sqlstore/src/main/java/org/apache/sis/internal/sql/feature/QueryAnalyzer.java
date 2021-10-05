@@ -124,7 +124,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
             {
                 if (reflect.next()) do {
                     final Relation relation = new Relation(analyzer, direction, reflect);
-                    if (columnNames.containsAll(relation.getForeignerKeys())) {
+                    if (columnNames.containsAll(relation.getOwnerColumns())) {
                         if (isImport) {
                             addForeignerKeys(relation);
                         }
