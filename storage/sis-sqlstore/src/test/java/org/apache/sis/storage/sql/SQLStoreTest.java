@@ -205,6 +205,7 @@ public final strictfp class SQLStoreTest extends TestCase {
              * Verify overloaded stream operations (sorting, etc.).
              */
             verifySimpleQuerySorting(store);
+            verifySimpleQueryWithLimit(store);
             verifySimpleWhere(store);
             verifyStreamOperations(store.findResource("Cities"));
         }
@@ -384,6 +385,20 @@ public final strictfp class SQLStoreTest extends TestCase {
             }).toArray();
         }
         assertArrayEquals("Values are not sorted as expected.", expectedValues, values);
+    }
+
+    /**
+     * Requests features with a limit on the number of items.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifySimpleQueryWithLimit(final SQLStore dataset) throws DataStoreException {
+        final FeatureSet   parks = dataset.findResource("Parks");
+        final FeatureQuery query = new FeatureQuery();
+        query.setLimit(2);
+        final FeatureSet subset = parks.subset(query);
+        assertEquals(2, subset.features(false).count());
     }
 
     /**
