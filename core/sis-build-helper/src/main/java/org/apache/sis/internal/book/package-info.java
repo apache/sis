@@ -16,30 +16,27 @@
  */
 
 /**
- * Takes the source HTML files in the {@code http://svn.apache.org/repos/asf/sis/site/trunk/book/} directory
- * and assembles them in a single file to be published in the
- * {@code http://svn.apache.org/repos/asf/sis/site/trunk/content/book/} directory.
+ * Takes the source HTML files in the {@code sis-site/main/source/developer-guide/} directory
+ * and assembles them in a single file to be published in the {@code asf-staging/book/} directory.
  *
  * <p>The main class in this package is {@link org.apache.sis.internal.book.Assembler}.
  * Other classes are helper classes that should be ignored. Assuming the following directory layout:</p>
  *
  * <pre>&lt;current directory&gt;
- * ├─ trunk
+ * ├─ master
+ * │   └─ core
+ * │       └─ sis-build-helper
  * └─ site
- *     ├─ book
- *     └─ content
+ *     ├─ source
+ *     └─ static
  * </pre>
  *
  * Then the command can be used as below on Unix systems:
  *
- * <pre>cd site
- * java -classpath ../trunk/core/sis-build-helper/target/classes org.apache.sis.internal.book.Assembler en
- * </pre>
- *
- * Replace {@code en} by {@code fr} for generating the French version.
+ * <pre>java -classpath master/core/sis-build-helper/target/classes org.apache.sis.internal.book.Assembler site</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.7
  */
 package org.apache.sis.internal.book;
