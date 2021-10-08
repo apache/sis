@@ -35,6 +35,17 @@
  *
  * <pre>java -classpath master/core/sis-build-helper/target/classes org.apache.sis.internal.book.Assembler site</pre>
  *
+ * <h2>Future evolution</h2>
+ * We may replace (at least partially) this tools by some more advanced open-source alternatives.
+ * Known candidates are:
+ *
+ * <ul>
+ *   <li><a href="http://www.xmlmind.com/ebookc/">XMLmind Ebook Compiler</a></li>
+ * </ul>
+ *
+ * A goal is to keep HTML5 as the language of source files, not DocBook or AsciiDoc or others.
+ * See <a href="http://www.xmlmind.com/tutorials/HTML5Books/HTML5Books.html">HTML5 as an alternative to DITA and DocBook</a>.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
