@@ -46,7 +46,7 @@ import org.apache.sis.util.Characters;
  * It is the converse of {@link GridExtent#typeFromAxes(CoordinateReferenceSystem, int)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -85,7 +85,8 @@ final class GridExtentCRS {
     }
 
     /**
-     * Builds a coordinate reference system for the given axis types.
+     * Builds a coordinate reference system for the given axis types. The CRS type is always engineering.
+     * We can not create temporal CRS because we do not know the temporal datum origin.
      *
      * @param  gridToCRS  matrix of the transform used for converting grid cell indices to envelope coordinates.
      *         It does not matter whether it maps pixel center or corner (translation coefficients are ignored).
@@ -102,6 +103,9 @@ final class GridExtentCRS {
         final int srcDim = Math.min(gridToCRS.getNumCol() - 1, types.length);
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[tgtDim];
         final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
+        boolean hasVertical = false;
+        boolean hasTime     = false;
+        boolean hasOther    = false;
         for (int i=0; i<srcDim; i++) {
             final DimensionNameType type = types[i];
             if (type != null) {
@@ -137,12 +141,13 @@ final class GridExtentCRS {
                 } else if (type == DimensionNameType.ROW || type == DimensionNameType.LINE) {
                     abbreviation = "y"; direction = AxisDirection.ROW_POSITIVE;
                 } else if (type == DimensionNameType.VERTICAL) {
-                    abbreviation = "z"; direction = AxisDirection.UP;
+                    abbreviation = "z"; direction = AxisDirection.UP; hasVertical = true;
                 } else if (type == DimensionNameType.TIME) {
-                    abbreviation = "t"; direction = AxisDirection.FUTURE;
+                    abbreviation = "t"; direction = AxisDirection.FUTURE; hasTime = true;
                 } else {
                     abbreviation = abbreviation(target);
                     direction = AxisDirection.OTHER;
+                    hasOther = true;
                 }
                 /*
                  * Verify that no other axis has the same direction and abbreviation. If duplicated
@@ -154,6 +159,7 @@ final class GridExtentCRS {
                     if (previous != null) {
                         if (direction.equals(AxisDirections.absolute(previous.getDirection()))) {
                             direction = AxisDirection.OTHER;
+                            hasOther = true;
                         }
                         if (abbreviation.equals(previous.getAbbreviation())) {
                             abbreviation = abbreviation(target);
@@ -178,12 +184,30 @@ final class GridExtentCRS {
                 axes[j] = axis(csFactory, name, abbreviation, AxisDirection.OTHER);
             }
         }
+        /*
+         * Create a coordinate system of affine type if all axes seem spatial.
+         * If no specialized type seems to fit, use an unspecified ("abstract")
+         * coordinate system type in last resort.
+         */
         final Map<String,?> properties = properties("Grid extent");
         final CoordinateSystem cs;
-        switch (tgtDim) {
+        if (hasOther || (tgtDim > (hasTime ? 1 : 3))) {
+            cs = new AbstractCS(properties, axes);
+        } else switch (tgtDim) {
+            case 1:  {
+                final CoordinateSystemAxis axis = axes[0];
+                if (hasVertical) {
+                    cs = csFactory.createVerticalCS(properties, axis);
+                } else if (hasTime) {
+                    cs = csFactory.createTimeCS(properties, axis);
+                } else {
+                    cs = csFactory.createLinearCS(properties, axis);
+                }
+                break;
+            }
             case 2:  cs = csFactory.createAffineCS(properties, axes[0], axes[1]); break;
             case 3:  cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
-            default: cs = new AbstractCS(properties, axes); break;
+            default: return null;
         }
         return DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(
                 properties(cs.getName()), CommonCRS.Engineering.GRID.datum(), cs);

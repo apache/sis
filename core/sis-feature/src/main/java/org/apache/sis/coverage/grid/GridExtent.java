@@ -68,6 +68,7 @@ import org.opengis.coverage.grid.GridCoordinates;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 
+
 /**
  * A range of grid coverage coordinates, also known as "grid envelope".
  * {@code GridExtent} are defined by {@linkplain #getLow() low} coordinates (often all zeros)
@@ -84,7 +85,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
