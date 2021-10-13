@@ -40,7 +40,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * the part of the caller. However the {@link LandsatStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -202,7 +202,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        return new Peek().probeContent(connector);
+        return new Peek().probeContent(this, connector);
     }
 
     /**

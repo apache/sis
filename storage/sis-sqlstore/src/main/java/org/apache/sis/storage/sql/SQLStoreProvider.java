@@ -31,6 +31,7 @@ import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.CanNotProbeException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
@@ -49,7 +50,7 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -185,7 +186,7 @@ public class SQLStoreProvider extends DataStoreProvider {
             } catch (SQLException e) {
                 final String state = e.getSQLState();
                 if (!"08001".equals(state) || !"3D000".equals(state)) {
-                    throw new DataStoreException(e);
+                    throw new CanNotProbeException(this, connector, e);
                 }
             }
         }

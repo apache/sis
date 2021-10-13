@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.CanNotProbeException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.io.IOUtilities;
@@ -35,7 +36,7 @@ import org.apache.sis.internal.storage.DocumentedStoreProvider;
  * (JAXB, StAX, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -160,7 +161,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
             reader.reset();
             return result;
         } catch (IOException e) {
-            throw new DataStoreException(e);
+            throw new CanNotProbeException(this, connector, e);
         }
         return ProbeResult.UNSUPPORTED_STORAGE;
     }

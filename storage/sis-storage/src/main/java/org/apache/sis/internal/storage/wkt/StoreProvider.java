@@ -34,7 +34,7 @@ import org.apache.sis.util.Version;
  * The provider of WKT {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -173,7 +173,7 @@ public final class StoreProvider extends URIDataStore.Provider {
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        return Peek.INSTANCE.probeContent(connector);
+        return Peek.INSTANCE.probeContent(this, connector);
     }
 
     /**

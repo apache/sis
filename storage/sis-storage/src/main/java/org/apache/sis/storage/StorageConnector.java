@@ -199,7 +199,7 @@ public class StorageConnector implements Serializable {
      *
      * @see #getStorage()
      */
-    private final Object storage;
+    final Object storage;
 
     /**
      * A name for the input/output object, or {@code null} if none.
