@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.geotiff;
 
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -31,7 +32,7 @@ import org.opengis.util.GenericName;
  * @todo May move to public API (in revised form) in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -73,18 +74,39 @@ public interface SchemaModifier {
      * Implementations can override this method for setting a better name or for declaring the
      * meaning of sample values (by adding "categories").
      *
-     * <p>The default implementation returns {@code builder.build()} without making any change.</p>
+     * <div class="note"><b>API note:</b>
+     * the zero fill value is excluded because tiles are already initialized to zero by default,
+     * and because conversions between "real world" values and "packaged values" already use 0
+     * as the background value if no category is specified. We avoid specifying categories when
+     * not necessary because GeoTIFF does not really has this information.
+     * </div>
+     *
+     * The default implementation creates categories only if {@code fillValue} is non-null.
+     * In such case, the fill value is also defined as the background value.
      *
      * @param  image        index of the image for which to create sample dimension.
      * @param  band         index of the band for which to create sample dimension.
      * @param  sampleRange  minimum and maximum values declared in the TIFF tags, or {@code null} if unknown.
+     * @param  fillValue    the "no data" value, or {@code null} if none or zero. May intersect {@code sampleRange}.
      * @param  dimension    a sample dimension builder initialized with band number as the dimension name.
      *                      This builder can be modified in-place.
      * @return the sample dimension to use.
      */
-    default SampleDimension customize(final int image, final int band, final NumberRange<?> sampleRange,
-                                      final SampleDimension.Builder dimension)
+    default SampleDimension customize(final int image, final int band, NumberRange<?> sampleRange,
+                                      final Number fillValue, final SampleDimension.Builder dimension)
     {
+        if (fillValue != null) {
+            dimension.setBackground(null, fillValue);
+            if (sampleRange != null && sampleRange.containsAny(fillValue)) {
+                final double fill = fillValue.doubleValue();
+                if (sampleRange.getMaxDouble() - fill < fill - sampleRange.getMinDouble()) {
+                    sampleRange = NumberRange.createBestFit(sampleRange.getMinValue(), sampleRange.isMinIncluded(), fill, false);
+                } else {
+                    sampleRange = NumberRange.createBestFit(fill, false, sampleRange.getMaxValue(), sampleRange.isMaxIncluded());
+                }
+                dimension.addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Values), sampleRange, sampleRange);
+            }
+        }
         return dimension.build();
     }
 
