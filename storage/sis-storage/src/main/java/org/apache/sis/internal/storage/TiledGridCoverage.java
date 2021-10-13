@@ -44,6 +44,7 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 
 
 /**
@@ -410,6 +411,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                         throw new DisjointExtentException(message);
                     }
                 }
+                // Lower and upper coordinates in subsampled image, rounded to integer number of tiles and clipped to available data.
                 final long lower = /* inclusive */Math.max(toSubsampledPixel(/* inclusive */multiplyExact(tileLo, tileSize[i]),  i), min);
                 final long upper = incrementExact(Math.min(toSubsampledPixel(decrementExact(multiplyExact(tileUp, tileSize[i])), i), max));
                 imageSize[i] = toIntExact(subtractExact(upper, lower));
@@ -460,7 +462,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         private final int[] tileUpper;
 
         /**
-         * Pixel coordinates to assign to the upper-left corner of the region to render, ignoring subsampling.
+         * Pixel coordinates to assign to the upper-left corner of the region to render, with subsampling applied.
          * This is the difference between the region requested by user and the region which will be rendered.
          */
         private final int[] offsetAOI;
@@ -473,9 +475,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
         /**
          * Pixel coordinates of current iterator position relative to the Area Of Interest specified by user.
-         * Initial position is a clone of {@link #offsetAOI}. This array is modified by calls to {@link #next()}.
+         * Those coordinates are in units of the full resolution image.
+         * Initial position is {@link #offsetAOI} multiplied by {@link #subsampling}.
+         * This array is modified by calls to {@link #next()}.
          */
-        private final int[] tileOffsetAOI;
+        private final long[] tileOffsetFull;
 
         /**
          * Current iterator position as an index in the array of tiles to be returned by {@link #readTiles(AOI)}.
@@ -494,13 +498,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @param  tileLower  indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
          * @param  tileUpper  indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
-         * @param  offsetAOI  pixel coordinates to assign to the upper-left corner of the region to read, ignoring subsampling.
+         * @param  offsetAOI  pixel coordinates to assign to the upper-left corner of the subsampled region to render.
          * @param  dimension  number of dimension of the {@code TiledGridCoverage} grid extent.
          */
         AOI(final int[] tileLower, final int[] tileUpper, final int[] offsetAOI, final int dimension) {
             this.tileLower = tileLower;
             this.tileUpper = tileUpper;
             this.offsetAOI = offsetAOI;
+            tileOffsetFull = new long[offsetAOI.length];
             /*
              * Initialize variables to values for the first tile to read. The loop does arguments validation and
              * converts the `tileLower` coordinates to index in the `tileOffsets` and `tileByteCounts` vectors.
@@ -512,6 +517,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final int count   = subtractExact(tileUpper[i], lower);
                 indexInTileVector = addExact(indexInTileVector, multiplyExact(tileStrides[i], lower));
                 tileCountInQuery  = multiplyExact(tileCountInQuery, count);
+                tileOffsetFull[i] = multiplyFull(offsetAOI[i], subsampling[i]);
                 /*
                  * Following is the pixel coordinate after the last pixel in current dimension.
                  * This is not stored; the intent is to get a potential `ArithmeticException`
@@ -523,7 +529,6 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
             this.tileCountInQuery = tileCountInQuery;
             this.tmcInSubset      = tileLower.clone();
-            this.tileOffsetAOI    = offsetAOI.clone();
         }
 
         /**
@@ -584,12 +589,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
         final int getTileOrigin(final int dimension) {
             /*
              * We really need `ceilDiv(…)` below, not `floorDiv(…)`. It makes no difference in the usual
-             * case where the subsampling is a divisor of the tile size. But if we are in the case where
-             * subsampling is larger than tile size, we need the `ceilDiv(…)`. At first the results seem
-             * inconsistent, but after we discard the tiles where `getRegionInsideTile(…)` returns false
-             * it become consistent.
+             * case where the subsampling is a divisor of the tile size (the numerator is initialized to
+             * a multiple of the denominator, then incremented by another multiple of the denominator).
+             * It makes no difference in the untiled case neither because the numerator is not incremented.
+             * But if we are in the case where subsampling is larger than tile size, then we want rounding
+             * to the next tile. The tile seems "too far", but it will either be discarded at a later step
+             * (because of empty intersection with AOI) or compensated by the offset caused by subsampling.
+             * At first the index values seem inconsistent, but after we discard the tiles where
+             * `getRegionInsideTile(…)` returns `false` they become consistent.
              */
-            return ceilDiv(tileOffsetAOI[dimension], subsampling[dimension]);
+            return toIntExact(ceilDiv(tileOffsetFull[dimension], subsampling[dimension]));
         }
 
         /**
@@ -613,7 +622,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              *   - `indexInResultArray` is the index in the `rasters` array to be returned.
              *   - `indexInTileVector`  is the corresponding index in the `tileOffsets` vector.
              *   - `tmcInSubset[]`      contains the Tile Matrix Coordinates (TMC) relative to this `TiledGridCoverage`.
-             *   - `tileOffsetAOI[]`    contains the pixel coordinates relative to the user-specified AOI.
+             *   - `tileOffsetFull[]`   contains the pixel coordinates relative to the user-specified AOI.
              *
              * We do not check for integer overflow in this method because if an overflow is possible,
              * then `ArithmeticException` should have occurred in `TiledGridCoverage` constructor.
@@ -621,13 +630,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
             for (int i=0; i<tmcInSubset.length; i++) {
                 indexInTileVector += tileStrides[i];
                 if (++tmcInSubset[i] < tileUpper[i]) {
-                    tileOffsetAOI[i] += tileSize[i];
+                    tileOffsetFull[i] += tileSize[i];
                     break;
                 }
                 // Rewind to index for tileLower[i].
                 indexInTileVector -= (tmcInSubset[i] - tileLower[i]) * tileStrides[i];
-                tmcInSubset  [i]   = tileLower[i];
-                tileOffsetAOI[i]   = offsetAOI[i];
+                tmcInSubset   [i]  = tileLower[i];
+                tileOffsetFull[i]  = multiplyFull(offsetAOI[i], subsampling[i]);
             }
             return true;
         }
@@ -776,7 +785,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * corner of the image in the {@link TiledGridResource}).
      *
      * The {@link WritableRaster#getMinX()} and {@code getMinY()} coordinates of returned rasters
-     * shall start at the given {@code offsetAOI} values.
+     * shall start at the given {@code iterator.offsetAOI} values.
      *
      * <p>This method must be thread-safe.</p>
      *
