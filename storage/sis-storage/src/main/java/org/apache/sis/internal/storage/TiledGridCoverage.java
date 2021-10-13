@@ -62,7 +62,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -460,7 +460,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
         private final int[] tileUpper;
 
         /**
-         * Pixel coordinates to assign to the upper-left corner of the region to read, ignoring subsampling.
+         * Pixel coordinates to assign to the upper-left corner of the region to render, ignoring subsampling.
+         * This is the difference between the region requested by user and the region which will be rendered.
          */
         private final int[] offsetAOI;
 
@@ -570,11 +571,25 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
         /**
          * Returns the origin to assign to the tile at current iterator position.
-         * Note that if there is more than one tile, then the subsampling should be
-         * a divisor of tile size, otherwise a drift in pixel coordinates will appear.
+         * Note that the subsampling should be a divisor of tile size,
+         * otherwise a drift in pixel coordinates will appear.
+         * There is two exceptions to this rule:
+         *
+         * <ul>
+         *   <li>If image is untiled (i.e. there is only one tile),
+         *       we allow to read a sub-region of the unique tile.</li>
+         *   <li>If subsampling is larger than tile size.</li>
+         * </ul>
          */
         final int getTileOrigin(final int dimension) {
-            return floorDiv(tileOffsetAOI[dimension], subsampling[dimension]);
+            /*
+             * We really need `ceilDiv(…)` below, not `floorDiv(…)`. It makes no difference in the usual
+             * case where the subsampling is a divisor of the tile size. But if we are in the case where
+             * subsampling is larger than tile size, we need the `ceilDiv(…)`. At first the results seem
+             * inconsistent, but after we discard the tiles where `getRegionInsideTile(…)` returns false
+             * it become consistent.
+             */
+            return ceilDiv(tileOffsetAOI[dimension], subsampling[dimension]);
         }
 
         /**

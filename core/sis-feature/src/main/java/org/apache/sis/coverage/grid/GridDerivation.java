@@ -1261,8 +1261,13 @@ public class GridDerivation {
             return 1;
         }
         if (chunkSize != null) {
+            /*
+             * If the coverage is divided in tiles (or "chunk" in n-dimensional case), we want the subsampling
+             * to be a divisor of tile size. In the special case where the subsampling is larger than tile size,
+             * we can remove an integer amount of tiles because tiles can be fully skipped at read time.
+             */
             final int size = chunkSize[dimension];
-            final int r = subsampling % size;
+            final int r = subsampling % size;       // Reduced subsampling (with integer amont of tiles removed).
             if (r > 1 && (size % r) != 0) {
                 final int[] divisors = MathFunctions.divisors(size);
                 final int i = ~Arrays.binarySearch(divisors, r);
