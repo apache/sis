@@ -50,7 +50,7 @@
  * order to give SIS a chance to redirect log events to an other logging framework.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://download.oracle.com/javase/6/docs/technotes/guides/logging/overview.html">Java Logging Overview</a>
  *

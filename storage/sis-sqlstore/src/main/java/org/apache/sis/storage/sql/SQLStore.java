@@ -56,7 +56,7 @@ import org.apache.sis.util.Exceptions;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -120,37 +120,6 @@ public class SQLStore extends DataStore implements Aggregate {
      * This is {@code null} if there is none.
      */
     private final SchemaModifier customizer;
-
-    /**
-     * Creates a new instance for the given storage.
-     * The given {@code connector} shall contain a {@link DataSource}.
-     * The given table names shall be qualified names of 1, 2 or 3 components.
-     * The name components are {@code <catalog>.<schema pattern>.<table pattern>} where:
-     *
-     * <ul>
-     *   <li>{@code <catalog>}, if present, is the name of a catalog as stored in the database.</li>
-     *   <li>{@code <schema pattern>}, if present, is the pattern of a schema.
-     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
-     *   <li>{@code <table pattern>} (mandatory) is the pattern of a table.
-     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
-     * </ul>
-     *
-     * Qualified table names can be created by the {@link SQLStoreProvider#createTableName(String, String, String)}
-     * convenience method. Only the main tables need to be specified; dependencies will be followed automatically.
-     *
-     * @param  provider    the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     * @param  connector   information about the storage (JDBC data source, <i>etc</i>).
-     * @param  tableNames  fully qualified names (including catalog and schema) of the tables to include in this store.
-     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
-     *
-     * @deprecated Replaced by {@link #SQLStore(SQLStoreProvider, StorageConnector, ResourceDefinition...)}.
-     */
-    @Deprecated
-    public SQLStore(final SQLStoreProvider provider, final StorageConnector connector, GenericName... tableNames)
-            throws DataStoreException
-    {
-        this(provider, connector, ResourceDefinition.wrap(tableNames, null));
-    }
 
     /**
      * Creates a new {@code SQLStore} for the given data source and tables, views or queries.

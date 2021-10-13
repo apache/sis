@@ -25,8 +25,8 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GTS, xmlns = {
-    @XmlNs(prefix = "gts", namespaceURI = Namespaces.GTS),
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = LegacyNamespaces.GTS, xmlns = {
+    @XmlNs(prefix = "gts", namespaceURI = LegacyNamespaces.GTS),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)
@@ -37,4 +37,5 @@ import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;

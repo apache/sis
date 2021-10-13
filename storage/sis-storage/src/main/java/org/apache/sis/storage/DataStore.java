@@ -141,25 +141,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
 
     /**
      * Creates a new instance as a child of another data store instance.
-     * The new instance inherits the parent {@linkplain #getProvider() provider}.
-     * Events created by this {@code DataStore} are forwarded to listeners registered
-     * into the parent data store too.
-     *
-     * @param  parent     the parent data store, or {@code null} if none.
-     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
-     *
-     * @since 0.8
-     *
-     * @deprecated Replaced by {@link #DataStore(DataStore, DataStoreProvider, StorageConnector, boolean)}.
-     */
-    @Deprecated
-    protected DataStore(final DataStore parent, final StorageConnector connector) throws DataStoreException {
-        this(parent, (parent != null) ? parent.provider : null, connector, false);
-    }
-
-    /**
-     * Creates a new instance as a child of another data store instance.
      * Events will be sent not only to {@linkplain #addListener registered listeners} of this {@code DataStore},
      * but also to listeners of the {@code parent} data store. Each listener will be notified only once, even if
      * the same listener is registered in the two places.

@@ -84,7 +84,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * See the <cite>Linearizers</cite> section in {@link LinearTransformBuilder} for more discussion.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see InterpolatedTransform
  * @see LinearTransform
@@ -626,21 +626,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Adds transforms to potentially apply on target control points before to compute the transform.
-     *
-     * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
-     * @param  projToGrid   the target dimensions to project, or null or omitted for projecting all target dimensions.
-     *
-     * @deprecated Replaced by {@link #addLinearizers(Map, boolean, int...)} with {@code compensate = true}.
-     *
-     * @since 1.0
-     */
-    @Deprecated
-    public void addLinearizers(final Map<String,MathTransform> projections, final int... projToGrid) {
-        addLinearizers(projections, true, projToGrid);
-    }
-
-    /**
      * Creates a transform from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
      * If this transform is close enough to an affine transform, then an instance of {@link LinearTransform} is returned.
@@ -889,18 +874,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * @deprecated Replaced by {@link #errors(boolean)}.
-     *
-     * @since 1.0
-     */
-    @Deprecated
-    public Statistics[] error(final MathTransform mt) throws NoninvertibleTransformException {
-        if (mt == transform) return errors(false);
-        if (mt == linearBuilder.transform()) return errors(true);
-        throw new IllegalArgumentException();
-    }
-
-    /**
      * Returns a string representation of this builder in the given locale.
      * Current implementation shows the following information:
      *
@@ -950,19 +923,9 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * @deprecated Replaced by {@link #toString(boolean, Locale)}.
-     *
-     * @since 1.0
-     */
-    @Deprecated
-    public String toString(final Locale locale) {
-        return toString(false, locale);
-    }
-
-    /**
      * Returns a string representation of this builder for debugging purpose.
      * The string representation is for debugging purpose and may change in any future version.
-     * The default implementation delegates to {@link #toString(Locale)} with a null locale.
+     * The default implementation delegates to {@link #toString(boolean, Locale)} with a null locale.
      *
      * @return a string representation of this builder.
      *

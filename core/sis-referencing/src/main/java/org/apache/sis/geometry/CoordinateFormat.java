@@ -98,7 +98,7 @@ import org.apache.sis.referencing.CRS;
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
@@ -869,20 +869,6 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             updateAccuracyVisibility();
             isPrecisionApplied = true;
         }
-    }
-
-    /**
-     * @deprecated Renamed {@link #setGroundPrecision(Quantity)}
-     * for avoiding confusion with {@link #setPrecisions(double...)}.
-     *
-     * @param  resolution  the desired resolution.
-     * @param  unit        unit of the desired resolution.
-     *
-     * @since 1.0
-     */
-    @Deprecated
-    public void setPrecision(double resolution, Unit<?> unit) {
-        setGroundPrecision(Quantities.create(resolution, unit));
     }
 
     /**

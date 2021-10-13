@@ -23,7 +23,7 @@ import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.metadata.quality.TemporalValidity;
 import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
@@ -48,8 +48,8 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(name = "AbstractDQ_TemporalAccuracy_Type", namespace = Namespaces.GMD)     // TODO: renamed TemporalQuality
-@XmlRootElement(name = "AbstractDQ_TemporalAccuracy", namespace = Namespaces.GMD)
+@XmlType(name = "AbstractDQ_TemporalAccuracy_Type", namespace = LegacyNamespaces.GMD)     // TODO: renamed TemporalQuality
+@XmlRootElement(name = "AbstractDQ_TemporalAccuracy", namespace = LegacyNamespaces.GMD)
 @XmlSeeAlso({
     DefaultAccuracyOfATimeMeasurement.class,
     DefaultTemporalConsistency.class,

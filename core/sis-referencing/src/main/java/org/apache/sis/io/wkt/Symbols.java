@@ -73,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
@@ -629,30 +629,6 @@ public class Symbols implements Localized, Cloneable, Serializable {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAUnicodeIdentifier_1, element));
         }
         return containsElement(wkt, element, 0);
-    }
-
-    /**
-     * Returns {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
-     * Invoking this method is equivalent to invoking
-     * <code>{@linkplain #containsElement(CharSequence, String) containsElement}(wkt, "AXIS")</code>.
-     *
-     * <h4>Use case</h4>
-     * The check for axis elements is of particular interest because the axis order is a frequent cause
-     * of confusion when processing geographic data. Some applications just ignore any declared axis order
-     * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.
-     * Consequently, the presence of {@code AXIS[…]} elements in a WKT 1 string is an indication
-     * that the encoded object may not be understood as intended by some external software products.
-     *
-     * @param  wkt  the WKT to inspect.
-     * @return {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
-     *
-     * @deprecated The {@code AXIS} element is no longer optional in WKT 2.
-     *             Consequently testing for its presence should not be needed anymore.
-     */
-    @Deprecated
-    public boolean containsAxis(final CharSequence wkt) {
-        ensureNonNull("wkt", wkt);
-        return containsElement(wkt, "AXIS", 0);
     }
 
     /**
