@@ -353,7 +353,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * The "no data" or background pixel value, or NaN if undefined.
      *
-     * @see #getFillValue()
+     * @see #getFillValue(boolean)
      */
     private double noData = Double.NaN;
 
@@ -1456,7 +1456,7 @@ final class ImageFileDirectory extends DataCube {
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
                     dimensions[band] = reader.store.customizer.customize(index, band,
-                                        sampleRange, getFillValue(), builder.setName(++band));
+                                        sampleRange, getFillValue(true), builder.setName(++band));
                     builder.clear();
                 }
                 sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
@@ -1636,6 +1636,16 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected Number getFillValue() {
+        return getFillValue(false);
+    }
+
+    /**
+     * Returns the value to use for filling empty spaces in the raster, or {@code null} if none,
+     * The exclusion of zero value is optional, controlled by the {@code acceptZero} argument.
+     *
+     * @param  acceptZero  whether to return a number for the zero value.
+     */
+    private Number getFillValue(final boolean acceptZero) {
         if (Double.isFinite(noData) && noData != 0) {
             final long min, max;
             switch (sampleFormat) {
@@ -1644,7 +1654,7 @@ final class ImageFileDirectory extends DataCube {
                 default: return noData;
             }
             final long value = Math.round(noData);
-            if (value >= min && value <= max && value != 0) {
+            if (value >= min && value <= max && (acceptZero || value != 0)) {
                 return Numbers.narrowestNumber(value);
             }
         }

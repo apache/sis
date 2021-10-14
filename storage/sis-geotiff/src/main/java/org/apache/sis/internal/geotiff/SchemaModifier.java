@@ -74,20 +74,13 @@ public interface SchemaModifier {
      * Implementations can override this method for setting a better name or for declaring the
      * meaning of sample values (by adding "categories").
      *
-     * <div class="note"><b>API note:</b>
-     * the zero fill value is excluded because tiles are already initialized to zero by default,
-     * and because conversions between "real world" values and "packaged values" already use 0
-     * as the background value if no category is specified. We avoid specifying categories when
-     * not necessary because GeoTIFF does not really has this information.
-     * </div>
-     *
-     * The default implementation creates categories only if {@code fillValue} is non-null.
-     * In such case, the fill value is also defined as the background value.
+     * <p>The default implementation creates categories only if {@code fillValue} is non-null.
+     * In such case, the fill value is also defined as the background value.</p>
      *
      * @param  image        index of the image for which to create sample dimension.
      * @param  band         index of the band for which to create sample dimension.
      * @param  sampleRange  minimum and maximum values declared in the TIFF tags, or {@code null} if unknown.
-     * @param  fillValue    the "no data" value, or {@code null} if none or zero. May intersect {@code sampleRange}.
+     * @param  fillValue    the "no data" value, or {@code null} if none. May intersect {@code sampleRange}.
      * @param  dimension    a sample dimension builder initialized with band number as the dimension name.
      *                      This builder can be modified in-place.
      * @return the sample dimension to use.
