@@ -69,7 +69,7 @@ import static java.lang.Double.doubleToRawLongBits;
  * <p>Instances of {@link CategoryList} are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -346,7 +346,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                  * This check is important for "unit to sample" conversions, because we typically expect all
                  * results to be convertible to integers (ignoring rounding errors).
                  */
-                if (converse.categories.length != 0) {
+                if (background == null && converse.categories.length != 0) {
                     final NumberRange<?> cr = converse.categories[0].range;
                     final double cv = cr.getMinDouble();
                     if ((cv > 0) || (cv == 0 && !cr.isMinIncluded())) {

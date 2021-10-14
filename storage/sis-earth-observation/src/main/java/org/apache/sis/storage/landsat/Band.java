@@ -48,7 +48,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * A band in a Landsat data set. Each band is represented by a separated GeoTIFF file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -189,7 +189,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
      */
     @Override
     public SampleDimension customize(final int image, final int band, final NumberRange<?> sampleRange,
-                                      final SampleDimension.Builder dimension)
+                                     final Number fillValue, final SampleDimension.Builder dimension)
     {
         if ((image | band) == 0) {
             dimension.setName(identifier);

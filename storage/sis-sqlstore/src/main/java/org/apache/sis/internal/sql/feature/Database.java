@@ -128,14 +128,14 @@ public class Database<G> extends Syntax  {
     /**
      * All tables known to this {@code Database} in declaration order.
      * This array contains only the tables specified at initialization time, not the dependencies.
-     * This field is initialized by {@link #analyze(SQLStore, Connection, GenericName[])} and shall
-     * not be modified after that point.
+     * This field is initialized by {@link #analyze(SQLStore, Connection, ResourceDefinition...)}
+     * and shall not be modified after that point.
      */
     private Table[] tables;
 
     /**
      * {@code true} if this database contains at least one geometry column.
-     * This field is initialized by {@link #analyze(SQLStore, Connection, GenericName[])}
+     * This field is initialized by {@link #analyze(SQLStore, Connection, ResourceDefinition...)}
      * and shall not be modified after that point.
      *
      * @see #hasGeometry()

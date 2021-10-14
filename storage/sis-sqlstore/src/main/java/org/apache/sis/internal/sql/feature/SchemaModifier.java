@@ -32,7 +32,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *       in which case the {@link TableReference} argument is no longer necessary.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -53,6 +53,18 @@ public interface SchemaModifier {
      */
     default DefaultFeatureType editFeatureType(TableReference table, FeatureTypeBuilder feature) throws DataStoreException {
         return feature.build();
+    }
+
+    /**
+     * Returns {@code true} if the given dependency is allowed to have an association to its dependent feature.
+     * A value of {@code true} creates a cyclic dependency, which {@code SQLStore} can manage but may surprise users.
+     * The default value is {@code false}.
+     *
+     * @param  dependency  the dependency table.
+     * @return whether the dependency is allowed to have an association to its parent.
+     */
+    default boolean isCyclicAssociationAllowed(TableReference dependency) {
+        return false;
     }
 
     /**

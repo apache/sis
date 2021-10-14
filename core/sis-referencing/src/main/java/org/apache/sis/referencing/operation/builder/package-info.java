@@ -30,7 +30,7 @@
  * convenience.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.5
  * @module
  */

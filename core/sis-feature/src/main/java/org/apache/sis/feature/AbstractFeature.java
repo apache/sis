@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.io.Serializable;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
@@ -64,7 +65,7 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see DefaultFeatureType#newInstance()
  *
@@ -800,6 +801,41 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
+     * The features for which a {@link #hashCode()} or {@link #equals(Object)} execution are in progress.
+     * This is used for avoiding never-ending loop in case of recursive dependency.
+     */
+    private static final ThreadLocal<IdentityHashMap<AbstractFeature,Boolean>> COMPARING = ThreadLocal.withInitial(IdentityHashMap::new);
+
+    /**
+     * Notifies that a {@link #hashCode()} or {@link #equals(Object)} method started execution
+     * for the given feature and returns {@code true} if there is no recursion.
+     * This method must be invoked in a {@code try ... finally} block as below:
+     *
+     * {@preformat java
+     *     if (comparisonStart()) try {
+     *         // Compare or compute hash code.
+     *     } finally {
+     *         comparisonEnd();
+     *     }
+     * }
+     *
+     * @return {@code true} if hash code or equality comparison can proceed, or
+     *         {@code false} if a recursivity is detected.
+     */
+    final boolean comparisonStart() {
+        return COMPARING.get().put(this, Boolean.TRUE) == null;
+    }
+
+    /**
+     * Notifies that the comparison of {@code this} feature is finished.
+     */
+    final void comparisonEnd() {
+        if (COMPARING.get().remove(this) != Boolean.TRUE) {
+            throw new AssertionError();     // Should never happen.
+        }
+    }
+
+    /**
      * Returns a hash code value for this feature.
      * The default implementation performs the following algorithm:
      *
@@ -823,14 +859,18 @@ public abstract class AbstractFeature implements Serializable {
     @Override
     public int hashCode() {
         int code = type.hashCode() * 37;
-        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
-            final String name = pt.getName().toString();
-            if (name != null) {                                             // Paranoiac check.
-                final Object value = getPropertyValue(name);
-                if (value != null) {
-                    code += name.hashCode() ^ value.hashCode();
+        if (comparisonStart()) try {
+            for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+                final String name = pt.getName().toString();
+                if (name != null) {                                             // Paranoiac check.
+                    final Object value = getPropertyValue(name);
+                    if (value != null) {
+                        code += name.hashCode() ^ value.hashCode();
+                    }
                 }
             }
+        } finally {
+            comparisonEnd();
         }
         return code;
     }
@@ -867,11 +907,15 @@ public abstract class AbstractFeature implements Serializable {
             if (!type.equals(that.type)) {
                 return false;
             }
-            for (final AbstractIdentifiedType pt : type.getProperties(true)) {
-                final String name = pt.getName().toString();
-                if (!Objects.equals(getPropertyValue(name), that.getPropertyValue(name))) {
-                    return false;
+            if (comparisonStart()) try {
+                for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+                    final String name = pt.getName().toString();
+                    if (!Objects.equals(getPropertyValue(name), that.getPropertyValue(name))) {
+                        return false;
+                    }
                 }
+            } finally {
+                comparisonEnd();
             }
         }
         return true;

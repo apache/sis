@@ -306,7 +306,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
          * If at least one filter is implemented by Java code (i.e. has not been translated to SQL statement),
          * then we can not count using SQL only. We have to rely on the more costly default implementation.
          */
-        if (hasPredicates) {
+        if (hasPredicates || count != 0) {
             return super.count();
         }
         /*
@@ -325,10 +325,9 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
             sql.appendIdentifier(table.attributes[0].label);
         }
         table.appendFromClause(sql.append(')'));
-        if (selection != null) {
+        if (selection != null && !selection.isEmpty()) {
             sql.append(" WHERE ").append(selection.toString());
         }
-        sql.appendFetchPage(offset, count);
         try (Connection connection = getConnection()) {
             makeReadOnly(connection);
             try (Statement st = connection.createStatement();
@@ -342,7 +341,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         } catch (SQLException e) {
             throw new BackingStoreException(e);
         }
-        return super.count();
+        return Math.max(super.count() - offset, 0);
     }
 
     /**
@@ -392,7 +391,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
      */
     @Override
     protected Spliterator<AbstractFeature> createSourceIterator() throws Exception {
-        final String filter = (selection != null) ? selection.toString() : null;
+        final String filter = (selection != null && !selection.isEmpty()) ? selection.toString() : null;
         selection   = null;     // Let the garbage collector do its work.
         filterToSQL = null;
 

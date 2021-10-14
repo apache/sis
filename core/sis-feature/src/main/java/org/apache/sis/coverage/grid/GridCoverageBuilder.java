@@ -232,7 +232,7 @@ public class GridCoverageBuilder {
      * @return {@code this} for method invocation chaining.
      *
      * @see #flipGridAxis(int)
-     * @see GridGeometry#GridGeometry(GridExtent, Envelope)
+     * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
      */
     public GridCoverageBuilder setDomain(final Envelope domain) {
         return setDomain(domain == null ? null : new GridGeometry(null, domain, GridOrientation.HOMOTHETY));

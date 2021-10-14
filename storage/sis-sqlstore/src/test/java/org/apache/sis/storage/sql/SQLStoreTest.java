@@ -24,11 +24,13 @@ import java.util.Collection;
 import java.util.stream.Stream;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.storage.FeatureQuery;
+import org.apache.sis.internal.sql.feature.SchemaModifier;
+import org.apache.sis.internal.sql.feature.TableReference;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -49,7 +51,7 @@ import org.apache.sis.feature.DefaultAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -83,6 +85,13 @@ public final strictfp class SQLStoreTest extends TestCase {
             this.parks       = parks;
         }
     };
+
+    /**
+     * Whether dependencies are allowed to have an association to their dependent feature.
+     *
+     * @see SchemaModifier#isCyclicAssociationAllowed(TableReference)
+     */
+    private boolean isCyclicAssociationAllowed;
 
     /**
      * The {@code Country} value for Canada, or {@code null} if not yet visited.
@@ -141,7 +150,9 @@ public final strictfp class SQLStoreTest extends TestCase {
      *                   and will be the only schema to exist (ignoring system schema); i.e. we assume that there
      *                   is no ambiguity if we do not specify the schema in {@link SQLStore} constructor.
      */
-    private void test(final TestDatabase database, final boolean inMemory) throws Exception {
+    private void test(final TestDatabase database, final boolean inMemory)
+            throws Exception
+    {
         final String[] scripts = {
             "CREATE SCHEMA " + SCHEMA + ';',
             "file:Features.sql"
@@ -152,42 +163,8 @@ public final strictfp class SQLStoreTest extends TestCase {
         try (TestDatabase tmp = database) {                 // TODO: omit `tmp` with JDK16.
             tmp.executeSQL(SQLStoreTest.class, scripts);
             final StorageConnector connector = new StorageConnector(tmp.source);
-            try (SQLStore store = new SQLStore(new SQLStoreProvider(), connector,
-                    ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities")))
-            {
-                final FeatureSet cities = store.findResource("Cities");
-                /*
-                 * Feature properties should be in same order than columns in the database table, except for
-                 * the generated identifier. Note that the country is an association to another feature.
-                 */
-                verifyFeatureType(cities.getType(),
-                        new String[] {"sis:identifier", "pk:country", "country",   "native_name", "english_name", "population",  "parks"},
-                        new Object[] {null,             String.class, "Countries", String.class,  String.class,   Integer.class, "Parks"});
-
-                verifyFeatureType(store.findResource("Countries").getType(),
-                        new String[] {"sis:identifier", "code",       "native_name"},
-                        new Object[] {null,             String.class, String.class});
-
-                verifyFeatureType(store.findResource("Parks").getType(),
-                        new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"},
-                        new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class});
-
-                final Map<String,Integer> countryCount = new HashMap<>();
-                try (Stream<AbstractFeature> features = cities.features(false)) {
-                    features.forEach((f) -> verifyContent(f, countryCount, true));
-                }
-                assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
-                assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
-                assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
-                assertTrue(countryCount.isEmpty());
-                /*
-                 * Verify overloaded stream operations (sorting, etc.).
-                 */
-                verifySimpleQuerySorting(store);
-                verifySimpleWhere(store);
-                verifyStreamOperations(store.findResource("Cities"));
-                canada = null;
-            }
+            final ResourceDefinition table = ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities");
+            testTableQuery(connector, table);
             /*
              * Verify using SQL statements instead of tables.
              */
@@ -195,7 +172,74 @@ public final strictfp class SQLStoreTest extends TestCase {
             verifyNestedSQLQuery(connector);
             verifyLimitOffsetAndColumnSelectionFromQuery(connector);
             verifyDistinctQuery(connector);
+            /*
+             * Test on the table again, but with cyclic associations enabled.
+             */
+            connector.setOption(SchemaModifier.OPTION, new SchemaModifier() {
+                @Override public boolean isCyclicAssociationAllowed(TableReference dependency) {
+                    return true;
+                }
+            });
+            isCyclicAssociationAllowed = true;
+            testTableQuery(connector, table);
         }
+    }
+
+    /**
+     * Creates a {@link SQLStore} instance with the specified table as a resource, then tests some queries.
+     */
+    private void testTableQuery(final StorageConnector connector, final ResourceDefinition table) throws Exception {
+        try (SQLStore store = new SQLStore(new SQLStoreProvider(), connector, table)) {
+            verifyFeatureTypes(store);
+            final Map<String,Integer> countryCount = new HashMap<>();
+            try (Stream<AbstractFeature> features = store.findResource("Cities").features(false)) {
+                features.forEach((f) -> verifyContent(f, countryCount));
+            }
+            assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
+            assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
+            assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
+            assertTrue(countryCount.isEmpty());
+            /*
+             * Verify overloaded stream operations (sorting, etc.).
+             */
+            verifySimpleQuerySorting(store);
+            verifySimpleQueryWithLimit(store);
+            verifySimpleWhere(store);
+            verifyStreamOperations(store.findResource("Cities"));
+        }
+        canada = null;
+    }
+
+    /**
+     * Verifies the feature types of the "Cities" resource and its dependencies.
+     * Feature properties should be in same order than columns in the database table, except for
+     * the generated identifier. Note that the country is an association to another feature.
+     *
+     * @param  isCyclicAssociationAllowed  whether dependencies are allowed to have an association
+     *         to their dependent feature, which create a cyclic dependency.
+     */
+    private void verifyFeatureTypes(final SQLStore store) throws DataStoreException {
+        verifyFeatureType(store.findResource("Cities").getType(),
+                new String[] {"sis:identifier", "pk:country", "country",   "native_name", "english_name", "population",  "parks"},
+                new Object[] {null,             String.class, "Countries", String.class,  String.class,   Integer.class, "Parks"});
+
+        verifyFeatureType(store.findResource("Countries").getType(),
+                new String[] {"sis:identifier", "code",       "native_name"},
+                new Object[] {null,             String.class, String.class});
+        /*
+         * If cyclic dependencies are allowed, an additional properties "FK_City" is present
+         * compared to the case where cyclic dependencies are avoided.
+         */
+        final String[] expectedNames;
+        final Object[] expectedTypes;
+        if (isCyclicAssociationAllowed) {
+            expectedNames = new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"};
+            expectedTypes = new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class};
+        } else {
+            expectedNames = new String[] {"sis:identifier", "country",    "city",       "native_name", "english_name"};
+            expectedTypes = new Object[] {null,             String.class, String.class, String.class,  String.class};
+        }
+        verifyFeatureType(store.findResource("Parks").getType(), expectedNames, expectedTypes);
     }
 
     /**
@@ -232,9 +276,8 @@ public final strictfp class SQLStoreTest extends TestCase {
      *
      * @param  feature       a feature returned by the stream.
      * @param  countryCount  number of time that the each country has been seen while iterating over the cities.
-     * @param  isTable       {@code true} if the resource is from a table, or {@code false} if from a query.
      */
-    private void verifyContent(final AbstractFeature feature, final Map<String,Integer> countryCount, final boolean isTable) {
+    private void verifyContent(final AbstractFeature feature, final Map<String,Integer> countryCount) {
         final String city = feature.getPropertyValue("native_name").toString();
         final City c;
         boolean isCanada = false;
@@ -286,7 +329,7 @@ public final strictfp class SQLStoreTest extends TestCase {
              * Verify the reverse association form Parks to Cities.
              * This create a cyclic graph, but SQLStore is capable to handle it.
              */
-            if (isTable) {
+            if (isCyclicAssociationAllowed) {
                 assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
             }
         }
@@ -338,6 +381,20 @@ public final strictfp class SQLStoreTest extends TestCase {
             }).toArray();
         }
         assertEquals(new HashSet<>(Arrays.asList(expectedValues)), new HashSet<>(Arrays.asList(values)));
+    }
+
+    /**
+     * Requests features with a limit on the number of items.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifySimpleQueryWithLimit(final SQLStore dataset) throws DataStoreException {
+        final FeatureSet   parks = dataset.findResource("Parks");
+        final FeatureQuery query = new FeatureQuery();
+        query.setLimit(2);
+        final FeatureSet subset = parks.subset(query);
+        assertEquals(2, subset.features(false).count());
     }
 
     /**
@@ -416,13 +473,14 @@ public final strictfp class SQLStoreTest extends TestCase {
             final FeatureSet cities = store.findResource("LargeCities");
             final Map<String,Integer> countryCount = new HashMap<>();
             try (Stream<AbstractFeature> features = cities.features(false)) {
-                features.forEach((f) -> verifyContent(f, countryCount, false));
+                features.forEach((f) -> verifyContent(f, countryCount));
             }
             assertEquals(Integer.valueOf(1), countryCount.remove("CAN"));
             assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
             assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
             assertTrue(countryCount.isEmpty());
         }
+        canada = null;
     }
 
     /**

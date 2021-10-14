@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
@@ -43,8 +43,8 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = Namespaces.GMD)     // TODO: renamed NonQuantitativeAttributeCorrectness
-@XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy", namespace = Namespaces.GMD)
+@XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = LegacyNamespaces.GMD)     // TODO: renamed NonQuantitativeAttributeCorrectness
+@XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy", namespace = LegacyNamespaces.GMD)
 public class DefaultNonQuantitativeAttributeAccuracy extends AbstractThematicAccuracy
         implements NonQuantitativeAttributeAccuracy
 {

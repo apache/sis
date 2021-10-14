@@ -18,7 +18,9 @@ package org.apache.sis.coverage;
 
 import java.util.List;
 import java.util.function.Function;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -44,7 +46,7 @@ import org.opengis.geometry.DirectPosition;
  * {@link Evaluator#apply(DirectPosition)} method signatures.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -54,6 +56,26 @@ public abstract class BandedCoverage {
      */
     protected BandedCoverage() {
     }
+
+    /**
+     * Returns the coordinate reference system to which the cells are referenced.
+     *
+     * @return the coordinate reference system to which the cells are referenced.
+     *
+     * @since 1.2
+     */
+    public abstract CoordinateReferenceSystem getCoordinateReferenceSystem();
+
+    /**
+     * Returns the bounding box for the coverage domain in CRS coordinates.
+     * The envelope encompasses all cell surfaces, from the left border of leftmost cell
+     * to the right border of the rightmost cell and similarly along other axes.
+     *
+     * @return the bounding box for the coverage domain in CRS coordinates.
+     *
+     * @since 1.2
+     */
+    public abstract Envelope getEnvelope();
 
     /**
      * Returns information about the <cite>range</cite> of this coverage.

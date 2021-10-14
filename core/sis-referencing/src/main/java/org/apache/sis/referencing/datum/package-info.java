@@ -61,7 +61,7 @@
            elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =
 {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
@@ -86,6 +86,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gml.DateAdapter;
 import org.apache.sis.internal.jaxb.metadata.*;

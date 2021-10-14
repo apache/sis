@@ -313,7 +313,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     @Override
     public int hashCode() {
         int code = 1;
-        if (properties != null) {
+        if (properties != null && comparisonStart()) try {
             if (properties instanceof Property[]) {
                 for (final Property p : (Property[]) properties) {
                     code = 31 * code;
@@ -332,6 +332,8 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
             } else {
                 code = Arrays.hashCode(properties);
             }
+        } finally {
+            comparisonEnd();
         }
         return type.hashCode() + code;
     }
@@ -357,7 +359,13 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
                         wrapValuesInProperties();
                     }
                 }
-                return Arrays.equals(properties, that.properties);
+                if (comparisonStart()) try {
+                    return Arrays.equals(properties, that.properties);
+                } finally {
+                    comparisonEnd();
+                } else {
+                    return true;
+                }
             }
         }
         return false;

@@ -288,7 +288,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             }
             case "dateTime": {
                 if (org.opengis.metadata.quality.Element.class.isAssignableFrom(impl)) {
-                    return Namespaces.GMD;
+                    return LegacyNamespaces.GMD;
                 }
                 break;
             }

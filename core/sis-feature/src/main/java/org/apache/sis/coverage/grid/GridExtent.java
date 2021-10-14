@@ -65,6 +65,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 
 
+
 /**
  * A range of grid coverage coordinates, also known as "grid envelope".
  * {@code GridExtent} are defined by {@linkplain #getLow() low} coordinates (often all zeros)
@@ -85,7 +86,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -294,10 +295,10 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * <p>An optional (nullable) {@code axisTypes} argument can be used for attaching a label to each grid axis.
      * For example if this {@code GridExtent} is four-dimensional, then the axis types may be
-     * {{@linkplain DimensionNameType#COLUMN   column}  (<var>x</var>),
-     *  {@linkplain DimensionNameType#ROW      row}     (<var>y</var>),
-     *  {@linkplain DimensionNameType#VERTICAL vertical (<var>z</var>),
-     *  {@linkplain DimensionNameType#TIME     time}    (<var>t</var>)},
+     * {{@linkplain DimensionNameType#COLUMN   column}   (<var>x</var>),
+     *  {@linkplain DimensionNameType#ROW      row}      (<var>y</var>),
+     *  {@linkplain DimensionNameType#VERTICAL vertical} (<var>z</var>),
+     *  {@linkplain DimensionNameType#TIME     time}     (<var>t</var>)},
      * which means that the last axis is for the temporal dimension, the third axis is for the vertical dimension, <i>etc.</i>
      * This information is related to the "real world" coordinate reference system axes, but not necessarily in the same order;
      * it is caller responsibility to ensure that the grid axes are consistent with the CRS axes.
@@ -1005,14 +1006,6 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
-     * @deprecated Renamed {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
-     */
-    @Deprecated
-    public GridExtent insert(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
-        return insertDimension(offset, axisType, low, high, isHighIncluded);
-    }
-
-    /**
      * Returns a new grid envelope with the specified dimension inserted at the given index in this grid envelope.
      * To append a new dimension after all existing dimensions, set {@code offset} to {@link #getDimension()}.
      *
@@ -1166,7 +1159,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @return a grid extent having the given sizes, or {@code this} if there is no change.
      * @throws ArithmeticException if resizing this extent to the given size overflows {@code long} capacity.
      *
-     * @see GridDerivation#resize(GridExtent, double...)
+     * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent resize(final long... sizes) {
         ArgumentChecks.ensureNonNull("sizes", sizes);
@@ -1194,14 +1187,6 @@ public class GridExtent implements Serializable, LenientComparable {
             c[i+m] = upper;
         }
         return Arrays.equals(c, coordinates) ? this : resize;
-    }
-
-    /**
-     * @deprecated Renamed {@link #reduceDimension(int...)}.
-     */
-    @Deprecated
-    public GridExtent reduce(int... dimensions) {
-        return reduceDimension(dimensions);
     }
 
     /**

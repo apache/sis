@@ -45,7 +45,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -322,12 +322,37 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#toEnvelope(MathTransform)}.
+     * Tests {@link GridExtent#toEnvelope(MathTransform)} with an identity transform.
      *
      * @throws TransformException if an error occurred while transforming to an envelope.
      */
     @Test
     public void testToEnvelope() throws TransformException {
+        final GridExtent extent = new GridExtent(new DimensionNameType[] {
+            DimensionNameType.COLUMN,
+            DimensionNameType.ROW,
+            DimensionNameType.TIME
+        }, new long[] {0, 0, 741}, new long[] {13, 9, 741}, true);
+        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.identity(3));
+
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] { 0,  0, 741},
+                new double[] {14, 10, 742}), envelope);
+
+        final CoordinateSystem cs = envelope.getCoordinateReferenceSystem().getCoordinateSystem();
+        assertAxisDirectionsEqual("toEnvelope", cs,
+                AxisDirection.COLUMN_POSITIVE,
+                AxisDirection.ROW_POSITIVE,
+                AxisDirection.FUTURE);
+    }
+
+    /**
+     * Tests {@link GridExtent#toEnvelope(MathTransform)} with a non-identity transform.
+     *
+     * @throws TransformException if an error occurred while transforming to an envelope.
+     */
+    @Test
+    public void testToTransformedEnvelope() throws TransformException {
         final GridExtent extent = new GridExtent(new DimensionNameType[] {
             DimensionNameType.ROW,
             DimensionNameType.TIME,

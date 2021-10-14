@@ -23,7 +23,9 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.storage.CanNotProbeException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.Characters;
@@ -33,7 +35,7 @@ import org.apache.sis.util.Characters;
  * Inspects the type of a text file based on the first keyword.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -138,11 +140,14 @@ public abstract class FirstKeywordPeek {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
      * header.
      *
+     * @param  provider   the data store provider which is performing the probe operation.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable.
      * @throws DataStoreException if an I/O error occurred.
      */
-    public final ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
+    public final ProbeResult probeContent(final DataStoreProvider provider, final StorageConnector connector)
+            throws DataStoreException
+    {
         try {
             final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
             final Reader reader;
@@ -168,7 +173,7 @@ public abstract class FirstKeywordPeek {
             }
             return probeContent(buffer, reader);
         } catch (IOException e) {
-            throw new DataStoreException(e);
+            throw new CanNotProbeException(provider, connector, e);
         }
     }
 

@@ -82,7 +82,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -722,7 +722,10 @@ public class PixelIterator {
                 releaseTile();                                      // Release current writable raster, if any.
                 tileX = tx;
                 tileY = ty;
-                if (fetchTile() > py || currentLowerX > px) {       // `fetchTile()` must be before `currentLowerX`.
+                int currentLowerY = fetchTile();                    // Also update `currentLowerX` field value.
+                if (currentLowerY > py || py >= currentUpperY ||
+                    currentLowerX > px || px >= currentUpperX)
+                {
                     throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
                 }
             }

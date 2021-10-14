@@ -18,10 +18,8 @@ package org.apache.sis.storage.netcdf;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.NoSuchFileException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -43,6 +41,8 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.CanNotProbeException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Aggregate;
@@ -64,7 +64,7 @@ import org.apache.sis.util.Version;
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see NetcdfStore
  *
@@ -223,10 +223,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     throw (Error) new IncompatibleClassChangeError("canOpen").initCause(e);
                 } catch (InvocationTargetException e) {
                     final Throwable cause = e.getCause();
-                    if (cause instanceof DataStoreException) throw (DataStoreException) cause;
-                    if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
-                    if (cause instanceof Error)              throw (Error)              cause;
-                    if (cause instanceof FileNotFoundException || cause instanceof NoSuchFileException) {
+                    if (cause instanceof DataStoreException) {
+                        throw (DataStoreException) cause;
+                    } else if (cause instanceof IOException) {
                         /*
                          * Happen if the String argument uses any protocol not recognized by the UCAR library,
                          * in which case UCAR tries to open it as a file even if it is not a file. For example
@@ -235,7 +234,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                         Logging.recoverableException(getLogger(), NetcdfStoreProvider.class, "probeContent", cause);
                         return ProbeResult.UNSUPPORTED_STORAGE;
                     }
-                    throw new DataStoreException(e);                        // The cause may be IOException.
+                    throw new CanNotProbeException(this, connector, cause);
                 }
             } else {
                 /*
@@ -360,7 +359,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             if (cause instanceof Error)              throw (Error)              cause;
             throw new UndeclaredThrowableException(cause);  // Should never happen actually.
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);                    // Should never happen (shall be verified by the JUnit tests).
+            throw new InternalDataStoreException(e);        // Should never happen (shall be verified by the JUnit tests).
         }
     }
 

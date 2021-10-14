@@ -61,7 +61,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -165,7 +165,7 @@ abstract class FeatureAnalyzer {
      * This is a helper method for {@link #getForeignerKeys(Relation.Direction)} implementations.
      */
     final void addForeignerKeys(Relation relation) {
-        for (final String column : relation.getForeignerKeys()) {
+        for (final String column : relation.getOwnerColumns()) {
             CollectionsExt.addToMultiValuesMap(foreignerKeys, column, relation);
             relation = null;       // Only the first column will be associated.
         }
@@ -244,7 +244,7 @@ abstract class FeatureAnalyzer {
         if (dependencies != null) {
             int count = 0;
             for (final Relation dependency : dependencies) {
-                if (dependency != null) {
+                if (dependency != null && !dependency.excluded) {
                     final GenericName typeName = dependency.getName(analyzer);
                     final Table table = analyzer.table(dependency, typeName, id);
                     /*
@@ -297,7 +297,7 @@ abstract class FeatureAnalyzer {
      * @throws DataStoreException if a logical error occurred while analyzing the relations.
      * @throws Exception for WKB parsing error or other kinds of errors.
      */
-    final PrimaryKey createAssociations(Relation[] exportedKeys) throws Exception {
+    final PrimaryKey createAssociations(final Relation[] exportedKeys) throws Exception {
         if (primaryKey.size() > 1) {
             if (!primaryKeyNullable) {
                 primaryKeyClass = Numbers.wrapperToPrimitive(primaryKeyClass);
@@ -307,7 +307,7 @@ abstract class FeatureAnalyzer {
         final PrimaryKey pk = PrimaryKey.create(primaryKeyClass, primaryKey);
         int count = 0;
         for (final Relation dependency : exportedKeys) {
-            if (dependency != null) {
+            if (dependency != null && !dependency.excluded) {
                 final GenericName typeName = dependency.getName(analyzer);
                 String propertyName = toHeuristicLabel(typeName.tip().toString());
                 final String base = propertyName;
@@ -315,7 +315,7 @@ abstract class FeatureAnalyzer {
                     propertyName = base + '-' + ++count;
                 }
                 dependency.propertyName = propertyName;
-                final Table table = analyzer.table(dependency, typeName, null);   // `null` because exported, not imported.
+                final Table table = analyzer.table(dependency, typeName, id);
                 final AssociationRoleBuilder association;
                 if (table != null) {
                     dependency.setSearchTable(analyzer, table, pk, Relation.Direction.EXPORT);

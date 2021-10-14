@@ -447,7 +447,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                     dot.setFrom(sum);
                     dot.inverseDivide(tmp);
                     set(j, i, dot);
-                    if (Math.abs(dot.doubleValue()) == 1) {
+                    if (Math.abs(dot.doubleValue()) >= 1) {
                         rowOfOne = j;
                     }
                 }
