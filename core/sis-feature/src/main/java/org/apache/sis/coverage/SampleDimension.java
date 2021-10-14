@@ -73,6 +73,15 @@ import org.apache.sis.util.Debug;
  * but organized in a different way. The use of the same name may seem a risk, but those two types are typically
  * not used at the same time.
  *
+ * <h2>Definition of missing data</h2>
+ * An important aspect of sample dimensions is the {@link #getBackground() background value}. It defines how to
+ * initialize an empty canvas/matrix with respect to the sample definition. It is the value that defines the main/
+ * default "lack of data" (fill value, no-data, missing value) category.
+ *
+ * It is recommended to define it to enforce stable behavior upon associated data processing. As a last resort, sample
+ * dimension {@link Builder builder} will try to identify an acceptable default background value by searching for a
+ * qualitative category named <q>background</q>, <q>fill-value</q> or <q>no-data</q>.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  *
@@ -699,6 +708,9 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given boolean value.
          * The {@code true} value is represented by 1 and the {@code false} value is represented by 0.
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -716,6 +728,9 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given tiny (8 bits) integer value.
          * The argument is treated as a signed integer ({@value Byte#MIN_VALUE} to {@value Byte#MAX_VALUE}).
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -732,6 +747,9 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given short (16 bits) integer value.
          * The argument is treated as a signed integer ({@value Short#MIN_VALUE} to {@value Short#MAX_VALUE}).
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -748,6 +766,9 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given integer value.
          * The argument is treated as a signed integer ({@value Integer#MIN_VALUE} to {@value Integer#MAX_VALUE}).
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -766,6 +787,9 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -788,6 +812,9 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -810,6 +837,9 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
@@ -828,6 +858,9 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for all samples in the specified range of values.
          * This is the most generic method for adding a qualitative category.
          * All other {@code addQualitative(name, …)} methods are convenience methods delegating their work to this method.
+         * <p>
+         * It is strongly recommended using {@link #setBackground(CharSequence, Number)} instead of this method when the
+         * aim is to define a main/primary fill value.
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
