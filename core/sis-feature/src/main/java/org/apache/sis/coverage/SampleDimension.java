@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -27,7 +28,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.measure.Unit;
+import org.apache.sis.util.logging.Logging;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -1104,7 +1108,76 @@ defName:    if (name == null) {
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
             }
+
+            // Putting background defaulting in a dedicated method make it easier to disable/evolve.
+            verifyBackground();
+
             return new SampleDimension(name, toNaN.background, UnmodifiableArrayList.wrap(categories, 0, count));
+        }
+
+        /**
+         * Try to define a background value if none has been defined by user.
+         * Note that this is a best-effort. It analyzes available categories types and names. If it finds a very common
+         * case in category naming/typing, it will promote the related category minimum value as background. Otherwise,
+         * the background value is left unset.
+         */
+        private void verifyBackground() {
+            if (toNaN.background != null) return;
+            final Logger logger = Logging.getLogger("org.apache.sis.coverage");
+            try {
+                Arrays.stream(categories, 0, count)
+                        .map(this::score)
+                        .filter(it -> it != null && it.score > 0)
+                        .sorted(Comparator.comparing(BackgroundCandidate::getScore).reversed())
+                        .findFirst()
+                        .ifPresent(promoted -> {
+                            logger.log(Level.FINE,
+                                    "No background value set by user. Defaulting to {}." +
+                                            "Use `setBackground()` to short this automatic choice.",
+                                    promoted.category);
+                            toNaN.background = promoted.category.getSampleRange().getMinValue();
+                        });
+            } catch (Exception e) {
+                logger.log(Level.FINEST, "Defaulting background value failed", e);
+            }
+        }
+
+        /**
+         * Compute a score for a category. The score represent the chances for the category to be a good replacement for
+         * an explicitly set background. The higher the score, the better. Note that any result with a 0 score should be
+         * rejected.
+         *
+         * @param candidate A category to evaluate as a candidate for background value. Do not accept null values.
+         * @return The input category with associated score. Can be null if input category is not a good candidate.
+         */
+        private BackgroundCandidate score(Category candidate) {
+            if (candidate.isQuantitative() || candidate.getSampleRange().getMinValue() == null) return null;
+
+            final String enName = candidate.getName()
+                    .toString(Locale.ENGLISH)
+                    .toLowerCase(Locale.ENGLISH);
+            if (enName.equals("background")) return new BackgroundCandidate(1f, candidate);
+            else if (enName.equals("fill-value") || enName.equals("fill_value") || enName.equals("fill")) return new BackgroundCandidate(0.9f, candidate);
+            else if (enName.equals("no-data") || enName.equals("no_data") || enName.equals("no data")) return new BackgroundCandidate(0.8f, candidate);
+            else if (enName.equals("missing-value") || enName.equals("missing_value") || enName.equals("missing value")) return new BackgroundCandidate(0.7f, candidate);
+            else if (enName.equals("missing-data") || enName.equals("missing_data") || enName.equals("missing data")) return new BackgroundCandidate(0.6f, candidate);
+            else return new BackgroundCandidate(0f, candidate);
+        }
+
+        /**
+         * Model a category associated with a score that represent its probability to be the best match for a background
+         * value.
+         */
+        private static final class BackgroundCandidate {
+            final float score;
+            final Category category;
+
+            public BackgroundCandidate(float score, Category category) {
+                this.score = score;
+                this.category = category;
+            }
+
+            public float getScore() { return score; }
         }
 
         /**

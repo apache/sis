@@ -222,4 +222,46 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertEquals("Clouds", categories.remove(1).getName().toString());
         assertEquals(2, categories.size());
     }
+
+    /**
+     * When user does not explicitly define a background category, ensure that we promote another category as background
+     * if and only if it matches <em>all</em> of the following requirements:
+     * <ul>
+     *     <li>Is qualitative</li>
+     *     <li>Named background, fill-value or no-data</li>
+     *     <li>has a valid minimum value</li>
+     * </ul>
+     */
+    @Test
+    public void testDefaultBackground() {
+        SampleDimension s = new SampleDimension.Builder()
+                .addQuantitative("background", 0f, 0.99f, Units.UNITY)
+                .addQuantitative("no-data", 1f, 1.99f, Units.UNITY)
+                .addQuantitative("fill-value", 2f, 3f, Units.UNITY)
+                .build();
+        s.getBackground().ifPresent(bg
+                -> fail("No quantitative category should be promoted as background value, but background is defined: "+bg));
+
+        s = new SampleDimension.Builder()
+                .addQualitative("background", 1, 2)
+                .build();
+        s.getBackground()
+                .filter(it -> it.intValue() == 1)
+                .orElseThrow(() -> new AssertionError("No background value defined, but we expect it to be 2"));
+
+        //tricky case: background should be prioritized, but it is quantitative, then it is discarded as a valid choice
+        s = new SampleDimension.Builder()
+                .addQuantitative("background", 0, 1, Units.UNITY)
+                .addQualitative("fill-value", 2, 3)
+                .build();
+        s.getBackground()
+                .filter(it -> it.intValue() == 2)
+                .orElseThrow(() -> new AssertionError("No background value defined, but we expect it to be 2"));
+
+        s = new SampleDimension.Builder()
+                .addQualitative("whatever", 0, 1)
+                .build();
+        s.getBackground().ifPresent(bg
+                -> fail("Only categories with a valid name should be promoted"));
+    }
 }
