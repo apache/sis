@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -191,19 +191,19 @@ final class Analyzer {
      * of another table. If a cyclic dependency is detected, then this method returns
      * {@code null} for one of the tables.
      *
-     * @param  id          identification of the table to create.
-     * @param  name        the value of {@code id.getName(analyzer)}
-     *                     (as an argument for avoiding re-computation when already known by the caller).
-     * @param  importedBy  if this table is imported by the foreigner keys of another table, the parent table.
-     *                     Otherwise {@code null}.
+     * @param  id            identification of the table to create.
+     * @param  name          the value of {@code id.getName(analyzer)}
+     *                       (as an argument for avoiding re-computation when already known by the caller).
+     * @param  dependencyOf  if the analyzed table is imported/exported by foreigner keys,
+     *                       the table that "contains" this table. Otherwise {@code null}.
      * @return the table, or {@code null} if there is a cyclic dependency and
      *         the table of the given name is already in process of being created.
      */
-    public final Table table(final TableReference id, final GenericName name, final TableReference importedBy) throws Exception {
+    public final Table table(final TableReference id, final GenericName name, final TableReference dependencyOf) throws Exception {
         Table table = tables.get(name);
         if (table == null && !tables.containsKey(name)) {
             tables.put(name, null);                       // Mark the feature as in process of being created.
-            table = new Table(database, new TableAnalyzer(this, id, importedBy), null);
+            table = new Table(database, new TableAnalyzer(this, id, dependencyOf), null);
             if (tables.put(name, table) != null) {
                 // Should never happen. If thrown, we have a bug (e.g. synchronization) in this package.
                 throw new InternalDataStoreException(internalError());

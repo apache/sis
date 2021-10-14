@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -399,29 +399,7 @@ public final class Characters extends Static {
          * @return {@code true} if this subset contains the given character.
          */
         public boolean contains(final int codePoint) {
-            return containsType(Character.getType(codePoint));
-        }
-
-        /**
-         * Returns {@code true} if this subset contains the characters of the given type.
-         * The given type shall be one of the {@link Character} constants like
-         * {@link Character#LOWERCASE_LETTER     LOWERCASE_LETTER},
-         * {@link Character#UPPERCASE_LETTER     UPPERCASE_LETTER},
-         * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER} or
-         * {@link Character#SPACE_SEPARATOR      SPACE_SEPARATOR}.
-         *
-         * @param  type  one of the {@link Character} constants.
-         * @return {@code true} if this subset contains the characters of the given type.
-         *
-         * @see Character#getType(int)
-         *
-         * @deprecated to be removed because not used (only {@link #contains(int)} is used in practice)
-         *             and consistency with {@link #contains(int)} is not guaranteed between different
-         *             Java versions.
-         */
-        @Deprecated
-        public final boolean containsType(final int type) {
-            return (types & Numerics.bitmask(type)) != 0;
+            return (types & Numerics.bitmask(Character.getType(codePoint))) != 0;
         }
 
         /**

@@ -50,7 +50,7 @@ import org.apache.sis.util.ArgumentChecks;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -59,17 +59,6 @@ public final class PerformanceLevel extends Level {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -6547125008284983701L;
-
-    /**
-     * The level for logging all time measurements, regardless of their duration.
-     * The {@linkplain #intValue() value} of this level is 600.
-     *
-     * @deprecated Replaced by {@link Level#FINE}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-504">SIS-504</a>
-     */
-    @Deprecated
-    public static final PerformanceLevel PERFORMANCE = new PerformanceLevel("PERFORMANCE", 600, 0);
 
     /**
      * The level for logging relatively slow events. By default, only events having an execution
@@ -85,16 +74,6 @@ public final class PerformanceLevel extends Level {
      * <code>SLOWER.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
     public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", 630, 10_000_000_000L);
-
-    /**
-     * The level for logging only slowest events.
-     *
-     * @deprecated Removed for simplification.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-504">SIS-504</a>
-     */
-    @Deprecated
-    public static final PerformanceLevel SLOWEST = SLOWER;
 
     /**
      * The minimal duration (in nanoseconds) for logging the record.
@@ -158,10 +137,6 @@ public final class PerformanceLevel extends Level {
     @Configuration
     @SuppressWarnings("fallthrough")
     public void setMinDuration(long duration, final TimeUnit unit) throws IllegalArgumentException {
-        if (this == PERFORMANCE) {
-            SLOW.setMinDuration(duration, unit);
-            return;
-        }
         ArgumentChecks.ensureStrictlyPositive("duration", duration);
         duration = unit.toNanos(duration);
         final int value = intValue();

@@ -79,7 +79,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GridGeometry#derive()
  * @see GridGeometry#reduce(int...)
@@ -402,94 +402,6 @@ public class GridDerivation {
             }
         }
         return copy;
-    }
-
-    /**
-     * Requests a grid geometry where cell sizes have been scaled by the given factors, which result in a change of grid size.
-     * The new grid geometry is given a <cite>"grid to CRS"</cite> transform computed as the concatenation of given scale factors
-     * (applied on grid indices) followed by the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform of the
-     * grid geometry specified at construction time. The resulting grid extent can be specified explicitly (typically as an extent
-     * computed by {@link GridExtent#resize(long...)}) or computed automatically by this method.
-     *
-     * <div class="note"><b>Example:</b>
-     * if the original grid geometry had an extent of [0 … 5] in <var>x</var> and [0 … 8] in <var>y</var>, then a call to
-     * {@code resize(null, 0.1, 0.1)} will build a grid geometry with an extent of [0 … 50] in <var>x</var> and [0 … 80] in <var>y</var>.
-     * This new extent covers the same geographic area than the old extent but with pixels having a size of 0.1 times the old pixels size.
-     * The <cite>grid to CRS</cite> transform of the new grid geometry will be pre-concatenated with scale factors of 0.1 in compensation
-     * for the shrink in pixels size.</div>
-     *
-     * <p>Notes:</p>
-     * <ul>
-     *   <li>This method can be invoked only once.</li>
-     *   <li>This method can not be used together with a {@code subgrid(…)} method.</li>
-     *   <li>If a non-default rounding mode or a non-default clipping mode is desired,
-     *       they should be {@linkplain #rounding(GridRoundingMode) specified} before to invoke this method.</li>
-     *   <li>If the grid extent is recomputed by this method, then the {@linkplain #margin(int...) margin} and
-     *       {@linkplain #chunkSize(int...)} will be taken in account.</li>
-     *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
-     * </ul>
-     *
-     * The {@code scales} parameter in this method can be seen as an alternative to the {@code resolution} parameter
-     * in {@link #subgrid(Envelope, double...)} working in grid coordinates space instead of CRS coordinates space.
-     *
-     * @param  extent  the grid extent to set as a result of the given scale, or {@code null} for computing it automatically.
-     *                 If non-null, then this given extent is used <i>as-is</i> without checking intersection with the base
-     *                 grid geometry.
-     * @param  scales  the scale factors to apply on grid indices. If the length of this array is smaller than the number of
-     *                 grid dimension, then a scale of 1 is assumed for all missing dimensions.
-     * @return {@code this} for method call chaining.
-     * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
-     *         method has already been invoked.
-     *
-     * @see #subsample(int...)
-     * @see GridExtent#resize(long...)
-     *
-     * @deprecated This method does not handle margin, chunk size and clipping according their contract.
-     *             It is replaced by {@link #subgrid(GridExtent, int...)}.
-     */
-    @Deprecated
-    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public GridDerivation resize(GridExtent extent, double... scales) {
-        ensureSubgridNotSet();
-        ArgumentChecks.ensureNonNull("scales", scales);
-        base.getGridToCRS(PixelInCell.CELL_CENTER);             // For making sure that the transform exist.
-        final int n = base.getDimension();
-        if (extent != null) {
-            final int actual = extent.getDimension();
-            if (actual != n) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "extent", n, actual));
-            }
-        }
-        subGridSetter = "resize";
-        /*
-         * Computes the affine transform to pre-concatenate with the `gridToCRS` transform.
-         * This is the simplest calculation done in this class since we are already in grid coordinates.
-         * The given `scales` array will become identical to `this.scales` after length adjustment.
-         */
-        final int actual = scales.length;
-        scales = Arrays.copyOf(scales, n);
-        if (actual < n) {
-            Arrays.fill(scales, actual, n, 1);
-        }
-        toBase = MathTransforms.scale(scales);
-        /*
-         * If the user did not specified explicitly the resulting grid extent, compute it now.
-         * This operation should never fail since we use a known implementation of MathTransform,
-         * unless some of the given scale factors were too close to zero.
-         */
-        if (extent == null && baseExtent != null) try {
-            final LinearTransform mt = toBase.inverse();
-            final GeneralEnvelope indices = baseExtent.toCRS(mt, mt, null);
-            extent = new GridExtent(indices, rounding, clipping, margin, chunkSize, null, null);
-            // PROBLEM! `margin` and `chunkSize` are not in `scaledExtent` unit.
-        } catch (TransformException e) {
-            throw new IllegalArgumentException(e);
-        }
-        scaledExtent = extent;
-        // Note: current version does not update `baseExtent`.
-        return this;
     }
 
     /**
@@ -969,13 +881,8 @@ public class GridDerivation {
      * @see #subgrid(GridExtent, int...)
      * @see #getSubsampling()
      * @see GridExtent#subsample(int...)
-     *
-     * @deprecated Replaced by {@link #subgrid(GridExtent, int...)} with a {@code null} extent.
      */
-    @Deprecated
-    // TODO: make private (do not delete) after next SIS release.
-    public GridDerivation subsample(final int... subsampling) {
-        ArgumentChecks.ensureNonNull("subsampling", subsampling);
+    private GridDerivation subsample(final int... subsampling) {
         if (toBase != null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "subsampling"));
         }
@@ -1258,25 +1165,6 @@ public class GridDerivation {
     }
 
     /**
-     * @deprecated Renamed {@link #getSubsampling()} (without "s" because "subsampling" is uncountable).
-     */
-    @Deprecated
-    public int[] getSubsamplings() {
-        final int[] subsamplings;
-        if (toBase == null) {
-            subsamplings = new int[base.getDimension()];
-            Arrays.fill(subsamplings, 1);
-        } else {
-            subsamplings = new int[toBase.getSourceDimensions()];
-            final Matrix affine = toBase.getMatrix();
-            for (int i=0; i < subsamplings.length; i++) {
-                subsamplings[i] = roundSubsampling(affine.getElement(i,i), i);
-            }
-        }
-        return subsamplings;
-    }
-
-    /**
      * Returns the strides for accessing cells along each axis of the base grid.
      * Those values define part of the conversion from <em>derived</em> grid coordinates
      * (<var>x</var>, <var>y</var>, <var>z</var>) to {@linkplain #base} grid coordinates
@@ -1373,8 +1261,13 @@ public class GridDerivation {
             return 1;
         }
         if (chunkSize != null) {
+            /*
+             * If the coverage is divided in tiles (or "chunk" in n-dimensional case), we want the subsampling
+             * to be a divisor of tile size. In the special case where the subsampling is larger than tile size,
+             * we can remove an integer amount of tiles because tiles can be fully skipped at read time.
+             */
             final int size = chunkSize[dimension];
-            final int r = subsampling % size;
+            final int r = subsampling % size;       // Reduced subsampling (with integer amont of tiles removed).
             if (r > 1 && (size % r) != 0) {
                 final int[] divisors = MathFunctions.divisors(size);
                 final int i = ~Arrays.binarySearch(divisors, r);
@@ -1444,19 +1337,6 @@ public class GridDerivation {
             }
         }
         return offsets;
-    }
-
-    /**
-     * Returns an <em>estimation</em> of the scale factor when converting sub-grid coordinates to {@link #base} grid coordinates.
-     * This is for information purpose only since this method combines potentially different scale factors for all dimensions.
-     *
-     * @return an <em>estimation</em> of the scale factor for all dimensions.
-     *
-     * @deprecated To be removed for avoiding operations that mix potentially unrelated dimensions.
-     */
-    @Deprecated
-    public double getGlobalScale() {
-        return java.util.stream.IntStream.of(getSubsampling()).average().getAsDouble();
     }
 
     /**

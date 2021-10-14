@@ -35,16 +35,16 @@ import org.apache.sis.internal.util.Strings;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 final class TableAnalyzer extends FeatureAnalyzer {
     /**
-     * If the analyzed table is imported by the foreigner keys of another table, the parent table.
-     * Otherwise {@code null}. This is relevant only for {@link Relation.Direction#EXPORT}.
+     * If the analyzed table is imported/exported by foreigner keys,
+     * the table that "contains" this table. Otherwise {@code null}.
      */
-    private final TableReference importedBy;
+    private final TableReference dependencyOf;
 
     /**
      * The table/schema name width {@code '_'} and {@code '%'} characters escaped.
@@ -57,16 +57,16 @@ final class TableAnalyzer extends FeatureAnalyzer {
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
      *
-     * @param  id          the catalog, schema and table name of the table to analyze.
-     * @param  importedBy  if the analyzed table is imported by the foreigner keys of another table,
-     *                     the parent table. Otherwise {@code null}.
+     * @param  id            the catalog, schema and table name of the table to analyze.
+     * @param  dependencyOf  if the analyzed table is imported/exported by foreigner keys,
+     *                       the table that "contains" this table. Otherwise {@code null}.
      * @throws SQLException if an error occurred while fetching information from the database.
      */
-    TableAnalyzer(final Analyzer analyzer, final TableReference id, final TableReference importedBy) throws SQLException {
+    TableAnalyzer(final Analyzer analyzer, final TableReference id, final TableReference dependencyOf) throws SQLException {
         super(analyzer, id);
-        this.importedBy = importedBy;
-        this.tableEsc   = escape(id.table);
-        this.schemaEsc  = escape(id.schema);
+        this.dependencyOf = dependencyOf;
+        this.tableEsc     = escape(id.table);
+        this.schemaEsc    = escape(id.schema);
         try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
             while (reflect.next()) {
                 primaryKey.add(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME));
@@ -115,9 +115,20 @@ final class TableAnalyzer extends FeatureAnalyzer {
         {
             if (reflect.next()) do {
                 final Relation relation = new Relation(analyzer, direction, reflect);
+                if (relation.equals(dependencyOf)) {
+                    if (!isImport) {
+                        /*
+                         * For export keys we can just forget the relation because there is no column in the
+                         * analyzed table for the relation (i.e. the foreigner keys are not in this table).
+                         */
+                        continue;
+                    }
+                    final SchemaModifier customizer = analyzer.customizer;
+                    relation.excluded = (customizer == null) || !customizer.isCyclicAssociationAllowed(id);
+                }
                 if (isImport) {
                     addForeignerKeys(relation);
-                } else if (relation.equals(importedBy)) {
+                } else if (relation.excluded) {
                     continue;
                 }
                 relations.add(relation);

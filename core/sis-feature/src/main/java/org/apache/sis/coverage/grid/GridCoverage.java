@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -55,7 +56,7 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -135,8 +136,26 @@ public abstract class GridCoverage extends BandedCoverage {
      * @return the "real world" CRS of this coverage.
      * @throws IncompleteGridGeometryException if the grid geometry has no CRS.
      */
+    @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return gridGeometry.getCoordinateReferenceSystem();
+    }
+
+    /**
+     * Returns the bounding box for the coverage domain in CRS coordinates.
+     * The envelope encompasses all cell surfaces, from the left border of leftmost cell
+     * to the right border of the rightmost cell and similarly along other axes.
+     *
+     * <p>The default implementation delegates to {@link GridGeometry#getEnvelope()}.</p>
+     *
+     * @return the bounding box for the coverage domain in CRS coordinates.
+     * @throws IncompleteGridGeometryException if the grid geometry has no envelope.
+     *
+     * @since 1.2
+     */
+    @Override
+    public Envelope getEnvelope() {
+        return gridGeometry.getEnvelope();
     }
 
     /**

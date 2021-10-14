@@ -502,25 +502,39 @@ public class SampleDimension implements Serializable {
      *   <li>An arbitrary amount of <cite>quantitative</cite> categories.</li>
      * </ul>
      *
-     * A <cite>qualitative category</cite> is a range of sample values associated to a label (not numbers).
-     * For example 0 = cloud, 1 = sea, 2 = land, <i>etc</i>.
-     * A <cite>quantitative category</cite> is a range of sample values associated to numbers with units of measurement.
-     * For example 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>.
-     * Those three kinds of category are created by the following methods:
+     * <p>A <cite>qualitative category</cite> is a range of sample values associated to a label.
+     * For example 0 = no data, 1 = cloud, 2 = sea, 3 = land, <i>etc</i>.
+     * Missing values are also considered as a qualitative category and should be declared.
+     * If the missing value can be used as a background value for filling empty spaces in
+     * {@linkplain org.apache.sis.image.ImageProcessor#resample image resampling operations},
+     * then it should be declared using {@code setBackground(…)} method instead of {@code addQualitative(…)}.</p>
+     *
+     * <p>A <cite>quantitative category</cite> is a range of sample values associated to numbers with units of measurement.
+     * For example 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>. A quantitative category has a
+     * {@linkplain org.opengis.metadata.content.SampleDimension#getTransferFunctionType() transfer function}
+     * (typically a scale factor and an offset) for converting sample values to values expressed
+     * in the unit of measurement.</p>
+     *
+     * <p>Qualitative and quantitative categories can be mixed in the same {@link SampleDimension},
+     * provided that their ranges do not overlap.
+     * After properties have been set, the sample dimension is created by invoking {@link #build()}.</p>
+     *
+     * <h2>Note for subclass implementations</h2>
+     * Properties are ultimately set by the following methods:
      *
      * <ul>
+     *   <li>{@link #setName(GenericName)}</li>
      *   <li>{@link #setBackground(CharSequence, Number)}</li>
      *   <li>{@link #addQualitative(CharSequence, NumberRange)}</li>
      *   <li>{@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}</li>
      * </ul>
      *
-     * All other {@code addQualitative(…)} and {@code addQuantitative(…)} methods are convenience methods delegating
-     * to above-cited methods. Qualitative and quantitative categories can be mixed in the same {@link SampleDimension},
-     * provided that their ranges do not overlap.
-     * After properties have been set, the sample dimension is created by invoking {@link #build()}.
+     * All other {@code setName(…)}, {@code addQualitative(…)} and {@code addQuantitative(…)} methods
+     * are convenience methods delegating to above-cited methods, thus providing single points that
+     * subclasses can override.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.1
+     * @version 1.2
      * @since   1.0
      * @module
      */
@@ -584,24 +598,28 @@ public class SampleDimension implements Serializable {
          * Sets an identification of the sample dimension as a character sequence.
          * This is a convenience method for creating a {@link GenericName} from the given characters.
          *
+         * <div class="note"><b>Implementation note:</b>
+         * this convenience method delegates to {@link #setName(GenericName)}.</div>
+         *
          * @param  name  identification of the sample dimension.
          * @return {@code this}, for method call chaining.
          */
         public Builder setName(final CharSequence name) {
-            dimensionName = createLocalName(name);
-            return this;
+            return setName(createLocalName(name));
         }
 
         /**
          * Sets an identification of the sample dimension as a band number.
          * This method should be used only when no more descriptive name is available.
          *
+         * <div class="note"><b>Implementation note:</b>
+         * this convenience method delegates to {@link #setName(GenericName)}.</div>
+         *
          * @param  band  sequence identifier of the sample dimension to create.
          * @return {@code this}, for method call chaining.
          */
         public Builder setName(final int band) {
-            dimensionName = Names.createMemberName(null, null, band);
-            return this;
+            return setName(Names.createMemberName(null, null, band));
         }
 
         /**

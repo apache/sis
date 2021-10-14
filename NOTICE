@@ -11,7 +11,7 @@ Apache SIS depends on GeoAPI published by OGC under BSD-style license.
 https://www.ogc.org/ogc/software/1.0
 
 Apache SIS depends on JSR-363 (API only) published under BSD license.
-https://www.jcp.org/aboutJava/communityprocess/final/jsr363/index.html
+https://jcp.org/en/jsr/detail?id=363
 
 Apache SIS depends on JAXB (API only) published under Eclipse Distribution License license.
 http://www.eclipse.org/org/documents/edl-v10.php

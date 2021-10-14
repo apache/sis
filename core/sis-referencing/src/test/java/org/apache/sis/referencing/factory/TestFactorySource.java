@@ -74,7 +74,7 @@ public final strictfp class TestFactorySource {
     static {
         if (TEST_ON_POSTGRESQL) {
             final PGSimpleDataSource ds = new PGSimpleDataSource();
-            ds.setServerName("localhost");
+            // Server default to "localhost".
             ds.setDatabaseName(Initializer.DATABASE);
             Initializer.setDefault(() -> ds);
         }

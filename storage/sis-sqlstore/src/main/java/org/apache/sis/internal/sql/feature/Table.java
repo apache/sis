@@ -56,7 +56,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -195,8 +195,8 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Sets the search tables on all {@link Relation} instances for which this operation has been deferred.
-     * This happen when a table could not be obtained because of circular dependency. This method is invoked
-     * after all tables have been created in order to fill such holes.
+     * This happen when a table could not be obtained because of circular dependency.
+     * This method is invoked after all tables have been created in order to fill such holes.
      *
      * @param  tables  all tables created.
      */
@@ -209,7 +209,7 @@ final class Table extends AbstractFeatureSet {
                 default: continue;
             }
             for (final Relation relation : relations) {
-                if (!relation.isSearchTableDefined()) {
+                if (relation.isSearchTableDeferred()) {
                     /*
                      * `ClassCastException` should never occur below because `relation.propertyName` fields
                      * have been set to association names. If `ClassCastException` occurs here, it is a bug

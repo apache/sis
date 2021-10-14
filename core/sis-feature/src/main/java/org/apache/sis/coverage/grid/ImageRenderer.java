@@ -97,7 +97,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GridCoverage#render(GridExtent)
  *
@@ -542,20 +542,6 @@ public class ImageRenderer {
     }
 
     /**
-     * @deprecated Replaced by {@link #setData(DataType, Buffer...)}.
-     *
-     * @param  dataType  type of data as one of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_SHORT TYPE_SHORT}
-     *         {@link DataBuffer#TYPE_USHORT TYPE_USHORT}, {@link DataBuffer#TYPE_INT TYPE_INT},
-     *         {@link DataBuffer#TYPE_FLOAT TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE TYPE_DOUBLE} constants.
-     * @param  data  the buffers wrapping arrays of primitive type.
-     * @throws RasterFormatException if {@code dataType} is not a supported value.
-     */
-    @Deprecated
-    public void setData(final int dataType, final Buffer... data) {
-        setData(DataType.forDataBufferType(dataType), data);
-    }
-
-    /**
      * Sets the data as vectors. The number of vectors must be equal to the {@linkplain #getNumBands() expected number of bands}.
      * All vectors must be backed by arrays (indirectly, through {@linkplain Vector#buffer() buffers} backed by arrays) and have
      * the same {@linkplain Vector#size() size}.
@@ -617,14 +603,6 @@ public class ImageRenderer {
     }
 
     /**
-     * @deprecated Renamed {@link #createRaster()}.
-     */
-    @Deprecated
-    public WritableRaster raster() {
-        return (WritableRaster) createRaster();
-    }
-
-    /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
      * The raster upper-left corner is located at the position given by {@link #getBounds()}.
      * The returned raster is often an instance of {@link WritableRaster}, but read-only rasters are also allowed.
@@ -666,14 +644,6 @@ public class ImageRenderer {
         }
         final Point location = new Point(imageX, imageY);
         return RasterFactory.createRaster(buffer, width, height, ps, ls, bankIndices, offsets, location);
-    }
-
-    /**
-     * @deprecated Renamed {@link #createImage()}.
-     */
-    @Deprecated
-    public RenderedImage image() {
-        return createImage();
     }
 
     /**

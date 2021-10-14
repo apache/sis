@@ -125,7 +125,7 @@ import org.apache.sis.xml.NilReason;
  * The same instance can be shared by different {@link GridCoverage} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -573,30 +573,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     static void recoverableException(final String caller, final TransformException exception) {
         Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
-    }
-
-    /**
-     * Creates a grid geometry with an extent and an envelope.
-     * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
-     * If only the coordinate reference system is known, then the envelope coordinates can be
-     * {@link GeneralEnvelope#isAllNaN() NaN}.
-     *
-     * <p>This constructor is generally not recommended since creating a <cite>grid to CRS</cite> from an envelope
-     * requires assumption on axis order and axis directions. This constructor assumes that all grid axes are in the
-     * same order than CRS axes and no axis is flipped. This straightforward approach often results in the <var>y</var>
-     * axis to be oriented toward up, not down as expected in rendered images. Those assumptions are often not suitable.
-     * For better control, use one of the constructors expecting a {@link MathTransform} argument instead.
-     * This constructor is provided mostly as a convenience for testing purposes, or when only the extent is known.</p>
-     *
-     * @param  extent    the valid extent of grid coordinates, or {@code null} if unknown.
-     * @param  envelope  the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
-     * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null.
-     *
-     * @deprecated Replaced by {@link #GridGeometry(GridExtent, Envelope, GridOrientation)}.
-     */
-    @Deprecated
-    public GridGeometry(final GridExtent extent, final Envelope envelope) {
-        this(extent, envelope, GridOrientation.HOMOTHETY);
     }
 
     /**

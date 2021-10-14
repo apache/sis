@@ -201,7 +201,7 @@ public strictfp class TestDatabase implements AutoCloseable {
     public static TestDatabase createOnPostgreSQL(final String schema, final boolean create) throws SQLException {
         assumeTrue("Extensive tests not enabled.", TestCase.RUN_EXTENSIVE_TESTS);
         final PGSimpleDataSource ds = new PGSimpleDataSource();
-        ds.setServerName("localhost");
+        // Server default to "localhost".
         ds.setDatabaseName(NAME);
         ds.setApplicationName("Apache SIS test database");
         ds.setCurrentSchema(schema);

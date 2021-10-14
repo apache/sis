@@ -66,7 +66,7 @@ import static org.apache.sis.internal.book.CodeColorizer.toArray;
  * See package javadoc for usage example.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.7
  */
 public final class Assembler {
@@ -85,10 +85,13 @@ public final class Assembler {
 
     /**
      * Relative path to be replaced by {@code "../"} path. We perform this substitution because the source files
-     * defined in the {@code book/<language>/<chapter>} directories reference directly the images in their final
-     * {@code content/book/images} directory.
+     * defined in the {@code source/developer-guide/<chapter>} directories reference directly the images in their
+     * final {@code static/book/images} directory.
      */
-    private static final String PATH_TO_REPLACE = "../../../content/book/";
+    private static final String[] PATHS_TO_REPLACE = {
+        "../../../static/book/",        // English version
+        "../../../../static/book/"      // Localized versions
+    };
 
     /**
      * The directory of all input files to process.
@@ -151,7 +154,7 @@ public final class Assembler {
     /**
      * Creates a new assembler for the given input and output files.
      *
-     * @param  input   the input file (e.g. {@code "site/book/en/index.html"}).
+     * @param  input   the input file (e.g. {@code "sis-site/main/source/developer-guide/index.html"}).
      * @param  locale  the locale for the message to generates in HTML code.
      * @throws ParserConfigurationException if this constructor can not build the XML document.
      * @throws IOException if an error occurred while reading the file.
@@ -188,7 +191,7 @@ public final class Assembler {
                         "      http://www.apache.org/licenses/LICENSE-2.0" + LINE_SEPARATOR +
                         LINE_SEPARATOR +
                         "  This is an automatically generated file. DO NOT EDIT." + LINE_SEPARATOR +
-                        "  See the files in the ../../../book/ directory instead." + LINE_SEPARATOR +
+                        "  See the files in the `source/developer-guide` directory instead." + LINE_SEPARATOR +
                         LINE_SEPARATOR);
                 break;
             }
@@ -277,19 +280,34 @@ public final class Assembler {
     }
 
     /**
-     * Adjusts the relative path in {@code <a href="../../../content">} or
-     * {@code <img src="../../../content">} attribute value.
+     * Adjusts the relative path in {@code <a href="../../../static/">}
+     * or {@code <img src="../../../static/">} attribute value.
      */
-    private void adjustURL(final Element element) {
+    private static void adjustURL(final Element element) {
+        for (final String prefix : PATHS_TO_REPLACE) {
+            if (adjustURL(element, prefix)) break;
+        }
+    }
+
+    /**
+     * Adjusts the relative path in {@code <a href="../../../static/">}
+     * or {@code <img src="../../../static/">} attribute value.
+     *
+     * @param  element  the element to adjust.
+     * @param  prefix   the path prefix to search and replace.
+     * @return whether replacement has been done.
+     */
+    private static boolean adjustURL(final Element element, final String prefix) {
         String attribute;
         String href = element.getAttribute(attribute = "href");
-        if (href == null || !href.startsWith(PATH_TO_REPLACE)) {
+        if (href == null || !href.startsWith(prefix)) {
             href = element.getAttribute(attribute = "src");
-            if (href == null || !href.startsWith(PATH_TO_REPLACE)) {
-                return;
+            if (href == null || !href.startsWith(prefix)) {
+                return false;
             }
         }
-        element.setAttribute(attribute, "../" + href.substring(PATH_TO_REPLACE.length()));
+        element.setAttribute(attribute, "../" + href.substring(prefix.length()));
+        return true;
     }
 
     /**
@@ -596,12 +614,11 @@ public final class Assembler {
     }
 
     /**
-     * Generates the {@code "content/book/en|fr/developer-guide.html"} file from {@code "book/en|fr/index.html"}.
-     * The only argument expected by this method is the language: {@code "en"} or {@code "fr"}.
-     * The current directory shall be the parent directory of {@code "book"} and {@code "content"}.
-     * See package javadoc for usage example.
+     * Generates the {@code "static/book/en|fr/developer-guide.html"} files
+     * from {@code "source/developer-guide/[fr/]index.html"} files.
+     * The only argument expected by this method is the root of {@code sis-site} project.
      *
-     * @param  args  command-line arguments. Should contain exactly on value, which is the language.
+     * @param  args  command-line arguments. Should contain exactly on value, which is the site root directory.
      * @throws Exception if an I/O error, a XML parsing error or other kinds of error occurred.
      *
      * @since 0.8
@@ -609,29 +626,26 @@ public final class Assembler {
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(final String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("Expected parameter: the language (\"en\" or \"fr\").");
-            System.err.println("Current directory shall be the root of Apache SIS site source code.");
+            System.err.println("Expected parameter: root of `sis-site` project.");
             System.exit(1);
         }
-        String lang = args[0];
-        final Locale locale;
-        if ("en".equalsIgnoreCase(lang)) {
-            locale = Locale.ENGLISH;
-        } else if ("fr".equalsIgnoreCase(lang)) {
-            locale = Locale.FRENCH;
-        } else {
-            System.err.println("Unsupported language code: " + lang);
+        final File directory = new File(args[0]);
+        if (!directory.isDirectory()) {
+            System.err.println("Not a directory: " + directory);
             System.exit(1);
-            return;
         }
-        lang = locale.getLanguage();
-        File input = new File("book/" + lang + "/index.html");
+        final File input = new File(directory, "source/developer-guide/index.html");
         if (!input.isFile()) {
-            System.err.println("Can not read " + input + ". Is the current directory the root of SIS site source code?");
+            System.err.println("File not found: " + input);
+            System.err.println("Is the given directory the root of `sis-site` project?");
             System.exit(1);
-            return;
         }
-        final Assembler assembler = new Assembler(input, locale);
-        assembler.run(new File("content/book/" + lang + "/developer-guide.html"));
+        Assembler assembler = new Assembler(input, Locale.ENGLISH);
+        assembler.run(new File(directory, "static/book/en/developer-guide.html"));
+        /*
+         * Localized versions.
+         */
+        assembler = new Assembler(new File(directory, "source/fr/developer-guide/index.html"), Locale.FRENCH);
+        assembler.run(new File(directory, "static/book/fr/developer-guide.html"));
     }
 }

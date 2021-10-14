@@ -136,9 +136,9 @@ final class Store extends URIDataStore {
                 parser.validate(obj);
             } while (pos.getIndex() < wkt.length());
         } catch (ParseException e) {
-            throw new DataStoreContentException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
+            throw new DataStoreContentException(getLocale(), StoreProvider.NAME, getDisplayName(), in).initCause(e);
         } catch (IOException e) {
-            throw new DataStoreException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
+            throw new DataStoreException(getLocale(), StoreProvider.NAME, getDisplayName(), in).initCause(e);
         }
     }
 

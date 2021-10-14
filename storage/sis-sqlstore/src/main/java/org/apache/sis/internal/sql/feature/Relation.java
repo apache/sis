@@ -53,7 +53,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -168,6 +168,16 @@ final class Relation extends TableReference {
      * @see #useFullKey()
      */
     private boolean useFullKey;
+
+    /**
+     * Whether this relation should be omitted from the list of feature type properties.
+     * This is a temporary information used only at {@code FeatureType} construction time.
+     * A relation is excluded if table <var>A</var> is a dependency of table <var>B</var>
+     * (defined by foreigner keys) and the relation is pointing back to <var>A</var>.
+     *
+     * @since 1.2
+     */
+    boolean excluded;
 
     /**
      * Creates a new relation for an imported key. The given {@code ResultSet} must be positioned
@@ -351,10 +361,10 @@ final class Relation extends TableReference {
     }
 
     /**
-     * Returns whether {@link #setSearchTable setSearchTable(…)} has been invoked.
+     * Returns whether {@link #setSearchTable setSearchTable(…)} needs to be invoked.
      */
-    final boolean isSearchTableDefined() {
-        return searchTable != null;
+    final boolean isSearchTableDeferred() {
+        return !excluded && searchTable == null;
     }
 
     /**
@@ -369,11 +379,12 @@ final class Relation extends TableReference {
 
     /**
      * Returns the foreigner key columns of the table that contains this relation.
-     * This method should be invoked only for {@link Direction#IMPORT} (otherwise the method name is wrong).
-     * This method returns only the foreigner key columns known to this relation; this is not necessarily
+     * For {@link Direction#IMPORT}, this is the foreigner keys in the enclosing table.
+     * For {@link Direction#EXPORT}, this is the primary keys in the dependency table.
+     * This method returns only the columns known to this relation; this is not necessarily
      * all the enclosing table foreigner keys. Some columns may be used in more than one relation.
      */
-    final Collection<String> getForeignerKeys() {
+    final Collection<String> getOwnerColumns() {
         return columns.values();
     }
 
@@ -439,6 +450,9 @@ final class Relation extends TableReference {
         String label = super.toString();
         if (freeText != null) {
             label = freeText + " ⟶ " + label;
+        }
+        if (excluded) {
+            label += " (excluded)";
         }
         final TreeTable.Node node = newChild(parent, label);
         for (final Map.Entry<String,String> e : columns.entrySet()) {

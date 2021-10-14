@@ -108,8 +108,8 @@ public final class Configuration {
      *     class MyClass {
      *         private static DataSource createDataSource() {
      *             PGSimpleDataSource ds = new PGSimpleDataSource();
-     *             ds.setServerName("localhost");
      *             ds.setDatabaseName("SpatialMetadata");
+     *             // Server default to "localhost".
      *             return ds;
      *         }
      *

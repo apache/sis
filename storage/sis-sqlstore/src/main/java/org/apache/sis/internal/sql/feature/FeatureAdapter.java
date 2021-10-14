@@ -49,7 +49,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -197,6 +197,7 @@ final class FeatureAdapter {
              */
             count = 0;                                                      // We will recount.
             for (final Relation dependency : table.importedKeys) {
+                if (dependency.excluded) continue;
                 if (dependency != noFollow) {
                     dependency.startFollowing(following);                   // Safety against never-ending recursivity.
                     associationNames   [count] = dependency.propertyName;
@@ -216,6 +217,7 @@ final class FeatureAdapter {
              * associations we need to iterate over all "Parks" rows referencing the city.
              */
             for (final Relation dependency : table.exportedKeys) {
+                if (dependency.excluded) continue;
                 dependency.startFollowing(following);                   // Safety against never-ending recursivity.
                 final Table foreigner  = dependency.getSearchTable();
                 final Relation inverse = foreigner.getInverseOf(dependency, table.name);
@@ -296,7 +298,7 @@ final class FeatureAdapter {
     private static int[] getColumnIndices(final SQLBuilder sql, final Relation dependency,
             final Map<String,Integer> columnIndices) throws InternalDataStoreException
     {
-        final Collection<String> columns = dependency.getForeignerKeys();
+        final Collection<String> columns = dependency.getOwnerColumns();
         int i = 0;
         final int[] indices = new int[columns.size()];
         for (final String column : columns) {

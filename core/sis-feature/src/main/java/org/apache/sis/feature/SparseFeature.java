@@ -41,7 +41,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see DenseFeature
  * @see DefaultFeatureType
@@ -388,21 +388,25 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     @Override
     public int hashCode() {
         int code = type.hashCode() * 37;
-        if (valuesKind == PROPERTIES) {
-            for (final Map.Entry<Integer,Object> entry : properties.entrySet()) {
-                final Object p = entry.getValue();
-                final Object value;
-                if (p instanceof Attribute<?>) {
-                    value = getAttributeValue((Attribute<?>) p);
-                } else if (p instanceof FeatureAssociation) {
-                    value = getAssociationValue((FeatureAssociation) p);
-                } else {
-                    value = null;
+        if (comparisonStart()) try {
+            if (valuesKind == PROPERTIES) {
+                for (final Map.Entry<Integer,Object> entry : properties.entrySet()) {
+                    final Object p = entry.getValue();
+                    final Object value;
+                    if (p instanceof Attribute<?>) {
+                        value = getAttributeValue((Attribute<?>) p);
+                    } else if (p instanceof FeatureAssociation) {
+                        value = getAssociationValue((FeatureAssociation) p);
+                    } else {
+                        value = null;
+                    }
+                    code += Objects.hashCode(entry.getKey()) ^ Objects.hashCode(value);
                 }
-                code += Objects.hashCode(entry.getKey()) ^ Objects.hashCode(value);
+            } else {
+                code += properties.hashCode();
             }
-        } else {
-            code += properties.hashCode();
+        } finally {
+            comparisonEnd();
         }
         return code;
     }
@@ -428,7 +432,13 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
                         requireMapOfProperties();
                     }
                 }
-                return properties.equals(that.properties);
+                if (comparisonStart()) try {
+                    return properties.equals(that.properties);
+                } finally {
+                    comparisonEnd();
+                } else {
+                    return true;
+                }
             }
         }
         return false;

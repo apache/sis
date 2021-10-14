@@ -87,7 +87,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal   (Geomatys)
  * @author  Cullen Rombach  (Image Matters)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -443,6 +443,7 @@ public final class Namespaces extends Static {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gmd"}.
+     * This is a legacy namespace, but still in wide use.
      *
      * @category ISO
      *
@@ -450,17 +451,6 @@ public final class Namespaces extends Static {
      */
     @Deprecated
     public static final String GMD = LegacyNamespaces.GMD;
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gts"}.
-     *
-     * @category ISO
-     *
-     * @deprecated as of ISO 19115-3, splitted in many different namespaces.
-     */
-    @Deprecated
-    public static final String GTS = LegacyNamespaces.GTS;
 
     /**
      * The <code>{@value}</code> URL.
