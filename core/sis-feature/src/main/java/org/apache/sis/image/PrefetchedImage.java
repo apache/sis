@@ -34,6 +34,7 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -41,7 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
  * This image has the same coordinate systems than the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see ImageProcessor#prefetch(RenderedImage, Rectangle)
  *
@@ -49,6 +50,24 @@ import org.apache.sis.util.ArgumentChecks;
  * @module
  */
 final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Executor {
+    /**
+     * Identifies workaround for a JDK bug: call to {@code Graphics2D.drawRenderedImage(…)}
+     * fails if the image contains more than one tile (or a single tile not located at 0,0)
+     * and the tiles are not instances of {@link WritableRaster} (i.e. are instances of the
+     * read-only {@link Raster} parent class). The exception thrown is:
+     *
+     * {@preformat text
+     *   Exception in thread "main" java.awt.image.RasterFormatException: (parentX + width) is outside raster
+     *       at java.desktop/java.awt.image.WritableRaster.createWritableChild(WritableRaster.java:228)
+     *       at java.desktop/sun.java2d.SunGraphics2D.drawTranslatedRenderedImage(SunGraphics2D.java:2852)
+     *       at java.desktop/sun.java2d.SunGraphics2D.drawRenderedImage(SunGraphics2D.java:2711)
+     * }
+     *
+     * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>
+     */
+    @Workaround(library="JDK", version="17")
+    private static final boolean PENDING_JDK_FIX = false;
+
     /**
      * The source image from which to prefetch tiles.
      */
@@ -289,6 +308,9 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
         final Point location = new Point(ImageUtilities.tileToPixelX(source, tileX),
                                          ImageUtilities.tileToPixelY(source, tileY));
         if (placeholderPixels != null) {
+            if (!PENDING_JDK_FIX) {
+                return Raster.createWritableRaster(model, placeholderPixels, location);
+            }
             // Reuse same `DataBuffer` with only a different location.
             return Raster.createRaster(model, placeholderPixels, location);
         }
