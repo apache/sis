@@ -79,6 +79,17 @@
       </roles>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Maxime Gavens</name>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+  </contributors>
 
 
   <!-- ===========================================================
