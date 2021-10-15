@@ -213,7 +213,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          * expected after conversion, but those values are not necessarily in any order.
          */
         final double[] extremums;
-        extremums = new double[count << 1];
+        extremums = new double[count * 2];
         minimums  = new double[count];
         int countOfFiniteRanges = 0;
         NumberRange<?> range = null;
@@ -240,7 +240,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
         }
         this.range = range;
-        this.converseRanges = (countOfFiniteRanges > 1) ? extremums : null;
+        this.converseRanges = (countOfFiniteRanges >= 2) ? extremums : null;
         assert ArraysExt.isSorted(minimums, false);
         /*
          * Verify that the ranges do not overlap and perform adjustments in `minimums` values for filling some gaps:

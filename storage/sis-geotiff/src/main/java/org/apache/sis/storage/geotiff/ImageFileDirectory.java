@@ -1646,7 +1646,7 @@ final class ImageFileDirectory extends DataCube {
      * @param  acceptZero  whether to return a number for the zero value.
      */
     private Number getFillValue(final boolean acceptZero) {
-        if (Double.isFinite(noData) && noData != 0) {
+        if (Double.isFinite(noData) && (acceptZero || noData != 0)) {
             final long min, max;
             switch (sampleFormat) {
                 case UNSIGNED: max = 1L << (bitsPerSample    ); min =    0; break;
