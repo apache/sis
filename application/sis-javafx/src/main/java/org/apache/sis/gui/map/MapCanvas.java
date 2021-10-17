@@ -122,7 +122,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -273,6 +273,13 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean isMouseChangeScheduled;
 
     /**
+     * {@code true} if navigation should be disabled.
+     *
+     * @see #setNavigationDisabled(boolean)
+     */
+    private boolean isNavigationDisabled;
+
+    /**
      * Whether a rendering is in progress. This property is set to {@code true} when {@code MapCanvas}
      * is about to start a background thread for performing a rendering, and is reset to {@code false}
      * after the {@code MapCanvas} has been updated with new rendering result.
@@ -288,6 +295,21 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #errorProperty()
      */
     private final ReadOnlyObjectWrapper<Throwable> error;
+
+    /**
+     * Whether the {@link #error} value should be considered non-null.
+     * This is set to {@code false} when a new painting start.
+     * If the value is still {@code false} after painting finished, we can clear {@link #error}.
+     *
+     * <h4>Rational</h4>
+     * A simpler approach would have been to clear {@link #error} when painting start, but this action
+     * fires an event which may resize the {@link StatusBar} height, which in turn may change the size
+     * of this {@code MapCanvas} and cause a new painting. The new painting may fail again, which causes
+     * an error to be reported, which may cause the status bar to change its height again, <i>etc.</i>
+     * It can cause a loop with hundred of repaints before the system stabilize.
+     * Using this flag avoids above problem.
+     */
+    private boolean hasError;
 
     /**
      * If a contextual menu is currently visible, that menu. Otherwise {@code null}.
@@ -356,11 +378,13 @@ public abstract class MapCanvas extends PlanarCanvas {
             switch (event.getButton()) {
                 case PRIMARY: {
                     hideContextMenu();
-                    floatingPane.setCursor(Cursor.CLOSED_HAND);
-                    floatingPane.requestFocus();
-                    isDragging = true;
-                    xPanStart  = x;
-                    yPanStart  = y;
+                    if (!isNavigationDisabled) {
+                        floatingPane.setCursor(Cursor.CLOSED_HAND);
+                        floatingPane.requestFocus();
+                        isDragging = true;
+                        xPanStart  = x;
+                        yPanStart  = y;
+                    }
                     event.consume();
                     break;
                 }
@@ -418,6 +442,10 @@ public abstract class MapCanvas extends PlanarCanvas {
             // Do not interpret scroll events on touch pad as a zoom.
             return;
         }
+        if (isNavigationDisabled) {
+            event.consume();
+            return;
+        }
         final double delta = event.getDeltaY();
         double zoom = Math.abs(delta) / SCROLL_EVENT_SIZE * ZOOM_FACTOR;
         if (event.isControlDown()) {
@@ -441,7 +469,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #applyTranslation(double, double, boolean)
      */
     private void applyZoomOrRotate(final GestureEvent event, final double zoom, final double angle) {
-        if (zoom != 1 || angle != 0) {
+        if (!isNavigationDisabled && (zoom != 1 || angle != 0)) {
             double x, y;
             if (event != null) {
                 x = event.getX();
@@ -481,6 +509,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * or zoom-in / zoom-out with page-down / page-up keys. If the control key is down, navigation is finer.
      */
     private void onKeyTyped(final KeyEvent event) {
+        if (isNavigationDisabled) {
+            event.consume();
+            return;
+        }
         double tx = 0, ty = 0, zoom = 1, angle = 0;
         if (event.isAltDown()) {
             switch (event.getCode()) {
@@ -529,6 +561,16 @@ public abstract class MapCanvas extends PlanarCanvas {
     public void reset() {
         invalidObjectiveToDisplay = true;
         requestRepaint();
+    }
+
+    /**
+     * Disables or re-enable navigation. Navigation is disabled when an error occurred while
+     * rendering the image, and navigating is likely to cause the error to happen again.
+     */
+    final void setNavigationDisabled(final boolean disabled) {
+        isNavigationDisabled = disabled;
+        if (disabled) isDragging = false;
+        floatingPane.setCursor(disabled ? Cursor.DEFAULT : Cursor.CROSSHAIR);
     }
 
     /**
@@ -884,13 +926,14 @@ public abstract class MapCanvas extends PlanarCanvas {
                 return;
             }
         }
+        hasError = false;
         isRendering.set(true);                      // Avoid that `requestRepaint(…)` trig new paints.
         renderingStartTime = System.nanoTime();
-        /*
-         * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
-         * It may cause a recomputation of the "objective to display" transform.
-         */
         try {
+            /*
+             * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
+             * It may cause a recomputation of the "objective to display" transform.
+             */
             if (sizeChanged) {
                 sizeChanged = false;
                 final Pane view = floatingPane;
@@ -986,7 +1029,9 @@ public abstract class MapCanvas extends PlanarCanvas {
                 isMouseChangeScheduled = true;
             }
         } else {
-            clearError();
+            if (!hasError) {
+                clearError();
+            }
             isRendering.set(false);
             restoreCursorAfterPaint();
         }
@@ -1047,6 +1092,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         final Throwable ex = task.getException();
         if (ex != null) {
             errorOccurred(ex);
+        } else if (!hasError) {
+            clearError();
         }
     }
 
@@ -1161,6 +1208,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Clears the error message in status bar.
      */
     protected final void clearError() {
+        hasError = false;
         error.set(null);
     }
 
@@ -1172,12 +1220,15 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  ex  the exception that occurred (can not be null).
      */
     protected void errorOccurred(final Throwable ex) {
-        final Throwable current = error.get();
-        if (current != null) {
-            current.addSuppressed(ex);
-        } else {
-            error.set(Objects.requireNonNull(ex));
+        if (hasError) {
+            final Throwable current = error.get();
+            if (current != null) {
+                current.addSuppressed(ex);
+                return;
+            }
         }
+        hasError = true;
+        error.set(Objects.requireNonNull(ex));
     }
 
     /**
@@ -1199,6 +1250,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         invalidObjectiveToDisplay = true;
         objectiveBounds = null;
         clearError();
+        isDragging = false;
+        isNavigationDisabled = false;
         isRendering.set(false);
         requestRepaint();
     }

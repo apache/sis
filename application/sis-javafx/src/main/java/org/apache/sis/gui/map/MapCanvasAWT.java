@@ -19,9 +19,12 @@ package org.apache.sis.gui.map;
 import java.util.Locale;
 import java.nio.IntBuffer;
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsConfiguration;
+import java.awt.Font;
+import java.awt.font.GlyphVector;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
@@ -48,7 +51,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * controls by the user.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -61,6 +64,16 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * Consequently before to enable this acceleration, we should benchmark to see if it is worth.
      */
     private static final boolean NATIVE_ACCELERATION = false;
+
+    /**
+     * Size (in pixels) of the warning symbol to show if rendering fail.
+     */
+    private static final int WARNING_SIZE = 200;
+
+    /**
+     * The symbols to show on top of the image as a warning when rendering failed.
+     */
+    private static final String WARNING_TEXT = "\u26A0";
 
     /**
      * Number of additional pixels to paint on each sides of the image, outside the viewing area.
@@ -120,6 +133,12 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * by {@link Renderer}. Subclasses should not set the image content directly.
      */
     protected final ImageView image;
+
+    /**
+     * Whether {@link #WARNING_TEXT} has been drawn on top of the image.
+     * When warning is shown, navigation should be disabled.
+     */
+    private boolean isWarningShown;
 
     /**
      * Creates a new canvas for JavaFX application.
@@ -409,6 +428,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             bufferWrapper       = wrapper;
             bufferConfiguration = configuration;
             final boolean done  = renderer.commit(MapCanvasAWT.this);
+            clearWarning();
             renderingCompleted(this);
             if (!done || contentsChanged()) {
                 repaint();
@@ -517,7 +537,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             } finally {
                 gr.dispose();
             }
-            return null;
+            return null;                                    // Indicate that the entire buffer was dirty.
         }
 
         /**
@@ -536,14 +556,60 @@ public abstract class MapCanvasAWT extends MapCanvas {
             }
             renderer.translate(image);
             final boolean done = renderer.commit(MapCanvasAWT.this);
+            clearWarning();
             renderingCompleted(this);
             if (!done || contentsLost || contentsChanged()) {
                 repaint();
             }
         }
 
-        @Override protected void failed()    {renderingCompleted(this);}
-        @Override protected void cancelled() {renderingCompleted(this);}
+        /** Clears the image in the same way than failure. */
+        @Override protected void cancelled() {failed();}
+
+        /**
+         * Invoked in JavaFX thread on failure. No result is available. The JavaFX image is set to an empty image.
+         */
+        @Override
+        protected void failed() {
+            if (!isWarningShown) {
+                final int rw = renderer.getWidth();
+                final int rh = renderer.getHeight();
+                final int x = Math.max((rw - WARNING_SIZE) / 2, 0);
+                final int y = Math.max((rh - WARNING_SIZE) / 2, 0);
+                final int width  = rw - 2*x;
+                final int height = rh - 2*y;
+                final Font font = new Font(Font.SERIF, Font.PLAIN, height);
+                bufferWrapper.updateBuffer((final PixelBuffer<IntBuffer> wrapper) -> {
+                    final Graphics2D gr = buffer.createGraphics();
+                    try {
+                        renderer.translate(gr);
+                        gr.setColor(new Color(0XA0804040, true));
+                        gr.fillRoundRect(x, y, width, height, width/5, height/5);
+                        gr.setColor(Color.RED);
+                        final GlyphVector glyphs = font.createGlyphVector(gr.getFontRenderContext(), WARNING_TEXT);
+                        final java.awt.geom.Rectangle2D vb = glyphs.getVisualBounds();
+                        gr.drawGlyphVector(glyphs, (float) (x + 0.5*width  - vb.getCenterX()),
+                                                   (float) (y + 0.5*height - vb.getCenterY()));
+                    } finally {
+                        gr.dispose();
+                    }
+                    return null;
+                });
+                isWarningShown = true;
+                setNavigationDisabled(true);
+            }
+            renderingCompleted(this);
+        }
+    }
+
+    /**
+     * If warning symbol was drawn on top of the image, clears it and restores navigation.
+     */
+    private void clearWarning() {
+        if (isWarningShown) {
+            isWarningShown = false;
+            setNavigationDisabled(false);
+        }
     }
 
     /**

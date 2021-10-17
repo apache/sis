@@ -46,7 +46,7 @@ import org.apache.sis.util.logging.Logging;
  * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -133,7 +133,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
         try {
             return f.get();
         } catch (ExecutionException e) {
-            ExceptionReporter.show(DataViewer.getCurrentStage(), null, null, e.getCause());
+            ExceptionReporter.show(DataViewer.getCurrentStage(), null, null, e);
         } catch (InterruptedException e) {
             interrupted("runAndWait", e);
         }
