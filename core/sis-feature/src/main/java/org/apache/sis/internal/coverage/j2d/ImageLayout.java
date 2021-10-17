@@ -28,6 +28,7 @@ import java.awt.image.BandedSampleModel;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.image.ComputedImage;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Strings;
 
 
@@ -36,7 +37,7 @@ import org.apache.sis.internal.util.Strings;
  * those information directly, but provides method for deriving those properties from a given image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -212,6 +213,9 @@ public class ImageLayout {
      * @return suggested tile size for the given image.
      */
     public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds, boolean allowPartialTiles) {
+        if (bounds != null && bounds.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
+        }
         if (allowPartialTiles && image != null && !isBoundsAdjustmentAllowed) {
             final ColorModel cm = image.getColorModel();
             allowPartialTiles = (cm != null);

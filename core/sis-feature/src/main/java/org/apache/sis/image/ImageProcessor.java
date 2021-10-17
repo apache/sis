@@ -46,6 +46,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
@@ -131,7 +132,7 @@ import org.apache.sis.measure.Units;
  * consider {@linkplain #clone() cloning} if setter methods are invoked on a shared instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -802,6 +803,16 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Verifies that the given rectangle, if non-null, is non-empty.
+     * This method assumes that the argument name is "bounds".
+     */
+    private static void ensureNonEmpty(final Rectangle bounds) {
+        if (bounds != null && bounds.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
+        }
+    }
+
+    /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a potentially non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
@@ -838,6 +849,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
+        ensureNonEmpty(bounds);
         final ColorModel  cm = source.getColorModel();
         final SampleModel sm = source.getSampleModel();
         boolean isIdentity = toSource.isIdentity();
@@ -1040,6 +1052,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
+        ensureNonEmpty(bounds);
         try {
             return Visualization.create(this, bounds, source, toSource, ranges, null);
         } catch (IllegalStateException | NoninvertibleTransformException e) {
@@ -1063,6 +1076,7 @@ public class ImageProcessor implements Cloneable {
         final Interpolation interpolation;
         final Number[]      fillValues;
         final Quantity<?>[] positionalAccuracyHints;
+        ensureNonEmpty(bounds);
         synchronized (this) {
             layout                  = this.layout;
             interpolation           = this.interpolation;
