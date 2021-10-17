@@ -358,11 +358,29 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Returns the bounds of the content in {@link #floatingPane} coordinates, or {@code null} if unknown.
+     * Some subclasses may compute a larger image than the widget size for better visual transition during
+     * pan or zoom-out. If such margin exists, it may not be necessary to repaint the canvas on size change.
+     */
+    Bounds getBoundsInParent() {
+        return null;
+    }
+
+    /**
      * Invoked when the size of the {@linkplain #floatingPane} has changed.
      * This method requests a new repaint after a short wait, in order to collect more resize events.
      */
     private void onSizeChanged() {
         sizeChanged = true;
+        final Bounds bp = getBoundsInParent();
+        if (bp != null) {
+            if (bp.getMinX() <= 0 && bp.getMinY() <= 0  &&
+                bp.getMaxX() >= floatingPane.getWidth() &&
+                bp.getMaxY() >= floatingPane.getHeight())
+            {
+                return;
+            }
+        }
         requestRepaint();
     }
 

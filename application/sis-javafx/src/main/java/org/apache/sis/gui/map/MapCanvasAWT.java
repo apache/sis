@@ -30,6 +30,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import javafx.application.Platform;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.ImageView;
@@ -151,6 +152,15 @@ public abstract class MapCanvasAWT extends MapCanvas {
         image = new ImageView();
         image.setPreserveRatio(true);
         floatingPane.getChildren().add(image);
+    }
+
+    /**
+     * Returns the image bounds. This is used for determining if a
+     * repaint is necessary after {@link MapCanvas} size changed.
+     */
+    @Override
+    final Bounds getBoundsInParent() {
+        return image.getBoundsInParent();
     }
 
     /**
