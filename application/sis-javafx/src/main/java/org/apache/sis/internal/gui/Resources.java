@@ -96,6 +96,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotFetchTile_2 = 5;
 
         /**
+         * Can not install the resource.
+         */
+        public static final short CanNotInstallResource = 62;
+
+        /**
          * Can not open “{0}”.
          */
         public static final short CanNotReadFile_1 = 6;
@@ -172,7 +177,7 @@ public final class Resources extends IndexedResourceBundle {
 
         /**
          * This geodetic dataset is required for the support of Coordinate Reference Systems defined by
-         * {0} codes. The database will use {1} Mb in directory {2}.
+         * {0} codes. The database will use {1} Mb in the “{2}” directory.
          */
         public static final short DownloadDetails_3 = 59;
 

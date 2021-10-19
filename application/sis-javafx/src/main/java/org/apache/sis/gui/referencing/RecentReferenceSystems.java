@@ -51,6 +51,7 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
+import org.apache.sis.internal.gui.OptionalDataDownloader;
 import org.apache.sis.internal.gui.RecentChoices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
@@ -70,7 +71,7 @@ import org.apache.sis.internal.util.Strings;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -883,12 +884,16 @@ next:       for (int i=0; i<count; i++) {
      * is not expected to be present in every runtime environments. The consequence of this error is "only"
      * that the CRS will not be listed among the reference systems that the user can choose.
      *
-     * <p>The default implementation log the error at {@link java.util.logging.Level#FINE}.
+     * <p>The default implementation popups an alert dialog only if the error occurred after the user
+     * accepted to {@linkplain org.apache.sis.setup.OptionalInstallations download optional dependencies},
+     * because the error may be caused by a problem related to the download operation.
+     * Otherwise this method only logs the error at {@link java.util.logging.Level#FINE}.
      * No other processing is done; user is not notified unless (s)he paid attention to loggings.</p>
      *
      * @param  e  the error that occurred.
      */
     protected void errorOccurred(final FactoryException e) {
+        OptionalDataDownloader.reportIfInstalling(e);
         Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "updateItems", e);
     }
 }
