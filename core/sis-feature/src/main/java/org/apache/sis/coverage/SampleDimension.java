@@ -200,7 +200,7 @@ public class SampleDimension implements Serializable {
      * @see #forConvertedValues(boolean)
      */
     private SampleDimension converted() {
-        // Transfer function shall never be null if 'converse' is non-null.
+        // Transfer function shall never be null if `converse` is non-null.
         return (converse != null && !transferFunction.isIdentity()) ? converse : this;
     }
 
@@ -439,7 +439,7 @@ public class SampleDimension implements Serializable {
      * @see org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean)
      */
     public SampleDimension forConvertedValues(final boolean converted) {
-        // Transfer function shall never be null if 'converse' is non-null.
+        // Transfer function shall never be null if `converse` is non-null.
         if (converse != null && transferFunction.isIdentity() != converted) {
             return converse;
         }
@@ -543,6 +543,7 @@ public class SampleDimension implements Serializable {
      * subclasses can override.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
+     * @author  Alexis Manin (Geomatys)
      * @version 1.2
      * @since   1.0
      * @module
@@ -655,7 +656,7 @@ public class SampleDimension implements Serializable {
                 case Numbers.FLOAT: {
                     final float min = minimum.floatValue();
                     final float max = maximum.floatValue();
-                    if (!Float.isNaN(min) || !Float.isNaN(max)) {       // Let 'create' throws an exception if only one value is NaN.
+                    if (!Float.isNaN(min) || !Float.isNaN(max)) {       // Let `create` throws an exception if only one value is NaN.
                         return NumberRange.create(min, true, max, true);
                     }
                     if (minimum.getClass() != Float.class) minimum = min;
@@ -665,7 +666,7 @@ public class SampleDimension implements Serializable {
                 default: {
                     final double min = minimum.doubleValue();
                     final double max = maximum.doubleValue();
-                    if (!Double.isNaN(min) || !Double.isNaN(max)) {     // Let 'create' throws an exception if only one value is NaN.
+                    if (!Double.isNaN(min) || !Double.isNaN(max)) {     // Let `create` throws an exception if only one value is NaN.
                         return NumberRange.create(min, true, max, true);
                     }
                     if (minimum.getClass() != Double.class) minimum = min;
@@ -676,6 +677,25 @@ public class SampleDimension implements Serializable {
             @SuppressWarnings({"unchecked", "rawtypes"})
             final NumberRange<?> samples = new NumberRange(type, minimum, true, maximum, true);
             return samples;
+        }
+
+        /**
+         * Returns the background value to use by default if none were explicitly defined.
+         * This method is invoked at {@linkplain #build() build} time
+         * if the {@link #setBackground(CharSequence, Number)} method has never been invoked
+         * since {@code Builder} construction or since the last call to {@link #clear()}.
+         * The background value returned by this method is not associated to any category.
+         *
+         * <p>The default implementation returns {@code null}.
+         * Subclasses can override this method and compute a background value
+         * for example by analyzing the content of {@link #categories()} list.</p>
+         *
+         * @return the default background value, or {@code null} if none.
+         *
+         * @since 1.2
+         */
+        protected Number defaultBackground() {
+            return null;
         }
 
         /**
@@ -695,7 +715,7 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
             final NumberRange<?> samples = range(sample.getClass(), sample, sample);
-            // Use of 'getMinValue()' below shall be consistent with ToNaN.remove(Category).
+            // Use of `getMinValue()` below shall be consistent with ToNaN.remove(Category).
             toNaN.background = samples.getMinValue();
             add(new Category(name, samples, null, null, toNaN));
             return this;
@@ -1152,6 +1172,9 @@ defName:    if (name == null) {
                     }
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
+            }
+            if (toNaN.background == null) {
+                toNaN.background = defaultBackground();
             }
             return new SampleDimension(name, toNaN.background, UnmodifiableArrayList.wrap(categories, 0, count));
         }
