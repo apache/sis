@@ -131,6 +131,17 @@ public class TilePlaceholder {
     }
 
     /**
+     * Returns a provider of empty tiles filled with the given values.
+     *
+     * @param  model  sample model of the empty tiles.
+     * @param  fill   the fill values.
+     * @return provider of filled tiles.
+     */
+    public static TilePlaceholder filled(final SampleModel model, final FillValues fill) {
+        return CACHE.unique(fill.isFullyZero ? new TilePlaceholder(model) : new Filled(model, fill));
+    }
+
+    /**
      * Returns a source of "empty" tiles with a white border and a white cross.
      *
      * @param  image  sample model and color model of the tiles to create.
@@ -168,6 +179,26 @@ public class TilePlaceholder {
     }
 
     /**
+     * Returns {@code true} if this factory is the creator of given raster.
+     *
+     * @param  tile  the tile to test, or {@code null}.
+     * @return whether this tile is the creator of given raster.
+     */
+    public final boolean isCreatorOf(final Raster tile) {
+        if (tile != null) {
+            final BufferRef r;
+            synchronized (this) {
+                r = reference;
+            }
+            if (r != null) {
+                return r.get() == tile.getDataBuffer();
+                // TODO: use r.refersTo(tile.getDataBuffer()) with JDK16.
+            }
+        }
+        return false;
+    }
+
+    /**
      * Invoked when a new empty tile is created. Subclasses can override this method
      * for drawing some visual indication that the tile is missing.
      * The default implementation does nothing.
@@ -175,6 +206,51 @@ public class TilePlaceholder {
      * @param  tile  the tile where to draw.
      */
     protected void draw(final WritableRaster tile) {
+    }
+
+
+
+
+    /**
+     * A provider of tile placeholder with a fill value.
+     */
+    private static final class Filled extends TilePlaceholder {
+        /**
+         * The object to use for filling the raster.
+         */
+        private final FillValues fill;
+
+        /**
+         * Creates a new provider for the given fill value.
+         */
+        Filled(final SampleModel model, final FillValues fill) {
+            super(model);
+            this.fill = fill;
+        }
+
+        /**
+         * Fills the given raster.
+         */
+        @Override
+        protected void draw(final WritableRaster tile) {
+            fill.fill(tile);
+        }
+
+        /**
+         * Compares this object with given object for equality.
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            return super.equals(obj) && fill.equals(((Filled) obj).fill);
+        }
+
+        /**
+         * Returns a hash code value for this provider of tile placeholders.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode() + fill.hashCode();
+        }
     }
 
 

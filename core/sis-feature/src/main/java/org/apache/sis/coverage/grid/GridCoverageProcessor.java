@@ -16,8 +16,10 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.awt.Shape;
 import java.util.Objects;
 import java.security.AccessController;
+import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -28,6 +30,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.FinalFieldSetter;
+import org.apache.sis.coverage.RegionOfInterest;
 
 
 /**
@@ -37,7 +40,7 @@ import org.apache.sis.internal.util.FinalFieldSetter;
  * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see org.apache.sis.image.ImageProcessor
  *
@@ -129,6 +132,74 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public void setPositionalAccuracyHints(final Quantity<?>... hints) {
         imageProcessor.setPositionalAccuracyHints(hints);
+    }
+
+    /**
+     * Returns the values to use for pixels that can not be computed.
+     * The default implementation delegates to the image processor.
+     *
+     * @return fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     *
+     * @see ImageProcessor#getFillValues()
+     *
+     * @since 1.2
+     */
+    public Number[] getFillValues() {
+        return imageProcessor.getFillValues();
+    }
+
+    /**
+     * Sets the values to use for pixels that can not be computed.
+     * The default implementation delegates to the image processor.
+     *
+     * @param  values  fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     *
+     * @see ImageProcessor#setFillValues(Number...)
+     *
+     * @since 1.2
+     */
+    public void setFillValues(final Number... values) {
+        imageProcessor.setFillValues(values);
+    }
+
+    /**
+     * Applies a clip defined by a region of interest (ROI).
+     * All pixels <em>outside</em> the given ROI are set to the {@linkplain #getFillValues() fill values}.
+     *
+     * @param  source  the coverage on which to apply a clip.
+     * @param  clip    region (in arbitrary CRS) of pixels to keep.
+     * @return a coverage with clip applied.
+     * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
+     *
+     * @since 1.2
+     */
+    public GridCoverage clip(final GridCoverage source, final RegionOfInterest clip) throws TransformException {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("clip", clip);
+        final Shape roi = clip.toShape2D(source.getGridGeometry());
+        RenderedImage data = source.render(null);
+        data = imageProcessor.clip(data, roi);
+        return new GridCoverage2D(source, data);
+    }
+
+    /**
+     * Applies a mask defined by a region of interest (ROI).
+     * All pixels <em>inside</em> the given ROI are set to the {@linkplain #getFillValues() fill values}.
+     *
+     * @param  source  the coverage on which to apply a mask.
+     * @param  mask    region (in arbitrary CRS) of pixels to mask.
+     * @return a coverage with mask applied.
+     * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
+     *
+     * @since 1.2
+     */
+    public GridCoverage mask(final GridCoverage source, final RegionOfInterest mask) throws TransformException {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("mask", mask);
+        final Shape roi = mask.toShape2D(source.getGridGeometry());
+        RenderedImage data = source.render(null);
+        data = imageProcessor.mask(data, roi);
+        return new GridCoverage2D(source, data);
     }
 
     /**

@@ -744,6 +744,46 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Applies a clip defined by a geometric shape.
+     * All pixels <em>outside</em> the given shape are set to the {@linkplain #getFillValues() fill values}.
+     *
+     * @param  source  the image on which to apply a clip.
+     * @param  clip    geometric area (in pixel coordinates) of pixels to keep.
+     * @return an image with clip applied.
+     *
+     * @since 1.2
+     */
+    public RenderedImage clip(final RenderedImage source, final Shape clip) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("clip",   clip);
+        final Number[] fillValues;
+        synchronized (this) {
+            fillValues = this.fillValues;
+        }
+        return unique(new MaskedImage(source, clip, false, fillValues));
+    }
+
+    /**
+     * Applies a mask defined by a geometric shape.
+     * All pixels <em>inside</em> the given shape are set to the {@linkplain #getFillValues() fill values}.
+     *
+     * @param  source  the image on which to apply a mask.
+     * @param  mask    geometric area (in pixel coordinates) of pixels to mask.
+     * @return an image with mask applied.
+     *
+     * @since 1.2
+     */
+    public RenderedImage mask(final RenderedImage source, final Shape mask) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("mask",   mask);
+        final Number[] fillValues;
+        synchronized (this) {
+            fillValues = this.fillValues;
+        }
+        return unique(new MaskedImage(source, mask, true, fillValues));
+    }
+
+    /**
      * Returns an image with sample values converted by the given functions. The results can be stored as
      * {@code byte}, {@code short}, {@code int}, {@code float} or {@code double} values, not necessarily
      * the same type than the source values. If the result values are stored as integers, then they are
