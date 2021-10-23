@@ -744,43 +744,26 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Applies a clip defined by a geometric shape.
-     * All pixels <em>outside</em> the given shape are set to the {@linkplain #getFillValues() fill values}.
+     * Applies a mask defined by a geometric shape. If {@code maskInside} is {@code true},
+     * then all pixels inside the given shape are set to the {@linkplain #getFillValues() fill values}.
+     * If {@code maskInside} is {@code false}, then the mask is reversed:
+     * the pixels set to fill values are the ones outside the shape.
      *
-     * @param  source  the image on which to apply a clip.
-     * @param  clip    geometric area (in pixel coordinates) of pixels to keep.
-     * @return an image with clip applied.
-     *
-     * @since 1.2
-     */
-    public RenderedImage clip(final RenderedImage source, final Shape clip) {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("clip",   clip);
-        final Number[] fillValues;
-        synchronized (this) {
-            fillValues = this.fillValues;
-        }
-        return unique(new MaskedImage(source, clip, false, fillValues));
-    }
-
-    /**
-     * Applies a mask defined by a geometric shape.
-     * All pixels <em>inside</em> the given shape are set to the {@linkplain #getFillValues() fill values}.
-     *
-     * @param  source  the image on which to apply a mask.
-     * @param  mask    geometric area (in pixel coordinates) of pixels to mask.
+     * @param  source      the image on which to apply a mask.
+     * @param  mask        geometric area (in pixel coordinates) of the mask.
+     * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
      * @return an image with mask applied.
      *
      * @since 1.2
      */
-    public RenderedImage mask(final RenderedImage source, final Shape mask) {
+    public RenderedImage mask(final RenderedImage source, final Shape mask, final boolean maskInside) {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("mask",   mask);
         final Number[] fillValues;
         synchronized (this) {
             fillValues = this.fillValues;
         }
-        return unique(new MaskedImage(source, mask, true, fillValues));
+        return unique(new MaskedImage(source, mask, maskInside, fillValues));
     }
 
     /**

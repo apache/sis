@@ -163,42 +163,27 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Applies a clip defined by a region of interest (ROI).
-     * All pixels <em>outside</em> the given ROI are set to the {@linkplain #getFillValues() fill values}.
+     * Applies a mask defined by a region of interest (ROI). If {@code maskInside} is {@code true},
+     * then all pixels inside the given ROI are set to the {@linkplain #getFillValues() fill values}.
+     * If {@code maskInside} is {@code false}, then the mask is reversed:
+     * the pixels set to fill values are the ones outside the ROI.
      *
-     * @param  source  the coverage on which to apply a clip.
-     * @param  clip    region (in arbitrary CRS) of pixels to keep.
-     * @return a coverage with clip applied.
-     * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
-     *
-     * @since 1.2
-     */
-    public GridCoverage clip(final GridCoverage source, final RegionOfInterest clip) throws TransformException {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("clip", clip);
-        final Shape roi = clip.toShape2D(source.getGridGeometry());
-        RenderedImage data = source.render(null);
-        data = imageProcessor.clip(data, roi);
-        return new GridCoverage2D(source, data);
-    }
-
-    /**
-     * Applies a mask defined by a region of interest (ROI).
-     * All pixels <em>inside</em> the given ROI are set to the {@linkplain #getFillValues() fill values}.
-     *
-     * @param  source  the coverage on which to apply a mask.
-     * @param  mask    region (in arbitrary CRS) of pixels to mask.
+     * @param  source      the coverage on which to apply a mask.
+     * @param  mask        region (in arbitrary CRS) of the mask.
+     * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
      * @return a coverage with mask applied.
      * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
      *
      * @since 1.2
      */
-    public GridCoverage mask(final GridCoverage source, final RegionOfInterest mask) throws TransformException {
+    public GridCoverage mask(final GridCoverage source, final RegionOfInterest mask, final boolean maskInside)
+            throws TransformException
+    {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("mask", mask);
         final Shape roi = mask.toShape2D(source.getGridGeometry());
         RenderedImage data = source.render(null);
-        data = imageProcessor.mask(data, roi);
+        data = imageProcessor.mask(data, roi, maskInside);
         return new GridCoverage2D(source, data);
     }
 
