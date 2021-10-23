@@ -19,6 +19,7 @@ package org.apache.sis.image;
 import java.util.Objects;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
+import java.awt.Rectangle;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Color;
@@ -33,6 +34,7 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import java.lang.ref.SoftReference;
 import java.nio.ByteOrder;
 import org.apache.sis.internal.coverage.j2d.FillValues;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -60,12 +62,23 @@ final class MaskedImage extends SourceAlignedImage {
     private final boolean maskInside;
 
     /**
+     * Bounds of the {@linkplain #clip} in pixels coordinates and in tile coordinates.
+     * The later provides a fast way to determine if a tile intersects the mask.
+     * The bounds are computed together when first needed.
+     *
+     * @see #getMaskTiles()
+     */
+    private transient volatile Rectangle maskBounds, maskTiles;
+
+    /**
      * The clip after rasterization. Each element contains 8 pixel values.
      * Index of pixel value at coordinate (x,y) can be obtained as below:
      *
      * {@preformat java
-     *     int element = mask[y*scanlineStride + x/Byte.SIZE];
-     *     int shift   = (Byte.SIZE-1) - (x & (Byte.SIZE-1));
+     *     int xm      = x - maskBounds.x;
+     *     int xy      = y - maskBounds.y;
+     *     int element = mask[ym*scanlineStride + xm/Byte.SIZE];
+     *     int shift   = (Byte.SIZE-1) - (xm & (Byte.SIZE-1));
      *     int pixel   = (element >>> shift) & 1;
      * }
      *
@@ -124,37 +137,68 @@ final class MaskedImage extends SourceAlignedImage {
     }
 
     /**
+     * Returns the bounds of the {@linkplain #clip} in tile coordinates.
+     * It provides a fast way to determine if a tile intersects the mask.
+     */
+    private Rectangle getMaskTiles() {
+        Rectangle bt = maskTiles;
+        if (bt == null) {
+            synchronized (this) {
+                bt = maskTiles;
+                if (bt == null) {
+                    final RenderedImage source = getSource();
+                    final Rectangle bp = clip.getBounds();
+                    ImageUtilities.clipBounds(source, bp);
+                    bt = new Rectangle();
+                    if (!bp.isEmpty()) {
+                        final int xmax = ImageUtilities.pixelToTileX(source, bp.x + bp.width  - 1) + 1;
+                        final int ymax = ImageUtilities.pixelToTileY(source, bp.y + bp.height - 1) + 1;
+                        bt.width  = xmax - (bt.x = ImageUtilities.pixelToTileX(source, bp.x));
+                        bt.height = ymax - (bt.y = ImageUtilities.pixelToTileY(source, bp.y));
+                    }
+                    maskBounds = bp;
+                    maskTiles  = bt;
+                }
+            }
+        }
+        return bt;
+    }
+
+    /**
      * Returns pixel values of the mask in a multi pixel packed array.
      * After conversion to {@link LongBuffer}, index of pixel value at
      * coordinate (x,y) can be obtained as below:
      *
      * {@preformat java
-     *     int element = mask[y*scanlineStride + x/Long.SIZE];
-     *     int shift   = (Long.SIZE-1) - (x & (Long.SIZE-1));
+     *     int xm      = x - maskBounds.x;
+     *     int xy      = y - maskBounds.y;
+     *     int element = mask[ym*scanlineStride + xm/Long.SIZE];
+     *     int shift   = (Long.SIZE-1) - (xm & (Long.SIZE-1));
      *     int pixel   = (element >>> shift) & 1;
      * }
+     *
+     * <h4>Pre-conditions</h4>
+     * The {@link #getMaskTiles()} method must have been invoked at least once before this method.
      */
     private synchronized ByteBuffer getMask() {
         ByteBuffer mask;
         if (maskRef == null || (mask = maskRef.get()) == null) {
-            /*
-             * Create a 1-bit image with an `IndexColorModel` with two colors: {0, 0, 0} and {255, 255, 255}.
-             * Java2D has specialized code for TYPE_BYTE_BINARY; we reproduce something equivalent but we the
-             * array size rounded to an integer multiple of {@code long} size.
-             */
-            final int width  = getWidth();
-            final int height = getHeight();
-            int size = ceilDiv(width, Byte.SIZE) * height;
+            final Rectangle maskBounds = this.maskBounds;
+            int size = ceilDiv(maskBounds.width, Byte.SIZE) * maskBounds.height;
             final int r = size & (Long.BYTES - 1);
             if (r != 0) size += Long.BYTES - r;                         // Round to a multiple of 8 bytes.
             final DataBufferByte buffer = new DataBufferByte(size);
-
+            /*
+             * Create a 1-bit image with an `IndexColorModel` with two colors: {0, 0, 0} and {255, 255, 255}.
+             * Java2D has specialized code for TYPE_BYTE_BINARY; we reproduce something equivalent but with
+             * the array size rounded to an integer multiple of {@code long} size.
+             */
             final byte[] gray = {0, -1};
             final IndexColorModel cm = new IndexColorModel(1, gray.length, gray, gray, gray);
-            final WritableRaster raster = Raster.createPackedRaster(buffer, width, height, 1, null);
+            final WritableRaster raster = Raster.createPackedRaster(buffer, maskBounds.width, maskBounds.height, 1, null);
             final Graphics2D g = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null).createGraphics();
             try {
-                g.translate(-getMinX(), -getMinY());
+                g.translate(-maskBounds.x, -maskBounds.y);
                 g.setColor(Color.WHITE);
                 g.fill(clip);
             } finally {
@@ -191,17 +235,33 @@ final class MaskedImage extends SourceAlignedImage {
      */
     @Override
     protected Raster computeTile(final int tileX, final int tileY, WritableRaster tile) {
-        final Raster source = getSource().getTile(tileX, tileY);
+        /*
+         * Before to compute the tile, check if the tile is outside the mask.
+         * If this is the case, we can return a tile (source or empty) as-is.
+         */
+        final RenderedImage source = getSource();
+        final int xmin = ImageUtilities.tileToPixelX(source, tileX);
+        final int ymin = ImageUtilities.tileToPixelY(source, tileY);
+        if (!getMaskTiles().contains(tileX, tileY)) {
+            if (maskInside) {
+                return source.getTile(tileX, tileY);
+            } else {
+                return createEmptyTile(xmin, ymin);
+            }
+        }
+        /*
+         * Tile may intersect the mask. Computation is necessary, but we may discover at
+         * the end of this method that the result is still an empty tile or source tile.
+         */
+        final Rectangle maskBounds = this.maskBounds;
         final LongBuffer mask = getMask().asLongBuffer();
-        final int xImage = getMinX();
-        final int yImage = getMinY();
-        final int xmin   = source.getMinX();
-        final int ymin   = source.getMinY();
-        final int xmax   = Math.min(xmin + source.getWidth(),  xImage + getWidth());    // Exclusive.
-        final int ymax   = Math.min(ymin + source.getHeight(), yImage + getHeight());
-        final int imax   = xmax - xImage - 1;                       // Inclusive.
-        final int xoff   = xmin - xImage;
-        final int stride = maskScanlineStride;                      // Must be after call to `getMask()`.
+        final int xStart = Math.max(xmin, maskBounds.x);
+        final int yStart = Math.max(ymin, maskBounds.y);
+        final int xEnd   = Math.min(xmin + source.getTileWidth(),  maskBounds.x + maskBounds.width);
+        final int yEnd   = Math.min(ymin + source.getTileHeight(), maskBounds.y + maskBounds.height);
+        final int imax   = xEnd   - maskBounds.x;                   // Maximum x index in mask, exclusive.
+        final int xoff   = xStart - maskBounds.x;
+        Raster    data   = null;
         Object  transfer = null;
         int transferSize = 0;
         long present     = -1;                                      // Bits will be set to 0 if some pixels are masked.
@@ -212,22 +272,22 @@ final class MaskedImage extends SourceAlignedImage {
          * to copy. It allows us to use the Java2D API for transferring blocks of data, which is more efficient
          * than looping over individual pixels.
          */
-        for (int y=ymin; y<ymax; y++) {
-            int index = (y - yImage) * stride;                      // Index in unit of bits for now (converted later).
+        for (int y=yStart; y<yEnd; y++) {
+            int index = (y - maskBounds.y) * maskScanlineStride;    // Index in unit of bits for now (converted later).
             final int emax  = (index +  imax) /  Long.SIZE;         // Last index in unit of long elements, inclusive.
             final int shift = (index += xoff) & (Long.SIZE-1);      // First bit to read in the long, 0 = highest bit.
             index /= Long.SIZE;                                     // Convert from bit (pixel) index to long[] index.
             /*
-             * We want a value such as `base + index*Long.SIZE + lower` is equal to `xmin`
-             * when all variables point to the first pixel in the current row of the tile:
+             * We want a value such as `base + index*Long.SIZE + lower` is equal to `xStart`
+             * when all variables point to the first potentially masked pixel of the tile:
              *
              *   - `index` has not yet been incremented
              *   - `lower = shift`                          (number of leading zeros)
              *
              * `remaining` is the number of bits to use in the last element (at index = emax).
              */
-            final int base = xmin - (index*Long.SIZE + shift);
-            final int remaining = xmax - (base + emax*Long.SIZE);
+            final int base = xStart - (index*Long.SIZE + shift);
+            final int remaining = xEnd - (base + emax*Long.SIZE);
             assert remaining >= 0 && remaining < Long.SIZE : remaining;
             /*
              * Read the bit mask for the first pixels (up to 64) of current row. Some leading bits of
@@ -258,9 +318,14 @@ final class MaskedImage extends SourceAlignedImage {
                     final int count = upper - lower;
                     assert count > 0 && count <= Long.SIZE : count;
                     if (count > transferSize) {
-                        if (transferSize == 0) {
-                            // First time that we copy pixels.
-                            boolean clean = needCreate(tile, source);
+                        if (data == null) {
+                            /*
+                             * First time that we copy pixels. Get the rasters only at this point.
+                             * This delay allows to avoid computing the source tile when fully masked.
+                             */
+                            data = source.getTile(tileX, tileY);
+                            assert data.getMinX() == xmin && data.getMinY() == ymin;
+                            boolean clean = needCreate(tile, data);
                             if (clean) {
                                 tile = createTile(tileX, tileY);
                                 clean = fillValues.isFullyZero;
@@ -272,7 +337,7 @@ final class MaskedImage extends SourceAlignedImage {
                         transferSize = count;
                         transfer = null;
                     }
-                    transfer = source.getDataElements(x, y, count, 1, transfer);
+                    transfer = data.getDataElements(x, y, count, 1, transfer);
                     tile.setDataElements(x, y, count, 1, transfer);
                     element &= (1L << (Long.SIZE - upper)) - 1;
                 }
@@ -299,22 +364,70 @@ final class MaskedImage extends SourceAlignedImage {
             }
         }
         /*
-         * The tile has been created only if at least one pixel needs to be copied from the source tile.
-         * If the tile is still null at this point, it means that it is fully empty.
+         * The tile is fetched only if at least one pixel needs to be copied from the source tile.
+         * If the source tile is still null at this point, it means that target tile is fully empty.
+         * Note that the target tile may be non-null because it was an argument to this method.
          */
-        if (tile == null) {
-            TilePlaceholder p = emptyTiles;
-            if (p == null) {
-                // Not a problem if invoked concurrently by two threads.
-                emptyTiles = p = TilePlaceholder.filled(sampleModel, fillValues);
-            }
-            return p.create(new Point(source.getMinX(), source.getMinY()));
+        if (data == null) {
+            return createEmptyTile(xmin, ymin);
         }
         /*
          * If no bit from the `present` mask have been cleared, then it means that all pixels
          * have been copied. In such case the source tile can be returned directly.
          */
-        return (present == -1) ? source : tile;
+        if (present == -1) {
+            return data;
+        }
+        /*
+         * The tile is partially masked. If the tile is not fully included in `maskBounds`,
+         * there is some pixels that we need to copy here.
+         */
+        if (maskInside) {
+            final int width  = tile.getWidth();
+                  int height = tile.getHeight();
+            final int xmax   = xmin + width;
+            final int ymax   = ymin + height;
+            height -= (yStart - ymin) + (ymax - yEnd);
+complete:   for (int border = 0; ; border++) {
+                final int start, span;
+                switch (border) {
+                    case 0:  span = yStart - (start = ymin); break;     // Top    (horizontal, lower y)
+                    case 1:  span = ymax   - (start = yEnd); break;     // Bottom (horizontal, upper y)
+                    case 2:  span = xStart - (start = xmin); break;     // Left   (vertical,   lower x)
+                    case 3:  span = xmax   - (start = xEnd); break;     // Right  (vertical,   upper x)
+                    default: break complete;
+                }
+                final boolean horizontal = (border & 2) == 0;
+                final int area = span * (horizontal ? width : height);
+                if (area > 0) {
+                    if (area > transferSize) {
+                        transferSize = area;
+                        transfer = null;
+                    }
+                    if (horizontal) {
+                        transfer = data.getDataElements(xmin, start, width, span, transfer);
+                        tile.setDataElements(xmin, start, width, span, transfer);
+                    } else {
+                        transfer = data.getDataElements(start, yStart, span, height, transfer);
+                        tile.setDataElements(start, yStart, span, height, transfer);
+                    }
+                }
+            }
+        }
+        return tile;
+    }
+
+    /**
+     * Returns an empty tile starting at the given pixel coordinates. Each empty tile will share its
+     * data buffer with other empty tiles, including from other images using the same sample model.
+     */
+    private Raster createEmptyTile(final int xmin, final int ymin) {
+        TilePlaceholder p = emptyTiles;
+        if (p == null) {
+            // Not a problem if invoked concurrently by two threads.
+            emptyTiles = p = TilePlaceholder.filled(sampleModel, fillValues);
+        }
+        return p.create(new Point(xmin, ymin));
     }
 
     /**

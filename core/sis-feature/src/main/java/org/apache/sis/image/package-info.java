@@ -32,6 +32,13 @@
  * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable georeferenceable}
  * <cite>grid coverages</cite>.
  *
+ * <h2>Usage note</h2>
+ * Some images are writable. But modifying pixel values should be done by invoking the {@code getWritableTile(…)}
+ * and {@code releaseWritableTile(…)} methods of {@link java.awt.image.WritableRenderedImage} interface.
+ * Do not cast directly a {@link java.awt.image.Raster} to {@link java.awt.image.WritableRaster}
+ * even when the cast is safe, because some raster data may be shared by many tiles having identical content.
+ * Furthermore changes in pixel values may be lost if {@code releaseWritableTile(…)} is not invoked.
+ *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
