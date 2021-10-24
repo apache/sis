@@ -72,7 +72,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -533,10 +533,12 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
-     * Applies this query on the given feature set. The default implementation executes the query using the default
-     * {@link java.util.stream.Stream} methods.  Queries executed by this method may not benefit from accelerations
-     * provided for example by databases. This method should be used only as a fallback when the query can not be
-     * executed natively by {@link FeatureSet#subset(Query)}.
+     * Applies this query on the given feature set.
+     * This method is invoked by the default implementation of {@link FeatureSet#subset(Query)}.
+     * The default implementation executes the query using the default {@link java.util.stream.Stream} methods.
+     * Queries executed by this method may not benefit from accelerations provided for example by databases.
+     * This method should be used only as a fallback when the query can not be executed natively
+     * by {@link FeatureSet#subset(Query)}.
      *
      * <p>The returned {@code FeatureSet} does not cache the resulting {@code Feature} instances;
      * the query is processed on every call to the {@link FeatureSet#features(boolean)} method.</p>
@@ -544,8 +546,13 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @param  source  the set of features to filter, sort or process.
      * @return a view over the given feature set containing only the filtered feature instances.
      * @throws DataStoreException if an error occurred during creation of the subset.
+     *
+     * @see FeatureSet#subset(Query)
+     * @see CoverageQuery#execute(GridCoverageResource)
+     *
+     * @since 1.2
      */
-    final FeatureSet execute(final FeatureSet source) throws DataStoreException {
+    protected FeatureSet execute(final FeatureSet source) throws DataStoreException {
         ArgumentChecks.ensureNonNull("source", source);
         final FeatureQuery query = clone();
         if (query.selection != null) {

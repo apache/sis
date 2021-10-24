@@ -93,15 +93,21 @@ public interface FeatureSet extends DataSet {
      * However the returned subset may not have the same capabilities as this {@link FeatureSet}.
      * In particular, write operations may become unsupported after complex queries.</p>
      *
-     * <p>The default implementation tries to execute the query by filtering the {@linkplain #features(boolean) stream of features},
-     * which may be inefficient — subclasses are encouraged to override. An {@link UnsupportedQueryException} is thrown if the given
-     * query is unrecognized.</p>
+     * <h4>Default implementation</h4>
+     * The default implementation delegates to {@link FeatureQuery#execute(FeatureSet)} if the given query
+     * is an instance of {@code FeatureQuery}, or throws {@link UnsupportedQueryException} otherwise.
+     * The default {@code FeatureQuery} implementation tries to execute the query
+     * by filtering the {@linkplain #features(boolean) stream of features},
+     * which may be inefficient — subclasses are encouraged to override this {@code subset(Query)} method.
      *
      * @param  query  definition of feature and feature properties filtering applied at reading time.
      * @return resulting subset of features (never {@code null}).
      * @throws UnsupportedQueryException if this {@code FeatureSet} can not execute the given query.
      *         This includes query validation errors.
      * @throws DataStoreException if another error occurred while processing the query.
+     *
+     * @see GridCoverageResource#subset(CoverageQuerty)
+     * @see FeatureQuery#execute(FeatureSet)
      */
     default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
         ArgumentChecks.ensureNonNull("query", query);

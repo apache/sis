@@ -120,13 +120,18 @@ public interface GridCoverageResource extends DataSet {
      * However the returned subset may not have the same capabilities as this {@link GridCoverageResource}.
      * In particular, write operations may become unsupported after complex queries.</p>
      *
-     * <p>The default implementation throws {@link UnsupportedQueryException}.</p>
+     * <h4>Default implementation</h4>
+     * The default implementation delegates to {@link CoverageQuery#execute(GridCoverageResource)} if the given
+     * query is an instance of {@code CoverageQuery}, or throws {@link UnsupportedQueryException} otherwise.
      *
      * @param  query  definition of domain (grid extent) and range (sample dimensions) filtering applied at reading time.
      * @return resulting coverage resource (never {@code null}).
-     * @throws UnsupportedQueryException if this {@code GridCoverageResource} can not execute the given query.
+     * @throws UnsupportedQueryException if the given query is not valid for this {@code GridCoverageResource}.
      *         This includes query validation errors.
      * @throws DataStoreException if another error occurred while processing the query.
+     *
+     * @see FeatureSet#subset(Query)
+     * @see CoverageQuery#execute(GridCoverageResource)
      *
      * @since 1.1
      */

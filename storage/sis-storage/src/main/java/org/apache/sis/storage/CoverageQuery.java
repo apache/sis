@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -258,13 +258,19 @@ next:       for (int i=0; i<rangeNames.length; i++) {
     }
 
     /**
-     * Applies this query on the given coverage.
+     * Applies this query on the given coverage resource.
+     * This method is invoked by the default implementation of {@link GridCoverageResource#subset(Query)}.
      *
      * @param  source  the coverage resource to filter.
      * @return a view over the given coverage resource containing only the given domain and range.
      * @throws DataStoreException if an error occurred during creation of the subset.
+     *
+     * @see GridCoverageResource#subset(CoverageQuerty)
+     * @see FeatureQuery#execute(FeatureSet)
+     *
+     * @since 1.2
      */
-    final GridCoverageResource execute(final GridCoverageResource source) throws DataStoreException {
+    protected GridCoverageResource execute(final GridCoverageResource source) throws DataStoreException {
         ArgumentChecks.ensureNonNull("source", source);
         final CoverageQuery query = clone();
         query.namesToIndices(source);
