@@ -42,7 +42,7 @@ import org.opengis.filter.LogicalOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -182,10 +182,13 @@ public final strictfp class LogicalFilterTest extends TestCase {
      */
     @Test
     public void testOptimization() {
-        final Filter<Feature> f1 = factory.isNull(factory.literal("text"));
-        final Filter<Feature> f2 = factory.isNull(factory.literal(null));
+        final Filter<Feature> f1 = factory.isNull(factory.literal("text"));     // False
+        final Filter<Feature> f2 = factory.isNull(factory.literal(null));       // True
+        final Filter<Feature> f3 = factory.isNull(factory.property("*"));       // Indeterminate
         optimize(factory.and(f1, f2), Filter.exclude());
         optimize(factory.or (f1, f2), Filter.include());
+        optimize(factory.and(f3, factory.not(f3)), Filter.exclude());
+        optimize(factory.or (f3, factory.not(f3)), Filter.include());
     }
 
     /**
