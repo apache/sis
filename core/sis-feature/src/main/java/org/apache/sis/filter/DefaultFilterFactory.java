@@ -80,7 +80,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     private final Map<String,FunctionRegister> availableFunctions;
 
     /**
-     * Creates a new factory for geometries of temporal objects of the given types.
+     * Creates a new factory for geometries and temporal objects of the given types.
      * The {@code spatial} argument can be one of the following classes:
      *
      * <table class="sis">
@@ -130,7 +130,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *
      * @todo The type of temporal object is not yet determined.
      */
-    public static synchronized FilterFactory<Feature, Object, Object> forFeatures() {
+    public static FilterFactory<Feature, Object, Object> forFeatures() {
         return Features.DEFAULT;
     }
 
@@ -196,7 +196,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          * of a resource between the specified dates.
          *
          * @param  identifier  identifier of the resource that shall be selected by the predicate.
-         * @param  version     version of the resource shall be selected, or {@code null} for any version.
+         * @param  version     version of the resource to select, or {@code null} for any version.
          * @param  startTime   start time of the resource to select, or {@code null} if none.
          * @param  endTime     end time of the resource to select, or {@code null} if none.
          * @return the predicate.

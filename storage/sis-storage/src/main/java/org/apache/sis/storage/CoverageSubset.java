@@ -37,7 +37,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * arguments of {@link GridCoverageResource#read(GridGeometry, int...)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -150,6 +150,24 @@ final class CoverageSubset extends AbstractGridResource {
             }
         }
         return UnmodifiableArrayList.wrap(subset);
+    }
+
+    /**
+     * Returns an indication about when the "physical" loading of raster data will happen.
+     * This information is fetched to the wrapped resource doing the actual real operations.
+     */
+    @Override
+    public RasterLoadingStrategy getLoadingStrategy() {
+        return source.getLoadingStrategy();
+    }
+
+    /**
+     * Sets the preferred strategy about when to do the "physical" loading of raster data.
+     * This information is forwarded to the wrapped resource doing the actual real operations.
+     */
+    @Override
+    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+        return source.setLoadingStrategy(strategy);
     }
 
     /**
