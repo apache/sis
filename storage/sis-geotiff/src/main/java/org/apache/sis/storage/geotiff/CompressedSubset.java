@@ -20,7 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.awt.Point;
-import java.awt.image.WritableRaster;
+import java.awt.image.Raster;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.storage.inflater.Inflater;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
@@ -191,8 +191,8 @@ final class CompressedSubset extends DataSubset {
      * @return a single tile decoded from the GeoTIFF file.
      */
     @Override
-    WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
-                             final int[] subsampling, final Point location) throws IOException, DataStoreException
+    Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
+                     final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType dataType = getDataType();
         final int  width        = pixelCount(lower, upper, subsampling, X_DIMENSION);
@@ -250,7 +250,7 @@ final class CompressedSubset extends DataSubset {
             fillRemainingRows(bank.flip());
             banks[b] = bank;
         }
-        return WritableRaster.createWritableRaster(model, RasterFactory.wrap(dataType, banks), location);
+        return Raster.createWritableRaster(model, RasterFactory.wrap(dataType, banks), location);
     }
 
     /**

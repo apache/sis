@@ -23,8 +23,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
@@ -100,13 +100,13 @@ public abstract class TiledGridResource extends AbstractGridResource {
     /**
      * All tiles loaded by any {@link TiledGridCoverage} created from this resource.
      * Keys contains tile indices in a row-major array of tiles.
-     * For each value, the {@link WritableRaster#getMinX()} and {@code minY} values
+     * For each value, the {@link Raster#getMinX()} and {@code minY} values
      * can be anything, depending which {@link TiledGridResource} was first to load the tile.
      *
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
      */
-    private final WeakValueHashMap<CacheKey, WritableRaster> rasters;
+    private final WeakValueHashMap<CacheKey, Raster> rasters;
 
     /**
      * Whether all tiles should be loaded at {@code read(…)} method call or deferred to a later time.
@@ -322,7 +322,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
          * It is a reference to {@link TiledGridResource#rasters} if shareable.
          */
-        final WeakValueHashMap<CacheKey, WritableRaster> cache;
+        final WeakValueHashMap<CacheKey, Raster> cache;
 
         /**
          * Creates parameters for the given domain and range.

@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.DataBuffer;
-import java.awt.image.WritableRaster;
+import java.awt.image.Raster;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -32,6 +32,7 @@ import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.TiledGridCoverage;
 import org.apache.sis.internal.storage.TiledGridResource;
+import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
@@ -64,7 +65,7 @@ import static java.lang.Math.toIntExact;
  * the same tile indices than {@link DataCube} in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -128,6 +129,12 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * of bands requested by user at reading time.
      */
     protected final int targetPixelStride;
+
+    /**
+     * Provider of empty tiles, created only if needed. Empty tiles are tiles with a length of 0
+     * declared in the TIFF header. This interpretation is a GDAL extension, not a TIFF standard.
+     */
+    private TilePlaceholder emptyTiles;
 
     /**
      * Creates a new data subset. All parameters should have been validated
@@ -278,7 +285,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * (0,0) is the tile in the upper-left corner of this {@code DataSubset} (not necessarily the upper-left
      * corner of the image stored in the TIFF file).
      *
-     * The {@link WritableRaster#getMinX()} and {@code getMinY()} coordinates of returned rasters
+     * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * will start at the given {@code offsetAOI} values.
      *
      * <p>This method is thread-safe.</p>
@@ -291,7 +298,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      *         (too many exception types to list them all).
      */
     @Override
-    protected final WritableRaster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
+    protected final Raster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
         /*
          * Prepare an array for all tiles to be returned. Tiles that are already in memory will be stored
          * in this array directly. Other tiles will be declared in the `missings` array and loaded later.
@@ -299,13 +306,13 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * (`sourcePixelStride` > 1) or use one separated bank per band (`sourcePixelStride` == 1).
          */
         final int[] includedBanks = (sourcePixelStride == 1) ? includedBands : null;
-        final WritableRaster[] result = new WritableRaster[iterator.tileCountInQuery];
+        final Raster[] result = new Raster[iterator.tileCountInQuery];
         final Tile[] missings = new Tile[iterator.tileCountInQuery];
         int numMissings = 0;
         boolean needsCompaction = false;
         synchronized (source.getSynchronizationLock()) {
             do {
-                final WritableRaster tile = iterator.getCachedTile();
+                final Raster tile = iterator.getCachedTile();
                 if (tile != null) {
                     result[iterator.getIndexInResultArray()] = tile;
                 } else {
@@ -337,10 +344,26 @@ class DataSubset extends TiledGridCoverage implements Localized {
                             origin.y = tile.originY;
                             tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
                             tile.copyTileInfo(tileByteCounts, byteCounts, includedBanks, numTiles);
+                            boolean isEmpty = true;
                             for (int b=0; b<offsets.length; b++) {
+                                isEmpty &= (byteCounts[b] == 0);
                                 offsets[b] = addExact(offsets[b], source.reader.origin);
                             }
-                            WritableRaster r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
+                            /*
+                             * If the length if zero for all bands, the GDAL "sparse files" convention said
+                             * that pixel values are not stored in the file and are assumed zero for all pixels.
+                             * This is a GDAL-specific convention but seems reasonable. Note that the default
+                             * fill value zero is different than `TilePlaceholder` default, which can be NaN.
+                             */
+                            final Raster r;
+                            if (isEmpty) {
+                                if (emptyTiles == null) {
+                                    emptyTiles = TilePlaceholder.filled(model, (fillValue != null) ? fillValue : 0);
+                                }
+                                r = emptyTiles.create(origin);
+                            } else {
+                                r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
+                            }
                             result[tile.indexInResultArray] = tile.cache(r);
                         } else {
                             needsCompaction = true;
@@ -356,7 +379,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          */
         if (needsCompaction) {
             int n = 0;
-            for (final WritableRaster tile : result) {
+            for (final Raster tile : result) {
                 if (tile != null) result[n++] = tile;
             }
             return Arrays.copyOf(result, n);
@@ -417,8 +440,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
      *
      * @see DataCube#canReadDirect(TiledGridResource.Subset)
      */
-    WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
-                             final int[] subsampling, final Point location) throws IOException, DataStoreException
+    Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
+                     final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
         final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by pre-conditions.
@@ -462,7 +485,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             banks[b] = bank;
         }
         final DataBuffer buffer = RasterFactory.wrap(type, banks);
-        return WritableRaster.createWritableRaster(model, buffer, location);
+        return Raster.createWritableRaster(model, buffer, location);
     }
 
     /**
