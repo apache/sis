@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.StringJoiner;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -42,13 +41,11 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.gui.Widget;
 
@@ -58,7 +55,7 @@ import org.apache.sis.gui.Widget;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -133,13 +130,6 @@ public class MetadataSummary extends Widget {
     private final TitledPane[] information;
 
     /**
-     * The listeners to notify about native metadata. We define those listeners in this {@link MetadataSummary}
-     * for taking advantage of the background loading mechanism. We do not provide public API for such listeners
-     * because a future version may want to provide those listeners in a more appropriate (not yet defined) class.
-     */
-    final ArrayList<MetadataTree> nativeMetadataViews;
-
-    /**
      * Creates an initially empty metadata overview.
      */
     public MetadataSummary() {
@@ -151,7 +141,6 @@ public class MetadataSummary extends Widget {
         };
         content = new ScrollPane(new VBox());
         content.setFitToWidth(true);
-        nativeMetadataViews = new ArrayList<>();
         metadataProperty = new SimpleObjectProperty<>(this, "metadata");
         metadataProperty.addListener(MetadataSummary::applyChange);
     }
@@ -230,9 +219,6 @@ public class MetadataSummary extends Widget {
         /** The resource from which to load metadata. */
         private final Resource resource;
 
-        /** The native metadata, or {@code null} if none or not requested. */
-        TreeTable nativeMetadata;
-
         /** Creates a new metadata getter. */
         Getter(final Resource resource) {
             this.resource = resource;
@@ -240,9 +226,6 @@ public class MetadataSummary extends Widget {
 
         /** Invoked in a background thread for fetching metadata. */
         @Override protected Metadata call() throws DataStoreException {
-            if (resource instanceof DataStore && !nativeMetadataViews.isEmpty()) {
-                nativeMetadata = ((DataStore) resource).getNativeMetadata().orElse(null);
-            }
             return resource.getMetadata();
         }
 
@@ -328,15 +311,6 @@ public class MetadataSummary extends Widget {
         s.getter = null;                // In case this method is invoked before `Getter` completed.
         s.error  = null;
         if (metadata != oldValue) {
-            /*
-             * The native metadata are handled in a special way by `setMetadata(Resource)`.
-             * Since we have no public API for setting native metadata in `MetadataSummary`,
-             * we set the value to null if this method is not invoked from `Getter.succeeded()`.
-             */
-            final TreeTable nativeMetadata = (getter != null && getter.isDone()) ? getter.nativeMetadata : null;
-            for (final MetadataTree view : s.nativeMetadataViews) {
-                view.setContent(nativeMetadata);
-            }
             final ObservableList<Node> children = s.getChildren();
             if (!children.isEmpty() && !(children.get(0) instanceof Section)) {
                 children.clear();       // If we were previously showing an error, clear all.

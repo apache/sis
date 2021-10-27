@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ListChangeListener;
@@ -39,16 +40,19 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataSet;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.gui.coverage.CoverageExplorer;
-import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.LogHandler;
 
 
@@ -76,8 +80,26 @@ public class ResourceExplorer extends WindowManager {
 
     /**
      * The widget showing metadata about a selected resource.
+     * Its content will be updated only when the tab is visible.
      */
     private final MetadataSummary metadata;
+
+    /**
+     * The widget showing native metadata about a selected resource.
+     * Its content will be updated only when the tab is visible.
+     */
+    private final MetadataTree nativeMetadata;
+
+    /**
+     * The tab containing {@link #nativeMetadata}.
+     * The table title will change depending on the selected resource.
+     */
+    private final Tab nativeMetadataTab;
+
+    /**
+     * Default label for {@link #nativeMetadataTab} when no resource is selected.
+     */
+    private final String defaultNativeTabLabel;
 
     /**
      * The gridded data as an image or as a table, created when first needed.
@@ -126,6 +148,11 @@ public class ResourceExplorer extends WindowManager {
     private boolean isDataTabSet;
 
     /**
+     * Whether one of the standard metadata tab (either "summary" or "metadata") is selected.
+     */
+    private final BooleanBinding metadataShown;
+
+    /**
      * Last divider position as a fraction between 0 and 1, or {@code NaN} if undefined.
      * This is used for keeping the position constant when adding and removing controls.
      */
@@ -142,42 +169,48 @@ public class ResourceExplorer extends WindowManager {
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
-        metadata = new MetadataSummary();
-        /*
-         * Build the tabs.
-         */
         final Vocabulary vocabulary = Vocabulary.getResources(resources.locale);
+        /*
+         * "Summary" tab showing a summary of resource metadata.
+         */
+        metadata = new MetadataSummary();
+        final Tab summaryTab = new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView());
+        /*
+         * "Visual" tab showing the raster data as an image.
+         *
+         * TODO: add contextual menu for creating a window showing directly the visual.
+         */
         viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
-        // TODO: add contextual menu for window showing directly the visual.
-
+        /*
+         * "Data" tab showing raster data as a table.
+         */
         tableTab = new Tab(vocabulary.getString(Vocabulary.Keys.Data));
         tableTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
+        /*
+         * "Metadata" tab showing ISO 19115 metadata as a tree.
+         */
+        final Tab metadataTab = new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata));
+        /*
+         * "Native metadata" tab showing metadata in their "raw" form (specific to the format).
+         */
+        nativeMetadata = new MetadataTree(metadata);
+        defaultNativeTabLabel = vocabulary.getString(Vocabulary.Keys.Format);
+        nativeMetadataTab = new Tab(defaultNativeTabLabel, nativeMetadata);
+        nativeMetadataTab.setDisable(true);
+        /*
+         * "Logging" tab showing log records specific to the selected resource
+         * (as opposed to the application menu showing all loggings regardless their source).
+         */
         final LogViewer logging = new LogViewer(vocabulary);
         logging.source.bind(selectedResource);
-
-        final String nativeTabText = vocabulary.getString(Vocabulary.Keys.Format);
-        final MetadataTree nativeMetadata = new MetadataTree(metadata);
-        final Tab nativeTab = new Tab(nativeTabText, nativeMetadata);
-        nativeTab.setDisable(true);
-        nativeMetadata.contentProperty.addListener((p,o,n) -> {
-            nativeTab.setDisable(n == null);
-            Object label = (n != null) ? n.getRoot().getValue(TableColumn.NAME) : null;
-            nativeTab.setText(Objects.toString(label, nativeTabText));
-        });
-
         final Tab loggingTab = new Tab(vocabulary.getString(Vocabulary.Keys.Logs), logging.getView());
         loggingTab.disableProperty().bind(logging.isEmptyProperty());
-
-        final TabPane tabs = new TabPane(
-            new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()), viewTab, tableTab,
-            new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
-            nativeTab, loggingTab);
-
-        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         /*
          * Build the main pane which put everything together.
          */
+        final TabPane tabs = new TabPane(summaryTab, viewTab, tableTab, metadataTab, nativeMetadataTab, loggingTab);
+        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         controls = new SplitPane(resources);
         controls.setOrientation(Orientation.VERTICAL);
         content = new SplitPane(controls, tabs);
@@ -187,9 +220,22 @@ public class ResourceExplorer extends WindowManager {
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
         /*
          * Register listeners last, for making sure we don't have undesired event.
+         * Those listeners trig loading of various objects (data, standard metadata,
+         * native metadata) when the corresponding tab become visible.
          */
         viewTab .selectedProperty().addListener((p,o,n) -> dataTabShown(n, true));
         tableTab.selectedProperty().addListener((p,o,n) -> dataTabShown(n, false));
+        metadataShown = summaryTab.selectedProperty().or(metadataTab.selectedProperty());
+        metadataShown.addListener((p,o,n) -> {
+            if (Boolean.FALSE.equals(o) && Boolean.TRUE.equals(n)) {
+                metadata.setMetadata(getSelectedResource());
+            }
+        });
+        nativeMetadataTab.selectedProperty().addListener((p,o,n) -> {
+            if (Boolean.FALSE.equals(o) && Boolean.TRUE.equals(n)) {
+                loadNativeMetadata();
+            }
+        });
     }
 
     /**
@@ -279,20 +325,72 @@ public class ResourceExplorer extends WindowManager {
                 if (resource != null) break;
             }
         }
+        /*
+         * Fetch metadata immediately if one of the two ISO 19115 metadata tabs is selected.
+         * Otherwise metadata will be fetched when one of those tabs will become selected
+         * (listener registered in the constructor). A similar policy is applied for data.
+         */
         selectedResource.set(resource);
-        metadata.setMetadata(resource);
-        isDataTabSet = isDataTabSelected();
+        metadata.setMetadata(metadataShown.get() ? resource : null);
+        isDataTabSet = viewTab.isSelected() || tableTab.isSelected();
         updateDataTab(isDataTabSet ? resource : null, true);
         if (!isDataTabSet) {
             setNewWindowDisabled(!(resource instanceof GridCoverageResource || resource instanceof FeatureSet));
         }
+        /*
+         * Update the label is disabled state of the native metadata tab. We do not have a reliable way
+         * to know if metadata are present without trying to fetch them, so current implementation only
+         * checks if the data store implementation override the `getNativeMetadata()` method.
+         */
+        String  label    = null;
+        boolean disabled = true;
+        if (resource instanceof DataStore) {
+            final DataStore store = (DataStore) resource;
+            final DataStoreProvider provider = store.getProvider();
+            if (provider != null) {
+                label = provider.getShortName();
+            }
+            try {
+                disabled = resource.getClass().getMethod("getNativeMetadata").getDeclaringClass() == DataStore.class;
+            } catch (NoSuchMethodException e) {
+                // Should never happen.
+            }
+        }
+        nativeMetadataTab.setText(Objects.toString(label, defaultNativeTabLabel));
+        nativeMetadataTab.setDisable(disabled);
+        nativeMetadata.setPlaceholder(null);
+        nativeMetadata.setContent(null);
+        if (nativeMetadataTab.isSelected()) {
+            loadNativeMetadata();
+        }
     }
 
     /**
-     * Returns whether the currently selected tab is {@link #viewTab} or {@link #tableTab}.
+     * Loads native metadata in a background thread and shows them in the "native metadata" tab.
      */
-    private boolean isDataTabSelected() {
-        return viewTab.isSelected() || tableTab.isSelected();
+    private final void loadNativeMetadata() {
+        final Resource resource = getSelectedResource();
+        if (resource instanceof DataStore) {
+            final DataStore store = (DataStore) resource;
+            BackgroundThreads.execute(new Task<TreeTable>() {
+                /** Invoked in a background thread for fetching metadata. */
+                @Override protected TreeTable call() throws DataStoreException {
+                    return store.getNativeMetadata().orElse(null);
+                }
+
+                /** Shows the result in JavaFX thread. */
+                @Override protected void succeeded() {
+                    if (resource == getSelectedResource()) {
+                        nativeMetadata.setContent(getValue());
+                    }
+                }
+
+                /** Invoked in JavaFX thread if metadata loading failed. */
+                @Override protected void failed() {
+                    nativeMetadata.setPlaceholder(new ExceptionReporter(getException()).getView());
+                }
+            });
+        }
     }
 
     /**
