@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
@@ -36,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  * This enumeration rather match the Java primitive type names.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -51,6 +52,11 @@ enum Type {
     UNDEFINED(7, Byte.BYTES, false) {
         @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
             throw new UnsupportedOperationException(name());
+        }
+
+        /** Unknown value (used for reporting native metadata only). */
+        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
+            return null;
         }
     },
 
@@ -290,12 +296,21 @@ enum Type {
      * </ul>
      */
     RATIONAL(10, (2*Integer.BYTES), false) {
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            final double value = input.readInt() / (double) input.readInt();
+        private Fraction readFraction(final ChannelDataInput input, final long count) throws IOException {
+            final Fraction value = new Fraction(input.readInt(), input.readInt());
             for (long i=1; i<count; i++) {
-                ensureSingleton(value, input.readInt() / (double) input.readInt(), count);
+                ensureSingleton(value.doubleValue(), input.readInt() / (double) input.readInt(), count);
             }
             return value;
+        }
+
+        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
+            return readFraction(input, count).doubleValue();
+        }
+
+        /** Returns the value as a {@link Fraction}. */
+        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
+            return readFraction(input, count);
         }
     },
 
@@ -307,12 +322,25 @@ enum Type {
      * </ul>
      */
     URATIONAL(5, (2*Integer.BYTES), true) {
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            final double value = input.readUnsignedInt() / (double) input.readUnsignedInt();
+        private Number readFraction(final ChannelDataInput input, final long count) throws IOException {
+            final long n  = input.readUnsignedInt();
+            final long d  = input.readUnsignedInt();
+            final int  ni = (int) n;
+            final int  di = (int) d;
+            final Number value = (ni == n && di == d) ? new Fraction(ni, di) : Double.valueOf(n / (double) d);
             for (long i=1; i<count; i++) {
-                ensureSingleton(value, input.readUnsignedInt() / (double) input.readUnsignedInt(), count);
+                ensureSingleton(value.doubleValue(), input.readUnsignedInt() / (double) input.readUnsignedInt(), count);
             }
             return value;
+        }
+
+        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
+            return readFraction(input, count).doubleValue();
+        }
+
+        /** Returns the value as {@link Faction} if possible or {@link Double} otherwise. */
+        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
+            return readFraction(input, count);
         }
     },
 
@@ -362,6 +390,10 @@ enum Type {
 
         @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
             return readString(input, count, StandardCharsets.US_ASCII);
+        }
+
+        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
+            return readString(input, count);
         }
     };
 
@@ -581,6 +613,20 @@ enum Type {
             s[i] = (r == value) ? String.valueOf(r) : String.valueOf(value);
         }
         return s;
+    }
+
+    /**
+     * Returns the value as a {@link Vector}, a {@link Number} (only for fractions) or a {@link String} instance.
+     * This method should be overridden by all enumeration values that do no override
+     * {@link #readArray(ChannelDataInput, int)}.
+     *
+     * @param  input  the input from where to read the values.
+     * @param  count  the amount of values.
+     * @return the value as a Java array or a {@link String}, or {@code null} if undefined.
+     * @throws IOException if an error occurred while reading the stream.
+     */
+    public Object readObject(ChannelDataInput input, long count) throws IOException {
+        return readVector(input, count);
     }
 
     /**

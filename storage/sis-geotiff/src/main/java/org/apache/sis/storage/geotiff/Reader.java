@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -78,7 +78,7 @@ final class Reader extends GeoTIFF {
      * Those values are defined that way for making easier (like a boolean flag) to test if
      * the file is a BigTIFF format, with statement like {@code if (intSizeExpansion != 0)}.
      */
-    private final byte intSizeExpansion;
+    final byte intSizeExpansion;
 
     /**
      * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD)

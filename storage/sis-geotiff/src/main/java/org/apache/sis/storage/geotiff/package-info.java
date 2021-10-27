@@ -16,7 +16,7 @@
  */
 
 /**
- * Maps ISO metadata elements from/to the GeoTIFF tags.
+ * Maps GeoTIFF tags to ISO metadata and read raster data as coverages.
  *
  * <p>References:</p>
  * <ul>

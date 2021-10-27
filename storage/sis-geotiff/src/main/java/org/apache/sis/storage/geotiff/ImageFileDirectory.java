@@ -607,7 +607,7 @@ final class ImageFileDirectory extends DataCube {
              * Compression scheme used on the image data.
              */
             case Tags.Compression: {
-                final long value = type.readLong(input(), count);
+                final int value = type.readInt(input(), count);
                 compression = Compression.valueOf(value);
                 if (compression == Compression.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
@@ -807,12 +807,7 @@ final class ImageFileDirectory extends DataCube {
              * Note that TIFF files use 0 as the end delimiter in strings (C/C++ convention).
              */
             case Tags.GeoAsciiParams: {
-                final String[] values = type.readString(input(), count, encoding());
-                switch (values.length) {
-                    case 0:  break;
-                    case 1:  referencing().asciiParameters = values[0]; break;
-                    default: referencing().asciiParameters = String.join("\u0000", values).concat("\u0000"); break;
-                }
+                referencing().setAsciiParameters(type.readString(input(), count, encoding()));
                 break;
             }
             /*
