@@ -361,7 +361,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     @Override
     public synchronized Optional<TreeTable> getNativeMetadata() throws DataStoreException {
         if (nativeMetadata == null) try {
-            nativeMetadata = new NativeMetadata().read(reader());
+            nativeMetadata = new NativeMetadata(getLocale()).read(reader());
         } catch (IOException e) {
             throw errorIO(e);
         }

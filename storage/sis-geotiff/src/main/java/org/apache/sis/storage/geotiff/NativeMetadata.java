@@ -20,10 +20,12 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.function.IntFunction;
 import java.io.IOException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -32,7 +34,6 @@ import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.geotiff.Predictor;
 
 import static java.lang.Math.addExact;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -87,9 +88,15 @@ final class NativeMetadata extends GeoKeysLoader {
     private TreeTable.Node geoNode;
 
     /**
+     * Resources for vocabulary.
+     */
+    private final Vocabulary vocabulary;
+
+    /**
      * Creates a reader for a tree table of native metadata.
      */
-    NativeMetadata() {
+    NativeMetadata(final Locale locale) {
+        vocabulary = Vocabulary.getResources(locale);
     }
 
     /**
@@ -112,11 +119,14 @@ final class NativeMetadata extends GeoKeysLoader {
              * Following loop is a simplified copy of `Reader.getImageFileDirectory(int)` method,
              * without the "deferred entries" mechanism. Instead we seek immediately.
              */
+            int imageNumber = 0;
             while ((nextIFD = readInt(false)) != 0) {
                 if (!doneIFD.add(nextIFD)) {
                     // Safety against infinite recursivity.
                     break;
                 }
+                final TreeTable.Node image = root.newChild();
+                image.setValue(NAME, vocabulary.getString(Vocabulary.Keys.Image_1, imageNumber));
                 input.seek(Math.addExact(reader.origin, nextIFD));
                 for (long remaining = readInt(true); --remaining >= 0;) {
                     final short tag  = (short) input.readUnsignedShort();
@@ -181,7 +191,7 @@ final class NativeMetadata extends GeoKeysLoader {
                             }
                         }
                         if (visible) {
-                            final TreeTable.Node node = root.newChild();
+                            final TreeTable.Node node = image.newChild();
                             node.setValue(CODE,  Short.toUnsignedInt(tag));
                             node.setValue(NAME,  Tags.name(tag));
                             node.setValue(VALUE, value);
@@ -192,6 +202,7 @@ final class NativeMetadata extends GeoKeysLoader {
                     }
                     input.seek(next);
                 }
+                imageNumber++;
             }
         } catch (ArithmeticException e) {
             throw new IOException(e);           // Can not seek that far.
