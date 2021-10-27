@@ -49,7 +49,6 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.LogHandler;
 
 
@@ -58,7 +57,7 @@ import org.apache.sis.internal.gui.LogHandler;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -133,12 +132,6 @@ public class ResourceExplorer extends WindowManager {
     private double dividerPosition;
 
     /**
-     * Used for building {@link #viewTab} and {@link #tableTab} when first needed.
-     * This is {@code null} the rest of the time.
-     */
-    private transient DataTabBuilder builder;
-
-    /**
      * Creates a new panel for exploring resources.
      */
     public ResourceExplorer() {
@@ -197,58 +190,6 @@ public class ResourceExplorer extends WindowManager {
          */
         viewTab .selectedProperty().addListener((p,o,n) -> dataTabShown(n, true));
         tableTab.selectedProperty().addListener((p,o,n) -> dataTabShown(n, false));
-        /*
-         * Optional execution in advance of a potentially slow operation. If `PRELOAD` is `false`,
-         * then the data tabs will be initialized only the first time that one of those tabs is
-         * visible at the same time that a resource is selected in the resources explorer.
-         */
-        if (BackgroundThreads.PRELOAD) {
-            builder = new DataTabBuilder(null);
-            BackgroundThreads.execute(builder);
-        }
-    }
-
-    /**
-     * A background task for building the content of {@link #viewTab} and {@link #tableTab} when first needed.
-     * This task does not load data, it is only for building the GUI. This operation is longer for those tabs
-     * when built for the first time.
-     */
-    private final class DataTabBuilder extends Task<CoverageExplorer> {
-        /**
-         * The resource to show after construction is completed, or {@code null} if none.
-         */
-        volatile Resource resource;
-
-        /**
-         * Creates a new data tabs builder. The given resource will be shown after
-         * the tabs are ready, unless {@link #resource} is modified after construction.
-         */
-        DataTabBuilder(final Resource resource) {
-            this.resource = resource;
-        }
-
-        /** Builds the tabs GUI components in a background thread. */
-        @Override protected CoverageExplorer call() {
-            return new CoverageExplorer();
-        }
-
-        /** Shows the resource after the tabs GUI are built. */
-        @Override protected void succeeded() {
-            builder  = null;
-            coverage = getValue();
-            updateDataTab(resource, true);
-        }
-
-        /** Invoked if the tabs can not be built. */
-        @Override protected void failed() {
-            builder = null;
-            ExceptionReporter.show(getView(), this);
-        }
-
-        /** Should never happen, but defined as a safety. */
-        @Override protected void cancelled() {
-            builder = null;
-        }
     }
 
     /**
@@ -369,14 +310,6 @@ public class ResourceExplorer extends WindowManager {
      *                   if the given resource is an aggregate.
      */
     private void updateDataTab(final Resource resource, boolean fallback) {
-        /*
-         * If tabs are being built in a background thread, wait for construction to finish.
-         * The builder will callback this `updateDataTab(resource, true)` method when ready.
-         */
-        if (builder != null) {
-            builder.resource = resource;
-            return;
-        }
         Region       image = null;
         Region       table = null;
         FeatureSet   data  = null;
@@ -384,9 +317,7 @@ public class ResourceExplorer extends WindowManager {
         CoverageExplorer.View type = null;
         if (resource instanceof GridCoverageResource) {
             if (coverage == null) {
-                builder = new DataTabBuilder(resource);
-                BackgroundThreads.execute(builder);
-                return;
+                coverage = new CoverageExplorer();
             }
             grid  = new ImageRequest((GridCoverageResource) resource, null, null);
             image = coverage.getDataView(CoverageExplorer.View.IMAGE);

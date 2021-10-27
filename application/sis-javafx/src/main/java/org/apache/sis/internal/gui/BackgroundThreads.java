@@ -53,13 +53,6 @@ import org.apache.sis.util.logging.Logging;
 @SuppressWarnings("serial")                         // Not intended to be serialized.
 public final class BackgroundThreads extends AtomicInteger implements ThreadFactory {
     /**
-     * Whether to allow the application to prepare in a background thread some GUI component
-     * before they are actually needed. It allows faster user experience, at the cost of CPU
-     * and memory consumption that may not be needed.
-     */
-    public static final boolean PRELOAD = true;
-
-    /**
      * The executor for background tasks. This is actually an {@link ExecutorService} instance,
      * but only the {@link Executor} method should be used according JavaFX documentation.
      */
