@@ -120,6 +120,7 @@ public class GridDerivation {
     /**
      * If the grid is divided in tiles or chunks, the size of the chunks.
      * This is used for snapping grid size to multiple values of chunk size.
+     * If non-null, can not be empty. Trailing 1 values are omitted.
      *
      * @see #chunkSize(int...)
      */
@@ -678,7 +679,7 @@ public class GridDerivation {
                     if (s > 1) {                                // Also for skipping NaN values.
                         scaled = true;
                         final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
-                        if (chunkSize != null) {
+                        if (chunkSize != null && i < chunkSize.length && chunkSize[i] != 1) {
                             s = roundSubsampling(s, i);         // Include clamp to `maximumSubsampling`.
                         } else {
                             final int accuracy = Math.max(0, Math.getExponent(indices.getSpan(i))) + 1;   // Power of 2.
@@ -1260,7 +1261,7 @@ public class GridDerivation {
         if (subsampling <= 1) {
             return 1;
         }
-        if (chunkSize != null) {
+        if (chunkSize != null && dimension < chunkSize.length) {
             /*
              * If the coverage is divided in tiles (or "chunk" in n-dimensional case), we want the subsampling
              * to be a divisor of tile size. In the special case where the subsampling is larger than tile size,
