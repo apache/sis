@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  * Tests the {@link NumberRange} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -136,6 +136,8 @@ public final strictfp class NumberRangeTest extends TestCase {
     public void testCreateBestFit() {
         assertEquals(NumberRange.create((short) 2, true, (short) 200, true),
                 NumberRange.createBestFit(2, true, 200.0, true));
+        assertEquals(NumberRange.create((float) 2, true, (float) 200, true),
+                NumberRange.createBestFit(true, 2, true, 200.0, true));
     }
 
     /**
