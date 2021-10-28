@@ -1446,7 +1446,7 @@ final class ImageFileDirectory extends DataCube {
                 for (int band = 0; band < samplesPerPixel;) {
                     NumberRange<?> sampleRange = null;
                     if (minValues != null && maxValues != null) {
-                        sampleRange = NumberRange.createBestFit(
+                        sampleRange = NumberRange.createBestFit(sampleFormat == FLOAT,
                                 minValues.get(Math.min(band, minValues.size()-1)), true,
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
@@ -1582,9 +1582,9 @@ final class ImageFileDirectory extends DataCube {
                         ArraysExt.swap(colors, 0, 1);
                     }
                     double min = 0;
-                    double max = Numerics.bitmask(bitsPerSample) - 1;
-                    if (minValues != null) min = Math.max(minValues.doubleValue(visibleBand), min);
-                    if (maxValues != null) max = Math.min(maxValues.doubleValue(visibleBand), max);
+                    double max = Numerics.bitmask(bitsPerSample);                   // Exclusive.
+                    if (minValues != null) min = Math.max(min, minValues.doubleValue(visibleBand));
+                    if (maxValues != null) max = Math.min(max, maxValues.doubleValue(visibleBand) + 1);
                     colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
                     break;
                 }

@@ -42,7 +42,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -382,21 +382,21 @@ public final class ColorModelFactory {
 
     /**
      * Returns a color model interpolated for the given range of values. This is a convenience method for
-     * {@link #createColorModel(int, int, int, Collection)} when the collection contains only one element.
+     * {@link #createPiecewise(int, int, int, Collection)} when the collection contains only one element.
      *
      * @param  dataType     the color model type.
      * @param  numBands     the number of bands for the color model (usually 1).
      * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
-     * @param  minimum      the minimum value, inclusive.
-     * @param  maximum      the maximum value, inclusive.
+     * @param  lower        the minimum value, inclusive.
+     * @param  upper        the maximum value, exclusive.
      * @param  colors       the colors to use for the range of sample values.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
     public static ColorModel createColorScale(final int dataType, final int numBands, final int visibleBand,
-                                              final double minimum, final double maximum, final Color... colors)
+                                              final double lower, final double upper, final Color... colors)
     {
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
-            new ColorsForRange(null, new NumberRange<>(Double.class, minimum, true, maximum, true), colors)
+            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors)
         });
     }
 
