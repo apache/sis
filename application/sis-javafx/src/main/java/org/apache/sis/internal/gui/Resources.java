@@ -61,6 +61,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short About = 46;
 
         /**
+         * Accessed regions
+         */
+        public static final short AccessedRegions = 65;
+
+        /**
          * All files
          */
         public static final short AllFiles = 1;
@@ -222,6 +227,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Exit = 20;
 
         /**
+         * File accesses
+         */
+        public static final short FileAccesses = 63;
+
+        /**
          * Full screen
          */
         public static final short FullScreen = 22;
@@ -336,6 +346,11 @@ public final class Resources extends IndexedResourceBundle {
          * Standard error stream
          */
         public static final short StandardErrorStream = 32;
+
+        /**
+         * System monitor
+         */
+        public static final short SystemMonitor = 64;
 
         /**
          * Tabular data

@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
@@ -36,7 +37,10 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.io.ChannelFactory;
+import org.apache.sis.internal.storage.io.InternalOptionKey;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.gui.DataViewer;
 
 
 /**
@@ -60,7 +64,7 @@ import org.apache.sis.storage.DataStore;
  * @todo Set title. Add progress listener and cancellation capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see BackgroundThreads#execute(Runnable)
  *
@@ -74,6 +78,19 @@ public final class ResourceLoader extends Task<Resource> {
      * Can be used from any thread.
      */
     private static final Cache<Object,DataStore> CACHE = new Cache<>();
+
+    /**
+     * Provider of wrappers around channels used for reading data.
+     * Those wrappers can be used for listening to file accesses.
+     *
+     * <p><b>Note:</b> it should be a package-private field of {@link DataViewer}, but we put it here because
+     * we have no public access to {@code DataViewer} non-public members. Using a static field is okay if only
+     * one {@link DataViewer} application is running in the same JVM.</p>
+     *
+     * @see #setFactoryWrapper(UnaryOperator)
+     * @see DataViewer#getCurrentStage()
+     */
+    private static volatile UnaryOperator<ChannelFactory> factoryWrapper;
 
     /**
      * The {@link Resource} input.
@@ -150,9 +167,22 @@ public final class ResourceLoader extends Task<Resource> {
 
     /**
      * Loads the resource after we verified that it is not in the cache.
+     * This method is invoked from a background thread.
      */
     private DataStore load() throws DataStoreException {
-        return DataStores.open(source);
+        Object input = source;
+        final UnaryOperator<ChannelFactory> wrapper = factoryWrapper;
+        if (wrapper != null) {
+            final StorageConnector connector;
+            if (input instanceof StorageConnector) {
+                connector = (StorageConnector) input;
+            } else {
+                connector = new StorageConnector(input);
+            }
+            connector.setOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER, wrapper);
+            input = connector;
+        }
+        return DataStores.open(input);
     }
 
     /**
@@ -168,6 +198,16 @@ public final class ResourceLoader extends Task<Resource> {
             name = Vocabulary.format(Vocabulary.Keys.Unknown);
         }
         return name;
+    }
+
+    /**
+     * Set the provider of wrappers around channels used for reading data.
+     * Those wrappers can be used for listening to file accesses.
+     *
+     * @param  wrapper  the wrapper, or {@code null} if none.
+     */
+    public static void setFactoryWrapper(final UnaryOperator<ChannelFactory> wrapper) {
+        factoryWrapper = wrapper;
     }
 
     /**

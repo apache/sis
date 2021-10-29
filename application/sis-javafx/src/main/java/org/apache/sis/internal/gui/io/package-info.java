@@ -16,13 +16,16 @@
  */
 
 /**
- * JavaFX application for Apache SIS.
+ * Widgets related to I/O operations, together with classes for listening to I/O activity.
  *
- * @author  Smaniotto Enzo (GSoC)
- * @author  Johann Sorel (Geomatys)
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.1
+ * @since   1.2
  * @module
  */
-package org.apache.sis.gui;
+package org.apache.sis.internal.gui.io;
