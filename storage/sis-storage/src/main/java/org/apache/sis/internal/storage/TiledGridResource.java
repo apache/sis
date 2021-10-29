@@ -34,7 +34,6 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
@@ -128,15 +127,6 @@ public abstract class TiledGridResource extends AbstractGridResource {
         super(parent);
         rasters = new WeakValueHashMap<>(CacheKey.class);
     }
-
-    /**
-     * Returns the object on which to perform all synchronizations for thread-safety.
-     * In current implementation, this is the {@link DataStore} that created this resource.
-     * However this restriction may be relaxed in any future version.
-     *
-     * @return the synchronization lock.
-     */
-    protected abstract DataStore getSynchronizationLock();
 
     /**
      * Returns the size of tiles in this resource.
