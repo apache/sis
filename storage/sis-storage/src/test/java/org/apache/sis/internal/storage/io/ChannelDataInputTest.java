@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * of that buffer is used for the tests, while the original full buffer is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -58,8 +58,9 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     public void testAllReadMethods() throws IOException {
         final byte[] array = createRandomArray(STREAM_LENGTH);
         referenceStream = new DataInputStream(new ByteArrayInputStream(array));
-        testedStream = new ChannelDataInput("testAllReadMethods", new DripByteChannel(array, random, 1, 1024),
-                ByteBuffer.allocate(random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES), false);
+        testedStream = new ChannelDataInput("testAllReadMethods",
+                new DripByteChannel(array, random, 1, 1024),
+                ByteBuffer.allocate(randomBufferCapacity()), false);
         transferRandomData(testedStream, array.length - ARRAY_MAX_LENGTH, 16);
     }
 

@@ -29,7 +29,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -41,6 +41,11 @@ abstract strictfp class ChannelDataTestCase extends TestCase {
      * write operation in more than one access to the channel.
      */
     static final int ARRAY_MAX_LENGTH = 256;
+
+    /**
+     * The minimal capacity of the buffer to use for write operations.
+     */
+    static final int BUFFER_MIN_CAPACITY = Double.BYTES;
 
     /**
      * The maximal capacity of the buffer to use for write operations.
@@ -79,6 +84,14 @@ abstract strictfp class ChannelDataTestCase extends TestCase {
      */
     @Debug
     void breakpoint() {
+    }
+
+    /**
+     * Returns a random buffer capacity between {@value #BUFFER_MIN_CAPACITY}
+     * and {@value #BUFFER_MAX_CAPACITY} inclusive.
+     */
+    final int randomBufferCapacity() {
+        return random.nextInt(BUFFER_MAX_CAPACITY - BUFFER_MIN_CAPACITY + 1) + BUFFER_MIN_CAPACITY;
     }
 
     /**

@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -58,7 +58,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
      */
     @Test
     public void testWriteBits() throws IOException {
-        initialize("testWriteBits", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Long.BYTES);
+        initialize("testWriteBits", STREAM_LENGTH, randomBufferCapacity());
         final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH; // Keep a margin against buffer underflow.
         while (testedStream.getStreamPosition() < length) {
