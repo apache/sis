@@ -23,11 +23,17 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
+import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
+import javafx.animation.FadeTransition;
+import javafx.util.Duration;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.collection.RangeSet;
 
@@ -41,7 +47,7 @@ import org.apache.sis.util.collection.RangeSet;
  * @since   1.2
  * @module
  */
-final class FileAccessItem implements Runnable {
+final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**
      * The height of bars in pixels.
      */
@@ -68,6 +74,22 @@ final class FileAccessItem implements Runnable {
     private static final Color BORDER_COLOR = FILL_COLOR.darker();
 
     /**
+     * Width of the cursor in pixels.
+     */
+    private static final int CURSOR_WIDTH = 10;
+
+    /**
+     * The amount of time to keep cursor visible for showing that
+     * a read or write operation is in progress.
+     */
+    private static final Duration CURSOR_DURATION = Duration.seconds(4);
+
+    /**
+     * The amount of time to keep seek positions before to let them fade away.
+     */
+    private static final Duration SEEK_DURATION = Duration.minutes(1);
+
+    /**
      * The list of rows shown by the table.
      * This is used for removing this item when the file is closed.
      */
@@ -91,6 +113,29 @@ final class FileAccessItem implements Runnable {
     final Pane accessView;
 
     /**
+     * The group of rectangles to keep showing after they have been added.
+     * Some rectangles may be merged together, but the visual effect is that fill area are only added.
+     */
+    private final ObservableList<Node> staticGroup;
+
+    /**
+     * The group of lines showing seek positions.
+     */
+    private final ObservableList<Node> seeksGroup;
+
+    /**
+     * An animation containing a rectangle showing the current position of read or write operation.
+     * The rectangle is drawn on top of {@link #staticView} and fades away after access stopped.
+     * This field is reset to {@code null} after the animation stopped.
+     */
+    private FadeTransition cursor;
+
+    /**
+     * Position (in bytes) of the cursor.
+     */
+    private long cursorPosition;
+
+    /**
      * Size of the file in bytes.
      */
     private long fileSize;
@@ -107,10 +152,16 @@ final class FileAccessItem implements Runnable {
      * @param  filename  text to show in the "File" column.
      */
     FileAccessItem(final List<FileAccessItem> owner, final String filename) {
+        final Group staticView, seeksView;
         this.owner    = owner;
         this.filename = filename;
-        accessRanges = RangeSet.create(Long.class, true, false);
-        accessView = new Pane();
+        staticView    = new Group();
+        seeksView     = new Group();
+        staticGroup   = staticView.getChildren();
+        seeksGroup    = seeksView .getChildren();
+        accessView    = new Pane(staticView, seeksView);
+        accessRanges  = RangeSet.create(Long.class, true, false);
+        staticView.setAutoSizeChildren(false);
         /*
          * Background rectangle.
          */
@@ -120,43 +171,119 @@ final class FileAccessItem implements Runnable {
         background.setStroke(FILL_COLOR.brighter());
         background.setFill(Color.TRANSPARENT);
         background.setStrokeType(StrokeType.INSIDE);
-        accessView.getChildren().add(background);
-        accessView.widthProperty().addListener((p,o,n) -> {
-            columnWidth = n.doubleValue() - MARGIN_RIGHT;
-            adjustSizes(true);
-        });
+        staticGroup.add(background);
+        accessView.widthProperty().addListener((p,o,n) -> resize(n.doubleValue()));
+    }
+
+    /**
+     * Sets a new total width (in pixels) for the bars to draw in {@link #accessView}.
+     * This method adjust the sizes of all bars and the positions of cursor and seeks.
+     */
+    private void resize(final double width) {
+        final double old = columnWidth;
+        columnWidth = width - MARGIN_RIGHT;
+        final double scale = columnWidth / fileSize;
+        if (Double.isFinite(scale)) {
+            adjustSizes(scale, true);
+            if (cursor != null) {
+                final Rectangle r = (Rectangle) cursor.getNode();
+                r.setX(Math.max(0, Math.min(scale*cursorPosition - CURSOR_WIDTH/2, columnWidth - CURSOR_WIDTH)));
+            }
+            final double ratio = columnWidth / old;
+            for (final Node node : seeksGroup) {
+                final Line line = (Line) node;
+                final double x = line.getStartX() * ratio;
+                line.setStartX(x);
+                line.setEndX(x);
+            }
+        }
+    }
+
+    /**
+     * Adds a seek position. The position will be kept for some time before to fade away.
+     */
+    private void addSeek(final long position) {
+        final double x = position * (columnWidth / fileSize);
+        final Line line = new Line(x, MARGIN_TOP, x, MARGIN_TOP + HEIGHT);
+        line.setStroke(Color.DARKBLUE);
+        seeksGroup.add(line);
+        final FadeTransition t = new FadeTransition(CURSOR_DURATION, line);
+        t.setDelay(SEEK_DURATION);
+        t.setFromValue(1);
+        t.setToValue(0);
+        t.setOnFinished(this);
+        t.play();
     }
 
     /**
      * Reports a read or write operation on a range of bytes.
-     * This method is invoked by the {@link Observer} wrapper.
+     * This method must be invoked from JavaFX thread.
      *
      * @param  position  offset of the first byte read or written.
      * @param  count     number of bytes read or written.
      * @param  write     {@code false} for a read operation, or {@code true} for a write operation.
      */
     private void addRange(final long position, final int count, final boolean write) {
-        Platform.runLater(() -> {
-            if (accessRanges.add(position, position + count)) {
-                adjustSizes(false);
+        cursorPosition = position;
+        final boolean add = accessRanges.add(position, position + count);
+        final double scale = columnWidth / fileSize;
+        if (Double.isFinite(scale)) {
+            if (add) {
+                adjustSizes(scale, false);
             }
-        });
+            final Rectangle r;
+            if (cursor == null) {
+                r = new Rectangle(0, MARGIN_TOP, CURSOR_WIDTH, HEIGHT);
+                r.setArcWidth(CURSOR_WIDTH/2 - 1);
+                r.setArcHeight(HEIGHT/2 - 2);
+                r.setStroke(Color.ORANGE);
+                r.setFill(Color.YELLOW);
+                accessView.getChildren().add(r);
+                cursor = new FadeTransition(CURSOR_DURATION, r);
+                cursor.setOnFinished(this);
+                cursor.setFromValue(1);
+                cursor.setToValue(0);
+            } else {
+                r = (Rectangle) cursor.getNode();
+            }
+            r.setX(Math.max(0, Math.min(scale*position - CURSOR_WIDTH/2, columnWidth - CURSOR_WIDTH)));
+            cursor.playFromStart();
+        }
+    }
+
+    /**
+     * Invoked when an animation effect finished.
+     * This method discards the animation and geometry objects for letting GC do its work.
+     */
+    @Override
+    public void handle(final ActionEvent event) {
+        final FadeTransition animation = (FadeTransition) event.getSource();
+        final ObservableList<Node> list;
+        if (animation == cursor) {
+            cursor = null;
+            list = accessView.getChildren();
+        } else {
+            list = seeksGroup;
+        }
+        final boolean removed = list.remove(animation.getNode());
+        assert removed : animation;
     }
 
     /**
      * Recomputes all rectangles from current {@link #columnWidth} and {@link #accessRanges}.
      *
+     * <h4>Implementation note:</h4>
+     * This method is inefficient as it iterates over all ranges instead of only the ranges that changed.
+     * It should be okay in the common case where file accesses happens often on consecutive blocks,
+     * in which case ranges get merged together and the total number of elements in {@link #accessRanges}
+     * stay stable or even reduce.
+     *
      * @param  resized  {@code true} if this method is invoked because of a change of column width
      *         with (presumably) no change in {@link #accessRanges}, or {@code false} if invoked
      *         after a new range has been added with (presumably) no change in {@link #columnWidth}.
      */
-    final void adjustSizes(final boolean resized) {
-        final double scale = columnWidth / fileSize;
-        if (!Double.isFinite(scale)) {
-            return;
-        }
-        final ObservableList<Node> children = accessView.getChildren();
-        final ListIterator<Node> bars = children.listIterator();
+    final void adjustSizes(final double scale, final boolean resized) {
+        final ListIterator<Node> bars = staticGroup.listIterator();
         ((Rectangle) bars.next()).setWidth(columnWidth);                    // Background.
         /*
          * Adjust the position and width of all rectangles.
@@ -188,7 +315,7 @@ final class FileAccessItem implements Runnable {
             bars.add(r);
         }
         // Remove all remaining children, if any.
-        children.remove(bars.nextIndex(), children.size());
+        staticGroup.remove(bars.nextIndex(), staticGroup.size());
     }
 
     /**
@@ -215,7 +342,7 @@ final class FileAccessItem implements Runnable {
         public int read(final ByteBuffer dst) throws IOException {
             final long position = position();
             final int count = channel.read(dst);
-            addRange(position, count, false);
+            Platform.runLater(() -> addRange(position, count, false));
             return count;
         }
 
@@ -226,7 +353,7 @@ final class FileAccessItem implements Runnable {
         public int write(final ByteBuffer src) throws IOException {
             final long position = position();
             final int count = channel.write(src);
-            addRange(position, count, true);
+            Platform.runLater(() -> addRange(position, count, true));
             return count;
         }
 
@@ -242,8 +369,9 @@ final class FileAccessItem implements Runnable {
          * Forwards to the wrapper channel.
          */
         @Override
-        public SeekableByteChannel position(final long newPosition) throws IOException {
-            channel.position(newPosition);
+        public SeekableByteChannel position(final long position) throws IOException {
+            channel.position(position);
+            Platform.runLater(() -> addSeek(position));
             return this;
         }
 
