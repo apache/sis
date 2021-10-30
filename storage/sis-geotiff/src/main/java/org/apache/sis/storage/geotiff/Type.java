@@ -369,23 +369,27 @@ enum Type {
             return ArraysExt.resize(lines, count);
         }
 
-        private String readString(final ChannelDataInput input, final long count) throws IOException {
+        /** Returns the singleton string, or {@code null} if none. */
+        private String readString(final ChannelDataInput input, final long count, final boolean mandatory) throws IOException {
             final String[] lines = readString(input, count, StandardCharsets.US_ASCII);
-            final String value = lines[0];
-            for (int i=1; i<lines.length; i++) {
-                if (!value.equals(lines[i])) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, count));
-                }
+            if (lines.length != 0) {
+                final String value = lines[0];
+                int i = 1;
+                do if (i >= lines.length) return value;
+                while (value.equals(lines[i++]));
+            } else if (!mandatory) {
+                return null;
             }
-            return value;
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, lines.length));
         }
 
         @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
-            return Long.parseLong(readString(input, count));
+            return Long.parseLong(readString(input, count, true));
         }
 
         @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            return Double.parseDouble(readString(input, count));
+            final String text = readString(input, count, false);
+            return (text != null) ? Double.parseDouble(text) : Double.NaN;
         }
 
         @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
@@ -393,7 +397,7 @@ enum Type {
         }
 
         @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
-            return readString(input, count);
+            return readString(input, count, false);
         }
     };
 
@@ -634,7 +638,7 @@ enum Type {
      *
      * @param  input  the input from where to read the values.
      * @param  count  the amount of values.
-     * @return the value as a Java array.
+     * @return the value as a Java array. May be an empty array.
      * @throws IOException if an error occurred while reading the stream.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
