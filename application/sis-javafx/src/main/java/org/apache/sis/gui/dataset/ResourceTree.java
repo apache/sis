@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -64,6 +63,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.gui.ResourceLoader;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
@@ -90,12 +90,9 @@ import org.apache.sis.util.logging.Logging;
  *       by another {@link ResourceTree} instance.</li>
  * </ul>
  *
- * @todo Listen to warnings and save log records in a separated collection for each data store.
- *       Add to the contextual menu an option for viewing the log records of selected data store.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -137,14 +134,19 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Sets the root {@link Resource} of this tree. The root resource is typically,
-     * but not necessarily, a {@link DataStore} instance. If other resources existed
-     * before this method call, they are discarded.
+     * Sets the root {@link Resource} of this tree.
+     * The root resource is typically, but not necessarily, a {@link DataStore} instance.
+     * If another root resource existed before this method call, it is discarded without being closed.
+     * Closing the previous resource is caller's responsibility.
      *
-     * <p>This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
-     * properties of {@link TreeView}.</p>
+     * <h4>Modified tree view properties</h4>
+     * This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
+     * properties of {@link TreeView} in an implementation-dependent way.
      *
      * @param  resource  the root resource to show, or {@code null} if none.
+     *
+     * @see #addResource(Resource)
+     * @see #removeAndClose(Resource)
      */
     public void setResource(final Resource resource) {
         setRoot(resource == null ? null : new Item(resource));
@@ -156,12 +158,16 @@ public class ResourceTree extends TreeView<Resource> {
      * has the same effect than invoking {@link #setResource(Resource)}. Otherwise this
      * method adds the new resource below previously added resources if not already present.
      *
-     * <p>This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
-     * properties of {@link TreeView}.</p>
+     * <h4>Modified tree view properties</h4>
+     * This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
+     * properties of {@link TreeView} in an implementation-dependent way.
      *
      * @param  resource  the root resource to add, or {@code null} if none.
      * @return {@code true} if the given resource has been added, or {@code false}
      *         if it was already presents or if the given resource is {@code null}.
+     *
+     * @see #setResource(Resource)
+     * @see #removeAndClose(Resource)
      */
     public boolean addResource(final Resource resource) {
         assert Platform.isFxApplicationThread();
@@ -199,10 +205,16 @@ public class ResourceTree extends TreeView<Resource> {
      * If the resource has already been loaded, then this method will use the
      * existing instance instead of loading the data again.
      *
+     * <h4>Notifications</h4>
+     * If {@link #onResourceLoaded} has a non-null value, the {@link EventHandler} will be
+     * notified in JavaFX thread after the background thread finished to open the resource.
+     * If an exception occurs while opening the resource, then {@link EventHandler} is not
+     * notified and the error is reported in a dialog box instead.
+     *
      * @param  source  the source of the resource to load. This is usually
      *                 a {@link java.io.File} or {@link java.nio.file.Path}.
      *
-     * @see #onResourceLoaded
+     * @see ResourceExplorer#loadResources(Collection)
      */
     public void loadResource(final Object source) {
         if (source != null) {
@@ -227,6 +239,10 @@ public class ResourceTree extends TreeView<Resource> {
 
     /**
      * Notifies {@link #onResourceLoaded} handler that a resource at the given path has been loaded.
+     * This method is invoked from JavaFX thread.
+     *
+     * <p>Those notifications are not used by {@code ResourceTree} itself.
+     * They are useful to other packages, for example for managing a list of opened files.</p>
      */
     private void notifyLoaded(final Object source) {
         final EventHandler<LoadEvent> handler = onResourceLoaded.getValue();
@@ -294,13 +310,18 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Removes the given resource from the tree and closes it if it is a {@link DataStore}.
+     * Removes the given resource from this tree and closes the resource if it is a {@link DataStore} instance.
      * It is caller's responsibility to ensure that the given resource is not used anymore.
-     * A resource can be removed only if it is a root. If the given resource is not in this
-     * tree view or is not a root resource, then this method does nothing.
      *
-     * @param  resource  the resource to remove, or {@code null}.
+     * <p>Only the "root" resources (such as the resources given to {@link #setResource(Resource)} or
+     * {@link #addResource(Resource)} methods) can be removed.
+     * Children of {@link Aggregate} resource and not scanned.
+     * If the given resource can not be removed, then this method does nothing.</p>
      *
+     * @param  resource  the resource to remove. Null values are ignored.
+     *
+     * @see #setResource(Resource)
+     * @see #addResource(Resource)
      * @see ResourceExplorer#removeAndClose(Resource)
      */
     public void removeAndClose(final Resource resource) {
@@ -360,24 +381,21 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Returns resources for current locale.
-     */
-    final Resources localized() {
-        return Resources.forLocale(locale);
-    }
-
-    /**
      * Returns a label for a resource. Current implementation returns the
      * {@linkplain DataStore#getDisplayName() data store display name} if available,
      * or the title found in {@linkplain Resource#getMetadata() metadata} otherwise.
+     * If no label can be found, then this method returns the localized "Unnamed" string.
+     *
+     * <p>This operation may be costly. For example the call to {@link Resource#getMetadata()}
+     * may cause the resource to open a connection to the EPSG database.
+     * Consequently his method should be invoked in a background thread.</p>
      *
      * @param  resource   the resource for which to get a label, or {@code null}.
-     * @param  showError  whether to show the error message if an error happen.
+     * @param  locale     the locale to use for localizing international strings.
      * @return the resource display name or the citation title, never null.
      */
-    final String getTitle(final Resource resource, final boolean showError) {
-        Throwable failure = null;
-        if (resource != null) try {
+    static String findLabel(final Resource resource, final Locale locale) throws DataStoreException {
+        if (resource != null) {
             final Long logID = LogHandler.loadingStart(resource);
             try {
                 /*
@@ -401,7 +419,7 @@ public class ResourceTree extends TreeView<Resource> {
                         for (final Identification identification : identifications) {
                             final Citation citation = identification.getCitation();
                             if (citation != null) {
-                                final String t = string(citation.getTitle());
+                                final String t = string(citation.getTitle(), locale);
                                 if (t != null) return t;
                             }
                         }
@@ -409,12 +427,12 @@ public class ResourceTree extends TreeView<Resource> {
                 }
                 /*
                  * If we find no title in the metadata, use the resource identifier.
-                 * We search of explicitly declared identifier first before to fallback
+                 * We search for explicitly declared identifier first before to fallback
                  * on metadata, because the later is more subject to interpretation.
                  */
                 final Optional<GenericName> id = resource.getIdentifier();
                 if (id.isPresent()) {
-                    final String t = string(id.get().toInternationalString());
+                    final String t = string(id.get().toInternationalString(), locale);
                     if (t != null) return t;
                 }
                 if (identifications != null) {
@@ -426,26 +444,21 @@ public class ResourceTree extends TreeView<Resource> {
             } finally {
                 LogHandler.loadingStop(logID);
             }
-        } catch (DataStoreException | RuntimeException e) {
-            if (showError) {
-                failure = e;
-            }
         }
-        /*
-         * If we failed to get the name, use "unnamed" with the exception message.
-         * It may still be possible to select this resource, view it or expand the children nodes.
-         */
-        String text = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
-        if (failure != null) {
-            text = text + " — " + string(failure);
-        }
-        return text;
+        return Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+    }
+
+    /**
+     * Returns resources for current locale.
+     */
+    final Resources localized() {
+        return Resources.forLocale(locale);
     }
 
     /**
      * Returns the given international string as a non-empty localized string, or {@code null} if none.
      */
-    private String string(final InternationalString i18n) {
+    private static String string(final InternationalString i18n, final Locale locale) {
         return (i18n != null) ? Strings.trimOrNull(i18n.toString(locale)) : null;
     }
 
@@ -453,7 +466,7 @@ public class ResourceTree extends TreeView<Resource> {
      * Returns a localized (if possible) string representation of the given exception.
      * This method returns the message if one exist, or the exception class name otherwise.
      */
-    private String string(final Throwable failure) {
+    private static String string(final Throwable failure, final Locale locale) {
         String text = Strings.trimOrNull(Exceptions.getLocalizedMessage(failure, locale));
         if (text == null) {
             text = Classes.getShortClassName(failure);
@@ -468,10 +481,14 @@ public class ResourceTree extends TreeView<Resource> {
         Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
     }
 
+
+
+
     /**
-     * The visual appearance of an {@link Item} in a tree. This call gets the cell text from a resource
-     * by a call to {@link ResourceTree#getTitle(Resource, boolean)}. Cells are initially empty;
+     * The visual appearance of an {@link Item} in a tree. Cells are initially empty;
      * their content will be specified by {@link TreeView} after construction.
+     * This class gets the cell text from a resource by a call to
+     * {@link ResourceTree#findLabel(Resource, Locale)} in a background thread.
      * The same call may be recycled many times for different {@link Item} data.
      *
      * @see Item
@@ -485,59 +502,70 @@ public class ResourceTree extends TreeView<Resource> {
 
         /**
          * Invoked when a new resource needs to be shown in the tree view.
-         * This method sets the text to a title that describe the resource.
+         * This method sets the text to a label that describe the resource.
          *
          * @param resource  the resource to show.
          * @param empty     whether this cell is used to fill out space.
          */
         @Override
         protected void updateItem(final Resource resource, boolean empty) {
-            /*
-             * This method is sometime invoked even if the resource is the same. It may be for example
-             * because the selected state changed. In such case, we do not need to construct again the
-             * title, contextual menu, etc. Only the color may change. More generally we don't need to
-             * fetch data from enclosing ResourceTree if the resource is the same, so we mark this case
-             * by setting `tree` to null.
-             */
-            final ResourceTree tree = (getItem() != resource) ? (ResourceTree) getTreeView() : null;
             super.updateItem(resource, empty);          // Mandatory according JavaFX documentation.
-            Color color = Styles.NORMAL_TEXT;
-            String text = null;
-            Button more = null;
-            if (!empty) {
-                if (resource == PseudoResource.LOADING) {
+            Color       color = Styles.NORMAL_TEXT;
+            String      text  = null;
+            Button      more  = null;
+            ContextMenu menu  = null;
+            final TreeItem<Resource> t;
+            if (!empty && (t = getTreeItem()) instanceof Item) {
+                final ResourceTree tree = (ResourceTree) getTreeView();
+                final Item item = (Item) t;
+                final Throwable error;
+                text = item.label;
+                if (item.isLoading) {
+                    /*
+                     * If the resource is in process of being loaded in a background thread, show "Loading…"
+                     * with a different color. Item with null resource will be replaced by a collection of new
+                     * items by a call to `CellItem.getChildren().setAll(…)` after loading process finished.
+                     * Item with non-null resource only need to have their name updated.
+                     */
                     color = Styles.LOADING_TEXT;
-                    if (tree != null) {
-                        text = tree.localized().getString(Resources.Keys.Loading);
+                    if (text == null) {
+                        text = item.label = tree.localized().getString(Resources.Keys.Loading);
+                        if (resource != null) {
+                            item.fetchLabel(resource, tree.locale);         // Start a background thread.
+                        }
                     }
-                } else if (resource instanceof Unloadable) {
+                } else if ((error = item.error) != null) {
+                    /*
+                     * If an error occurred, show the exception message with a button for more details.
+                     * The list of resource children may or may not be available, depending if the error
+                     * occurred while fetching the children list or only their labels.
+                     */
                     color = Styles.ERROR_TEXT;
-                    if (tree != null) {
-                        final Throwable failure = ((Unloadable) resource).failure;
-                        text = tree.string(failure);
+                    if (text == null) {
+                        if (resource != null) {
+                            // We have the resource, we only failed to fetch its name.
+                            text = Vocabulary.getResources(tree.locale).getString(Vocabulary.Keys.Unnamed);
+                        } else {
+                            // More serious error (no resource), show exception message.
+                            text = string(error, tree.locale);
+                        }
+                        item.label = text;
+                    }
+                    more = (Button) getGraphic();
+                    if (more == null) {
                         more = new Button(Styles.ERROR_DETAILS_ICON);
-                        more.setOnAction((e) -> {
-                            final Resources localized = tree.localized();
-                            ExceptionReporter.show(tree,
-                                    localized.getString(Resources.Keys.ErrorDetails),
-                                    localized.getString(Resources.Keys.CanNotReadResource), failure);
-                        });
                     }
-                } else {
-                    if (tree != null) {
-                        text = tree.getTitle(resource, true);
-                    }
+                    more.setOnAction((e) -> {
+                        final Resources localized = tree.localized();
+                        ExceptionReporter.show(tree,
+                                localized.getString(Resources.Keys.ErrorDetails),
+                                localized.getString(Resources.Keys.CanNotReadResource), error);
+                    });
                 }
-            }
-            setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
-            /*
-             * If the resource is at the root, add a menu for removing it.
-             * If we find that the cell already has a menu, we do not need to build it again.
-             */
-            if (tree != null) {
-                setText(text);
-                setGraphic(more);
-                ContextMenu menu = null;
+                /*
+                 * If the resource is one of the "root" resources, add a menu for removing it.
+                 * If we find that the cell already has a menu, we do not need to build it again.
+                 */
                 if (tree.findOrRemove(resource, false)) {
                     menu = getContextMenu();
                     if (menu == null) {
@@ -563,8 +591,11 @@ public class ResourceTree extends TreeView<Resource> {
                     }
                     menu.getItems().get(COPY_PATH).setDisable(!IOUtilities.isKindOfPath(path));
                 }
-                setContextMenu(menu);
             }
+            setText(text);
+            setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
+            setGraphic(more);
+            setContextMenu(menu);
         }
 
         /**
@@ -574,14 +605,40 @@ public class ResourceTree extends TreeView<Resource> {
         private static final int COPY_PATH = 0, CLOSE = 1;
     }
 
+
+
+
     /**
-     * A simple node encapsulating a {@link Resource} in a view.
-     * The list of children is fetched when first needed.
+     * An item of the {@link Resource} tree completed with additional information.
+     * The list of children is fetched in a background thread when first needed.
      * This node contains only the data; for visual appearance, see {@link Cell}.
      *
      * @see Cell
      */
     private static final class Item extends TreeItem<Resource> {
+        /**
+         * The text of this node, computed and cached when first needed.
+         * Computation is done by invoking {@link #findLabel(Resource, Locale)} in a background thread.
+         *
+         * @see #fetchLabel(Resource, Locale)
+         */
+        String label;
+
+        /**
+         * Whether this node is in process of loading data. There is two kinds of loading:
+         * <ul>
+         *   <li>The {@link Resource} itself, in which case {@link #getValue()} is null.</li>
+         *   <li>The resource {@link #title}, in which case {@link #getValue()} has a valid value.</li>
+         * </ul>
+         */
+        boolean isLoading;
+
+        /**
+         * If an error occurred while loading the resource, the cause. The {@link #getValue()} property may
+         * be null or non-null, depending if the error occurred while loading the resource or only its title.
+         */
+        Throwable error;
+
         /**
          * Whether the resource is a leaf. A resource is a leaf if it is not an
          * instance of {@link Aggregate}, in which case it can not have children.
@@ -599,14 +656,59 @@ public class ResourceTree extends TreeView<Resource> {
         private boolean isChildrenKnown;
 
         /**
+         * Creates a temporary item with null value for a resource in process of being loaded.
+         * This item will be replaced (not updated) by a fresh {@code Item} instance when the
+         * resource will become available.
+         */
+        Item() {
+            isLeaf    = true;
+            isLoading = true;
+        }
+
+        /**
+         * Creates an item for a resource that we failed to load.
+         */
+        Item(final Throwable exception) {
+            isLeaf = true;
+            error  = exception;
+        }
+
+        /**
          * Creates a new node for the given resource.
          *
          * @param resource  the resource to show in the tree.
          */
         Item(final Resource resource) {
             super(resource);
+            isLoading = true;       // Means that the label still need to be fetched.
             isLeaf = !(resource instanceof Aggregate);
             LogHandler.installListener(resource);
+        }
+
+        /**
+         * Update {@link #label} with the resource label fetched in background thread.
+         * Caller should invoke this method only if {@link #isLoading} is {@code true}
+         * {@link #label} is null. Note that {@link #error} should be null in such case.
+         */
+        final void fetchLabel(final Resource resource, final Locale locale) {
+            BackgroundThreads.execute(new Task<String>() {
+                @Override protected String call() throws DataStoreException {
+                    return findLabel(resource, locale);
+                }
+
+                @Override protected void succeeded() {
+                    isLoading = false;
+                    label = getValue();
+                    GUIUtilities.forceCellUpdate(Item.this);
+                }
+
+                @Override protected void failed() {
+                    isLoading = false;
+                    label = null;
+                    error = getException();
+                    GUIUtilities.forceCellUpdate(Item.this);
+                }
+            });
         }
 
         /**
@@ -619,7 +721,7 @@ public class ResourceTree extends TreeView<Resource> {
 
         /**
          * Returns the items for all sub-resources contained in this resource.
-         * The list is empty is the resource is not an aggregate.
+         * The list is empty if the resource is not an aggregate.
          */
         @Override
         public ObservableList<TreeItem<Resource>> getChildren() {
@@ -629,7 +731,7 @@ public class ResourceTree extends TreeView<Resource> {
                 final Resource resource = getValue();
                 if (resource instanceof Aggregate) {
                     BackgroundThreads.execute(new GetChildren((Aggregate) resource));
-                    children.add(new Item(PseudoResource.LOADING));     // Temporary node with "loading" text.
+                    children.add(new Item());
                 }
             }
             return children;
@@ -671,53 +773,32 @@ public class ResourceTree extends TreeView<Resource> {
 
             /**
              * Invoked in JavaFX thread if children have been loaded successfully.
+             * The previous node, which was showing "Loading…", is replaced by all
+             * nodes loaded in the background thread.
              */
             @Override
             protected void succeeded() {
-                setResources(getValue());
+                Item.super.getChildren().setAll(getValue());
             }
 
             /**
              * Invoked in JavaFX thread if children can not be loaded.
-             * This method set a placeholder items with error message.
              */
             @Override
             protected void failed() {
-                setResources(Collections.singletonList(new Item(new Unloadable(getException()))));
+                Item.super.getChildren().setAll(new Item(getException()));
             }
         }
-
-        /**
-         * Sets the resources after the background task completed.
-         * This method must be invoked in the JavaFX thread.
-         */
-        private void setResources(final List<TreeItem<Resource>> result) {
-            super.getChildren().setAll(result);
-        }
     }
 
-    /**
-     * Placeholder for a resource that we failed to load.
-     */
-    private static final class Unloadable extends PseudoResource {
-        /**
-         * The reason why we can not load the resource.
-         */
-        final Throwable failure;
 
-        /**
-         * Creates a new place-holder for a resource that we failed to load for the given reason.
-         */
-        Unloadable(final Throwable failure) {
-            this.failure = failure;
-        }
-    }
+
 
     /**
      * The root resource when there is more than one resources to display.
      * This root node should be hidden in the {@link ResourceTree}.
      */
-    private static final class Root extends PseudoResource implements Aggregate {
+    private static final class Root implements Aggregate {
         /**
          * The children to expose as an unmodifiable list of components.
          */
@@ -758,7 +839,7 @@ public class ResourceTree extends TreeView<Resource> {
          * @return whether the given resource has been added.
          */
         boolean add(final Resource resource) {
-            for (int i=components.size(); --i >= 0;) {
+            for (int i = components.size(); --i >= 0;) {
                 if (components.get(i).getValue() == resource) {
                     return false;
                 }
@@ -792,24 +873,6 @@ public class ResourceTree extends TreeView<Resource> {
                     return components.get(index).getValue();
                 }
             };
-        }
-    }
-
-    /**
-     * A pseudo-resource with no identifier and no metadata.
-     * This is used as a placeholder for a node while loading
-     * is in progress, or for reporting a failure to load a node.
-     */
-    private static class PseudoResource implements Resource {
-        /**
-         * Place holder for a resource in process of being loaded.
-         */
-        static final PseudoResource LOADING = new PseudoResource();
-
-        /**
-         * Creates a new pseudo-resource.
-         */
-        PseudoResource() {
         }
 
         /**

@@ -523,7 +523,13 @@ public class ResourceExplorer extends WindowManager {
         } else {
             return null;
         }
-        return new SelectedData(resources.getTitle(resource, false), table, grid, localized());
+        String text;
+        try {
+            text = ResourceTree.findLabel(resource, resources.locale);
+        } catch (DataStoreException | RuntimeException e) {
+            text = Vocabulary.getResources(resources.locale).getString(Vocabulary.Keys.Unnamed);
+        }
+        return new SelectedData(text, table, grid, localized());
     }
 
     /**
