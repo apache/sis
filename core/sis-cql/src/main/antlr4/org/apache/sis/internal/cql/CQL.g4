@@ -30,7 +30,8 @@ options {
 COMMA 	: ',' ;
 WS  :   ( ' ' | '\t' | '\r'| '\n' ) -> skip;
 UNARY : '+' | '-' ;
-MULT : '*' | '/' ;
+MULT : '*' ;
+DIV : '/' ;
 fragment DIGIT : '0'..'9' ;
 
 // caseinsensitive , possible alternative solution ?
@@ -152,6 +153,17 @@ TCONTAINS	: T C O N T A I N S ;
 TEQUALS		: T E Q U A L S ;
 TOVERLAPS	: T O V E R L A P S ;
 
+// QUERY ---------------------------------------------
+
+SELECT : S E L E C T ;
+WHERE : W H E R E ;
+LIMIT : L I M I T ;
+OFFSET : O F F S E T ;
+AS : A S ;
+ORDER : O R D E R ;
+BY : B Y ;
+ASC : A S C ;
+DESC : D E S C ;
 
 // PROPERTY NAME -------------------------------------
 PROPERTY_NAME    	:  '"' ( ESC_SEQ | ~('\\'|'"') )* '"'    ;
@@ -165,7 +177,7 @@ fragment HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
 fragment
 ESC_SEQ
-    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\''|'\\')
+    :   '\\' ('b'|'t'|'n'|'f'|'r'|'"'|'\''|'\\')
     |   UNICODE_ESC
     |   OCTAL_ESC
     ;
@@ -223,7 +235,7 @@ expressionTerm
 	| LPAREN expression RPAREN
 	;
 
-expression : expression MULT expression
+expression : expression (MULT|DIV) expression
            | expression UNARY expression
            | expressionTerm
            ;
@@ -277,4 +289,10 @@ filter : filter (AND filter)+
 
 filterOrExpression : filter | expression ;
 
-
+sortprop : expression (ASC | DESC)? ;
+orderby : ORDER BY sortprop (COMMA sortprop)* ;
+limit : LIMIT INT ;
+offset : OFFSET INT ;
+where : WHERE filter ;
+projection : expression (AS TEXT)? ;
+query : SELECT (MULT | (projection (COMMA projection)*)) where? orderby? offset? limit?;

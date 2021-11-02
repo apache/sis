@@ -34,6 +34,8 @@ import org.junit.runners.Suite;
     org.apache.sis.cql.ExpressionWritingTest.class,
     org.apache.sis.cql.FilterReadingTest.class,
     org.apache.sis.cql.FilterWritingTest.class,
+    org.apache.sis.cql.QueryReadingTest.class,
+    org.apache.sis.cql.QueryWritingTest.class,
 })
 public final strictfp class CQLTestSuite extends TestSuite {
     /**

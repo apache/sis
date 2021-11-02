@@ -208,6 +208,16 @@ public final class SEPortrayer {
                 return stream;
             }
         } else if (resource instanceof GridCoverageResource) {
+
+            // Apply user query if defined.
+            final Query basequery = layer.getQuery();
+            if (basequery != null) try {
+                resource = ((GridCoverageResource) resource).subset(basequery);
+            } catch (DataStoreException ex) {
+                stream = Stream.concat(stream, Stream.of(new ExceptionPresentation(ex)));
+                return stream;
+            }
+
             type = null;
         } else if (resource instanceof Aggregate) {
             try {
@@ -280,7 +290,7 @@ public final class SEPortrayer {
             if (resource instanceof GridCoverageResource) {
                 boolean painted = false;
                 for (int i = 0; i < elseRuleIndex; i++) {
-                    final Stream<Presentation> subStream = present(rules.get(i), layer, resource, refResource, null);
+                    final Stream<Presentation> subStream = present(rules.get(i), layer, resource, resource, null);
                     if (subStream != null) {
                         painted = true;
                         stream = Stream.concat(stream, subStream);
@@ -289,7 +299,7 @@ public final class SEPortrayer {
                 // The data hasn't been painted, paint it with the 'else' rules.
                 if (!painted) {
                     for (int i = elseRuleIndex, n = rules.size(); i < n; i++) {
-                        final Stream<Presentation> subStream = present(rules.get(i), layer, resource, refResource, null);
+                        final Stream<Presentation> subStream = present(rules.get(i), layer, resource, resource, null);
                         if (subStream != null) {
                             stream = Stream.concat(stream, subStream);
                         }
