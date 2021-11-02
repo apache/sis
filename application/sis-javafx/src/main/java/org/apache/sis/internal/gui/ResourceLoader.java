@@ -71,7 +71,7 @@ import org.apache.sis.gui.DataViewer;
  * @since 1.1
  * @module
  */
-public final class ResourceLoader extends Task<Resource> {
+public final class ResourceLoader extends Task<DataStore> {
     /**
      * The cache of previously loaded resources.
      * Used for avoiding to load the same resource twice.

@@ -69,6 +69,7 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -107,8 +108,20 @@ public class ResourceTree extends TreeView<Resource> {
      * The default value is {@code null}.
      *
      * @see #loadResource(Object)
+     * @see ResourceEvent#LOADED
      */
-    public final ObjectProperty<EventHandler<LoadEvent>> onResourceLoaded;
+    public final ObjectProperty<EventHandler<ResourceEvent>> onResourceLoaded;
+
+    /**
+     * Function to be called after a resource has been closed from a file or URL.
+     * The default value is {@code null}.
+     *
+     * @see #removeAndClose(Resource)
+     * @see ResourceEvent#CLOSED
+     *
+     * @since 1.2
+     */
+    public final ObjectProperty<EventHandler<ResourceEvent>> onResourceClosed;
 
     /**
      * Creates a new tree of resources with initially no resource to show.
@@ -120,6 +133,7 @@ public class ResourceTree extends TreeView<Resource> {
         setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::onDragDropped);
         onResourceLoaded = new SimpleObjectProperty<>(this, "onResourceLoaded");
+        onResourceClosed = new SimpleObjectProperty<>(this, "onResourceClosed");
     }
 
     /**
@@ -186,10 +200,10 @@ public class ResourceTree extends TreeView<Resource> {
                     addTo = (Root) root;
                 } else {
                     final TreeItem<Resource> group = new TreeItem<>();
-                    addTo = new Root(group, root);
-                    group.setValue(addTo);
-                    setRoot(group);
                     setShowRoot(false);
+                    setRoot(group);                     // Also detach `item` from the TreeView root.
+                    addTo = new Root(group, item);      // Pseudo-resource for a group of data stores.
+                    group.setValue(addTo);
                 }
                 return addTo.add(resource);
             }
@@ -222,13 +236,12 @@ public class ResourceTree extends TreeView<Resource> {
                 addResource((Resource) source);
             } else {
                 final ResourceLoader loader = new ResourceLoader(source);
-                final Resource existing = loader.fromCache();
+                final DataStore existing = loader.fromCache();
                 if (existing != null) {
                     addResource(existing);
                 } else {
                     loader.setOnSucceeded((event) -> {
-                        addResource((Resource) event.getSource().getValue());
-                        notifyLoaded(source);
+                        addLoadedResource((DataStore) event.getSource().getValue(), source);
                     });
                     loader.setOnFailed((event) -> ExceptionReporter.show(this, event));
                     BackgroundThreads.execute(loader);
@@ -238,23 +251,28 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Notifies {@link #onResourceLoaded} handler that a resource at the given path has been loaded.
+     * Adds the given store as a resource, then notifies {@link #onResourceLoaded}
+     * handler that a resource at the given path has been loaded.
      * This method is invoked from JavaFX thread.
-     *
-     * <p>Those notifications are not used by {@code ResourceTree} itself.
-     * They are useful to other packages, for example for managing a list of opened files.</p>
      */
-    private void notifyLoaded(final Object source) {
-        final EventHandler<LoadEvent> handler = onResourceLoaded.getValue();
+    private void addLoadedResource(final DataStore store, final Object source) {
+        addResource(store);
+        final EventHandler<ResourceEvent> handler = onResourceLoaded.getValue();
         if (handler != null) {
             final Path path;
             try {
                 path = IOUtilities.toPathOrNull(source);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-                Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, "loadResource", e);
+                recoverableException("loadResource", e);
                 return;
             }
             if (path != null) {
+                /*
+                 * Following call should be quick because it starts the search from last item.
+                 * A `NullPointerException` or `ClassCastException` here would be a bug in our
+                 * wrapping of resources.
+                 */
+                ((Item) findOrRemove(store, false)).path = path;
                 handler.handle(new LoadEvent(this, path));
             }
         }
@@ -318,6 +336,11 @@ public class ResourceTree extends TreeView<Resource> {
      * Children of {@link Aggregate} resource and not scanned.
      * If the given resource can not be removed, then this method does nothing.</p>
      *
+     * <h4>Notifications</h4>
+     * If {@link #onResourceClosed} has a non-null value, the {@link EventHandler} will be notified.
+     * The notification may happen in same time that the resource is closing in a background thread.
+     * If an exception occurs while closing the resource, the error is reported in a dialog box.
+     *
      * @param  resource  the resource to remove. Null values are ignored.
      *
      * @see #setResource(Resource)
@@ -325,9 +348,27 @@ public class ResourceTree extends TreeView<Resource> {
      * @see ResourceExplorer#removeAndClose(Resource)
      */
     public void removeAndClose(final Resource resource) {
-        if (findOrRemove(resource, true)) {
-            if (resource instanceof DataStore) {
-                ResourceLoader.removeAndClose((DataStore) resource, this);
+        final TreeItem<Resource> item = findOrRemove(resource, true);
+        if (item != null && resource instanceof DataStore) {
+            final DataStore store = (DataStore) resource;
+            ResourceLoader.removeAndClose(store, this);
+            final EventHandler<ResourceEvent> handler = onResourceClosed.get();
+            if (handler != null) {
+                Path path = null;
+                if (item instanceof Item) {
+                    path = ((Item) item).path;
+                }
+                if (path == null) try {
+                    path = store.getOpenParameters()
+                            .map((p) -> IOUtilities.toPathOrNull(p.parameter(DataStoreProvider.LOCATION).getValue()))
+                            .orElse(null);
+                } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+                    // Ignore because the location parameter is optional.
+                    recoverableException("removeAndClose", e);
+                }
+                if (path != null) {
+                    handler.handle(new ResourceEvent(this, path, ResourceEvent.CLOSED));
+                }
             }
         }
     }
@@ -337,9 +378,9 @@ public class ResourceTree extends TreeView<Resource> {
      *
      * @param  resource  the resource to search of remove, or {@code null}.
      * @param  remove    {@code true} for removing the resource, or {@code false} for checking only.
-     * @return whether the resource has been found in the roots.
+     * @return the item wrapping the resource, or {@code null} if the resource has been found in the roots.
      */
-    private boolean findOrRemove(final Resource resource, final boolean remove) {
+    private TreeItem<Resource> findOrRemove(final Resource resource, final boolean remove) {
         assert Platform.isFxApplicationThread();
         if (resource != null) {
             /*
@@ -365,19 +406,15 @@ public class ResourceTree extends TreeView<Resource> {
                         if (remove) {
                             setRoot(null);
                         }
-                        return true;
+                        return item;
                     }
                     if (root instanceof Root) {
-                        if (remove) {
-                            return ((Root) root).remove(resource);
-                        } else {
-                            return ((Root) root).contains(resource);
-                        }
+                        return ((Root) root).contains(resource, remove);
                     }
                 }
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -475,6 +512,13 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
+     * Reports an ignorable exception in the given method.
+     */
+    private static void recoverableException(final String method, final Exception e) {
+        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
+    }
+
+    /**
      * Reports an unexpected but non-fatal exception in the given method.
      */
     static void unexpectedException(final String method, final Exception e) {
@@ -566,7 +610,7 @@ public class ResourceTree extends TreeView<Resource> {
                  * If the resource is one of the "root" resources, add a menu for removing it.
                  * If we find that the cell already has a menu, we do not need to build it again.
                  */
-                if (tree.findOrRemove(resource, false)) {
+                if (tree.findOrRemove(resource, false) != null) {
                     menu = getContextMenu();
                     if (menu == null) {
                         menu = new ContextMenu();
@@ -616,6 +660,12 @@ public class ResourceTree extends TreeView<Resource> {
      * @see Cell
      */
     private static final class Item extends TreeItem<Resource> {
+        /**
+         * The path to the resource, or {@code null} if none or unknown. This is used for notifications only;
+         * this information does not play an important role for {@link ResourceTree} itself.
+         */
+        Path path;
+
         /**
          * The text of this node, computed and cached when first needed.
          * Computation is done by invoking {@link #findLabel(Resource, Locale)} in a background thread.
@@ -785,6 +835,7 @@ public class ResourceTree extends TreeView<Resource> {
              * Invoked in JavaFX thread if children can not be loaded.
              */
             @Override
+            @SuppressWarnings("unchecked")
             protected void failed() {
                 Item.super.getChildren().setAll(new Item(getException()));
             }
@@ -795,7 +846,7 @@ public class ResourceTree extends TreeView<Resource> {
 
 
     /**
-     * The root resource when there is more than one resources to display.
+     * The root pseudo-resource when there is more than one resources to display.
      * This root node should be hidden in the {@link ResourceTree}.
      */
     private static final class Root implements Aggregate {
@@ -805,31 +856,33 @@ public class ResourceTree extends TreeView<Resource> {
         private final List<TreeItem<Resource>> components;
 
         /**
-         * Creates a new aggregate which is going to be wrapped in the given item.
-         * Caller should invoke {@code group.setValue(root)} after this constructor.
+         * Creates a new aggregate which is going to be wrapped in the given node.
+         * Caller shall invoke {@code group.setValue(root)} after this constructor.
          *
-         * @param  group     the new tree root which will contain "real" resources.
+         * @param  group  the new tree root which will contain "real" resources.
          * @param  previous  the previous root, to be added in the new group.
          */
-        Root(final TreeItem<Resource> group, final Resource previous) {
+        Root(final TreeItem<Resource> group, final TreeItem<Resource> previous) {
             components = group.getChildren();
-            add(previous);
+            components.add(previous);
         }
 
         /**
-         * Returns whether this root contains the given resource as a direct child.
+         * Checks whether this root contains the given resource as a direct child.
          * This method does not search recursively in sub-trees.
          *
          * @param  resource  the resource to search.
-         * @return whether the given resource is present.
+         * @param  remove    whether to remove the resource if found.
+         * @return the resource wrapper, or {@code null} if not found.
          */
-        boolean contains(final Resource resource) {
+        TreeItem<Resource> contains(final Resource resource, final boolean remove) {
             for (int i=components.size(); --i >= 0;) {
-                if (components.get(i).getValue() == resource) {
-                    return true;
+                final TreeItem<Resource> item = components.get(i);
+                if (item.getValue() == resource) {
+                    return remove ? components.remove(i) : item;
                 }
             }
-            return false;
+            return null;
         }
 
         /**
@@ -845,16 +898,6 @@ public class ResourceTree extends TreeView<Resource> {
                 }
             }
             return components.add(new Item(resource));
-        }
-
-        /**
-         * Removes the given resource if presents.
-         *
-         * @param  resource  the resource to remove.
-         * @return whether the resource has been removed.
-         */
-        boolean remove(final Resource resource) {
-            return components.removeIf((i) -> i.getValue() == resource);
         }
 
         /**

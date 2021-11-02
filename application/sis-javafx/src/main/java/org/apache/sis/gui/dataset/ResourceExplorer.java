@@ -264,7 +264,7 @@ public class ResourceExplorer extends WindowManager {
      *
      * @return current function to be called after a resource has been loaded, or {@code null} if none.
      */
-    public EventHandler<LoadEvent> getOnResourceLoaded() {
+    public EventHandler<ResourceEvent> getOnResourceLoaded() {
         return resources.onResourceLoaded.get();
     }
 
@@ -275,8 +275,33 @@ public class ResourceExplorer extends WindowManager {
      *
      * @param  handler  new function to be called after a resource has been loaded, or {@code null} if none.
      */
-    public void setOnResourceLoaded(final EventHandler<LoadEvent> handler) {
+    public void setOnResourceLoaded(final EventHandler<ResourceEvent> handler) {
         resources.onResourceLoaded.set(handler);
+    }
+
+    /**
+     * Returns the function to be called when a resource is closed.
+     * This is an accessor for the {@link ResourceTree#onResourceClosed} property value.
+     *
+     * @return current function to be called when a resource is closed, or {@code null} if none.
+     *
+     * @since 1.2
+     */
+    public EventHandler<ResourceEvent> getOnResourceClosed() {
+        return resources.onResourceClosed.get();
+    }
+
+    /**
+     * Specifies a function to be called when a resource is closed.
+     * This is a setter for the {@link ResourceTree#onResourceClosed} property value.
+     * If this method is never invoked, then the default value is {@code null}.
+     *
+     * @param  handler  new function to be called when a resource is closed, or {@code null} if none.
+     *
+     * @since 1.2
+     */
+    public void setOnResourceClosed(final EventHandler<ResourceEvent> handler) {
+        resources.onResourceClosed.set(handler);
     }
 
     /**
