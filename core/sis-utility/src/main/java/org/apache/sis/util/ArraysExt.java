@@ -2020,7 +2020,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all values in the specified array are equal to the specified value,
-     * which may be {@link Double#NaN}.
+     * which may be {@link Double#NaN}. A NaN value is considered equal to all other NaN values.
      *
      * @param  array  the array to check.
      * @param  value  the expected value.

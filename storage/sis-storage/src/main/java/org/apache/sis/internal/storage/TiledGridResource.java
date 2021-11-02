@@ -50,7 +50,7 @@ import static org.apache.sis.internal.storage.TiledGridCoverage.Y_DIMENSION;
  * as "chunk" in a <var>n</var>-dimensional generalization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -493,9 +493,10 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * Returns an indication about when the "physical" loading of raster data will happen.
      *
      * @return current raster data loading strategy for this resource.
+     * @throws DataStoreException if an error occurred while fetching data store configuration.
      */
     @Override
-    public final RasterLoadingStrategy getLoadingStrategy() {
+    public final RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (loadingStrategy == null) {
                 setLoadingStrategy(supportImmediateLoading());
@@ -510,9 +511,10 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * @param  strategy  the desired strategy for loading raster data.
      * @return {@code true} if the given strategy has been accepted, or {@code false}
      *         if this implementation replaced the given strategy by an alternative.
+     * @throws DataStoreException if an error occurred while setting data store configuration.
      */
     @Override
-    public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+    public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (strategy != null) {
                 setLoadingStrategy(strategy == RasterLoadingStrategy.AT_READ_TIME && supportImmediateLoading());

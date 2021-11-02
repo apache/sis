@@ -154,10 +154,10 @@ final class CoverageSubset extends AbstractGridResource {
 
     /**
      * Returns an indication about when the "physical" loading of raster data will happen.
-     * This information is fetched to the wrapped resource doing the actual real operations.
+     * This information is fetched from the wrapped resource doing the actual real operations.
      */
     @Override
-    public RasterLoadingStrategy getLoadingStrategy() {
+    public RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         return source.getLoadingStrategy();
     }
 
@@ -166,7 +166,7 @@ final class CoverageSubset extends AbstractGridResource {
      * This information is forwarded to the wrapped resource doing the actual real operations.
      */
     @Override
-    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         return source.setLoadingStrategy(strategy);
     }
 
