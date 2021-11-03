@@ -253,13 +253,16 @@ final class RenderingData implements Cloneable {
         this.data          = data;
         this.dataGeometry  = domain;
         this.dataRanges    = ranges;        // Not cloned because already an unmodifiable list.
-        if (!domain.isDefined(GridGeometry.GRID_TO_CRS)) {
+        if (domain != null && !domain.isDefined(GridGeometry.GRID_TO_CRS)
+                           &&  domain.isDefined(GridGeometry.EXTENT))
+        {
             CoordinateReferenceSystem crs = null;
             if (domain.isDefined(GridGeometry.CRS)) {
                 crs = domain.getCoordinateReferenceSystem();
             }
-            dataGeometry = new GridGeometry(domain.getExtent(), PixelInCell.CELL_CENTER,
-                                    MathTransforms.identity(domain.getDimension()), crs);
+            final GridExtent extent = domain.getExtent();
+            dataGeometry = new GridGeometry(extent, PixelInCell.CELL_CENTER,
+                    MathTransforms.identity(extent.getDimension()), crs);
         }
     }
 

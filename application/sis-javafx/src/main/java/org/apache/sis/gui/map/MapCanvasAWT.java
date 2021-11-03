@@ -339,6 +339,11 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * In all cases we need to be careful to not use directly any {@link MapCanvas} field from the {@code call()}
      * methods. Information needed by {@code call()} must be copied first.
      *
+     * <h4>Preconditions</h4>
+     * It is important that no other worker is in progress at the time this method is invoked
+     * ({@code assert renderingInProgress == null}), otherwise conflicts may happen when workers
+     * will update the {@code MapCanvasAWT} fields after they completed their task.</p>
+     *
      * @see #requestRepaint()
      */
     @Override
@@ -593,7 +598,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
                     final Graphics2D gr = buffer.createGraphics();
                     try {
                         renderer.translate(gr);
-                        gr.setColor(new Color(0XA0804040, true));
+                        gr.setColor(new Color(0xA0804040, true));
                         gr.fillRoundRect(x, y, width, height, width/5, height/5);
                         gr.setColor(Color.RED);
                         final GlyphVector glyphs = font.createGlyphVector(gr.getFontRenderContext(), WARNING_TEXT);
@@ -625,6 +630,17 @@ public abstract class MapCanvasAWT extends MapCanvas {
     /**
      * Clears the image and all intermediate buffer.
      * Invoking this method may help to release memory when the map is no longer shown.
+     *
+     * <h4>Usage</h4>
+     * Overriding methods in subclasses should invoke {@code super.clear()}.
+     * Other methods should generally not invoke this method directly,
+     * and use the following code instead:
+     *
+     * {@preformat java
+     *     runAfterRendering(this::clear);
+     * }
+     *
+     * @see #runAfterRendering(Runnable)
      */
     @Override
     protected void clear() {

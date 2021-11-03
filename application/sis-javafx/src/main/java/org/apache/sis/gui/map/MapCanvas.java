@@ -225,6 +225,14 @@ public abstract class MapCanvas extends PlanarCanvas {
     private Task<?> renderingInProgress;
 
     /**
+     * User-specified task of execute after rendering is completed, or {@code null} if none.
+     * {@code MapCanvas} does not use this mechanism for itself, but some subclasses need it.
+     *
+     * @see #runAfterRendering(Runnable)
+     */
+    private Runnable afterRendering;
+
+    /**
      * Whether the size of this canvas changed.
      */
     private boolean sizeChanged;
@@ -1059,6 +1067,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Creates the background task which will invoke {@link Renderer#render()} in a background thread.
      * The tasks must invoke {@link #renderingCompleted(Task)} in JavaFX thread after completion,
      * either successful or not.
+     *
+     * <p><b>Note:</b> it is important that no other worker is in progress at the time this method is invoked
+     * ({@code assert renderingInProgress == null}), otherwise conflicts may happen when workers will update
+     * the {@code MapCanvas} fields after they completed their task.</p>
      */
     Task<?> createWorker(final Renderer renderer) {
         return new Task<Void>() {
@@ -1113,6 +1125,18 @@ public abstract class MapCanvas extends PlanarCanvas {
         } else if (!hasError) {
             clearError();
         }
+        /*
+         * Run user-specified task if any. `MapCanvas` does not use this mechanism for itself,
+         * but some subclasses need it. User is responsible for providing tasks that do not fail.
+         */
+        final Runnable t = afterRendering;
+        if (t != null) try {
+            afterRendering = null;
+            t.run();
+        } catch (Exception e) {
+            // `runAfterRendering(…)` is the documented method providing this feature.
+            unexpectedException("runAfterRendering", e);
+        }
     }
 
     /**
@@ -1150,8 +1174,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #requestRepaint()
      */
     private void paintAfterDelay() {
-        renderingInProgress = null;
-        repaint();
+        if (renderingInProgress instanceof Delayed) {
+            renderingInProgress = null;
+            repaint();
+        }
     }
 
     /**
@@ -1207,6 +1233,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      * is reset to {@code false} after this {@code MapCanvas} has been updated with new rendering result.
      *
      * @return a property telling whether a rendering is in progress.
+     *
+     * @see #runAfterRendering(Runnable)
      */
     public final ReadOnlyBooleanProperty renderingProperty() {
         return isRendering.getReadOnlyProperty();
@@ -1252,14 +1280,69 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Invoked when an unexpected exception occurred but it is okay to continue despite it.
      */
-    private static void unexpectedException(final String method, final NonInvertibleTransformException e) {
+    private static void unexpectedException(final String method, final Exception e) {
         Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MapCanvas.class, method, e);
+    }
+
+    /**
+     * Registers a task to execute after the background thread finished its current rendering task.
+     * This method shall be invoked in JavaFX thread. If there is a {@linkplain #renderingProperty()
+     * rendering in progress} at the time this method is invoked, then the given task is queued for
+     * execution in JavaFX thread after the rendering finished.
+     * Otherwise the given task is executed immediately.
+     *
+     * <p>Exceptions are propagated if the given task has been executed immediately,
+     * or logged if execution has been deferred.</p>
+     *
+     * <p>This method is useful for subclasses when modifying the {@code MapCanvas} state during
+     * a rendering process may cause inconsistent state.</p>
+     *
+     * @param  task  the task to execute.
+     * @return {@code true} if the task has been executed immediately, or
+     *         {@code false} if it has been queued for later execution.
+     *
+     * @see #renderingProperty()
+     * @see Platform#runLater(Runnable)
+     *
+     * @since 1.2
+     */
+    protected boolean runAfterRendering(final Runnable task) {
+        ArgumentChecks.ensureNonNull("task", task);
+        assert Platform.isFxApplicationThread();
+        if (renderingInProgress == null || renderingInProgress instanceof Delayed) {
+            task.run();
+            return true;
+        }
+        final Runnable before = afterRendering;
+        if (before == null) {
+            afterRendering = task;
+        } else {
+            afterRendering = () -> {
+                try {
+                    before.run();
+                } catch (Exception e) {
+                    unexpectedException("runAfterRendering", e);
+                }
+                task.run();
+            };
+        }
+        return false;
     }
 
     /**
      * Removes map content and clears all properties of this canvas.
      *
+     * <h4>Usage</h4>
+     * Overriding methods in subclasses should invoke {@code super.clear()}.
+     * Other methods should generally not invoke this method directly,
+     * and use the following code instead:
+     *
+     * {@preformat java
+     *     runAfterRendering(this::clear);
+     * }
+     *
      * @see #reset()
+     * @see #runAfterRendering(Runnable)
      */
     protected void clear() {
         assert Platform.isFxApplicationThread();

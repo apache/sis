@@ -419,7 +419,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     private void onImageSpecified() {
         final GridCoverage coverage = getCoverage();
         if (coverage == null) {
-            clear();
+            runAfterRendering(this::clear);
         } else {
             final GridExtent sliceExtent = getSliceExtent();
             BackgroundThreads.execute(new Task<RenderedImage>() {
@@ -462,7 +462,10 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * Invoked in JavaFX thread for setting the image to the instance we just fetched.
                  */
                 @Override protected void succeeded() {
-                    setRawImage(getValue(), imageGeometry, coverage.getSampleDimensions());
+                    final RenderedImage image = getValue();
+                    final GridGeometry    gg  = imageGeometry;
+                    List<SampleDimension> sd  = coverage.getSampleDimensions();
+                    runAfterRendering(() -> setRawImage(image, gg, sd));
                 }
             });
         }
@@ -895,6 +898,17 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Removes the image shown and releases memory.
+     *
+     * <h4>Usage</h4>
+     * Overriding methods in subclasses should invoke {@code super.clear()}.
+     * Other methods should generally not invoke this method directly,
+     * and use the following code instead:
+     *
+     * {@preformat java
+     *     runAfterRendering(this::clear);
+     * }
+     *
+     * @see #runAfterRendering(Runnable)
      */
     @Override
     protected void clear() {
