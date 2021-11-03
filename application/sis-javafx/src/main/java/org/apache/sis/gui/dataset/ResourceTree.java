@@ -23,8 +23,10 @@ import java.net.MalformedURLException;
 import java.nio.file.FileSystemNotFoundException;
 import java.util.AbstractList;
 import java.util.Locale;
+import java.util.Queue;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Collection;
 import java.util.Optional;
 import javafx.application.Platform;
@@ -124,11 +126,26 @@ public class ResourceTree extends TreeView<Resource> {
     public final ObjectProperty<EventHandler<ResourceEvent>> onResourceClosed;
 
     /**
+     * Tree node items (wrappers around {@link Resource} instances) waiting to be
+     * completed with the item labels. Those labels are fetched in a background thread.
+     * All accesses to this list must be synchronized on {@code pendingItems}.
+     *
+     * <h4>Design note</h4>
+     * We use a list instead of creating a {@link Task} for each item because the later can create a lot
+     * of threads, which are likely to be blocked anyway because of {@link DataStore} synchronization.
+     * Furthermore those threads of overkill in the common case where labels are very quick to fetch.
+     *
+     * @see #fetchLabel(Item.Completer)
+     */
+    private final Queue<Item.Completer> pendingItems;
+
+    /**
      * Creates a new tree of resources with initially no resource to show.
      * For showing a resource, invoke {@link #setResource(Resource)} after construction.
      */
     public ResourceTree() {
         locale = Locale.getDefault();
+        pendingItems = new LinkedList<>();
         setCellFactory((v) -> new Cell());
         setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::onDragDropped);
@@ -486,6 +503,32 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
+     * Updates {@link Item#label} with the resource label fetched in background thread.
+     * Caller should invoke this method only if {@link Item#isLoading} is {@code true}.
+     */
+    private void fetchLabel(final Item.Completer item) {
+        final boolean isEmpty;
+        synchronized (pendingItems) {
+            // The two operations below must be atomic (this is why we do not use ConcurrentLinkedQueue).
+            isEmpty = pendingItems.isEmpty();
+            pendingItems.add(item);
+        }
+        if (isEmpty) {
+            // Not a problem if 2 tasks are launched in parallel.
+            BackgroundThreads.execute(() -> {
+                for (;;) {
+                    final Item.Completer c;
+                    synchronized (pendingItems) {
+                        c = pendingItems.poll();
+                    }
+                    if (c == null) break;
+                    c.fetch(locale);
+                }
+            });
+        }
+    }
+
+    /**
      * Returns resources for current locale.
      */
     final Resources localized() {
@@ -575,7 +618,7 @@ public class ResourceTree extends TreeView<Resource> {
                     if (text == null) {
                         text = item.label = tree.localized().getString(Resources.Keys.Loading);
                         if (resource != null) {
-                            item.fetchLabel(resource, tree.locale);         // Start a background thread.
+                            tree.fetchLabel(item.new Completer(resource));      // Start a background thread.
                         }
                     }
                 } else if ((error = item.error) != null) {
@@ -737,28 +780,40 @@ public class ResourceTree extends TreeView<Resource> {
 
         /**
          * Update {@link #label} with the resource label fetched in background thread.
-         * Caller should invoke this method only if {@link #isLoading} is {@code true}
-         * {@link #label} is null. Note that {@link #error} should be null in such case.
+         * Caller should invoke this method only if {@link #isLoading} is {@code true}.
          */
-        final void fetchLabel(final Resource resource, final Locale locale) {
-            BackgroundThreads.execute(new Task<String>() {
-                @Override protected String call() throws DataStoreException {
-                    return findLabel(resource, locale);
-                }
+        final class Completer implements Runnable {
+            /** The resource for which to fetch a label. */
+            private final Resource resource;
 
-                @Override protected void succeeded() {
-                    isLoading = false;
-                    label = getValue();
-                    GUIUtilities.forceCellUpdate(Item.this);
-                }
+            /** Result of fetching the label of a resource. */
+            private String result;
 
-                @Override protected void failed() {
-                    isLoading = false;
-                    label = null;
-                    error = getException();
-                    GUIUtilities.forceCellUpdate(Item.this);
+            /** Error that occurred while fetching the label. */
+            private Throwable failure;
+
+            /** Creates a new container for the label of a resource. */
+            Completer(final Resource resource) {
+                this.resource = resource;
+            }
+
+            /** Invoked in a background thread for fetching the label. */
+            final void fetch(final Locale locale) {
+                try {
+                    result = findLabel(resource, locale);
+                } catch (Throwable e) {
+                    failure = e;
                 }
-            });
+                Platform.runLater(this);
+            }
+
+            /** Invoked in JavaFX thread after the label has been fetched. */
+            public void run() {
+                isLoading = false;
+                label     = result;
+                error     = failure;
+                GUIUtilities.forceCellUpdate(Item.this);
+            }
         }
 
         /**
