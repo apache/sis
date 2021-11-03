@@ -983,11 +983,7 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("colors", colors);
-        try {
-            return Visualization.create(this, null, source, null, null, colors.entrySet());
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
+        return visualize(new Visualization.Builder(source, colors.entrySet()));
     }
 
     /**
@@ -1024,11 +1020,7 @@ public class ImageProcessor implements Cloneable {
      */
     public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
-        try {
-            return Visualization.create(this, null, source, null, ranges, null);
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
+        return visualize(new Visualization.Builder(null, source, null, ranges));
     }
 
     /**
@@ -1076,38 +1068,25 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
         ensureNonEmpty(bounds);
-        try {
-            return Visualization.create(this, bounds, source, toSource, ranges, null);
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
+        return visualize(new Visualization.Builder(bounds, source, toSource, ranges));
     }
 
     /**
-     * Callback method for {@link Visualization}.
-     *
-     * @param  source      image to be resampled and converted.
-     * @param  toSource    conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
-     * @param  converters  transfer functions to apply on each band of the source image. This array is not cloned.
-     * @param  bounds      domain of pixel coordinates of this image, or {@code null} if same as {@code source} image.
-     * @param  colorModel  color model of the image to create.
+     * Finishes builder configuration and creates the {@link Visualization} image.
      */
-    final RenderedImage resampleAndConvert(final RenderedImage source, final MathTransform toSource,
-            final MathTransform1D[] converters, final Rectangle bounds, final ColorModel colorModel)
-    {
-        final ImageLayout   layout;
-        final Interpolation interpolation;
-        final Number[]      fillValues;
-        final Quantity<?>[] positionalAccuracyHints;
-        ensureNonEmpty(bounds);
+    private RenderedImage visualize(final Visualization.Builder builder) {
         synchronized (this) {
-            layout                  = this.layout;
-            interpolation           = this.interpolation;
-            fillValues              = this.fillValues;
-            positionalAccuracyHints = this.positionalAccuracyHints;
+            builder.layout                  = layout;
+            builder.interpolation           = interpolation;
+            builder.categoryColors          = colors;
+            builder.fillValues              = fillValues;
+            builder.positionalAccuracyHints = positionalAccuracyHints;
         }
-        return unique(new Visualization(source, layout, bounds, toSource, toSource.isIdentity(),
-                      interpolation, converters, fillValues, colorModel, positionalAccuracyHints));
+        try {
+            return builder.create(this);
+        } catch (IllegalStateException | NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
+        }
     }
 
     /**

@@ -99,6 +99,46 @@ public class ImageLayout {
     }
 
     /**
+     * Creates a new layout with exactly the tile size of given image.
+     *
+     * @param  source  image from which to take tile size and indices.
+     * @return layout giving exactly the tile size and indices of given image.
+     */
+    public static ImageLayout fixedSize(final RenderedImage source) {
+        return new FixedSize(source);
+    }
+
+    /**
+     * Override preferred tile size with a fixed size.
+     */
+    private static final class FixedSize extends ImageLayout {
+        /** Indices of the first tile. */
+        private final int xmin, ymin;
+
+        /** Creates a new layout with exactly the tile size of given image. */
+        FixedSize(final RenderedImage source) {
+            super(new Dimension(source.getTileWidth(), source.getTileHeight()), false);
+            xmin = source.getMinTileX();
+            ymin = source.getMinTileY();
+        }
+
+        /** Returns the fixed tile size. All parameters are ignored. */
+        @Override public Dimension suggestTileSize(int imageWidth, int imageHeight, boolean allowPartialTiles) {
+            return getPreferredTileSize();
+        }
+
+        /** Returns the fixed tile size. All parameters are ignored. */
+        @Override public Dimension suggestTileSize(RenderedImage image, Rectangle bounds, boolean allowPartialTiles) {
+            return getPreferredTileSize();
+        }
+
+        /** Returns indices of the first tile. */
+        @Override public Point getMinTile() {
+            return new Point(xmin, ymin);
+        }
+    }
+
+    /**
      * Returns the preferred tile size. This is the dimension values specified at construction time.
      *
      * @return the preferred tile size.
