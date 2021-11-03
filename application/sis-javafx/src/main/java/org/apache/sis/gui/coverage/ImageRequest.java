@@ -55,7 +55,7 @@ public class ImageRequest {
 
     /**
      * The source for rendering the image, specified at construction time.
-     * After class initialization, only one of {@link #resource} and {@link #coverage} is non-null.
+     * After construction, only one of {@link #resource} and {@link #coverage} is non-null.
      * But after task execution, this field will be set to the coverage which has been read.
      */
     private GridCoverage coverage;
@@ -147,7 +147,7 @@ public class ImageRequest {
     }
 
     /**
-     * Returns the coverage, or an empty value is not yet known. This is either the value specified explicitly
+     * Returns the coverage, or an empty value if not yet known. This is either the value specified explicitly
      * to the constructor, or otherwise the coverage obtained after a read operation.
      *
      * @return the coverage.
@@ -162,7 +162,7 @@ public class ImageRequest {
      *
      * <blockquote>{@link #ImageRequest(GridCoverageResource, GridGeometry, int[])}</blockquote>
      *
-     * and this argument will be transferred verbatim to the following method
+     * This argument will be forwarded verbatim to the following method
      * (see its javadoc for more explanation):
      *
      * <blockquote>{@link GridCoverageResource#read(GridGeometry, int...)}</blockquote>
@@ -183,7 +183,7 @@ public class ImageRequest {
      *
      * <blockquote>{@link #ImageRequest(GridCoverageResource, GridGeometry, int[])}</blockquote>
      *
-     * and this argument will be transferred verbatim to the following method
+     * This argument will be forwarded verbatim to the following method
      * (see its javadoc for more explanation):
      *
      * <blockquote>{@link GridCoverageResource#read(GridGeometry, int...)}</blockquote>
@@ -209,7 +209,7 @@ public class ImageRequest {
      *
      * <blockquote>{@link #ImageRequest(GridCoverage, GridExtent)}</blockquote>
      *
-     * and this argument will be transferred verbatim to the following method
+     * This argument will be forwarded verbatim to the following method
      * (see its javadoc for more explanation):
      *
      * <blockquote>{@link GridCoverage#render(GridExtent)}</blockquote>
@@ -223,11 +223,14 @@ public class ImageRequest {
     }
 
     /**
-     * Sets a new subspace of the grid coverage extent to render. This {@code sliceExtent} argument is not specified
+     * Sets a new subspace of the grid coverage extent to render.
+     *
+     * <div class="note"><b>API design note:</b>
+     * this {@code sliceExtent} argument is not specified
      * to the {@link #ImageRequest(GridCoverageResource, GridGeometry, int[])} constructor because when reading data
      * from a {@link GridCoverageResource}, a slicing can already be done by the {@link GridGeometry} {@code domain}
      * argument. This method is provided for the rare cases where it may be useful to specify both the {@code domain}
-     * and the {@code sliceExtent}.
+     * and the {@code sliceExtent}.</div>
      *
      * @param  sliceExtent  subspace of the grid coverage extent to render.
      */
