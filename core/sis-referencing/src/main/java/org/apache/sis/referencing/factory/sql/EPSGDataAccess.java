@@ -157,7 +157,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -267,7 +267,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * and returns {@code false} if some are found (thus blocking the call to {@link #close()}
      * by the {@link org.apache.sis.referencing.factory.ConcurrentAuthorityFactory} timer).</p>
      */
-    private final Map<Class<?>, CloseableReference<AuthorityCodes>> authorityCodes = new HashMap<>();
+    private final Map<Class<?>, CloseableReference> authorityCodes = new HashMap<>();
 
     /**
      * Cache for axis names. This service is not provided by {@code ConcurrentAuthorityFactory}
@@ -534,6 +534,9 @@ addURIs:    for (int i=0; ; i++) {
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
         try {
+            if (connection.isClosed()) {
+                throw new FactoryException(error().getString(Errors.Keys.ConnectionClosed));
+            }
             return getCodeMap(type).keySet();
         } catch (SQLException exception) {
             throw new FactoryException(exception.getLocalizedMessage(), exception);
@@ -552,7 +555,7 @@ addURIs:    for (int i=0; ; i++) {
      * @see #getDescriptionText(String)
      */
     private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
-        CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
+        CloseableReference reference = authorityCodes.get(type);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
             if (existing != null) {
@@ -586,7 +589,7 @@ addURIs:    for (int i=0; ; i++) {
                     if (existing != null) {
                         codes = existing;
                     } else {
-                        reference = null;   // The weak reference is no longer valid.
+                        reference = null;           // The weak reference is no longer valid.
                     }
                 }
                 if (reference == null) {
@@ -3132,7 +3135,14 @@ next:                   while (r.next()) {
      */
     @Override
     public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
-        return new EPSGCodeFinder(this);
+        try {
+            if (connection.isClosed()) {
+                throw new FactoryException(error().getString(Errors.Keys.ConnectionClosed));
+            }
+            return new EPSGCodeFinder(this);
+        } catch (SQLException exception) {
+            throw new FactoryException(exception.getLocalizedMessage(), exception);
+        }
     }
 
     /**
@@ -3331,14 +3341,18 @@ next:                   while (r.next()) {
      * Returns {@code true} if it is safe to close this factory. This method is invoked indirectly
      * by {@link EPSGFactory} after some timeout in order to release resources.
      * This method will block the disposal if some {@link AuthorityCodes} are still in use.
+     *
+     * @return {@code true} if this Data Access Object can be closed.
+     *
+     * @see EPSGFactory#canClose(EPSGDataAccess)
      */
     final synchronized boolean canClose() {
         boolean can = true;
         if (!authorityCodes.isEmpty()) {
             System.gc();                // For cleaning as much weak references as we can before we check them.
-            final Iterator<CloseableReference<AuthorityCodes>> it = authorityCodes.values().iterator();
+            final Iterator<CloseableReference> it = authorityCodes.values().iterator();
             while (it.hasNext()) {
-                final AuthorityCodes codes = it.next().get();
+                final AuthorityCodes codes = it.next().get();       // TODO: use referTo(null) with JDK16.
                 if (codes == null) {
                     it.remove();
                 } else {
@@ -3378,7 +3392,7 @@ next:                   while (r.next()) {
             }
             ip.remove();
         }
-        final Iterator<CloseableReference<AuthorityCodes>> it = authorityCodes.values().iterator();
+        final Iterator<CloseableReference> it = authorityCodes.values().iterator();
         while (it.hasNext()) {
             try {
                 it.next().close();

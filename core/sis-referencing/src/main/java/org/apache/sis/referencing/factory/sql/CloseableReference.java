@@ -26,15 +26,20 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Closes JDBC resources when {@link AuthorityCodes} is garbage collected.
- * Those weak references are stored in the {@link EPSGDataAccess#authorityCodes} map.
+ * Closes JDBC statements when {@link AuthorityCodes} is garbage collected.
+ * Those weak references are stored in the {@link EPSGDataAccess#authorityCodes} map as cached values.
+ * Connection is not closed by this class because they will be closed when {@link EPSGDataAccess} will
+ * be closed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
+ * @version 1.2
+ *
+ * @see EPSGFactory#canClose(EPSGDataAccess)
+ *
+ * @since 0.7
  * @module
  */
-final class CloseableReference<T> extends WeakReference<T> implements Disposable {
+final class CloseableReference extends WeakReference<AuthorityCodes> implements Disposable {
     /**
      * The EPSG factory, used for synchronization lock.
      */
@@ -50,7 +55,7 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
      * Creates a new phantom reference which will close the given statements
      * when the given referenced object will be garbage collected.
      */
-    CloseableReference(final T ref, final EPSGDataAccess factory, final Statement[] statements) {
+    CloseableReference(final AuthorityCodes ref, final EPSGDataAccess factory, final Statement[] statements) {
         super(ref, ReferenceQueueConsumer.QUEUE);
         this.statements = statements;
         this.factory = factory;
@@ -58,13 +63,15 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
 
     /**
      * Closes the statements. If an exception occurred, it will be thrown only after all statements have been closed.
+     * The connection is not closed in this method because it will be closed later by (indirectly)
+     * {@link org.apache.sis.referencing.factory.ConcurrentAuthorityFactory#close(List)}.
      *
      * @throws SQLException if an error occurred while closing the statements.
      */
     final void close() throws SQLException {
         SQLException exception = null;
         synchronized (factory) {
-            for (int i=statements.length; --i >= 0;) {
+            for (int i = statements.length; --i >= 0;) {
                 final Statement s = statements[i];
                 statements[i] = null;
                 if (s != null) try {

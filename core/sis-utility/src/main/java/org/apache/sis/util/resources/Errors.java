@@ -204,6 +204,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CloneNotSupported_1 = 20;
 
         /**
+         * Connection is closed.
+         */
+        public static final short ConnectionClosed = 194;
+
+        /**
          * Cross references are not supported.
          */
         public static final short CrossReferencesNotSupported = 167;
