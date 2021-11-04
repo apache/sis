@@ -200,7 +200,7 @@ public class MetadataSummary extends Widget {
     public void setMetadata(final Resource resource) {
         assert Platform.isFxApplicationThread();
         if (getter != null) {
-            getter.cancel();
+            getter.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
             getter = null;
         }
         if (resource == null) {

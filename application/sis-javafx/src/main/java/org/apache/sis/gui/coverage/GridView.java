@@ -316,7 +316,7 @@ public class GridView extends Control {
             final ImageLoader previous = loader;
             loader = null;
             if (previous != null) {
-                previous.cancel();
+                previous.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
             }
             loader = new ImageLoader(source, true);
             BackgroundThreads.execute(loader);
@@ -444,7 +444,7 @@ public class GridView extends Control {
      */
     private void onImageSpecified(final RenderedImage image) {
         if (loader != null) {
-            loader.cancel();
+            loader.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
             loader = null;
         }
         tiles.clear();          // Let garbage collector dispose the rasters.

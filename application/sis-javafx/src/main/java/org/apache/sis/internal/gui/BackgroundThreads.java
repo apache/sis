@@ -53,6 +53,19 @@ import org.apache.sis.util.logging.Logging;
 @SuppressWarnings("serial")                         // Not intended to be serialized.
 public final class BackgroundThreads extends AtomicInteger implements ThreadFactory {
     /**
+     * The {@code mayInterruptIfRunning} argument value to give to calls to
+     * {@link java.util.concurrent.Future#cancel(boolean)} if the background task
+     * may be doing I/O operations on a {@link java.nio.channels.InterruptibleChannel}.
+     * Interruption must be disabled for avoiding the channel to be closed.
+     *
+     * <p>Note that the default value of {@link javafx.concurrent.Task#cancel()} is {@code true}.
+     * So task doing I/O operations should be cancelled with {@code cancel(NO_INTERRUPT_DURING_IO)}.
+     * This flag is defined mostly for tracking places in the code where tasks doing I/O operations
+     * may be interrupted.</p>
+     */
+    public static final boolean NO_INTERRUPT_DURING_IO = false;
+
+    /**
      * The executor for background tasks. This is actually an {@link ExecutorService} instance,
      * but only the {@link Executor} method should be used according JavaFX documentation.
      */
