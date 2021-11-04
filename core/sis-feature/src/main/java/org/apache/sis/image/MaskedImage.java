@@ -33,6 +33,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.lang.ref.SoftReference;
 import java.nio.ByteOrder;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.FillValues;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
@@ -191,7 +192,7 @@ final class MaskedImage extends SourceAlignedImage {
             /*
              * Create a 1-bit image with an `IndexColorModel` with two colors: {0, 0, 0} and {255, 255, 255}.
              * Java2D has specialized code for TYPE_BYTE_BINARY; we reproduce something equivalent but with
-             * the array size rounded to an integer multiple of {@code long} size.
+             * the array size rounded to an integer multiple of `long` size.
              */
             final byte[] gray = {0, -1};
             final IndexColorModel cm = new IndexColorModel(1, gray.length, gray, gray, gray);
@@ -215,7 +216,7 @@ final class MaskedImage extends SourceAlignedImage {
                     b.put(b.position(), ~b.get());          // Inverse all bits.
                 }
             }
-            mask.order(ByteOrder.BIG_ENDIAN).asReadOnlyBuffer();
+            mask = mask.order(ByteOrder.BIG_ENDIAN).asReadOnlyBuffer();
             final MultiPixelPackedSampleModel sm = (MultiPixelPackedSampleModel) raster.getSampleModel();
             assert sm.getNumDataElements() == 1 && sm.getPixelBitStride() == 1 && sm.getDataBitOffset() == 0;
             maskScanlineStride = sm.getScanlineStride() * Byte.SIZE;
@@ -295,10 +296,10 @@ final class MaskedImage extends SourceAlignedImage {
              * We need to clear those bits for allowing the loop to skip them.
              */
             long element = mask.get(index);
-            if (shift != 0) {
-                long m = (1L << (Long.SIZE - shift)) - 1;
+            {   // For keeping variable local.
+                long m = Numerics.bitmask(Long.SIZE - shift) - 1;           // All bits set if shift = 0.
                 if (index == emax && remaining != 0) {
-                    m &= (1L << (Long.SIZE - remaining)) - 1;
+                    m &= -(1L << (Long.SIZE - remaining));                  // ~(x-1) simplified as -x
                 }
                 present &= (element | ~m);
                 element &= m;
