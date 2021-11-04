@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -106,7 +107,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * The maximum number of dimensions (inclusive) that this class currently supports.
      * Current maximum is {@value}. This restriction come from 2⁶ = {@value Long#SIZE}.
      */
-    public static final int MAXIMUM_DIMENSIONS = 6;
+    public static final int MAXIMUM_DIMENSIONS = Numerics.LONG_SHIFT;
 
     /**
      * The type of elements in this set.

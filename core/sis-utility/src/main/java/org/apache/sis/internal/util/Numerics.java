@@ -39,7 +39,7 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -155,6 +155,19 @@ public final class Numerics extends Static {
     public static final int MAX_INTEGER_CONVERTIBLE_TO_FLOAT = 1 << (SIGNIFICAND_SIZE_OF_FLOAT + 1);
 
     /**
+     * Right shift to apply for a result equivalent to a division by {@Long#SIZE} (ignoring negative numbers).
+     * The value is {@value} so that the following relationship hold: 2⁶ = {@value Long#SIZE}.
+     *
+     * <h4>Usage</h4>
+     * The {@code x / Long.SIZE} operation can be replaced by {@code x >>> LONG_SHIFT} if <var>x</var> is positive.
+     * The compiler may not do this optimization itself because those two operations are not equivalent for negative
+     * <var>x</var> values (even with {@code >>} instead of {@code >>>}). By contrast it is not worth to apply such
+     * replacement on multiplications because the {@code x * Long.SIZE} and {@code x << LONG_SHIFT} operations are
+     * equivalent for all numbers (positive or negative), so the compiler is more likely to optimize itself.
+     */
+    public static final int LONG_SHIFT = 6;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Numerics() {
@@ -174,7 +187,7 @@ public final class Numerics extends Static {
      * @return a mask with the given bit set, or 0 if the given argument is negative or ≥ {@value Long#SIZE}.
      */
     public static long bitmask(final int bit) {
-        return (bit >= 0 && bit < Long.SIZE) ? (1L << bit) : 0;
+        return (bit & ~(Long.SIZE - 1)) == 0 ? (1L << bit) : 0;
     }
 
     /**

@@ -39,6 +39,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.internal.util.Numerics.LONG_SHIFT;
 
 
 /**
@@ -275,9 +276,9 @@ final class MaskedImage extends SourceAlignedImage {
          */
         for (int y=yStart; y<yEnd; y++) {
             int index = (y - maskBounds.y) * maskScanlineStride;    // Index in unit of bits for now (converted later).
-            final int emax  = (index +  imax) /  Long.SIZE;         // Last index in unit of long elements, inclusive.
+            final int emax  = (index +  imax) >>> LONG_SHIFT;       // Last index in unit of long elements, inclusive.
             final int shift = (index += xoff) & (Long.SIZE-1);      // First bit to read in the long, 0 = highest bit.
-            index /= Long.SIZE;                                     // Convert from bit (pixel) index to long[] index.
+            index >>>= LONG_SHIFT;                                  // Convert from bit (pixel) index to long[] index.
             /*
              * We want a value such as `base + index*Long.SIZE + lower` is equal to `xStart`
              * when all variables point to the first potentially masked pixel of the tile:
