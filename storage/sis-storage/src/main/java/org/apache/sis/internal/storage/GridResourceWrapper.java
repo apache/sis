@@ -23,6 +23,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
@@ -38,7 +39,7 @@ import org.opengis.util.GenericName;
  * The wrapped resource is created only when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -57,6 +58,8 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
 
     /**
      * Returns the object on which to perform all synchronizations for thread-safety.
+     *
+     * @return the object on which to perform synchronizations.
      */
     protected abstract Object getSynchronizationLock();
 
@@ -147,6 +150,17 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
     }
 
     /**
+     * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
+     *
+     * @return preferred resolutions for read operations in this data store, or an empty array if none.
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     */
+    @Override
+    public List<double[]> getResolutions() throws DataStoreException {
+        return source().getResolutions();
+    }
+
+    /**
      * Loads a subset of the grid coverage represented by this resource.
      * The default implementation delegates to the source.
      *
@@ -158,6 +172,24 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
     @Override
     public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
         return source().read(domain, range);
+    }
+
+    /**
+     * Returns an indication about when the "physical" loading of raster data will happen.
+     * The default implementation delegates to the source.
+     */
+    @Override
+    public RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
+        return source().getLoadingStrategy();
+    }
+
+    /**
+     * Sets the preferred strategy about when to do the "physical" loading of raster data.
+     * The default implementation delegates to the source.
+     */
+    @Override
+    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
+        return source().setLoadingStrategy(strategy);
     }
 
     /**

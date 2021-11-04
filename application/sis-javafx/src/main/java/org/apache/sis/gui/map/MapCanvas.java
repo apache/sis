@@ -122,7 +122,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -225,6 +225,14 @@ public abstract class MapCanvas extends PlanarCanvas {
     private Task<?> renderingInProgress;
 
     /**
+     * User-specified task of execute after rendering is completed, or {@code null} if none.
+     * {@code MapCanvas} does not use this mechanism for itself, but some subclasses need it.
+     *
+     * @see #runAfterRendering(Runnable)
+     */
+    private Runnable afterRendering;
+
+    /**
      * Whether the size of this canvas changed.
      */
     private boolean sizeChanged;
@@ -273,6 +281,13 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean isMouseChangeScheduled;
 
     /**
+     * {@code true} if navigation should be disabled.
+     *
+     * @see #setNavigationDisabled(boolean)
+     */
+    private boolean isNavigationDisabled;
+
+    /**
      * Whether a rendering is in progress. This property is set to {@code true} when {@code MapCanvas}
      * is about to start a background thread for performing a rendering, and is reset to {@code false}
      * after the {@code MapCanvas} has been updated with new rendering result.
@@ -288,6 +303,21 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #errorProperty()
      */
     private final ReadOnlyObjectWrapper<Throwable> error;
+
+    /**
+     * Whether the {@link #error} value should be considered non-null.
+     * This is set to {@code false} when a new painting start.
+     * If the value is still {@code false} after painting finished, we can clear {@link #error}.
+     *
+     * <h4>Rational</h4>
+     * A simpler approach would have been to clear {@link #error} when painting start, but this action
+     * fires an event which may resize the {@link StatusBar} height, which in turn may change the size
+     * of this {@code MapCanvas} and cause a new painting. The new painting may fail again, which causes
+     * an error to be reported, which may cause the status bar to change its height again, <i>etc.</i>
+     * It can cause a loop with hundred of repaints before the system stabilize.
+     * Using this flag avoids above problem.
+     */
+    private boolean hasError;
 
     /**
      * If a contextual menu is currently visible, that menu. Otherwise {@code null}.
@@ -336,11 +366,29 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Returns the bounds of the content in {@link #floatingPane} coordinates, or {@code null} if unknown.
+     * Some subclasses may compute a larger image than the widget size for better visual transition during
+     * pan or zoom-out. If such margin exists, it may not be necessary to repaint the canvas on size change.
+     */
+    Bounds getBoundsInParent() {
+        return null;
+    }
+
+    /**
      * Invoked when the size of the {@linkplain #floatingPane} has changed.
      * This method requests a new repaint after a short wait, in order to collect more resize events.
      */
     private void onSizeChanged() {
         sizeChanged = true;
+        final Bounds bp = getBoundsInParent();
+        if (bp != null) {
+            if (bp.getMinX() <= 0 && bp.getMinY() <= 0  &&
+                bp.getMaxX() >= floatingPane.getWidth() &&
+                bp.getMaxY() >= floatingPane.getHeight())
+            {
+                return;
+            }
+        }
         requestRepaint();
     }
 
@@ -356,11 +404,13 @@ public abstract class MapCanvas extends PlanarCanvas {
             switch (event.getButton()) {
                 case PRIMARY: {
                     hideContextMenu();
-                    floatingPane.setCursor(Cursor.CLOSED_HAND);
-                    floatingPane.requestFocus();
-                    isDragging = true;
-                    xPanStart  = x;
-                    yPanStart  = y;
+                    if (!isNavigationDisabled) {
+                        floatingPane.setCursor(Cursor.CLOSED_HAND);
+                        floatingPane.requestFocus();
+                        isDragging = true;
+                        xPanStart  = x;
+                        yPanStart  = y;
+                    }
                     event.consume();
                     break;
                 }
@@ -418,6 +468,10 @@ public abstract class MapCanvas extends PlanarCanvas {
             // Do not interpret scroll events on touch pad as a zoom.
             return;
         }
+        if (isNavigationDisabled) {
+            event.consume();
+            return;
+        }
         final double delta = event.getDeltaY();
         double zoom = Math.abs(delta) / SCROLL_EVENT_SIZE * ZOOM_FACTOR;
         if (event.isControlDown()) {
@@ -441,7 +495,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #applyTranslation(double, double, boolean)
      */
     private void applyZoomOrRotate(final GestureEvent event, final double zoom, final double angle) {
-        if (zoom != 1 || angle != 0) {
+        if (!isNavigationDisabled && (zoom != 1 || angle != 0)) {
             double x, y;
             if (event != null) {
                 x = event.getX();
@@ -481,6 +535,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * or zoom-in / zoom-out with page-down / page-up keys. If the control key is down, navigation is finer.
      */
     private void onKeyTyped(final KeyEvent event) {
+        if (isNavigationDisabled) {
+            event.consume();
+            return;
+        }
         double tx = 0, ty = 0, zoom = 1, angle = 0;
         if (event.isAltDown()) {
             switch (event.getCode()) {
@@ -529,6 +587,16 @@ public abstract class MapCanvas extends PlanarCanvas {
     public void reset() {
         invalidObjectiveToDisplay = true;
         requestRepaint();
+    }
+
+    /**
+     * Disables or re-enable navigation. Navigation is disabled when an error occurred while
+     * rendering the image, and navigating is likely to cause the error to happen again.
+     */
+    final void setNavigationDisabled(final boolean disabled) {
+        isNavigationDisabled = disabled;
+        if (disabled) isDragging = false;
+        floatingPane.setCursor(disabled ? Cursor.DEFAULT : Cursor.CROSSHAIR);
     }
 
     /**
@@ -884,13 +952,14 @@ public abstract class MapCanvas extends PlanarCanvas {
                 return;
             }
         }
+        hasError = false;
         isRendering.set(true);                      // Avoid that `requestRepaint(…)` trig new paints.
         renderingStartTime = System.nanoTime();
-        /*
-         * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
-         * It may cause a recomputation of the "objective to display" transform.
-         */
         try {
+            /*
+             * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
+             * It may cause a recomputation of the "objective to display" transform.
+             */
             if (sizeChanged) {
                 sizeChanged = false;
                 final Pane view = floatingPane;
@@ -986,7 +1055,9 @@ public abstract class MapCanvas extends PlanarCanvas {
                 isMouseChangeScheduled = true;
             }
         } else {
-            clearError();
+            if (!hasError) {
+                clearError();
+            }
             isRendering.set(false);
             restoreCursorAfterPaint();
         }
@@ -996,6 +1067,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Creates the background task which will invoke {@link Renderer#render()} in a background thread.
      * The tasks must invoke {@link #renderingCompleted(Task)} in JavaFX thread after completion,
      * either successful or not.
+     *
+     * <p><b>Note:</b> it is important that no other worker is in progress at the time this method is invoked
+     * ({@code assert renderingInProgress == null}), otherwise conflicts may happen when workers will update
+     * the {@code MapCanvas} fields after they completed their task.</p>
      */
     Task<?> createWorker(final Renderer renderer) {
         return new Task<Void>() {
@@ -1047,6 +1122,20 @@ public abstract class MapCanvas extends PlanarCanvas {
         final Throwable ex = task.getException();
         if (ex != null) {
             errorOccurred(ex);
+        } else if (!hasError) {
+            clearError();
+        }
+        /*
+         * Run user-specified task if any. `MapCanvas` does not use this mechanism for itself,
+         * but some subclasses need it. User is responsible for providing tasks that do not fail.
+         */
+        final Runnable t = afterRendering;
+        if (t != null) try {
+            afterRendering = null;
+            t.run();
+        } catch (Exception e) {
+            // `runAfterRendering(…)` is the documented method providing this feature.
+            unexpectedException("runAfterRendering", e);
         }
     }
 
@@ -1085,8 +1174,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #requestRepaint()
      */
     private void paintAfterDelay() {
-        renderingInProgress = null;
-        repaint();
+        if (renderingInProgress instanceof Delayed) {
+            renderingInProgress = null;
+            repaint();
+        }
     }
 
     /**
@@ -1142,6 +1233,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      * is reset to {@code false} after this {@code MapCanvas} has been updated with new rendering result.
      *
      * @return a property telling whether a rendering is in progress.
+     *
+     * @see #runAfterRendering(Runnable)
      */
     public final ReadOnlyBooleanProperty renderingProperty() {
         return isRendering.getReadOnlyProperty();
@@ -1161,6 +1254,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Clears the error message in status bar.
      */
     protected final void clearError() {
+        hasError = false;
         error.set(null);
     }
 
@@ -1172,25 +1266,83 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  ex  the exception that occurred (can not be null).
      */
     protected void errorOccurred(final Throwable ex) {
-        final Throwable current = error.get();
-        if (current != null) {
-            current.addSuppressed(ex);
-        } else {
-            error.set(Objects.requireNonNull(ex));
+        if (hasError) {
+            final Throwable current = error.get();
+            if (current != null) {
+                current.addSuppressed(ex);
+                return;
+            }
         }
+        hasError = true;
+        error.set(Objects.requireNonNull(ex));
     }
 
     /**
      * Invoked when an unexpected exception occurred but it is okay to continue despite it.
      */
-    private static void unexpectedException(final String method, final NonInvertibleTransformException e) {
+    private static void unexpectedException(final String method, final Exception e) {
         Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MapCanvas.class, method, e);
+    }
+
+    /**
+     * Registers a task to execute after the background thread finished its current rendering task.
+     * This method shall be invoked in JavaFX thread. If there is a {@linkplain #renderingProperty()
+     * rendering in progress} at the time this method is invoked, then the given task is queued for
+     * execution in JavaFX thread after the rendering finished.
+     * Otherwise the given task is executed immediately.
+     *
+     * <p>Exceptions are propagated if the given task has been executed immediately,
+     * or logged if execution has been deferred.</p>
+     *
+     * <p>This method is useful for subclasses when modifying the {@code MapCanvas} state during
+     * a rendering process may cause inconsistent state.</p>
+     *
+     * @param  task  the task to execute.
+     * @return {@code true} if the task has been executed immediately, or
+     *         {@code false} if it has been queued for later execution.
+     *
+     * @see #renderingProperty()
+     * @see Platform#runLater(Runnable)
+     *
+     * @since 1.2
+     */
+    protected boolean runAfterRendering(final Runnable task) {
+        ArgumentChecks.ensureNonNull("task", task);
+        assert Platform.isFxApplicationThread();
+        if (renderingInProgress == null || renderingInProgress instanceof Delayed) {
+            task.run();
+            return true;
+        }
+        final Runnable before = afterRendering;
+        if (before == null) {
+            afterRendering = task;
+        } else {
+            afterRendering = () -> {
+                try {
+                    before.run();
+                } catch (Exception e) {
+                    unexpectedException("runAfterRendering", e);
+                }
+                task.run();
+            };
+        }
+        return false;
     }
 
     /**
      * Removes map content and clears all properties of this canvas.
      *
+     * <h4>Usage</h4>
+     * Overriding methods in subclasses should invoke {@code super.clear()}.
+     * Other methods should generally not invoke this method directly,
+     * and use the following code instead:
+     *
+     * {@preformat java
+     *     runAfterRendering(this::clear);
+     * }
+     *
      * @see #reset()
+     * @see #runAfterRendering(Runnable)
      */
     protected void clear() {
         assert Platform.isFxApplicationThread();
@@ -1199,6 +1351,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         invalidObjectiveToDisplay = true;
         objectiveBounds = null;
         clearError();
+        isDragging = false;
+        isNavigationDisabled = false;
         isRendering.set(false);
         requestRepaint();
     }

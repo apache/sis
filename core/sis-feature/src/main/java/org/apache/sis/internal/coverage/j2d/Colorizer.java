@@ -270,7 +270,7 @@ public final class Colorizer {
         ArgumentChecks.ensureFinite("minimum", minimum);
         ArgumentChecks.ensureFinite("maximum", maximum);
         target = new SampleDimension.Builder()
-                .mapQualitative(null, 0, Float.NaN)
+                .setBackground(null, 0)
                 .addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Data),
                         NumberRange.create(1, true, MAX_VALUE, true),
                         NumberRange.create(minimum, true, maximum, true)).build();

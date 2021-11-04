@@ -61,11 +61,22 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
 public class ChannelDataInput extends ChannelData {
+    /**
+     * Minimum number of bytes to skip in the {@code seek(long)} operation.
+     * If there is less bytes to skip, then it is not worth to do a seek
+     * and we will continue reading as normal instead.
+     *
+     * <p>This threshold is used because some formats add padding to their data for aligning on 32 bits boundary.
+     * It may result in very small seeks before reading the next chunk of data. A common padding is 32 bits,
+     * but there is no harm in using a larger one here (64 bits).</p>
+     */
+    private static final int SEEK_THRESHOLD = Long.BYTES;
+
     /**
      * The channel from where data are read.
      * This is supplied at construction time.
@@ -864,7 +875,7 @@ public class ChannelDataInput extends ChannelData {
              * Requested position is inside the current limits of the buffer.
              */
             buffer.position((int) p);
-        } else if (channel instanceof SeekableByteChannel) {
+        } else if ((p < 0 || p - buffer.limit() >= SEEK_THRESHOLD) && channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
              * but we can set the new position directly in the channel. Note

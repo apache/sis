@@ -607,7 +607,7 @@ final class ImageFileDirectory extends DataCube {
              * Compression scheme used on the image data.
              */
             case Tags.Compression: {
-                final long value = type.readLong(input(), count);
+                final int value = type.readInt(input(), count);
                 compression = Compression.valueOf(value);
                 if (compression == Compression.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
@@ -807,12 +807,7 @@ final class ImageFileDirectory extends DataCube {
              * Note that TIFF files use 0 as the end delimiter in strings (C/C++ convention).
              */
             case Tags.GeoAsciiParams: {
-                final String[] values = type.readString(input(), count, encoding());
-                switch (values.length) {
-                    case 0:  break;
-                    case 1:  referencing().asciiParameters = values[0]; break;
-                    default: referencing().asciiParameters = String.join("\u0000", values).concat("\u0000"); break;
-                }
+                referencing().setAsciiParameters(type.readString(input(), count, encoding()));
                 break;
             }
             /*
@@ -1451,7 +1446,7 @@ final class ImageFileDirectory extends DataCube {
                 for (int band = 0; band < samplesPerPixel;) {
                     NumberRange<?> sampleRange = null;
                     if (minValues != null && maxValues != null) {
-                        sampleRange = NumberRange.createBestFit(
+                        sampleRange = NumberRange.createBestFit(sampleFormat == FLOAT,
                                 minValues.get(Math.min(band, minValues.size()-1)), true,
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
@@ -1587,9 +1582,9 @@ final class ImageFileDirectory extends DataCube {
                         ArraysExt.swap(colors, 0, 1);
                     }
                     double min = 0;
-                    double max = Numerics.bitmask(bitsPerSample) - 1;
-                    if (minValues != null) min = Math.max(minValues.doubleValue(visibleBand), min);
-                    if (maxValues != null) max = Math.min(maxValues.doubleValue(visibleBand), max);
+                    double max = Numerics.bitmask(bitsPerSample);                   // Exclusive.
+                    if (minValues != null) min = Math.max(min, minValues.doubleValue(visibleBand));
+                    if (maxValues != null) max = Math.min(max, maxValues.doubleValue(visibleBand) + 1);
                     colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
                     break;
                 }
@@ -1646,7 +1641,7 @@ final class ImageFileDirectory extends DataCube {
      * @param  acceptZero  whether to return a number for the zero value.
      */
     private Number getFillValue(final boolean acceptZero) {
-        if (Double.isFinite(noData) && noData != 0) {
+        if (Double.isFinite(noData) && (acceptZero || noData != 0)) {
             final long min, max;
             switch (sampleFormat) {
                 case UNSIGNED: max = 1L << (bitsPerSample    ); min =    0; break;

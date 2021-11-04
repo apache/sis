@@ -18,13 +18,13 @@
 /**
  * Widgets about data store resources and their metadata.
  * Those widgets can show a hierarchical collection of {@link org.apache.sis.storage.Resource}s in a tree,
- * and show their content in other panel when a resource is selected. The resources can optionally be loaded
- * from a file in background thread.
+ * and show their content in other panel when a resource is selected.
+ * The resources can optionally be loaded from a file in background thread.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */

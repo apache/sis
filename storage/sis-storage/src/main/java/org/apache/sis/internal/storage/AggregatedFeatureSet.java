@@ -42,7 +42,7 @@ import org.opengis.feature.FeatureType;
  * Subclasses need to implement {@link #dependencies()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -117,17 +117,19 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * @throws DataStoreException if an error occurred while computing the envelope.
      */
     @Override
-    public final synchronized Optional<Envelope> getEnvelope() throws DataStoreException {
-        if (!isEnvelopeComputed) {
-            final List<Envelope> envelopes = new ArrayList<>();
-            if (getEnvelopes(envelopes)) try {
-                envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
-            } catch (TransformException e) {
-                warning(e);
+    public final Optional<Envelope> getEnvelope() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            if (!isEnvelopeComputed) {
+                final List<Envelope> envelopes = new ArrayList<>();
+                if (getEnvelopes(envelopes)) try {
+                    envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
+                } catch (TransformException e) {
+                    warning(e);
+                }
+                isEnvelopeComputed = true;
             }
-            isEnvelopeComputed = true;
+            return Optional.ofNullable(envelope);
         }
-        return Optional.ofNullable(envelope);
     }
 
     /**
@@ -153,9 +155,11 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * This method should be invoked if the data in underlying data store changed.
      */
     @Override
-    protected synchronized void clearCache() {
-        isEnvelopeComputed = false;
-        envelope = null;
-        super.clearCache();
+    protected void clearCache() {
+        synchronized (getSynchronizationLock()) {
+            isEnvelopeComputed = false;
+            envelope = null;
+            super.clearCache();
+        }
     }
 }

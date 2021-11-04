@@ -237,7 +237,7 @@ final class IdentificationInfo extends Section<Identification> {
     @Override
     void setInformation(final Metadata metadata) {
         if (aggregateWalker != null) {
-            aggregateWalker.cancel();
+            aggregateWalker.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
             aggregateWalker = null;
         }
         final Collection<? extends Identification> info;

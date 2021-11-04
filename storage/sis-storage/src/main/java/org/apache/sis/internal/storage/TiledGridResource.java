@@ -23,8 +23,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
@@ -34,7 +34,6 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
@@ -51,7 +50,7 @@ import static org.apache.sis.internal.storage.TiledGridCoverage.Y_DIMENSION;
  * as "chunk" in a <var>n</var>-dimensional generalization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -100,13 +99,13 @@ public abstract class TiledGridResource extends AbstractGridResource {
     /**
      * All tiles loaded by any {@link TiledGridCoverage} created from this resource.
      * Keys contains tile indices in a row-major array of tiles.
-     * For each value, the {@link WritableRaster#getMinX()} and {@code minY} values
+     * For each value, the {@link Raster#getMinX()} and {@code minY} values
      * can be anything, depending which {@link TiledGridResource} was first to load the tile.
      *
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
      */
-    private final WeakValueHashMap<CacheKey, WritableRaster> rasters;
+    private final WeakValueHashMap<CacheKey, Raster> rasters;
 
     /**
      * Whether all tiles should be loaded at {@code read(…)} method call or deferred to a later time.
@@ -128,15 +127,6 @@ public abstract class TiledGridResource extends AbstractGridResource {
         super(parent);
         rasters = new WeakValueHashMap<>(CacheKey.class);
     }
-
-    /**
-     * Returns the object on which to perform all synchronizations for thread-safety.
-     * In current implementation, this is the {@link DataStore} that created this resource.
-     * However this restriction may be relaxed in any future version.
-     *
-     * @return the synchronization lock.
-     */
-    protected abstract DataStore getSynchronizationLock();
 
     /**
      * Returns the size of tiles in this resource.
@@ -322,7 +312,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
          * It is a reference to {@link TiledGridResource#rasters} if shareable.
          */
-        final WeakValueHashMap<CacheKey, WritableRaster> cache;
+        final WeakValueHashMap<CacheKey, Raster> cache;
 
         /**
          * Creates parameters for the given domain and range.
@@ -503,9 +493,10 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * Returns an indication about when the "physical" loading of raster data will happen.
      *
      * @return current raster data loading strategy for this resource.
+     * @throws DataStoreException if an error occurred while fetching data store configuration.
      */
     @Override
-    public final RasterLoadingStrategy getLoadingStrategy() {
+    public final RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (loadingStrategy == null) {
                 setLoadingStrategy(supportImmediateLoading());
@@ -520,9 +511,10 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * @param  strategy  the desired strategy for loading raster data.
      * @return {@code true} if the given strategy has been accepted, or {@code false}
      *         if this implementation replaced the given strategy by an alternative.
+     * @throws DataStoreException if an error occurred while setting data store configuration.
      */
     @Override
-    public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+    public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (strategy != null) {
                 setLoadingStrategy(strategy == RasterLoadingStrategy.AT_READ_TIME && supportImmediateLoading());

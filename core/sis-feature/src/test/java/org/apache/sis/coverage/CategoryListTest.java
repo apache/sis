@@ -371,7 +371,8 @@ public final strictfp class CategoryListTest extends TestCase {
     }
 
     /**
-     * Same tests than {@link #testInverseTransform()} but without background value that the code
+     * Same tests than {@link #testInverseTransform()} but without background value
+     * that the transform could use as a fallback.
      *
      * @throws TransformException if an error occurred while transforming a value.
      */

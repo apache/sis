@@ -17,10 +17,12 @@
 package org.apache.sis.storage;
 
 import java.util.List;
+import java.util.Collections;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -38,7 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -107,6 +109,39 @@ public interface GridCoverageResource extends DataSet {
     List<SampleDimension> getSampleDimensions() throws DataStoreException;
 
     /**
+     * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
+     * If the storage supports pyramid, then the list should contain the resolution at each pyramid level
+     * ordered from coarsest (largest numbers) to finest (smallest numbers) resolution.
+     * Otherwise the list contains a single element which is the {@linkplain #getGridGeometry() grid geometry}
+     * resolution, or an empty list if no resolution is applicable to the coverage (e.g. because non-constant).
+     *
+     * <p>Each element shall be an array with a length equals to the number of CRS dimensions.
+     * In each array, value at index <var>i</var> is the cell size along CRS dimension <var>i</var>
+     * in units of the CRS axis <var>i</var>.</p>
+     *
+     * <p>Note that arguments given to {@link #subset(CoverageQuery) subset(…)} or {@link #read read(…)} methods
+     * are <em>not</em> constrained to the resolutions returned by this method. Those resolutions are only hints
+     * about resolution values where read operations are likely to be more efficient.</p>
+     *
+     * @return preferred resolutions for read operations in this data store, or an empty array if none.
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     *
+     * @see GridGeometry#getResolution(boolean)
+     *
+     * @since 1.2
+     */
+    default List<double[]> getResolutions() throws DataStoreException {
+        final GridGeometry gg = getGridGeometry();
+        if (gg != null && gg.isDefined(GridGeometry.RESOLUTION)) {      // Should never be null but we are paranoiac.
+            final double[] resolution = gg.getResolution(false);
+            if (!ArraysExt.allEquals(resolution, Double.NaN)) {
+                return Collections.singletonList(resolution);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * Requests a subset of the coverage.
      * The filtering can be applied in two aspects:
      *
@@ -120,13 +155,18 @@ public interface GridCoverageResource extends DataSet {
      * However the returned subset may not have the same capabilities as this {@link GridCoverageResource}.
      * In particular, write operations may become unsupported after complex queries.</p>
      *
-     * <p>The default implementation throws {@link UnsupportedQueryException}.</p>
+     * <h4>Default implementation</h4>
+     * The default implementation delegates to {@link CoverageQuery#execute(GridCoverageResource)} if the given
+     * query is an instance of {@code CoverageQuery}, or throws {@link UnsupportedQueryException} otherwise.
      *
      * @param  query  definition of domain (grid extent) and range (sample dimensions) filtering applied at reading time.
      * @return resulting coverage resource (never {@code null}).
-     * @throws UnsupportedQueryException if this {@code GridCoverageResource} can not execute the given query.
+     * @throws UnsupportedQueryException if the given query is not valid for this {@code GridCoverageResource}.
      *         This includes query validation errors.
      * @throws DataStoreException if another error occurred while processing the query.
+     *
+     * @see FeatureSet#subset(Query)
+     * @see CoverageQuery#execute(GridCoverageResource)
      *
      * @since 1.1
      */
@@ -170,10 +210,11 @@ public interface GridCoverageResource extends DataSet {
      * <p>The default strategy is to load raster data at {@link #read read(…)} method invocation time.</p>
      *
      * @return current raster data loading strategy for this resource.
+     * @throws DataStoreException if an error occurred while fetching data store configuration.
      *
      * @since 1.1
      */
-    default RasterLoadingStrategy getLoadingStrategy() {
+    default RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         return RasterLoadingStrategy.AT_READ_TIME;
     }
 
@@ -185,10 +226,11 @@ public interface GridCoverageResource extends DataSet {
      * @param  strategy  the desired strategy for loading raster data.
      * @return {@code true} if the given strategy has been accepted, or {@code false}
      *         if this implementation replaced the given strategy by an alternative.
+     * @throws DataStoreException if an error occurred while setting data store configuration.
      *
      * @since 1.1
      */
-    default boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+    default boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         ArgumentChecks.ensureNonNull("strategy", strategy);
         return strategy == getLoadingStrategy();
     }

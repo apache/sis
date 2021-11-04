@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
  * and profiles.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -45,8 +45,9 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
      * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
      *
      * @see RasterResource#lock
+     * @see #getSynchronizationLock()
      */
-    final Object lock;
+    private final Object lock;
 
     /**
      * Creates a new discrete sampling parser.
@@ -60,6 +61,16 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
         super(listeners);
         factory = Geometries.implementation(library);
         this.lock = lock;
+    }
+
+    /**
+     * Returns the object on which to perform synchronizations for thread-safety.
+     *
+     * @return the synchronization lock.
+     */
+    @Override
+    protected final Object getSynchronizationLock() {
+        return lock;
     }
 
     /**

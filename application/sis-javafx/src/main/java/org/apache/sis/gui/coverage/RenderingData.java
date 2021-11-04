@@ -92,7 +92,7 @@ import org.apache.sis.util.logging.Logging;
  *       works well in the general case before doing special cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -253,6 +253,17 @@ final class RenderingData implements Cloneable {
         this.data          = data;
         this.dataGeometry  = domain;
         this.dataRanges    = ranges;        // Not cloned because already an unmodifiable list.
+        if (domain != null && !domain.isDefined(GridGeometry.GRID_TO_CRS)
+                           &&  domain.isDefined(GridGeometry.EXTENT))
+        {
+            CoordinateReferenceSystem crs = null;
+            if (domain.isDefined(GridGeometry.CRS)) {
+                crs = domain.getCoordinateReferenceSystem();
+            }
+            final GridExtent extent = domain.getExtent();
+            dataGeometry = new GridGeometry(extent, PixelInCell.CELL_CENTER,
+                    MathTransforms.identity(extent.getDimension()), crs);
+        }
     }
 
     /**

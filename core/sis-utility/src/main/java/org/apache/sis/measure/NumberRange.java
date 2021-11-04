@@ -80,7 +80,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.1
+ * @version 1.2
  *
  * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
@@ -321,7 +321,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *       {@value java.lang.Short#MIN_VALUE} and {@value java.lang.Short#MAX_VALUE} inclusive.</li>
      *   <li>{@code NumberRange<Integer>} if the given values are integers between
      *       {@value java.lang.Integer#MIN_VALUE} and {@value java.lang.Integer#MAX_VALUE} inclusive.</li>
-     *   <li>{@code NumberRange<Long>} if the given values are integers in the range of {@code long} values.</li>
+     *   <li>{@code NumberRange<Long>} if the given values are integers between
+     *       {@value java.lang.Long#MIN_VALUE} and {@value java.lang.Long#MAX_VALUE} inclusive.</li>
      *   <li>{@code NumberRange<Float>} if the given values can be casted to {@code float} values without data lost.</li>
      *   <li>{@code NumberRange<Double>} if none of the above types is suitable.</li>
      * </ul>
@@ -335,15 +336,53 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return the new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
      * @throws Illegal­Argument­Exception if the given numbers are not primitive wrappers for numeric types.
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
     public static NumberRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
                                                final Number maxValue, final boolean isMaxIncluded)
     {
+        return createBestFit(false, minValue, isMinIncluded, maxValue, isMaxIncluded);
+    }
+
+    /**
+     * Constructs a range using the smallest integer type or floating point type that can hold the given values.
+     * If {@code asFloat} is {@code false}, then the returned range can use any wrapper type and this method behaves
+     * as described in {@linkplain #createBestFit(java.lang.Number, boolean, java.lang.Number, boolean) above method}.
+     * If {@code asFloat} is {@code true}, then the returned range is restricted to {@link Float} and {@link Double}
+     * number types; integer types are casted to one of the floating point types.
+     *
+     * @param  asFloat        whether to restrict the returned range to floating point types.
+     * @param  minValue       the minimal value, or {@code null} if none.
+     * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @param  maxValue       the maximal value, or {@code null} if none.
+     * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     * @return the new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
+     * @throws Illegal­Argument­Exception if the given numbers are not primitive wrappers for numeric types.
+     *
+     * @since 1.2
+     */
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public static NumberRange<?> createBestFit(final boolean asFloat,
+            final Number minValue, final boolean isMinIncluded,
+            final Number maxValue, final boolean isMaxIncluded)
+    {
         final Class<? extends Number> type;
-        type = Numbers.widestClass(Numbers.narrowestClass(minValue),
-                                   Numbers.narrowestClass(maxValue));
-        if (type == null) {
-            return null;
+        if (asFloat) {
+            if (minValue == null && maxValue == null) {
+                return null;
+            }
+            // Types supported below should be consistent with the comment in next block.
+            type = (isFloat(minValue) && isFloat(maxValue)) ? Float.class : Double.class;
+        } else {
+            /*
+             * The `narrowestClass(…)` method currently returns only wrappers of primitive types.
+             * The `Fraction`, `BigInteger` or `BigDecimal` types accepted by `widestClass(…)` are lost.
+             * We could support those additional classes as well (by improving `narrowestClass(…)` and
+             * updating above Javadoc), but we do not yet have a need for them.
+             */
+            type = Numbers.widestClass(Numbers.narrowestClass(minValue),
+                                       Numbers.narrowestClass(maxValue));
+            if (type == null) {
+                return null;
+            }
         }
         Number min = Numbers.cast(minValue, type);
         Number max = Numbers.cast(maxValue, type);
@@ -356,6 +395,14 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
             range = unique(range);
         }
         return range;
+    }
+
+    /**
+     * Returns {@code true} if the given value can be casted to the {@code Float} type.
+     */
+    private static boolean isFloat(final Number value) {
+        return (value == null) ||
+                Double.doubleToRawLongBits(value.floatValue()) == Double.doubleToRawLongBits(value.doubleValue());
     }
 
     /**

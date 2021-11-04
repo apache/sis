@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * <p>This class extends {@link CompoundFormat} for implementation convenience only.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -212,7 +212,7 @@ public final class PropertyView extends CompoundFormat<Object> {
     public void set(final Object newValue, final Rectangle visibleBounds) {
         if (newValue != value || !Objects.equals(visibleBounds, visibleImageBounds)) {
             if (runningTask != null) {
-                runningTask.cancel();
+                runningTask.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
                 runningTask = null;
             }
             visibleImageBounds = visibleBounds;

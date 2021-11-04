@@ -35,7 +35,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -438,6 +438,10 @@ public final strictfp class MathFunctionsTest extends TestCase {
             78, 100, 104, 120, 130, 150, 156, 195, 200, 260, 300, 312, 325, 390, 520, 600, 650,
             780, 975, 1300, 1560, 1950, 2600, 3900, 7800
         }, divisors(7800));
+
+        assertArrayEquals(new int[] {
+            1, Integer.MAX_VALUE
+        }, divisors(Integer.MAX_VALUE));
     }
 
     /**

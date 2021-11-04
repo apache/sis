@@ -26,6 +26,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TreeItem;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -37,13 +38,14 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Workaround;
 
 
 /**
  * Miscellaneous utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -94,6 +96,21 @@ public final class GUIUtilities extends Static {
         clip.widthProperty() .bind(pane.widthProperty());
         clip.heightProperty().bind(pane.heightProperty());
         pane.setClip(clip);
+    }
+
+    /**
+     * Forces a {@link TreeItem} to update the {@code TreeView} when its value has been externally modified.
+     * This is a workaround for situations where the item's value is unchanged, but some state of the value
+     * has been modified.
+     *
+     * @param  <T>   type of values in the tree item.
+     * @param  item  the item for which to force an update.
+     */
+    @Workaround(library = "JavaFX", version = "17")
+    public static <T> void forceCellUpdate(final TreeItem<T> item) {
+        final T value = item.getValue();
+        item.setValue(null);
+        item.setValue(value);
     }
 
     /**

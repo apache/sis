@@ -67,7 +67,7 @@ final class BandGroup extends AbstractResource implements Aggregate {
      * This constructor will copy only the resources for that group from the given array.
      */
     private BandGroup(final StoreListeners parent, final BandGroupName group,
-                             final Band[] resources, final int count)
+                      final Band[] resources, final int count)
     {
         super(parent);
         this.group = group;

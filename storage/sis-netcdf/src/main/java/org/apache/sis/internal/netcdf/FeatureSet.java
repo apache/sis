@@ -64,7 +64,7 @@ import org.opengis.feature.Attribute;
  * It may be inefficient unless the {@link Decoder} uses a {@code ChannelDataInput} backed by a direct buffer.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -141,6 +141,10 @@ final class FeatureSet extends DiscreteSampling {
      *   <li>{@link GeometryType#LINEAR} with coordinates stored in {@link #dynamicProperties}.</li>
      * </ul>
      *
+     * If there is no coordinates ({@link #referencingDimension} = 0), then this field shall be {@code true}.
+     * This is a convenience for the way we compute an {@code isEmpty} flag in {@code tryAdvance(Consumer)}.
+     * This policy may change in any future version.
+     *
      * @see #TRAJECTORY
      * @see #getReferencingDimension(boolean)
      */
@@ -195,8 +199,8 @@ final class FeatureSet extends DiscreteSampling {
         this.properties           = properties;
         this.dynamicProperties    = dynamicProperties;
         this.referencingDimension = selectedAxes.size();
+        this.isTrajectory         = isTrajectory | (referencingDimension == 0);
         this.hasTime              = hasTime;
-        this.isTrajectory         = isTrajectory;
         /*
          * We will create a description of the features to be read with following properties:
          *
@@ -288,7 +292,7 @@ final class FeatureSet extends DiscreteSampling {
 
     /**
      * Creates new discrete sampling parsers from the attribute values found in the given decoder.
-     * This method shall be invoked in a method synchronized on {@link #lock}.
+     * This method shall be invoked in a method synchronized on {@code lock}.
      *
      * @param  decoder  the source of the features to create.
      * @param  lock     the lock to use in {@code synchronized(lock)} statements.
@@ -886,7 +890,7 @@ makeGeom:   if (!isEmpty) {
             final GridExtent extent = extent(null, 1, position, length);
             List<Dimension> textDimensions = null;
             GridExtent textExtent = null;
-            synchronized (lock) {
+            synchronized (getSynchronizationLock()) {
                 for (int i=0; i < variables.length; i++) {
                     final Variable p = variables[i];
                     List<?> value;

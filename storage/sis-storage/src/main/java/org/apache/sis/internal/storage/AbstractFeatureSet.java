@@ -42,7 +42,7 @@ import org.opengis.feature.FeatureType;
  *
  * <h2>Thread safety</h2>
  * Default methods of this abstract class are thread-safe.
- * Synchronization, when needed, uses {@code this} lock.
+ * Synchronization, when needed, uses {@link #getSynchronizationLock()}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

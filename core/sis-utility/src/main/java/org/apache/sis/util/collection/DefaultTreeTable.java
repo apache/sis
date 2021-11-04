@@ -64,7 +64,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * implementation provided in the {@link Node} inner class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.2
  *
  * @see Node
  * @see TableColumn
@@ -208,6 +208,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     public TreeTable.Node getRoot() {
         if (root == null) {
             root = new Node(this);
+            initialize(root);
         }
         return root;
     }
@@ -229,6 +230,19 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             }
         }
         this.root = root;
+    }
+
+    /**
+     * Invoked when {@link #getRoot()} is invoked for the first time and no root had been specified to the constructor.
+     * The {@code root} argument is a newly created empty node to be returned by {@link #getRoot()}.
+     * The default implementation does nothing.
+     * Subclasses can override for lazy initialization of tree table content.
+     *
+     * @param  root  a newly created tree table root.
+     *
+     * @since 1.2
+     */
+    protected void initialize(final TreeTable.Node root) {
     }
 
     /**
@@ -268,7 +282,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         if (other != null && other.getClass() == getClass()) {
             final DefaultTreeTable that = (DefaultTreeTable) other;
             return columnIndices.equals(that.columnIndices) &&
-                    Objects.equals(root, that.root);
+                    Objects.equals(getRoot(), that.getRoot());
         }
         return false;
     }
@@ -281,7 +295,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      */
     @Override
     public int hashCode() {
-        return (columnIndices.hashCode() + 31*Objects.hashCode(root)) ^ (int) serialVersionUID;
+        return (columnIndices.hashCode() + 31*Objects.hashCode(getRoot())) ^ (int) serialVersionUID;
     }
 
     /**

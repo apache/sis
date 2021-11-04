@@ -24,6 +24,7 @@ import java.util.Set;
 import java.awt.SplashScreen;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -36,7 +37,6 @@ import javafx.stage.FileChooser;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import org.apache.sis.gui.dataset.LogViewer;
 import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.LogHandler;
@@ -59,7 +59,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -162,18 +162,20 @@ public class DataViewer extends Application {
                 close.setDisable(!(n instanceof DataStore));
             });
         }
+        final Menu windows = new Menu(localized.getString(Resources.Keys.Windows));
+        {
+            final ObservableList<MenuItem> items = windows.getItems();
+            content.setWindowsItems(items);
+            final MenuItem logging = new MenuItem(localized.getString(Resources.Keys.SystemMonitor));
+            logging.setOnAction((e) -> showSystemLogsWindow());
+            items.addAll(content.createNewWindowMenu(), logging);
+        }
         final Menu help = new Menu(localized.getString(Resources.Keys.Help));
         {   // For keeping variables locale.
-            final MenuItem logging = new MenuItem(vocabulary.getString(Vocabulary.Keys.Logs));
-            logging.setOnAction((e) -> showSystemLogsWindow());
             help.getItems().addAll(
-                    localized.menu(Resources.Keys.WebSite, (e) -> getHostServices().showDocument("https://sis.apache.org/")),
-                    new SeparatorMenuItem(), logging,
+                    localized.menu(Resources.Keys.WebSite, (e) -> getHostServices().showDocument("https://sis.apache.org/javafx.html")),
                     localized.menu(Resources.Keys.About, (e) -> AboutDialog.show()));
         }
-        final Menu windows = new Menu(localized.getString(Resources.Keys.Windows));
-        windows.getItems().add(content.createNewWindowMenu());
-        content.setWindowsItems(windows.getItems());
         menus.getMenus().addAll(file, windows, help);
         /*
          * Set the main content and show.
@@ -277,18 +279,10 @@ public class DataViewer extends Application {
      */
     private void showSystemLogsWindow() {
         if (systemLogsWindow == null) {
-            final LogViewer viewer = new LogViewer();
-            viewer.systemLogs.set(true);
-            final Stage w = new Stage();
-            w.setTitle(Vocabulary.format(Vocabulary.Keys.Logs) + " — Apache SIS");
-            w.getIcons().setAll(window.getIcons());
-            w.setScene(new Scene(viewer.getView()));
-            w.setWidth (800);
-            w.setHeight(600);
-            window.setOnHidden((e) -> w.hide());
-            systemLogsWindow = w;
+            systemLogsWindow = SystemMonitor.create(window, null);
         }
         systemLogsWindow.show();
+        systemLogsWindow.toFront();
     }
 
     /**

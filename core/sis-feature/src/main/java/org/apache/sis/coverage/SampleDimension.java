@@ -69,7 +69,14 @@ import org.apache.sis.util.Debug;
  * but organized in a different way. The use of the same name may seem a risk, but those two types are typically
  * not used at the same time.
  *
+ * <h2>Definition of missing data</h2>
+ * An important aspect of sample dimensions is the {@linkplain #getBackground() background value}.
+ * It defines how to initialize an empty image or canvas with respect to the sample definition.
+ * It can be thought as the value for "lack of data" (fill value, no-data, missing value) category
+ * when the missing value can not be categorized more precisely (cloud, instrument error, <i>etc</i>).
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  *
  * @see org.opengis.metadata.content.SampleDimension
@@ -193,7 +200,7 @@ public class SampleDimension implements Serializable {
      * @see #forConvertedValues(boolean)
      */
     private SampleDimension converted() {
-        // Transfer function shall never be null if 'converse' is non-null.
+        // Transfer function shall never be null if `converse` is non-null.
         return (converse != null && !transferFunction.isIdentity()) ? converse : this;
     }
 
@@ -223,8 +230,10 @@ public class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns the background value. If this sample dimensions has quantitative categories, then the background
-     * value should be one of the value returned by {@link #getNoDataValues()}. However this is not mandatory.
+     * Returns the background value. This is the value used for filling empty spaces (e.g. in image corners)
+     * after a {@linkplain org.apache.sis.image.ImageProcessor#resample resampling operation}.
+     * If this sample dimensions has quantitative categories, then the background value should be
+     * one of the value returned by {@link #getNoDataValues()}. However this is not mandatory.
      *
      * @return the background value, typically (but not necessarily) one of {@link #getNoDataValues()}.
      */
@@ -430,7 +439,7 @@ public class SampleDimension implements Serializable {
      * @see org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean)
      */
     public SampleDimension forConvertedValues(final boolean converted) {
-        // Transfer function shall never be null if 'converse' is non-null.
+        // Transfer function shall never be null if `converse` is non-null.
         if (converse != null && transferFunction.isIdentity() != converted) {
             return converse;
         }
@@ -534,6 +543,7 @@ public class SampleDimension implements Serializable {
      * subclasses can override.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
+     * @author  Alexis Manin (Geomatys)
      * @version 1.2
      * @since   1.0
      * @module
@@ -646,7 +656,7 @@ public class SampleDimension implements Serializable {
                 case Numbers.FLOAT: {
                     final float min = minimum.floatValue();
                     final float max = maximum.floatValue();
-                    if (!Float.isNaN(min) || !Float.isNaN(max)) {       // Let 'create' throws an exception if only one value is NaN.
+                    if (!Float.isNaN(min) || !Float.isNaN(max)) {       // Let `create` throws an exception if only one value is NaN.
                         return NumberRange.create(min, true, max, true);
                     }
                     if (minimum.getClass() != Float.class) minimum = min;
@@ -656,7 +666,7 @@ public class SampleDimension implements Serializable {
                 default: {
                     final double min = minimum.doubleValue();
                     final double max = maximum.doubleValue();
-                    if (!Double.isNaN(min) || !Double.isNaN(max)) {     // Let 'create' throws an exception if only one value is NaN.
+                    if (!Double.isNaN(min) || !Double.isNaN(max)) {     // Let `create` throws an exception if only one value is NaN.
                         return NumberRange.create(min, true, max, true);
                     }
                     if (minimum.getClass() != Double.class) minimum = min;
@@ -667,6 +677,25 @@ public class SampleDimension implements Serializable {
             @SuppressWarnings({"unchecked", "rawtypes"})
             final NumberRange<?> samples = new NumberRange(type, minimum, true, maximum, true);
             return samples;
+        }
+
+        /**
+         * Returns the background value to use by default if none were explicitly defined.
+         * This method is invoked at {@linkplain #build() build} time
+         * if the {@link #setBackground(CharSequence, Number)} method has never been invoked
+         * since {@code Builder} construction or since the last call to {@link #clear()}.
+         * The background value returned by this method is not associated to any category.
+         *
+         * <p>The default implementation returns {@code null}.
+         * Subclasses can override this method and compute a background value
+         * for example by analyzing the content of {@link #categories()} list.</p>
+         *
+         * @return the default background value, or {@code null} if none.
+         *
+         * @since 1.2
+         */
+        protected Number defaultBackground() {
+            return null;
         }
 
         /**
@@ -686,7 +715,7 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
             final NumberRange<?> samples = range(sample.getClass(), sample, sample);
-            // Use of 'getMinValue()' below shall be consistent with ToNaN.remove(Category).
+            // Use of `getMinValue()` below shall be consistent with ToNaN.remove(Category).
             toNaN.background = samples.getMinValue();
             add(new Category(name, samples, null, null, toNaN));
             return this;
@@ -695,6 +724,11 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given boolean value.
          * The {@code true} value is represented by 1 and the {@code false} value is represented by 0.
+         *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -713,6 +747,11 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for samples of the given tiny (8 bits) integer value.
          * The argument is treated as a signed integer ({@value Byte#MIN_VALUE} to {@value Byte#MAX_VALUE}).
          *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
          *
@@ -728,6 +767,11 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given short (16 bits) integer value.
          * The argument is treated as a signed integer ({@value Short#MIN_VALUE} to {@value Short#MAX_VALUE}).
+         *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -745,6 +789,11 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for samples of the given integer value.
          * The argument is treated as a signed integer ({@value Integer#MIN_VALUE} to {@value Integer#MAX_VALUE}).
          *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
          *
@@ -759,6 +808,11 @@ public class SampleDimension implements Serializable {
 
         /**
          * Adds a qualitative category for samples of the given floating-point value.
+         *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -782,6 +836,11 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given double precision floating-point value.
          *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
          *
@@ -804,6 +863,11 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples in the given range of values.
          *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
          *
@@ -824,6 +888,11 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for all samples in the specified range of values.
          * This is the most generic method for adding a qualitative category.
          * All other {@code addQualitative(name, …)} methods are convenience methods delegating their work to this method.
+         *
+         * <div class="note"><b>Usage note:</b>
+         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * when the aim is to define a default "no data" category to use when the missing value can not
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
@@ -1103,6 +1172,9 @@ defName:    if (name == null) {
                     }
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
+            }
+            if (toNaN.background == null) {
+                toNaN.background = defaultBackground();
             }
             return new SampleDimension(name, toNaN.background, UnmodifiableArrayList.wrap(categories, 0, count));
         }

@@ -70,6 +70,8 @@ import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
     /**
      * The data access object to use for searching EPSG codes.
+     * Supplied at construction time and assumed alive for the duration of this {@code EPSGCodeFinder} life
+     * (i.e. this class does not create and does not close DAO by itself).
      */
     private final EPSGDataAccess dao;
 
