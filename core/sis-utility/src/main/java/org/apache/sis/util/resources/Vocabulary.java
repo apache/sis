@@ -620,6 +620,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ImageSize = 234;
 
         /**
+         * Image #{0}
+         */
+        public static final short Image_1 = 261;
+
+        /**
          * Implementation
          */
         public static final short Implementation = 104;

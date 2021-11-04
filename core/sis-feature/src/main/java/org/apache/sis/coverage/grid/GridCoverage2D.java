@@ -93,7 +93,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -175,6 +175,45 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
+     * Constructs a grid coverage using the same domain and range than the given coverage, but different data.
+     * This constructor can be used when new data have been computed by an image processing operation,
+     * but each pixel of the result have the same coordinates and the same units of measurement
+     * than in the source coverage.
+     *
+     * @param  source  the coverage from which to copy grid geometry and sample dimensions.
+     * @param  data    the sample values as a {@link RenderedImage}, with one band for each sample dimension.
+     * @throws IllegalGridGeometryException if the image size is not consistent with the grid geometry.
+     * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
+     *
+     * @since 1.2
+     */
+    public GridCoverage2D(final GridCoverage source, RenderedImage data) {
+        super(source, source.getGridGeometry());
+        ArgumentChecks.ensureNonNull("data", data);
+        this.data = data = unwrapIfSameSize(data);
+        final GridExtent extent = gridGeometry.getExtent();
+        final int[] imageAxes;
+        if (source instanceof GridCoverage2D) {
+            final GridCoverage2D gs = (GridCoverage2D) source;
+            xDimension     = gs.xDimension;
+            yDimension     = gs.yDimension;
+            gridToImageX   = gs.gridToImageX;
+            gridToImageY   = gs.gridToImageY;
+            gridGeometry2D = gs.gridGeometry2D;
+            imageAxes      = new int[] {xDimension, yDimension};
+        } else {
+            imageAxes      = extent.getSubspaceDimensions(BIDIMENSIONAL);
+            xDimension     = imageAxes[0];
+            yDimension     = imageAxes[1];
+            gridToImageX   = subtractExact(data.getMinX(), extent.getLow(xDimension));
+            gridToImageY   = subtractExact(data.getMinY(), extent.getLow(yDimension));
+            gridGeometry2D = new AtomicReference<>();
+        }
+        verifyImageSize(extent, data, imageAxes);
+        verifyBandCount(super.getSampleDimensions(), data);
+    }
+
+    /**
      * Constructs a grid coverage using the specified domain, range and data. If the given domain does not
      * have an extent, then a default {@link GridExtent} will be computed from given image. Otherwise the
      * {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height}
@@ -230,17 +269,7 @@ public class GridCoverage2D extends GridCoverage {
         yDimension   = imageAxes[1];
         gridToImageX = subtractExact(data.getMinX(), extent.getLow(xDimension));
         gridToImageY = subtractExact(data.getMinY(), extent.getLow(yDimension));
-        /*
-         * Verify that the domain is consistent with image size.
-         * We do not verify image location; it can be anywhere.
-         */
-        for (int i=0; i<BIDIMENSIONAL; i++) {
-            final int imageSize = (i == 0) ? data.getWidth() : data.getHeight();
-            final long gridSize = extent.getSize(imageAxes[i]);
-            if (imageSize != gridSize) {
-                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.MismatchedImageSize_3, i, imageSize, gridSize));
-            }
-        }
+        verifyImageSize(extent, data, imageAxes);
         verifyBandCount(range, data);
         gridGeometry2D = new AtomicReference<>();
     }
@@ -336,6 +365,20 @@ public class GridCoverage2D extends GridCoverage {
         if (!ArraysExt.contains(axisTypes, DimensionNameType.COLUMN)) axisTypes[0] = DimensionNameType.COLUMN;
         if (!ArraysExt.contains(axisTypes, DimensionNameType.ROW))    axisTypes[1] = DimensionNameType.ROW;
         return new GridExtent(axisTypes, low, high, true);
+    }
+
+    /**
+     * Verifies that the domain is consistent with image size.
+     * We do not verify image location; it can be anywhere.
+     */
+    private static void verifyImageSize(final GridExtent extent, final RenderedImage data, final int[] imageAxes) {
+        for (int i=0; i<BIDIMENSIONAL; i++) {
+            final int imageSize = (i == 0) ? data.getWidth() : data.getHeight();
+            final long gridSize = extent.getSize(imageAxes[i]);
+            if (imageSize != gridSize) {
+                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.MismatchedImageSize_3, i, imageSize, gridSize));
+            }
+        }
     }
 
     /**

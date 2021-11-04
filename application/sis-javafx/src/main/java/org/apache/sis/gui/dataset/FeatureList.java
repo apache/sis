@@ -149,7 +149,7 @@ final class FeatureList extends ObservableListBase<AbstractFeature> {
         final FeatureLoader previous = nextPageLoader;
         if (previous != null) {
             nextPageLoader = null;
-            previous.cancel();
+            previous.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
         }
         if (features != null) {
             nextPageLoader = new FeatureLoader(table, features);
@@ -333,7 +333,7 @@ final class FeatureList extends ObservableListBase<AbstractFeature> {
         final FeatureLoader loader = nextPageLoader;
         nextPageLoader = null;
         if (loader != null) {
-            loader.cancel();
+            loader.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
             BackgroundThreads.execute(loader::waitAndClose);
         }
     }

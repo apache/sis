@@ -34,20 +34,26 @@ import org.apache.sis.util.collection.IntegerList;
  * A map of EPSG authority codes as keys and object names as values.
  * This map requires a living connection to the EPSG database.
  *
- * <p>Serialization of this class stores a copy of all authority codes.
- * The serialization does not preserve any connection to the database.</p>
+ * <h2>Serialization</h2>
+ * Serialization of this class stores a copy of all authority codes.
+ * The serialization does not preserve any connection to the database.
  *
- * <p>This method does not implement {@link AutoCloseable} because the same instance may be shared by many users,
+ * <h2>Garbage collection</h2>
+ * This method does not implement {@link AutoCloseable} because the same instance may be shared by many users,
  * since {@link EPSGDataAccess#getAuthorityCodes(Class)} caches {@code AuthorityCodes} instances. Furthermore we can
  * not rely on the users closing {@code AuthorityCodes} themselves because this is not part of the usual contract
  * for Java collection classes (we could document that recommendation in method Javadoc, but not every developers
  * read Javadoc). Relying on the garbage collector for disposing this resource is far from ideal, but alternatives
  * are not very convincing either (load the same codes many time, have the risk that users do not dispose resources,
- * have the risk to return to user an already closed {@code AuthorityCodes} instance).</p>
+ * have the risk to return to user an already closed {@code AuthorityCodes} instance).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.7
+ * @version 1.2
+ *
+ * @see EPSGDataAccess#canClose()
+ * @see CloseableReference#close()
+ *
+ * @since 0.7
  * @module
  */
 @SuppressWarnings("serial")   // serialVersionUID not needed because of writeReplace().
@@ -64,9 +70,9 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     private static final int ALL = 0, ONE = 1;
 
     /**
-     * The factory which is the owner of this map. One purpose of this field is to prevent garbage collection
-     * of that factory as long as this map is in use. This is required because {@link EPSGDataAccess#finalize()}
-     * closes the JDBC connections.
+     * The factory which is the owner of this map. One purpose of this field is to prevent
+     * garbage collection of that factory as long as this map is in use. This is required
+     * because {@link CloseableReference#dispose()} closes the JDBC connections.
      */
     private final transient EPSGDataAccess factory;
 
@@ -170,8 +176,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * when the garbage collector determined that this {@code AuthorityCodes} instance is no longer in use.
      * See class Javadoc for more information.
      */
-    final CloseableReference<AuthorityCodes> createReference() {
-        return new CloseableReference<>(this, factory, statements);
+    final CloseableReference createReference() {
+        return new CloseableReference(this, factory, statements);
     }
 
     /**

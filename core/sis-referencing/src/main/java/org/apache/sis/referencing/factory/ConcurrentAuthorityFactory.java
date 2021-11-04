@@ -1779,7 +1779,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * the work to the underlying Data Access Object and caches the result.
      *
      * <h4>Synchronization note</h4>
-     * our public API claims that {@link IdentifiedObjectFinder}s are not thread-safe.
+     * Our public API claims that {@link IdentifiedObjectFinder}s are not thread-safe.
      * Nevertheless we synchronize this particular implementation for safety, because the consequence of misuse
      * are more dangerous than other implementations. Furthermore this is also a way to assert that no code path
      * go to the {@link #create(AuthorityFactoryProxy, String)} method from a non-overridden public method.
@@ -2090,7 +2090,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @param  availableDAOs  the queue of factories to close.
      */
-    static <DAO extends GeodeticAuthorityFactory> List<DAO> clear(final Deque<DataAccessRef<DAO>> availableDAOs) {
+    private static <DAO extends GeodeticAuthorityFactory> List<DAO> clear(final Deque<DataAccessRef<DAO>> availableDAOs) {
         assert Thread.holdsLock(availableDAOs);
         final List<DAO> factories = new ArrayList<>(availableDAOs.size());
         DataAccessRef<DAO> dao;
@@ -2107,9 +2107,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @param  factories  the factories to close.
      * @throws Exception the exception thrown by the first factory that failed to close.
      */
-    static <DAO extends GeodeticAuthorityFactory> void close(final List<DAO> factories) throws Exception {
+    private static <DAO extends GeodeticAuthorityFactory> void close(final List<DAO> factories) throws Exception {
         Exception exception = null;
-        for (int i=factories.size(); --i>=0;) {
+        for (int i = factories.size(); --i >= 0;) {
             final DAO factory = factories.get(i);
             if (factory instanceof AutoCloseable) try {
                 ((AutoCloseable) factory).close();

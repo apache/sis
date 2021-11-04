@@ -46,15 +46,24 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
     /**
+     * The {@systemProperty org.apache.sis.epsg.downloadURL} system property for overriding
+     * the {@link #DOWNLOAD_URL} value. This is useful for testing purpose before a release,
+     * or for providing a work-around for bad URL after release.
+     *
+     * @since 1.2
+     */
+    private static final String DOWNLOAD_PROPERTY = "org.apache.sis.epsg.downloadURL";
+
+    /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
-    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.1/sis-epsg-1.1.jar";
+    private static final String DOWNLOAD_URL = "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.1/sis-epsg-1.1.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.
@@ -167,7 +176,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
      */
     private String getDownloadURL(final String authority) {
         switch (authority) {
-            case EPSG: return DOWNLOAD_URL;
+            case EPSG: return System.getProperty(DOWNLOAD_PROPERTY, DOWNLOAD_URL);
             default: throw unsupported(authority);      // More authorities may be added in the future.
         }
     }
@@ -189,7 +198,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
                 return c;
             }
         }
-        // Should not happen.
+        // May happen if the URL is wrong.
         throw new FileNotFoundException(Errors.getResources(getLocale()).getString(Errors.Keys.FileNotFound_1, source));
     }
 

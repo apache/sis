@@ -75,7 +75,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * Returns the object on which to perform all synchronizations for thread-safety.
      */
     @Override
-    protected final DataStore getSynchronizationLock() {
+    protected final Object getSynchronizationLock() {
         return reader.store;
     }
 

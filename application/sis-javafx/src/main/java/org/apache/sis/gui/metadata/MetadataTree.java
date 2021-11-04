@@ -68,7 +68,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -185,9 +185,6 @@ check:      if (data != null) {
         contentProperty.addListener(MetadataTree::applyChange);
         if (!standard) {
             setShowRoot(false);
-            if (controller != null) {
-                controller.nativeMetadataViews.add(this);
-            }
         }
     }
 
@@ -231,6 +228,8 @@ check:      if (data != null) {
 
     /**
      * Invoked when {@link #contentProperty} value changed.
+     * This method invokes {@link TreeTable#getRoot()} and
+     * wraps the value as the root node of this control.
      *
      * @param  property  the property which has been modified.
      * @param  oldValue  the old tree table.

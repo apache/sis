@@ -79,7 +79,7 @@ import org.apache.sis.math.Vector;
  * @since   1.0
  * @module
  */
-final class GridGeometryBuilder {
+final class GridGeometryBuilder extends GeoKeysLoader {
     /**
      * The reader for which we will create coordinate reference systems.
      * This is used for reporting warnings.
@@ -92,20 +92,12 @@ final class GridGeometryBuilder {
     ////                                                                                ////
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * References the {@link GeoKeys} needed for building the Coordinate Reference System.
+    /*
+     * Fields inherited from `GeoKeysLoader`:
+     *   - keyDirectory:       references the GeoKeys needed for building the Coordinate Reference System.
+     *   - numericParameters:  the numeric values referenced by the `keyDirectory`.
+     *   - asciiParameters:    the characters referenced by the `keyDirectory`.
      */
-    public Vector keyDirectory;
-
-    /**
-     * The numeric values referenced by the {@link #keyDirectory}.
-     */
-    public Vector numericParameters;
-
-    /**
-     * The characters referenced by the {@link #keyDirectory}.
-     */
-    public String asciiParameters;
 
     /**
      * Raster model tie points. This vector contains coordinate values structured as (I,J,K, X,Y,Z) records.
@@ -288,7 +280,7 @@ final class GridGeometryBuilder {
         if (keyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
             try {
-                crs = helper.build(keyDirectory, numericParameters, asciiParameters);
+                crs = helper.build(this);
                 description  = helper.description;
                 cellGeometry = helper.cellGeometry;
             } catch (NoSuchIdentifierException | ParameterNotFoundException e) {

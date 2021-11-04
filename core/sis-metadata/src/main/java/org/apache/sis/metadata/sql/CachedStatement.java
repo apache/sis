@@ -47,7 +47,7 @@ import org.apache.sis.internal.system.Loggers;
  * the {@code CachedStatement} instance. This object is closed by a background thread of {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -151,7 +151,7 @@ final class CachedStatement implements AutoCloseable {
     private void closeResultSet() throws SQLException {
         final ResultSet r = results;
         results = null;               // Make sure that this field is cleared even if an exception occurs below.
-        if (r != null) {
+        if (r != null && !r.isClosed()) {
             final boolean hasNext = r.next();
             r.close();
             if (hasNext) {

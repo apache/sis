@@ -56,6 +56,7 @@ import org.apache.sis.internal.util.ListOfUnknownSize;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -65,7 +66,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -78,6 +79,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * The GeoTIFF reader implementation, or {@code null} if the store has been closed.
+     *
+     * @see #reader()
      */
     private Reader reader;
 
@@ -124,6 +127,13 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @see #getMetadata()
      */
     private Metadata metadata;
+
+    /**
+     * The native metadata, or {@code null} if not yet created.
+     *
+     * @see #getNativeMetadata()
+     */
+    private TreeTable nativeMetadata;
 
     /**
      * Description of images in this GeoTIFF files. This collection is created only when first needed.
@@ -324,6 +334,38 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             md.transitionTo(DefaultMetadata.State.FINAL);
         }
         return metadata;
+    }
+
+    /**
+     * Returns TIFF tags and GeoTIFF keys as a tree for debugging purpose.
+     * The tags and keys appear in the order they are declared in the file.
+     * The columns are tag numerical code as an {@link Integer},
+     * tag name as a {@link String} and value as an {@link Object}.
+     *
+     * <p>This method should not be invoked during normal operations;
+     * the {@linkplain #getMetadata() standard metadata} are preferred
+     * because they allow abstraction of data format details.
+     * Native metadata should be used only when an information does not appear in standard metadata,
+     * or for debugging purposes.</p>
+     *
+     * <h4>Performance note</h4>
+     * Since this method should not be invoked in normal operations, it has not been tuned for performance.
+     * Invoking this method may cause a lot of {@linkplain java.nio.channels.SeekableByteChannel#position(long)
+     * seek operations}.
+     *
+     * @return resources information structured in an implementation-specific way.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @since 1.2
+     */
+    @Override
+    public synchronized Optional<TreeTable> getNativeMetadata() throws DataStoreException {
+        if (nativeMetadata == null) try {
+            nativeMetadata = new NativeMetadata(getLocale()).read(reader());
+        } catch (IOException e) {
+            throw errorIO(e);
+        }
+        return Optional.of(nativeMetadata);
     }
 
     /**

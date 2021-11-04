@@ -56,6 +56,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
+import org.apache.sis.internal.storage.io.InternalOptionKey;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
@@ -86,7 +87,7 @@ import org.apache.sis.setup.OptionKey;
  * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -923,8 +924,10 @@ public class StorageConnector implements Serializable {
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          * If the given storage is already a ReadableByteChannel, then the factory will return it as-is.
          */
-        final ChannelFactory factory = ChannelFactory.prepare(storage,
-                getOption(OptionKey.URL_ENCODING), false, getOption(OptionKey.OPEN_OPTIONS));
+        final ChannelFactory factory = ChannelFactory.prepare(storage, false,
+                getOption(OptionKey.URL_ENCODING),
+                getOption(OptionKey.OPEN_OPTIONS),
+                getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER));
         if (factory == null) {
             return null;
         }

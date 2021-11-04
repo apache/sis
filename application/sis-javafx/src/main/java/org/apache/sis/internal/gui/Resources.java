@@ -61,6 +61,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short About = 46;
 
         /**
+         * Accessed regions
+         */
+        public static final short AccessedRegions = 65;
+
+        /**
          * All files
          */
         public static final short AllFiles = 1;
@@ -94,6 +99,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not fetch tile ({0}, {1}).
          */
         public static final short CanNotFetchTile_2 = 5;
+
+        /**
+         * Can not install the resource.
+         */
+        public static final short CanNotInstallResource = 62;
 
         /**
          * Can not open “{0}”.
@@ -172,7 +182,7 @@ public final class Resources extends IndexedResourceBundle {
 
         /**
          * This geodetic dataset is required for the support of Coordinate Reference Systems defined by
-         * {0} codes. The database will use {1} Mb in directory {2}.
+         * {0} codes. The database will use {1} Mb in the “{2}” directory.
          */
         public static final short DownloadDetails_3 = 59;
 
@@ -215,6 +225,11 @@ public final class Resources extends IndexedResourceBundle {
          * Exit
          */
         public static final short Exit = 20;
+
+        /**
+         * File accesses
+         */
+        public static final short FileAccesses = 63;
 
         /**
          * Full screen
@@ -331,6 +346,11 @@ public final class Resources extends IndexedResourceBundle {
          * Standard error stream
          */
         public static final short StandardErrorStream = 32;
+
+        /**
+         * System monitor
+         */
+        public static final short SystemMonitor = 64;
 
         /**
          * Tabular data

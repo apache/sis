@@ -87,7 +87,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     private final Map<String,FunctionRegister> availableFunctions;
 
     /**
-     * Creates a new factory for geometries of temporal objects of the given types.
+     * Creates a new factory for geometries and temporal objects of the given types.
      * The {@code spatial} argument can be one of the following classes:
      *
      * <table class="sis">
@@ -137,7 +137,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
      *
      * @todo The type of temporal object is not yet determined.
      */
-    public static synchronized DefaultFilterFactory<AbstractFeature, Object, Object> forFeatures() {
+    public static DefaultFilterFactory<AbstractFeature, Object, Object> forFeatures() {
         return Features.DEFAULT;
     }
 

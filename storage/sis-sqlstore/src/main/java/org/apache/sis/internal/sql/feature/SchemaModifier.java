@@ -18,6 +18,7 @@ package org.apache.sis.internal.sql.feature;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.io.InternalOptionKey;
 import org.apache.sis.setup.OptionKey;
 
 // Branch-dependent imports
@@ -73,6 +74,5 @@ public interface SchemaModifier {
      * @todo if we move this key in public API in the future, then it would be a
      *       value in existing {@link org.apache.sis.storage.DataOptionKey} class.
      */
-    OptionKey<SchemaModifier> OPTION = new OptionKey<SchemaModifier>("SCHEMA_MODIFIER", SchemaModifier.class) {
-    };
+    OptionKey<SchemaModifier> OPTION = new InternalOptionKey<SchemaModifier>("SCHEMA_MODIFIER", SchemaModifier.class);
 }

@@ -65,6 +65,7 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * that may change in future version. Subclasses are specialization for more restricted areas.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Maxime Gavens (Geomatys)
  * @version 1.1
  *
  * @see ModifiedAzimuthalEquidistant

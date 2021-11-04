@@ -46,6 +46,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
@@ -131,7 +132,7 @@ import org.apache.sis.measure.Units;
  * consider {@linkplain #clone() cloning} if setter methods are invoked on a shared instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -743,6 +744,29 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Applies a mask defined by a geometric shape. If {@code maskInside} is {@code true},
+     * then all pixels inside the given shape are set to the {@linkplain #getFillValues() fill values}.
+     * If {@code maskInside} is {@code false}, then the mask is reversed:
+     * the pixels set to fill values are the ones outside the shape.
+     *
+     * @param  source      the image on which to apply a mask.
+     * @param  mask        geometric area (in pixel coordinates) of the mask.
+     * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
+     * @return an image with mask applied.
+     *
+     * @since 1.2
+     */
+    public RenderedImage mask(final RenderedImage source, final Shape mask, final boolean maskInside) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("mask",   mask);
+        final Number[] fillValues;
+        synchronized (this) {
+            fillValues = this.fillValues;
+        }
+        return unique(new MaskedImage(source, mask, maskInside, fillValues));
+    }
+
+    /**
      * Returns an image with sample values converted by the given functions. The results can be stored as
      * {@code byte}, {@code short}, {@code int}, {@code float} or {@code double} values, not necessarily
      * the same type than the source values. If the result values are stored as integers, then they are
@@ -802,6 +826,16 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Verifies that the given rectangle, if non-null, is non-empty.
+     * This method assumes that the argument name is "bounds".
+     */
+    private static void ensureNonEmpty(final Rectangle bounds) {
+        if (bounds != null && bounds.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
+        }
+    }
+
+    /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a potentially non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
@@ -838,6 +872,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
+        ensureNonEmpty(bounds);
         final ColorModel  cm = source.getColorModel();
         final SampleModel sm = source.getSampleModel();
         boolean isIdentity = toSource.isIdentity();
@@ -948,11 +983,7 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("colors", colors);
-        try {
-            return Visualization.create(this, null, source, null, null, colors.entrySet());
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
+        return visualize(new Visualization.Builder(source, colors.entrySet()));
     }
 
     /**
@@ -989,11 +1020,7 @@ public class ImageProcessor implements Cloneable {
      */
     public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
-        try {
-            return Visualization.create(this, null, source, null, ranges, null);
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
+        return visualize(new Visualization.Builder(null, source, null, ranges));
     }
 
     /**
@@ -1040,37 +1067,26 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
-        try {
-            return Visualization.create(this, bounds, source, toSource, ranges, null);
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
+        ensureNonEmpty(bounds);
+        return visualize(new Visualization.Builder(bounds, source, toSource, ranges));
     }
 
     /**
-     * Callback method for {@link Visualization}.
-     *
-     * @param  source      image to be resampled and converted.
-     * @param  toSource    conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
-     * @param  converters  transfer functions to apply on each band of the source image. This array is not cloned.
-     * @param  bounds      domain of pixel coordinates of this image, or {@code null} if same as {@code source} image.
-     * @param  colorModel  color model of the image to create.
+     * Finishes builder configuration and creates the {@link Visualization} image.
      */
-    final RenderedImage resampleAndConvert(final RenderedImage source, final MathTransform toSource,
-            final MathTransform1D[] converters, final Rectangle bounds, final ColorModel colorModel)
-    {
-        final ImageLayout   layout;
-        final Interpolation interpolation;
-        final Number[]      fillValues;
-        final Quantity<?>[] positionalAccuracyHints;
+    private RenderedImage visualize(final Visualization.Builder builder) {
         synchronized (this) {
-            layout                  = this.layout;
-            interpolation           = this.interpolation;
-            fillValues              = this.fillValues;
-            positionalAccuracyHints = this.positionalAccuracyHints;
+            builder.layout                  = layout;
+            builder.interpolation           = interpolation;
+            builder.categoryColors          = colors;
+            builder.fillValues              = fillValues;
+            builder.positionalAccuracyHints = positionalAccuracyHints;
         }
-        return unique(new Visualization(source, layout, bounds, toSource, toSource.isIdentity(),
-                      interpolation, converters, fillValues, colorModel, positionalAccuracyHints));
+        try {
+            return builder.create(this);
+        } catch (IllegalStateException | NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
+        }
     }
 
     /**

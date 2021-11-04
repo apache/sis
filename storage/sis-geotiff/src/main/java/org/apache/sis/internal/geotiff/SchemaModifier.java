@@ -21,6 +21,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.internal.storage.io.InternalOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
@@ -123,8 +124,7 @@ public interface SchemaModifier {
      * @todo if we move this key in public API in the future, then it would be a
      *       value in existing {@link org.apache.sis.storage.DataOptionKey} class.
      */
-    OptionKey<SchemaModifier> OPTION = new OptionKey<SchemaModifier>("SCHEMA_MODIFIER", SchemaModifier.class) {
-    };
+    OptionKey<SchemaModifier> OPTION = new InternalOptionKey<SchemaModifier>("SCHEMA_MODIFIER", SchemaModifier.class);
 
     /**
      * The default instance which performs no modification.

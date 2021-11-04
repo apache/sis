@@ -17,32 +17,23 @@
 package org.apache.sis.gui.dataset;
 
 import java.nio.file.Path;
-import javafx.event.Event;
-import javafx.event.EventType;
 
 
 /**
  * Event sent when a resource is loaded.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
+ *
+ * @deprecated Renamed {@link ResourceEvent}.
  */
-public final class LoadEvent extends Event {
+@Deprecated
+public final class LoadEvent extends ResourceEvent {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 5935085957507976585L;
-
-    /**
-     * The only valid type for the load event.
-     */
-    private static final EventType<LoadEvent> LOAD = new EventType<>("LOAD");
-
-    /**
-     * Path to the resource being loaded.
-     */
-    private final Path path;
 
     /**
      * Creates a new event.
@@ -51,16 +42,6 @@ public final class LoadEvent extends Event {
      * @param  path    path to the file being loaded.
      */
     LoadEvent(final ResourceTree source, final Path path) {
-        super(source, null, LOAD);
-        this.path = path;
-    }
-
-    /**
-     * Returns the path to the resource being loaded.
-     *
-     * @return path to the resource being loaded.
-     */
-    public Path getResourcePath() {
-        return path;
+        super(source, path, LOADED);
     }
 }

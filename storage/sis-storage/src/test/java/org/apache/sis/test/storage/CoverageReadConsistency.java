@@ -61,7 +61,7 @@ import static org.junit.Assert.*;
  * (because of the use of static fields).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -253,7 +253,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     /**
      * Applies a random configuration on the resource.
      */
-    private void randomConfigureResource() {
+    private void randomConfigureResource() throws DataStoreException {
         if (resource instanceof AbstractGridResource) {
             final RasterLoadingStrategy[] choices = RasterLoadingStrategy.values();
             ((AbstractGridResource) resource).setLoadingStrategy(choices[random.nextInt(choices.length)]);

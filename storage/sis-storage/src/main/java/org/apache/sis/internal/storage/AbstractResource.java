@@ -48,10 +48,10 @@ import org.apache.sis.util.CharSequences;
  *
  * <h2>Thread safety</h2>
  * Default methods of this abstract class are thread-safe.
- * Synchronization, when needed, uses {@code this} lock.
+ * Synchronization, when needed, uses {@link #getSynchronizationLock()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -111,11 +111,13 @@ public class AbstractResource extends StoreListeners implements Resource {
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
-    public final synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) {
-            metadata = createMetadata();
+    public final Metadata getMetadata() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            if (metadata == null) {
+                metadata = createMetadata();
+            }
+            return metadata;
         }
-        return metadata;
     }
 
     /**
@@ -187,8 +189,19 @@ public class AbstractResource extends StoreListeners implements Resource {
      * Clears any cache in this resource, forcing the data to be recomputed when needed again.
      * This method should be invoked if the data in underlying data store changed.
      */
-    protected synchronized void clearCache() {
-        metadata = null;
+    protected void clearCache() {
+        synchronized (getSynchronizationLock()) {
+            metadata = null;
+        }
+    }
+
+    /**
+     * Returns the object on which to perform synchronizations for thread-safety.
+     *
+     * @return the synchronization lock.
+     */
+    protected Object getSynchronizationLock() {
+        return this;
     }
 
     /**

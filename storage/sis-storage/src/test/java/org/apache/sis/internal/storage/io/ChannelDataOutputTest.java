@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -108,7 +108,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     @Test
     public void testAllWriteMethods() throws IOException {
-        initialize("testAllWriteMethods", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
+        initialize("testAllWriteMethods", STREAM_LENGTH, randomBufferCapacity());
         writeInStreams();
         assertStreamContentEquals();
     }
@@ -132,7 +132,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     @Test
     @DependsOnMethod("testAllWriteMethods")
     public void testWriteAndSeek() throws IOException {
-        initialize("testWriteAndSeek", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
+        initialize("testWriteAndSeek", STREAM_LENGTH, randomBufferCapacity());
         writeInStreams();
         ((Closeable) referenceStream).close();
         final byte[] expectedArray = expectedData.toByteArray();

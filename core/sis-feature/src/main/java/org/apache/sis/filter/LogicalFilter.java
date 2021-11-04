@@ -36,7 +36,7 @@ import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
@@ -299,6 +299,19 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
                             effective.add(optimization.apply(s));
                         }
                     }
+                }
+            }
+        }
+        /*
+         * Simplification after we finished to inline nested logical operators:
+         *
+         *     A AND NOT(A) = FALSE
+         *     A OR  NOT(A) = TRUE
+         */
+        for (Filter<? super R> f : effective) {
+            if (LogicalOperatorName.NOT.equals(f.getOperatorType())) {
+                if (effective.containsAll(((LogicalOperator<?>) f).getOperands())) {
+                    return shortCircuit;
                 }
             }
         }

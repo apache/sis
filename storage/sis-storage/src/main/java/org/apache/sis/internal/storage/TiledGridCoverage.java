@@ -25,7 +25,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
+import java.awt.image.Raster;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -92,8 +92,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * This is relevant only for the last column of tile matrix, because those tiles may be truncated
      * if the image size is not a multiple of tile size. It is usually necessary to read those tiles
      * fully anyway because otherwise, the pixels read from the storage would not be aligned with the
-     * pixels stored in the {@link WritableRaster}. However there is a few exceptions where the read
-     * extent should not be forced to the tile size:
+     * pixels stored in the {@link Raster}. However there is a few exceptions where the read extent
+     * should not be forced to the tile size:
      *
      * <ul>
      *   <li>If the image is untiled, then the {@link org.apache.sis.internal.storage.TiledGridResource.Subset}
@@ -176,7 +176,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @see AOI#getCachedTile()
      * @see #createCacheKey(int)
      */
-    private final Map<TiledGridResource.CacheKey, WritableRaster> rasters;
+    private final Map<TiledGridResource.CacheKey, Raster> rasters;
 
     /**
      * The sample model for all rasters. The size of this sample model is the values of two elements
@@ -422,7 +422,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             /*
              * Get all tiles in the specified region. I/O operations, if needed, happen here.
              */
-            final WritableRaster[] result = readTiles(new AOI(tileLower, tileUpper, offsetAOI, dimension));
+            final Raster[] result = readTiles(new AOI(tileLower, tileUpper, offsetAOI, dimension));
             /*
              * Wraps in an image all the tiles that we just read, together with the following properties:
              *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
@@ -554,10 +554,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @return cached tile at current iterator position, or {@code null} if none.
          *
-         * @see Snapshot#cache(WritableRaster)
+         * @see Snapshot#cache(Raster)
          */
-        public WritableRaster getCachedTile() {
-            WritableRaster tile = rasters.get(createCacheKey(indexInTileVector));
+        public Raster getCachedTile() {
+            Raster tile = rasters.get(createCacheKey(indexInTileVector));
             if (tile != null) {
                 /*
                  * Found a tile, but the sample model may be different because band order may be different.
@@ -566,9 +566,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final int x = getTileOrigin(X_DIMENSION);
                 final int y = getTileOrigin(Y_DIMENSION);
                 if (!model.equals(tile.getSampleModel())) {
-                    tile = WritableRaster.createWritableRaster(model, tile.getDataBuffer(), new Point(x, y));
+                    tile = Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
                 } else if (tile.getMinX() != x || tile.getMinY() != y) {
-                    tile = tile.createWritableTranslatedChild(x, y);
+                    tile = tile.createTranslatedChild(x, y);
                 }
             }
             return tile;
@@ -765,8 +765,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @see AOI#getCachedTile()
          */
-        public WritableRaster cache(final WritableRaster raster) {
-            final WritableRaster existing = coverage.rasters.putIfAbsent(
+        public Raster cache(final Raster raster) {
+            final Raster existing = coverage.rasters.putIfAbsent(
                     coverage.createCacheKey(indexInTileVector), raster);
             return (existing != null) ? existing : raster;
         }
@@ -784,7 +784,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * (0,0) is the tile in the upper-left corner of this {@code TiledGridCoverage} (not necessarily the upper-left
      * corner of the image in the {@link TiledGridResource}).
      *
-     * The {@link WritableRaster#getMinX()} and {@code getMinY()} coordinates of returned rasters
+     * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * shall start at the given {@code iterator.offsetAOI} values.
      *
      * <p>This method must be thread-safe.</p>
@@ -796,5 +796,5 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @throws RuntimeException if the Java2D image can not be created for another reason
      *         (too many exception types to list them all).
      */
-    protected abstract WritableRaster[] readTiles(AOI iterator) throws IOException, DataStoreException;
+    protected abstract Raster[] readTiles(AOI iterator) throws IOException, DataStoreException;
 }

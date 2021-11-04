@@ -30,7 +30,7 @@ package org.apache.sis.internal.geotiff;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -137,24 +137,22 @@ public enum Compression {
      * @param  code  the TIFF code for which to get a compression enumeration value.
      * @return enumeration value for the given code, or {@link #UNKNOWN} if none.
      */
-    public static Compression valueOf(final long code) {
-        if ((code & ~0xFFFF) == 0) {                // Should be a short according TIFF specification.
-            switch ((int) code) {
-                case 1:     return NONE;
-                case 2:     return CCITTRLE;
-                case 5:     return LZW;
-                case 6:     // "old-style" JPEG, later overriden in Technical Notes 2.
-                case 7:     return JPEG;
-                case 8:
-                case 32946: return DEFLATE;
-                case 32773: return PACKBITS;
-                default: {
-                    // Fallback for uncommon formats.
-                    for (final Compression c : values()) {
-                        if (c.code == code) return c;
-                    }
-                    break;
+    public static Compression valueOf(final int code) {
+        switch (code) {
+            case 1:     return NONE;
+            case 2:     return CCITTRLE;
+            case 5:     return LZW;
+            case 6:     // "old-style" JPEG, later overriden in Technical Notes 2.
+            case 7:     return JPEG;
+            case 8:
+            case 32946: return DEFLATE;
+            case 32773: return PACKBITS;
+            default: {
+                // Fallback for uncommon formats.
+                for (final Compression c : values()) {
+                    if (c.code == code) return c;
                 }
+                break;
             }
         }
         return UNKNOWN;

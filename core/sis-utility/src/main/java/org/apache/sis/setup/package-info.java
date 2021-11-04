@@ -23,7 +23,7 @@
  * is created.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */

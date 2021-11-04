@@ -16,7 +16,6 @@
  */
 package org.apache.sis.image;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.lang.ref.Reference;
 import java.nio.DoubleBuffer;
@@ -39,6 +38,7 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.FillValues;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
@@ -70,7 +70,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see Interpolation
  * @see java.awt.image.AffineTransformOp
@@ -298,31 +298,7 @@ public class ResampledImage extends ComputedImage {
         }
         this.toSourceSupport = toSourceSupport;
         this.linearAccuracy  = linearAccuracy;
-        /*
-         * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on whether
-         * the target data type is an integer type or not. Null elements default to zero.
-         */
-        final int numBands = ImageUtilities.getNumBands(source);
-        if (ImageUtilities.isIntegerType(sampleModel)) {
-            final int[] fill = new int[numBands];
-            if (fillValues != null) {
-                for (int i=Math.min(fillValues.length, numBands); --i >= 0;) {
-                    final Number f = fillValues[i];
-                    if (f != null) fill[i] = f.intValue();
-                }
-            }
-            this.fillValues = fill;
-        } else {
-            final double[] fill = new double[numBands];
-            Arrays.fill(fill, Double.NaN);
-            if (fillValues != null) {
-                for (int i=Math.min(fillValues.length, numBands); --i >= 0;) {
-                    final Number f = fillValues[i];
-                    if (f != null) fill[i] = f.doubleValue();
-                }
-            }
-            this.fillValues = fill;
-        }
+        this.fillValues      = new FillValues(sampleModel, fillValues, false).asPrimitiveArray;
     }
 
     /**

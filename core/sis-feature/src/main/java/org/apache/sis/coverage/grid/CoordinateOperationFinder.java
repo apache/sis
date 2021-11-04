@@ -245,7 +245,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
         /*
          * If `coordinates` is non-null, it means that `CoordinateOperationContext.getConstantCoordinates()`
          * has been invoked during previous `gridToCRS()` execution, which implies that `changeOfCRS` depends
-         * on the`anchor` value. In such case we will need to recompute all fields that depend on `changeOfCRS`.
+         * on the `anchor` value. In such case we will need to recompute all fields that depend on `changeOfCRS`.
          */
         anchor = newValue;
         gridToCRS = null;

@@ -63,6 +63,7 @@ abstract class GeoTIFF implements Closeable {
 
     /**
      * The store which created this reader or writer.
+     * This is also the synchronization lock.
      */
     final GeoTiffStore store;
 

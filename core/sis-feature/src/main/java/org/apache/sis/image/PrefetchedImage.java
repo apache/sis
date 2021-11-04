@@ -16,22 +16,18 @@
  */
 package org.apache.sis.image;
 
-import java.util.Arrays;
 import java.util.Vector;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -41,7 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
  * This image has the same coordinate systems than the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see ImageProcessor#prefetch(RenderedImage, Rectangle)
  *
@@ -80,7 +76,7 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
      *
      * @see #createPlaceholder(int, int)
      */
-    private DataBuffer placeholderPixels;
+    private volatile TilePlaceholder placeholderPixels;
 
     /**
      * Non-null if errors should be handled during {@link #getTile(int, int)} execution for tiles outside
@@ -285,77 +281,12 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
      * @return placeholder for the tile at given indices.
      */
     private Raster createPlaceholder(final int tileX, final int tileY) {
-        final SampleModel model = getSampleModel();
-        final Point location = new Point(ImageUtilities.tileToPixelX(source, tileX),
-                                         ImageUtilities.tileToPixelY(source, tileY));
-        if (placeholderPixels != null) {
-            // Reuse same `DataBuffer` with only a different location.
-            return Raster.createRaster(model, placeholderPixels, location);
+        TilePlaceholder p = placeholderPixels;
+        if (p == null) {
+            // Not a problem if invoked concurrently in two threads.
+            placeholderPixels = p = TilePlaceholder.withCross(source);
         }
-        final double[] samples = new double[model.getNumBands()];
-        if (ImageUtilities.isIntegerType(model)) {
-            final boolean isUnsigned = ImageUtilities.isUnsignedType(model);
-            for (int i=0; i<samples.length; i++) {
-                int size = model.getSampleSize(i);
-                if (!isUnsigned) size--;
-                samples[i] = Numerics.bitmask(size) - 1;
-            }
-        } else {
-            final ColorSpace cs;
-            final ColorModel cm = getColorModel();
-            if (cm != null && (cs = cm.getColorSpace()) != null) {
-                for (int i = Math.min(cs.getNumComponents(), samples.length); --i >=0;) {
-                    samples[i] = cs.getMaxValue(i);
-                }
-            } else {
-                Arrays.fill(samples, 1);
-            }
-        }
-        /*
-         * Draw borders around the tile as dotted lines. The left border will have (usually) white pixels
-         * at even coordinates relative to upper-left corner, while right border will have same pixels at
-         * odd coordinates. The same pattern applies to top and bottom borders.
-         */
-        final WritableRaster tile = WritableRaster.createWritableRaster(model, model.createDataBuffer(), location);
-        final int width  = tile.getWidth();
-        final int height = tile.getHeight();
-        final int xmin   = tile.getMinX();
-        final int ymin   = tile.getMinY();
-        final int xmax   = width  + xmin - 1;
-        final int ymax   = height + ymin - 1;
-        int x = xmin;
-        while (x < xmax) {
-            tile.setPixel(x++, ymin, samples);
-            tile.setPixel(x++, ymax, samples);
-        }
-        int y = ymin;
-        while (y < ymax) {
-            tile.setPixel(xmin, y++, samples);
-            tile.setPixel(xmax, y++, samples);
-        }
-        if (x == xmax) tile.setPixel(xmax, ymin, samples);
-        if (y == ymax) tile.setPixel(xmin, ymax, samples);
-        /*
-         * Add a cross (X) inside the tile.
-         */
-        if (width >= height) {
-            final double step = height / (double) width;
-            for (int i=0; i<width; i++) {
-                x = xmin + i;
-                y = (int) (i*step);
-                tile.setPixel(x, ymin + y, samples);
-                tile.setPixel(x, ymax - y, samples);
-            }
-        } else {
-            final double step = width / (double) height;
-            for (int i=0; i<height; i++) {
-                y = ymin + i;
-                x = (int) (i*step);
-                tile.setPixel(xmin + x, y, samples);
-                tile.setPixel(xmax - x, y, samples);
-            }
-        }
-        placeholderPixels = tile.getDataBuffer();
-        return tile;
+        return p.create(new Point(ImageUtilities.tileToPixelX(source, tileX),
+                                  ImageUtilities.tileToPixelY(source, tileY)));
     }
 }

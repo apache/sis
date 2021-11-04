@@ -36,7 +36,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * to the source image.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -55,6 +55,17 @@ abstract class SourceAlignedImage extends ComputedImage {
     private final ColorModel colorModel;
 
     /**
+     * Creates a new image with the given source.
+     * This image inherit the color model and sample model of source image.
+     *
+     * @param  source  the image to use as a background for this image.
+     */
+    protected SourceAlignedImage(final RenderedImage source) {
+        super(source.getSampleModel(), source);
+        colorModel = source.getColorModel();
+    }
+
+    /**
      * Creates a new image with the given source, color model and sample model.
      *
      * @param  source       source of this image. Shall not be null.
@@ -69,13 +80,13 @@ abstract class SourceAlignedImage extends ComputedImage {
     }
 
     /**
-     * Creates a new image with the given source and a sample model derived from the color model.
+     * Creates a new image with the given source and a sample model derived from the given color model.
      * The new image will have the same tile size than the given image.
      *
      * @param  source       source of this image. Shall not be null.
      * @param  colorModel   the color model of the new image.
      */
-    SourceAlignedImage(final RenderedImage source, final ColorModel colorModel) {
+    protected SourceAlignedImage(final RenderedImage source, final ColorModel colorModel) {
         super(createSampleModel(colorModel, source.getSampleModel()), source);
         this.colorModel = colorModel;
     }
@@ -91,7 +102,9 @@ abstract class SourceAlignedImage extends ComputedImage {
     }
 
     /**
-     * Returns an arbitrary color model for this image.
+     * Returns the color model associated with this image.
+     *
+     * @return the color model, or {@code null} if none.
      */
     @Override
     public final ColorModel getColorModel() {

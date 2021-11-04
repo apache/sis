@@ -44,6 +44,7 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * @todo Add Jacobian matrix formulas.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Maxime Gavens (Geomatys)
  * @version 1.1
  *
  * @see AzimuthalEquidistant
@@ -211,6 +212,11 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         if (!derivate) {
             return null;
         }
+        /*
+         * If we want to give another try in supporting this,
+         * the following formulas may be used as a starting point:
+         * https://svn.apache.org/repos/asf/sis/analysis/Modified%20Azimuthal%20Equidistant.wxmx
+         */
         throw new ProjectionException("Derivative not yet implemented.");
     }
 

@@ -67,7 +67,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -163,6 +163,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
      *
      * @see DiscreteSampling#lock
+     * @see #getSynchronizationLock()
      */
     private final Object lock;
 
@@ -747,5 +748,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
     @Override
     public Path[] getComponentFiles() {
         return (location != null) ? new Path[] {location} : new Path[0];
+    }
+
+    /**
+     * Returns the object on which to perform synchronizations for thread-safety.
+     *
+     * @return the synchronization lock.
+     */
+    @Override
+    protected final Object getSynchronizationLock() {
+        return lock;
     }
 }

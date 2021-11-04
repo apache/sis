@@ -67,7 +67,7 @@ public final class Styles extends Static {
     /**
      * "Standard" height of table rows. Can be approximate.
      */
-    public static final double ROW_HEIGHT = 30;
+    public static final int ROW_HEIGHT = 30;
 
     /**
      * Usual color of text.

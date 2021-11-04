@@ -31,6 +31,7 @@ import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.doubleToRawLongBits;
+import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
@@ -61,7 +62,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
@@ -880,7 +881,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
          * values before that point, i.e. if n=p₁⋅p₂ and p₂ is greater than `sqrt`, than p₁
          * must be lower than `sqrt`.
          */
-        for (int p,i=0; (p=primeNumberAt(i))*p <= number; i++) {
+        for (int p,i=0; multiplyFull(p=primeNumberAt(i), p) <= number; i++) {
             if (number % p == 0) {
                 if (count == divisors.length) {
                     divisors = Arrays.copyOf(divisors, count*2);
@@ -913,7 +914,9 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
         for (int i=1; i<count; i++) {
             d1 = divisors[i];
             for (int j=i; j<count; j++) {
-                d2 = d1 * divisors[j];
+                final long m = multiplyFull(d1, divisors[j]);
+                if (m > number) break;
+                d2 = (int) m;
                 if (number % d2 == 0) {
                     int p = Arrays.binarySearch(divisors, j, count, d2);
                     if (p < 0) {

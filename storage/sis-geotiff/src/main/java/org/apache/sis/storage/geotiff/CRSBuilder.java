@@ -83,65 +83,19 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 /**
  * Helper class for building a {@link CoordinateReferenceSystem} from information found in TIFF tags.
- * A {@code CRSBuilder} receives as inputs the values of the following TIFF tags:
- *
- * <ul>
- *   <li>{@link Tags#GeoKeyDirectory} — array of unsigned {@code short} values grouped into blocks of 4.</li>
- *   <li>{@link Tags#GeoDoubleParams} — array of {@double} values referenced by {@code GeoKeyDirectory} elements.</li>
- *   <li>{@link Tags#GeoAsciiParams}  — array of characters referenced by {@code GeoKeyDirectory} elements.</li>
- * </ul>
- *
- * For example, consider the following values for the above-cited tags:
- *
- * <table class="sis">
- *   <caption>GeoKeyDirectory(34735) values</caption>
- *   <tr><td>    1 </td><td>     1 </td><td>  2 </td><td>     6 </td></tr>
- *   <tr><td> 1024 </td><td>     0 </td><td>  1 </td><td>     2 </td></tr>
- *   <tr><td> 1026 </td><td> 34737 </td><td>  0 </td><td>    12 </td></tr>
- *   <tr><td> 2048 </td><td>     0 </td><td>  1 </td><td> 32767 </td></tr>
- *   <tr><td> 2049 </td><td> 34737 </td><td> 14 </td><td>    12 </td></tr>
- *   <tr><td> 2050 </td><td>     0 </td><td>  1 </td><td>     6 </td></tr>
- *   <tr><td> 2051 </td><td> 34736 </td><td>  1 </td><td>     0 </td></tr>
- * </table>
- *
- * {@preformattext
- *   GeoDoubleParams(34736) = {1.5}
- *   GeoAsciiParams(34737) = "Custom File|My Geographic|"
- * }
- *
- * <p>The first number in the {@code GeoKeyDirectory} table indicates that this is a version 1 GeoTIFF GeoKey directory.
- * This version will only change if the key structure is changed. The other numbers on the first line said that the file
- * uses revision 1.2 of the set of keys and that there is 6 key values.</p>
- *
- * <p>The next line indicates that the first key (1024 = {@code ModelType}) has the value 2 (Geographic),
- * explicitly placed in the entry list since the TIFF tag location is 0.
- * The next line indicates that the key 1026 ({@code Citation}) is listed in the {@code GeoAsciiParams(34737)} array,
- * starting at offset 0 (the first in array), and running for 12 bytes and so has the value "Custom File".
- * The "|" character is converted to a null delimiter at the end in C/C++ libraries.</p>
- *
- * <p>Going further down the list, the key 2051 ({@code GeogLinearUnitSize}) is located in {@code GeoDoubleParams(34736)}
- * at offset 0 and has the value 1.5; the value of key 2049 ({@code GeogCitation}) is "My Geographic".</p>
+ * GeoKeys are loaded by {@link GeoKeysLoader} and consumed by this class.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GeoKeys
+ * @see GeoKeysLoader
  *
  * @since 0.8
  * @module
  */
 final class CRSBuilder extends ReferencingFactoryContainer {
-    /**
-     * Number of {@code short} values in each GeoKey entry.
-     */
-    private static final int ENTRY_LENGTH = 4;
-
-    /**
-     * The character used as a separator in {@link String} multi-values.
-     */
-    private static final char SEPARATOR = '|';
-
     /**
      * Index where to store the name of the geodetic CRS, the datum, the ellipsoid and the prime meridian.
      * The GeoTIFF specification has only one key, {@link GeoKeys#GeogCitation}, for the geographic CRS and
@@ -241,8 +195,9 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  args  arguments for the log message.
      *
      * @see Resources
+     * @see GeoKeysLoader#warning(short, Object...)
      */
-    private void warning(final short key, final Object... args) {
+    final void warning(final short key, final Object... args) {
         final LogRecord r = reader.resources().getLogRecord(Level.WARNING, key, args);
         reader.store.warning(r);
     }
@@ -400,8 +355,10 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     /**
      * Reports a warning about missing value for the given key. The key name is opportunistically returned for
      * building the {@link NoSuchElementException} message, but it is not the main purpose of this method.
+     *
+     * @see GeoKeysLoader#missingValue(short)
      */
-    private String missingValue(final short key) {
+    final String missingValue(final short key) {
         final String name = GeoKeys.name(key);
         warning(Resources.Keys.MissingGeoValue_1, name);
         return name;
@@ -490,9 +447,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * The {@link #description} and {@link #cellGeometry} fields are set as a side-effect.
      * A warning is emitted if any GeoTIFF tags were ignored.
      *
-     * @param  keyDirectory       the GeoTIFF keys to be associated to values. Can not be null.
-     * @param  numericParameters  a vector of {@code double} parameters, or {@code null} if none.
-     * @param  asciiParameters    the sequence of characters from which to build strings, or {@code null} if none.
+     * @param  source  the {@code keyDirectory}, {@code numericParameters} and {@code asciiParameters} tags.
      * @return the coordinate reference system created from the given GeoTIFF keys, or {@code null} if undefined.
      *
      * @throws NoSuchElementException if a mandatory value is missing.
@@ -501,144 +456,19 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
     @SuppressWarnings("null")
-    public CoordinateReferenceSystem build(final Vector keyDirectory, final Vector numericParameters, final String asciiParameters)
-            throws FactoryException
-    {
-        final int numberOfKeys;
-        final int directoryLength = keyDirectory.size();
-        if (directoryLength >= ENTRY_LENGTH) {
-            final int version = keyDirectory.intValue(0);
-            if (version != 1) {
-                warning(Resources.Keys.UnsupportedGeoKeyDirectory_1, version);
+    public CoordinateReferenceSystem build(final GeoKeysLoader source) throws FactoryException {
+        try {
+            source.logger = this;
+            if (!source.load(geoKeys)) {
                 return null;
             }
-            majorRevision = keyDirectory.shortValue(1);
-            minorRevision = keyDirectory.shortValue(2);
-            numberOfKeys  = keyDirectory.intValue(3);
-        } else {
-            numberOfKeys = 0;
+        } finally {
+            source.logger = null;
+            this.majorRevision = source.majorRevision;
+            this.minorRevision = source.minorRevision;
         }
         /*
-         * The key directory may be longer than needed for the amount of keys, but not shorter.
-         * If shorter, report a warning and stop the parsing since we have no way to know if the
-         * missing information were essentiel or not.
-         *
-         *     (number of key + head) * 4    ---    1 entry = 4 short values.
-         */
-        final int expectedLength = (numberOfKeys + 1) * ENTRY_LENGTH;
-        if (directoryLength < expectedLength) {
-            warning(Resources.Keys.ListTooShort_3, "GeoKeyDirectory", expectedLength, directoryLength);
-            return null;
-        }
-        final int numberOfDoubles = (numericParameters != null) ? numericParameters.size() : 0;
-        final int numberOfChars   =   (asciiParameters != null) ? asciiParameters.length() : 0;
-        /*
-         * Now iterate over all GeoKey values. The values are copied in a HashMap for convenience,
-         * because the CRS creation may use them out of order.
-         */
-        for (int i=1; i <= numberOfKeys; i++) {
-            final int p = i * ENTRY_LENGTH;
-            final short key       = keyDirectory.shortValue(p);
-            final int tagLocation = keyDirectory.intValue(p+1);
-            final int count       = keyDirectory.intValue(p+2);
-            final int valueOffset = keyDirectory.intValue(p+3);
-            if (valueOffset < 0 || count < 0) {
-                missingValue(key);
-                continue;
-            }
-            final Object value;
-            switch (tagLocation) {
-                /*
-                 * tagLocation == 0 means that 'valueOffset' actually contains the value,
-                 * thus avoiding the need to allocate a separated storage location for it.
-                 * The count should be 1.
-                 */
-                case 0: {
-                    switch (count) {
-                        case 0:  continue;
-                        case 1:  break;          // Expected value.
-                        default: warning(Resources.Keys.UnexpectedListOfValues_2, GeoKeys.name(key), count); break;
-                    }
-                    value = valueOffset;
-                    break;
-                }
-                /*
-                 * Values of type 'short' are stored in the same vector than the key directory;
-                 * the specification does not allocate a separated vector for them. We use the
-                 * 'int' type if needed for allowing storage of unsigned short values.
-                 */
-                case Tags.GeoKeyDirectory & 0xFFFF: {
-                    if (valueOffset + count > keyDirectory.size()) {
-                        missingValue(key);
-                        continue;
-                    }
-                    switch (count) {
-                        case 0:  continue;
-                        case 1:  value = keyDirectory.get(valueOffset); break;
-                        default: final int[] array = new int[count];
-                                 for (int j=0; j<count; j++) {
-                                     array[j] = keyDirectory.intValue(valueOffset + j);
-                                 }
-                                 value = array;
-                                 break;
-                    }
-                    break;
-                }
-                /*
-                 * Values of type 'double' are read from a separated vector, 'numericParameters'.
-                 * Result is stored in a Double wrapper or in an array of type 'double[]'.
-                 */
-                case Tags.GeoDoubleParams & 0xFFFF: {
-                    if (valueOffset + count > numberOfDoubles) {
-                        missingValue(key);
-                        continue;
-                    }
-                    switch (count) {
-                        case 0:  continue;
-                        case 1:  value = numericParameters.get(valueOffset); break;
-                        default: final double[] array = new double[count];
-                                 for (int j=0; j<count; j++) {
-                                     array[j] = numericParameters.doubleValue(valueOffset + j);
-                                 }
-                                 value = array;
-                                 break;
-                    }
-                    break;
-                }
-                /*
-                 * ASCII encoding use the pipe ('|') character as a replacement for the NUL character
-                 * used in C/C++ programming languages. We need to omit those trailing characters.
-                 */
-                case Tags.GeoAsciiParams & 0xFFFF: {
-                    int upper = valueOffset + count;
-                    if (upper > numberOfChars) {
-                        missingValue(key);
-                        continue;
-                    }
-                    upper = CharSequences.skipTrailingWhitespaces(asciiParameters, valueOffset, upper);
-                    while (upper > valueOffset && asciiParameters.charAt(upper - 1) == SEPARATOR) {
-                        upper--;    // Skip trailing pipe, interpreted as C/C++ NUL character.
-                    }
-                    // Use String.trim() for skipping C/C++ NUL character in addition of whitespaces.
-                    final String s = asciiParameters.substring(valueOffset, upper).trim();
-                    if (s.isEmpty()) continue;
-                    value = s;
-                    break;
-                }
-                /*
-                 * GeoKeys are not expected to use other storage mechanism. If this happen anyway, report a warning
-                 * and continue on the assumption that if the value that we are ignoring was critical information,
-                 * it would have be stored in one of the standard GeoTIFF tags.
-                 */
-                default: {
-                    warning(Resources.Keys.UnsupportedGeoKeyStorage_1, GeoKeys.name(key));
-                    continue;
-                }
-            }
-            geoKeys.put(key, value);
-        }
-        /*
-         * At this point we finished copying all GeoTIFF keys in the 'geoKeys' map. Before to create the CRS,
+         * At this point we finished copying all GeoTIFF keys in the `geoKeys` map. Before to create the CRS,
          * store a few metadata. The first one is an ASCII reference to published documentation on the overall
          * configuration of the GeoTIFF file. In practice it seems to be often the projected CRS name, despite
          * GeoKeys.PCSCitation being already for that purpose.
@@ -1066,7 +896,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      */
     static String[] splitName(final String name) {
         final String[] names = new String[GCRS + 1];
-        final String[] components = (String[]) CharSequences.split(name, SEPARATOR);
+        final String[] components = (String[]) CharSequences.split(name, GeoKeysLoader.SEPARATOR);
         switch (components.length) {
             case 0: break;
             case 1: names[GCRS] = name; break;

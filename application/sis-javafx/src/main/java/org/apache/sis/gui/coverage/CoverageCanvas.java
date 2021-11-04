@@ -59,6 +59,8 @@ import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
@@ -86,7 +88,7 @@ import org.apache.sis.util.Debug;
  * A canvas for {@link RenderedImage} provided by a {@link GridCoverage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see CoverageExplorer
  *
@@ -417,7 +419,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     private void onImageSpecified() {
         final GridCoverage coverage = getCoverage();
         if (coverage == null) {
-            clear();
+            runAfterRendering(this::clear);
         } else {
             final GridExtent sliceExtent = getSliceExtent();
             BackgroundThreads.execute(new Task<RenderedImage>() {
@@ -460,7 +462,10 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * Invoked in JavaFX thread for setting the image to the instance we just fetched.
                  */
                 @Override protected void succeeded() {
-                    setRawImage(getValue(), imageGeometry, coverage.getSampleDimensions());
+                    final RenderedImage image = getValue();
+                    final GridGeometry    gg  = imageGeometry;
+                    List<SampleDimension> sd  = coverage.getSampleDimensions();
+                    runAfterRendering(() -> setRawImage(image, gg, sd));
                 }
             });
         }
@@ -484,8 +489,16 @@ public class CoverageCanvas extends MapCanvasAWT {
         derivedImages.clear();
         data.setImage(image, domain, ranges);
         Envelope bounds = null;
-        if (domain != null && domain.isDefined(GridGeometry.ENVELOPE)) {
-            bounds = domain.getEnvelope();
+        if (domain != null) {
+            if (domain.isDefined(GridGeometry.ENVELOPE)) {
+                bounds = domain.getEnvelope();
+            } else if (domain.isDefined(GridGeometry.EXTENT)) try {
+                final GeneralEnvelope ge = domain.getExtent().toEnvelope(MathTransforms.identity(BIDIMENSIONAL));
+                ge.setCoordinateReferenceSystem(CommonCRS.Engineering.DISPLAY.crs());
+                bounds = ge;
+            } catch (TransformException e) {
+                unexpectedException(e);         // Should never happen.
+            }
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
@@ -885,6 +898,17 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Removes the image shown and releases memory.
+     *
+     * <h4>Usage</h4>
+     * Overriding methods in subclasses should invoke {@code super.clear()}.
+     * Other methods should generally not invoke this method directly,
+     * and use the following code instead:
+     *
+     * {@preformat java
+     *     runAfterRendering(this::clear);
+     * }
+     *
+     * @see #runAfterRendering(Runnable)
      */
     @Override
     protected void clear() {
