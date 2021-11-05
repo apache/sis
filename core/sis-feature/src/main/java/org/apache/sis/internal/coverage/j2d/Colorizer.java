@@ -37,6 +37,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Debug;
@@ -61,7 +62,7 @@ import org.apache.sis.util.Debug;
  * product as different depth or different time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see ColorModelType
  * @see ColorModelFactory#createColorModel(int, int, int, Collection)
@@ -106,7 +107,7 @@ public final class Colorizer {
                 Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED} : null;
 
     /**
-     * The colors to use for each category.
+     * The colors to use for each category. Never {@code null}.
      * The function may return {@code null}, which means transparent.
      */
     private final Function<Category,Color[]> colors;
@@ -114,6 +115,7 @@ public final class Colorizer {
     /**
      * The colors to use for each range of values in the source image.
      * Entries will be sorted and modified in place.
+     * The array may be null if unspecified, but shall not contain null element.
      */
     private ColorsForRange[] entries;
 
@@ -128,8 +130,17 @@ public final class Colorizer {
      * The sample dimension for values after conversion, or {@code null} if not yet computed.
      * May be the same than {@link #source} or {@code source.forConvertedValues(true)} if one
      * of those values is suitable, or a new sample dimension created by {@link #compact()}.
+     *
+     * <p>This sample dimension should not be returned to the user because it may not contain meaningful values.
+     * For example it may contain an "artificial" transfer function for computing a {@link MathTransform1D} from
+     * source range to the [0 … 255] value range.</p>
      */
     private SampleDimension target;
+
+    /**
+     * Default range of values to use if no explicitly specified by a {@link Category}.
+     */
+    private NumberRange<?> defaultRange;
 
     /**
      * Creates a new colorizer which will apply colors on the given range of values in source image.
@@ -137,12 +148,12 @@ public final class Colorizer {
      * callers shall <strong>not</strong> invoke an {@code initialize(…)} method.
      *
      * @param  colors  the colors to use for each range of values in source image.
-     *                 A {@code null} value means transparent.
+     *                 A {@code null} entry value means transparent.
      */
     public Colorizer(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors) {
         ArgumentChecks.ensureNonNull("colors", colors);
         entries = ColorsForRange.list(colors);
-        this.colors = null;
+        this.colors = GRAYSCALE;
     }
 
     /**
@@ -190,12 +201,13 @@ public final class Colorizer {
             this.source = source;
             final List<Category> categories = source.getCategories();
             if (!categories.isEmpty()) {
-                entries = new ColorsForRange[categories.size()];
+                final ColorsForRange[] entries = new ColorsForRange[categories.size()];
                 for (int i=0; i<entries.length; i++) {
                     final Category category = categories.get(i);
                     entries[i] = new ColorsForRange(category, category.getSampleRange(), colors.apply(category));
                 }
                 // Leave `target` to null. It will be computed by `compact()` if needed.
+                this.entries = entries;
                 return true;
             }
         }
@@ -269,19 +281,20 @@ public final class Colorizer {
         checkInitializationStatus(false);
         ArgumentChecks.ensureFinite("minimum", minimum);
         ArgumentChecks.ensureFinite("maximum", maximum);
+        defaultRange = NumberRange.create(minimum, true, maximum, true);
         target = new SampleDimension.Builder()
                 .setBackground(null, 0)
                 .addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Data),
-                        NumberRange.create(1, true, MAX_VALUE, true),
-                        NumberRange.create(minimum, true, maximum, true)).build();
+                        NumberRange.create(1, true, MAX_VALUE, true), defaultRange).build();
 
         source = target.forConvertedValues(true);
         final List<Category> categories = source.getCategories();
-        entries = new ColorsForRange[categories.size()];
+        final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
             entries[i] = new ColorsForRange(category, category.forConvertedValues(false).getSampleRange(), colors.apply(category));
         }
+        this.entries = entries;
     }
 
     /**
@@ -303,8 +316,8 @@ public final class Colorizer {
             final ColorSpace cs = original.getColorSpace();
             if (cs instanceof ScaledColorSpace) {
                 final ScaledColorSpace scs = (ScaledColorSpace) cs;
-                final double  minimum = scs.offset;
-                final double  maximum = scs.maximum;
+                final double minimum = scs.offset;
+                final double maximum = scs.maximum;
                 ColorsForRange widest = null;
                 double widestSpan = 0;
                 for (final ColorsForRange entry : entries) {
@@ -315,8 +328,9 @@ public final class Colorizer {
                         widest = entry;
                     }
                 }
+                defaultRange = NumberRange.create(minimum, true, maximum, false);
                 if (widest != null && widestSpan != widest.sampleRange.getSpan()) {
-                    widest.sampleRange = NumberRange.create(minimum, true, maximum, false);
+                    widest.sampleRange = defaultRange;
                     target = null;      // For recomputing the transfer function later.
                 }
             }
@@ -344,9 +358,14 @@ public final class Colorizer {
          * If a source SampleDimension has been specified, verify if it provides a transfer function that we can
          * use directly. If this is the case, use the existing transfer function instead of inventing our own.
          */
+        ColorsForRange[] entries = this.entries;
 reuse:  if (source != null) {
             target = source.forConvertedValues(false);
             if (target.getSampleRange().filter(Colorizer::isAlreadyScaled).isPresent()) {
+                /*
+                 * If we enter in this block, all sample values are already in the [0 … 255] range.
+                 * If in addition there is no conversion to apply, then there is nothing to do.
+                 */
                 if (target == source) {
                     return;
                 }
@@ -378,7 +397,7 @@ reuse:  if (source != null) {
             }
         }
         /*
-         * IF we reach this point, `source` sample dimensions were not specified or can not be used for
+         * If we reach this point, `source` sample dimensions were not specified or can not be used for
          * getting a transfer function to the [0 … 255] range of values. We will need to create our own.
          * First, sort the entries for having transparent colors first.
          */
@@ -387,23 +406,42 @@ reuse:  if (source != null) {
         int lower    = 0;                                   // First available index in the [0 … 255] range.
         int deferred = 0;                                   // Number of entries deferred to next loop.
         int count    = entries.length;                      // Total number of valid entries.
+        NumberRange<?> themes = null;                       // The range of values in a thematic map.
         final Map<NumberRange<Integer>,ColorsForRange> mapper = new HashMap<>();
         final SampleDimension.Builder builder = new SampleDimension.Builder();
         /*
          * We will use the byte values range [0 … 255] with 0 reserved in priority for the most transparent pixels.
          * The first loop below processes NaN values, which are usually the ones associated to transparent pixels.
-         * The second loop processes everything else.
+         * The second loop (from 0 to `deferred`) will process everything else.
          */
         for (int i=0; i<count; i++) {
             final ColorsForRange entry = entries[i];
-            final double s = entry.sampleRange.getSpan();
-            if (Double.isNaN(s)) {
+            NumberRange<?> sourceRange = entry.sampleRange;
+            final double s = sourceRange.getSpan();
+            if (!entry.isData()) {
                 if (lower >= MAX_VALUE) {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
                 }
-                final NumberRange<Integer> samples = NumberRange.create(lower, true, ++lower, false);
-                if (mapper.put(samples, entry) == null) {
-                    builder.mapQualitative(entry.name(), samples, (float) s);
+                final NumberRange<Integer> targetRange = NumberRange.create(lower, true, ++lower, false);
+                if (mapper.put(targetRange, entry) == null) {
+                    final CharSequence name = entry.name();
+                    final double value = sourceRange.getMinDouble();
+                    /*
+                     * In the usual case where we have a mix of quantitative and qualitative categories,
+                     * the qualitative ones (typically "no data" categories) are associated to NaN.
+                     * Values are real only if all categories are qualitatives (e.g. a thematic map).
+                     * In such case we will create pseudo-quantitative categories for the purpose of
+                     * computing a transfer function, but those categories should not be returned to user.
+                     */
+                    if (Double.isNaN(value)) {
+                        builder.mapQualitative(name, targetRange, (float) value);
+                    } else {
+                        if (value == entry.sampleRange.getMaxDouble()) {
+                            sourceRange = NumberRange.create(value - 0.5, true, value + 0.5, false);
+                        }
+                        builder.addQuantitative(name, targetRange, sourceRange);
+                        themes = (themes != null) ? themes.unionAny(sourceRange) : sourceRange;
+                    }
                 }
             } else if (s > 0) {
                 // Range of real values: defer processing to next loop.
@@ -417,6 +455,27 @@ reuse:  if (source != null) {
             }
         }
         /*
+         * Following block is executed only if the sample dimension defines only qualitative categories.
+         * This is the case of thematic (or classification) map. It may also happen because the coverage
+         * defined only a "no data" value with no information about the "real" values. In such case we
+         * generate an artificial quantitative category for mapping all remaining values to [0…255] range.
+         * The actual category creation happen in the loop after this block.
+         */
+        if (deferred == 0 && themes != null) {
+            if (defaultRange == null) {
+                defaultRange = NumberRange.create(0, true, Short.MAX_VALUE + 1, false);
+            }
+            // Following loop will usually be executed only once.
+            for (final NumberRange<?> sourceRange : defaultRange.subtractAny(themes)) {
+                span += sourceRange.getSpan();
+                final ColorsForRange[] tmp = new ColorsForRange[++count];
+                System.arraycopy(entries, deferred, tmp, ++deferred, count - deferred);
+                tmp[deferred-1] = new ColorsForRange(null, sourceRange, new Color[] {Color.BLACK, Color.WHITE});
+                entries = tmp;
+            }
+        }
+        this.entries = entries = ArraysExt.resize(entries, count);      // Should be a no-op most of the times.
+        /*
          * Above loop mapped all NaN values. Now map the real values. Usually, there is exactly one entry taking
          * all remaining values in the [0 … 255] range, but code below is tolerant to arbitrary amount of ranges.
          */
@@ -425,19 +484,17 @@ reuse:  if (source != null) {
         span = 0;
         for (int i=0; i<deferred; i++) {
             final ColorsForRange entry = entries[i];
-            if (entry != null) {
-                span += entry.sampleRange.getSpan();
-                final int upper = Math.toIntExact(Math.round(span * toIndexRange) + base);
-                if (upper <= lower) {
-                    // May happen if too many qualitative categories have been added by previous loop.
-                    throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
-                }
-                final NumberRange<Integer> samples = NumberRange.create(lower, true, upper, false);
-                if (mapper.put(samples, entry) == null) {
-                    builder.addQuantitative(entry.name(), samples, entry.sampleRange);
-                }
-                lower = upper;
+            span += entry.sampleRange.getSpan();
+            final int upper = Math.toIntExact(Math.round(span * toIndexRange) + base);
+            if (upper <= lower) {
+                // May happen if too many qualitative categories have been added by previous loop.
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
             }
+            final NumberRange<Integer> samples = NumberRange.create(lower, true, upper, false);
+            if (mapper.put(samples, entry) == null) {
+                builder.addQuantitative(entry.name(), samples, entry.sampleRange);
+            }
+            lower = upper;
         }
         /*
          * At this point we created a `Category` instance for each given `ColorsForRange`.
