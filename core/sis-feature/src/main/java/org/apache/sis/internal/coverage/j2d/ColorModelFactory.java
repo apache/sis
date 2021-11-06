@@ -420,9 +420,10 @@ public final class ColorModelFactory {
             final int visibleBand, final double minimum, final double maximum)
     {
         final ColorModel cm;
-        if (numComponents == 1 && isStandardRange(dataType, minimum, maximum)) {
+        if (numComponents == 1 && minimum > -1 && isStandardRange(dataType, minimum, maximum)) {
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             cm = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
+            // Note: `ComponentColorModel` does not work well with negative values.
         } else {
             final ScaledColorSpace cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
             cm = new ScaledColorModel(cs, dataType);

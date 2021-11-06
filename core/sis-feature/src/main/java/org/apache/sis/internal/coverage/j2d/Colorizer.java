@@ -468,7 +468,7 @@ reuse:  if (source != null) {
             // Following loop will usually be executed only once.
             for (final NumberRange<?> sourceRange : defaultRange.subtractAny(themes)) {
                 span += sourceRange.getSpan();
-                final ColorsForRange[] tmp = new ColorsForRange[++count];
+                final ColorsForRange[] tmp = Arrays.copyOf(entries, ++count);
                 System.arraycopy(entries, deferred, tmp, ++deferred, count - deferred);
                 tmp[deferred-1] = new ColorsForRange(null, sourceRange, new Color[] {Color.BLACK, Color.WHITE});
                 entries = tmp;
