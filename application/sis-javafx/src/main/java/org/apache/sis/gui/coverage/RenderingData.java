@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.function.DoubleUnaryOperator;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
@@ -48,6 +47,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
@@ -189,7 +189,9 @@ final class RenderingData implements Cloneable {
 
     /**
      * Statistics on pixel values of current {@link #data}, or {@code null} if none or not yet computed.
-     * There is one {@link Statistics} instance per band.
+     * There is one {@link Statistics} instance per band. This is a cache for stretching the color ramp
+     * of the image to view. The {@link #recolor()} method uses statistics on the source image instead
+     * of statistics on the shown image in order to have stable colors during pans or zooms.
      *
      * @see #recolor()
      */
@@ -290,7 +292,7 @@ final class RenderingData implements Cloneable {
         if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             if (statistics == null) {
-                statistics = processor.valueOfStatistics(image, null, (DoubleUnaryOperator[]) null);
+                statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(processor, dataRanges));
             }
             modifiers.put("statistics", statistics);
             if (selectedDerivative == Stretching.AUTOMATIC) {

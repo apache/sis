@@ -323,6 +323,8 @@ public final class PropertyView extends CompoundFormat<Object> {
 
     /**
      * Invoked when {@link #runningTask} completed its work, either successfully or with a failure.
+     *
+     * @param  statistics  statistics for each band of the source image (before conversion to JavaFX).
      */
     private void taskCompleted(final Statistics[] statistics) {
         runningTask  = null;

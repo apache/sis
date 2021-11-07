@@ -108,6 +108,8 @@ final class ImageConverter extends Task<Statistics[]> {
 
     /**
      * Prepares the ARGB values to be written in the JavaFX image.
+     * The task opportunistically returns statistics on all bands of the source image.
+     * Those statistics were used for stretching the color ramp before to paint the JavaFX image.
      */
     @Override
     protected Statistics[] call() {
@@ -125,7 +127,9 @@ final class ImageConverter extends Task<Statistics[]> {
         height = (int) Math.round(scale * bounds.height);
         final AffineTransform toCanvas = AffineTransform.getScaleInstance(scale, scale);
         toCanvas.translate(-bounds.x, -bounds.y);
-
+        /*
+         * Stretch color ramp using statistics on the source image before to pain on JavaFX image.
+         */
         final ImageProcessor processor  = new ImageProcessor();
         final Statistics[]   statistics = processor.valueOfStatistics(source, bounds, (DoubleUnaryOperator[]) null);
         final RenderedImage  image      = processor.stretchColorRamp(source, JDK9.mapOf("multStdDev", 3, "statistics", statistics));

@@ -754,6 +754,10 @@ public class ImageProcessor implements Cloneable {
      *     <td>Pixel coordinates of the region for which to compute statistics.</td>
      *     <td>{@link Shape}</td>
      *   </tr><tr>
+     *     <td>{@code "nodataValues"}</td>
+     *     <td>Values to ignore in statistics.</td>
+     *     <td>{@link Number} or {@code Number[]}</td>
+     *   </tr><tr>
      *     <td>{@code "sampleDimensions"}</td>
      *     <td>Meaning of pixel values.</td>
      *     <td>{@link SampleDimension}</td>
