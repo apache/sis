@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gui;
 
 import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -126,7 +127,7 @@ final class ImageConverter extends Task<Statistics[]> {
         toCanvas.translate(-bounds.x, -bounds.y);
 
         final ImageProcessor processor  = new ImageProcessor();
-        final Statistics[]   statistics = processor.valueOfStatistics(source, bounds);
+        final Statistics[]   statistics = processor.valueOfStatistics(source, bounds, (DoubleUnaryOperator[]) null);
         final RenderedImage  image      = processor.stretchColorRamp(source, JDK9.mapOf("multStdDev", 3, "statistics", statistics));
         final RenderedImage  mask       = getMask(processor);
         final BufferedImage  buffer     = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);

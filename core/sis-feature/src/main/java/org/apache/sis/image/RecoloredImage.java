@@ -19,6 +19,7 @@ package org.apache.sis.image;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
+import java.util.function.DoubleUnaryOperator;
 import java.awt.Shape;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
@@ -179,7 +180,8 @@ final class RecoloredImage extends ImageAdapter {
                 if (statsAllBands == null) {
                     final Object areaOfInterest = modifiers.get("areaOfInterest");
                     statsAllBands = processor.valueOfStatistics(statsSource,
-                            (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null);
+                            (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null,
+                            (DoubleUnaryOperator[]) null);
                 }
                 if (statsAllBands != null && visibleBand < statsAllBands.length) {
                     statistics = statsAllBands[visibleBand];

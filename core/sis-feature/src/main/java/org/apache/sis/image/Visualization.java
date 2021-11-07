@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -243,7 +244,7 @@ final class Visualization extends ResampledImage {
                  * If none of above Colorizer configurations worked, use statistics in last resort. We do that
                  * after we reduced the image to a single band, in order to reduce the amount of calculations.
                  */
-                final Statistics statistics = processor.valueOfStatistics(source, null)[VISIBLE_BAND];
+                final Statistics statistics = processor.valueOfStatistics(source, null, (DoubleUnaryOperator[]) null)[VISIBLE_BAND];
                 colorizer.initialize(statistics.minimum(), statistics.maximum());
             }
             /*

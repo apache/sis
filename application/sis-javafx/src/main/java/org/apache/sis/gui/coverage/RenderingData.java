@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.function.DoubleUnaryOperator;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
@@ -289,7 +290,7 @@ final class RenderingData implements Cloneable {
         if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             if (statistics == null) {
-                statistics = processor.valueOfStatistics(image, null);
+                statistics = processor.valueOfStatistics(image, null, (DoubleUnaryOperator[]) null);
             }
             modifiers.put("statistics", statistics);
             if (selectedDerivative == Stretching.AUTOMATIC) {

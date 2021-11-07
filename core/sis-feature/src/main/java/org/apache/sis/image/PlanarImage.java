@@ -26,6 +26,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
 import java.util.Vector;
+import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -162,12 +163,12 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * <p>Values should be instances of <code>{@linkplain org.apache.sis.math.Statistics}[]</code>.
      * The array length should be the number of bands. If this property is not provided, Apache SIS
-     * may have to {@linkplain ImageProcessor#statistics(RenderedImage, Shape) compute statistics itself}
+     * may have to {@linkplain ImageProcessor#statistics compute statistics itself}
      * (by iterating over pixel values) when needed.</p>
      *
      * <p>Statistics are only indicative. They may be computed on an image sub-region.</p>
      *
-     * @see ImageProcessor#statistics(RenderedImage, Shape)
+     * @see ImageProcessor#statistics(RenderedImage, Shape, DoubleUnaryOperator...)
      */
     public static final String STATISTICS_KEY = "org.apache.sis.Statistics";
 
