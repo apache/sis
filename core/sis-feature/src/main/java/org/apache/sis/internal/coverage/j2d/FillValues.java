@@ -156,14 +156,14 @@ public final class FillValues {
         chunk = tile.getDataElements(xmin, y, chunkWidth, 1, null);
         final int ymax = y + tile.getHeight();
         final int xmax = xmin + width;
-        int x = chunkWidth;
+        int x = xmin + chunkWidth;
         do {
             int remaining;
             while ((remaining = xmax - x) > 0) {
                 tile.setDataElements(x, y, Math.min(chunkWidth, remaining), 1, chunk);
                 x += chunkWidth;
             }
-            x = 0;
+            x = xmin;
         } while (++y < ymax);
     }
 
