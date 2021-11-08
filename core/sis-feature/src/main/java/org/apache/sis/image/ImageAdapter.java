@@ -36,6 +36,10 @@ import org.apache.sis.util.ArgumentChecks;
  * most non-abstract methods are final because {@link PixelIterator} (among others) relies
  * on the fact that it can unwrap this image and still get the same pixel values.</div>
  *
+ * <div class="note"><b>Relationship with other classes</b><br>
+ * This class is similar to {@link SourceAlignedImage} except that it does not extend {@link ComputedImage}
+ * and forward {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

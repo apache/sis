@@ -29,11 +29,18 @@ import org.apache.sis.internal.jdk9.JDK9;
  * An image computed from a single source and sharing the same coordinate system.
  * In addition of pixel coordinate system, images share also the same tile indices.
  * Tiles in this image have the same size than tiles in the source image.
+ * See {@link ComputedImage} javadoc for more information about tile computation.
  *
  * <div class="note"><b>Relationship with other classes</b><br>
  * This class is similar to {@link ImageAdapter} except that it extends {@link ComputedImage}
  * and does not forward {@link #getTile(int, int)}, {@link #getData()} and other data methods
  * to the source image.</div>
+ *
+ * <h2>Sub-classing</h2>
+ * Subclasses need to implement at least the {@link #computeTile(int, int, WritableRaster)} method.
+ * That method is invoked when a requested tile is not in the cache or needs to be updated.
+ * All methods related to pixel and tile coordinates ({@link #getMinX()}, {@link #getMinTileX()},
+ * <i>etc.</i>) are final and delegate to the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -67,6 +74,8 @@ abstract class SourceAlignedImage extends ComputedImage {
 
     /**
      * Creates a new image with the given source, color model and sample model.
+     * This constructor is not public because user could specify a sample model
+     * with mismatched tile size.
      *
      * @param  source       source of this image. Shall not be null.
      * @param  colorModel   the color model of the new image.

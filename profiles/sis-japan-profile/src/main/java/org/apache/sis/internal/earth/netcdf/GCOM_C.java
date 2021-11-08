@@ -69,7 +69,7 @@ import ucar.nc2.constants.CF;
  *         variables:
  *             ushort SST(1599, 1250)                   // Note: different size than (latitude, longitude) variables.
  *                 string dim0 = "Line grids"
- *                 string dim1 = "Piexl grids"              // Note: typo in "Pixel"
+ *                 string dim1 = "Piexl grids"          // Note: typo in "Pixel"
  *                 ushort Error_DN           = 65535
  *                 ushort Land_DN            = 65534
  *                 ushort Cloud_error_DN     = 65533
