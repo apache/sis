@@ -115,7 +115,7 @@ import org.apache.sis.internal.feature.Resources;
  * if the change to dirty state happened after the call to {@link #getTile(int, int) getTile(…)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -414,6 +414,21 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
+     * Verifies that an index is inside the expected range of tile indices.
+     * If the index is out of bounds, then this method throws an {@code IndexOutOfBoundsException}
+     * for consistency with {@link java.awt.image.BufferedImage#getTile(int, int)} public contract.
+     *
+     * @throws IndexOutOfBoundsException if the given tile index is out of bounds.
+     */
+    private static void checkTileIndex(final String name, final int min, final int count, final int value) {
+        final int max = min + count;
+        if (value < min || value >= max) {
+            throw new IndexOutOfBoundsException(Errors.format(
+                    Errors.Keys.ValueOutOfRange_4, name, min, max - 1, value));
+        }
+    }
+
+    /**
      * Returns a tile of this image, computing it when needed.
      * This method performs the first of the following actions that apply:
      *
@@ -436,7 +451,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @param  tileX  the column index of the tile to get.
      * @param  tileY  the row index of the tile to get.
      * @return the tile at the given index (never null).
-     * @throws IllegalArgumentException if a given tile index is out of bounds.
+     * @throws IndexOutOfBoundsException if a given tile index is out of bounds.
      * @throws ImagingOpException if an error occurred while computing the image.
      */
     @Override
@@ -451,9 +466,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
              * We will need to check the cache again after we got the lock in case computation has
              * happened in the short time between above check and lock acquisition.
              */
-            int min;
-            ArgumentChecks.ensureBetween("tileX", (min = getMinTileX()), min + getNumXTiles() - 1, tileX);
-            ArgumentChecks.ensureBetween("tileY", (min = getMinTileY()), min + getNumYTiles() - 1, tileY);
+            checkTileIndex("tileX", getMinTileX(), getNumXTiles(), tileX);
+            checkTileIndex("tileY", getMinTileY(), getNumYTiles(), tileY);
             Throwable error = null;
             final Cache.Handler<Raster> handler = cache.lock(key);
             try {
@@ -466,6 +480,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                      * by that destination. The write operation shall happen between `getWritableTile(…)`
                      * and `releaseWritableTile(…)` method calls.
                      */
+                    int min;
                     final WritableRenderedImage destination = this.destination;     // Protect from change (paranoiac).
                     final boolean writeInDestination = (destination != null)
                             && (tileX >= (min = destination.getMinTileX()) && tileX < min + destination.getNumXTiles())

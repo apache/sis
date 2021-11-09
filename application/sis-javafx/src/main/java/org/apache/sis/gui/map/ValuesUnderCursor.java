@@ -38,7 +38,6 @@ import javafx.scene.control.MenuItem;
 import javax.measure.Unit;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.gui.coverage.CoverageCanvas;
@@ -67,7 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * {@code ValuesUnderCursor} methods will be invoked from JavaFX thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -521,8 +520,6 @@ public abstract class ValuesUnderCursor {
                             }
                             return buffer.toString();
                         }
-                    } catch (PointOutsideCoverageException e) {
-                        // Ignore.
                     } catch (CannotEvaluateException e) {
                         recoverableException("evaluate", e);
                     }
