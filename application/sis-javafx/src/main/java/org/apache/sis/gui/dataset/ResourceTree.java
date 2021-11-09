@@ -62,7 +62,7 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.gui.ResourceLoader;
+import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -252,16 +252,16 @@ public class ResourceTree extends TreeView<Resource> {
             if (source instanceof Resource) {
                 addResource((Resource) source);
             } else {
-                final ResourceLoader loader = new ResourceLoader(source);
-                final DataStore existing = loader.fromCache();
+                final DataStoreOpener opener = new DataStoreOpener(source);
+                final DataStore existing = opener.fromCache();
                 if (existing != null) {
                     addResource(existing);
                 } else {
-                    loader.setOnSucceeded((event) -> {
+                    opener.setOnSucceeded((event) -> {
                         addLoadedResource((DataStore) event.getSource().getValue(), source);
                     });
-                    loader.setOnFailed((event) -> ExceptionReporter.show(this, event));
-                    BackgroundThreads.execute(loader);
+                    opener.setOnFailed((event) -> ExceptionReporter.show(this, event));
+                    BackgroundThreads.execute(opener);
                 }
             }
         }
@@ -273,7 +273,7 @@ public class ResourceTree extends TreeView<Resource> {
      * This method is invoked from JavaFX thread.
      */
     private void addLoadedResource(final DataStore store, final Object source) {
-        addResource(store);
+        final boolean added = addResource(store);
         final EventHandler<ResourceEvent> handler = onResourceLoaded.getValue();
         if (handler != null) {
             final Path path;
@@ -289,7 +289,9 @@ public class ResourceTree extends TreeView<Resource> {
                  * A `NullPointerException` or `ClassCastException` here would be a bug in our
                  * wrapping of resources.
                  */
-                ((Item) findOrRemove(store, false)).path = path;
+                if (added) {
+                    ((Item) findOrRemove(store, false)).path = path;
+                }
                 handler.handle(new LoadEvent(this, path));
             }
         }
@@ -368,7 +370,7 @@ public class ResourceTree extends TreeView<Resource> {
         final TreeItem<Resource> item = findOrRemove(resource, true);
         if (item != null && resource instanceof DataStore) {
             final DataStore store = (DataStore) resource;
-            ResourceLoader.removeAndClose(store, this);
+            DataStoreOpener.removeAndClose(store, this);
             final EventHandler<ResourceEvent> handler = onResourceClosed.get();
             if (handler != null) {
                 Path path = null;

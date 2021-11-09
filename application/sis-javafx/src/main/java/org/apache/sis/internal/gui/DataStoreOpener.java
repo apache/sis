@@ -30,7 +30,6 @@ import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.application.Platform;
 import javafx.scene.Node;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
@@ -44,17 +43,17 @@ import org.apache.sis.gui.DataViewer;
 
 
 /**
- * Task in charge of loading a {@link org.apache.sis.storage.Resource} from a data store.
+ * Task in charge of opening a {@link DataStore} from a path or URL.
  * No action is registered by default;
  * caller should invoke {@link #setOnSucceeded(EventHandler)} for defining such action.
  * Example:
  *
  * {@preformat java
  *     public void loadResource(final Object source) {
- *         final ResourceLoader loader = new ResourceLoader(source);
- *         loader.setOnSucceeded((event) -> addResource((Resource) event.getSource().getValue()));
- *         loader.setOnFailed(ExceptionReporter::show);
- *         BackgroundThreads.execute(loader);
+ *         final DataStoreOpener opener = new DataStoreOpener(source);
+ *         opener.setOnSucceeded((event) -> addResource((DataStore) event.getSource().getValue()));
+ *         opener.setOnFailed(ExceptionReporter::show);
+ *         BackgroundThreads.execute(opener);
  *     }
  * }
  *
@@ -71,7 +70,7 @@ import org.apache.sis.gui.DataViewer;
  * @since 1.1
  * @module
  */
-public final class ResourceLoader extends Task<DataStore> {
+public final class DataStoreOpener extends Task<DataStore> {
     /**
      * The cache of previously loaded resources.
      * Used for avoiding to load the same resource twice.
@@ -93,7 +92,7 @@ public final class ResourceLoader extends Task<DataStore> {
     private static volatile UnaryOperator<ChannelFactory> factoryWrapper;
 
     /**
-     * The {@link Resource} input.
+     * The {@link DataStore} input.
      * This is usually a {@link File} or {@link Path}.
      */
     private final Object source;
@@ -109,9 +108,9 @@ public final class ResourceLoader extends Task<DataStore> {
      * Creates a new task for opening the given input.
      *
      * @param  source  the source of the resource to load.
-     *         This is usually a {@link File} or {@link Path}.
+     *         This is usually a {@link File} or a {@link Path}.
      */
-    public ResourceLoader(Object source) {
+    public DataStoreOpener(Object source) {
         this.source = source;
         try {
             if (source instanceof StorageConnector) {
@@ -188,6 +187,8 @@ public final class ResourceLoader extends Task<DataStore> {
     /**
      * Returns the input filename, or "unknown" if we can not infer the filename.
      * This is used for reporting errors.
+     *
+     * @return the input file name for message purpose.
      */
     final String getFileName() {
         if (source instanceof StorageConnector) {
