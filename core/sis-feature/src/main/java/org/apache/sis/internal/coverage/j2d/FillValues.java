@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 
 
 /**
@@ -165,6 +166,27 @@ public final class FillValues {
             }
             x = xmin;
         } while (++y < ymax);
+    }
+
+    /**
+     * Fills the given image with the fill value. The image sample model should be the same
+     * than the sample model specified at construction time of this {@code FillValues} object.
+     *
+     * @param  image  the image to fill.
+     */
+    public void fill(final WritableRenderedImage image) {
+        int y = image.getMinTileY();
+        for (int ny = image.getNumYTiles(); --ny >= 0; y++) {
+            int x = image.getMinTileX();
+            for (int nx = image.getNumXTiles(); --nx >= 0; x++) {
+                final WritableRaster raster = image.getWritableTile(x, y);
+                try {
+                    fill(raster);
+                } finally {
+                    image.releaseWritableTile(x, y);
+                }
+            }
+        }
     }
 
     /**
