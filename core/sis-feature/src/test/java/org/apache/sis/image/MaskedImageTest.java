@@ -31,6 +31,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.test.FeatureAssert;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
 import org.junit.Test;
@@ -149,6 +150,36 @@ public final strictfp class MaskedImageTest extends TestCase {
     @Test
     public void fill_MULTI_tile_OUTside_conCAVE_polygon() {
         fillOutsideConcavePolygon(multiTile());
+    }
+
+    /**
+     * Ensure that performing a mask on a {@link BufferedImage#getSubimage(int, int, int, int) subset of a buffered image}
+     * will return a tile correctly sized.
+     */
+    @Test
+    public void maskSubRegion() {
+        final BufferedImage source = monoTile();
+        final BufferedImage sourceSubset = source.getSubimage(0, 0, 4, 4);
+        final ImageProcessor processor = new ImageProcessor();
+        processor.setFillValues(4);
+        final RenderedImage mask = processor.mask(sourceSubset, new Rectangle(0, 0, 2, 2), true);
+
+        final Raster tile = mask.getTile(0, 0);
+        assertEquals("Tile width", mask.getTileWidth(), tile.getWidth());
+        assertEquals("Tile height", mask.getTileHeight(), tile.getHeight());
+
+        // Note: put 5 on pixels that should not be tested, so the test will fail if we do not test the right area
+        final RenderedImage expected = monoTile(new int[] {
+                4, 4, 0, 0, 5, 5, 5, 5,
+                4, 4, 0, 0, 5, 5, 5, 5,
+                0, 0, 0, 0, 5, 5, 5, 5,
+                0, 0, 0, 0, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5
+        });
+        FeatureAssert.assertPixelsEqual(expected, new Rectangle(4, 4), mask, null);
     }
 
     /**
