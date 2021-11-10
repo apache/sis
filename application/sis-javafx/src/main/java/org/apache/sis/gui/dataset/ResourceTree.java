@@ -442,15 +442,21 @@ public class ResourceTree extends TreeView<Resource> {
      * or the title found in {@linkplain Resource#getMetadata() metadata} otherwise.
      * If no label can be found, then this method returns the localized "Unnamed" string.
      *
+     * <p>Identifiers can be very short, for example "1" or "2" meaning first or second image in a TIFF file.
+     * If {@code qualified} is {@code true}, then this method tries to return a label such as "filename:id".
+     * Generally {@code qualified} should be {@code false} if the label will be a node in a tree having the
+     * filename as parent, and {@code true} if the label will be used outside the context of a tree.</p>
+     *
      * <p>This operation may be costly. For example the call to {@link Resource#getMetadata()}
      * may cause the resource to open a connection to the EPSG database.
      * Consequently his method should be invoked in a background thread.</p>
      *
      * @param  resource   the resource for which to get a label, or {@code null}.
      * @param  locale     the locale to use for localizing international strings.
+     * @param  qualified  whether to use fully-qualified path of generic names.
      * @return the resource display name or the citation title, never null.
      */
-    static String findLabel(final Resource resource, final Locale locale) throws DataStoreException {
+    static String findLabel(final Resource resource, final Locale locale, final boolean qualified) throws DataStoreException {
         if (resource != null) {
             final Long logID = LogHandler.loadingStart(resource);
             try {
@@ -464,9 +470,12 @@ public class ResourceTree extends TreeView<Resource> {
                     if (name != null) return name;
                 }
                 /*
-                 * Search for a title in metadata first because it has better chances
-                 * to be human-readable compared to the resource identifier.
+                 * Search for a title in metadata first because it has better chances to be human-readable
+                 * compared to the resource identifier. If the title is the same text as the identifier,
+                 * then we will execute the code path for identifier unless the caller did not asked for
+                 * qualified name, in which case it would make no difference.
                  */
+                GenericName name = qualified ? resource.getIdentifier().orElse(null) : null;
                 Collection<? extends Identification> identifications = null;
                 final Metadata metadata = resource.getMetadata();
                 if (metadata != null) {
@@ -476,19 +485,26 @@ public class ResourceTree extends TreeView<Resource> {
                             final Citation citation = identification.getCitation();
                             if (citation != null) {
                                 final String t = string(citation.getTitle(), locale);
-                                if (t != null) return t;
+                                if (t != null && (name == null || !t.equals(name.toString()))) {
+                                    return t;
+                                }
                             }
                         }
                     }
                 }
                 /*
                  * If we find no title in the metadata, use the resource identifier.
-                 * We search for explicitly declared identifier first before to fallback
-                 * on metadata, because the later is more subject to interpretation.
+                 * We search for explicitly declared identifier first before to fallback on
+                 * metadata identifier, because the later is more subject to interpretation.
                  */
-                final Optional<GenericName> id = resource.getIdentifier();
-                if (id.isPresent()) {
-                    final String t = string(id.get().toInternationalString(), locale);
+                if (!qualified) {
+                    name = resource.getIdentifier().orElse(null);
+                }
+                if (name != null) {
+                    if (qualified) {
+                        name = name.toFullyQualifiedName();
+                    }
+                    final String t = string(name.toInternationalString(), locale);
                     if (t != null) return t;
                 }
                 if (identifications != null) {
@@ -577,7 +593,7 @@ public class ResourceTree extends TreeView<Resource> {
      * The visual appearance of an {@link Item} in a tree. Cells are initially empty;
      * their content will be specified by {@link TreeView} after construction.
      * This class gets the cell text from a resource by a call to
-     * {@link ResourceTree#findLabel(Resource, Locale)} in a background thread.
+     * {@link ResourceTree#findLabel(Resource, Locale, boolean)} in a background thread.
      * The same call may be recycled many times for different {@link Item} data.
      *
      * @see Item
@@ -713,7 +729,7 @@ public class ResourceTree extends TreeView<Resource> {
 
         /**
          * The text of this node, computed and cached when first needed.
-         * Computation is done by invoking {@link #findLabel(Resource, Locale)} in a background thread.
+         * Computation is done by invoking {@link #findLabel(Resource, Locale, boolean)} in a background thread.
          *
          * @see #fetchLabel(Resource, Locale)
          */
@@ -802,7 +818,7 @@ public class ResourceTree extends TreeView<Resource> {
             /** Invoked in a background thread for fetching the label. */
             final void fetch(final Locale locale) {
                 try {
-                    result = findLabel(resource, locale);
+                    result = findLabel(resource, locale, false);
                 } catch (Throwable e) {
                     failure = e;
                 }

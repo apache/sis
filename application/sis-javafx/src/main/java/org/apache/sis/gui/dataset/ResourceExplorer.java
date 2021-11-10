@@ -550,7 +550,7 @@ public class ResourceExplorer extends WindowManager {
         }
         String text;
         try {
-            text = ResourceTree.findLabel(resource, resources.locale);
+            text = ResourceTree.findLabel(resource, resources.locale, true);
         } catch (DataStoreException | RuntimeException e) {
             text = Vocabulary.getResources(resources.locale).getString(Vocabulary.Keys.Unnamed);
         }
