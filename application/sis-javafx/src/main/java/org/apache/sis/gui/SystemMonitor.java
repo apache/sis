@@ -102,6 +102,8 @@ final class SystemMonitor implements EventHandler<WindowEvent> {
         w.setTitle(resources.getString(Resources.Keys.SystemMonitor) + " — Apache SIS");
         w.getIcons().setAll(parent.getIcons());
         w.setScene(new Scene(panes));
+        w.setMinWidth (400);
+        w.setMinHeight(500);        // For preventing logging details to hide logging message table.
         w.setWidth (800);
         w.setHeight(600);
         /*
