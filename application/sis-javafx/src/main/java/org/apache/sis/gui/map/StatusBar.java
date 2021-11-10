@@ -110,7 +110,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -1298,12 +1298,5 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             text = Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotRender);
         }
         setErrorMessage(text, details);
-    }
-
-    /**
-     * Returns the locale for error messages.
-     */
-    private Locale getLocale() {
-        return format.getLocale(Locale.Category.DISPLAY);
     }
 }

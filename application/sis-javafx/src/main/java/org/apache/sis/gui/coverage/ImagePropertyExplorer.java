@@ -74,7 +74,7 @@ import org.apache.sis.internal.util.PropertyFormat;
  * For displaying a geospatial raster as a GIS application, see {@link CoverageCanvas} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -822,5 +822,15 @@ nextProp:       for (final String property : properties) {
     @Override
     public Region getView() {
         return view;
+    }
+
+    /**
+     * Returns the locale for controls and messages.
+     *
+     * @since 1.2
+     */
+    @Override
+    public final Locale getLocale() {
+        return propertyDetails.getLocale();
     }
 }

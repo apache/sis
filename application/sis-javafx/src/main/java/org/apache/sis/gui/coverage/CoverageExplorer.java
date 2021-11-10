@@ -16,9 +16,10 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.Locale;
+import java.util.EnumMap;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
@@ -35,6 +36,7 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
@@ -44,10 +46,27 @@ import org.apache.sis.storage.Resource;
 
 /**
  * An image or tabular view of {@link GridCoverage} together with controls for band selection and other operations.
- * This class manages a {@link CoverageCanvas} and a {@link GridView} for showing the visual and the numerical values.
+ * The class contains two properties:
+ *
+ * <ul>
+ *   <li>A {@link GridCoverage} supplied by user, or an {@link ImageRequest} for loading a coverage.</li>
+ *   <li>A {@link View} type which specify how to show the coverage:
+ *     <ul>
+ *       <li>using {@link GridView} for showing numerical values in a table, or</li>
+ *       <li>using {@link CoverageCanvas} for showing the coverage as an image.</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * Controls are provided for allowing user to customize map projection, number formats, <i>etc.</i>.
+ * The set of control depends on the view type.
+ *
+ * <h2>Limitations</h2>
+ * Current implementation is restricted to {@link GridCoverage} instances, but a future
+ * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see CoverageCanvas
  * @see GridView
@@ -60,18 +79,26 @@ public class CoverageExplorer extends Widget {
     /**
      * Type of view shown in the explorer.
      * It may be either an image or a table of numerical values.
+     *
+     * @see #viewTypeProperty
      */
     public enum View {
-        /**
-         * Shows the coverage numerical value in a table. This view uses {@link GridView}.
-         * This is the default value of newly constructed {@link CoverageExplorer}.
-         */
-        TABLE("\uD83D\uDD22\uFE0F", Resources.Keys.Visualize),      // 🔢 — Input symbol for numbers.
+        // Enumeration order is the order in which buttons will appear on the button bar.
 
         /**
          * Shows the coverage visual as an image. This view uses {@link CoverageCanvas}.
          */
-        IMAGE("\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData);    // 🗺 — World map.
+        IMAGE("\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData),    // 🗺 — World map.
+
+        /**
+         * Shows the coverage numerical value in a table. This view uses {@link GridView}.
+         */
+        TABLE("\uD83D\uDD22\uFE0F", Resources.Keys.Visualize);      // 🔢 — Input symbol for numbers.
+
+        /**
+         * Number of enumeration values.
+         */
+        static final int COUNT = 2;
 
         /**
          * The Unicode characters to use as icon.
@@ -107,12 +134,6 @@ public class CoverageExplorer extends Widget {
 
     /**
      * The type of view (image or tabular data) shown in this explorer.
-     * The default value is {@link View#TABLE}.
-     *
-     * <div class="note"><b>API note:</b>
-     * the reason for setting default value to tabular data is because it requires loading much less data with
-     * {@link java.awt.image.RenderedImage}s supporting deferred tile loading. By contrast {@link View#IMAGE}
-     * may require loading the full image.</div>
      *
      * @see #getViewType()
      * @see #setViewType(View)
@@ -120,8 +141,8 @@ public class CoverageExplorer extends Widget {
     public final ObjectProperty<View> viewTypeProperty;
 
     /**
-     * Whether the {@link #coverageProperty} is in process of being set, in which case some
-     * listeners should not react.
+     * Whether the {@link #coverageProperty} is in process of being set,
+     * in which case some listeners should not react.
      */
     private boolean isCoverageAdjusting;
 
@@ -134,10 +155,13 @@ public class CoverageExplorer extends Widget {
     private SplitPane content;
 
     /**
-     * The different views we can provide on {@link #coverageProperty},
-     * together with associated controls.
+     * The different views we can provide on {@link #coverageProperty}, together with associated controls.
+     * Values in this map are initially null and created when first needed.
+     * Concrete classes are {@link GridControls} and {@link CoverageControls}.
+     *
+     * @see #getControl(View)
      */
-    private final Controls[] views;
+    private final EnumMap<View,ViewAndControls> views;
 
     /**
      * Handles the {@link javafx.scene.control.ChoiceBox} and menu items for selecting a CRS.
@@ -145,24 +169,52 @@ public class CoverageExplorer extends Widget {
     private final RecentReferenceSystems referenceSystems;
 
     /**
-     * Creates an initially empty explorer.
+     * Creates an initially empty explorer with default view type.
+     * By default {@code CoverageExplorer} will show a coverage as a table of values,
+     * i.e. the default view type is {@link View#TABLE}.
+     *
+     * <div class="note"><b>API note:</b>
+     * the reason for setting default value to tabular data is because it requires loading much less data with
+     * {@link java.awt.image.RenderedImage}s supporting deferred tile loading. By contrast {@link View#IMAGE}
+     * may require loading the full image.</div>
      */
     public CoverageExplorer() {
+        this(View.TABLE);
+    }
+
+    /**
+     * Creates an initially empty explorer with the specified view type.
+     *
+     * @param  type  the way to show coverages in this explorer.
+     *
+     * @see #setViewType(View)
+     *
+     * @since 1.2
+     */
+    public CoverageExplorer(final View type) {
+        ArgumentChecks.ensureNonNull("type", type);
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
-        viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", View.TABLE);
+        viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", type);
         coverageProperty.addListener((p,o,n) -> onCoverageSpecified(n));
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
         referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395");         // WGS 84 / World Mercator
         /*
          * The coverage property may be shown in various ways (tabular data, image).
-         * Each visualization way is an entry in the `views` array.
+         * Each visualization way is a value in the `views` map.
+         * Elements will be created when first needed.
          */
-        final View[]     viewTypes  = View.values();
-        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
-        views = new Controls[viewTypes.length];
-        for (final View type : viewTypes) {
-            final Controls c;
+        views = new EnumMap<>(View.class);
+    }
+
+    /**
+     * Returns the view-control pair for the given view type.
+     * The view-control pair is created when first needed.
+     */
+    private ViewAndControls getViewAndControls(final View type) {
+        ViewAndControls c = views.get(type);
+        if (c == null) {
+            final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
             switch (type) {
                 case TABLE: c = new GridControls(referenceSystems, vocabulary); break;
                 case IMAGE: c = new CoverageControls(vocabulary, coverageProperty, referenceSystems); break;
@@ -170,8 +222,9 @@ public class CoverageExplorer extends Widget {
             }
             SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
             SplitPane.setResizableWithParent(c.view(),     Boolean.TRUE);
-            views[type.ordinal()] = c;
+            views.put(type, c);
         }
+        return c;
     }
 
     /**
@@ -180,27 +233,33 @@ public class CoverageExplorer extends Widget {
      * and may change in any future version.
      *
      * @return the region to show.
+     *
+     * @see #getDataView(View)
+     * @see #getControls(View)
      */
     @Override
     public final Region getView() {
+        assert Platform.isFxApplicationThread();
+        /*
+         * We build when first requested because `ResourceExplorer` for example will never request this view.
+         * Instead it will invoke `getDataView(View)` or `getControls(View)` and layout those regions itself.
+         */
         if (content == null) {
             /*
              * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
              * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
              * text and action for each button.
              */
-            final Locale      locale  = null;
             final ToggleGroup group   = new ToggleGroup();
-            final Control[]   buttons = new Control[views.length + 1];
-            final Resources localized = Resources.forLocale(locale);
+            final Control[]   buttons = new Control[View.COUNT + 1];
+            final Resources localized = Resources.forLocale(getLocale());
             buttons[0] = new Separator();
             for (final View type : View.values()) {
-                final Controls c = views[type.ordinal()];
-                c.selector = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
-                buttons[buttons.length - type.ordinal() - 1] = c.selector;  // Buttons in reverse order.
+                buttons[1 + type.ordinal()] = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
             }
-            final Controls c = views[0];                            // First View enumeration is default value.
-            group.selectToggle(group.getToggles().get(0));
+            final View type = getViewType();
+            final ViewAndControls c = getViewAndControls(type);
+            group.selectToggle(group.getToggles().get(type.ordinal()));
             content = new SplitPane(c.controls(), c.view());
             ToolbarButton.insert(content, buttons);
             viewTypeProperty.addListener((p,o,n) -> onViewTypeSpecified(n));
@@ -209,7 +268,7 @@ public class CoverageExplorer extends Widget {
              * to give all the space to controls and no space to data, which is not what we want. However
              * experience with JavaFX 14 shows that this setting gives just a reasonable space to controls
              * and most space to data. I have not identified the cause of this surprising behavior.
-             * A smaller value result in too few space for the controls.
+             * A smaller value results in too few space for the controls.
              */
             content.setDividerPosition(0, 1);
         }
@@ -222,12 +281,13 @@ public class CoverageExplorer extends Widget {
      * The {@link Region} subclass returned by this method is implementation dependent and may change
      * in any future version.
      *
-     * @param  view  whether to obtain a {@link GridView} or {@link CoverageCanvas}.
+     * @param  type  whether to obtain a {@link GridView} or {@link CoverageCanvas}.
      * @return the requested view for the {@link #coverageProperty}.
      */
-    public final Region getDataView(final View view) {
-        ArgumentChecks.ensureNonNull("view", view);
-        return views[view.ordinal()].view();
+    public final Region getDataView(final View type) {
+        assert Platform.isFxApplicationThread();
+        ArgumentChecks.ensureNonNull("type", type);
+        return getViewAndControls(type).view();
     }
 
     /**
@@ -235,12 +295,13 @@ public class CoverageExplorer extends Widget {
      * The {@link Region} subclass returned by this method is implementation dependent and may
      * change in any future version.
      *
-     * @param  view  whether to obtain controls for {@link GridView} or {@link CoverageCanvas}.
+     * @param  type  whether to obtain controls for {@link GridView} or {@link CoverageCanvas}.
      * @return the controls on specified data view.
      */
-    public final Region getControls(final View view) {
-        ArgumentChecks.ensureNonNull("view", view);
-        return views[view.ordinal()].controls();
+    public final Region getControls(final View type) {
+        assert Platform.isFxApplicationThread();
+        ArgumentChecks.ensureNonNull("type", type);
+        return getViewAndControls(type).controls();
     }
 
     /**
@@ -248,18 +309,19 @@ public class CoverageExplorer extends Widget {
      */
     private final class Selector extends ToolbarButton {
         /** The view to select when the button is pressed. */
-        private final View view;
+        private final View type;
 
         /** Creates a new action which will show the view at the given index. */
-        Selector(final View view) {
-            this.view = view;
+        Selector(final View type) {
+            this.type = type;
         }
 
         /** Invoked when the user selects another view to show (tabular data or the image). */
         @Override public void handle(final ActionEvent event) {
             final Toggle button = (Toggle) event.getSource();
             if (button.isSelected()) {
-                setViewType(view);
+                setViewType(type);
+                views.get(type).selector = button;    // Should never null null.
             } else {
                 button.setSelected(true);       // Prevent situation where all buttons are unselected.
             }
@@ -301,8 +363,12 @@ public class CoverageExplorer extends Widget {
      * @param  source  the coverage or resource to load, or {@code null} if none.
      */
     public final void setCoverage(final ImageRequest source) {
+        assert Platform.isFxApplicationThread();
         if (source == null) {
             setCoverage((GridCoverage) null);
+        } else if (source.listener != null) {
+            throw new IllegalArgumentException(Errors.getResources(getLocale())
+                    .getString(Errors.Keys.AlreadyInitialized_1, "listener"));
         } else {
             source.listener = this;
             startLoading(source);
@@ -349,7 +415,7 @@ public class CoverageExplorer extends Widget {
      * @param  source  the coverage or resource to load, or {@code null} if none.
      */
     private void startLoading(final ImageRequest source) {
-        final GridView main = (GridView) views[View.TABLE.ordinal()].view();
+        final GridView main = (GridView) getViewAndControls(View.TABLE).view();
         main.setImage(source);
     }
 
@@ -369,7 +435,7 @@ public class CoverageExplorer extends Widget {
                 referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
             }
         }
-        for (final Controls c : views) {
+        for (final ViewAndControls c : views.values()) {
             c.coverageChanged(data, originator);
         }
     }
@@ -378,7 +444,7 @@ public class CoverageExplorer extends Widget {
      * Returns the type of view (image or tabular data) shown in this explorer.
      * The default value is {@link View#TABLE}.
      *
-     * @return the type of view shown in this explorer.
+     * @return the way to show coverages in this explorer.
      *
      * @see #viewTypeProperty
      */
@@ -389,22 +455,25 @@ public class CoverageExplorer extends Widget {
     /**
      * Sets the type of view to show in this explorer.
      *
-     * @param  coverage  the type of view to show in this explorer.
+     * @param  type  the new way to show coverages in this explorer.
      *
      * @see #viewTypeProperty
      */
-    public final void setViewType(final View coverage) {
-        viewTypeProperty.set(coverage);
+    public final void setViewType(final View type) {
+        viewTypeProperty.set(type);
     }
 
     /**
      * Invoked when a new view type has been specified.
      *
-     * @param  view  the new view type.
+     * @param  type  the new way to show coverages in this explorer.
      */
-    private void onViewTypeSpecified(final View view) {
-        final Controls c = views[view.ordinal()];
+    private void onViewTypeSpecified(final View type) {
+        final ViewAndControls c = getViewAndControls(type);
         content.getItems().setAll(c.controls(), c.view());
-        ((Toggle) c.selector).setSelected(true);
+        final Toggle selector = c.selector;
+        if (selector != null) {
+            selector.setSelected(true);
+        }
     }
 }

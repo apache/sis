@@ -18,9 +18,9 @@ package org.apache.sis.gui.coverage;
 
 import java.lang.ref.Reference;
 import javafx.geometry.Insets;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -35,11 +35,11 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * to show in a {@link CoverageExplorer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
-abstract class Controls {
+abstract class ViewAndControls {
     /**
      * Margin to keep around captions on top of tables or lists.
      */
@@ -58,14 +58,14 @@ abstract class Controls {
 
     /**
      * The toolbar button for selecting this view.
-     * This is initialized after construction.
+     * This is initialized after construction and only if a button bar exists.
      */
-    ButtonBase selector;
+    Toggle selector;
 
     /**
-     * Creates a new control.
+     * Creates a new view-control pair.
      */
-    Controls() {
+    ViewAndControls() {
     }
 
     /**

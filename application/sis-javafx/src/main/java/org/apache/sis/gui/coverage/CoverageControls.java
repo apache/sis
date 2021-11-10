@@ -54,11 +54,11 @@ import org.apache.sis.internal.gui.control.ValueColorMapper;
  * A {@link CoverageCanvas} with associated controls to show in a {@link CoverageExplorer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
-final class CoverageControls extends Controls {
+final class CoverageControls extends ViewAndControls {
     /**
      * The component for showing sample values.
      */
