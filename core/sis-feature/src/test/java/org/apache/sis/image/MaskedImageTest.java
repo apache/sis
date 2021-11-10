@@ -152,6 +152,36 @@ public final strictfp class MaskedImageTest extends TestCase {
     }
 
     /**
+     * Ensure that performing a mask on a {@linkplain BufferedImage#getSubimage(int, int, int, int)
+     * subset of a buffered image} will return a tile correctly sized.
+     */
+    @Test
+    public void maskSubRegion() {
+        final BufferedImage source = monoTile();
+        final BufferedImage sourceSubset = source.getSubimage(0, 0, 4, 4);
+        final ImageProcessor processor = new ImageProcessor();
+        processor.setFillValues(4);
+        final RenderedImage mask = processor.mask(sourceSubset, new Rectangle(0, 0, 2, 2), true);
+
+        final Raster tile = mask.getTile(0, 0);
+        assertEquals("Tile width",  mask.getTileWidth(),  tile.getWidth());
+        assertEquals("Tile height", mask.getTileHeight(), tile.getHeight());
+
+        // Note: put 5 on pixels that should not be tested, so the test will fail if we do not test the right area
+        final RenderedImage expected = monoTile(new int[] {
+                4, 4, 0, 0, 5, 5, 5, 5,
+                4, 4, 0, 0, 5, 5, 5, 5,
+                0, 0, 0, 0, 5, 5, 5, 5,
+                0, 0, 0, 0, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5, 5, 5, 5
+        });
+        assertPixelsEqual(expected, new Rectangle(4, 4), mask, null);
+    }
+
+    /**
      * Tests masking pixels inside a rectangle on the given image.
      * This method is invoked twice, for untiled image and for tiled image.
      */
