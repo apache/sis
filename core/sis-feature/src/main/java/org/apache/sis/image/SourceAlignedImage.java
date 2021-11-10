@@ -68,8 +68,24 @@ abstract class SourceAlignedImage extends ComputedImage {
      * @param  source  the image to use as a background for this image.
      */
     protected SourceAlignedImage(final RenderedImage source) {
-        super(source.getSampleModel(), source);
+        super(getSampleModel(source), source);
         colorModel = source.getColorModel();
+    }
+
+    /**
+     * Gets the sample model, making sure it has the right size. This is a workaround for RFE #4093999
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.8")
+    private static SampleModel getSampleModel(final RenderedImage source) {
+        final SampleModel sm = source.getSampleModel();
+        final int width  = source.getTileWidth();
+        final int height = source.getTileHeight();
+        if (sm.getWidth() == width && sm.getHeight() == height) {
+            return sm;
+        } else {
+            return sm.createCompatibleSampleModel(width, height);
+        }
     }
 
     /**
