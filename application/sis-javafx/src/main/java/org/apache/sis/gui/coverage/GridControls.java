@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.lang.ref.Reference;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Accordion;
@@ -31,13 +30,14 @@ import javafx.scene.layout.VBox;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Styles;
 
 
 /**
  * A {@link GridView} with associated controls to show in a {@link CoverageExplorer}.
+ * This class installs bidirectional bindings between {@link GridView} and the controls.
+ * The controls are updated when the image shown in {@link GridView} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -63,14 +63,14 @@ final class GridControls extends ViewAndControls {
     /**
      * Creates a new set of grid controls.
      *
-     * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
-     * @param  vocabulary        localized set of words, provided in argument because often known by the caller.
+     * @param  owner  the widget which create this view. Can not be null.
      */
-    GridControls(final RecentReferenceSystems referenceSystems, final Vocabulary vocabulary) {
-        view = new GridView(referenceSystems);
+    GridControls(final CoverageExplorer owner) {
+        super(owner);
+        view = new GridView(this, owner.referenceSystems);
+        final Vocabulary vocabulary = Vocabulary.getResources(owner.getLocale());
         sampleDimensions = new BandRangeTable(view.cellFormat).create(vocabulary);
-        sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(view.bandProperty));
-        view.bandProperty.addListener((p,o,n) -> onBandSpecified(n));
+        BandSelectionListener.bind(view.bandProperty, sampleDimensions.getSelectionModel());
         /*
          * "Coverage" section with the following controls:
          *    - Coverage domain as a list of CRS dimensions with two of them selected (TODO).
@@ -119,22 +119,13 @@ final class GridControls extends ViewAndControls {
     }
 
     /**
-     * Invoked when the band property changed. This method ensures that the selected row
-     * in the sample dimension table matches the band which is shown in the grid view.
-     */
-    private void onBandSpecified(final Number band) {
-        sampleDimensions.getSelectionModel().clearAndSelect(band.intValue());
-    }
-
-    /**
-     * Invoked after {@link CoverageExplorer#setCoverage(ImageRequest)} for updating the table of
-     * sample dimensions when information become available. This method is invoked in JavaFX thread.
+     * Invoked after {@link GridView#setImage(ImageRequest)} for updating the table of sample
+     * dimensions when information become available. This method is invoked in JavaFX thread.
      *
-     * @param  data        the new coverage, or {@code null} if none.
-     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
+     * @param  source  the new source of coverage, or {@code null} if none.
+     * @param  data    the new coverage, or {@code null} if none.
      */
-    @Override
-    final void coverageChanged(final GridCoverage data, final Reference<Resource> originator) {
+    final void coverageChanged(final Resource source, final GridCoverage data) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (data != null) {
             items.setAll(data.getSampleDimensions());
@@ -142,6 +133,18 @@ final class GridControls extends ViewAndControls {
         } else {
             items.clear();
         }
+        owner.coverageChanged(source, data);
+    }
+
+    /**
+     * Sets the view content to the given image.
+     * This method starts a background thread.
+     *
+     * @param  request  the image to set, or {@code null} for clearing the view.
+     */
+    @Override
+    final void load(final ImageRequest request) {
+        view.setImage(request);
     }
 
     /**

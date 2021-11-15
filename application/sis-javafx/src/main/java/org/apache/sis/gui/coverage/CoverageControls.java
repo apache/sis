@@ -16,10 +16,8 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Control;
 import javafx.scene.control.TitledPane;
@@ -27,31 +25,29 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.scene.control.ChoiceBox;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
-import javafx.util.StringConverter;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.gui.map.StatusBar;
-import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.gui.control.ValueColorMapper;
+import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.control.ValueColorMapper;
 
 
 /**
  * A {@link CoverageCanvas} with associated controls to show in a {@link CoverageExplorer}.
+ * This class installs bidirectional bindings between {@link CoverageCanvas} and the controls.
+ * The controls are updated when the coverage shown in {@link CoverageCanvas} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -87,23 +83,22 @@ final class CoverageControls extends ViewAndControls {
     /**
      * Creates a new set of coverage controls.
      *
-     * @param  vocabulary  localized set of words, provided in argument because often known by the caller.
-     * @param  coverage    property containing the coverage to show.
+     * @param  owner  the widget which create this view. Can not be null.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
-    CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage,
-                     final RecentReferenceSystems referenceSystems)
-    {
-        final Resources resources = Resources.forLocale(vocabulary.getLocale());
-        view = new CoverageCanvas(vocabulary.getLocale());
+    CoverageControls(final CoverageExplorer owner) {
+        super(owner);
+        final Locale     locale     = owner.getLocale();
+        final Resources  resources  = Resources.forLocale(locale);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+
+        view = new CoverageCanvas(locale);
         view.setBackground(Color.BLACK);
-        final StatusBar statusBar = new StatusBar(referenceSystems, view);
-        view.statusBar = statusBar;
+        view.statusBar = new StatusBar(owner.referenceSystems, view);
         imageAndStatus = new BorderPane(view.getView());
-        imageAndStatus.setBottom(statusBar.getView());
+        imageAndStatus.setBottom(view.statusBar.getView());
         final MapMenu menu = new MapMenu(view);
-        menu.addReferenceSystems(referenceSystems);
-        menu.addCopyOptions(statusBar);
+        menu.addReferenceSystems(owner.referenceSystems);
+        menu.addCopyOptions(view.statusBar);
         /*
          * "Display" section with the following controls:
          *    - Current CRS
@@ -121,7 +116,7 @@ final class CoverageControls extends ViewAndControls {
              *   - Interpolation
              */
             final GridPane valuesControl = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale())));
+                label(vocabulary, Vocabulary.Keys.Interpolation, InterpolationConverter.button(view)));
             final Label valuesHeader = labelOfGroup(vocabulary, Vocabulary.Keys.Values, valuesControl, false);
             /*
              * All sections put together.
@@ -164,120 +159,75 @@ final class CoverageControls extends ViewAndControls {
         final TitledPane p4 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
         controls = new Accordion(p1, p2, p3, p4);
         controls.setExpandedPane(p1);
-        view.coverageProperty.bind(coverage);
+        view.coverageProperty.addListener((p,o,n) -> coverageChanged(null, n));
         p4.expandedProperty().addListener(new PropertyPaneCreator(view, p4));
     }
 
     /**
-     * Creates the controls for choosing an interpolation method.
-     */
-    private ChoiceBox<Interpolation> createInterpolationButton(final Locale locale) {
-        final ChoiceBox<Interpolation> b = new ChoiceBox<>();
-        b.setConverter(new InterpolationConverter(locale));
-        b.getItems().setAll(InterpolationConverter.INTERPOLATIONS);
-        b.getSelectionModel().select(view.getInterpolation());
-        view.interpolationProperty.bind(b.getSelectionModel().selectedItemProperty());
-        return b;
-    }
-
-    /**
-     * Gives a localized {@link String} instance for a given {@link Interpolation} and conversely.
-     */
-    private static final class InterpolationConverter extends StringConverter<Interpolation> {
-        /** The interpolation supported by this converter. */
-        static final Interpolation[] INTERPOLATIONS = {
-            Interpolation.NEAREST, Interpolation.BILINEAR, Interpolation.LANCZOS
-        };
-
-        /** Keys of localized names for each {@link #INTERPOLATIONS} element. */
-        private static final short[] VOCABULARIES = {
-            Vocabulary.Keys.NearestNeighbor, Vocabulary.Keys.Bilinear, 0
-        };
-
-        /** The locale to use for string representation. */
-        private final Locale locale;
-
-        /** Creates a new converter for the given locale. */
-        InterpolationConverter(final Locale locale) {
-            this.locale = locale;
-        }
-
-        /** Returns a string representation of the given item. */
-        @Override public String toString(final Interpolation item) {
-            for (int i=0; i<INTERPOLATIONS.length; i++) {
-                if (INTERPOLATIONS[i].equals(item)) {
-                    final short key = VOCABULARIES[i];
-                    if (key != 0) {
-                        return Vocabulary.getResources(locale).getString(key);
-                    } else if (item == Interpolation.LANCZOS) {
-                        return "Lanczos";
-                    }
-                }
-            }
-            return Objects.toString(item);
-        }
-
-        /** Returns the interpolation for the given text. */
-        @Override public Interpolation fromString(final String text) {
-            final Vocabulary vocabulary = Vocabulary.getResources(locale);
-            for (int i=0; i<VOCABULARIES.length; i++) {
-                final short key = VOCABULARIES[i];
-                final Interpolation item = INTERPOLATIONS[i];
-                if ((key != 0 && vocabulary.getString(key).equalsIgnoreCase(text))
-                                        || item.toString().equalsIgnoreCase(text))
-                {
-                    return item;
-                }
-            }
-            return null;
-        }
-    }
-
-    /**
-     * Invoked the first time that the "Properties" pane is opened for building the JavaFX visual components.
-     * We deffer the creation of this pane because it is often not requested at all, since this is more for
-     * developers than users.
-     */
-    private static final class PropertyPaneCreator implements ChangeListener<Boolean> {
-        /** A copy of {@link CoverageControls#view} reference. */
-        private final CoverageCanvas view;
-
-        /** The pane where to set the content. */
-        private final TitledPane pane;
-
-        /** Creates a new {@link ImagePropertyExplorer} constructor. */
-        PropertyPaneCreator(final CoverageCanvas view, final TitledPane pane) {
-            this.view = view;
-            this.pane = pane;
-        }
-
-        /** Creates the {@link ImagePropertyExplorer} when {@link TitledPane#expandedProperty()} changed. */
-        @Override public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
-            if (newValue) {
-                pane.expandedProperty().removeListener(this);
-                final ImagePropertyExplorer properties = view.createPropertyExplorer();
-                properties.updateOnChange.bind(pane.expandedProperty());
-                pane.setContent(properties.getView());
-            }
-        }
-    }
-
-    /**
-     * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
+     * Invoked in JavaFX thread after {@link CoverageCanvas#setCoverage(GridCoverage)}.
      * This method updates the GUI with new information available.
      *
-     * @param  data        the new coverage, or {@code null} if none.
-     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
+     * @param  source  the new source of coverage, or {@code null} if none.
+     * @param  data    the new coverage, or {@code null} if none.
+     */
+    private void coverageChanged(final Resource source, final GridCoverage data) {
+        final ObservableList<Category> items = categoryTable.getItems();
+        if (data == null) {
+            items.clear();
+        } else {
+            final int visibleBand = 0;          // TODO: provide a selector for the band to show.
+            items.setAll(data.getSampleDimensions().get(visibleBand).getCategories());
+        }
+        owner.coverageChanged(source, data);
+    }
+
+    /**
+     * Sets the view content to the given coverage.
+     * This method starts a background thread.
+     *
+     * @param  request  the coverage to set, or {@code null} for clearing the view.
      */
     @Override
-    final void coverageChanged(final GridCoverage data, final Reference<Resource> originator) {
-        view.setOriginator(originator);
-        if (data != null) {
-            final int visibleBand = 0;          // TODO: provide a selector for the band to show.
-            final List<SampleDimension> bands = data.getSampleDimensions();
-            categoryTable.getItems().setAll(bands.get(visibleBand).getCategories());
+    final void load(final ImageRequest request) {
+        if (request == null) {
+            view.setOriginator(null);
+            view.setCoverage(null);
         } else {
-            categoryTable.getItems().clear();
+            view.setOriginator(request.resource != null ? new WeakReference<>(request.resource) : null);
+            request.getCoverage().ifPresentOrElse(view::setCoverage,
+                    () -> BackgroundThreads.execute(new Loader(request)));
+        }
+    }
+
+    /**
+     * A task for loading {@link GridCoverage} from a resource in a background thread.
+     *
+     * @todo Remove this loader, replace by a {@code resourceProperty} in {@link CoverageCanvas}.
+     */
+    private final class Loader extends Task<GridCoverage> {
+        /** The coverage resource together with optional parameters for reading only a subset. */
+        private final ImageRequest request;
+
+        /** Creates a new task for loading a coverage from the specified resource. */
+        Loader(final ImageRequest request) {
+            this.request = request;
+        }
+
+        /** Invoked in background thread for loading the coverage. */
+        @Override protected GridCoverage call() throws DataStoreException {
+            request.load(this, true, false);
+            return request.getCoverage().orElse(null);
+        }
+
+        /** Invoked in JavaFX thread after successful loading. */
+        @Override protected void succeeded() {
+            view.setCoverage(getValue());
+        }
+
+        /** Invoked in JavaFX thread on failure. */
+        @Override protected void failed() {
+            view.setCoverage(null);
+            request.reportError(imageAndStatus, getException());
         }
     }
 

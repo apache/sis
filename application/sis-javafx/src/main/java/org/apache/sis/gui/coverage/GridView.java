@@ -38,10 +38,7 @@ import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
@@ -59,14 +56,12 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  * consider using the standard JavaFX {@link javafx.scene.control.TableView} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see CoverageExplorer
  *
  * @since 1.1
  * @module
- *
- * @todo Allow users to specify a {@link NumberFormat} pattern for writing sample values.
  */
 @DefaultProperty("image")
 public class GridView extends Control {
@@ -124,8 +119,8 @@ public class GridView extends Control {
     private final GridTileCache tiles;
 
     /**
-     * The most recently used tile. Cached separately because it will be the desired tile in the vast majority
-     * of cases.
+     * The most recently used tile.
+     * Cached separately because it will be the desired tile in the vast majority of cases.
      */
     private GridTile lastTile;
 
@@ -212,20 +207,31 @@ public class GridView extends Control {
     final StatusBar statusBar;
 
     /**
+     * If this grid view is associated with controls, the controls. Otherwise {@code null}.
+     * This is used only for notifications; a future version may use a more generic listener.
+     * We use this specific mechanism because there is no {@code coverageProperty} in this class.
+     *
+     * @see GridControls#coverageChanged(GridCoverage)
+     */
+    private final GridControls controls;
+
+    /**
      * Creates an initially empty grid view. The content can be set after
      * construction by a call to {@link #setImage(RenderedImage)}.
      */
     public GridView() {
-        this(null);
+        this(null, null);
     }
 
     /**
      * Creates an initially empty grid view. The content can be set after
      * construction by a call to {@link #setImage(RenderedImage)}.
      *
+     * @param  controls          the controls of this grid view, or {@code null} if none.
      * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
      */
-    GridView(final RecentReferenceSystems referenceSystems) {
+    GridView(final GridControls controls, final RecentReferenceSystems referenceSystems) {
+        this.controls    = controls;
         bandProperty     = new BandProperty();
         imageProperty    = new SimpleObjectProperty<>(this, "image");
         headerWidth      = new SimpleDoubleProperty  (this, "headerWidth", 60);
@@ -299,6 +305,7 @@ public class GridView extends Control {
      */
     public final void setImage(final RenderedImage image) {
         imageProperty.set(image);
+        // Above call will cause an invocation of `onImageSpecified(image)`.
     }
 
     /**
@@ -308,24 +315,41 @@ public class GridView extends Control {
      * the modifications will appear after an undetermined amount of time.
      *
      * @param  source  the coverage or resource to load, or {@code null} if none.
+     *
+     * @see CoverageExplorer#setCoverage(ImageRequest)
      */
     public void setImage(final ImageRequest source) {
         if (source == null) {
             setImage((RenderedImage) null);
-        } else {
-            final ImageLoader previous = loader;
-            loader = null;
-            if (previous != null) {
-                previous.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
+            if (controls != null) {
+                controls.coverageChanged(null, null);
             }
-            loader = new ImageLoader(source, true);
+        } else {
+            cancelLoader();
+            loader = new ImageLoader(source);
             BackgroundThreads.execute(loader);
         }
     }
 
     /**
-     * A task for loading {@link GridCoverage} from a resource in a background thread,
-     * then fetching an image from it.
+     * Invoked after the image has been loaded or after failure.
+     *
+     * @param  source  the coverage or resource to load (never {@code null}).
+     * @param  image   the loaded image, or {@code null} on failure.
+     */
+    private void setLoadedImage(final ImageRequest request, final RenderedImage image) {
+        loader = null;          // Must be first for preventing cancellation.
+        setImage(image);
+        request.configure(statusBar);
+        if (controls != null) {
+            controls.coverageChanged(request.resource, request.getCoverage().orElse(null));
+        }
+    }
+
+    /**
+     * A task for loading {@link GridCoverage} from a resource in a background thread, then fetching an image from it.
+     *
+     * @see #setImage(ImageRequest)
      */
     private final class ImageLoader extends Task<RenderedImage> {
         /**
@@ -334,32 +358,24 @@ public class GridView extends Control {
         private final ImageRequest request;
 
         /**
-         * Whether the caller wants a grid coverage that contains real values or sample values.
-         */
-        private final boolean converted;
-
-        /**
          * Creates a new task for loading an image from the specified coverage resource.
          *
-         * @param  request    source of the image to load.
-         * @param  converted  {@code true} for a coverage containing converted values,
+         * @param  request  source of the image to load.
          */
-        ImageLoader(final ImageRequest request, final boolean converted) {
-            this.request   = request;
-            this.converted = converted;
+        ImageLoader(final ImageRequest request) {
+            this.request = request;
         }
 
         /**
-         * Loads the image. Current implementation reads the full image. If the coverage has more than 2 dimensions,
-         * only two of them are taken for the image; for all other dimensions, only the values at lowest index will
-         * be read.
+         * Loads the image. If the coverage has more than 2 dimensions, only two of them are taken for the image;
+         * for all other dimensions, only the values at lowest index will be read.
          *
          * @return the image loaded from the source given at construction time.
          * @throws DataStoreException if an error occurred while loading the grid coverage.
          */
         @Override
         protected RenderedImage call() throws DataStoreException {
-            return request.load(this, converted);
+            return request.load(this, true, true);
         }
 
         /**
@@ -368,10 +384,7 @@ public class GridView extends Control {
          */
         @Override
         protected void succeeded() {
-            loader = null;
-            terminated(request.getCoverage().get());    // Should not be empty when the task is successful.
-            setImage(getValue());                       // Must be after the coverage has been set.
-            request.configure(statusBar);
+            setLoadedImage(request, getValue());
         }
 
         /**
@@ -380,36 +393,8 @@ public class GridView extends Control {
          */
         @Override
         protected void failed() {
-            terminated(null);
-            setImage((RenderedImage) null);
-            final GridCoverageResource resource = request.resource;
-            final GridView owner = GridView.this;
-            if (resource instanceof StoreListeners) {
-                ExceptionReporter.canNotReadFile(owner, ((StoreListeners) resource).getSourceName(), getException());
-            } else {
-                ExceptionReporter.canNotUseResource(owner, getException());
-            }
-        }
-
-        /**
-         * Invoked in JavaFX thread in case of cancellation.
-         */
-        @Override
-        protected void cancelled() {
-            terminated(null);
-        }
-
-        /**
-         * Notifies listener that the given coverage has been read or failed to be read,
-         * then discards the listener. This method shall be invoked in JavaFX thread.
-         * A null argument means that the read operation failed (or has been cancelled.
-         */
-        private void terminated(final GridCoverage result) {
-            final CoverageExplorer snapshot = request.listener;
-            request.listener = null;                // Clear now in case an error happen.
-            if (snapshot != null) {
-                snapshot.onCoverageLoaded(result, request.resource);
-            }
+            setLoadedImage(request, null);
+            request.reportError(GridView.this, getException());
         }
     }
 
@@ -436,6 +421,18 @@ public class GridView extends Control {
     }
 
     /**
+     * If an image is loaded in a background thread, cancel the loading process.
+     * This method is invoked when a new image is specified.
+     */
+    private void cancelLoader() {
+        final ImageLoader previous = loader;
+        if (previous != null) {
+            loader = null;
+            previous.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
+        }
+    }
+
+    /**
      * Invoked (indirectly) when the user sets a new {@link RenderedImage}.
      * See {@link #setImage(RenderedImage)} for more description.
      *
@@ -443,10 +440,7 @@ public class GridView extends Control {
      * @throws ArithmeticException if the "tile grid x/y offset" property is too large.
      */
     private void onImageSpecified(final RenderedImage image) {
-        if (loader != null) {
-            loader.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
-            loader = null;
-        }
+        cancelLoader();
         tiles.clear();          // Let garbage collector dispose the rasters.
         lastTile = null;
         width    = 0;
@@ -461,14 +455,14 @@ public class GridView extends Control {
             tileHeight      = Math.max(1, image.getTileHeight());
             tileGridXOffset = Math.subtractExact(image.getTileGridXOffset(), minX);
             tileGridYOffset = Math.subtractExact(image.getTileGridYOffset(), minY);
-            cellFormat.dataTypeisInteger = false;           // To be kept consistent with `cellFormat` pattern.
+            cellFormat.dataTypeIsInteger = false;           // To be kept consistent with `cellFormat` pattern.
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
                 final int numBands = sm.getNumBands();
                 if (getBand() >= numBands) {
                     ((BandProperty) bandProperty).setNoCheck(numBands - 1);
                 }
-                cellFormat.dataTypeisInteger = ImageUtilities.isIntegerType(sm);
+                cellFormat.dataTypeIsInteger = ImageUtilities.isIntegerType(sm);
             }
             cellFormat.configure(image, getBand());
         }

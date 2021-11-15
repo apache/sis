@@ -17,8 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.EnumMap;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
 import javafx.scene.control.Control;
@@ -36,8 +35,6 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.Widget;
@@ -49,7 +46,8 @@ import org.apache.sis.storage.Resource;
  * The class contains two properties:
  *
  * <ul>
- *   <li>A {@link GridCoverage} supplied by user, or an {@link ImageRequest} for loading a coverage.</li>
+ *   <li>A {@link GridCoverage} supplied by user.
+ *       May be specified indirectly with an {@link ImageRequest} for loading the coverage.</li>
  *   <li>A {@link View} type which specify how to show the coverage:
  *     <ul>
  *       <li>using {@link GridView} for showing numerical values in a table, or</li>
@@ -151,6 +149,7 @@ public class CoverageExplorer extends Widget {
      * The type of control may change in any future SIS version.
      *
      * @see #getView()
+     * @see #onViewTypeSpecified(View)
      */
     private SplitPane content;
 
@@ -166,7 +165,7 @@ public class CoverageExplorer extends Widget {
     /**
      * Handles the {@link javafx.scene.control.ChoiceBox} and menu items for selecting a CRS.
      */
-    private final RecentReferenceSystems referenceSystems;
+    final RecentReferenceSystems referenceSystems;
 
     /**
      * Creates an initially empty explorer with default view type.
@@ -195,6 +194,7 @@ public class CoverageExplorer extends Widget {
         ArgumentChecks.ensureNonNull("type", type);
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
         viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", type);
+        viewTypeProperty.addListener((p,o,n) -> onViewTypeSpecified(n));
         coverageProperty.addListener((p,o,n) -> onCoverageSpecified(n));
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
@@ -210,19 +210,33 @@ public class CoverageExplorer extends Widget {
     /**
      * Returns the view-control pair for the given view type.
      * The view-control pair is created when first needed.
+     *
+     * @param  type  type of view to obtain.
+     * @param  load  whether to force loading of data in the new type.
      */
-    private ViewAndControls getViewAndControls(final View type) {
+    private ViewAndControls getViewAndControls(final View type, boolean load) {
         ViewAndControls c = views.get(type);
         if (c == null) {
-            final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
             switch (type) {
-                case TABLE: c = new GridControls(referenceSystems, vocabulary); break;
-                case IMAGE: c = new CoverageControls(vocabulary, coverageProperty, referenceSystems); break;
+                case TABLE: c = new GridControls(this); break;
+                case IMAGE: c = new CoverageControls(this); break;
                 default: throw new AssertionError(type);
             }
             SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
             SplitPane.setResizableWithParent(c.view(),     Boolean.TRUE);
             views.put(type, c);
+            load = true;
+        }
+        /*
+         * If this explorer is showing a coverage, load data in the newly created view.
+         * Data may also be loaded because the view was previously unselected (hidden)
+         * and became selected (visible).
+         */
+        if (load) {
+            final GridCoverage coverage = getCoverage();
+            if (coverage != null) {
+                c.load(new ImageRequest(coverage, null));
+            }
         }
         return c;
     }
@@ -258,11 +272,10 @@ public class CoverageExplorer extends Widget {
                 buttons[1 + type.ordinal()] = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
             }
             final View type = getViewType();
-            final ViewAndControls c = getViewAndControls(type);
+            final ViewAndControls c = getViewAndControls(type, false);
             group.selectToggle(group.getToggles().get(type.ordinal()));
             content = new SplitPane(c.controls(), c.view());
             ToolbarButton.insert(content, buttons);
-            viewTypeProperty.addListener((p,o,n) -> onViewTypeSpecified(n));
             /*
              * The divider position is supposed to be a fraction between 0 and 1. A value of 1 would mean
              * to give all the space to controls and no space to data, which is not what we want. However
@@ -287,7 +300,7 @@ public class CoverageExplorer extends Widget {
     public final Region getDataView(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type).view();
+        return getViewAndControls(type, false).view();
     }
 
     /**
@@ -301,7 +314,7 @@ public class CoverageExplorer extends Widget {
     public final Region getControls(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type).controls();
+        return getViewAndControls(type, false).controls();
     }
 
     /**
@@ -321,7 +334,7 @@ public class CoverageExplorer extends Widget {
             final Toggle button = (Toggle) event.getSource();
             if (button.isSelected()) {
                 setViewType(type);
-                views.get(type).selector = button;    // Should never null null.
+                views.get(type).selector = button;          // Should never be null.
             } else {
                 button.setSelected(true);       // Prevent situation where all buttons are unselected.
             }
@@ -335,6 +348,8 @@ public class CoverageExplorer extends Widget {
      * @return the coverage shown in this explorer, or {@code null} if none.
      *
      * @see #coverageProperty
+     * @see CoverageCanvas#getCoverage()
+     * @see GridView#getImage()
      */
     public final GridCoverage getCoverage() {
         return coverageProperty.get();
@@ -349,9 +364,12 @@ public class CoverageExplorer extends Widget {
      * @param  coverage  the data to show in this explorer, or {@code null} if none.
      *
      * @see #coverageProperty
+     * @see CoverageCanvas#setCoverage(GridCoverage)
+     * @see GridView#setImage(RenderedImage)
      */
     public final void setCoverage(final GridCoverage coverage) {
         coverageProperty.set(coverage);
+        // `onCoverageSpecified(…)` is indirectly invoked.
     }
 
     /**
@@ -361,18 +379,19 @@ public class CoverageExplorer extends Widget {
      * the modifications will appear after an undetermined amount of time.
      *
      * @param  source  the coverage or resource to load, or {@code null} if none.
+     *
+     * @see GridView#setImage(ImageRequest)
      */
     public final void setCoverage(final ImageRequest source) {
         assert Platform.isFxApplicationThread();
-        if (source == null) {
-            setCoverage((GridCoverage) null);
-        } else if (source.listener != null) {
-            throw new IllegalArgumentException(Errors.getResources(getLocale())
-                    .getString(Errors.Keys.AlreadyInitialized_1, "listener"));
-        } else {
-            source.listener = this;
-            startLoading(source);
+        final ViewAndControls current = views.get(getViewType());
+        for (final ViewAndControls c : views.values()) {
+            c.load(c == current ? source : null);
         }
+        if (current == null) {
+            coverageChanged(null, null);
+        }
+        // Else `coverageChanged(…)` will be invoked later after background thread finishes its work.
     }
 
     /**
@@ -384,39 +403,8 @@ public class CoverageExplorer extends Widget {
      */
     private void onCoverageSpecified(final GridCoverage coverage) {
         if (!isCoverageAdjusting) {
-            startLoading(null);                                         // Clear data.
-            notifyCoverageChange(coverage, null);
-            if (coverage != null) {
-                startLoading(new ImageRequest(coverage, null));         // Start a background thread.
-            }
+            setCoverage((coverage != null) ? new ImageRequest(coverage, null) : null);
         }
-    }
-
-    /**
-     * Invoked in JavaFX thread by {@link GridView} after the coverage has been read.
-     *
-     * @param  coverage    the new coverage, or {@code null} if loading failed or has been cancelled.
-     * @param  originator  resource from which the data has been read, or {@code null} if unknown.
-     */
-    final void onCoverageLoaded(final GridCoverage coverage, final Resource originator) {
-        notifyCoverageChange(coverage, (originator != null) ? new WeakReference<>(originator) : null);
-        isCoverageAdjusting = true;
-        try {
-            setCoverage(coverage);
-        } finally {
-            isCoverageAdjusting = false;
-        }
-    }
-
-    /**
-     * Invoked by {@link #setCoverage(ImageRequest)} for starting data loading in a background thread.
-     * This method is invoked in JavaFX thread.
-     *
-     * @param  source  the coverage or resource to load, or {@code null} if none.
-     */
-    private void startLoading(final ImageRequest source) {
-        final GridView main = (GridView) getViewAndControls(View.TABLE).view();
-        main.setImage(source);
     }
 
     /**
@@ -424,10 +412,10 @@ public class CoverageExplorer extends Widget {
      * about the coverage change. Controls should update the GUI with new information available,
      * in particular the coordinate reference system and the list of sample dimensions.
      *
-     * @param  data        the new coverage, or {@code null} if none.
-     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
+     * @param  source  the new source of coverage, or {@code null} if none.
+     * @param  data    the new coverage, or {@code null} if none.
      */
-    private void notifyCoverageChange(final GridCoverage data, final Reference<Resource> originator) {
+    final void coverageChanged(final Resource source, final GridCoverage data) {
         if (data != null) {
             final GridGeometry gg = data.getGridGeometry();
             referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
@@ -435,8 +423,11 @@ public class CoverageExplorer extends Widget {
                 referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
             }
         }
-        for (final ViewAndControls c : views.values()) {
-            c.coverageChanged(data, originator);
+        isCoverageAdjusting = true;
+        try {
+            setCoverage(data);
+        } finally {
+            isCoverageAdjusting = false;
         }
     }
 
@@ -469,11 +460,13 @@ public class CoverageExplorer extends Widget {
      * @param  type  the new way to show coverages in this explorer.
      */
     private void onViewTypeSpecified(final View type) {
-        final ViewAndControls c = getViewAndControls(type);
-        content.getItems().setAll(c.controls(), c.view());
-        final Toggle selector = c.selector;
-        if (selector != null) {
-            selector.setSelected(true);
+        final ViewAndControls c = getViewAndControls(type, true);
+        if (content != null) {
+            content.getItems().setAll(c.controls(), c.view());
+            final Toggle selector = c.selector;
+            if (selector != null) {
+                selector.setSelected(true);
+            }
         }
     }
 }

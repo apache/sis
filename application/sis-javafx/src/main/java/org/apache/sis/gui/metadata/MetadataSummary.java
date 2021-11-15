@@ -307,7 +307,6 @@ public class MetadataSummary extends Widget {
                                     final Metadata oldValue, final Metadata metadata)
     {
         final MetadataSummary s = (MetadataSummary) ((SimpleObjectProperty<?>) property).getBean();
-        final Getter getter = s.getter;
         s.getter = null;                // In case this method is invoked before `Getter` completed.
         s.error  = null;
         if (metadata != oldValue) {

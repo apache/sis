@@ -132,20 +132,16 @@ public class ResourceExplorer extends WindowManager {
      * The {@link #features} and {@link #coverage} data will be set only if a data tab is visible,
      * because the data loading may be costly.
      *
-     * @see #isDataTabSet
-     * @see #isDataTabSelected()
-     * @see #updateDataTab(Resource, boolean)
+     * @see #updateDataTab(Resource)
      */
     private final Tab viewTab, tableTab;
 
     /**
-     * Whether the setting of new values in {@link #viewTab} or {@link #tableTab} has been done.
-     * The new values are set only if a data tab is visible, and otherwise are delayed until one
-     * of data tab become visible.
+     * Whether one of the "view" or "table" tab is shown. They are the tabs requiring data loading.
      *
-     * @see #updateDataTab(Resource, boolean)
+     * @see #getCoverageView()
      */
-    private boolean isDataTabSet;
+    private final BooleanBinding dataShown;
 
     /**
      * Whether one of the standard metadata tab (either "summary" or "metadata") is selected.
@@ -177,10 +173,9 @@ public class ResourceExplorer extends WindowManager {
         final Tab summaryTab = new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView());
         /*
          * "Visual" tab showing the raster data as an image.
-         *
-         * TODO: add contextual menu for creating a window showing directly the visual.
          */
         viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
+        viewTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
         /*
          * "Data" tab showing raster data as a table.
          */
@@ -219,12 +214,16 @@ public class ResourceExplorer extends WindowManager {
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
         /*
-         * Register listeners last, for making sure we don't have undesired event.
+         * Register listeners last, for making sure we do not have undesired events.
          * Those listeners trig loading of various objects (data, standard metadata,
          * native metadata) when the corresponding tab become visible.
          */
-        viewTab .selectedProperty().addListener((p,o,n) -> dataTabShown(n, true));
-        tableTab.selectedProperty().addListener((p,o,n) -> dataTabShown(n, false));
+        dataShown = viewTab.selectedProperty().or(tableTab.selectedProperty());
+        dataShown.addListener((p,o,n) -> {
+            if (Boolean.FALSE.equals(o) && Boolean.TRUE.equals(n)) {
+                updateDataTabWithDefault(getSelectedResource());
+            }
+        });
         metadataShown = summaryTab.selectedProperty().or(metadataTab.selectedProperty());
         metadataShown.addListener((p,o,n) -> {
             if (Boolean.FALSE.equals(o) && Boolean.TRUE.equals(n)) {
@@ -357,15 +356,11 @@ public class ResourceExplorer extends WindowManager {
          */
         selectedResource.set(resource);
         metadata.setMetadata(metadataShown.get() ? resource : null);
-        isDataTabSet = viewTab.isSelected() || tableTab.isSelected();
-        updateDataTab(isDataTabSet ? resource : null, true);
-        if (!isDataTabSet) {
-            setNewWindowDisabled(!(resource instanceof GridCoverageResource || resource instanceof FeatureSet));
-        }
+        updateDataTabWithDefault(dataShown.get() ? resource : null);
         /*
-         * Update the label is disabled state of the native metadata tab. We do not have a reliable way
+         * Update the label and disabled state of the native metadata tab. We do not have a reliable way
          * to know if metadata are present without trying to fetch them, so current implementation only
-         * checks if the data store implementation override the `getNativeMetadata()` method.
+         * checks if the data store implementation overrides the `getNativeMetadata()` method.
          */
         String  label    = null;
         boolean disabled = true;
@@ -378,7 +373,7 @@ public class ResourceExplorer extends WindowManager {
             try {
                 disabled = resource.getClass().getMethod("getNativeMetadata").getDeclaringClass() == DataStore.class;
             } catch (NoSuchMethodException e) {
-                // Should never happen.
+                warning("onResourceSelected", resource, e);         // Should never happen.
             }
         }
         nativeMetadataTab.setText(Objects.toString(label, defaultNativeTabLabel));
@@ -392,8 +387,9 @@ public class ResourceExplorer extends WindowManager {
 
     /**
      * Loads native metadata in a background thread and shows them in the "native metadata" tab.
+     * This method is invoked when the tab become visible, or when a new resource is loaded.
      */
-    private final void loadNativeMetadata() {
+    private void loadNativeMetadata() {
         final Resource resource = getSelectedResource();
         if (resource instanceof DataStore) {
             final DataStore store = (DataStore) resource;
@@ -419,41 +415,54 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
-     * Assigns the given resource into the {@link #viewTab} and {@link #tableTab}. Should be invoked only
-     * if a data tab is visible because data loading may be costly. It is caller responsibility to invoke
-     * {@link #setNewWindowDisabled(boolean)} after this method.
+     * Returns the enumeration value that describe the kind of content to show in {@link CoverageExplorer}.
+     * The type depends on which tab is visible. If no coverage data tab is visible, then returns null.
      *
-     * <p>The {@link #isDataTabSet} flag should be set before to invoke this method. If {@code true}, then
-     * the given resource is the final content and window menus will be updated accordingly by this method.
-     * If {@code false}, then the given resource is temporarily null and window menus should be updated by
-     * the caller instead of this method.</p>
+     * @see #dataShown
+     */
+    private CoverageExplorer.View getCoverageView() {
+        if  (viewTab.isSelected()) return CoverageExplorer.View.IMAGE;
+        if (tableTab.isSelected()) return CoverageExplorer.View.TABLE;
+        return null;
+    }
+
+    /**
+     * Assigns the given resource into the {@link #viewTab} or {@link #tableTab}, depending which one is visible.
+     * Shall be invoked with a non-null resource only if a data tab is visible because data loading may be costly.
      *
      * @param  resource  the resource to set, or {@code null} if none.
-     * @param  fallback  whether to allow the search for a default component to show
-     *                   if the given resource is an aggregate.
+     * @return {@code true} if the resource has been recognized.
+     *
+     * @see #dataShown
+     * @see #updateDataTabWithDefault(Resource)
      */
-    private void updateDataTab(final Resource resource, boolean fallback) {
-        Region       image = null;
-        Region       table = null;
-        FeatureSet   data  = null;
-        ImageRequest grid  = null;
+    private boolean updateDataTab(final Resource resource) {
+        Region        image = null;
+        Region        table = null;
+        FeatureSet    data  = null;
+        ImageRequest  grid  = null;
+        Region controlPanel = null;
         CoverageExplorer.View type = null;
         if (resource instanceof GridCoverageResource) {
+            type = getCoverageView();       // A null value here would be a violation of method contract.
             if (coverage == null) {
-                coverage = new CoverageExplorer();
+                coverage = new CoverageExplorer(type);
+            } else {
+                coverage.setViewType(type);
             }
-            grid  = new ImageRequest((GridCoverageResource) resource, null, null);
-            image = coverage.getDataView(CoverageExplorer.View.IMAGE);
-            table = coverage.getDataView(CoverageExplorer.View.TABLE);
-            type  = viewTab.isSelected() ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
-            fallback = false;
+            final Region view = coverage.getDataView(type);
+            switch (type) {
+                case IMAGE: image = view; break;
+                case TABLE: table = view; break;
+            }
+            grid = new ImageRequest((GridCoverageResource) resource, null, null);
+            controlPanel = coverage.getControls(type);
         } else if (resource instanceof FeatureSet) {
             data = (FeatureSet) resource;
             if (features == null) {
                 features = new FeatureTable();
             }
             table = features;
-            fallback = false;
         }
         /*
          * At least one of `grid` or `data` will be null. Invoking the following
@@ -463,44 +472,19 @@ public class ResourceExplorer extends WindowManager {
         if (features != null) features.setFeatures(data);
         if (image    != null) viewTab .setContent(image);
         if (table    != null) tableTab.setContent(table);
-        if (isDataTabSet) {
-            setNewWindowDisabled(image == null && table == null);
-            updateControls(type);
-        }
-        if (fallback) {
-            defaultIfNotViewable(resource);
-        }
-    }
-
-    /**
-     * Invoked when a data tab become selected or unselected.
-     * This method sets the current resource in the {@link #viewTab}
-     * or {@link #tableTab} if it has not been already set.
-     *
-     * @param  selected  whether the tab became the selected one.
-     * @param  visual    {@code true} for visual, or {@code false} for tabular data.
-     */
-    private void dataTabShown(final Boolean selected, final boolean visual) {
-        CoverageExplorer.View type = null;
-        if (selected) {
-            if (!isDataTabSet) {
-                isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
-                updateDataTab(getSelectedResource(), true);
-            }
-            if (coverage != null) {                     // May still be null if the selected resource is not a coverage.
-                type = visual ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
-            }
-        }
-        updateControls(type);
+        final boolean isEmpty = (image == null & table == null);
+        setNewWindowDisabled(isEmpty);
+        updateControls(controlPanel);
+        return !isEmpty | (resource == null);
     }
 
     /**
      * Adds or removes controls for the given view.
+     * This method is invoked when the visible tab changed.
      *
-     * @param  type  the view for which to provide controls, or {@code null} if none.
+     * @param  controlPanel  the controls for the currently selected tab, or {@code null} if none.
      */
-    private void updateControls(final CoverageExplorer.View type) {
-        final Region controlPanel = (type != null) ? coverage.getControls(type) : null;
+    private void updateControls(final Region controlPanel) {
         final ObservableList<Node> items = controls.getItems();
         if (items.size() >= 2) {
             if (controlPanel != null) {
@@ -519,6 +503,7 @@ public class ResourceExplorer extends WindowManager {
 
     /**
      * Returns the set of currently selected data, or {@code null} if none.
+     * This is invoked when the user selects the "New window" menu item.
      */
     @Override
     final SelectedData getSelectedData() {
@@ -540,9 +525,8 @@ public class ResourceExplorer extends WindowManager {
              * We do that even if the feature table is not currently visible. This will not cause
              * useless data loading since they share the same `FeatureLoader`.
              */
-            if (features == null || !isDataTabSet) {
-                isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
-                updateDataTab(resource, true);          // For forcing creation of FeatureTable.
+            if (features == null) {
+                updateDataTab(resource);                // For forcing creation of FeatureTable.
             }
             table = features;
         } else {
@@ -576,14 +560,19 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
-     * If the given resource is not one of the resource that {@link #updateDataTab(Resource, boolean)}
-     * can handle, searches in a background thread for a default resource to show. The purpose of this
-     * method is to make navigation easier by allowing users to click on the root node of a resource,
+     * If the given resource is not one of the resource that {@link #updateDataTab(Resource)} can handle,
+     * searches in a background thread for a default resource to show. The purpose of this method is to
+     * make navigation easier by allowing users to click on the root node of a resource,
      * without requerying them to expand the tree node before to select a resource.
      *
      * @param  resource  the selected resource.
+     *
+     * @see #updateDataTab(Resource)
      */
-    private void defaultIfNotViewable(final Resource resource) {
+    private void updateDataTabWithDefault(final Resource resource) {
+        if (updateDataTab(resource)) {
+            return;
+        }
         if (resource instanceof Aggregate && !(resource instanceof DataSet)) {
             BackgroundThreads.execute(new Task<Resource>() {
                 /** Invoked in background thread for fetching the first resource. */
@@ -604,23 +593,33 @@ public class ResourceExplorer extends WindowManager {
                 /** Invoked in JavaFX thread for showing the resource. */
                 @Override protected void succeeded() {
                     if (getSelectedResource() == resource) {
-                        updateDataTab(getValue(), false);
+                        updateDataTab(getValue());
                     }
                 }
 
                 /** Invoked in JavaFX thread if children can not be loaded. */
                 @Override protected void failed() {
-                    final ObservableList<LogRecord> records = LogHandler.getRecords(resource);
-                    if (records != null) {
-                        final Throwable e = getException();
-                        final LogRecord record = new LogRecord(Level.WARNING, e.getLocalizedMessage());
-                        record.setSourceClassName(ResourceExplorer.class.getName());
-                        record.setSourceMethodName("defaultIfNotViewable");
-                        record.setThrown(e);
-                        records.add(record);
-                    }
+                    warning("updateDataTabWithDefault", resource, getException());
                 }
             });
+        }
+    }
+
+    /**
+     * Adds a warning to the logger associated to the resource.
+     *
+     * @param caller    the method to declare as the source of the warning.
+     * @param resource  the resource for which an exception occurred.
+     * @param error     the exception to log.
+     */
+    private static void warning(final String caller, final Resource resource, final Throwable error) {
+        final ObservableList<LogRecord> records = LogHandler.getRecords(resource);
+        if (records != null) {
+            final LogRecord record = new LogRecord(Level.WARNING, error.getLocalizedMessage());
+            record.setSourceClassName(ResourceExplorer.class.getName());
+            record.setSourceMethodName(caller);
+            record.setThrown(error);
+            records.add(record);
         }
     }
 }

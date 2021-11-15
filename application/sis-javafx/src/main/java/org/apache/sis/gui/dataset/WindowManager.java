@@ -84,7 +84,7 @@ abstract class WindowManager extends Widget {
      * Creates a new manager of windows.
      */
     WindowManager() {
-        newWindowMenus     = new ArrayList<>(2);
+        newWindowMenus     = new ArrayList<>(3);
         hasWindowsProperty = new WindowsProperty();
     }
 

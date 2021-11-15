@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.lang.ref.Reference;
 import javafx.geometry.Insets;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -31,8 +30,11 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
- * A {@link GridView} or {@link CoverageCanvas} together with the controls
- * to show in a {@link CoverageExplorer}.
+ * A {@link GridView} or {@link CoverageCanvas} together with the controls to show in a {@link CoverageExplorer}.
+ * When the image or coverage is updated in a view, the {@link #coverageChanged(Resource, GridCoverage)} method
+ * is invoked, which will in turn update the {@link CoverageExplorer} properties. Coverage changes are applied
+ * on the view then propagated to {@code CoverageExplorer} rather than the opposite direction because loading
+ * mechanisms are implemented in the view (different views may load a different amount of data).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -63,9 +65,25 @@ abstract class ViewAndControls {
     Toggle selector;
 
     /**
-     * Creates a new view-control pair.
+     * The widget which contain this view. This is the widget to inform when the coverage changed.
+     * Subclasses should define the following method:
+     *
+     * {@preformat java
+     *     private void coverageChanged(final Resource source, final GridCoverage data) {
+     *         // Update subclass-specific controls here, before to forward to explorer.
+     *         owner.coverageChanged(source, data);
+     *     }
+     * }
      */
-    ViewAndControls() {
+    protected final CoverageExplorer owner;
+
+    /**
+     * Creates a new view-control pair.
+     *
+     * @param  owner  the widget which create this view. Can not be null.
+     */
+    ViewAndControls(final CoverageExplorer owner) {
+        this.owner = owner;
     }
 
     /**
@@ -107,7 +125,7 @@ abstract class ViewAndControls {
     /**
      * Returns the font to assign to the label of a group of control.
      */
-    static Font fontOfGroup() {
+    private static Font fontOfGroup() {
         return Font.font(null, FontWeight.BOLD, -1);
     }
 
@@ -124,13 +142,10 @@ abstract class ViewAndControls {
     abstract Control controls();
 
     /**
-     * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
-     * Implementation should update the GUI with new information available, in particular
-     * the coordinate reference system and the list of sample dimensions.
+     * Sets the view content to the given resource, coverage or image.
+     * This method may start a background thread.
      *
-     * @param  data        the new coverage, or {@code null} if none.
-     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
-     *                     This is used for determining a target window for logging records.
+     * @param  request  the resource, coverage or image to set, or {@code null} for clearing the view.
      */
-    abstract void coverageChanged(GridCoverage data, Reference<Resource> originator);
+    abstract void load(ImageRequest request);
 }

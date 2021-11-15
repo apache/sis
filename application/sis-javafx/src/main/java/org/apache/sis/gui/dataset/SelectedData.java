@@ -109,13 +109,8 @@ final class SelectedData {
                     }
                 }
             }
-            final CoverageExplorer ce = new CoverageExplorer();
+            final CoverageExplorer ce = new CoverageExplorer(view);
             ce.setCoverage(coverage);
-            /*
-             * TODO: following line is disabled for now because it causes
-             *       the vertical scroll bar of `GridView` to disappear.
-             */
-//          ce.setViewType(view);
             return ce.getView();
         }
     }
