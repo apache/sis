@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.feature.jts;
 
+import java.awt.Shape;
 import java.util.Map;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
@@ -33,6 +34,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -293,5 +295,28 @@ public final class JTS extends Static {
             geometry = gct.transform(geometry);
         }
         return geometry;
+    }
+
+    /**
+     * Create a view of the JTS geometry as a Java2D Shape.
+     *
+     * @param geometry the geometry to view as a shape, not {@code null}.
+     * @param transform transform to apply on coordinates, or {@code null}.
+     * @return the Java2D shape view
+     */
+    public static Shape asShape(Geometry geometry, final MathTransform transform) {
+        ArgumentChecks.ensureNonNull("geometry", geometry);
+        return new JTSShape(geometry, transform);
+    }
+    /**
+     * Create a view of the JTS geometry as a Java2D Shape applying a decimation on the fly.
+     *
+     * @param geometry the geometry to view as a shape, not {@code null}.
+     * @param resolution decimation resolution, or {@code null}.
+     * @return the Java2D shape view
+     */
+    public static Shape asDecimatedShape(Geometry geometry, final double[] resolution) {
+        ArgumentChecks.ensureNonNull("geometry", geometry);
+        return new DecimateJTSShape(geometry, resolution);
     }
 }
