@@ -16,8 +16,17 @@
  */
 package org.apache.sis.internal.feature.jts;
 
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Area;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -37,6 +46,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import org.locationtech.jts.geom.Envelope;
 
 
 /**
@@ -418,5 +428,124 @@ public final strictfp class JTSTest extends TestCase {
         ite.next();
 
         assertTrue(ite.isDone());
+    }
+
+    /**
+     * Tests {@link JTS#fromAwt(org.locationtech.jts.geom.GeometryFactory, java.awt.Shape, double)} with a point type shape.
+     */
+    @Test
+    public void testFromAwtPoint() {
+        final GeneralPath path = new GeneralPath();
+        path.moveTo(10, 20);
+
+        final Geometry candidate = JTS.fromAwt(GF, path, 0.0001);
+        final Geometry expected = GF.createPoint(new Coordinate(10,20));
+        assertEquals(expected, candidate);
+    }
+
+    /**
+     * Tests {@link JTS#fromAwt(org.locationtech.jts.geom.GeometryFactory, java.awt.Shape, double)} with a line type shape.
+     */
+    @Test
+    public void testFromAwtLine() {
+        final Line2D shape = new Line2D.Double(1, 2, 3, 4);
+        final Geometry geometry = JTS.fromAwt(GF, shape, 0.1);
+        assertTrue(geometry instanceof LineString);
+        final LineString ls = (LineString) geometry;
+        final Coordinate[] coordinates = ls.getCoordinates();
+        assertEquals(2, coordinates.length);
+        assertEquals(new Coordinate(1,2), coordinates[0]);
+        assertEquals(new Coordinate(3,4), coordinates[1]);
+    }
+
+    /**
+     * Tests {@link JTS#fromAwt(org.locationtech.jts.geom.GeometryFactory, java.awt.Shape, double)} with a rectangle type shape.
+     */
+    @Test
+    public void testFromAwtRectangle() {
+        final Rectangle2D shape = new Rectangle2D.Double(1,2,10,20);
+        final Geometry geometry = JTS.fromAwt(GF, shape, 0.1);
+        assertTrue(geometry instanceof Polygon);
+        final Polygon ls = (Polygon) geometry;
+        final Coordinate[] coordinates = ls.getCoordinates();
+        assertEquals(5, coordinates.length);
+        assertEquals(new Coordinate(1,2), coordinates[0]);
+        assertEquals(new Coordinate(11,2), coordinates[1]);
+        assertEquals(new Coordinate(11,22), coordinates[2]);
+        assertEquals(new Coordinate(1,22), coordinates[3]);
+        assertEquals(new Coordinate(1,2), coordinates[4]);
+    }
+
+    /**
+     * Tests {@link JTS#fromAwt(org.locationtech.jts.geom.GeometryFactory, java.awt.Shape, double)} with a rectangle with a hole shape.
+     */
+    @Test
+    public void testFromAwtRectangleWithHole() {
+        final Rectangle2D contour = new Rectangle2D.Double(1,2,10,20);
+        final Rectangle2D hole = new Rectangle2D.Double(5,6,2,3);
+        final Area shape = new Area(contour);
+        shape.subtract(new Area(hole));
+        final Geometry geometry = JTS.fromAwt(GF, shape, 0.1);
+        assertTrue(geometry instanceof Polygon);
+        final Polygon ls = (Polygon) geometry;
+        final LinearRing exteriorRing = ls.getExteriorRing();
+        assertEquals(1, ls.getNumInteriorRing());
+        final LinearRing interiorRing = ls.getInteriorRingN(0);
+
+        final Coordinate[] coordinatesExt = exteriorRing.getCoordinates();
+        assertEquals(5, coordinatesExt.length);
+        assertEquals(new Coordinate(1,2), coordinatesExt[0]);
+        assertEquals(new Coordinate(1,22), coordinatesExt[1]);
+        assertEquals(new Coordinate(11,22), coordinatesExt[2]);
+        assertEquals(new Coordinate(11,2), coordinatesExt[3]);
+        assertEquals(new Coordinate(1,2), coordinatesExt[4]);
+
+        final Coordinate[] coordinatesInt = interiorRing.getCoordinates();
+        assertEquals(5, coordinatesInt.length);
+        assertEquals(new Coordinate(7,6), coordinatesInt[0]);
+        assertEquals(new Coordinate(7,9), coordinatesInt[1]);
+        assertEquals(new Coordinate(5,9), coordinatesInt[2]);
+        assertEquals(new Coordinate(5,6), coordinatesInt[3]);
+        assertEquals(new Coordinate(7,6), coordinatesInt[4]);
+    }
+
+    /**
+     * Tests {@link JTS#fromAwt(org.locationtech.jts.geom.GeometryFactory, java.awt.Shape, double)} with a text shape.
+     */
+    @Test
+    public void testFromAwtText() {
+        final BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D g = img.createGraphics();
+        final FontRenderContext fontRenderContext = g.getFontRenderContext();
+        final Font font = new Font("Monospaced", Font.PLAIN, 12);
+        final GlyphVector glyphs = font.createGlyphVector(fontRenderContext, "Labi");
+        final Shape shape = glyphs.getOutline();
+        final GeneralPath gp = new GeneralPath();
+        gp.append(shape.getPathIterator(null, 0.1), false);
+        final Rectangle2D bounds2D = gp.getBounds2D();
+
+        final Geometry geometry = JTS.fromAwt(GF, shape, 0.1);
+        assertTrue(geometry instanceof MultiPolygon);
+        final MultiPolygon mp = (MultiPolygon) geometry;
+        assertEquals(5, mp.getNumGeometries()); //4 characters but 'i' is split in two ploygons
+        Geometry l = mp.getGeometryN(0);
+        Geometry a = mp.getGeometryN(1);
+        Geometry b = mp.getGeometryN(2);
+        Geometry i0 = mp.getGeometryN(3);
+        Geometry i1 = mp.getGeometryN(4);
+        assertTrue(l instanceof Polygon);
+        assertTrue(a instanceof Polygon);
+        assertTrue(b instanceof Polygon);
+        assertTrue(i0 instanceof Polygon);
+        assertTrue(i1 instanceof Polygon);
+        //a must contain a hole
+        assertEquals(1, ((Polygon) a).getNumInteriorRing());
+
+        //check bounding box
+        final Envelope env = geometry.getEnvelopeInternal();
+        assertEquals(bounds2D.getMinX(), env.getMinX(), 0.0);
+        assertEquals(bounds2D.getMaxX(), env.getMaxX(), 0.0);
+        assertEquals(bounds2D.getMinY(), env.getMinY(), 0.0);
+        assertEquals(bounds2D.getMaxY(), env.getMaxY(), 0.0);
     }
 }
