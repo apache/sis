@@ -37,6 +37,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
 import org.opengis.filter.SortOrder;
+import org.opengis.filter.SortProperty;
 
 
 /**
@@ -208,5 +209,16 @@ public final strictfp class FeatureQueryTest extends TestCase {
         final Feature result = TestUtilities.getSingleton(fs.features(false).collect(Collectors.toList()));
         final PropertyType p = TestUtilities.getSingleton(result.getType().getProperties(true));
         assertEquals("value2", p.getName().toString());
+    }
+
+    @Test
+    public void testColumnNameClash() throws DataStoreException {
+        final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(
+                ff.add(ff.property("value1", Number.class), ff.literal(1)),
+                ff.add(ff.property("value2", Number.class), ff.literal(1)));
+        final FeatureSet subset = featureSet.subset(query); // NOTE: I would expect an error here
+        final FeatureType type = subset.getType();
+        assertEquals(2, type.getProperties(true).size());
     }
 }
