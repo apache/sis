@@ -64,6 +64,7 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 // Branch-dependent imports
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**
@@ -154,6 +155,11 @@ final class Wrapper extends GeometryWrapper<Geometry> {
         if (dimension != Factory.BIDIMENSIONAL) {
             ArgumentChecks.ensureDimensionMatches("crs",
                     (dimension <= Factory.BIDIMENSIONAL) ? Factory.BIDIMENSIONAL : 3, crs);
+            final int coordsDim = getCoordinatesDimension(geometry);
+            if (coordsDim < dimension) {
+                throw new MismatchedDimensionException(Errors.format(
+                            Errors.Keys.MismatchedDimension_3, "crs", coordsDim, dimension));
+            }
         }
         JTS.setCoordinateReferenceSystem(geometry, crs);
     }
@@ -691,5 +697,33 @@ add:    for (Geometry next = geometry;;) {
     @Override
     public String formatWKT(final double flatness) {
         return geometry.toText();
+    }
+
+    /**
+     * Extract geometry coordinates dimension.
+     */
+    private static int getCoordinatesDimension(Geometry geometry) {
+        switch (geometry.getGeometryType()) {
+            case Geometry.TYPENAME_POINT :
+                return ((Point) geometry).getCoordinateSequence().getDimension();
+            case Geometry.TYPENAME_LINESTRING :
+            case Geometry.TYPENAME_LINEARRING :
+                return ((LineString) geometry).getCoordinateSequence().getDimension();
+            case Geometry.TYPENAME_POLYGON :
+                return getCoordinatesDimension(((Polygon) geometry).getExteriorRing());
+            case Geometry.TYPENAME_MULTIPOINT :
+            case Geometry.TYPENAME_MULTILINESTRING :
+            case Geometry.TYPENAME_MULTIPOLYGON :
+            case Geometry.TYPENAME_GEOMETRYCOLLECTION :
+                final GeometryCollection gc = (GeometryCollection) geometry;
+                if (gc.getNumGeometries() == 0) {
+                    //undefined coordinates, JTS assume 3 for empty geometries.
+                    return 3;
+                } else {
+                    return getCoordinatesDimension(gc.getGeometryN(0));
+                }
+            default :
+                throw new IllegalArgumentException("Unexpected JTS geometry type " + geometry.getGeometryType());
+        }
     }
 }
