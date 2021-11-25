@@ -84,8 +84,8 @@ final class MultiResolutionImageLoader extends MultiResolutionCoverageLoader {
      * @return loader for the specified resource (never {@code null}).
      * @throws DataStoreException if an error occurred while querying the resource for resolutions.
      */
-    static MultiResolutionImageLoader getInstance(final GridCoverageResource resource,
-            MultiResolutionImageLoader cached) throws DataStoreException
+    static MultiResolutionCoverageLoader getInstance(final GridCoverageResource resource,
+            MultiResolutionCoverageLoader cached) throws DataStoreException
     {
         if (cached == null || cached.resource != resource) {
             synchronized (CACHE) {

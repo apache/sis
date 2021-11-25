@@ -83,7 +83,7 @@ public class MultiResolutionCoverageLoader {
     /**
      * The resource from which to read grid coverages.
      */
-    protected final GridCoverageResource resource;
+    public final GridCoverageResource resource;
 
     /**
      * Squares of resolution at each pyramid level, from finest (smaller numbers) to coarsest (largest numbers).
@@ -190,6 +190,13 @@ public class MultiResolutionCoverageLoader {
     }
 
     /**
+     * Returns the maximal level (the level with coarsest resolution).
+     */
+    final int getLastLevel() {
+        return Math.max(resolutionSquared.length - 1, 0);
+    }
+
+    /**
      * Returns the pyramid level for a zoom defined by the given "objective to display" transform.
      * Only the scale factors of the given transform will be considered; translations are ignored.
      *
@@ -200,10 +207,10 @@ public class MultiResolutionCoverageLoader {
      * @return pyramid level for the zoom determined by the given transform. Finest level is 0.
      * @throws TransformException if an error occurred while computing resolution from given transforms.
      */
-    public final int findPyramidLevel(final MathTransform dataToObjective, final LinearTransform objectiveToDisplay,
-                                      final DirectPosition objectivePOI) throws TransformException
+    final int findPyramidLevel(final MathTransform dataToObjective, final LinearTransform objectiveToDisplay,
+                               final DirectPosition objectivePOI) throws TransformException
     {
-        int level = Math.max(resolutionSquared.length - 1, 0);
+        int level = getLastLevel();
         if (level != 0) {
             final LinearTransform displayToObjective = objectiveToDisplay.inverse();
             final Matrix m = displayToObjective.getMatrix();
@@ -353,7 +360,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
      */
     @Override
     public String toString() {
-        final int count = resolutionSquared.length - 1;
+        final int count = getLastLevel();
         double delta = magnitude(0);
         if (count != 0) {
             delta = (magnitude(count) - delta) / count;

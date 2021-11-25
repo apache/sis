@@ -181,12 +181,12 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * The {@code RenderedImage} to draw together with transform from pixel coordinates to display coordinates.
-     * Shall never be {@code null} but may be {@linkplain RenderingData#isEmpty() empty}. This instance shall be
-     * read and modified in JavaFX thread only and cloned if those data are needed by a background thread.
+     * Shall never be {@code null} but may be {@link StyledRenderingData#isEmpty() empty}. This instance shall
+     * be read and modified in JavaFX thread only and cloned if those data are needed by a background thread.
      *
      * @see Worker
      */
-    private RenderingData data;
+    private StyledRenderingData data;
 
     /**
      * The {@link #data} with different operations applied on them. Currently the only supported operation is
@@ -249,7 +249,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     CoverageCanvas(final Locale locale) {
         super(locale);
-        data                  = new RenderingData((report) -> errorReport = report.getDescription());
+        data                  = new StyledRenderingData((report) -> errorReport = report.getDescription());
         derivedImages         = new EnumMap<>(Stretching.class);
         resourceProperty      = new SimpleObjectProperty<>(this, "resource");
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
@@ -659,7 +659,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         /**
          * Value of {@link CoverageCanvas#data} at the time this worker has been initialized.
          */
-        private final RenderingData data;
+        private final StyledRenderingData data;
 
         /**
          * Value of {@link CoverageCanvas#getObjectiveCRS()} at the time this worker has been initialized.
@@ -722,7 +722,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          * when the only change is a translation. But this transform may also contain a rotation or scale factor during
          * a short time if the rendering happens while {@link #prefetchedImage} is in need to be recomputed.
          *
-         * @see RenderingData#displayToObjective
+         * @see StyledRenderingData#displayToObjective
          */
         private AffineTransform resampledToDisplay;
 
