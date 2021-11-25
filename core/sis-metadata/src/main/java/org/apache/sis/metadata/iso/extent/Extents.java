@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.function.Function;
+import java.util.function.BiConsumer;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -44,6 +46,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.metadata.InvalidMetadataException;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
@@ -75,7 +78,7 @@ import org.opengis.geometry.Geometry;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see org.apache.sis.geometry.Envelopes
  *
@@ -548,6 +551,27 @@ public final class Extents extends Static {
     }
 
     /**
+     * Returns the union of the given geographic bounding boxes. If any of the arguments is {@code null},
+     * then this method returns the other argument (which may be null). Otherwise this method returns a box
+     * which is the union of the two given boxes.
+     *
+     * <p>This method never modify the given boxes, but may return directly one of the given arguments
+     * if it already represents the union result.</p>
+     *
+     * @param  b1  the first bounding box, or {@code null}.
+     * @param  b2  the second bounding box, or {@code null}.
+     * @return the union (may be any of the {@code b1} or {@code b2} argument if unchanged),
+     *         or {@code null} if the two given boxes are null.
+     *
+     * @see DefaultGeographicBoundingBox#add(GeographicBoundingBox)
+     *
+     * @since 1.2
+     */
+    public static GeographicBoundingBox union(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
+        return apply(b1, b2, DefaultGeographicBoundingBox::new, DefaultGeographicBoundingBox::add);
+    }
+
+    /**
      * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
      * then this method returns the other argument (which may be null). Otherwise this method returns a box which
      * is the intersection of the two given boxes. If there is no intersection, the returned bounding box contains
@@ -568,13 +592,7 @@ public final class Extents extends Static {
      * @since 0.4
      */
     public static GeographicBoundingBox intersection(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
-        if (b1 == null) return b2;
-        if (b2 == null || b2 == b1) return b1;
-        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(b1);
-        box.intersect(b2);
-        if (box.equals(b1, ComparisonMode.BY_CONTRACT)) return b1;
-        if (box.equals(b2, ComparisonMode.BY_CONTRACT)) return b2;
-        return box;
+        return apply(b1, b2, DefaultGeographicBoundingBox::new, DefaultGeographicBoundingBox::intersect);
     }
 
     /**
@@ -618,13 +636,7 @@ public final class Extents extends Static {
      * @since 0.8
      */
     public static VerticalExtent intersection(final VerticalExtent e1, final VerticalExtent e2) {
-        if (e1 == null) return e2;
-        if (e2 == null || e2 == e1) return e1;
-        final DefaultVerticalExtent extent = new DefaultVerticalExtent(e1);
-        extent.intersect(e2);
-        if (extent.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
-        if (extent.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
-        return extent;
+        return apply(e1, e2, DefaultVerticalExtent::new, DefaultVerticalExtent::intersect);
     }
 
     /**
@@ -647,13 +659,7 @@ public final class Extents extends Static {
      * @since 0.8
      */
     public static TemporalExtent intersection(final TemporalExtent e1, final TemporalExtent e2) {
-        if (e1 == null) return e2;
-        if (e2 == null || e2 == e1) return e1;
-        final DefaultTemporalExtent extent = new DefaultTemporalExtent(e1);
-        extent.intersect(e2);
-        if (extent.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
-        if (extent.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
-        return extent;
+        return apply(e1, e2, DefaultTemporalExtent::new, DefaultTemporalExtent::intersect);
     }
 
     /**
@@ -680,12 +686,35 @@ public final class Extents extends Static {
      * @since 0.8
      */
     public static Extent intersection(final Extent e1, final Extent e2) {
+        return apply(e1, e2, DefaultExtent::new, DefaultExtent::intersect);
+    }
+
+    /**
+     * Implementation of {@code intersection(…)} and {@code union(…)} methods.
+     *
+     * <div class="note"><b>Note:</b>
+     * the <var>C</var> parameter type should be {@code <C extends ISOMetadata & I>}.
+     * But this is not allowed by current Java compiler, because of complexity. See
+     * <a href="https://bugs.openjdk.java.net/browse/JDK-4899305">JDK-4899305</a>.</div>
+     *
+     * @param  <I>          the metadata interface.
+     * @param  <C>          the metadata implementation class. Shall implement {@code <I>}.
+     * @param  e1           the first extent, or {@code null}.
+     * @param  e2           the second extent, or {@code null}.
+     * @param  constructor  copy constructor of metadata implementation class.
+     * @param  operator     the union or intersection operator to apply.
+     * @return
+     */
+    @SuppressWarnings("unchecked")      // Workaround for Java above-cited compiler restriction.
+    private static <I, C extends ISOMetadata> I apply(final I e1, final I e2,
+            final Function<I,C> constructor, final BiConsumer<C,I> operator)
+    {
         if (e1 == null) return e2;
         if (e2 == null || e2 == e1) return e1;
-        final DefaultExtent extent = new DefaultExtent(e1);
-        extent.intersect(e2);
-        if (extent.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
-        if (extent.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
-        return extent;
+        final C result = constructor.apply(e1);
+        operator.accept(result, e2);
+        if (result.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
+        if (result.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
+        return (I) result;
     }
 }
