@@ -500,6 +500,9 @@ public class GridDerivation {
             if (base.equals(areaOfInterest)) {
                 return this;
             }
+            if (areaOfInterest.extent == null && areaOfInterest.resolution != null) {
+                return subgrid(areaOfInterest.envelope, areaOfInterest.resolution);
+            }
             final MathTransform mapCenters;
             final GridExtent domain = areaOfInterest.getExtent();       // May throw IncompleteGridGeometryException.
             try {

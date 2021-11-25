@@ -55,7 +55,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -305,7 +305,8 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridDerivation#subgrid(GridExtent)} with an integer amount of tiles, operating only on extents.
+     * Tests {@link GridDerivation#subgrid(GridExtent, int...)}
+     * with an integer amount of tiles, operating only on extents.
      */
     @Test
     public void testSubgridWithTilingOnExtent() {
@@ -404,7 +405,24 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridDerivation#subgrid(GridExtent)} with a null "grid to CRS" transform.
+     * Tests {@link GridDerivation#subgrid(GridGeometry)} with only a "grid to CRS" transform.
+     */
+    @Test
+    public void testSubgridWithTransformOnly() {
+        GridGeometry   base   = grid(2000, -1000, 9000, 8000,   2,   -1);
+        GridGeometry   query  = new GridGeometry(null, PixelInCell.CELL_CENTER, MathTransforms.scale(10, 40), null);
+        GridDerivation change = base.derive().subgrid(query);
+        GridGeometry   result = change.build();
+        Matrix         toCRS  = MathTransforms.getMatrix(result.getGridToCRS(PixelInCell.CELL_CENTER));
+        assertArrayEquals(new double[] {10, 40}, result.getResolution(false), STRICT);
+        assertMatrixEquals("gridToCRS", new Matrix3(
+                 10,   0, 205,
+                  0, -40, 480,      // Note the negative sign, preserved from base grid geometry.
+                  0,   0,   1), toCRS, STRICT);
+    }
+
+    /**
+     * Tests {@link GridDerivation#subgrid(GridExtent, int...)} with a null "grid to CRS" transform.
      */
     @Test
     public void testSubgridWithoutTransform() {
