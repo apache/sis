@@ -342,7 +342,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * <h4>Preconditions</h4>
      * It is important that no other worker is in progress at the time this method is invoked
      * ({@code assert renderingInProgress == null}), otherwise conflicts may happen when workers
-     * will update the {@code MapCanvasAWT} fields after they completed their task.</p>
+     * will update the {@code MapCanvasAWT} fields after they completed their task.
      *
      * @see #requestRepaint()
      */
