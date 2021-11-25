@@ -31,20 +31,24 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.coverage.grid.PixelTranslation;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.SampleDimensions;
@@ -57,7 +61,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -89,8 +93,8 @@ import org.apache.sis.util.logging.Logging;
  * and rely on tiling for reducing actual computations to required tiles. Since pan gestures are expressed
  * in pixel coordinates, the translation terms in {@code resampledToDisplay} transform should stay integers.
  *
- * @todo This class does not perform a special case for {@link BufferedImage}. We wait to see if this class
- *       works well in the general case before doing special cases.
+ * <p>Current version of this class does not perform a special case for {@link BufferedImage}.
+ * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -107,6 +111,18 @@ final class RenderingData implements Cloneable {
     private static final boolean CREATE_INDEX_COLOR_MODEL = true;
 
     /**
+     * Loader for reading and caching coverages at various resolutions. Used if no image has been
+     * explicitly assigned to {@link #data}, or if the image may vary depending on the resolution.
+     * The same instance may be shared by many {@link RenderingData} objects.
+     */
+    MultiResolutionImageLoader coverageLoader;
+
+    /**
+     * The pyramid level of {@linkplain #data} loaded by the {@linkplain #coverageLoader}.
+     */
+    private int currentPyramidLevel;
+
+    /**
      * The data fetched from {@link GridCoverage#render(GridExtent)} for current {@code sliceExtent}.
      * This rendered image may be tiled and fetching those tiles may require computations to be performed
      * in background threads. Pixels in this {@code data} image are mapped to pixels in the display
@@ -118,9 +134,12 @@ final class RenderingData implements Cloneable {
      *   <li>{@link CoverageCanvas#getObjectiveToDisplay()}</li>
      * </ol>
      *
+     * This field is initially {@code null}.
+     *
      * @see #dataGeometry
      * @see #dataRanges
-     * @see #setImage(RenderedImage, GridGeometry, List)
+     * @see #isEmpty()
+     * @see #loadIfNeeded(LinearTransform, DirectPosition, GridExtent)
      */
     private RenderedImage data;
 
@@ -133,7 +152,7 @@ final class RenderingData implements Cloneable {
      *
      * @see #data
      * @see #dataRanges
-     * @see #setImage(RenderedImage, GridGeometry, List)
+     * @see #setCoverageSpace(GridGeometry, List)
      */
     private GridGeometry dataGeometry;
 
@@ -143,7 +162,7 @@ final class RenderingData implements Cloneable {
      *
      * @see #data
      * @see #dataGeometry
-     * @see #setImage(RenderedImage, GridGeometry, List)
+     * @see #setCoverageSpace(GridGeometry, List)
      */
     private List<SampleDimension> dataRanges;
 
@@ -216,9 +235,11 @@ final class RenderingData implements Cloneable {
 
     /**
      * Returns {@code true} if this object has no data.
+     * If {@code true}, then {@link CoverageCanvas} should paint
+     * an empty space without starting a background worker thread.
      */
     final boolean isEmpty() {
-        return data == null;
+        return data == null && dataGeometry == null && dataRanges == null;
     }
 
     /**
@@ -246,16 +267,36 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Sets the data to given image, which can be {@code null}.
+     * Clears this renderer. This method should be invoked when the source of data (resource or coverage) changed.
+     * The {@link #displayToObjective} transform will be recomputed from scratch when first needed.
      */
-    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    final void setImage(final RenderedImage data, final GridGeometry domain, final List<SampleDimension> ranges) {
+    final void clear() {
         clearCRS();
         displayToObjective = null;
         statistics         = null;
-        this.data          = data;
-        this.dataGeometry  = domain;
-        this.dataRanges    = ranges;        // Not cloned because already an unmodifiable list.
+        data               = null;
+        dataRanges         = null;
+        dataGeometry       = null;
+    }
+
+    /**
+     * Sets the input space (domain) and output space (ranges) of the coverage to be rendered.
+     * It should be followed by a call to {@link #ensureImageLoaded(GridCoverage, GridExtent)}.
+     *
+     * @param  data    the new image, or {@code null} if not yet known (i.e. loading may have been deferred).
+     * @param  domain  the two-dimensional grid geometry, or {@code null} if there is no data.
+     * @param  ranges  descriptions of bands, or {@code null} if there is no data.
+     *
+     * @see #isEmpty()
+     */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    final void setCoverageSpace(final GridGeometry domain, final List<SampleDimension> ranges) {
+        dataRanges   = ranges;      // Not cloned because already an unmodifiable list.
+        dataGeometry = domain;
+        /*
+         * If the grid geometry does not define a "grid to CRS" transform, set it to an identity transform.
+         * We do that because this class needs a complete `GridGeometry` as much as possible.
+         */
         if (domain != null && !domain.isDefined(GridGeometry.GRID_TO_CRS)
                            &&  domain.isDefined(GridGeometry.EXTENT))
         {
@@ -266,6 +307,106 @@ final class RenderingData implements Cloneable {
             final GridExtent extent = domain.getExtent();
             dataGeometry = new GridGeometry(extent, PixelInCell.CELL_CENTER,
                     MathTransforms.identity(extent.getDimension()), crs);
+        }
+    }
+
+    /**
+     * Loads a new grid coverage if {@linkplain #data} is null or if the pyramid level changed.
+     * It is caller's responsibility to ensure that {@link #coverageLoader} has a non-null value
+     * and is using the right resource before to invoke this method.
+     *
+     * <p>Caller should invoke {@link #ensureImageLoaded(GridCoverage, GridExtent)}
+     * after this method (this is not done automatically).</p>
+     *
+     * @param  objectiveToDisplay  transform used for rendering the coverage on screen.
+     * @param  objectivePOI        point where to compute resolution, in coordinates of objective CRS.
+     * @return the loaded grid coverage, or {@code null} if no loading has been done
+     *         (which means that the coverage is unchanged, not that it does not exist).
+     *
+     * @see #setCoverageSpace(GridGeometry, List)
+     */
+    final GridCoverage ensureCoverageLoaded(final LinearTransform objectiveToDisplay, final DirectPosition objectivePOI)
+            throws TransformException, DataStoreException
+    {
+        final MathTransform dataToObjective = (changeOfCRS != null) ? changeOfCRS.getMathTransform() : null;
+        final int level = coverageLoader.findPyramidLevel(dataToObjective, objectiveToDisplay, objectivePOI);
+        if (data != null && level == currentPyramidLevel) {
+            return null;
+        }
+        data = null;
+        currentPyramidLevel = level;
+        return coverageLoader.getOrLoad(level).forConvertedValues(true);
+    }
+
+    /**
+     * Fetches the rendered image if {@linkplain #data} is null. This method needs to be invoked at least
+     * once after {@link #setCoverageSpace(GridGeometry, List)}. The {@code coverage} given in argument
+     * may be the value returned by {@link #ensureCoverageLoaded(LinearTransform, DirectPosition)}.
+     *
+     * @param  coverage  the coverage from which to read data, or {@code null} if the coverage did not changed.
+     */
+    final void ensureImageLoaded(final GridCoverage coverage, @Deprecated final GridExtent sliceExtent)
+            throws FactoryException, TransformException
+    {
+        if (data != null || coverage == null) {
+            return;
+        }
+        final GridGeometry old = dataGeometry;
+        final List<SampleDimension> ranges = coverage.getSampleDimensions();
+        final RenderedImage image = coverage.render(sliceExtent);
+        final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
+        final GridGeometry domain = (value instanceof GridGeometry) ? (GridGeometry) value
+                : new ImageRenderer(coverage, sliceExtent).getImageGeometry(MultiResolutionImageLoader.BIDIMENSIONAL);
+        setCoverageSpace(domain, ranges);
+        data = image;
+        /*
+         * Update the transforms in a way that preserve the current zoom level, translation, etc.
+         * We compute the change in the "data grid to objective CRS" transforms caused by the change
+         * in data grid geometry, then we concatenate that change to the existing transforms.
+         * That way, the objective CRS is kept unchanged.
+         */
+        if (old != null && cornerToObjective != null && objectiveToCenter != null) {
+            MathTransform toNew = null, toOld = null;
+            if (old.isDefined(GridGeometry.CRS) && domain.isDefined(GridGeometry.CRS)) {
+                final CoordinateReferenceSystem oldCRS = old.getCoordinateReferenceSystem();
+                final CoordinateReferenceSystem newCRS = dataGeometry.getCoordinateReferenceSystem();
+                if (newCRS != oldCRS) {             // Quick check for the vast majority of cases.
+                    /*
+                     * Transform computed below should always be the identity transform,
+                     * but we check anyway as a safety. A non-identity transform would be
+                     * a pyramid where the CRS changes according the pyramid level.
+                     */
+                    final GeographicBoundingBox areaOfInterest = Extents.union(
+                            dataGeometry.getGeographicExtent().orElse(null),
+                            old.getGeographicExtent().orElse(null));
+                    toNew = CRS.findOperation(oldCRS, newCRS, areaOfInterest).getMathTransform();
+                    toOld = toNew.inverse();
+                }
+            }
+            final MathTransform forward = concatenate(PixelInCell.CELL_CORNER, dataGeometry, old, toOld);
+            final MathTransform inverse = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
+            cornerToObjective = MathTransforms.concatenate(forward, cornerToObjective);
+            objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, inverse);
+        }
+    }
+
+    /**
+     * Computes the transform that represent a change of "data grid to objective" transform
+     *
+     * @param  anchor       the cell part to map (center or corner).
+     * @param  toCRS        the grid geometry for which to use the "grid to CRS" transform.
+     * @param  toGrid       the grid geometry for which to use the "CRS to grid" transform.
+     * @param  changeOfCRS  transform from CRS of {@code toCRS} to CRS of {@code toGrid}.
+     */
+    private static MathTransform concatenate(final PixelInCell anchor, final GridGeometry toCRS,
+            final GridGeometry toGrid, final MathTransform changeOfCRS) throws TransformException
+    {
+        final MathTransform forward = toCRS .getGridToCRS(anchor);
+        final MathTransform inverse = toGrid.getGridToCRS(anchor).inverse();
+        if (changeOfCRS != null) {
+            return MathTransforms.concatenate(forward, changeOfCRS, inverse);
+        } else {
+            return MathTransforms.concatenate(forward, inverse);
         }
     }
 
@@ -305,43 +446,48 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Sets the coordinate reference system of the display. This method does nothing if the CRS was already set.
+     * <em>It does not verify if CRS is the same</em>, it is caller responsibility to clear {@link #changeOfCRS}
+     * before to invoke this method for forcing a change of CRS.
+     *
+     * <p>This method updates the following fields only:</p>
+     * <ul>
+     *   <li>{@link #changeOfCRS}</li>
+     *   <li>{@link #processor} positional accuracy hint</li>
+     * </ul>
+     *
+     * @param  objectiveCRS  value of {@link CoverageCanvas#getObjectiveCRS()}.
+     */
+    final void setObjectiveCRS(final CoordinateReferenceSystem objectiveCRS) throws TransformException {
+        if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) try {
+            changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS,
+                                            dataGeometry.getGeographicExtent().orElse(null));
+            final double accuracy = CRS.getLinearAccuracy(changeOfCRS);
+            processor.setPositionalAccuracyHints(
+//                  TODO: uncomment after https://issues.apache.org/jira/browse/SIS-497 is fixed.
+//                  Quantities.create(0.25, Units.PIXEL),
+                    (accuracy > 0) ? Quantities.create(accuracy, Units.METRE) : null);
+        } catch (FactoryException e) {
+            recoverableException(e);
+            // Leave `changeOfCRS` to null.
+        }
+    }
+
+    /**
      * Creates the resampled image, then optionally applies an index color model.
      * This method will compute the {@link MathTransform} steps from image coordinate system
      * to display coordinate system if those steps have not already been computed.
      *
      * @param  recoloredImage      the image computed by {@link #recolor()}.
-     * @param  objectiveCRS        value of {@link CoverageCanvas#getObjectiveCRS()}.
      * @param  objectiveToDisplay  value of {@link CoverageCanvas#getObjectiveToDisplay()}.
      * @param  objectivePOI        value of {@link CoverageCanvas#getPointOfInterest(boolean)} in objective CRS.
      * @return image with operation applied and color ramp stretched.
      */
-    final RenderedImage resampleAndConvert(final RenderedImage             recoloredImage,
-                                           final CoordinateReferenceSystem objectiveCRS,
-                                           final LinearTransform           objectiveToDisplay,
-                                           final DirectPosition            objectivePOI)
+    final RenderedImage resampleAndConvert(final RenderedImage   recoloredImage,
+                                           final LinearTransform objectiveToDisplay,
+                                           final DirectPosition  objectivePOI)
             throws TransformException
     {
-        if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) {
-            DefaultGeographicBoundingBox areaOfInterest = null;
-            if (dataGeometry.isDefined(GridGeometry.ENVELOPE)) try {
-                areaOfInterest = new DefaultGeographicBoundingBox();
-                areaOfInterest.setBounds(dataGeometry.getEnvelope());
-            } catch (TransformException e) {
-                recoverableException(e);
-                // Leave `areaOfInterest` to null.
-            }
-            try {
-                changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS, areaOfInterest);
-                final double accuracy = CRS.getLinearAccuracy(changeOfCRS);
-                processor.setPositionalAccuracyHints(
-//                      TODO: uncomment after https://issues.apache.org/jira/browse/SIS-497 is fixed.
-//                      Quantities.create(0.25, Units.PIXEL),
-                        (accuracy > 0) ? Quantities.create(accuracy, Units.METRE) : null);
-            } catch (FactoryException e) {
-                recoverableException(e);
-                // Leave `changeOfCRS` to null.
-            }
-        }
         /*
          * Following transforms are computed when first needed after the new data have been specified,
          * or after the objective CRS changed. If non-null, `objToCenterNoWrap` is the same transform

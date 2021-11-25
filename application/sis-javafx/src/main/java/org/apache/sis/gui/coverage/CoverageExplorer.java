@@ -29,6 +29,7 @@ import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.Resources;
@@ -38,7 +39,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.Widget;
-import org.apache.sis.storage.Resource;
 
 
 /**
@@ -118,19 +118,6 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * The coverage shown in this explorer. Note that setting this property to a non-null value may not
-     * modify the view content immediately. Instead, a background process will request the tiles.
-     *
-     * <p>Current implementation is restricted to {@link GridCoverage} instances, but a future
-     * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.</p>
-     *
-     * @see #getCoverage()
-     * @see #setCoverage(GridCoverage)
-     * @see #setCoverage(ImageRequest)
-     */
-    public final ObjectProperty<GridCoverage> coverageProperty;
-
-    /**
      * The type of view (image or tabular data) shown in this explorer.
      *
      * @see #getViewType()
@@ -139,33 +126,85 @@ public class CoverageExplorer extends Widget {
     public final ObjectProperty<View> viewTypeProperty;
 
     /**
+     * The source of coverage data shown in this explorer. If this property value is non-null,
+     * then {@link #coverageProperty} value will change at any time (potentially many times)
+     * depending on the zoom level or other user interaction. Conversely if a value is set
+     * explicitly on {@link #coverageProperty}, then this {@code resourceProperty} is cleared.
+     *
+     * <h4>Relationship with view properties</h4>
+     * This property is "weakly bound" to {@link CoverageCanvas#resourceProperty}:
+     * the two properties generally have the same value but are not necessarily updated in same time.
+     * After a value is set on one property, the other property may be updated only after some background process
+     * (e.g. loading) finished. If a view is not the {@linkplain #getViewType() currently visible view},
+     * its property may be updated only when the view become visible.
+     *
+     * @see #getResource()
+     * @see #setResource(GridCoverageResource)
+     * @see CoverageCanvas#resourceProperty
+     *
+     * @since 1.2
+     */
+    public final ObjectProperty<GridCoverageResource> resourceProperty;
+
+    /**
+     * The data shown in this canvas. This property value may be set implicitly or explicitly:
+     * <ul>
+     *   <li>If the {@link #resourceProperty} value is non-null, then the value will change
+     *       automatically at any time (potentially many times) depending on user interaction.</li>
+     *   <li>Conversely if an explicit value is set on this property,
+     *       then the {@link #resourceProperty} is cleared.</li>
+     * </ul>
+     *
+     * Note that a change in this property value may not modify the canvas content immediately.
+     * Instead, a background process will request the tiles and update the canvas content later,
+     * when data are ready.
+     *
+     * <p>Current implementation is restricted to {@link GridCoverage} instances, but a future
+     * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.</p>
+     *
+     * <h4>Relationship with view properties</h4>
+     * This property is "weakly bound" to {@link CoverageCanvas#coverageProperty}:
+     * the two properties generally have the same value but are not necessarily updated in same time.
+     * After a value is set on one property, the other property may be updated only after some background process
+     * (e.g. loading) finished. If a view is not the {@linkplain #getViewType() currently visible view},
+     * its property may be updated only when the view become visible.
+     *
+     * @see #getCoverage()
+     * @see #setCoverage(GridCoverage)
+     * @see #setCoverage(ImageRequest)
+     * @see CoverageCanvas#coverageProperty
+     */
+    public final ObjectProperty<GridCoverage> coverageProperty;
+
+    /**
      * Whether the {@link #coverageProperty} is in process of being set,
      * in which case some listeners should not react.
      */
     private boolean isCoverageAdjusting;
 
     /**
-     * The control that put everything together, created when first requested.
-     * The type of control may change in any future SIS version.
-     *
-     * @see #getView()
-     * @see #onViewTypeSpecified(View)
+     * Handles the {@link javafx.scene.control.ChoiceBox} and menu items for selecting a CRS.
      */
-    private SplitPane content;
+    final RecentReferenceSystems referenceSystems;
 
     /**
      * The different views we can provide on {@link #coverageProperty}, together with associated controls.
      * Values in this map are initially null and created when first needed.
      * Concrete classes are {@link GridControls} and {@link CoverageControls}.
      *
-     * @see #getControl(View)
+     * @see #getDataView(View)
+     * @see #getControls(View)
      */
     private final EnumMap<View,ViewAndControls> views;
 
     /**
-     * Handles the {@link javafx.scene.control.ChoiceBox} and menu items for selecting a CRS.
+     * The control that put everything together, created when first requested.
+     * The type of control may change in any future SIS version.
+     *
+     * @see #getView()
+     * @see #onViewTypeSet(View)
      */
-    final RecentReferenceSystems referenceSystems;
+    private SplitPane content;
 
     /**
      * Creates an initially empty explorer with default view type.
@@ -192,24 +231,22 @@ public class CoverageExplorer extends Widget {
      */
     public CoverageExplorer(final View type) {
         ArgumentChecks.ensureNonNull("type", type);
-        coverageProperty = new SimpleObjectProperty<>(this, "coverage");
+        views            = new EnumMap<>(View.class);
         viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", type);
-        viewTypeProperty.addListener((p,o,n) -> onViewTypeSpecified(n));
-        coverageProperty.addListener((p,o,n) -> onCoverageSpecified(n));
+        resourceProperty = new SimpleObjectProperty<> (this, "resource");
+        coverageProperty = new SimpleObjectProperty<> (this, "coverage");
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
         referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395");         // WGS 84 / World Mercator
-        /*
-         * The coverage property may be shown in various ways (tabular data, image).
-         * Each visualization way is a value in the `views` map.
-         * Elements will be created when first needed.
-         */
-        views = new EnumMap<>(View.class);
+        viewTypeProperty.addListener((p,o,n) -> onViewTypeSet(n));
+        resourceProperty.addListener((p,o,n) -> onPropertySet(n, null, coverageProperty));
+        coverageProperty.addListener((p,o,n) -> onPropertySet(null, n, resourceProperty));
     }
 
     /**
      * Returns the view-control pair for the given view type.
      * The view-control pair is created when first needed.
+     * Invoking this method may cause data to be loaded in a background thread.
      *
      * @param  type  type of view to obtain.
      * @param  load  whether to force loading of data in the new type.
@@ -233,9 +270,10 @@ public class CoverageExplorer extends Widget {
          * and became selected (visible).
          */
         if (load) {
+            final GridCoverageResource resource = getResource();
             final GridCoverage coverage = getCoverage();
-            if (coverage != null) {
-                c.load(new ImageRequest(coverage, null));
+            if (resource != null || coverage != null) {
+                c.load(new ImageRequest(resource, coverage));
             }
         }
         return c;
@@ -295,7 +333,7 @@ public class CoverageExplorer extends Widget {
      * in any future version.
      *
      * @param  type  whether to obtain a {@link GridView} or {@link CoverageCanvas}.
-     * @return the requested view for the {@link #coverageProperty}.
+     * @return the requested view for the value of {@link #resourceProperty} or {@link #coverageProperty}.
      */
     public final Region getDataView(final View type) {
         assert Platform.isFxApplicationThread();
@@ -319,6 +357,7 @@ public class CoverageExplorer extends Widget {
 
     /**
      * The action to execute when the user selects a view.
+     * This is used by the toolbar buttons in the widget created by {@link #getView()}.
      */
     private final class Selector extends ToolbarButton {
         /** The view to select when the button is pressed. */
@@ -338,96 +377,6 @@ public class CoverageExplorer extends Widget {
             } else {
                 button.setSelected(true);       // Prevent situation where all buttons are unselected.
             }
-        }
-    }
-
-    /**
-     * Returns the source of sample values for this explorer.
-     * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
-     *
-     * @return the coverage shown in this explorer, or {@code null} if none.
-     *
-     * @see #coverageProperty
-     * @see CoverageCanvas#getCoverage()
-     * @see GridView#getImage()
-     */
-    public final GridCoverage getCoverage() {
-        return coverageProperty.get();
-    }
-
-    /**
-     * Sets the coverage to show in this view.
-     * This method shall be invoked from JavaFX thread and returns immediately.
-     * The new data are loaded in a background thread and will appear after an
-     * undetermined amount of time.
-     *
-     * @param  coverage  the data to show in this explorer, or {@code null} if none.
-     *
-     * @see #coverageProperty
-     * @see CoverageCanvas#setCoverage(GridCoverage)
-     * @see GridView#setImage(RenderedImage)
-     */
-    public final void setCoverage(final GridCoverage coverage) {
-        coverageProperty.set(coverage);
-        // `onCoverageSpecified(…)` is indirectly invoked.
-    }
-
-    /**
-     * Loads coverage in a background thread from the given source.
-     * This method shall be invoked from JavaFX thread and returns immediately.
-     * The grid content may appear unmodified after this method returns;
-     * the modifications will appear after an undetermined amount of time.
-     *
-     * @param  source  the coverage or resource to load, or {@code null} if none.
-     *
-     * @see GridView#setImage(ImageRequest)
-     */
-    public final void setCoverage(final ImageRequest source) {
-        assert Platform.isFxApplicationThread();
-        final ViewAndControls current = views.get(getViewType());
-        for (final ViewAndControls c : views.values()) {
-            c.load(c == current ? source : null);
-        }
-        if (current == null) {
-            coverageChanged(null, null);
-        }
-        // Else `coverageChanged(…)` will be invoked later after background thread finishes its work.
-    }
-
-    /**
-     * Invoked when a new coverage has been set on the {@link #coverageProperty}.
-     * This method notifies the GUI controls about the change then starts loading
-     * data in a background thread.
-     *
-     * @param  coverage  the new coverage.
-     */
-    private void onCoverageSpecified(final GridCoverage coverage) {
-        if (!isCoverageAdjusting) {
-            setCoverage((coverage != null) ? new ImageRequest(coverage, null) : null);
-        }
-    }
-
-    /**
-     * Invoked in JavaFX thread after {@link #setCoverage(ImageRequest)} completion for notifying controls
-     * about the coverage change. Controls should update the GUI with new information available,
-     * in particular the coordinate reference system and the list of sample dimensions.
-     *
-     * @param  source  the new source of coverage, or {@code null} if none.
-     * @param  data    the new coverage, or {@code null} if none.
-     */
-    final void coverageChanged(final Resource source, final GridCoverage data) {
-        if (data != null) {
-            final GridGeometry gg = data.getGridGeometry();
-            referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
-            if (gg.isDefined(GridGeometry.CRS)) {
-                referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
-            }
-        }
-        isCoverageAdjusting = true;
-        try {
-            setCoverage(data);
-        } finally {
-            isCoverageAdjusting = false;
         }
     }
 
@@ -459,7 +408,7 @@ public class CoverageExplorer extends Widget {
      *
      * @param  type  the new way to show coverages in this explorer.
      */
-    private void onViewTypeSpecified(final View type) {
+    private void onViewTypeSet(final View type) {
         final ViewAndControls c = getViewAndControls(type, true);
         if (content != null) {
             content.getItems().setAll(c.controls(), c.view());
@@ -467,6 +416,160 @@ public class CoverageExplorer extends Widget {
             if (selector != null) {
                 selector.setSelected(true);
             }
+        }
+    }
+
+    /**
+     * Returns the source of coverages for this explorer.
+     * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
+     *
+     * @return the source of coverages shown in this explorer, or {@code null} if none.
+     *
+     * @see #resourceProperty
+     *
+     * @since 1.2
+     */
+    public final GridCoverageResource getResource() {
+        return resourceProperty.get();
+    }
+
+    /**
+     * Sets the source of coverages shown in this explorer.
+     * This method shall be invoked from JavaFX thread and returns immediately.
+     * The new data are loaded in a background thread and the {@link #coverageProperty}
+     * value will be updated after an undetermined amount of time.
+     *
+     * @param  resource  the source of data to show in this explorer, or {@code null} if none.
+     *
+     * @see #resourceProperty
+     *
+     * @since 1.2
+     */
+    public final void setResource(final GridCoverageResource resource) {
+        resourceProperty.set(resource);
+        /*
+         * `onCoverageSpecified(…)` is indirectly invoked,
+         * which in turn invokes `setCoverage(ImageRequest)`.
+         */
+    }
+
+    /**
+     * Returns the source of sample values for this explorer.
+     * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
+     * Note that this value may change at any time (depending on user interaction)
+     * if the {@link #resourceProperty} has a non-null value.
+     *
+     * @return the coverage shown in this explorer, or {@code null} if none.
+     *
+     * @see #coverageProperty
+     * @see CoverageCanvas#getCoverage()
+     * @see GridView#getImage()
+     */
+    public final GridCoverage getCoverage() {
+        return coverageProperty.get();
+    }
+
+    /**
+     * Sets the coverage to show in this explorer.
+     * This method shall be invoked from JavaFX thread and returns immediately.
+     * The new data are loaded in a background thread and will appear after an
+     * undetermined amount of time.
+     *
+     * <p>Invoking this method sets the {@link #resourceProperty} value to {@code null}.</p>
+     *
+     * @param  coverage  the data to show in this explorer, or {@code null} if none.
+     *
+     * @see #coverageProperty
+     * @see CoverageCanvas#setCoverage(GridCoverage)
+     * @see GridView#setImage(RenderedImage)
+     */
+    public final void setCoverage(final GridCoverage coverage) {
+        coverageProperty.set(coverage);
+        /*
+         * `onCoverageSpecified(…)` is indirectly invoked,
+         * which in turn invokes `setCoverage(ImageRequest)`.
+         */
+    }
+
+    /**
+     * Loads coverage in a background thread from the given source.
+     * This method shall be invoked from JavaFX thread and returns immediately.
+     * The grid content may appear unmodified after this method returns;
+     * the modifications will appear after an undetermined amount of time.
+     *
+     * @param  source  the coverage or resource to load, or {@code null} if none.
+     *
+     * @see GridView#setImage(ImageRequest)
+     */
+    public final void setCoverage(final ImageRequest source) {
+        assert Platform.isFxApplicationThread();
+        final ViewAndControls current = views.get(getViewType());
+        for (final ViewAndControls c : views.values()) {
+            c.load(c == current ? source : null);
+        }
+        if (current == null) {
+            notifyDataChanged(null, null);
+        }
+        // Else `notifyDataChanged(…)` will be invoked later after background thread finishes its work.
+    }
+
+    /**
+     * Invoked when a new value has been set on {@link #resourceProperty} or {@link #coverageProperty}.
+     * This method sets the resource or coverage on the currently visible view, which in turn will load
+     * data in its own background thread.
+     *
+     * @param  resource  the new resource, or {@code null} if none.
+     * @param  coverage  the new coverage, or {@code null} if none.
+     * @param  toClear   the property which is an alternative to the property that has been set.
+     */
+    private void onPropertySet(final GridCoverageResource resource, final GridCoverage coverage,
+                               final ObjectProperty<?> toClear)
+    {
+        if (!isCoverageAdjusting) {
+            isCoverageAdjusting = true;
+            try {
+                toClear.set(null);
+            } finally {
+                isCoverageAdjusting = false;
+            }
+            // Indirectly start a background thread which will invoke `notifyDataChanged(…)` later.
+            setCoverage((resource != null || coverage != null) ? new ImageRequest(resource, coverage) : null);
+        }
+    }
+
+    /**
+     * Invoked in JavaFX thread after the current view finished to load the new coverage.
+     * It is the responsibility of all {@link ViewAndControls} subclasses to listen to change events
+     * emitted by their views ({@link GridView} or {@link CoverageCanvas}) and to invoke this method.
+     * This method will then update the properties of this {@code CoverageExplorer} for the new data.
+     *
+     * <p>Note that view data may have been changed either by user changing directly a {@link GridView}
+     * or {@link CoverageCanvas} property, or indirectly by user changing {@link #resourceProperty} or
+     * {@link #coverageProperty}. In the later case, the {@code resource} and {@code coverage} arguments
+     * given to this method may be the value that the properties already have.</p>
+     *
+     * @param  resource  the new source of coverage, or {@code null} if none.
+     * @param  coverage  the new coverage, or {@code null} if none.
+     */
+    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+        if (coverage != null) {
+            final GridGeometry gg = coverage.getGridGeometry();
+            referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
+            if (gg.isDefined(GridGeometry.CRS)) {
+                referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
+            }
+        }
+        /*
+         * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`
+         * method is invoked as a consequence of view properties being updated. Those views should already
+         * have the new property values at this moment.
+         */
+        isCoverageAdjusting = true;
+        try {
+            setResource(resource);
+            setCoverage(coverage);
+        } finally {
+            isCoverageAdjusting = false;
         }
     }
 }

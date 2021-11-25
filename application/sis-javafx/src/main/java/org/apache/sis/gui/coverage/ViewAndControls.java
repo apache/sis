@@ -143,7 +143,8 @@ abstract class ViewAndControls {
 
     /**
      * Sets the view content to the given resource, coverage or image.
-     * This method may start a background thread.
+     * This method is invoked when a new source of data (either a resource or a coverage) is specified,
+     * or when a previously hidden view is made visible. Implementations may start a background thread.
      *
      * @param  request  the resource, coverage or image to set, or {@code null} for clearing the view.
      */

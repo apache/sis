@@ -21,7 +21,6 @@ import java.util.concurrent.FutureTask;
 import java.awt.image.RenderedImage;
 import javafx.scene.Node;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -49,11 +48,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @module
  */
 public class ImageRequest {
-    /**
-     * The {@value} value, for identifying code that assume two-dimensional objects.
-     */
-    private static final int BIDIMENSIONAL = 2;
-
     /**
      * The source from where to read the image, specified at construction time.
      * May be {@code null} if {@link #coverage} instance was specified at construction time.
@@ -96,12 +90,20 @@ public class ImageRequest {
     private GridExtent sliceExtent;
 
     /**
-     * The relative position of slice in dimensions other than the 2 visible dimensions,
-     * as a ratio between 0 and 1. This may become configurable in a future version.
+     * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.
+     * If both arguments are non-null, then {@code data} must be the result of reading the given resource.
+     * In the later case we will not actually read data (because they are already read) and this instance
+     * is used only for transferring data e.g. from {@link CoverageExplorer} to {@link CoverageCanvas}.
      *
-     * @see GridDerivation#sliceByRatio(double, int[])
+     * <p>This constructor is not in public API because users should supply only a resource or a coverage,
+     * not both.</p>
      */
-    private static final double SLICE_RATIO = 0;
+    ImageRequest(final GridCoverageResource source, final GridCoverage data) {
+        resource = source;
+        coverage = data;
+        domain   = null;
+        range    = null;
+    }
 
     /**
      * Creates a new request for loading an image from the specified resource.
@@ -241,29 +243,6 @@ public class ImageRequest {
     }
 
     /**
-     * Computes a two dimensional slice of the given grid geometry.
-     * This method selects the two first dimensions having a size greater than 1 cell.
-     *
-     * @todo Give control to user over which dimensions are selected.
-     *
-     * @param  domain  the grid geometry in which to choose a two-dimensional slice.
-     * @return a builder configured for returning the desired two-dimensional slice.
-     */
-    private static GridDerivation slice(final GridGeometry domain) {
-        final GridExtent extent = domain.getExtent();
-        final int dimension = extent.getDimension();
-        final int[] sliceDimensions = new int[BIDIMENSIONAL];
-        int k = 0;
-        for (int i=0; i<dimension; i++) {
-            if (extent.getLow(i) != extent.getHigh(i)) {
-                sliceDimensions[k] = i;
-                if (++k >= BIDIMENSIONAL) break;
-            }
-        }
-        return domain.derive().sliceByRatio(ImageRequest.SLICE_RATIO, sliceDimensions);
-    }
-
-    /**
      * Loads the image. If the coverage has more than {@value #BIDIMENSIONAL} dimensions,
      * only two of them are taken for the image; for all other dimensions, only the values
      * at lowest index will be read.
@@ -275,43 +254,29 @@ public class ImageRequest {
      * This class does not need to be thread-safe because it should be used only once in a well-defined life cycle.
      * We nevertheless synchronize as a safety (e.g. user could give the same {@code ImageRequest} to two different
      * {@link CoverageExplorer} instances). In such case the {@link GridCoverage} will be loaded only once,
-     * but no caching is done for the {@link RenderedImage}. Image caching is generally not needed because
-     * {@link CoverageCanvas} does its own image rendering (it invokes this method with {@code render = false}).
-     * If two image renderings happen anyway, we rely on {@link org.apache.sis.storage.DataStore} caching.</p>
+     * but no caching is done for the {@link RenderedImage} (because usually not needed).
      *
-     * @param  task       the task invoking this method (for checking for cancellation).
-     * @param  converted  {@code true} for a coverage containing converted values,
-     *                    or {@code false} for a coverage containing packed values.
-     * @param  render     {@code false} if only coverage reading is desired.
+     * @param  task  the task invoking this method (for checking for cancellation).
      * @return the image loaded from the source given at construction time, or {@code null}
-     *         if the task has been cancelled or if {@code render} is {@code false}.
+     *         if the task has been cancelled.
      * @throws DataStoreException if an error occurred while loading the grid coverage.
      */
-    final synchronized RenderedImage load(final FutureTask<?> task, final boolean converted, final boolean render)
-            throws DataStoreException
-    {
+    final synchronized RenderedImage load(final FutureTask<?> task) throws DataStoreException {
         GridCoverage cv = coverage;
         final Long id = LogHandler.loadingStart(resource);
         try {
             if (cv == null) {
-                GridGeometry gg = domain;
-                if (gg == null) {
-                    gg = resource.getGridGeometry();
-                }
-                if (gg != null && gg.getDimension() > BIDIMENSIONAL) {
-                    gg = slice(gg).build();
-                }
-                cv = resource.read(gg, range);
+                cv = MultiResolutionImageLoader.getInstance(resource, null).getOrLoad(domain, range);
             }
-            coverage = cv = cv.forConvertedValues(converted);
-            if (!render || task.isCancelled()) {
+            coverage = cv = cv.forConvertedValues(true);
+            if (task.isCancelled()) {
                 return null;
             }
             GridExtent ex = sliceExtent;
             if (ex == null) {
                 final GridGeometry gg = cv.getGridGeometry();
-                if (gg != null && gg.getDimension() > BIDIMENSIONAL) {      // Should never be null but we are paranoiac.
-                    ex = slice(gg).getIntersection();
+                if (gg.getDimension() > MultiResolutionImageLoader.BIDIMENSIONAL) {
+                    ex = MultiResolutionImageLoader.slice(gg.derive(), gg.getExtent()).getIntersection();
                 }
             }
             return cv.render(ex);

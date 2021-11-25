@@ -211,7 +211,7 @@ public class GridView extends Control {
      * This is used only for notifications; a future version may use a more generic listener.
      * We use this specific mechanism because there is no {@code coverageProperty} in this class.
      *
-     * @see GridControls#coverageChanged(GridCoverage)
+     * @see GridControls#notifyDataChanged(GridCoverageResource, GridCoverage)
      */
     private final GridControls controls;
 
@@ -322,7 +322,7 @@ public class GridView extends Control {
         if (source == null) {
             setImage((RenderedImage) null);
             if (controls != null) {
-                controls.coverageChanged(null, null);
+                controls.notifyDataChanged(null, null);
             }
         } else {
             cancelLoader();
@@ -342,7 +342,7 @@ public class GridView extends Control {
         setImage(image);
         request.configure(statusBar);
         if (controls != null) {
-            controls.coverageChanged(request.resource, request.getCoverage().orElse(null));
+            controls.notifyDataChanged(request.resource, request.getCoverage().orElse(null));
         }
     }
 
@@ -375,7 +375,7 @@ public class GridView extends Control {
          */
         @Override
         protected RenderedImage call() throws DataStoreException {
-            return request.load(this, true, true);
+            return request.load(this);
         }
 
         /**

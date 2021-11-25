@@ -17,7 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
-import java.lang.ref.WeakReference;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Control;
 import javafx.scene.control.TitledPane;
@@ -26,19 +25,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.control.ValueColorMapper;
-import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
@@ -159,76 +155,54 @@ final class CoverageControls extends ViewAndControls {
         final TitledPane p4 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
         controls = new Accordion(p1, p2, p3, p4);
         controls.setExpandedPane(p1);
-        view.coverageProperty.addListener((p,o,n) -> coverageChanged(null, n));
+        /*
+         * Set listeners: changes on `CoverageCanvas` properties are propagated to the corresponding
+         * `CoverageExplorer` properties. This constructor does not install listeners in the opposite
+         * direction; instead `CoverageExplorer` will invoke `load(ImageRequest)`.
+         */
+        view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
+        view.coverageProperty.addListener((p,o,n) -> onPropertySet(null, n));
         p4.expandedProperty().addListener(new PropertyPaneCreator(view, p4));
     }
 
     /**
-     * Invoked in JavaFX thread after {@link CoverageCanvas#setCoverage(GridCoverage)}.
-     * This method updates the GUI with new information available.
+     * Invoked in JavaFX thread after {@link CoverageCanvas} resource or coverage property value changed.
+     * This method updates the controls GUI with new information available and update the corresponding
+     * {@link CoverageExplorer} properties.
      *
-     * @param  source  the new source of coverage, or {@code null} if none.
-     * @param  data    the new coverage, or {@code null} if none.
+     * @param  resource  the new source of coverage, or {@code null} if none.
+     * @param  coverage  the new coverage, or {@code null} if none.
      */
-    private void coverageChanged(final Resource source, final GridCoverage data) {
+    private void onPropertySet(final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<Category> items = categoryTable.getItems();
-        if (data == null) {
+        if (coverage == null) {
             items.clear();
         } else {
             final int visibleBand = 0;          // TODO: provide a selector for the band to show.
-            items.setAll(data.getSampleDimensions().get(visibleBand).getCategories());
+            items.setAll(coverage.getSampleDimensions().get(visibleBand).getCategories());
         }
-        owner.coverageChanged(source, data);
+        owner.notifyDataChanged(resource, coverage);
     }
 
     /**
      * Sets the view content to the given coverage.
-     * This method starts a background thread.
+     * This method is invoked when a new source of data (either a resource or a coverage) is specified,
+     * or when a previously hidden view is made visible. This implementation starts a background thread.
      *
-     * @param  request  the coverage to set, or {@code null} for clearing the view.
+     * @param  request  the resource or coverage to set, or {@code null} for clearing the view.
      */
     @Override
     final void load(final ImageRequest request) {
-        if (request == null) {
-            view.setOriginator(null);
-            view.setCoverage(null);
+        final GridCoverageResource resource;
+        final GridCoverage coverage;
+        if (request != null) {
+            resource = request.resource;
+            coverage = request.getCoverage().orElse(null);
         } else {
-            view.setOriginator(request.resource != null ? new WeakReference<>(request.resource) : null);
-            request.getCoverage().ifPresentOrElse(view::setCoverage,
-                    () -> BackgroundThreads.execute(new Loader(request)));
+            resource = null;
+            coverage = null;
         }
-    }
-
-    /**
-     * A task for loading {@link GridCoverage} from a resource in a background thread.
-     *
-     * @todo Remove this loader, replace by a {@code resourceProperty} in {@link CoverageCanvas}.
-     */
-    private final class Loader extends Task<GridCoverage> {
-        /** The coverage resource together with optional parameters for reading only a subset. */
-        private final ImageRequest request;
-
-        /** Creates a new task for loading a coverage from the specified resource. */
-        Loader(final ImageRequest request) {
-            this.request = request;
-        }
-
-        /** Invoked in background thread for loading the coverage. */
-        @Override protected GridCoverage call() throws DataStoreException {
-            request.load(this, true, false);
-            return request.getCoverage().orElse(null);
-        }
-
-        /** Invoked in JavaFX thread after successful loading. */
-        @Override protected void succeeded() {
-            view.setCoverage(getValue());
-        }
-
-        /** Invoked in JavaFX thread on failure. */
-        @Override protected void failed() {
-            view.setCoverage(null);
-            request.reportError(imageAndStatus, getException());
-        }
+        view.setCoverage(resource, coverage);
     }
 
     /**

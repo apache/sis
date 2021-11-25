@@ -14,34 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
-
-import org.apache.sis.test.TestSuite;
-import org.junit.BeforeClass;
-import org.junit.runners.Suite;
 
 
 /**
- * All tests from the {@code sis-portrayal} module, in rough dependency order.
+ * Helper classes for the rendering of grid coverages.
  *
- * @author  Johann Sorel (Geomatys)
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.portrayal.MapLayersTest.class,
-    org.apache.sis.internal.map.SEPortrayerTest.class,
-    org.apache.sis.internal.map.coverage.MultiResolutionCoverageLoaderTest.class
-})
-public final strictfp class PortrayalTestSuite extends TestSuite {
-    /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class[])} for more information.
-     */
-    @BeforeClass
-    public static void verifyTestList() {
-        assertNoMissingTest(PortrayalTestSuite.class);
-        verifyTestList(PortrayalTestSuite.class);
-    }
-}
+package org.apache.sis.internal.map.coverage;

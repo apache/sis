@@ -27,9 +27,9 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Styles;
 
@@ -125,7 +125,7 @@ final class GridControls extends ViewAndControls {
      * @param  source  the new source of coverage, or {@code null} if none.
      * @param  data    the new coverage, or {@code null} if none.
      */
-    final void coverageChanged(final Resource source, final GridCoverage data) {
+    final void notifyDataChanged(final GridCoverageResource source, final GridCoverage data) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (data != null) {
             items.setAll(data.getSampleDimensions());
@@ -133,12 +133,13 @@ final class GridControls extends ViewAndControls {
         } else {
             items.clear();
         }
-        owner.coverageChanged(source, data);
+        owner.notifyDataChanged(source, data);
     }
 
     /**
      * Sets the view content to the given image.
-     * This method starts a background thread.
+     * This method is invoked when a new source of data (either a resource or a coverage) is specified,
+     * or when a previously hidden view is made visible. This implementation starts a background thread.
      *
      * @param  request  the image to set, or {@code null} for clearing the view.
      */
