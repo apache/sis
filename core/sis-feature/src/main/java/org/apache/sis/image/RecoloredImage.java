@@ -225,8 +225,8 @@ final class RecoloredImage extends ImageAdapter {
             final int size = icm.getMapSize();
             int validMin = 0;
             int validMax = size - 1;        // Inclusive.
-            double span = 0;
             if (range != null) {
+                double span = 0;
                 for (final Category category : range.getCategories()) {
                     if (category.isQuantitative()) {
                         final NumberRange<?> r = category.getSampleRange();
@@ -245,12 +245,12 @@ final class RecoloredImage extends ImageAdapter {
              * Create a copy of RGB codes and replace values in the range of the quantitative category.
              * Values for other categories (qualitative) are left unmodified.
              */
-            final int   end   = Math.max(Math.min((int) maximum, validMax), validMin);      // Inclusive.
-            final int   start = Math.min(Math.max((int) minimum, validMin), end);
+            final int   start = Math.max((int) minimum, validMin);
+            final int   end   = Math.min((int) maximum, validMax);          // Inclusive.
             final int[] ARGB  = new int[size];
-            icm.getRGBs(ARGB);
-            Arrays.fill(ARGB, validMin, start, icm.getRGB(validMin));
-            Arrays.fill(ARGB, end+1, validMax, icm.getRGB(validMax));
+            icm.getRGBs(ARGB);                                              // Initialize to a copy of current colors.
+            Arrays.fill(ARGB, validMin, start,   icm.getRGB(validMin));     // Part of quantitative category outside the new range.
+            Arrays.fill(ARGB, end+1, validMax+1, icm.getRGB(validMax));
             final float scale = (float) ((validMax - validMin) / (maximum - minimum));
             for (int i = start; i <= end; i++) {
                 final float s = (i - start) * scale + validMin;
