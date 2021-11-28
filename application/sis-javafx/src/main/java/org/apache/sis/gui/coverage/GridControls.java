@@ -20,7 +20,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Control;
-import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
@@ -72,17 +71,9 @@ final class GridControls extends ViewAndControls {
         sampleDimensions = new BandRangeTable(view.cellFormat).create(vocabulary);
         BandSelectionListener.bind(view.bandProperty, sampleDimensions.getSelectionModel());
         /*
-         * "Coverage" section with the following controls:
+         * "Display" section with the following controls:
          *    - Coverage domain as a list of CRS dimensions with two of them selected (TODO).
          *    - Coverage range as a list of sample dimensions with at least one selected.
-         */
-        final VBox coveragePane;
-        {   // Block for making variables locale to this scope.
-            final Label label = labelOfGroup(vocabulary, Vocabulary.Keys.SampleDimensions, sampleDimensions, true);
-            coveragePane = new VBox(label, sampleDimensions);
-        }
-        /*
-         * "Display" section with the following controls:
          *    - Number format as a localized pattern.
          *    - Cell width as a slider.
          */
@@ -94,14 +85,15 @@ final class GridControls extends ViewAndControls {
                 label(vocabulary, Vocabulary.Keys.Format, view.cellFormat.createEditor()));
 
             Styles.setAllRowToSameHeight(gp);
-            displayPane = new VBox(labelOfGroup(vocabulary, Vocabulary.Keys.Cells, gp, true), gp);
+            displayPane = new VBox(
+                    labelOfGroup(vocabulary, Vocabulary.Keys.SampleDimensions, sampleDimensions, true), sampleDimensions,
+                    labelOfGroup(vocabulary, Vocabulary.Keys.Cells, gp, false), gp);
         }
         /*
          * Put all sections together and have the first one expanded by default.
          */
         controls = new Accordion(
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Coverage), coveragePane),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane)
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane)
             // TODO: more controls to be added in a future version.
         );
         controls.setExpandedPane(controls.getPanes().get(0));

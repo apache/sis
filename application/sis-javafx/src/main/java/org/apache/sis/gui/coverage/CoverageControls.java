@@ -99,40 +99,35 @@ final class CoverageControls extends ViewAndControls {
          * "Display" section with the following controls:
          *    - Current CRS
          *    - Interpolation
+         *    - Color stretching
+         *    - Colors for each category
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
             final Label crsControl = new Label();
-            final Label crsHeader  = labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, crsControl, true);
             crsControl.setPadding(CONTENT_MARGIN);
             crsControl.setTooltip(new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu)));
             menu.selectedReferenceSystem().ifPresent((text) -> crsControl.textProperty().bind(text));
             /*
              * Creates a "Values" sub-section with the following controls:
              *   - Interpolation
+             *   - Color stretching
              */
             final GridPane valuesControl = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Interpolation, InterpolationConverter.button(view)));
-            final Label valuesHeader = labelOfGroup(vocabulary, Vocabulary.Keys.Values, valuesControl, false);
+                label(vocabulary, Vocabulary.Keys.Interpolation, InterpolationConverter.button(view)),
+                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
+            /*
+             * Creates a "Categories" section with the category table.
+             */
+            final CoverageStyling styling = new CoverageStyling(view);
+            categoryTable = styling.createCategoryTable(vocabulary);
             /*
              * All sections put together.
              */
-            displayPane = new VBox(crsHeader, crsControl, valuesHeader, valuesControl);
-        }
-        /*
-         * "Colors" section with the following controls:
-         *    - Colors for each category
-         *    - Color stretching
-         */
-        final VBox colorsPane;
-        {   // Block for making variables locale to this scope.
-            final CoverageStyling styling = new CoverageStyling(view);
-            categoryTable = styling.createCategoryTable(vocabulary);
-            final GridPane gp = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
-
-            colorsPane = new VBox(
-                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories, categoryTable, true), categoryTable, gp);
+            displayPane = new VBox(
+                    labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, crsControl,    true),  crsControl,
+                    labelOfGroup(vocabulary, Vocabulary.Keys.Values,          valuesControl, false), valuesControl,
+                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories,      categoryTable, false), categoryTable);
         }
         /*
          * "Isolines" section with the following controls:
@@ -149,11 +144,10 @@ final class CoverageControls extends ViewAndControls {
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
-        final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.SpatialRepresentation), displayPane);
-        final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Colors), colorsPane);
-        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane);
-        final TitledPane p4 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
-        controls = new Accordion(p1, p2, p3, p4);
+        final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane);
+        final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane);
+        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
+        controls = new Accordion(p1, p2, p3);
         controls.setExpandedPane(p1);
         /*
          * Set listeners: changes on `CoverageCanvas` properties are propagated to the corresponding
@@ -162,7 +156,7 @@ final class CoverageControls extends ViewAndControls {
          */
         view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
         view.coverageProperty.addListener((p,o,n) -> onPropertySet(null, n));
-        p4.expandedProperty().addListener(new PropertyPaneCreator(view, p4));
+        p3.expandedProperty().addListener(new PropertyPaneCreator(view, p3));
     }
 
     /**

@@ -27,13 +27,13 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.concurrent.Task;
-import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.layout.Region;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
@@ -112,11 +112,12 @@ public class ResourceExplorer extends WindowManager {
     private FeatureTable features;
 
     /**
-     * Controls for the image or tabular data. This is a vertical split pane.
-     * The upper part contains the {@link #resources} tree and the lower part
-     * contains the resource-dependent controls.
+     * Controls for the image or tabular data. The first titled pane on top contains the
+     * {@link #resources} tree and all other panes below are resource-dependent controls.
+     *
+     * @see #updateControls(Region)
      */
-    private final SplitPane controls;
+    private final Accordion controls;
 
     /**
      * The control that put everything together.
@@ -149,23 +150,22 @@ public class ResourceExplorer extends WindowManager {
     private final BooleanBinding metadataShown;
 
     /**
-     * Last divider position as a fraction between 0 and 1, or {@code NaN} if undefined.
-     * This is used for keeping the position constant when adding and removing controls.
-     */
-    private double dividerPosition;
-
-    /**
      * Creates a new panel for exploring resources.
      */
     public ResourceExplorer() {
         /*
          * Build the resource explorer. Must be first because `localized()` depends on it.
+         * Then build the controls on the left side, which will initially contain only the
+         * resource explorer. The various tabs will be next (on the right side).
          */
         resources = new ResourceTree();
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         final Vocabulary vocabulary = Vocabulary.getResources(resources.locale);
+        final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
+        controls = new Accordion(resourcesPane);
+        controls.setExpandedPane(resourcesPane);
         /*
          * "Summary" tab showing a summary of resource metadata.
          */
@@ -206,11 +206,8 @@ public class ResourceExplorer extends WindowManager {
         final TabPane tabs = new TabPane(summaryTab, viewTab, tableTab, metadataTab, nativeMetadataTab, loggingTab);
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
-        controls = new SplitPane(resources);
-        controls.setOrientation(Orientation.VERTICAL);
         content = new SplitPane(controls, tabs);
         content.setDividerPosition(0, 0.2);
-        dividerPosition = Double.NaN;
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
         /*
@@ -222,6 +219,8 @@ public class ResourceExplorer extends WindowManager {
         dataShown.addListener((p,o,n) -> {
             if (Boolean.FALSE.equals(o) && Boolean.TRUE.equals(n)) {
                 updateDataTabWithDefault(getSelectedResource());
+            } else {
+                updateDataTab(null);
             }
         });
         metadataShown = summaryTab.selectedProperty().or(metadataTab.selectedProperty());
@@ -474,31 +473,25 @@ public class ResourceExplorer extends WindowManager {
         if (table    != null) tableTab.setContent(table);
         final boolean isEmpty = (image == null & table == null);
         setNewWindowDisabled(isEmpty);
-        updateControls(controlPanel);
-        return !isEmpty | (resource == null);
-    }
-
-    /**
-     * Adds or removes controls for the given view.
-     * This method is invoked when the visible tab changed.
-     *
-     * @param  controlPanel  the controls for the currently selected tab, or {@code null} if none.
-     */
-    private void updateControls(final Region controlPanel) {
-        final ObservableList<Node> items = controls.getItems();
-        if (items.size() >= 2) {
-            if (controlPanel != null) {
-                items.set(1, controlPanel);
+        /*
+         * Adds or removes controls for the selected view.
+         */
+        final ObservableList<TitledPane> items = controls.getPanes();
+        final int size = items.size();
+        items.remove(1, size);
+        if (controlPanel != null) {
+            if (controlPanel instanceof Accordion) {
+                /*
+                 * It is okay to use the same controls in another JavaFX node because the `controlPanel` will
+                 * never be shown (we will only show its components). The children are in only one scene graph.
+                 */
+                items.addAll(((Accordion) controlPanel).getPanes());
             } else {
-                dividerPosition = controls.getDividerPositions()[0];
-                items.remove(1);
-            }
-        } else if (controlPanel != null) {
-            items.add(controlPanel);
-            if (dividerPosition >= 0) {
-                controls.setDividerPosition(0, dividerPosition);
+                items.add(new TitledPane(Vocabulary.getResources(getLocale())
+                        .getString(Vocabulary.Keys.Controls), controlPanel));
             }
         }
+        return !isEmpty | (resource == null);
     }
 
     /**
