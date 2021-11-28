@@ -230,20 +230,12 @@ public class RenderingData implements Cloneable {
     }
 
     /**
-     * Returns {@code true} if this object has no image to render.
-     *
-     * @return {@code true} if this object has no data.
-     */
-    public final boolean isEmpty() {
-        return data == null && dataGeometry == null && dataRanges == null;
-    }
-
-    /**
      * Clears this renderer. This method should be invoked when the source of data (resource or coverage) changed.
      * The {@link #displayToObjective} transform will be recomputed from scratch when first needed.
      */
     public final void clear() {
         clearCRS();
+        coverageLoader     = null;
         displayToObjective = null;
         statistics         = null;
         data               = null;
@@ -416,7 +408,7 @@ public class RenderingData implements Cloneable {
      *
      * @return the image loaded be {@link #ensureImageLoaded(GridCoverage, GridExtent)}.
      */
-    protected final RenderedImage getSourceImage() {
+    public final RenderedImage getSourceImage() {
         return data;
     }
 

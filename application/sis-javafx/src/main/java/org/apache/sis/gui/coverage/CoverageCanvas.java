@@ -623,7 +623,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected Renderer createRenderer() {
-        return data.isEmpty() ? null : new Worker(this);
+        return (data.getSourceImage() != null || getResource() != null) ? new Worker(this) : null;
     }
 
     /**
