@@ -93,6 +93,8 @@ import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
  * in pixel coordinates, the translation terms in {@code resampledToDisplay} transform should stay integers.
  *
  * <p>Current version of this class does not perform a special case for {@link BufferedImage}.
+ * It may not be desirable because interpolations would not be applied in the same way, except
+ * when SIS {@link ImageProcessor} would have interpolated RGB color values anyway like Java2D.
  * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

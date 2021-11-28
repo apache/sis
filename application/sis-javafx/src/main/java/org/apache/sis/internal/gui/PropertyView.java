@@ -29,6 +29,8 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -52,7 +54,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * A viewer for property value. The property may be of various class (array, image, <i>etc</i>).
  * If the type is unrecognized, the property is shown as text.
  *
- * <p>This class extends {@link CompoundFormat} for implementation convenience only.</p>
+ * <p>This class extends {@link CompoundFormat} and implements {@code ChangeListener} for
+ * implementation convenience only. Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -60,7 +63,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
-public final class PropertyView extends CompoundFormat<Object> {
+public final class PropertyView extends CompoundFormat<Object> implements ChangeListener<Number> {
     /**
      * The current property value. This is used for detecting changes.
      */
@@ -138,6 +141,8 @@ public final class PropertyView extends CompoundFormat<Object> {
         if (background != null) {
             imageCanvas.backgroundProperty().bind(background);
         }
+        imageCanvas.widthProperty() .addListener(this);
+        imageCanvas.heightProperty().addListener(this);
     }
 
     /**
@@ -210,7 +215,8 @@ public final class PropertyView extends CompoundFormat<Object> {
      * @param  visibleBounds  if the property is an image, currently visible region. Can be {@code null}.
      */
     public void set(final Object newValue, final Rectangle visibleBounds) {
-        if (newValue != value || !Objects.equals(visibleBounds, visibleImageBounds)) {
+        final boolean boundsChanged = !Objects.equals(visibleBounds, visibleImageBounds);
+        if (newValue != value || boundsChanged) {
             if (runningTask != null) {
                 runningTask.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
                 runningTask = null;
@@ -220,7 +226,7 @@ public final class PropertyView extends CompoundFormat<Object> {
             if (newValue == null) {
                 content = null;
             } else if (newValue instanceof RenderedImage) {
-                content = setImage((RenderedImage) newValue);
+                content = setImage((RenderedImage) newValue, boundsChanged);
             } else if (newValue instanceof Throwable) {
                 content = setText((Throwable) newValue);
             } else if (newValue instanceof Collection<?>) {
@@ -278,8 +284,11 @@ public final class PropertyView extends CompoundFormat<Object> {
 
     /**
      * Sets the property value to the given image.
+     *
+     * @param  image  the property value to set, or {@code null}.
+     * @param  boundsChanged  whether {@link #visibleImageBounds} changed since last call.
      */
-    private Node setImage(final RenderedImage image) {
+    private Node setImage(final RenderedImage image, final boolean boundsChanged) {
         ImageView node = imageView;
         if (node == null) {
             node = new ImageView();
@@ -310,14 +319,16 @@ public final class PropertyView extends CompoundFormat<Object> {
             imagePane.setHgap(0);
             imageView = node;
         }
-        final ImageConverter converter = new ImageConverter(image, visibleImageBounds, node);
-        converter.setOnSucceeded((e) -> taskCompleted(converter.getValue()));
-        converter.setOnFailed((e) -> {
-            taskCompleted(null);
-            view.set(setText(e.getSource().getException()));
-        });
-        runningTask = converter;
-        BackgroundThreads.execute(converter);
+        final ImageConverter converter = new ImageConverter(image, visibleImageBounds, node, imageCanvas);
+        if (converter.needsRun(boundsChanged)) {
+            converter.setOnSucceeded((e) -> taskCompleted(converter.getValue()));
+            converter.setOnFailed((e) -> {
+                taskCompleted(null);
+                view.set(setText(e.getSource().getException()));
+            });
+            runningTask = converter;
+            BackgroundThreads.execute(converter);
+        }
         return imagePane;
     }
 
@@ -349,6 +360,23 @@ public final class PropertyView extends CompoundFormat<Object> {
         }
         sampleValueRange.setText(range);
         meanValue.setText(mean);
+        changed(null, null, null);      // For centering the image.
+    }
+
+    /**
+     * Invoked when the image canvas size changed. If the previous canvas size was 0, the image could not be rendered
+     * during the previous call to {@link #setImage(RenderedImage, boolean)}, so we need to call that method again now
+     * that the image size is known. In addition we also need to move the image to canvas center.
+     *
+     * @param  property  the image canvas property that changed (width or height).
+     * @param  oldValue  the old width or height value.
+     * @param  newValue  the new width or height value.
+     */
+    @Override
+    public void changed(final ObservableValue<? extends Number> property, final Number oldValue, final Number newValue) {
+        if (value instanceof RenderedImage) {
+            setImage((RenderedImage) value, false);
+        }
     }
 
     /**
@@ -357,7 +385,11 @@ public final class PropertyView extends CompoundFormat<Object> {
     public void clear() {
         value = null;
         view.set(null);
-        if (textView  != null) textView .setText (null);
-        if (imageView != null) imageView.setImage(null);
+        if (textView != null) {
+            textView .setText (null);
+        }
+        if (imageView != null) {
+            ImageConverter.clear(imageView);
+        }
     }
 }

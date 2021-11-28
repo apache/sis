@@ -530,7 +530,7 @@ public class ImagePropertyExplorer extends Widget {
 
     /**
      * Invoked when an image is selected in the tree of image sources. The selected image
-     * is not necessarily {@link #image} property value; it may be one of its sources.
+     * is not necessarily the {@link #image} property value; it may be one of its sources.
      * If no image is explicitly selected, defaults to the root image.
      */
     private void imageSelected(final RenderedImage selected) {
