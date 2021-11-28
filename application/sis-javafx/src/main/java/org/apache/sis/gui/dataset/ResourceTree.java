@@ -88,9 +88,9 @@ import org.apache.sis.util.logging.Logging;
  * <ul>
  *   <li>The {@link #rootProperty() rootProperty} should be considered read-only.
  *       For changing content, use the {@link #setResource(Resource)} instead.</li>
- *   <li>If the user selects "close" in the contextual menu, the resource is closed (if it is an instance
- *       of {@link DataStore}). There is not yet a mechanism for keeping it open if the resource is shared
- *       by another {@link ResourceTree} instance.</li>
+ *   <li>If the user selects "close" in the contextual menu, the resource is unconditionally closed
+ *       (if it is an instance of {@link DataStore}). There is not yet a mechanism for keeping it open
+ *       if the resource is shared by another {@link ResourceTree} instance.</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
@@ -155,7 +155,15 @@ public class ResourceTree extends TreeView<Resource> {
 
     /**
      * Returns the root {@link Resource} of this tree.
-     * This is often (but not necessarily) a {@link DataStore}.
+     * The returned value depends on how the resource was set:
+     *
+     * <ul>
+     *   <li>If the resource was specified by {@link #setResource(Resource)},
+     *       then this method returns that resource.
+     *       This is often (but not necessarily) a {@link DataStore}.</li>
+     *   <li>If one or more resources were specified by {@link #addResource(Resource)},
+     *       then this method returns an {@link Aggregate} of all added resources.</li>
+     * </ul>
      *
      * @return root {@link Resource}, or {@code null} if none.
      */
@@ -185,9 +193,8 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Adds a resource to this tree. If this tree is empty, then invoking this method
-     * has the same effect than invoking {@link #setResource(Resource)}. Otherwise this
-     * method adds the new resource below previously added resources if not already present.
+     * Adds a resource in this tree below previously added resources.
+     * This method does nothing if the given resource is already present in this tree.
      *
      * <h4>Modified tree view properties</h4>
      * This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
@@ -205,29 +212,30 @@ public class ResourceTree extends TreeView<Resource> {
         if (resource == null) {
             return false;
         }
+        Root addTo = null;
         final TreeItem<Resource> item = getRoot();
         if (item != null) {
             final Resource root = item.getValue();
-            if (root != null) {
-                if (root == resource) {
-                    return false;
-                }
-                final Root addTo;
-                if (root instanceof Root) {
-                    addTo = (Root) root;
-                } else {
-                    final TreeItem<Resource> group = new TreeItem<>();
-                    setShowRoot(false);
-                    setRoot(group);                     // Also detach `item` from the TreeView root.
-                    addTo = new Root(group, item);      // Pseudo-resource for a group of data stores.
-                    group.setValue(addTo);
-                }
-                return addTo.add(resource);
+            if (root == resource) {
+                return false;
+            }
+            if (root instanceof Root) {
+                addTo = (Root) root;
             }
         }
-        setRoot(new Item(resource));
-        setShowRoot(true);
-        return true;
+        /*
+         * We create the `Root` pseudo-resource even if there is only one resource.
+         * A previous version created `Root` only if there was two or more ressources,
+         * but it was causing confusing events when the second resource was added.
+         */
+        if (addTo == null) {
+            final TreeItem<Resource> group = new TreeItem<>();
+            setShowRoot(false);
+            setRoot(group);                                 // Also detach `item` from the TreeView root.
+            addTo = new Root(group, item);                  // Pseudo-resource for a group of data stores.
+            group.setValue(addTo);
+        }
+        return addTo.add(resource);
     }
 
     /**
@@ -397,7 +405,7 @@ public class ResourceTree extends TreeView<Resource> {
      *
      * @param  resource  the resource to search of remove, or {@code null}.
      * @param  remove    {@code true} for removing the resource, or {@code false} for checking only.
-     * @return the item wrapping the resource, or {@code null} if the resource has been found in the roots.
+     * @return the item wrapping the resource, or {@code null} if the resource has not been found in the roots.
      */
     private TreeItem<Resource> findOrRemove(final Resource resource, final boolean remove) {
         assert Platform.isFxApplicationThread();
@@ -919,7 +927,7 @@ public class ResourceTree extends TreeView<Resource> {
 
 
     /**
-     * The root pseudo-resource when there is more than one resources to display.
+     * The root pseudo-resource for allowing the tree to contain more than one resource.
      * This root node should be hidden in the {@link ResourceTree}.
      */
     private static final class Root implements Aggregate {
@@ -932,12 +940,14 @@ public class ResourceTree extends TreeView<Resource> {
          * Creates a new aggregate which is going to be wrapped in the given node.
          * Caller shall invoke {@code group.setValue(root)} after this constructor.
          *
-         * @param  group  the new tree root which will contain "real" resources.
+         * @param  group     the new tree root which will contain "real" resources.
          * @param  previous  the previous root, to be added in the new group.
          */
         Root(final TreeItem<Resource> group, final TreeItem<Resource> previous) {
             components = group.getChildren();
-            components.add(previous);
+            if (previous != null) {
+                components.add(previous);
+            }
         }
 
         /**
