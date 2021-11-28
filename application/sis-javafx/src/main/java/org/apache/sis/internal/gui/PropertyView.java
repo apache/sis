@@ -32,7 +32,6 @@ import java.awt.image.RenderedImage;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
@@ -123,9 +122,10 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     private Rectangle visibleImageBounds;
 
     /**
-     * If a work is under progress, that work. Otherwise {@code null}.
+     * The work which is under progress in a background thread (running) or
+     * which is waiting for execution (pending), or {@code null} if none.
      */
-    private Task<?> runningTask;
+    private ImageConverter runningTask, pendingTask;
 
     /**
      * Creates a new property view.
@@ -134,6 +134,7 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
      * @param  view        the property where to set the node showing the value.
      * @param  background  the image background color, or {@code null} if none.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
         super(locale, null);
         this.view = view;
@@ -217,24 +218,32 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     public void set(final Object newValue, final Rectangle visibleBounds) {
         final boolean boundsChanged = !Objects.equals(visibleBounds, visibleImageBounds);
         if (newValue != value || boundsChanged) {
-            if (runningTask != null) {
-                runningTask.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
-                runningTask = null;
-            }
             visibleImageBounds = visibleBounds;
             final Node content;
-            if (newValue == null) {
-                content = null;
-            } else if (newValue instanceof RenderedImage) {
+            if (newValue instanceof RenderedImage) {
                 content = setImage((RenderedImage) newValue, boundsChanged);
-            } else if (newValue instanceof Throwable) {
-                content = setText((Throwable) newValue);
-            } else if (newValue instanceof Collection<?>) {
-                content = setList(((Collection<?>) newValue).toArray());
-            } else if (newValue.getClass().isArray()) {
-                content = setList(newValue);
             } else {
-                content = setText(formatValue(newValue));
+                /*
+                 * The `setImage(…)` method manages itself the `runningTaks` and `pendingTask` fields.
+                 * But if the new property requires a different method, we need to cancel everything.
+                 */
+                final ImageConverter task = runningTask;
+                if (task != null) {
+                    runningTask = null;
+                    pendingTask = null;
+                    task.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
+                }
+                if (newValue == null) {
+                    content = null;
+                } else if (newValue instanceof Throwable) {
+                    content = setText((Throwable) newValue);
+                } else if (newValue instanceof Collection<?>) {
+                    content = setList(((Collection<?>) newValue).toArray());
+                } else if (newValue.getClass().isArray()) {
+                    content = setList(newValue);
+                } else {
+                    content = setText(formatValue(newValue));
+                }
             }
             view.set(content);
             value = newValue;           // Assign only on success.
@@ -285,7 +294,7 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     /**
      * Sets the property value to the given image.
      *
-     * @param  image  the property value to set, or {@code null}.
+     * @param  image          the property value to set, or {@code null}.
      * @param  boundsChanged  whether {@link #visibleImageBounds} changed since last call.
      */
     private Node setImage(final RenderedImage image, final boolean boundsChanged) {
@@ -326,19 +335,38 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
                 taskCompleted(null);
                 view.set(setText(e.getSource().getException()));
             });
-            runningTask = converter;
-            BackgroundThreads.execute(converter);
+            /*
+             * If an image rendering is already in progress, we will wait for its completion before to start
+             * a new background thread. That way, if many `setImage(…)` invocations happen before the current
+             * rendering finished, we will start only one new rendering process instead of as many processes
+             * as they were `setImage(…)` invocations.
+             */
+            if (runningTask != null) {
+                pendingTask = converter;
+            } else {
+                runningTask = converter;
+                BackgroundThreads.execute(converter);
+            }
         }
         return imagePane;
     }
 
     /**
      * Invoked when {@link #runningTask} completed its work, either successfully or with a failure.
+     * This method updates the text containing statistic values in the status bar below the image.
+     * If new rendering request happened during the time the task was running, start the last request.
      *
      * @param  statistics  statistics for each band of the source image (before conversion to JavaFX).
      */
     private void taskCompleted(final Statistics[] statistics) {
-        runningTask  = null;
+        runningTask = pendingTask;
+        pendingTask = null;
+        if (runningTask != null) {
+            BackgroundThreads.execute(runningTask);
+        }
+        /*
+         * Update the status bar with statistics computed by background thread.
+         */
         String range = null;
         String mean  = null;
         if (statistics != null && statistics.length != 0) {
@@ -360,7 +388,6 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
         }
         sampleValueRange.setText(range);
         meanValue.setText(mean);
-        changed(null, null, null);      // For centering the image.
     }
 
     /**
