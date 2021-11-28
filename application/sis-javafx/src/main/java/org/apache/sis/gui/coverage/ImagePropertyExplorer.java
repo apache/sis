@@ -630,7 +630,9 @@ public class ImagePropertyExplorer extends Widget {
 
         /**
          * Invoked when a new image is shown in this cell node. This method also tests image consistency.
-         * If an inconsistency is found, the line is shown in read with a warning message.
+         * If an inconsistency is found, the line is shown in red (except for "width" and "height") with
+         * a warning message. We do not use a red color for "width" and "height" because the mismatch may
+         * be normal.
          */
         @Override protected void updateItem(final RenderedImage image, final boolean empty) {
             super.updateItem(image, empty);
@@ -642,7 +644,9 @@ public class ImagePropertyExplorer extends Widget {
                     final String check = ((PlanarImage) image).verify();
                     if (check != null) {
                         text = Resources.format(Resources.Keys.InconsistencyIn_2, text, check);
-                        fill = Styles.ERROR_TEXT;
+                        if (!(check.equals("width") || check.equals("height"))) {
+                            fill = Styles.ERROR_TEXT;
+                        }
                     }
                 }
             }

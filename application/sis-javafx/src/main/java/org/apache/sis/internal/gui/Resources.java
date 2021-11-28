@@ -257,7 +257,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ImageStart = 36;
 
         /**
-         * {0} – inconsistency in `{1}` property
+         * {0} – `{1}` has an unexpected value.
          */
         public static final short InconsistencyIn_2 = 39;
 
