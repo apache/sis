@@ -282,6 +282,7 @@ final class ResampledGridCoverage extends GridCoverage {
     {
         final GridGeometry sourceGG = source.getGridGeometry();
         final CoordinateOperationFinder changeOfCRS = new CoordinateOperationFinder(sourceGG, target);
+        changeOfCRS.verifyPresenceOfCRS(true);
         /*
          * Compute the transform from source pixels to target CRS (to be completed to target pixels later).
          * The following lines may throw IncompleteGridGeometryException, which is desired because if that

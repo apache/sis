@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -74,7 +75,7 @@ import org.apache.sis.internal.util.Numerics;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -234,6 +235,18 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     }
 
     /**
+     * Verifies whether the presence of a CRS considered mandatory, unless the CRS of opposite grid
+     * is also missing.
+     *
+     * @param  rs  {@code true} is source CRS is mandatory, {@code false} if target CRS is mandatory.
+     */
+    final void verifyPresenceOfCRS(final boolean rs) {
+        if ((rs ? target : source).isDefined(GridGeometry.CRS)) {
+            Objects.requireNonNull((rs ? source : target).getCoordinateReferenceSystem());
+        }
+    }
+
+    /**
      * Sets whether operations will be between cell centers or cell corners.
      * This method must be invoked before any other method in this class.
      * The {@link PixelInCell#CELL_CORNER} value should be used first
@@ -277,28 +290,12 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     }
 
     /**
-     * Returns the CRS of the source grid geometry. If neither the source and target grid geometry
-     * define a CRS, then this method returns {@code null}.
-     *
-     * @throws IncompleteGridGeometryException if the target grid geometry has a CRS but the source
-     *         grid geometry has none. Note that the converse is allowed, in which case the target
-     *         CRS is assumed the same than the source.
-     */
-    private CoordinateReferenceSystem getSourceCRS() {
-        return source.isDefined(GridGeometry.CRS) ||
-               target.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
-    }
-
-    /**
      * Returns the target of the "corner to CRS" transform.
      * May be {@code null} if the neither the source and target grid geometry define a CRS.
-     *
-     * @throws IncompleteGridGeometryException if the target grid geometry has a CRS but the source
-     *         grid geometry has none. Note that the converse is allowed, in which case the target
-     *         CRS is assumed the same than the source.
      */
     final CoordinateReferenceSystem getTargetCRS() {
-        return (changeOfCRS != null) ? changeOfCRS.getTargetCRS() : getSourceCRS();
+        return (changeOfCRS != null) ? changeOfCRS.getTargetCRS() :
+                source.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
     }
 
     /**
@@ -322,23 +319,21 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
                 if (sourceEnvelope != null && targetEnvelope != null) {
                     changeOfCRS = Envelopes.findOperation(sourceEnvelope, targetEnvelope);
                 }
-                if (changeOfCRS == null && target.isDefined(GridGeometry.CRS)) {
-                    final CoordinateReferenceSystem sourceCRS = getSourceCRS();
-                    if (sourceCRS != null) {
-                        /*
-                         * Unconditionally create operation even if CRS are the same. A non-null operation trig
-                         * the check for wraparound axes, which is necessary even if the transform is identity.
-                         */
-                        DefaultGeographicBoundingBox areaOfInterest = null;
-                        if (sourceEnvelope != null || targetEnvelope != null) try {
-                            areaOfInterest = new DefaultGeographicBoundingBox();
-                            areaOfInterest.setBounds(targetEnvelope != null ? targetEnvelope : sourceEnvelope);
-                        } catch (TransformException e) {
-                            areaOfInterest = null;
-                            recoverableException("changeOfCRS", e);
-                        }
-                        changeOfCRS = CRS.findOperation(sourceCRS, target.getCoordinateReferenceSystem(), areaOfInterest);
+                if (changeOfCRS == null && source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) {
+                    final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
+                    /*
+                     * Unconditionally create operation even if CRS are the same. A non-null operation trig
+                     * the check for wraparound axes, which is necessary even if the transform is identity.
+                     */
+                    DefaultGeographicBoundingBox areaOfInterest = null;
+                    if (sourceEnvelope != null || targetEnvelope != null) try {
+                        areaOfInterest = new DefaultGeographicBoundingBox();
+                        areaOfInterest.setBounds(targetEnvelope != null ? targetEnvelope : sourceEnvelope);
+                    } catch (TransformException e) {
+                        areaOfInterest = null;
+                        recoverableException("changeOfCRS", e);
                     }
+                    changeOfCRS = CRS.findOperation(sourceCRS, target.getCoordinateReferenceSystem(), areaOfInterest);
                 }
             } catch (BackingStoreException e) {                         // May be thrown by getConstantCoordinates().
                 throw e.unwrapOrRethrow(TransformException.class);
