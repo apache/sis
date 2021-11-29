@@ -210,7 +210,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         final Map<GenericName,List<RasterResource>> byName = new HashMap<>();   // For detecting name collisions.
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
-            if (variable == null || variable.getRole() != VariableRole.COVERAGE) {
+            if (!VariableRole.isCoverage(variable)) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
             final GridGeometry grid = variable.getGridGeometry();
@@ -268,7 +268,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                         int suffixLength = name.length() - suffixStart;
                         for (int j=i; ++j < variables.length;) {
                             final Variable candidate = variables[j];
-                            if (candidate == null || candidate.getRole() != VariableRole.COVERAGE) {
+                            if (!VariableRole.isCoverage(candidate)) {
                                 variables[j] = null;                                // For avoiding to revisit that variable again.
                                 continue;
                             }
@@ -504,7 +504,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
             } else {
                 String name = band.getDescription();
                 if (name == null) name = band.getName();
-                builder.addQuantitative(name, range, mt, band.getUnit());
+                if (band.getRole() == VariableRole.DISCRETE_COVERAGE) {
+                    builder.addQualitative(name, range);
+                } else {
+                    builder.addQuantitative(name, range, mt, band.getUnit());
+                }
             }
         } catch (TransformException e) {
             /*

@@ -113,7 +113,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_c/">SHIKISAI (GCOM-C) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -126,6 +126,11 @@ public final class GCOM_C extends Convention {
      * Sentinel value to search in the {@code "Satellite"} attribute for determining if GCOM-C conventions apply.
      */
     private static final Pattern SENTINEL_VALUE = Pattern.compile(".*\\bGCOM-C\\b.*");
+
+    /**
+     * Name of the variable storing data quality flags.
+     */
+    private static final String QA_FLAG = "QA_flag";
 
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-C.
@@ -238,7 +243,7 @@ public final class GCOM_C extends Convention {
      */
     @Override
     public VariableRole roleOf(final Variable variable) {
-        VariableRole role = super.roleOf(variable);
+        final VariableRole role = super.roleOf(variable);
         if (role == VariableRole.COVERAGE) {
             /*
              * Exclude (for now) some variables associated to longitude and latitude: Obs_time, Sensor_zenith, Solar_zenith.
@@ -246,7 +251,10 @@ public final class GCOM_C extends Convention {
              */
             final String group = variable.getGroupName();
             if (GEOMETRY_DATA.equalsIgnoreCase(group)) {
-                role = VariableRole.OTHER;
+                return VariableRole.OTHER;
+            }
+            if (QA_FLAG.equals(variable.getName())) {
+                return VariableRole.DISCRETE_COVERAGE;
             }
         }
         return role;
@@ -272,7 +280,7 @@ public final class GCOM_C extends Convention {
     public String nameOfDimension(final Variable dataOrAxis, final int index) {
         String name = super.nameOfDimension(dataOrAxis, index);
         if (name == null) {
-            if ("QA_flag".equals(dataOrAxis.getName())) {
+            if (QA_FLAG.equals(dataOrAxis.getName())) {
                 /*
                  * The "QA_flag" variable is missing "Dim0" and "Dim1" attribute in GCOM-C version 1.00.
                  * However not all GCOM-C files use a localization grid. We use the presence of spatial

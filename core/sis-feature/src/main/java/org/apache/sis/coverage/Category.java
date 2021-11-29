@@ -227,14 +227,14 @@ public class Category implements Serializable {
         ArgumentChecks.ensureNonNull("samples", samples);
         if (units != null) {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
-            // The converse is not true: we allow 'units' to be null even if 'toUnits' is non-null.
+            // The converse is not true: we allow `units` to be null even if `toUnits` is non-null.
         }
         this.name = Types.toInternationalString(name);
         final double  minimum = samples.getMinDouble(true);
         final double  maximum = samples.getMaxDouble(true);
         final boolean isNaN   = Double.isNaN(minimum);
         /*
-         * Following arguments check uses '!' in comparison in order to reject NaN values in quantitative category.
+         * Following arguments check uses `!` in comparison in order to reject NaN values in quantitative category.
          * For qualitative category, NaN is accepted provided that it is the same NaN for both ends of the range.
          */
         if (!(minimum <= maximum)) {
@@ -301,7 +301,7 @@ public class Category implements Serializable {
         name       = original.name;
         toConverse = Objects.requireNonNull(toSamples);
         /*
-         * Compute 'minimum' and 'maximum' (which must be real numbers) using the conversion from samples
+         * Compute `minimum` and `maximum` (which must be real numbers) using the conversion from samples
          * to real values. To be strict, we should use some numerical algorithm for finding a function's
          * minimum and maximum. For linear and logarithmic functions, minimum and maximum are always at
          * the bounding input values, so we are using a very simple algorithm for now.
@@ -449,7 +449,7 @@ public class Category implements Serializable {
     public Optional<MathTransform1D> getTransferFunction() {
         /*
          * Note: if this method is invoked on "real values category", then we need to return
-         * the identity transform instead of 'toConverse'. This is done by ConvertedCategory.
+         * the identity transform instead of `toConverse`. This is done by ConvertedCategory.
          */
         if (converse.isConvertedQualitative()) {
             return Optional.empty();

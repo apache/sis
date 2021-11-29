@@ -933,6 +933,8 @@ public abstract class Variable extends Node {
 
     /**
      * Builds the function converting values from their packed formats in the variable to "real" values.
+     * This method is invoked in contexts where a transfer function is assumed to exist. Consequently it
+     * shall never return {@code null}, but may return the identity function.
      */
     final TransferFunction getTransferFunction() {
         return decoder.convention().transferFunction(this);

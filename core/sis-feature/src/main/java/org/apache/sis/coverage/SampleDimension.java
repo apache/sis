@@ -1033,7 +1033,7 @@ public class SampleDimension implements Serializable {
          * @param  name     the category name as a {@link String} or {@link InternationalString} object.
          * @param  minimum  the minimum value (inclusive) in the given units.
          * @param  maximum  the maximum value (inclusive) in the given units.
-         * @param  units    the units of measurement.
+         * @param  units    the units of measurement, or {@code null} if unknown or not applicable.
          * @return {@code this}, for method call chaining.
          * @throws IllegalArgumentException if a value is NaN or if {@code minimum} is greater than {@code maximum}.
          */
@@ -1051,7 +1051,7 @@ public class SampleDimension implements Serializable {
          * @param  name     the category name as a {@link String} or {@link InternationalString} object.
          * @param  minimum  the minimum value (inclusive) in the given units.
          * @param  maximum  the maximum value (inclusive) in the given units.
-         * @param  units    the units of measurement.
+         * @param  units    the units of measurement, or {@code null} if unknown or not applicable.
          * @return {@code this}, for method call chaining.
          * @throws IllegalArgumentException if a value is NaN or if {@code minimum} is greater than {@code maximum}.
          */
@@ -1075,7 +1075,8 @@ public class SampleDimension implements Serializable {
          * @param  upper   the upper sample value, exclusive.
          * @param  scale   the scale value which is multiplied to sample values for the category. Must be different than zero.
          * @param  offset  the offset value to add to sample values for this category.
-         * @param  units   the units of measurement of values after conversion by the scale factor and offset.
+         * @param  units   the units of measurement of values after conversion by the scale factor and offset,
+         *                 or {@code null} if unknown or not applicable.
          * @return {@code this}, for method call chaining.
          * @throws IllegalArgumentException if {@code lower} is not smaller than {@code upper},
          *         or if {@code scale} or {@code offset} are not real numbers, or if {@code scale} is zero.
@@ -1100,7 +1101,8 @@ public class SampleDimension implements Serializable {
          * @param  samples  the minimum and maximum sample values in the category. Element class is usually
          *                  {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
          * @param  toUnits  the transfer function from sample values to real values in the specified units.
-         * @param  units    the units of measurement of values after conversion by the transfer function.
+         * @param  units    the units of measurement of values after conversion by the transfer function,
+         *                  or {@code null} if unknown or not applicable.
          * @return {@code this}, for method call chaining.
          * @throws ClassCastException if the range element class is not a {@link Number} subclass.
          * @throws IllegalArgumentException if the range is invalid.
