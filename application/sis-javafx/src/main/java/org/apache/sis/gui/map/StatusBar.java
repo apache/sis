@@ -126,6 +126,12 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private static final Insets PADDING = new Insets(5, Styles.SCROLLBAR_WIDTH, 6, 9);
 
     /**
+     * An arbitrary increase in size of the text field where sample values are shown.
+     * This is in case {@link #computeSizeOfSampleValues(String, Iterable)} underestimates the required size.
+     */
+    private static final int VALUES_PADDING = 9;
+
+    /**
      * The container of controls making the status bar.
      */
     private final HBox view;
@@ -1242,7 +1248,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (!(width > 0)) {                 // May be 0 if canvas is not yet added to scene graph.
                 return false;
             }
-            sampleValues.setPrefWidth(width);
+            sampleValues.setPrefWidth(width + VALUES_PADDING);
         }
         return true;
     }

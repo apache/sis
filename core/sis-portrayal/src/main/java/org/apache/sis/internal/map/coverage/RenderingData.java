@@ -278,6 +278,7 @@ public class RenderingData implements Cloneable {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public final void setCoverageSpace(final GridGeometry domain, final List<SampleDimension> ranges) {
+        processor.setFillValues(SampleDimensions.backgrounds(ranges));
         dataRanges   = ranges;      // Not cloned because already an unmodifiable list.
         dataGeometry = domain;
         /*

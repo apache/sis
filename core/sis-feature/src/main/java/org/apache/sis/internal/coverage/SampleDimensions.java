@@ -17,6 +17,7 @@
 package org.apache.sis.internal.coverage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
@@ -38,6 +39,30 @@ public final class SampleDimensions extends Static {
      * Do not allow instantiation of this class.
      */
     private SampleDimensions() {
+    }
+
+    /**
+     * Returns the background values of all bands in the given list.
+     * The length of the returned array is the number of sample dimensions.
+     * If a sample dimension does not declare a background value, the corresponding array element is null.
+     *
+     * @param  bands  the bands for which to get background values, or {@code null}.
+     * @return the background values, or {@code null} if the given argument was null.
+     *         Otherwise the returned array is never null but may contain null elements.
+     */
+    public static Number[] backgrounds(final List<SampleDimension> bands) {
+        if (bands == null) {
+            return null;
+        }
+        final Number[] fillValues = new Number[bands.size()];
+        for (int i=fillValues.length; --i >= 0;) {
+            final SampleDimension band = bands.get(i);
+            final Optional<Number> bg = band.getBackground();
+            if (bg.isPresent()) {
+                fillValues[i] = bg.get();
+            }
+        }
+        return fillValues;
     }
 
     /**
