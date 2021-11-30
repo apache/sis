@@ -98,7 +98,8 @@ public final class Colorizer {
 
     /**
      * Blue to red color palette with white in the middle. Useful for data with a clear 0 (white)
-     * in the range center and negative and positive values (to appear blue and red respectively).
+     * in the middle of the range and with minimal value equals to the negative of maximal value
+     * (to appear blue and red respectively).
      * Used for debugging purposes; production code should use a {@code PaletteFactory} instead.
      */
     @Debug

@@ -152,6 +152,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private final int bandDimension;
 
     /**
+     * The band to use for defining pixel colors when the image is displayed on screen.
+     * All other bands, if any, will exist in the raster but be ignored at display time.
+     *
+     * @see Convention#getVisibleBand()
+     */
+    private final int visibleBand;
+
+    /**
      * Path to the netCDF file for information purpose, or {@code null} if unknown.
      *
      * @see #getComponentFiles()
@@ -182,13 +190,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
             final int numBands, final int bandDim, final Object lock)
     {
         super(decoder.listeners);
-        data          = bands.toArray(new Variable[bands.size()]);
-        ranges        = new SampleDimension[numBands];
-        identifier    = decoder.nameFactory.createLocalName(decoder.namespace, name);
-        location      = decoder.location;
+        this.lock     = lock;
         gridGeometry  = grid;
         bandDimension = bandDim;
-        this.lock     = lock;
+        location      = decoder.location;
+        identifier    = decoder.nameFactory.createLocalName(decoder.namespace, name);
+        visibleBand   = decoder.convention().getVisibleBand();
+        ranges        = new SampleDimension[numBands];
+        data          = bands.toArray(new Variable[bands.size()]);
         assert data.length == (bandDimension >= 0 ? 1 : ranges.length);
     }
 
@@ -523,7 +532,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
          * as category name. If the sample values are already real values, then the "no data" values have been replaced by NaN
          * values by Variable.replaceNaN(Object). The qualitative categories constructed below must be consistent with the NaN
-         * values created by 'replaceNaN'.
+         * values created by `replaceNaN`.
          */
         boolean setBackground = true;
         int ordinal = band.hasRealValues() ? 0 : -1;
@@ -659,7 +668,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             }
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
-             * by the 'range' argument.  The intent is to perform sequential I/O as much as possible, without
+             * by the `range` argument.  The intent is to perform sequential I/O as much as possible, without
              * seeking backward. In the (uncommon) case where bands are one of the variable dimension instead
              * than different variables, the reading of the whole variable occurs during the first iteration.
              */
@@ -721,11 +730,17 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 throw new DataStoreContentException(canNotReadFile(), e);
             }
         }
+        /*
+         * At this point the I/O operation is completed and sample values have been stored in a NIO buffer.
+         * Provide to `Raster` all information needed for building a `RenderedImage` when requested.
+         */
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
+        final Variable main = data[visibleBand];
         final Raster raster = new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
-                rangeIndices.getPixelStride(), bandOffsets, String.valueOf(identifier));
+                String.valueOf(identifier), rangeIndices.getPixelStride(), bandOffsets, visibleBand,
+                main.decoder.convention().getColors(main));
         logReadOperation(location, domain, startTime);
         return raster;
     }

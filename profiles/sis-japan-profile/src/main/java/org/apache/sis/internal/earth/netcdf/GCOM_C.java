@@ -16,12 +16,15 @@
  */
 package org.apache.sis.internal.earth.netcdf;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
+import java.util.function.Function;
+import java.awt.Color;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -41,6 +44,7 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
@@ -535,5 +539,32 @@ public final class GCOM_C extends Convention {
             }
         }
         return super.getUnitFallback(data);
+    }
+
+    /**
+     * Returns the colors to use for each category, or {@code null} for the default colors.
+     *
+     * @param  data  the variable for which to get the colors.
+     * @return colors to use for each category, or {@code null} for the default.
+     */
+    @Override
+    public Function<Category,Color[]> getColors(final Variable data) {
+        if (QA_FLAG.equals(data.getName())) {
+            return (category) -> {
+                final NumberRange<?> range = category.getSampleRange();
+                if (Objects.equals(range.getMinValue(), range.getMaxValue())) {
+                    return null;        // A "no data" value.
+                }
+                /*
+                 * Following colors are not really appropriate for "QA_flag" because that variable is a bitmask
+                 * rather than a continuous coverage. Following code may be replaced by a better color palette
+                 * in a future version.
+                 */
+                return new Color[] {
+                    Color.BLUE, Color.CYAN, Color.YELLOW, Color.RED
+                };
+            };
+        }
+        return super.getColors(data);
     }
 }
