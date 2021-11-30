@@ -26,9 +26,13 @@ import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.MenuItem;
+import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.ContextMenu;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
 import org.apache.sis.internal.gui.control.ColorRamp;
 import org.apache.sis.internal.gui.control.ColorColumnHandler;
@@ -43,7 +47,7 @@ import org.opengis.util.InternationalString;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -79,6 +83,21 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
             }
         }
         fallback = Colorizer.GRAYSCALE;
+    }
+
+    /**
+     * Resets all colors to their default values.
+     *
+     * @param items  list of items of the table to clear.
+     */
+    private void clear(final ObservableList<Category> items) {
+        final Category[] content = items.toArray(new Category[items.size()]);
+        items.clear();              // For forcing a repaint of the table.
+        customizedColors.clear();
+        items.setAll(content);
+        if (canvas != null) {
+            canvas.setCategoryColors(null);
+        }
     }
 
     /**
@@ -168,7 +187,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      * @param  vocabulary  localized resources, given because already known by the caller
      *                     (this argument would be removed if this method was public API).
      */
-    final TableView<Category> createCategoryTable(final Vocabulary vocabulary) {
+    final TableView<Category> createCategoryTable(final Resources resources, final Vocabulary vocabulary) {
         final TableColumn<Category,String> name = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Name));
         name.setCellValueFactory(CoverageStyling::getCategoryName);
         name.setCellFactory(CoverageStyling::createNameCell);
@@ -181,6 +200,12 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         final TableView<Category> table = new TableView<>();
         table.getColumns().add(name);
         addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Colors));
+        /*
+         * Add contextual menu items.
+         */
+        final MenuItem reset = new MenuItem(resources.getString(Resources.Keys.ClearAll));
+        reset.setOnAction((e) -> clear(table.getItems()));
+        table.setContextMenu(new ContextMenu(reset));
         return table;
     }
 

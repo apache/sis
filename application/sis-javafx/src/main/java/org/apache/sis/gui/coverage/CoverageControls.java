@@ -24,6 +24,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
@@ -120,7 +121,8 @@ final class CoverageControls extends ViewAndControls {
              * Creates a "Categories" section with the category table.
              */
             final CoverageStyling styling = new CoverageStyling(view);
-            categoryTable = styling.createCategoryTable(vocabulary);
+            categoryTable = styling.createCategoryTable(resources, vocabulary);
+            VBox.setVgrow(categoryTable, Priority.ALWAYS);
             /*
              * All sections put together.
              */
@@ -138,7 +140,9 @@ final class CoverageControls extends ViewAndControls {
             final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
             isolines = new IsolineRenderer(view);
             isolines.setIsolineTables(java.util.Collections.singletonList(mapper.getSteps()));
-            isolinesPane = new VBox(mapper.getView());              // TODO: add band selector
+            final Region view = mapper.getView();
+            VBox.setVgrow(view, Priority.ALWAYS);
+            isolinesPane = new VBox(view);                          // TODO: add band selector
         }
         /*
          * Put all sections together and have the first one expanded by default.
