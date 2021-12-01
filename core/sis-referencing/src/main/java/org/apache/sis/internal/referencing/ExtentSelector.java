@@ -24,6 +24,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Range;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -58,8 +59,15 @@ import org.apache.sis.measure.Range;
  *       then the first of those candidates is selected.</li>
  * </ol>
  *
+ * <h2>Change of rule order</h2>
+ * The following configuration flags change the order in which above rules are applied.
+ *
+ * <ul>
+ *   <li>{@link #alternateOrdering} — whether the time center criterion is tested last.</li>
+ * </ul>
+ *
  * <h2>Usage</h2>
- * Example!
+ * Example:
  *
  * {@preformat java
  *     ExtentSelector<Foo> selector = new ExtentSelector<>(areaOfInterest);
@@ -70,7 +78,7 @@ import org.apache.sis.measure.Range;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <T>  the type of object to be selected.
  *
@@ -95,6 +103,27 @@ public final class ExtentSelector<T> {
     private Instant minTOI, maxTOI;
 
     /**
+     * Granularity of the time of interest in seconds, or 0 if none.
+     * If non-zero, this this is always positive.
+     *
+     * @see #setTimeGranularity(Duration)
+     * @see #round(Duration)
+     */
+    private long granularity;
+
+    /**
+     * Whether to use an alternate conditions order where the time center criterion is tested last.
+     * This flag can be set to {@code true} if the Time Of Interest (TOI) is expected to be larger
+     * than the temporal extent of candidate objects, in which case many objects may fit in the TOI.
+     * Those candidates may be considered practically equally good regarding temporal aspect,
+     * in which case the caller may want to give precedence to geographic area.
+     *
+     * <p>This flag is often used together with {@link #setTimeGranularity(Duration)} method
+     * for reducing the preponderance of temporal criteria.</p>
+     */
+    public boolean alternateOrdering;
+
+    /**
      * The best object found so far.
      */
     private T best;
@@ -108,6 +137,7 @@ public final class ExtentSelector<T> {
     /**
      * Duration of the {@linkplain #best} object, or {@code null} if none.
      * This is equivalent to {@link #largestArea} in the temporal domain.
+     * Value is rounded by {@link #round(Duration)}.
      */
     private Duration longestTime;
 
@@ -222,6 +252,48 @@ public final class ExtentSelector<T> {
     }
 
     /**
+     * Sets the temporal granularity of the Time of Interest (TOI). If non-null, intersections with TOI
+     * will be rounded to an integer amount of this granularity. This is useful if data are expected at
+     * an approximately regular interval (for example one remote sensing image per day) and we want to
+     * ignore slight variations in the temporal extent declared for each image.
+     *
+     * <p>This method is often used together with {@link #alternateOrdering} flag
+     * for reducing the preponderance of temporal criteria.</p>
+     *
+     * @param  resolution  granularity of the time of interest, or {@code null} if none.
+     * @throws IllegalArgumentException if the given resolution is zero or negative.
+     */
+    public final void setTimeGranularity(final Duration resolution) {
+        if (resolution == null) {
+            granularity = 0;
+        } else if (resolution.isZero() || resolution.isNegative()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "resolution", resolution));
+        } else {
+            granularity = resolution.getSeconds();
+        }
+    }
+
+    /**
+     * Returns the given duration rounded to the nearest integer amount of temporal granularity.
+     * If no granularity has been specified, then this method returns the given duration unmodified.
+     */
+    private Duration round(Duration duration) {
+        if (duration != null && !duration.isZero() && granularity != 0) {
+            long t = duration.getSeconds();
+            long n = t / granularity;
+            long r = t % granularity;
+            if (r != 0) {
+                t -= r;
+                if (t == 0 || r >= (granularity >> 1)) {
+                    t += granularity;
+                };
+                duration = Duration.ofSeconds(t);
+            }
+        }
+        return duration;
+    }
+
+    /**
      * Computes a pseudo-distance between the center of given area and of {@link #areaOfInterest}.
      * This is <strong>not</strong> a real distance, neither great circle distance or rhumb line.
      * May be {@link Double#NaN} if information is unknown.
@@ -274,10 +346,16 @@ public final class ExtentSelector<T> {
     /**
      * Computes the amount of time outside the time of interest (TOI). The returned value is always positive
      * because {@code intersection} should always be less than {@code endTime} − {@code startTime} duration.
+     * Value is rounded by {@link #round(Duration)}.
+     *
+     * @param  startTime     start time of of the candidate object, or {@code null} if none (unbounded).
+     * @param  endTime       end time of the candidate object, or {@code null} if none (unbounded).
+     * @param  intersection  duration of the intersection of [{@code startTime} … {@code endTime}]
+     *                       with [{@link #minTOI} … {@link #maxTOI}].
      */
-    private static Duration overtime(final Instant startTime, final Instant endTime, final Duration intersection) {
+    private Duration overtime(final Instant startTime, final Instant endTime, final Duration intersection) {
         return (startTime != null && endTime != null && intersection != null)
-                ? Duration.between(startTime, endTime).minus(intersection) : null;
+                ? round(Duration.between(startTime, endTime).minus(intersection)) : null;
     }
 
     /**
@@ -349,8 +427,9 @@ public final class ExtentSelector<T> {
          *         // Compute and test criteria.
          *     }
          */
+        final Duration durationRounded = round(duration);
         int comparison, remainingFieldsToCompute = OVERTIME;
-        if (best != null && (comparison = compare(duration, longestTime, -1)) <= 0) {
+        if (best != null && (comparison = compare(durationRounded, longestTime, -1)) <= 0) {
             if (comparison != 0) return;
             /*
              * Criterion #2: select the object having smallest amount of time outside Time Of Interest (TOI).
@@ -362,10 +441,11 @@ public final class ExtentSelector<T> {
                 if (comparison != 0) return;
                 /*
                  * Criterion #3: select the object having median time closest to TOI median time.
+                 * This condition is skipped in the "alternate condition ordering" mode.
                  */
                 remainingFieldsToCompute = OUTSIDE_AREA;
                 final double td = temporalDistance(startTime, endTime);
-                if ((comparison = compare(td, temporalDistance, +1)) >= 0) {
+                if (alternateOrdering || (comparison = compare(td, temporalDistance, +1)) >= 0) {
                     if (comparison != 0) return;
                     /*
                      * Criterion #4: select the object covering largest geographic area.
@@ -383,22 +463,27 @@ public final class ExtentSelector<T> {
                             /*
                              * Criterion #5: select the object having center closest to AOI center.
                              * Distances are computed with inexact formulas (not a real distance).
+                             * TOI is also compared here in "alternate condition ordering" mode.
                              */
                             remainingFieldsToCompute = NONE;
                             final double pd = pseudoDistance(bbox);
                             if (compare(pd, pseudoDistance, +1) >= 0) {
                                 return;
                             }
+                            if (alternateOrdering && compare(td, temporalDistance, +1) >= 0) {
+                                return;
+                            }
                             pseudoDistance = pd;
                         }
                         outsideArea = out;
                     }
+                    // largestArea = area; assigned below because was computed early.
                 }
                 temporalDistance = td;
             }
             overtime = et;
         }
-        longestTime = duration;
+        longestTime = durationRounded;
         largestArea = area;
         switch (remainingFieldsToCompute) {           // Intentional fallthrough in every cases.
             case OVERTIME:          overtime          = overtime(startTime, endTime, duration);
