@@ -255,6 +255,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Container = 33;
 
         /**
+         * Controls
+         */
+        public static final short Controls = 262;
+
+        /**
          * Conversion
          */
         public static final short Conversion = 34;
@@ -1068,6 +1073,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Resource identification
          */
         public static final short ResourceIdentification = 173;
+
+        /**
+         * Resources
+         */
+        public static final short Resources = 263;
 
         /**
          * Result

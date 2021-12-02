@@ -113,7 +113,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
                     result.setCoordinateReferenceSystem(crs);
                 }
             }
-            return geometry;
+            return result.implementation();
         } catch (Exception e) {
             warning(e, false);
         }

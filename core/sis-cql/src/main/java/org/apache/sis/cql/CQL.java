@@ -59,6 +59,9 @@ import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.ValueReference;
 
 import static org.apache.sis.internal.cql.CQLParser.*;
+import org.opengis.filter.Literal;
+import org.opengis.filter.SortOrder;
+import org.opengis.filter.SortProperty;
 
 
 /**
@@ -115,6 +118,23 @@ public final class CQL {
         return result;
     }
 
+    public static Query parseQuery(String cql) throws CQLException {
+        return parseQuery(cql, null);
+    }
+
+    public static Query parseQuery(String cql, FilterFactory<Feature,Object,Object> factory) throws CQLException {
+        final Object obj = AntlrCQL.compileQuery(cql);
+        Query result = null;
+        if (obj instanceof QueryContext) {
+            ParseTree tree = (ParseTree) obj;
+            if (factory == null) {
+                factory = DefaultFilterFactory.forFeatures();
+            }
+            result = convertQuery(tree, factory);
+        }
+        return result;
+    }
+
     public static String write(final Filter<Feature> filter) {
         final StringBuilder sb = new StringBuilder();
         FilterToCQLVisitor.INSTANCE.visit(filter, sb);
@@ -124,6 +144,53 @@ public final class CQL {
     public static String write(final Expression<Feature,?> exp) {
         final StringBuilder sb = new StringBuilder();
         FilterToCQLVisitor.INSTANCE.visit(exp, sb);
+        return sb.toString();
+    }
+
+    public static String write(final Query query) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        if (query.projections.isEmpty()) {
+            sb.append('*');
+        } else {
+            for (int i = 0, n = query.projections.size(); i < n; i++) {
+                Query.Projection p = query.projections.get(i);
+                if (i != 0) sb.append(", ");
+                sb.append(write(p.expression));
+                if (p.alias != null && !p.alias.isEmpty()) {
+                    sb.append(" AS '");
+                    sb.append(p.alias);
+                    sb.append('\'');
+                }
+            }
+        }
+        if (query.filter != null) {
+            sb.append(" WHERE ");
+            sb.append(write(query.filter));
+        }
+
+        if (!query.sortby.isEmpty()) {
+            sb.append(" ORDER BY ");
+            for (int i = 0, n = query.sortby.size(); i < n; i++) {
+                SortProperty p = query.sortby.get(i);
+                if (i != 0) sb.append(", ");
+                sb.append(write(p.getValueReference()));
+                switch (p.getSortOrder()) {
+                    case ASCENDING : sb.append(" ASC"); break;
+                    case DESCENDING : sb.append(" DESC"); break;
+                }
+            }
+        }
+
+        if (query.offset != null) {
+            sb.append(" OFFSET ");
+            sb.append(query.offset);
+        }
+        if (query.limit != null) {
+            sb.append(" LIMIT ");
+            sb.append(query.limit);
+        }
+
         return sb.toString();
     }
 
@@ -739,5 +806,54 @@ public final class CQL {
             }
         }
         throw new CQLException("Unreconized filter : type=" + tree.getText());
+    }
+
+    /**
+     * Convert the given tree in a Query.
+     */
+    private static Query convertQuery(ParseTree tree, FilterFactory<Feature,Object,Object> ff) throws CQLException {
+        if (tree instanceof QueryContext) {
+            final QueryContext context = (QueryContext) tree;
+            final List<ProjectionContext> projections = context.projection();
+            final WhereContext where = context.where();
+            final OffsetContext offset = context.offset();
+            final LimitContext limit = context.limit();
+            final OrderbyContext orderby = context.orderby();
+
+            final Query query = new Query();
+            if (context.MULT() == null) {
+                for (ProjectionContext pc : projections) {
+                    final Expression<Feature, ?> exp = convertExpression(pc.expression(), ff);
+                    if (pc.AS() != null) {
+                        final Expression<Feature, ?> alias = convertExpression(pc.TEXT(), ff);
+                        query.projections.add(new Query.Projection(exp, String.valueOf(( (Literal) alias).getValue())));
+                    } else {
+                        query.projections.add(new Query.Projection(exp, null));
+                    }
+                }
+            }
+            if (where != null) {
+                query.filter = (Filter<Feature>) convertFilter(where.filter(), ff);
+            }
+            if (offset != null) {
+                query.offset = Integer.valueOf(offset.INT().getText());
+            }
+            if (limit != null) {
+                query.limit = Integer.valueOf(limit.INT().getText());
+            }
+            if (orderby != null) {
+                for (SortpropContext spc : orderby.sortprop()) {
+                    final Expression<Feature, ?> exp = convertExpression(spc.expression(), ff);
+                    if (exp instanceof ValueReference) {
+                        query.sortby.add(ff.sort((ValueReference<? super Feature, ?>) exp,
+                                spc.DESC() != null ? SortOrder.DESCENDING : SortOrder.ASCENDING));
+                    } else {
+                        throw new CQLException("Sort by may be used with property names only");
+                    }
+                }
+            }
+            return query;
+        }
+        return null;
     }
 }

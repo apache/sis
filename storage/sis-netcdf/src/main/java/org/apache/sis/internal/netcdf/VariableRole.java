@@ -21,7 +21,7 @@ package org.apache.sis.internal.netcdf;
  * Specifies whether a variable is used as a coordinate system axis, a coverage or other purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -32,9 +32,16 @@ public enum VariableRole {
     AXIS,
 
     /**
-     * The variable is a grid coverage.
+     * The variable is a continuous grid coverage.
+     * Interpolation between cells is allowed.
      */
     COVERAGE,
+
+    /**
+     * The variable is a discrete grid coverage, for example data quality masks.
+     * Interpolation between cells is not allowed.
+     */
+    DISCRETE_COVERAGE,
 
     /**
      * The variable is a property of a feature.
@@ -50,5 +57,19 @@ public enum VariableRole {
     /**
      * Unidentified kind of variable.
      */
-    OTHER
+    OTHER;
+
+    /**
+     * Returns {@code true} if the role of the given variable is {@link #COVERAGE} or {@link #DISCRETE_COVERAGE}.
+     *
+     * @param  candidate  the variable for which to check the role, or {@code null}.
+     * @return whether the given variable is non-null and its role is a continuous or discrete coverage.
+     */
+    public static boolean isCoverage(final Variable candidate) {
+        if (candidate != null) {
+            final VariableRole role = candidate.getRole();
+            return (role == COVERAGE || role == DISCRETE_COVERAGE);
+        }
+        return false;
+    }
 }

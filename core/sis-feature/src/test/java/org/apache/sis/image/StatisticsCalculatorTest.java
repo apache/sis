@@ -16,12 +16,16 @@
  */
 package org.apache.sis.image;
 
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.util.Random;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
+import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.TestCase;
@@ -36,7 +40,7 @@ import static org.junit.Assert.*;
  * {@link org.apache.sis.internal.coverage.j2d.TileOpExecutor} with multi-threading.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -53,6 +57,22 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Rule
     public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Modules.RASTER));
+
+    /**
+     * The area of interest, or {@code null} if none.
+     */
+    private Shape areaOfInterest;
+
+    /**
+     * The filter to apply on sample values, or {@code null} if none.
+     */
+    private DoubleUnaryOperator[] sampleFilters;
+
+    /**
+     * Creates a new test case.
+     */
+    public StatisticsCalculatorTest() {
+    }
 
     /**
      * Creates a dummy image for testing purpose. This image will contain many small tiles
@@ -83,20 +103,24 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      * @param  source  the image on which to compute statistics.
      * @return statistics on the given image computed sequentially.
      */
-    private static Statistics[] computeSequentially(final RenderedImage source) {
-        return (Statistics[]) new StatisticsCalculator(source, null, false, true).computeSequentially();
+    private Statistics[] computeSequentially(final RenderedImage source) {
+        return (Statistics[]) new StatisticsCalculator(source, areaOfInterest, sampleFilters, false, true).computeSequentially();
     }
 
     /**
-     * Tests with parallel execution. The result of sequential execution is used as a reference.
+     * Implementation of {@link #testParallelExecution()} and other tests with various options.
+     * Values in the first band are determinist and values in the second band are randoms.
+     *
+     * @param  minimum  expected minimal sample value in the first band (the deterministic one).
+     * @param  maximum  expected maximal sample value in the first band (the deterministic one).
      */
-    @Test
-    public void testParallelExecution() {
-        final ImageProcessor operations = new ImageProcessor();
+    private void compareParallelWithSequential(final ImageProcessor operations,
+            final double minimum, final double maximum)
+    {
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
         final Statistics[] expected = computeSequentially(image);
-        final Statistics[] actual = operations.valueOfStatistics(image, null);
+        final Statistics[] actual = operations.valueOfStatistics(image, areaOfInterest, sampleFilters);
         for (int i=0; i<expected.length; i++) {
             final Statistics e = expected[i];
             final Statistics a = actual  [i];
@@ -105,6 +129,42 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
             assertEquals("sum",     e.sum(),     a.sum(),     STRICT);
         }
         loggings.assertNoUnexpectedLog();
+        assertEquals("minimum", minimum, actual[0].minimum(), STRICT);
+        assertEquals("maximum", maximum, actual[0].maximum(), STRICT);
+    }
+
+    /**
+     * Tests with parallel execution. The result of sequential execution is used as a reference.
+     * The expected minimum sample value is 100 because this is by definition the value written
+     * in the first pixel of the first tile created by {@link #createImage()}.
+     */
+    @Test
+    public void testParallelExecution() {
+        compareParallelWithSequential(new ImageProcessor(), 100, 51324);
+    }
+
+    /**
+     * Tests with an arbitrary area of interest.
+     * The expected minimum and maximum values are determined empirically.
+     */
+    @Test
+    public void testWithAOI() {
+        areaOfInterest = new Ellipse2D.Float(70, -50, TILE_WIDTH*11.6f, TILE_HEIGHT*9.2f);
+        compareParallelWithSequential(new ImageProcessor(), 19723, 44501);
+    }
+
+    /**
+     * Tests with sample filters. The filter excludes the first and the few last pixels in the image
+     * created by {@link #createImage()}, which produces a visible effect on minimum and maximum values.
+     */
+    @Test
+    @DependsOnMethod("testFilterNodataValues")
+    public void testWithSampleFilters() {
+        final ImageProcessor operations = new ImageProcessor();
+        sampleFilters = new DoubleUnaryOperator[] {
+            operations.filterNodataValues(100, 51324, 51323, 201, 310)
+        };
+        compareParallelWithSequential(operations, 101, 51322);
     }
 
     /**
@@ -117,7 +177,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(-8739538736973900203L), true);
         try {
-            operations.valueOfStatistics(image, null);
+            operations.valueOfStatistics(image, areaOfInterest, sampleFilters);
             fail("Expected ImagingOpException.");
         } catch (ImagingOpException e) {
             final String message = e.getMessage();
@@ -137,7 +197,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         operations.setErrorHandler(ErrorHandler.LOG);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(8004277484984714811L), true);
-        final Statistics[] stats = operations.valueOfStatistics(image, null);
+        final Statistics[] stats = operations.valueOfStatistics(image, areaOfInterest, sampleFilters);
         for (final Statistics a : stats) {
             assertTrue(a.count() > 0);
         }
@@ -147,5 +207,24 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
          */
         loggings.assertNextLogContains(/* no keywords we could rely on. */);
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests {@link StatisticsCalculator#filterNodataValues(Number[])}.
+     */
+    @Test
+    public void testFilterNodataValues() {
+        assertNull(StatisticsCalculator.filterNodataValues(new Number[] {null, Double.NaN}));
+        DoubleUnaryOperator op =  StatisticsCalculator.filterNodataValues(new Number[] {100});
+        assertEquals( 10, op.applyAsDouble( 10), STRICT);
+        assertEquals(202, op.applyAsDouble(202), STRICT);
+        assertTrue(Double.isNaN(op.applyAsDouble(100)));
+
+        op =  StatisticsCalculator.filterNodataValues(new Number[] {201, null, 100, 310, Double.NaN, 201});
+        assertEquals( 10, op.applyAsDouble( 10), STRICT);
+        assertEquals(202, op.applyAsDouble(202), STRICT);
+        assertTrue(Double.isNaN(op.applyAsDouble(100)));
+        assertTrue(Double.isNaN(op.applyAsDouble(310)));
+        assertTrue(Double.isNaN(op.applyAsDouble(201)));
     }
 }

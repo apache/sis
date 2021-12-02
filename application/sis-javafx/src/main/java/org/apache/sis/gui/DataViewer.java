@@ -206,12 +206,13 @@ public class DataViewer extends Application {
     }
 
     /**
-     * Creates the file filters for the dialog box to shown in "File" ▶ "Open" and "File" ▶ "Save" menus.
+     * Creates the file filters for the dialog box to show in "File" ▶ "Open" and "File" ▶ "Save" menus.
      *
      * @todo Iterate only over the classes in JDK9, without initializing the providers.
      */
     private void createFileFilters() {
         final Resources res = Resources.getInstance();
+        final Set<String>    suffixes = new LinkedHashSet<>();
         final Set<String> allSuffixes = new LinkedHashSet<>();
         final List<FileChooser.ExtensionFilter> open = new ArrayList<>();
         final List<FileChooser.ExtensionFilter> save = new ArrayList<>();
@@ -223,21 +224,29 @@ public class DataViewer extends Application {
         for (DataStoreProvider provider : DataStores.providers()) {
             final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
             if (md != null) {
-                final String[] suffixes = md.fileSuffixes();
-                if (suffixes.length != 0) {
-                    final boolean canOpen = ArraysExt.contains(md.capabilities(), Capability.READ);
-                    final boolean canSave = ArraysExt.contains(md.capabilities(), Capability.WRITE);
-                    for (int i=0; i < suffixes.length; i++) {
-                        final String fs = "*.".concat(suffixes[i]);
-                        suffixes[i] = fs;
-                        if (canOpen) {
-                            allSuffixes.add(fs);
-                        }
-                    }
+                String label = null;
+                for (final String suffix : md.fileSuffixes()) {
+                    final String fs = "*.".concat(suffix);
+                    suffixes.add(fs);
+                    suffixes.add(fs.toUpperCase());       // Locale-dependent conversion is okay.
+                    if (label == null) label = fs;
+                }
+                if (label != null) {
                     final FileChooser.ExtensionFilter f = new FileChooser.ExtensionFilter(
-                                    md.formatName() + " (" + suffixes[0] + ')', suffixes);
-                    if (canOpen) open.add(f);
-                    if (canSave) save.add(f);
+                            md.formatName() + " (" + label + ')', suffixes.toArray(String[]::new));
+                    /*
+                     * We use two lists depending on whether the `DataStore` can read, write or
+                     * do both. The "All formats" choice is relevant only for read operations.
+                     */
+                    final Capability[] capabilities = md.capabilities();
+                    if (ArraysExt.contains(capabilities, Capability.READ)) {
+                        allSuffixes.addAll(suffixes);
+                        open.add(f);
+                    }
+                    if (ArraysExt.contains(capabilities, Capability.WRITE)) {
+                        save.add(f);
+                    }
+                    suffixes.clear();
                 }
             }
         }
@@ -246,9 +255,9 @@ public class DataViewer extends Application {
          * the filters for specific formats. This will be the default filter for the "Open" action.
          */
         open.add(1, new FileChooser.ExtensionFilter(res.getString(Resources.Keys.GeospatialFiles),
-                            allSuffixes.toArray(new String[allSuffixes.size()])));
-        this.openFilters = open.toArray(new FileChooser.ExtensionFilter[open.size()]);
-        this.saveFilters = save.toArray(new FileChooser.ExtensionFilter[save.size()]);
+                                                    allSuffixes.toArray(String[]::new)));
+        openFilters = open.toArray(FileChooser.ExtensionFilter[]::new);
+        saveFilters = save.toArray(FileChooser.ExtensionFilter[]::new);
     }
 
     /**

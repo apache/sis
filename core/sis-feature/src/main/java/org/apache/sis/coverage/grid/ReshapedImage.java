@@ -288,16 +288,16 @@ final class ReshapedImage extends PlanarImage {
 
     /**
      * Verifies whether image layout information are consistent.
+     * This method first checks the properties modified by this class.
+     * If okay, then this method completes the check with all verifications
+     * {@linkplain ComputedImage#verify() documented in parent class}
      */
     @Override
     public String verify() {
-        final String error = super.verify();
-        if (error == null) {
-            if (getMinX() != image.getMinX() + (minTileX - image.getMinTileX()) * getTileWidth()  + offsetX) return "minX";
-            if (getMinY() != image.getMinY() + (minTileY - image.getMinTileY()) * getTileHeight() + offsetY) return "minY";
-            if (getTileGridXOffset() != super.getTileGridXOffset()) return "tileGridXOffset";
-            if (getTileGridYOffset() != super.getTileGridYOffset()) return "tileGridYOffset";
-        }
-        return error;
+        if (getMinX() != image.getMinX() + (minTileX - image.getMinTileX()) * getTileWidth()  + offsetX) return "minX";
+        if (getMinY() != image.getMinY() + (minTileY - image.getMinTileY()) * getTileHeight() + offsetY) return "minY";
+        if (getTileGridXOffset() != super.getTileGridXOffset()) return "tileGridXOffset";
+        if (getTileGridYOffset() != super.getTileGridYOffset()) return "tileGridYOffset";
+        return super.verify();      // "width" and "height" properties should be checked last.
     }
 }

@@ -20,9 +20,14 @@ import java.awt.Shape;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
+import java.util.Arrays;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Collector;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -31,23 +36,49 @@ import org.apache.sis.util.resources.Vocabulary;
  * The statistics can be computed in parallel or sequentially for non thread-safe images.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 final class StatisticsCalculator extends AnnotatedImage {
     /**
+     * An optional function for converting values before to add them to statistics.
+     * The main purpose is to exclude "no data" values by replacing them by NaN.
+     * If non-null, the length of this array must be equal to the number of bands.
+     * Array may contain null elements if no filter should be applied for a band.
+     */
+    private final DoubleUnaryOperator[] sampleFilters;
+
+    /**
      * Creates a new calculator.
      *
      * @param  image            the image for which to compute statistics.
      * @param  areaOfInterest   pixel coordinates of AOI, or {@code null} for the whole image.
+     * @param  sampleFilters    converters to apply on sample values before to add them to statistics, or {@code null}.
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    StatisticsCalculator(final RenderedImage image, final Shape areaOfInterest,
+    StatisticsCalculator(final RenderedImage image, final Shape areaOfInterest, DoubleUnaryOperator[] sampleFilters,
                          final boolean parallel, final boolean failOnException)
     {
         super(image, areaOfInterest, parallel, failOnException);
+        if (sampleFilters != null) {
+            sampleFilters = Arrays.copyOf(sampleFilters, ImageUtilities.getNumBands(image));
+            if (ArraysExt.allEquals(sampleFilters, null)) {
+                sampleFilters = null;
+            }
+        }
+        this.sampleFilters = sampleFilters;
+    }
+
+    /**
+     * Returns the optional filter parameter. This is used by parent class for caching
+     * and for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Caller will not modify.
+    final Object[] getExtraParameter() {
+        return sampleFilters;
     }
 
     /**
@@ -72,6 +103,26 @@ final class StatisticsCalculator extends AnnotatedImage {
     }
 
     /**
+     * Returns accumulators which will apply the {@link #filter} before to add values to statistics.
+     * If there is no filter to apply, then this method returns the {@code accumulator} array directly.
+     *
+     * @param  accumulator  where to accumulate the statistics results.
+     * @return the accumulator optionally filtered.
+     */
+    private final DoubleConsumer[] filtered(final Statistics[] accumulator) {
+        if (sampleFilters == null) {
+            return accumulator;
+        }
+        final DoubleConsumer[] filtered = new DoubleConsumer[accumulator.length];
+        for (int i=0; i<filtered.length; i++) {
+            final DoubleConsumer c = accumulator[i];
+            final DoubleUnaryOperator f = sampleFilters[i];
+            filtered[i] = (f == null) ? c : (v) -> c.accept(f.applyAsDouble(v));
+        }
+        return filtered;
+    }
+
+    /**
      * Computes statistics using the given iterator and accumulates the result for all bands.
      * This method is invoked in both sequential and parallel case. In the sequential case it
      * is invoked for the whole image; in the parallel case it is invoked for only one tile.
@@ -82,7 +133,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      * @param accumulator  where to accumulate the statistics results.
      * @param it           the iterator on a raster or on the whole image.
      */
-    private void compute(final Statistics[] accumulator, final PixelIterator it) {
+    private void compute(final DoubleConsumer[] accumulator, final PixelIterator it) {
         double[] samples = null;
         while (it.next()) {
             if (areaOfInterest == null || areaOfInterest.contains(it.x, it.y)) {
@@ -103,7 +154,7 @@ final class StatisticsCalculator extends AnnotatedImage {
     protected Object computeSequentially() {
         final PixelIterator it = new PixelIterator.Builder().setRegionOfInterest(boundsOfInterest).create(source);
         final Statistics[] accumulator = createAccumulator(it.getNumBands());
-        compute(accumulator, it);
+        compute(filtered(accumulator), it);
         return accumulator;
     }
 
@@ -134,10 +185,10 @@ final class StatisticsCalculator extends AnnotatedImage {
      * This method will be invoked for each worker thread before the worker starts its execution.
      *
      * @return a thread-local variable holding information computed by a single thread.
-     *         May be {@code null} is such objects are not needed.
+     *         May be {@code null} if such objects are not needed.
      */
     private Statistics[] createAccumulator() {
-        return createAccumulator(source.getSampleModel().getNumBands());
+        return createAccumulator(ImageUtilities.getNumBands(source));
     }
 
     /**
@@ -166,6 +217,52 @@ final class StatisticsCalculator extends AnnotatedImage {
      * @throws RuntimeException if the calculation failed.
      */
     private void compute(final Statistics[] accumulator, final Raster tile) {
-        compute(accumulator, new PixelIterator.Builder().setRegionOfInterest(boundsOfInterest).create(tile));
+        compute(filtered(accumulator), new PixelIterator.Builder().setRegionOfInterest(boundsOfInterest).create(tile));
+    }
+
+    /**
+     * Builds an operator which can be used for filtering "no data" values. Calls to {@code applyAsDouble(x)}
+     * on the returned operator will return {@link Double#NaN} if the <var>x</var> value is equal to one of
+     * the given no-data {@code values}, and will return <var>x</var> unchanged otherwise.
+     * This operator can be used as a {@code sampleFilters} argument in calls to
+     * {@link #StatisticsCalculator(RenderedImage, Shape, DoubleUnaryOperator[], boolean, boolean)}.
+     *
+     * @param  values  the "no data" values. Null and NaN elements are ignored.
+     * @return an operator for filtering the given "no data" values,
+     *         or {@code null} if there is no non-NaN value to filter.
+     */
+    static DoubleUnaryOperator filterNodataValues(final Number[] values) {
+        final double[] retained = new double[values.length];
+        int count = 0;
+        for (final Number v : values) {
+            if (v != null) {
+                retained[count++] = v.doubleValue();
+            }
+        }
+        Arrays.sort(retained, 0, count);
+        final int n = count;
+        count = 0;
+        for (int i=0; i<n; i++) {
+            final double v = retained[i];
+            if (Double.isNaN(v)) break;                     // NaN values are sorted last.
+            if (count != 0) {
+                if (retained[count-1] == v) continue;       // Skip duplicated values.
+                retained[count] = v;
+            }
+            count++;
+        }
+        switch (count) {
+            case 0: {
+                return null;
+            }
+            case 1: {
+                final double nodata = retained[0];
+                return (v) -> (nodata != v) ? v : Double.NaN;
+            }
+            default: {
+                final double[] nodata = ArraysExt.resize(retained, count);
+                return (v) -> Arrays.binarySearch(nodata, v) < 0 ? v : Double.NaN;
+            }
+        }
     }
 }

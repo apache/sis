@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -56,7 +57,7 @@ import org.apache.sis.internal.util.Strings;
  * on the fact that it can unwrap this image and still get the same pixel values.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -98,7 +99,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * those results are replaced by {@link #NULL}.</p>
      *
      * <p>Keys are {@link String} instances containing directly the property name when {@link #areaOfInterest}
-     * is {@code null}, or {@link CacheKey} instances otherwise.</p>
+     * and {@link #getExtraParameter()} are {@code null}, or {@link CacheKey} instances otherwise.</p>
      */
     private final Cache<Object,Object> cache;
 
@@ -109,25 +110,34 @@ abstract class AnnotatedImage extends ImageAdapter {
         /** The property name (never null). */
         private final String property;
 
-        /** The area of interest (never null). */
+        /** The area of interest, or null if none. */
         private final Shape areaOfInterest;
 
+        /** Parameter specific to subclass, or null if none. */
+        private final Object[] extraParameter;
+
         /** Creates a new key for the given property and AOI. */
-        CacheKey(final String property, final Shape areaOfInterest) {
+        CacheKey(final String property, final Shape areaOfInterest, final Object[] extraParameter) {
             this.property       = property;
             this.areaOfInterest = areaOfInterest;
+            this.extraParameter = extraParameter;
         }
 
         /** Returns a hash code value for this key. */
         @Override public int hashCode() {
-            return property.hashCode() + 19 * areaOfInterest.hashCode();
+            return property.hashCode()
+                    + 19 * Objects.hashCode(areaOfInterest)
+                    + 37 *  Arrays.hashCode(extraParameter);
+
         }
 
         /** Compares this key with the given object for equality. */
         @Override public boolean equals(final Object obj) {
             if (obj instanceof CacheKey) {
                 final CacheKey other = (CacheKey) obj;
-                return property.equals(other.property) && areaOfInterest.equals(areaOfInterest);
+                return property.equals(other.property)
+                        && Objects.equals(areaOfInterest, other.areaOfInterest)
+                        &&  Arrays.equals(extraParameter, other.extraParameter);
             }
             return false;
         }
@@ -244,6 +254,22 @@ abstract class AnnotatedImage extends ImageAdapter {
     }
 
     /**
+     * Returns an optional parameter specific to subclass. This is used for caching purpose
+     * and for {@link #equals(Object)} and {@link #hashCode()} method implementations only,
+     * i.e. for distinguishing between two {@code AnnotatedImage} instances that are identical
+     * except for subclass-defined parameters.
+     *
+     * <div class="note"><b>API note:</b>
+     * the return value is an array because there is typically one parameter value per band.
+     * This method will not modify the returned array.</div>
+     *
+     * @return subclass specific extra parameter, or {@code null} if none.
+     */
+    Object[] getExtraParameter() {
+        return null;
+    }
+
+    /**
      * If the source image is the same operation for the same area of interest, returns that source.
      * Otherwise returns {@code this} or a previous instance doing the same operation than {@code this}.
      *
@@ -263,7 +289,9 @@ abstract class AnnotatedImage extends ImageAdapter {
      * @param  property  value of {@link #getPropertyNames()}.
      */
     private Object getCacheKey(final String property) {
-        return (areaOfInterest != null) ? new CacheKey(property, areaOfInterest) : property;
+        final Object[] extraParameter = getExtraParameter();
+        return (areaOfInterest != null || extraParameter != null)
+                ? new CacheKey(property, areaOfInterest, extraParameter) : property;
     }
 
     /**
@@ -421,7 +449,8 @@ abstract class AnnotatedImage extends ImageAdapter {
                     if (!failOnException) {
                         executor.setErrorHandler((e) -> errors = e, AnnotatedImage.class, "getProperty");
                     }
-                    return executor.executeOnReadable(source, collector());
+                    executor.setAreaOfInterest(source, areaOfInterest);
+                    return executor.executeOnReadable(source, collector);
                 }
             }
         }
@@ -533,7 +562,8 @@ abstract class AnnotatedImage extends ImageAdapter {
      * The {@link #errors} is omitted because it is part of computation results.
      */
     private boolean equalParameters(final AnnotatedImage other) {
-        return Objects.equals(areaOfInterest, other.areaOfInterest) &&
-                parallel == other.parallel && failOnException == other.failOnException;
+        return parallel == other.parallel && failOnException == other.failOnException
+                && Objects.equals(areaOfInterest,      other.areaOfInterest)
+                &&  Arrays.equals(getExtraParameter(), other.getExtraParameter());
     }
 }

@@ -62,7 +62,7 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.gui.ResourceLoader;
+import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -88,9 +88,9 @@ import org.apache.sis.util.logging.Logging;
  * <ul>
  *   <li>The {@link #rootProperty() rootProperty} should be considered read-only.
  *       For changing content, use the {@link #setResource(Resource)} instead.</li>
- *   <li>If the user selects "close" in the contextual menu, the resource is closed (if it is an instance
- *       of {@link DataStore}). There is not yet a mechanism for keeping it open if the resource is shared
- *       by another {@link ResourceTree} instance.</li>
+ *   <li>If the user selects "close" in the contextual menu, the resource is unconditionally closed
+ *       (if it is an instance of {@link DataStore}). There is not yet a mechanism for keeping it open
+ *       if the resource is shared by another {@link ResourceTree} instance.</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
@@ -155,7 +155,15 @@ public class ResourceTree extends TreeView<Resource> {
 
     /**
      * Returns the root {@link Resource} of this tree.
-     * This is often (but not necessarily) a {@link DataStore}.
+     * The returned value depends on how the resource was set:
+     *
+     * <ul>
+     *   <li>If the resource was specified by {@link #setResource(Resource)},
+     *       then this method returns that resource.
+     *       This is often (but not necessarily) a {@link DataStore}.</li>
+     *   <li>If one or more resources were specified by {@link #addResource(Resource)},
+     *       then this method returns an {@link Aggregate} of all added resources.</li>
+     * </ul>
      *
      * @return root {@link Resource}, or {@code null} if none.
      */
@@ -185,9 +193,8 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Adds a resource to this tree. If this tree is empty, then invoking this method
-     * has the same effect than invoking {@link #setResource(Resource)}. Otherwise this
-     * method adds the new resource below previously added resources if not already present.
+     * Adds a resource in this tree below previously added resources.
+     * This method does nothing if the given resource is already present in this tree.
      *
      * <h4>Modified tree view properties</h4>
      * This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
@@ -205,29 +212,30 @@ public class ResourceTree extends TreeView<Resource> {
         if (resource == null) {
             return false;
         }
+        Root addTo = null;
         final TreeItem<Resource> item = getRoot();
         if (item != null) {
             final Resource root = item.getValue();
-            if (root != null) {
-                if (root == resource) {
-                    return false;
-                }
-                final Root addTo;
-                if (root instanceof Root) {
-                    addTo = (Root) root;
-                } else {
-                    final TreeItem<Resource> group = new TreeItem<>();
-                    setShowRoot(false);
-                    setRoot(group);                     // Also detach `item` from the TreeView root.
-                    addTo = new Root(group, item);      // Pseudo-resource for a group of data stores.
-                    group.setValue(addTo);
-                }
-                return addTo.add(resource);
+            if (root == resource) {
+                return false;
+            }
+            if (root instanceof Root) {
+                addTo = (Root) root;
             }
         }
-        setRoot(new Item(resource));
-        setShowRoot(true);
-        return true;
+        /*
+         * We create the `Root` pseudo-resource even if there is only one resource.
+         * A previous version created `Root` only if there was two or more ressources,
+         * but it was causing confusing events when the second resource was added.
+         */
+        if (addTo == null) {
+            final TreeItem<Resource> group = new TreeItem<>();
+            setShowRoot(false);
+            setRoot(group);                                 // Also detach `item` from the TreeView root.
+            addTo = new Root(group, item);                  // Pseudo-resource for a group of data stores.
+            group.setValue(addTo);
+        }
+        return addTo.add(resource);
     }
 
     /**
@@ -252,16 +260,16 @@ public class ResourceTree extends TreeView<Resource> {
             if (source instanceof Resource) {
                 addResource((Resource) source);
             } else {
-                final ResourceLoader loader = new ResourceLoader(source);
-                final DataStore existing = loader.fromCache();
+                final DataStoreOpener opener = new DataStoreOpener(source);
+                final DataStore existing = opener.fromCache();
                 if (existing != null) {
                     addResource(existing);
                 } else {
-                    loader.setOnSucceeded((event) -> {
+                    opener.setOnSucceeded((event) -> {
                         addLoadedResource((DataStore) event.getSource().getValue(), source);
                     });
-                    loader.setOnFailed((event) -> ExceptionReporter.show(this, event));
-                    BackgroundThreads.execute(loader);
+                    opener.setOnFailed((event) -> ExceptionReporter.show(this, event));
+                    BackgroundThreads.execute(opener);
                 }
             }
         }
@@ -273,7 +281,7 @@ public class ResourceTree extends TreeView<Resource> {
      * This method is invoked from JavaFX thread.
      */
     private void addLoadedResource(final DataStore store, final Object source) {
-        addResource(store);
+        final boolean added = addResource(store);
         final EventHandler<ResourceEvent> handler = onResourceLoaded.getValue();
         if (handler != null) {
             final Path path;
@@ -289,7 +297,9 @@ public class ResourceTree extends TreeView<Resource> {
                  * A `NullPointerException` or `ClassCastException` here would be a bug in our
                  * wrapping of resources.
                  */
-                ((Item) findOrRemove(store, false)).path = path;
+                if (added) {
+                    ((Item) findOrRemove(store, false)).path = path;
+                }
                 handler.handle(new LoadEvent(this, path));
             }
         }
@@ -368,7 +378,7 @@ public class ResourceTree extends TreeView<Resource> {
         final TreeItem<Resource> item = findOrRemove(resource, true);
         if (item != null && resource instanceof DataStore) {
             final DataStore store = (DataStore) resource;
-            ResourceLoader.removeAndClose(store, this);
+            DataStoreOpener.removeAndClose(store, this);
             final EventHandler<ResourceEvent> handler = onResourceClosed.get();
             if (handler != null) {
                 Path path = null;
@@ -395,7 +405,7 @@ public class ResourceTree extends TreeView<Resource> {
      *
      * @param  resource  the resource to search of remove, or {@code null}.
      * @param  remove    {@code true} for removing the resource, or {@code false} for checking only.
-     * @return the item wrapping the resource, or {@code null} if the resource has been found in the roots.
+     * @return the item wrapping the resource, or {@code null} if the resource has not been found in the roots.
      */
     private TreeItem<Resource> findOrRemove(final Resource resource, final boolean remove) {
         assert Platform.isFxApplicationThread();
@@ -440,15 +450,21 @@ public class ResourceTree extends TreeView<Resource> {
      * or the title found in {@linkplain Resource#getMetadata() metadata} otherwise.
      * If no label can be found, then this method returns the localized "Unnamed" string.
      *
+     * <p>Identifiers can be very short, for example "1" or "2" meaning first or second image in a TIFF file.
+     * If {@code qualified} is {@code true}, then this method tries to return a label such as "filename:id".
+     * Generally {@code qualified} should be {@code false} if the label will be a node in a tree having the
+     * filename as parent, and {@code true} if the label will be used outside the context of a tree.</p>
+     *
      * <p>This operation may be costly. For example the call to {@link Resource#getMetadata()}
      * may cause the resource to open a connection to the EPSG database.
      * Consequently his method should be invoked in a background thread.</p>
      *
      * @param  resource   the resource for which to get a label, or {@code null}.
      * @param  locale     the locale to use for localizing international strings.
+     * @param  qualified  whether to use fully-qualified path of generic names.
      * @return the resource display name or the citation title, never null.
      */
-    static String findLabel(final Resource resource, final Locale locale) throws DataStoreException {
+    static String findLabel(final Resource resource, final Locale locale, final boolean qualified) throws DataStoreException {
         if (resource != null) {
             final Long logID = LogHandler.loadingStart(resource);
             try {
@@ -462,9 +478,12 @@ public class ResourceTree extends TreeView<Resource> {
                     if (name != null) return name;
                 }
                 /*
-                 * Search for a title in metadata first because it has better chances
-                 * to be human-readable compared to the resource identifier.
+                 * Search for a title in metadata first because it has better chances to be human-readable
+                 * compared to the resource identifier. If the title is the same text as the identifier,
+                 * then we will execute the code path for identifier unless the caller did not asked for
+                 * qualified name, in which case it would make no difference.
                  */
+                GenericName name = qualified ? resource.getIdentifier().orElse(null) : null;
                 Collection<? extends Identification> identifications = null;
                 final Metadata metadata = resource.getMetadata();
                 if (metadata != null) {
@@ -474,19 +493,26 @@ public class ResourceTree extends TreeView<Resource> {
                             final Citation citation = identification.getCitation();
                             if (citation != null) {
                                 final String t = string(citation.getTitle(), locale);
-                                if (t != null) return t;
+                                if (t != null && (name == null || !t.equals(name.toString()))) {
+                                    return t;
+                                }
                             }
                         }
                     }
                 }
                 /*
                  * If we find no title in the metadata, use the resource identifier.
-                 * We search for explicitly declared identifier first before to fallback
-                 * on metadata, because the later is more subject to interpretation.
+                 * We search for explicitly declared identifier first before to fallback on
+                 * metadata identifier, because the later is more subject to interpretation.
                  */
-                final Optional<GenericName> id = resource.getIdentifier();
-                if (id.isPresent()) {
-                    final String t = string(id.get().toInternationalString(), locale);
+                if (!qualified) {
+                    name = resource.getIdentifier().orElse(null);
+                }
+                if (name != null) {
+                    if (qualified) {
+                        name = name.toFullyQualifiedName();
+                    }
+                    final String t = string(name.toInternationalString(), locale);
                     if (t != null) return t;
                 }
                 if (identifications != null) {
@@ -575,7 +601,7 @@ public class ResourceTree extends TreeView<Resource> {
      * The visual appearance of an {@link Item} in a tree. Cells are initially empty;
      * their content will be specified by {@link TreeView} after construction.
      * This class gets the cell text from a resource by a call to
-     * {@link ResourceTree#findLabel(Resource, Locale)} in a background thread.
+     * {@link ResourceTree#findLabel(Resource, Locale, boolean)} in a background thread.
      * The same call may be recycled many times for different {@link Item} data.
      *
      * @see Item
@@ -711,7 +737,7 @@ public class ResourceTree extends TreeView<Resource> {
 
         /**
          * The text of this node, computed and cached when first needed.
-         * Computation is done by invoking {@link #findLabel(Resource, Locale)} in a background thread.
+         * Computation is done by invoking {@link #findLabel(Resource, Locale, boolean)} in a background thread.
          *
          * @see #fetchLabel(Resource, Locale)
          */
@@ -800,7 +826,7 @@ public class ResourceTree extends TreeView<Resource> {
             /** Invoked in a background thread for fetching the label. */
             final void fetch(final Locale locale) {
                 try {
-                    result = findLabel(resource, locale);
+                    result = findLabel(resource, locale, false);
                 } catch (Throwable e) {
                     failure = e;
                 }
@@ -901,7 +927,7 @@ public class ResourceTree extends TreeView<Resource> {
 
 
     /**
-     * The root pseudo-resource when there is more than one resources to display.
+     * The root pseudo-resource for allowing the tree to contain more than one resource.
      * This root node should be hidden in the {@link ResourceTree}.
      */
     private static final class Root implements Aggregate {
@@ -914,12 +940,14 @@ public class ResourceTree extends TreeView<Resource> {
          * Creates a new aggregate which is going to be wrapped in the given node.
          * Caller shall invoke {@code group.setValue(root)} after this constructor.
          *
-         * @param  group  the new tree root which will contain "real" resources.
+         * @param  group     the new tree root which will contain "real" resources.
          * @param  previous  the previous root, to be added in the new group.
          */
         Root(final TreeItem<Resource> group, final TreeItem<Resource> previous) {
             components = group.getChildren();
-            components.add(previous);
+            if (previous != null) {
+                components.add(previous);
+            }
         }
 
         /**

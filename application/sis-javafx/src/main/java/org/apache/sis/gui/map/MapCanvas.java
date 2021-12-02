@@ -783,7 +783,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition)
      */
     protected void setObjectiveBounds(final Envelope visibleArea) {
-        ArgumentChecks.ensureDimensionMatches("bounds", BIDIMENSIONAL, visibleArea);
+        ArgumentChecks.ensureDimensionMatches("visibleArea", BIDIMENSIONAL, visibleArea);
         objectiveBounds = ImmutableEnvelope.castOrCopy(visibleArea);
         invalidObjectiveToDisplay = true;
     }
@@ -1262,6 +1262,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Sets the error property to the given value. This method is provided for subclasses that perform
      * processing outside the {@link Renderer}. It does not need to be invoked if the error occurred
      * during the rendering process.
+     *
+     * <p>If the error property already has a value, then the new error will be to the current error
+     * as a {@linkplain Throwable#addSuppressed(Throwable) suppressed exception}. The error property
+     * is cleared when a rendering operation completed successfully.</p>
      *
      * @param  ex  the exception that occurred (can not be null).
      */

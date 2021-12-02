@@ -63,7 +63,7 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
     protected abstract ColorRamp.Type applyColors(S row, ColorRamp colors);
 
     /**
-     * Gets the ARGB codes of colors to shown in the cell for the given row data.
+     * Gets the ARGB codes of colors to show in the cell for the given row data.
      * This method is sufficient when the color(s) can be changed only by calls to
      * {@link #applyColors(S, ColorRamp)}. If the color(s) may change externally,
      * then {@link #getObservableValue(S)} should be overridden too.
@@ -108,7 +108,7 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      * This method also modifies the table configuration.
      *
      * @param  table   the table where to add a colors column.
-     * @param  header  column title to shown in header row. This is typically "Color" or "Colors".
+     * @param  header  column title to show in header row. This is typically "Color" or "Colors".
      *                 The use of singular or plural depends on whether the column allows color gradients.
      */
     protected final void addColumnTo(final TableView<S> table, final String header) {

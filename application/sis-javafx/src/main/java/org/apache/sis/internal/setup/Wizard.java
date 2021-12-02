@@ -97,7 +97,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     private static final int WIDTH = 700;
 
     /**
-     * Label of button to shown in the wizard, also used as action identifier.
+     * Label of button to show in the wizard, also used as action identifier.
      */
     private static final String BACK = "Back", NEXT = "Next", CANCEL = "Cancel",
             JAVAFX_HOME = "Open JavaFX home page", BROWSE = "Browse", SELECT = "Select";

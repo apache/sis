@@ -95,4 +95,20 @@ public final class AntlrCQL {
             throw new IllegalStateException("Recognition exception is never thrown, only declared.");
         }
     }
+
+    public static Object compileQuery(String cql) {
+        try {
+            // Lexer splits input into tokens.
+            final CodePointCharStream input = CharStreams.fromString(cql);
+            final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
+
+            // Parser generates abstract syntax tree.
+            final CQLParser parser = new CQLParser(tokens);
+            final CQLParser.QueryContext ctx = parser.query();
+            return ctx;
+
+        } catch (RecognitionException e) {
+            throw new IllegalStateException("Recognition exception is never thrown, only declared.");
+        }
+    }
 }

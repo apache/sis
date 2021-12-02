@@ -906,7 +906,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {
                 try {
                     final DefaultGeographicBoundingBox db = ReferencingServices.getInstance().setBounds(envelope, null, null);
-                    db.transitionTo(DefaultGeographicBoundingBox.State.EDITABLE);
+                    db.transitionTo(DefaultGeographicBoundingBox.State.FINAL);
                     bbox = db;
                 } catch (TransformException e) {
                     bbox = NilReason.INAPPLICABLE.createNilObject(GeographicBoundingBox.class);
@@ -1365,6 +1365,7 @@ public class GridGeometry implements LenientComparable, Serializable {
          * effort for using `WraparoundTransform` only if needed (contrarily to `gridToCRS(…)`).
          */
         final CoordinateOperationFinder finder = new CoordinateOperationFinder(target, this);
+        finder.verifyPresenceOfCRS(false);
         finder.setAnchor(anchor);
         final MathTransform tr;
         try {

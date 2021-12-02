@@ -25,13 +25,14 @@ import org.junit.runners.Suite;
  * All tests from the {@code sis-portrayal} module, in rough dependency order.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.portrayal.MapLayersTest.class,
     org.apache.sis.internal.map.SEPortrayerTest.class,
+    org.apache.sis.internal.map.coverage.MultiResolutionCoverageLoaderTest.class
 })
 public final strictfp class PortrayalTestSuite extends TestSuite {
     /**

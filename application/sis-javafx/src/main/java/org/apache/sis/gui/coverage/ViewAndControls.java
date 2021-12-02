@@ -16,11 +16,13 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.lang.ref.Reference;
 import javafx.geometry.Insets;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -31,15 +33,18 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
- * A {@link GridView} or {@link CoverageCanvas} together with the controls
- * to show in a {@link CoverageExplorer}.
+ * A {@link GridView} or {@link CoverageCanvas} together with the controls to show in a {@link CoverageExplorer}.
+ * When the image or coverage is updated in a view, the {@link #coverageChanged(Resource, GridCoverage)} method
+ * is invoked, which will in turn update the {@link CoverageExplorer} properties. Coverage changes are applied
+ * on the view then propagated to {@code CoverageExplorer} rather than the opposite direction because loading
+ * mechanisms are implemented in the view (different views may load a different amount of data).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
-abstract class Controls {
+abstract class ViewAndControls {
     /**
      * Margin to keep around captions on top of tables or lists.
      */
@@ -58,14 +63,39 @@ abstract class Controls {
 
     /**
      * The toolbar button for selecting this view.
-     * This is initialized after construction.
+     * This is initialized after construction and only if a button bar exists.
      */
-    ButtonBase selector;
+    Toggle selector;
 
     /**
-     * Creates a new control.
+     * The controls put together in an accordion. Built only if requested
+     * (may never be requested if the caller creates its own accordion with additional panes,
+     * as {@link org.apache.sis.gui.dataset.ResourceExplorer} does).
+     *
+     * @see #controls()
      */
-    Controls() {
+    private Accordion controls;
+
+    /**
+     * The widget which contain this view. This is the widget to inform when the coverage changed.
+     * Subclasses should define the following method:
+     *
+     * {@preformat java
+     *     private void coverageChanged(final Resource source, final GridCoverage data) {
+     *         // Update subclass-specific controls here, before to forward to explorer.
+     *         owner.coverageChanged(source, data);
+     *     }
+     * }
+     */
+    protected final CoverageExplorer owner;
+
+    /**
+     * Creates a new view-control pair.
+     *
+     * @param  owner  the widget which create this view. Can not be null.
+     */
+    ViewAndControls(final CoverageExplorer owner) {
+        this.owner = owner;
     }
 
     /**
@@ -107,30 +137,45 @@ abstract class Controls {
     /**
      * Returns the font to assign to the label of a group of control.
      */
-    static Font fontOfGroup() {
+    private static Font fontOfGroup() {
         return Font.font(null, FontWeight.BOLD, -1);
     }
 
     /**
      * Returns the main component, which is showing coverage data or image.
-     * This is the component to shown on the right (largest) part of the split pane.
+     * This is the component to show on the right (largest) part of the split pane.
      */
     abstract Region view();
 
     /**
-     * Returns the controls for controlling the view.
-     * This is the component to shown on the left (smaller) part of the split pane.
+     * Returns the list of control panels for controlling the view.
+     * They are the components to show on the left (smaller) part of the split pane.
+     * Callers will typically put those components in an {@link javafx.scene.control.Accordion}.
+     *
+     * @return the controls. This method does not clone the returned array; do not modify!
      */
-    abstract Control controls();
+    abstract TitledPane[] controlPanes();
 
     /**
-     * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
-     * Implementation should update the GUI with new information available, in particular
-     * the coordinate reference system and the list of sample dimensions.
-     *
-     * @param  data        the new coverage, or {@code null} if none.
-     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
-     *                     This is used for determining a target window for logging records.
+     * Returns the controls for controlling the view.
+     * This is the component to show on the left (smaller) part of the split pane.
      */
-    abstract void coverageChanged(GridCoverage data, Reference<Resource> originator);
+    final Accordion controls() {
+        if (controls == null) {
+            final TitledPane[] panes = controlPanes();
+            controls = new Accordion(panes);
+            controls.setExpandedPane(panes[0]);
+            SplitPane.setResizableWithParent(controls, Boolean.FALSE);
+        }
+        return controls;
+    }
+
+    /**
+     * Sets the view content to the given resource, coverage or image.
+     * This method is invoked when a new source of data (either a resource or a coverage) is specified,
+     * or when a previously hidden view is made visible. Implementations may start a background thread.
+     *
+     * @param  request  the resource, coverage or image to set, or {@code null} for clearing the view.
+     */
+    abstract void load(ImageRequest request);
 }

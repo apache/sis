@@ -19,16 +19,18 @@ package org.apache.sis.gui.coverage;
 import java.util.Optional;
 import java.util.concurrent.FutureTask;
 import java.awt.image.RenderedImage;
+import javafx.scene.Node;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.LogHandler;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -37,28 +39,29 @@ import org.apache.sis.storage.DataStoreException;
  * {@linkplain GridCoverage#render(GridExtent) rendering} and image in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.2
+ *
+ * @see GridView#setImage(ImageRequest)
+ * @see CoverageExplorer#setCoverage(ImageRequest)
+ *
+ * @since 1.1
  * @module
  */
 public class ImageRequest {
     /**
-     * The {@value} value, for identifying code that assume two-dimensional objects.
-     */
-    private static final int BIDIMENSIONAL = 2;
-
-    /**
      * The source from where to read the image, specified at construction time.
-     * Can not be {@code null}.
+     * May be {@code null} if {@link #coverage} instance was specified at construction time.
      */
     final GridCoverageResource resource;
 
     /**
      * The source for rendering the image, specified at construction time.
-     * After construction, only one of {@link #resource} and {@link #coverage} is non-null.
-     * But after task execution, this field will be set to the coverage which has been read.
+     * After construction, only one of {@link #resource} and {@code coverage} fields is non-null.
+     * But after {@link Loader} task execution, this field will be set to the coverage which has been read.
+     *
+     * @see #getCoverage()
      */
-    private GridCoverage coverage;
+    private volatile GridCoverage coverage;
 
     /**
      * Desired grid extent and resolution, or {@code null} for reading the whole domain.
@@ -72,7 +75,7 @@ public class ImageRequest {
      * 0-based indices of sample dimensions to read, or {@code null} for reading them all.
      * This is used only if the data source is a {@link GridCoverageResource}.
      *
-     * @see #getDomain()
+     * @see #getRange()
      */
     private final int[] range;
 
@@ -87,19 +90,20 @@ public class ImageRequest {
     private GridExtent sliceExtent;
 
     /**
-     * The relative position of slice in dimensions other than the 2 visible dimensions,
-     * as a ratio between 0 and 1. This may become configurable in a future version.
+     * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.
+     * If both arguments are non-null, then {@code data} must be the result of reading the given resource.
+     * In the later case we will not actually read data (because they are already read) and this instance
+     * is used only for transferring data e.g. from {@link CoverageExplorer} to {@link CoverageCanvas}.
      *
-     * @see GridDerivation#sliceByRatio(double, int[])
+     * <p>This constructor is not in public API because users should supply only a resource or a coverage,
+     * not both.</p>
      */
-    private static final double SLICE_RATIO = 0;
-
-    /**
-     * The coverage explorer to inform after loading completed, or {@code null} if none.
-     * We do not provide a more generic listeners API for now, but we could do that
-     * in the future if there is a need.
-     */
-    CoverageExplorer listener;
+    ImageRequest(final GridCoverageResource source, final GridCoverage data) {
+        resource = source;
+        coverage = data;
+        domain   = null;
+        range    = null;
+    }
 
     /**
      * Creates a new request for loading an image from the specified resource.
@@ -232,81 +236,50 @@ public class ImageRequest {
      * argument. This method is provided for the rare cases where it may be useful to specify both the {@code domain}
      * and the {@code sliceExtent}.</div>
      *
-     * @param  sliceExtent  subspace of the grid coverage extent to render.
+     * @param  sliceExtent  subspace of the grid coverage extent to render, or {@code null} for the whole extent.
      */
     public final void setSliceExtent(final GridExtent sliceExtent) {
         this.sliceExtent = sliceExtent;
     }
 
     /**
-     * Computes a two dimension slice of the given grid geometry.
-     * This method selects the two first dimensions having a size greater than 1 cell.
-     *
-     * @param  domain  the grid geometry in which to choose a two-dimensional slice.
-     * @return a builder configured for returning the desired two-dimensional slice.
-     */
-    private static GridDerivation slice(final GridGeometry domain) {
-        final GridExtent extent = domain.getExtent();
-        final int dimension = extent.getDimension();
-        final int[] sliceDimensions = new int[BIDIMENSIONAL];
-        int k = 0;
-        for (int i=0; i<dimension; i++) {
-            if (extent.getLow(i) != extent.getHigh(i)) {
-                sliceDimensions[k] = i;
-                if (++k >= BIDIMENSIONAL) break;
-            }
-        }
-        return domain.derive().sliceByRatio(ImageRequest.SLICE_RATIO, sliceDimensions);
-    }
-
-    /**
-     * Loads the image. Current implementation reads the full image. If the coverage has more than
-     * {@value #BIDIMENSIONAL} dimensions, only two of them are taken for the image; for all other
-     * dimensions, only the values at lowest index will be read.
+     * Loads the image. If the coverage has more than {@value #BIDIMENSIONAL} dimensions,
+     * only two of them are taken for the image; for all other dimensions, only the values
+     * at lowest index will be read.
      *
      * <p>If the {@link #coverage} field was null, it will be initialized as a side-effect.
      * No other fields will be modified.</p>
      *
-     * <p>This class does not need to be thread-safe since it should be used only once in a well-defined
-     * life cycle. We nevertheless synchronize as a safety (user could give the same {@code ImageRequest}
-     * to two different {@link CoverageExplorer} instances).</p>
+     * <h4>Thread safety</h4>
+     * This class does not need to be thread-safe because it should be used only once in a well-defined life cycle.
+     * We nevertheless synchronize as a safety (e.g. user could give the same {@code ImageRequest} to two different
+     * {@link CoverageExplorer} instances). In such case the {@link GridCoverage} will be loaded only once,
+     * but no caching is done for the {@link RenderedImage} (because usually not needed).
      *
-     * @param  task       the task invoking this method (for checking for cancellation).
-     * @param  converted  {@code true} for a coverage containing converted values,
-     *                    or {@code false} for a coverage containing packed values.
-     * @return the image loaded from the source given at construction time,
-     *         or {@code null} if the task has been cancelled.
+     * @param  task  the task invoking this method (for checking for cancellation).
+     * @return the image loaded from the source given at construction time, or {@code null}
+     *         if the task has been cancelled.
      * @throws DataStoreException if an error occurred while loading the grid coverage.
      */
-    final synchronized RenderedImage load(final FutureTask<?> task, final boolean converted) throws DataStoreException {
+    final synchronized RenderedImage load(final FutureTask<?> task) throws DataStoreException {
+        GridCoverage cv = coverage;
         final Long id = LogHandler.loadingStart(resource);
         try {
-            if (coverage == null) {
-                GridGeometry domain = this.domain;
-                if (domain == null) {
-                    domain = resource.getGridGeometry();
-                }
-                if (domain != null && domain.getDimension() > BIDIMENSIONAL) {
-                    domain = slice(domain).build();
-                }
-                /*
-                 * TODO: We restrict loading to a two-dimensional slice for now.
-                 * Future version will need to give user control over slices.
-                 */
-                coverage = resource.read(domain, range);                    // May be long to execute.
-                coverage = coverage.forConvertedValues(converted);
+            if (cv == null) {
+                cv = MultiResolutionImageLoader.getInstance(resource, null).getOrLoad(domain, range);
             }
+            coverage = cv = cv.forConvertedValues(true);
             if (task.isCancelled()) {
                 return null;
             }
-            GridExtent se = sliceExtent;
-            if (se == null) {
-                final GridGeometry cd = coverage.getGridGeometry();
-                if (cd != null && cd.getDimension() > BIDIMENSIONAL) {      // Should never be null but we are paranoiac.
-                    se = slice(cd).getIntersection();
+            GridExtent ex = sliceExtent;
+            if (ex == null) {
+                final GridGeometry gg = cv.getGridGeometry();
+                if (gg.getDimension() > MultiResolutionImageLoader.BIDIMENSIONAL) {
+                    ex = MultiResolutionImageLoader.slice(gg.derive(), gg.getExtent()).getIntersection();
                 }
             }
-            return coverage.render(se);
+            return cv.render(ex);
         } finally {
             LogHandler.loadingStop(id);
         }
@@ -315,13 +288,13 @@ public class ImageRequest {
     /**
      * Configures the given status bar with the geometry of the grid coverage we have just read.
      * This method is invoked in JavaFX thread after {@link GridView#setImage(ImageRequest)}
-     * successfully loaded in background thread a new image.
+     * loaded in background thread a new image, successfully or not.
      */
     final void configure(final StatusBar bar) {
         final Long id = LogHandler.loadingStart(resource);
         try {
             final GridCoverage cv = coverage;
-            final GridExtent request = sliceExtent;
+            final GridExtent ex = sliceExtent;
             bar.applyCanvasGeometry(cv != null ? cv.getGridGeometry() : null);
             /*
              * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
@@ -330,16 +303,31 @@ public class ImageRequest {
              * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`, so it will
              * not be overwritten by gesture events (zoom, pan, etc).
              */
-            if (request != null) {
-                final double[] origin = new double[request.getDimension()];
+            if (ex != null) {
+                final double[] origin = new double[ex.getDimension()];
                 for (int i=0; i<origin.length; i++) {
-                    origin[i] = request.getLow(i);
+                    origin[i] = ex.getLow(i);
                 }
                 bar.localToObjectiveCRS.set(MathTransforms.concatenate(
                         MathTransforms.translation(origin), bar.localToObjectiveCRS.get()));
             }
         } finally {
             LogHandler.loadingStop(id);
+        }
+    }
+
+    /**
+     * Reports an exception in a dialog box. This is a convenience method for
+     * {@link javafx.concurrent.Task#succeeded()} implementations.
+     *
+     * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
+     * @param  exception  the error that occurred.
+     */
+    final void reportError(final Node owner, final Throwable exception) {
+        if (resource instanceof StoreListeners) {
+            ExceptionReporter.canNotReadFile(owner, ((StoreListeners) resource).getSourceName(), exception);
+        } else {
+            ExceptionReporter.canNotUseResource(owner, exception);
         }
     }
 }

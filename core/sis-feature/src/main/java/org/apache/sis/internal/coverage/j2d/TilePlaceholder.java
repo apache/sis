@@ -323,36 +323,47 @@ public class TilePlaceholder {
             final int ymin   = tile.getMinY();
             final int xmax   = width  + xmin - 1;
             final int ymax   = height + ymin - 1;
-            int x = xmin;
-            while (x < xmax) {
-                tile.setPixel(x++, ymin, samples);
-                tile.setPixel(x++, ymax, samples);
+            if (height >= 4) {
+                for (int x = xmin; x <= xmax; x++) {
+                    tile.setPixel(x, ymax-1, samples);
+                    tile.setPixel(x, ymin,   samples); if (++x > xmax) break;
+                    tile.setPixel(x, ymin+1, samples);
+                    tile.setPixel(x, ymax,   samples);
+                }
             }
-            int y = ymin;
-            while (y < ymax) {
-                tile.setPixel(xmin, y++, samples);
-                tile.setPixel(xmax, y++, samples);
+            if (width >= 4) {
+                for (int y = ymin; y <= ymax; y++) {
+                    tile.setPixel(xmax-1, y, samples);
+                    tile.setPixel(xmin,   y, samples); if (++y > ymax) break;
+                    tile.setPixel(xmin+1, y, samples);
+                    tile.setPixel(xmax,   y, samples);
+                }
             }
-            if (x == xmax) tile.setPixel(xmax, ymin, samples);
-            if (y == ymax) tile.setPixel(xmin, ymax, samples);
             /*
              * Add a cross (X) inside the tile.
              */
+            final int t = 1;        // Thickness to add on each side of the line.
             if (width >= height) {
                 final double step = height / (double) width;
-                for (int i=0; i<width; i++) {
-                    x = xmin + i;
-                    y = (int) (i*step);
-                    tile.setPixel(x, ymin + y, samples);
-                    tile.setPixel(x, ymax - y, samples);
+                final int m = ymax + ymin;
+                for (int x = xmin; x <= xmax; x++) {
+                    final int y = ymin + (int) ((x-xmin)*step);
+                    final int s = Math.min(x+t, xmax);
+                    for  (int i = Math.max(x-t, xmin); i <= s; i++) {
+                        tile.setPixel(i,   y, samples);
+                        tile.setPixel(i, m-y, samples);
+                    }
                 }
             } else {
                 final double step = width / (double) height;
-                for (int i=0; i<height; i++) {
-                    y = ymin + i;
-                    x = (int) (i*step);
-                    tile.setPixel(xmin + x, y, samples);
-                    tile.setPixel(xmax - x, y, samples);
+                final int m = xmax + xmin;
+                for (int y = ymin; y <= ymax; y++) {
+                    final int x = xmin + (int) ((y-ymin)*step);
+                    final int s = Math.min(y+t, ymax);
+                    for  (int i = Math.max(y-t, ymin); i <= s; i++) {
+                        tile.setPixel(  x, i, samples);
+                        tile.setPixel(m-x, i, samples);
+                    }
                 }
             }
         }

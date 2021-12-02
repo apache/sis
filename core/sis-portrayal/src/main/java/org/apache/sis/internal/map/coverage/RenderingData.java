@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.coverage;
+package org.apache.sis.internal.map.coverage;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.HashMap;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
@@ -31,32 +30,36 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.PixelTranslation;
+import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.PixelTranslation;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
-import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -64,11 +67,12 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
 
 
 /**
- * The {@code RenderedImage} to draw in a {@link CoverageCanvas} together with transform
- * from pixel coordinates to display coordinates.
+ * The {@code RenderedImage} to draw in a {@link PlanarCanvas} together with transforms from pixel coordinates
+ * to display coordinates. This is a helper class for implementations of stateful renderer.
  *
  * <h2>Note on Java2D optimizations</h2>
  * {@link Graphics2D#drawRenderedImage(RenderedImage, AffineTransform)} implementation
@@ -78,7 +82,7 @@ import org.apache.sis.util.logging.Logging;
  *   <li>If the image is an instance of {@link BufferedImage},
  *       then the {@link AffineTransform} can be anything. Java2D applies interpolations efficiently.</li>
  *   <li>Otherwise if the {@link AffineTransform} scale factors are 1 and the translations are integers,
- *       then Java2D invokes {@link RenderedImage#getTile(int, int)}. It make possible for us to create
+ *       then Java2D invokes {@link RenderedImage#getTile(int, int)}. It makes possible for us to create
  *       a very large image covering the whole data but with tiles computed only when first requested.</li>
  *   <li>Otherwise Java2D invokes {@link RenderedImage#getData(Rectangle)}, which is more costly.
  *       We try to avoid that situation.</li>
@@ -88,15 +92,22 @@ import org.apache.sis.util.logging.Logging;
  * and rely on tiling for reducing actual computations to required tiles. Since pan gestures are expressed
  * in pixel coordinates, the translation terms in {@code resampledToDisplay} transform should stay integers.
  *
- * @todo This class does not perform a special case for {@link BufferedImage}. We wait to see if this class
- *       works well in the general case before doing special cases.
+ * <p>Current version of this class does not perform a special case for {@link BufferedImage}.
+ * It may not be desirable because interpolations would not be applied in the same way, except
+ * when SIS {@link ImageProcessor} would have interpolated RGB color values anyway like Java2D.
+ * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
  * @module
  */
-final class RenderingData implements Cloneable {
+public class RenderingData implements Cloneable {
+    /**
+     * The {@value} value, for identifying code that assume two-dimensional objects.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
     /**
      * Whether to allow the creation of {@link java.awt.image.IndexColorModel}. This flag may be temporarily set
      * to {@code false} for testing or debugging. If {@code false}, images may be only grayscale and may be much
@@ -106,20 +117,36 @@ final class RenderingData implements Cloneable {
     private static final boolean CREATE_INDEX_COLOR_MODEL = true;
 
     /**
+     * Loader for reading and caching coverages at various resolutions. Used if no image has been
+     * explicitly assigned to {@link #data}, or if the image may vary depending on the resolution.
+     * The same instance may be shared by many {@link RenderingData} objects.
+     */
+    public MultiResolutionCoverageLoader coverageLoader;
+
+    /**
+     * The pyramid level of {@linkplain #data} loaded by the {@linkplain #coverageLoader}.
+     */
+    private int currentPyramidLevel;
+
+    /**
      * The data fetched from {@link GridCoverage#render(GridExtent)} for current {@code sliceExtent}.
      * This rendered image may be tiled and fetching those tiles may require computations to be performed
      * in background threads. Pixels in this {@code data} image are mapped to pixels in the display
-     * {@link CoverageCanvas#image} by the following chain of operations:
+     * {@link PlanarCanvas} by the following chain of operations:
      *
      * <ol>
      *   <li><code>{@linkplain #dataGeometry}.getGridGeometry(CELL_CENTER)</code></li>
      *   <li><code>{@linkplain #changeOfCRS}.getMathTransform()</code></li>
-     *   <li>{@link CoverageCanvas#getObjectiveToDisplay()}</li>
+     *   <li>{@link PlanarCanvas#getObjectiveToDisplay()}</li>
      * </ol>
+     *
+     * This field is initially {@code null}.
      *
      * @see #dataGeometry
      * @see #dataRanges
-     * @see #setImage(RenderedImage, GridGeometry, List)
+     * @see #isEmpty()
+     * @see #loadIfNeeded(LinearTransform, DirectPosition, GridExtent)
+     * @see #getSourceImage()
      */
     private RenderedImage data;
 
@@ -127,12 +154,12 @@ final class RenderingData implements Cloneable {
      * Conversion from {@link #data} pixel coordinates to the coverage CRS, together with geospatial area.
      * It contains the {@link GridGeometry#getGridToCRS(PixelInCell)} value of {@link GridCoverage} reduced
      * to two dimensions and with a translation added for taking in account the requested {@code sliceExtent}.
-     * The coverage CRS is initially the same as the {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS},
+     * The coverage CRS is initially the same as the {@linkplain PlanarCanvas#getObjectiveCRS() objective CRS},
      * but may become different later if user selects a different objective CRS.
      *
      * @see #data
      * @see #dataRanges
-     * @see #setImage(RenderedImage, GridGeometry, List)
+     * @see #setCoverageSpace(GridGeometry, List)
      */
     private GridGeometry dataGeometry;
 
@@ -140,21 +167,20 @@ final class RenderingData implements Cloneable {
      * Ranges of sample values in each band of {@link #data}. This is used for determining on which sample values
      * to apply colors when user asked to apply a color ramp. May be {@code null}.
      *
-     * @see #data
-     * @see #dataGeometry
-     * @see #setImage(RenderedImage, GridGeometry, List)
+     * @see #setCoverageSpace(GridGeometry, List)
+     * @see #statistics()
      */
     private List<SampleDimension> dataRanges;
 
     /**
-     * Conversion or transformation from {@linkplain #data} CRS to {@linkplain CoverageCanvas#getObjectiveCRS()
+     * Conversion or transformation from {@linkplain #data} CRS to {@linkplain PlanarCanvas#getObjectiveCRS()
      * objective CRS}, or {@code null} if not yet computed. This is an identity operation if the user did not
      * selected a different CRS after the coverage has been shown.
      */
     private CoordinateOperation changeOfCRS;
 
     /**
-     * Conversion from {@link #data} pixel coordinates to {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS}.
+     * Conversion from {@link #data} pixel coordinates to {@linkplain PlanarCanvas#getObjectiveCRS() objective CRS}.
      * This is value of {@link GridGeometry#getGridToCRS(PixelInCell)} invoked on {@link #dataGeometry}, concatenated
      * with {@link #changeOfCRS} and potentially completed by a wraparound operation.
      * May be {@code null} if not yet computed.
@@ -162,7 +188,7 @@ final class RenderingData implements Cloneable {
     private MathTransform cornerToObjective;
 
     /**
-     * Conversion from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to {@link #data} pixel coordinates.
+     * Conversion from {@linkplain PlanarCanvas#getObjectiveCRS() objective CRS} to {@link #data} pixel coordinates.
      * This is the inverse of {@link #changeOfCRS} (potentially with a wraparound operation) concatenated with inverse
      * of {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}.
      * May be {@code null} if not yet computed.
@@ -170,7 +196,7 @@ final class RenderingData implements Cloneable {
     private MathTransform objectiveToCenter;
 
     /**
-     * The inverse of the {@linkplain CoverageCanvas#objectiveToDisplay objective to display} transform which was
+     * The inverse of the {@linkplain PlanarCanvas#objectiveToDisplay objective to display} transform which was
      * active at the time resampled images have been computed. The concatenation of this transform with the actual
      * "objective to display" transform at the time the rendered image is drawn should be a translation.
      * May be {@code null} if not yet computed.
@@ -180,57 +206,41 @@ final class RenderingData implements Cloneable {
     private AffineTransform displayToObjective;
 
     /**
-     * Key of the currently selected alternative in {@link CoverageCanvas#derivedImages} map.
+     * Statistics on pixel values of current {@link #data}, or {@code null} if not yet computed.
+     * This is the cached value of {@link #statistics()}.
      *
-     * @see #recolor()
-     */
-    Stretching selectedDerivative;
-
-    /**
-     * Statistics on pixel values of current {@link #data}, or {@code null} if none or not yet computed.
-     * There is one {@link Statistics} instance per band.
-     *
-     * @see #recolor()
+     * @see #statistics()
      */
     private Statistics[] statistics;
 
     /**
-     * The processor that we use for resampling image and stretching their color ramps.
+     * The processor that we use for resampling image and recoloring the image.
      */
-    final ImageProcessor processor;
+    public final ImageProcessor processor;
 
     /**
      * Creates a new instance initialized to no image.
      *
      * @param  errorHandler  where to report errors during tile computations.
      */
-    RenderingData(final ErrorHandler errorHandler) {
-        selectedDerivative = Stretching.NONE;
+    public RenderingData(final ErrorHandler errorHandler) {
         processor = new ImageProcessor();
         processor.setErrorHandler(errorHandler);
         processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
     }
 
     /**
-     * Returns {@code true} if this object has no data.
+     * Clears this renderer. This method should be invoked when the source of data (resource or coverage) changed.
+     * The {@link #displayToObjective} transform will be recomputed from scratch when first needed.
      */
-    final boolean isEmpty() {
-        return data == null;
-    }
-
-    /**
-     * Verifies if this {@code RenderingData} contains an image for the given objective CRS.
-     * If this is not the case, the cached resampled images will be discarded.
-     *
-     * @param  objectiveCRS  the coordinate reference system to use for rendering.
-     * @return whether the data are valid for the given objective CRS.
-     */
-    final boolean validateCRS(final CoordinateReferenceSystem objectiveCRS) {
-        if (changeOfCRS != null && !Utilities.equalsIgnoreMetadata(objectiveCRS, changeOfCRS.getTargetCRS())) {
-            clearCRS();
-            return false;
-        }
-        return true;
+    public final void clear() {
+        clearCRS();
+        coverageLoader     = null;
+        displayToObjective = null;
+        statistics         = null;
+        data               = null;
+        dataRanges         = null;
+        dataGeometry       = null;
     }
 
     /**
@@ -243,16 +253,38 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Sets the data to given image, which can be {@code null}.
+     * Verifies if this {@code RenderingData} contains an image for the given objective CRS.
+     * If this is not the case, the cached resampled images will need to be discarded.
+     *
+     * @param  objectiveCRS  the coordinate reference system to use for rendering.
+     * @return whether the data are valid for the given objective CRS.
+     */
+    public final boolean validateCRS(final CoordinateReferenceSystem objectiveCRS) {
+        if (changeOfCRS != null && !Utilities.equalsIgnoreMetadata(objectiveCRS, changeOfCRS.getTargetCRS())) {
+            clearCRS();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Sets the input space (domain) and output space (ranges) of the coverage to be rendered.
+     * It should be followed by a call to {@link #ensureImageLoaded(GridCoverage, GridExtent)}.
+     *
+     * @param  domain  the two-dimensional grid geometry, or {@code null} if there is no data.
+     * @param  ranges  descriptions of bands, or {@code null} if there is no data.
+     *
+     * @see #isEmpty()
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    final void setImage(final RenderedImage data, final GridGeometry domain, final List<SampleDimension> ranges) {
-        clearCRS();
-        displayToObjective = null;
-        statistics         = null;
-        this.data          = data;
-        this.dataGeometry  = domain;
-        this.dataRanges    = ranges;        // Not cloned because already an unmodifiable list.
+    public final void setCoverageSpace(final GridGeometry domain, final List<SampleDimension> ranges) {
+        processor.setFillValues(SampleDimensions.backgrounds(ranges));
+        dataRanges   = ranges;      // Not cloned because already an unmodifiable list.
+        dataGeometry = domain;
+        /*
+         * If the grid geometry does not define a "grid to CRS" transform, set it to an identity transform.
+         * We do that because this class needs a complete `GridGeometry` as much as possible.
+         */
         if (domain != null && !domain.isDefined(GridGeometry.GRID_TO_CRS)
                            &&  domain.isDefined(GridGeometry.EXTENT))
         {
@@ -267,6 +299,122 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Loads a new grid coverage if {@linkplain #data} is null or if the pyramid level changed.
+     * It is caller's responsibility to ensure that {@link #coverageLoader} has a non-null value
+     * and is using the right resource before to invoke this method.
+     *
+     * <p>Caller should invoke {@link #ensureImageLoaded(GridCoverage, GridExtent)}
+     * after this method (this is not done automatically).</p>
+     *
+     * @param  objectiveToDisplay  transform used for rendering the coverage on screen.
+     * @param  objectivePOI        point where to compute resolution, in coordinates of objective CRS.
+     * @return the loaded grid coverage, or {@code null} if no loading has been done
+     *         (which means that the coverage is unchanged, not that it does not exist).
+     * @throws TransformException if an error occurred while computing resolution from given transforms.
+     * @throws DataStoreException if an error occurred while loading the coverage.
+     *
+     * @see #setCoverageSpace(GridGeometry, List)
+     */
+    public final GridCoverage ensureCoverageLoaded(final LinearTransform objectiveToDisplay, final DirectPosition objectivePOI)
+            throws TransformException, DataStoreException
+    {
+        final MathTransform dataToObjective = (changeOfCRS != null) ? changeOfCRS.getMathTransform() : null;
+        final int level = coverageLoader.findPyramidLevel(dataToObjective, objectiveToDisplay, objectivePOI);
+        if (data != null && level == currentPyramidLevel) {
+            return null;
+        }
+        data = null;
+        currentPyramidLevel = level;
+        return coverageLoader.getOrLoad(level).forConvertedValues(true);
+    }
+
+    /**
+     * Fetches the rendered image if {@linkplain #data} is null. This method needs to be invoked at least
+     * once after {@link #setCoverageSpace(GridGeometry, List)}. The {@code coverage} given in argument
+     * may be the value returned by {@link #ensureCoverageLoaded(LinearTransform, DirectPosition)}.
+     *
+     * @param  coverage     the coverage from which to read data, or {@code null} if the coverage did not changed.
+     * @param  sliceExtent  a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
+     * @throws FactoryException if the CRS changed but the transform from old to new CRS can not be determined.
+     * @throws TransformException if an error occurred while transforming coordinates from old to new CRS.
+     */
+    public final void ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent)
+            throws FactoryException, TransformException
+    {
+        if (data != null || coverage == null) {
+            return;
+        }
+        coverage = coverage.forConvertedValues(true);
+        final GridGeometry old = dataGeometry;
+        final List<SampleDimension> ranges = coverage.getSampleDimensions();
+        final RenderedImage image = coverage.render(sliceExtent);
+        final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
+        final GridGeometry domain = (value instanceof GridGeometry) ? (GridGeometry) value
+                : new ImageRenderer(coverage, sliceExtent).getImageGeometry(BIDIMENSIONAL);
+        setCoverageSpace(domain, ranges);
+        data = image;
+        /*
+         * Update the transforms in a way that preserve the current zoom level, translation, etc.
+         * We compute the change in the "data grid to objective CRS" transforms caused by the change
+         * in data grid geometry, then we concatenate that change to the existing transforms.
+         * That way, the objective CRS is kept unchanged.
+         */
+        if (old != null && cornerToObjective != null && objectiveToCenter != null) {
+            MathTransform toNew = null, toOld = null;
+            if (old.isDefined(GridGeometry.CRS) && domain.isDefined(GridGeometry.CRS)) {
+                final CoordinateReferenceSystem oldCRS = old.getCoordinateReferenceSystem();
+                final CoordinateReferenceSystem newCRS = dataGeometry.getCoordinateReferenceSystem();
+                if (newCRS != oldCRS) {             // Quick check for the vast majority of cases.
+                    /*
+                     * Transform computed below should always be the identity transform,
+                     * but we check anyway as a safety. A non-identity transform would be
+                     * a pyramid where the CRS changes according the pyramid level.
+                     */
+                    final GeographicBoundingBox areaOfInterest = Extents.union(
+                            dataGeometry.getGeographicExtent().orElse(null),
+                            old.getGeographicExtent().orElse(null));
+                    toNew = CRS.findOperation(oldCRS, newCRS, areaOfInterest).getMathTransform();
+                    toOld = toNew.inverse();
+                }
+            }
+            final MathTransform forward = concatenate(PixelInCell.CELL_CORNER, dataGeometry, old, toOld);
+            final MathTransform inverse = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
+            cornerToObjective = MathTransforms.concatenate(forward, cornerToObjective);
+            objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, inverse);
+        }
+    }
+
+    /**
+     * Computes the transform that represent a change of "data grid to objective" transform
+     *
+     * @param  anchor       the cell part to map (center or corner).
+     * @param  toCRS        the grid geometry for which to use the "grid to CRS" transform.
+     * @param  toGrid       the grid geometry for which to use the "CRS to grid" transform.
+     * @param  changeOfCRS  transform from CRS of {@code toCRS} to CRS of {@code toGrid}.
+     */
+    private static MathTransform concatenate(final PixelInCell anchor, final GridGeometry toCRS,
+            final GridGeometry toGrid, final MathTransform changeOfCRS) throws TransformException
+    {
+        final MathTransform forward = toCRS .getGridToCRS(anchor);
+        final MathTransform inverse = toGrid.getGridToCRS(anchor).inverse();
+        if (changeOfCRS != null) {
+            return MathTransforms.concatenate(forward, changeOfCRS, inverse);
+        } else {
+            return MathTransforms.concatenate(forward, inverse);
+        }
+    }
+
+    /**
+     * Returns the image which will be used as the source for rendering operations.
+     *
+     * @return the image loaded be {@link #ensureImageLoaded(GridCoverage, GridExtent)}.
+     */
+    public final RenderedImage getSourceImage() {
+        return data;
+    }
+
+    /**
      * Returns the position at the center of source data, or {@code null} if none.
      */
     private DirectPosition getSourceMedian() {
@@ -277,28 +425,70 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Stretches the color ramp of source image according the current value of {@link #selectedDerivative}.
-     * This method uses the original image as the source of statistics. It saves computation time
-     * (no need to recompute the statistics when the projection is changed) and provides more stable
-     * visual output when standard deviations are used for configuring the color ramp.
+     * Returns statistics on the source image (computed when first requested, then cached).
+     * There is one {@link Statistics} instance per band. This is an information for dynamic
+     * stretching of image color ramp. Such recoloring operation should use statistics on the
+     * source image instead of statistics on the shown image in order to have stable colors
+     * during pans or zooms.
      *
-     * @return the given image with {@link #selectedDerivative} applied.
+     * <p>The returned map is suitable for use with {@link ImageProcessor#stretchColorRamp(RenderedImage, Map)}.
+     * The map content is:</p>
+     * <ul>
+     *   <li>{@code "statistics"}: the statistics as a {@code Statistics[]} array.</li>
+     *   <li>{@code "sampleDimensions"}: band descriptions as a {@code List<SampleDimension>}.</li>
+     * </ul>
+     *
+     * This operation may be costly since it causes the loading of full image.
+     * If {@link #coverageLoader} is non-null, statistics will be computed on the
+     * image with coarsest resolution.
+     *
+     * @return statistics on sample values for each band, in a modifiable map.
+     * @throws DataStoreException if an error occurred while reading the image at coarsest resolution.
      */
-    final RenderedImage recolor() {
-        RenderedImage image = data;
-        if (selectedDerivative != Stretching.NONE) {
-            final Map<String,Object> modifiers = new HashMap<>(4);
-            if (statistics == null) {
-                statistics = processor.valueOfStatistics(image, null);
+    protected final Map<String,Object> statistics() throws DataStoreException {
+        if (statistics == null) {
+            RenderedImage image = data;
+            if (coverageLoader != null) {
+                final int level = coverageLoader.getLastLevel();
+                if (level != currentPyramidLevel) {
+                    image = coverageLoader.getOrLoad(level).forConvertedValues(true).render(null);
+                }
             }
-            modifiers.put("statistics", statistics);
-            if (selectedDerivative == Stretching.AUTOMATIC) {
-                modifiers.put("multStdDev", 3);
-            }
-            modifiers.put("sampleDimensions", dataRanges);
-            image = processor.stretchColorRamp(image, modifiers);
+            statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(processor, dataRanges));
         }
-        return image;
+        final Map<String,Object> modifiers = new HashMap<>(8);
+        modifiers.put("statistics", statistics);
+        modifiers.put("sampleDimensions", dataRanges);
+        return modifiers;
+    }
+
+    /**
+     * Sets the coordinate reference system of the display. This method does nothing if the CRS was already set.
+     * <em>It does not verify if CRS is the same</em>, it is caller responsibility to clear {@link #changeOfCRS}
+     * before to invoke this method for forcing a change of CRS.
+     *
+     * <p>This method updates the following fields only:</p>
+     * <ul>
+     *   <li>{@link #changeOfCRS}</li>
+     *   <li>{@link #processor} positional accuracy hint</li>
+     * </ul>
+     *
+     * @param  objectiveCRS  value of {@link PlanarCanvas#getObjectiveCRS()}.
+     * @throws TransformException if an error occurred while transforming coordinates from grid to new CRS.
+     */
+    public final void setObjectiveCRS(final CoordinateReferenceSystem objectiveCRS) throws TransformException {
+        if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) try {
+            changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS,
+                                            dataGeometry.getGeographicExtent().orElse(null));
+            final double accuracy = CRS.getLinearAccuracy(changeOfCRS);
+            processor.setPositionalAccuracyHints(
+//                  TODO: uncomment after https://issues.apache.org/jira/browse/SIS-497 is fixed.
+//                  Quantities.create(0.25, Units.PIXEL),
+                    (accuracy > 0) ? Quantities.create(accuracy, Units.METRE) : null);
+        } catch (FactoryException e) {
+            recoverableException(e);
+            // Leave `changeOfCRS` to null.
+        }
     }
 
     /**
@@ -306,39 +496,17 @@ final class RenderingData implements Cloneable {
      * This method will compute the {@link MathTransform} steps from image coordinate system
      * to display coordinate system if those steps have not already been computed.
      *
-     * @param  recoloredImage      the image computed by {@link #recolor()}.
-     * @param  objectiveCRS        value of {@link CoverageCanvas#getObjectiveCRS()}.
-     * @param  objectiveToDisplay  value of {@link CoverageCanvas#getObjectiveToDisplay()}.
-     * @param  objectivePOI        value of {@link CoverageCanvas#getPointOfInterest(boolean)} in objective CRS.
+     * @param  recoloredImage      {@link #data} or a derived (typically recolored) image.
+     * @param  objectiveToDisplay  value of {@link PlanarCanvas#getObjectiveToDisplay()}.
+     * @param  objectivePOI        value of {@link PlanarCanvas#getPointOfInterest(boolean)} in objective CRS.
      * @return image with operation applied and color ramp stretched.
+     * @throws TransformException if an error occurred in the use of "grid to CRS" transforms.
      */
-    final RenderedImage resampleAndConvert(final RenderedImage             recoloredImage,
-                                           final CoordinateReferenceSystem objectiveCRS,
-                                           final LinearTransform           objectiveToDisplay,
-                                           final DirectPosition            objectivePOI)
+    public final RenderedImage resampleAndConvert(final RenderedImage   recoloredImage,
+                                                  final LinearTransform objectiveToDisplay,
+                                                  final DirectPosition  objectivePOI)
             throws TransformException
     {
-        if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) {
-            DefaultGeographicBoundingBox areaOfInterest = null;
-            if (dataGeometry.isDefined(GridGeometry.ENVELOPE)) try {
-                areaOfInterest = new DefaultGeographicBoundingBox();
-                areaOfInterest.setBounds(dataGeometry.getEnvelope());
-            } catch (TransformException e) {
-                recoverableException(e);
-                // Leave `areaOfInterest` to null.
-            }
-            try {
-                changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS, areaOfInterest);
-                final double accuracy = CRS.getLinearAccuracy(changeOfCRS);
-                processor.setPositionalAccuracyHints(
-//                      TODO: uncomment after https://issues.apache.org/jira/browse/SIS-497 is fixed.
-//                      Quantities.create(0.25, Units.PIXEL),
-                        (accuracy > 0) ? Quantities.create(accuracy, Units.METRE) : null);
-            } catch (FactoryException e) {
-                recoverableException(e);
-                // Leave `changeOfCRS` to null.
-            }
-        }
         /*
          * Following transforms are computed when first needed after the new data have been specified,
          * or after the objective CRS changed. If non-null, `objToCenterNoWrap` is the same transform
@@ -413,7 +581,7 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Conversion or transformation from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to
+     * Conversion or transformation from {@linkplain PlanarCanvas#getObjectiveCRS() objective CRS} to
      * {@linkplain #data} CRS. This transform will include {@code WraparoundTransform} steps if needed.
      */
     private static MathTransform applyWraparound(final MathTransform transform, final DirectPosition sourceMedian,
@@ -481,8 +649,8 @@ final class RenderingData implements Cloneable {
      * @param  displayBounds       size and location of the display device (plus margin), in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
      */
-    final RenderedImage prefetch(final RenderedImage resampledImage, final AffineTransform resampledToDisplay,
-                                 final Envelope2D displayBounds)
+    public final RenderedImage prefetch(final RenderedImage resampledImage, final AffineTransform resampledToDisplay,
+                                        final Envelope2D displayBounds)
     {
         final Rectangle areaOfInterest;
         try {
@@ -495,12 +663,15 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Gets the transform to use for painting the stretched image. If the image to draw is an instance of
+     * Gets the transform to use for painting the resampled image. If the image to draw is an instance of
      * {@link BufferedImage}, then it is okay to have any transform. However for other kinds of image,
      * it is important that the transform has scale factors of 1 and integer translations because Java2D
      * has an optimization which avoid to copy the whole data only for that case.
+     *
+     * @param  objectiveToDisplay  the transform from objective CRS to canvas coordinates.
+     * @return transform from resampled image to canvas (display) coordinates.
      */
-    final AffineTransform getTransform(final LinearTransform objectiveToDisplay) {
+    public final AffineTransform getTransform(final LinearTransform objectiveToDisplay) {
         if (displayToObjective == null) {
             return new AffineTransform();
         }
@@ -519,7 +690,7 @@ final class RenderingData implements Cloneable {
      * @param  objectivePOI  point of interest in objective CRS.
      * @return an estimation of the source pixel size at the given location.
      */
-    final float getDataPixelSize(final DirectPosition objectivePOI) {
+    public final float getDataPixelSize(final DirectPosition objectivePOI) {
         if (objectiveToCenter != null) try {
             final Matrix d = objectiveToCenter.derivative(objectivePOI);
             double sum = 0;
@@ -540,13 +711,24 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Returns the conversion from {@link #data} pixel coordinates to
+     * {@linkplain PlanarCanvas#getObjectiveCRS() objective CRS}.
+     *
+     * @param  anchor  whether the conversion should start from pixel corner or pixel center.
+     * @return conversion from data pixel coordinates to objective CRS.
+     */
+    public final MathTransform getDataToObjective(final PixelInCell anchor) {
+        return PixelTranslation.translate(cornerToObjective, PixelInCell.CELL_CORNER, anchor);
+    }
+
+    /**
      * Converts the given bounds from objective coordinates to pixel coordinates in the source coverage.
      *
      * @param  bounds  objective coordinates.
      * @return data coverage cell coordinates (in pixels), or {@code null} if unknown.
      * @throws TransformException if the bounds can not be transformed.
      */
-    final Rectangle objectiveToData(final Rectangle2D bounds) throws TransformException {
+    public final Rectangle objectiveToData(final Rectangle2D bounds) throws TransformException {
         if (objectiveToCenter == null) return null;
         return (Rectangle) Shapes2D.transform(MathTransforms.bidimensional(objectiveToCenter), bounds, new Rectangle());
     }
@@ -554,8 +736,11 @@ final class RenderingData implements Cloneable {
     /**
      * Returns whether {@link #dataGeometry} or {@link #objectiveToCenter} changed since a previous rendering.
      * This is used for information purposes only.
+     *
+     * @param  previous  previous instance of {@code RenderingData}.
+     * @return whether this {@code RenderingData} does a different rendering than previous {@code RenderingData}.
      */
-    final boolean hasChanged(final RenderingData previous) {
+    public final boolean hasChanged(final RenderingData previous) {
         /*
          * Really !=, not Object.equals(Object), because we rely on new instances to be created
          * (even if equal) as a way to detect that cached values have not been reused.
@@ -565,26 +750,10 @@ final class RenderingData implements Cloneable {
 
     /**
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
-     * This method pretends that the warning come from {@link CoverageCanvas} class since it is the public API.
+     * This method pretends that the warning come from {@link PlanarCanvas} class since it is the public API.
      */
     private static void recoverableException(final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
-    }
-
-    /**
-     * Prepares isolines by computing the the Java2D shapes that were not already computed in a previous rendering.
-     * This method shall be invoked in a background thread after image rendering has been completed (because this
-     * method uses some image computation results).
-     *
-     * @param  isolines  value of {@link IsolineRenderer#prepare()}, or {@code null} if none.
-     * @return result of isolines generation, or {@code null} if there is no isoline to compute.
-     * @throws TransformException if an interpolated point can not be transformed using the given transform.
-     */
-    final Future<Isolines[]> generate(final IsolineRenderer.Snapshot[] isolines) throws TransformException {
-        if (isolines == null) return null;
-        final MathTransform centerToObjective = PixelTranslation.translate(
-                cornerToObjective, PixelInCell.CELL_CORNER, PixelInCell.CELL_CENTER);
-        return IsolineRenderer.generate(isolines, data, centerToObjective);
+        Logging.recoverableException(Logging.getLogger(Modules.PORTRAYAL), PlanarCanvas.class, "render", e);
     }
 
     /**
@@ -602,8 +771,6 @@ final class RenderingData implements Cloneable {
     /**
      * Returns a string representation for debugging purposes.
      * The string content may change in any future version.
-     *
-     * @see CoverageCanvas#toString()
      */
     @Override
     public String toString() {

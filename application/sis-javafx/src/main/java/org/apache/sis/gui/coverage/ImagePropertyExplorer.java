@@ -74,7 +74,7 @@ import org.apache.sis.internal.util.PropertyFormat;
  * For displaying a geospatial raster as a GIS application, see {@link CoverageCanvas} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -530,7 +530,7 @@ public class ImagePropertyExplorer extends Widget {
 
     /**
      * Invoked when an image is selected in the tree of image sources. The selected image
-     * is not necessarily {@link #image} property value; it may be one of its sources.
+     * is not necessarily the {@link #image} property value; it may be one of its sources.
      * If no image is explicitly selected, defaults to the root image.
      */
     private void imageSelected(final RenderedImage selected) {
@@ -630,7 +630,9 @@ public class ImagePropertyExplorer extends Widget {
 
         /**
          * Invoked when a new image is shown in this cell node. This method also tests image consistency.
-         * If an inconsistency is found, the line is shown in read with a warning message.
+         * If an inconsistency is found, the line is shown in red (except for "width" and "height") with
+         * a warning message. We do not use a red color for "width" and "height" because the mismatch may
+         * be normal.
          */
         @Override protected void updateItem(final RenderedImage image, final boolean empty) {
             super.updateItem(image, empty);
@@ -642,7 +644,9 @@ public class ImagePropertyExplorer extends Widget {
                     final String check = ((PlanarImage) image).verify();
                     if (check != null) {
                         text = Resources.format(Resources.Keys.InconsistencyIn_2, text, check);
-                        fill = Styles.ERROR_TEXT;
+                        if (!(check.equals("width") || check.equals("height"))) {
+                            fill = Styles.ERROR_TEXT;
+                        }
                     }
                 }
             }
@@ -822,5 +826,15 @@ nextProp:       for (final String property : properties) {
     @Override
     public Region getView() {
         return view;
+    }
+
+    /**
+     * Returns the locale for controls and messages.
+     *
+     * @since 1.2
+     */
+    @Override
+    public final Locale getLocale() {
+        return propertyDetails.getLocale();
     }
 }

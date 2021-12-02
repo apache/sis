@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.lang.ref.Reference;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +36,7 @@ import org.apache.sis.storage.event.WarningEvent;
  * This class maintains both a global (system) list and a list of log records specific to each resource.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -108,17 +107,6 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
         if (resource != null) {
             resource.addListener(WarningEvent.class, INSTANCE);
         }
-    }
-
-    /**
-     * Notifies this {@code LogHandler} that an operation is about to start on the given resource.
-     * Call to this method must be followed by call to {@link #loadingStop(Long)} in a {@code finally} block.
-     *
-     * @param  source  the resource on which an operation is about to start in current thread. May be {@code null}.
-     * @return key to use in call to {@link #loadingStop(Long)} when the operation is finished. May be {@code null}.
-     */
-    public static Long loadingStart(final Reference<Resource> source) {
-        return loadingStart(source != null ? source.get() : null);
     }
 
     /**

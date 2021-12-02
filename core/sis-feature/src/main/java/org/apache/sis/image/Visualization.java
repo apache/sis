@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -38,6 +39,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.CompoundTransform;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
@@ -243,7 +245,8 @@ final class Visualization extends ResampledImage {
                  * If none of above Colorizer configurations worked, use statistics in last resort. We do that
                  * after we reduced the image to a single band, in order to reduce the amount of calculations.
                  */
-                final Statistics statistics = processor.valueOfStatistics(source, null)[VISIBLE_BAND];
+                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(processor, sourceBands);
+                final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
                 colorizer.initialize(statistics.minimum(), statistics.maximum());
             }
             /*

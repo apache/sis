@@ -44,7 +44,9 @@ public strictfp class FeatureAssert extends ReferencingAssert {
     }
 
     /**
-     * Verifies that sample values in the given image are equal to the expected integer values.
+     * Verifies that sample values in the given image are equal to the expected values.
+     * Sample values are compared using floating point {@code double} precision.
+     * NaN values must be strictly equals (same bit pattern).
      *
      * @param  expected       the expected sample values.
      * @param  boundsExpected bounds of the expected region, or {@code null} for the whole image.

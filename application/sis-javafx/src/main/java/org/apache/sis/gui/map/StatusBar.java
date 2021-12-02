@@ -110,7 +110,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -124,6 +124,12 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Some spaces to add around the status bar.
      */
     private static final Insets PADDING = new Insets(5, Styles.SCROLLBAR_WIDTH, 6, 9);
+
+    /**
+     * An arbitrary increase in size of the text field where sample values are shown.
+     * This is in case {@link #computeSizeOfSampleValues(String, Iterable)} underestimates the required size.
+     */
+    private static final int VALUES_PADDING = 9;
 
     /**
      * The container of controls making the status bar.
@@ -626,7 +632,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
             /*
              * Add a tolerance factor of ½ pixel when computing the number of significant
-             * fraction digits to shown in coordinates.
+             * fraction digits to show in coordinates.
              */
             if (geometry.isDefined(GridGeometry.EXTENT)) {
                 final GridExtent extent = geometry.getExtent();
@@ -1242,7 +1248,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (!(width > 0)) {                 // May be 0 if canvas is not yet added to scene graph.
                 return false;
             }
-            sampleValues.setPrefWidth(width);
+            sampleValues.setPrefWidth(width + VALUES_PADDING);
         }
         return true;
     }
@@ -1298,12 +1304,5 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             text = Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotRender);
         }
         setErrorMessage(text, details);
-    }
-
-    /**
-     * Returns the locale for error messages.
-     */
-    private Locale getLocale() {
-        return format.getLocale(Locale.Category.DISPLAY);
     }
 }

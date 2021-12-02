@@ -532,7 +532,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
              * (count = 1 & missing = 18) — this is where we want to force a third layout — then the third layout
              * is stable (count = 19 & missing = 0).
              */
-            layoutAll = count <= missing;
+            layoutAll = (count <= missing);
         }
         /*
          * Update position of the highlights at mouse cursor position. Usually the correction computed below is
@@ -543,18 +543,20 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          */
         if (selection.isVisible()) {
             GridRow row = flow.getFirstVisibleCell();
-            double sy = selection.getY() - (row.getLayoutY() + headerHeight);
-            final int i = ((int) Math.rint(sy / cellHeight)) + row.getIndex();
-            row = flow.getCell(i);                      // Empty cell if beyond the range.
-            sy  = row.getLayoutY() + headerHeight;      // Usually same as `selection.y` (see above comment).
-            final double offset = row.getLayoutX() + leftBackground.getWidth();
-            final double column = Math.rint((selection.getX() - offset) / cellWidth);
-            final double sx     = column * cellWidth + offset;
-            selection.setX(sx);
-            selection.setY(sy);
-            selectedRow.setY(sy);
-            selectedColumn.setX(sx);
-            getSkinnable().formatCoordinates(firstVisibleColumn + (int) column, i);
+            if (row != null) {
+                double sy = selection.getY() - (row.getLayoutY() + headerHeight);
+                final int i = ((int) Math.rint(sy / cellHeight)) + row.getIndex();
+                row = flow.getCell(i);                      // Empty cell if beyond the range.
+                sy  = row.getLayoutY() + headerHeight;      // Usually same as `selection.y` (see above comment).
+                final double offset = row.getLayoutX() + leftBackground.getWidth();
+                final double column = Math.rint((selection.getX() - offset) / cellWidth);
+                final double sx     = column * cellWidth + offset;
+                selection.setX(sx);
+                selection.setY(sy);
+                selectedRow.setY(sy);
+                selectedColumn.setX(sx);
+                getSkinnable().formatCoordinates(firstVisibleColumn + (int) column, i);
+            }
         }
         if (hasErrors) {
             computeErrorBounds(flow);

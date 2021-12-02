@@ -100,8 +100,9 @@ public class TiledImage extends PlanarImage {
 
     /**
      * Verifies whether image layout information and tile coordinates are consistent.
-     * This method verifies the size and minimum pixel coordinates of all tiles,
-     * in addition to the verifications documented in the super-class.
+     * This method verifies the size and minimum pixel coordinates of all tiles.
+     * If okay, then this method completes the check with all verifications
+     * {@linkplain ComputedImage#verify() documented in parent class}
      *
      * @return {@code null} if image layout information are consistent,
      *         or the name of inconsistent attribute if a problem is found.
@@ -122,7 +123,7 @@ public class TiledImage extends PlanarImage {
             if (tile.getMinX()   != tileWidth  * tx + minX) return property(tx, ty, "x");
             if (tile.getMinY()   != tileHeight * ty + minY) return property(tx, ty, "y");
         }
-        return super.verify();
+        return super.verify();      // "width" and "height" properties should be checked last.
     }
 
     /**

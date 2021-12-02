@@ -419,11 +419,11 @@ public class TransverseMercator extends NormalizedProjection {
              * In Mercator projection, y values tend toward infinity for latitudes close to ±90°.
              * In Transverse Mercator, x values tend toward infinity for longitudes close to ±90°
              * at equator and after subtraction of central meridian. After we pass the 90° limit,
-             * the Transverse Mercator results at (90° + Δ) are the same as for (90° - Δ).
+             * the Transverse Mercator formulas produce the same values at (90° + Δ) than at (90° - Δ).
              *
              * Problem is that 90° is an ordinary longitude value, not even close to the limit of longitude
              * values range (±180°). So having f(π/2+Δ, φ) = f(π/2-Δ, φ) results in wrong behavior in some
-             * algorithms like the one used by Envelopes.transform(CoordinateOperation, Envelope).
+             * algorithms like the one used by `Envelopes.transform(CoordinateOperation, Envelope)`.
              * Since a distance of 90° from central meridian is far outside the Transverse Mercator
              * domain of validity anyway, we do not let the user go further.
              *
@@ -437,12 +437,12 @@ public class TransverseMercator extends NormalizedProjection {
              *
              * Reminder: difference between returning NaN or throwing an exception is as below:
              *
-             *    - NaN means "value does not exist".
-             *    - ProjectionException means "values exist but can not be computed".
+             *    - NaN means "value does not exist or is not a real number".
+             *    - ProjectionException means "value should exist but can not be computed".
              *
              * So it is okay to return NaN for values located at Δλ > 90°, but we should throw an exception
              * for values at Δλ ≤ 90° if we can not compute them. Previous version of this method was throwing
-             * an exception. Now that we accept all longitudes up to 90°, we return NaN instead.
+             * an exception for all Δλ > 70°. Now that we accept all longitudes up to 90°, we return NaN instead.
              */
             if (Math.abs(IEEEremainder(λ, 2*PI)) > 90 * (PI/180)) {         // More costly check.
                 return outsideDomainOfValidity(dstPts, dstOff, derivate);

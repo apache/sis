@@ -38,7 +38,6 @@ import javafx.scene.control.MenuItem;
 import javax.measure.Unit;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.gui.coverage.CoverageCanvas;
@@ -67,7 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * {@code ValuesUnderCursor} methods will be invoked from JavaFX thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -334,17 +333,17 @@ public abstract class ValuesUnderCursor {
                 // Same configuration than previous coverage.
                 return;
             }
-            final int n   = bands.size();
-            units         = new String[n];
-            sampleFormats = new NumberFormat[n];
-            outsideText = null;                     // Will be recomputed on next `evaluate(…)` call.
+            final int numBands = bands.size();
+            units         = new String[numBands];
+            sampleFormats = new NumberFormat[numBands];
+            outsideText   = null;               // Will be recomputed on next `evaluate(…)` call.
             /*
              * Only the first band is initially selected, unless the image has only 2 or 3 bands
              * in which case all bands are selected. An image with two bands is often giving the
              * (u,v) components of velocity vectors, which we want to keep together by default.
              */
             selectedBands.clear();
-            selectedBands.set(0, (n <= 3) ? n : 1, true);
+            selectedBands.set(0, (numBands <= 3) ? numBands : 1, true);
             nodata.clear();
             /*
              * Loop below initializes number formats and unit symbols for all bands, regardless
@@ -355,10 +354,10 @@ public abstract class ValuesUnderCursor {
             final Map<Unit<?>,String>       sharedSymbols = new HashMap<>();
             final Locale                    locale        = getLocale(property);
             final UnitFormat                unitFormat    = new UnitFormat(locale);
-            final CheckMenuItem[]           menuItems     = new CheckMenuItem[n];
-            for (int i=0; i<n; i++) {
-                final SampleDimension sd = bands.get(i);
-                menuItems[i] = createMenuItem(i, sd, locale);
+            final CheckMenuItem[]           menuItems     = new CheckMenuItem[numBands];
+            for (int b=0; b<numBands; b++) {
+                final SampleDimension sd = bands.get(b);
+                menuItems[b] = createMenuItem(b, sd, locale);
                 /*
                  * Build the list of texts to show for missing values. A coverage can have
                  * different NaN values representing different kind of missing values.
@@ -366,7 +365,7 @@ public abstract class ValuesUnderCursor {
                 for (final Category c : sd.forConvertedValues(true).getCategories()) {
                     final float value = ((Number) c.getSampleRange().getMinValue()).floatValue();
                     if (Float.isNaN(value)) try {
-                        nodata.putIfAbsent(toNodataKey(i, value), c.getName().toString(locale));
+                        nodata.putIfAbsent(toNodataKey(b, value), c.getName().toString(locale));
                     } catch (IllegalArgumentException e) {
                         recoverableException("changed", e);
                     }
@@ -375,7 +374,7 @@ public abstract class ValuesUnderCursor {
                  * Format in advance the units of measurement. If none, an empty string is used.
                  * Note: it is quite common that all bands use the same unit of measurement.
                  */
-                units[i] = sd.getUnits().map((unit) -> sharedSymbols.computeIfAbsent(unit,
+                units[b] = sd.getUnits().map((unit) -> sharedSymbols.computeIfAbsent(unit,
                                               (key) -> format(unitFormat, key))).orElse("");
                 /*
                  * Infer a number of fraction digits to use for the resolution of sample values in each band.
@@ -392,7 +391,7 @@ public abstract class ValuesUnderCursor {
                  *   - Key -1 is for default format with unspecified number of fraction digits.
                  *   - Key -2 is for scientific notation.
                  */
-                sampleFormats[i] = sharedFormats.computeIfAbsent(nf, (precision) -> {
+                sampleFormats[b] = sharedFormats.computeIfAbsent(nf, (precision) -> {
                     switch (precision) {
                         case 0:              return NumberFormat.getIntegerInstance(locale);
                         case DEFAULT_FORMAT: return NumberFormat.getNumberInstance(locale);
@@ -521,8 +520,6 @@ public abstract class ValuesUnderCursor {
                             }
                             return buffer.toString();
                         }
-                    } catch (PointOutsideCoverageException e) {
-                        // Ignore.
                     } catch (CannotEvaluateException e) {
                         recoverableException("evaluate", e);
                     }

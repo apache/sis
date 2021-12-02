@@ -1094,7 +1094,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             final int length = text.length();
             int toRemove = length - maxLength;
             if (toRemove > 0) {
-                toRemove += 5; // Space needed for the " (…) " string.
+                toRemove += 5;          // Space needed for the " (…) " string.
                 /*
                  * We will remove characters from 'lower' to 'upper' both exclusive. We try to
                  * adjust 'lower' and 'upper' in such a way that the first and last characters

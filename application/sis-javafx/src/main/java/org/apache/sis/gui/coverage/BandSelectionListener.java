@@ -19,6 +19,7 @@ package org.apache.sis.gui.coverage;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.SelectionModel;
 
 
 /**
@@ -26,11 +27,22 @@ import javafx.beans.value.ObservableValue;
  * the selection is forwarded to the {@link GridView#bandProperty}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 final class BandSelectionListener implements ChangeListener<Number> {
+    /**
+     * Applies a bidirectional binding between a property and the selection in a tabme of sample dimensions.
+     *
+     * @param  bandProperty   the property for currently selected band.
+     * @param  bandSelection  the selection in a table of bands or sample dimensions.
+     */
+    static void bind(final IntegerProperty bandProperty, final SelectionModel<?> bandSelection) {
+        bandSelection.selectedIndexProperty().addListener(new BandSelectionListener(bandProperty));
+        bandProperty.addListener((p,o,n) -> bandSelection.clearAndSelect(n.intValue()));
+    }
+
     /**
      * The {@link GridView#bandProperty} to update when a new band is selected.
      */
@@ -45,7 +57,7 @@ final class BandSelectionListener implements ChangeListener<Number> {
     /**
      * Creates a new listener which will modify the given property.
      */
-    BandSelectionListener(final IntegerProperty bandProperty) {
+    private BandSelectionListener(final IntegerProperty bandProperty) {
         this.bandProperty = bandProperty;
     }
 

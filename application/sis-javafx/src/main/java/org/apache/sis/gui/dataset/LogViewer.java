@@ -27,7 +27,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.layout.HBox;
@@ -38,7 +37,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -83,7 +81,7 @@ import org.apache.sis.util.CharSequences;
  * using that resource, in particular {@linkplain Resource#addListener warnings emitted by the resource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -122,7 +120,7 @@ public class LogViewer extends Widget {
      *
      * @see #getView()
      */
-    private final SplitPane view;
+    private final VBox view;
 
     /**
      * Details about selected record.
@@ -238,6 +236,7 @@ public class LogViewer extends Widget {
 
             message = new TextArea();
             message.setEditable(false);
+            message.setMinHeight(100);
             GridPane.setConstraints(textSelector, 0, 5);
             GridPane.setConstraints(message, 1, 5);
             GridPane.setMargin(textSelector, MARGIN);
@@ -248,15 +247,14 @@ public class LogViewer extends Widget {
         /*
          * Buttons bar on top of the table. Provides filtering options.
          */
-        final VBox tableAndBar;
+        final HBox bar;
         {
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Level));
             final ChoiceBox<Level> levels = new ChoiceBox<>();
             label.setLabelFor(levels);
-            final HBox bar = new HBox(SPACE, label, levels);
+            bar = new HBox(SPACE, label, levels);
             bar.setAlignment(Pos.CENTER_LEFT);
             bar.setPadding(BAR_INSETS);
-            tableAndBar = new VBox(bar, table);
             VBox.setVgrow(table, Priority.ALWAYS);
 
             levels.getItems().setAll(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG,
@@ -268,9 +266,7 @@ public class LogViewer extends Widget {
         /*
          * Put all view components together.
          */
-        view = new SplitPane(tableAndBar, new TitledPane(vocabulary.getString(Vocabulary.Keys.Details), details));
-        view.setOrientation(Orientation.VERTICAL);
-        SplitPane.setResizableWithParent(details, false);
+        view = new VBox(bar, table, new TitledPane(vocabulary.getString(Vocabulary.Keys.Details), details));
         /*
          * Register all remaining listeners.
          */

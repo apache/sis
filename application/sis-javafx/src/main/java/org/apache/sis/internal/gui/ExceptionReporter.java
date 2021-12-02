@@ -174,8 +174,8 @@ public final class ExceptionReporter extends Widget {
     public static void show(final Node owner, final WorkerStateEvent event) {
         final Worker<?> worker = event.getSource();
         final Throwable exception = worker.getException();
-        if (worker instanceof ResourceLoader) {
-            canNotReadFile(owner, ((ResourceLoader) worker).getFileName(), exception);
+        if (worker instanceof DataStoreOpener) {
+            canNotReadFile(owner, ((DataStoreOpener) worker).getFileName(), exception);
         } else {
             show(getWindow(owner), (short) 0, (short) 0, null, exception);
         }

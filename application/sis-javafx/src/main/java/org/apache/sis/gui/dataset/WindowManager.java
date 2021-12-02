@@ -18,6 +18,7 @@ package org.apache.sis.gui.dataset;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
@@ -33,7 +34,7 @@ import org.apache.sis.gui.Widget;
  * Manages the list of opened {@link DataWindow}s.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -83,7 +84,7 @@ abstract class WindowManager extends Widget {
      * Creates a new manager of windows.
      */
     WindowManager() {
-        newWindowMenus     = new ArrayList<>(2);
+        newWindowMenus     = new ArrayList<>(3);
         hasWindowsProperty = new WindowsProperty();
     }
 
@@ -92,6 +93,14 @@ abstract class WindowManager extends Widget {
      * but we currently ask to subclass because it has this information anyway.
      */
     abstract Resources localized();
+
+    /**
+     * Returns the locale for controls and messages.
+     */
+    @Override
+    public final Locale getLocale() {
+        return localized().getLocale();
+    }
 
     /**
      * Creates a menu item for creating new windows for the currently selected resource.

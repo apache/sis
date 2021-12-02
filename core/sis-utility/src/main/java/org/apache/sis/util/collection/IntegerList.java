@@ -33,6 +33,7 @@ import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -65,7 +66,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * The shift to apply on {@code index} in order to produce a result equivalent to {@code index} / {@value #VALUE_SIZE}.
      * The following relation must hold: {@code (1 << BASE_SHIFT) == VALUE_SIZE}.
      */
-    private static final int BASE_SHIFT = 6;
+    private static final int BASE_SHIFT = Numerics.LONG_SHIFT;
 
     /**
      * The mask to apply on {@code index} in order to produce a result equivalent to {@code index} % {@value #VALUE_SIZE}.
