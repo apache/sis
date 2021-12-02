@@ -21,7 +21,7 @@
  * together with doclet performing post-processing after Javadoc generation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.5
  * @module
  */

@@ -17,9 +17,12 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.List;
+import java.util.function.Function;
+import java.awt.Color;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -39,7 +42,7 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
  * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -56,20 +59,37 @@ final class Raster extends BufferedGridCoverage {
     private final int[] bandOffsets;
 
     /**
+     * The band to use for defining pixel colors when the image is displayed on screen.
+     * All other bands, if any, will exist in the raster but be ignored at display time.
+     *
+     * @see Convention#getVisibleBand()
+     */
+    private final int visibleBand;
+
+    /**
      * Name to display in error messages. Not to be used for processing.
      */
     private final String label;
 
     /**
+     * The colors to use for each category, or {@code null} for default.
+     * The function may return {@code null}, which means transparent.
+     */
+    private final Function<Category,Color[]> colors;
+
+    /**
      * Creates a new raster from the given resource.
      */
     Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data,
-            final int pixelStride, final int[] bandOffsets, final String label)
+           final String label, final int pixelStride, final int[] bandOffsets, final int visibleBand,
+           final Function<Category,Color[]> colors)
     {
         super(domain, range, data);
         this.label       = label;
+        this.colors      = colors;
         this.pixelStride = pixelStride;
         this.bandOffsets = bandOffsets;
+        this.visibleBand = visibleBand;
     }
 
     /**
@@ -84,6 +104,10 @@ final class Raster extends BufferedGridCoverage {
             if (bandOffsets != null) {
                 renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
             }
+            if (colors != null) {
+                renderer.setCategoryColors(colors);
+            }
+            renderer.setVisibleBand(visibleBand);
             return renderer.createImage();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new RuntimeException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);

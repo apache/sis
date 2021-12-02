@@ -18,8 +18,6 @@ package org.apache.sis.internal.gui;
 
 import javafx.scene.Node;
 import javafx.scene.control.Control;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
@@ -38,7 +36,7 @@ import org.apache.sis.util.ArraysExt;
  * in different packages without making toolbar API public.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -92,24 +90,18 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
      * Convenience method for creating a button.
      * The action handler will be {@code this}.
      *
-     * @param  group      the group of the toggle button, or {@code null} for an ordinary button.
+     * @param  group      the group of the toggle button.
      * @param  icon       the text to put in the button, as a Unicode emoji.
      * @param  localized  an instance of {@link Resources} for current locale.
      * @param  tooltip    the {@link Resources.Keys} value for the tooltip.
      * @return the button configured with text or icon, tooltip and action.
      */
-    public final ButtonBase createButton(final ToggleGroup group, final String icon, final Resources localized, final short tooltip) {
-        final ButtonBase b;
-        if (group != null) {
-            final ToggleButton tb = new ToggleButton(icon);
-            tb.setToggleGroup(group);
-            b = tb;
-        } else {
-            b = new Button(icon);
-        }
-        b.setTooltip(new Tooltip(localized.getString(tooltip)));
-        b.setOnAction(this);
-        return b;
+    public final ToggleButton createButton(final ToggleGroup group, final String icon, final Resources localized, final short tooltip) {
+        final ToggleButton tb = new ToggleButton(icon);
+        tb.setToggleGroup(group);
+        tb.setTooltip(new Tooltip(localized.getString(tooltip)));
+        tb.setOnAction(this);
+        return tb;
     }
 
     /**

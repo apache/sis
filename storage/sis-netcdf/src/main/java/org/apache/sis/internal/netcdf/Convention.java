@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.function.Function;
+import java.awt.Color;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -35,6 +37,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -64,7 +67,7 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
@@ -764,6 +767,27 @@ public class Convention {
      * @throws ParserException if the unit symbol can not be parsed.
      */
     public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        return null;
+    }
+
+    /**
+     * Returns the band to use for defining pixel colors when the image is displayed on screen.
+     * All other bands, if any, will exist in the raster but be ignored at display time.
+     * The default value is 0, the first (and often only) band.
+     *
+     * @return the band on which {@link #getColors(Variable)} will apply.
+     */
+    public int getVisibleBand() {
+        return 0;
+    }
+
+    /**
+     * Returns the colors to use for each category, or {@code null} for the default colors.
+     *
+     * @param  data  the variable for which to get the colors.
+     * @return colors to use for each category, or {@code null} for the default.
+     */
+    public Function<Category,Color[]> getColors(final Variable data) {
         return null;
     }
 }

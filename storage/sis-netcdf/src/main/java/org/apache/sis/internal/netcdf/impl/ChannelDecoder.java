@@ -74,7 +74,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -974,7 +974,9 @@ public final class ChannelDecoder extends Decoder {
             final Map<DimensionInfo, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
                 switch (variable.getRole()) {
-                    case COVERAGE: {
+                    case COVERAGE:
+                    case DISCRETE_COVERAGE:
+                    {
                         // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
                         // remember the new value for avoiding to ask again in next loops.
                         variable.isCoordinateSystemAxis = false;

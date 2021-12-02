@@ -47,14 +47,22 @@ final class RecentFiles implements EventHandler<ActionEvent> {
 
     /**
      * Menu items for each recently opened file.
+     * Items will be added and removed when files are opened or closed.
      * This list should have no more than {@value #MAX_COUNT} elements.
      */
     private final ObservableList<MenuItem> items;
 
     /**
      * The explorer where to open the file.
+     * This is used when user selects an "Open recent file" menu item.
      */
     private final ResourceExplorer explorer;
+
+    /**
+     * Recent files, regardless if opened or not.
+     * May contain {@code null} trailing elements.
+     */
+    private final File[] allFiles;
 
     /**
      * Creates a new handler for a list of recently used files in the specified menu.
@@ -62,6 +70,20 @@ final class RecentFiles implements EventHandler<ActionEvent> {
     private RecentFiles(final ResourceExplorer explorer, final Menu menu) {
         this.explorer = explorer;
         items = menu.getItems();
+        allFiles = new File[MAX_COUNT];
+        final CharSequence[] paths = RecentChoices.getFiles();
+        final MenuItem[] menus = new MenuItem[paths.length];
+        final int limit = Math.min(paths.length, MAX_COUNT);
+        int count = 0;
+        for (int i=0; i<limit; i++) {
+            final String path = paths[i].toString();
+            if (!path.isBlank()) {
+                final File file = new File(path);
+                allFiles[count] = file;
+                menus[count++]  = createItem(file);
+            }
+        }
+        items.setAll(ArraysExt.resize(menus, count));
     }
 
     /**
@@ -70,18 +92,8 @@ final class RecentFiles implements EventHandler<ActionEvent> {
      * The user preferences are updated when {@link #touched(ResourceEvent, boolean)} is invoked.
      */
     static Menu create(final ResourceExplorer explorer, final Resources localized) {
-        final Menu           menu    = new Menu(localized.getString(Resources.Keys.OpenRecentFile));
-        final RecentFiles    handler = new RecentFiles(explorer, menu);
-        final CharSequence[] files   = RecentChoices.getFiles();
-        final MenuItem[]     items   = new MenuItem[files.length];
-        int n = 0;
-        for (int i=0; i<files.length; i++) {
-            final String file = files[i].toString();
-            if (!file.isBlank()) {
-                items[n++] = handler.createItem(new File(file));
-            }
-        }
-        handler.items.setAll(ArraysExt.resize(items, n));
+        final Menu menu = new Menu(localized.getString(Resources.Keys.OpenRecentFile));
+        final RecentFiles handler = new RecentFiles(explorer, menu);
         explorer.setOnResourceLoaded((e) -> handler.touched(e, false));
         explorer.setOnResourceClosed((e) -> handler.touched(e, true));
         return menu;
@@ -94,7 +106,6 @@ final class RecentFiles implements EventHandler<ActionEvent> {
         final MenuItem item = new MenuItem(file.getName());
         item.setUserData(file);
         item.setOnAction(this);
-        item.setDisable(!file.exists());
         return item;
     }
 
@@ -125,35 +136,33 @@ final class RecentFiles implements EventHandler<ActionEvent> {
                 break;
             }
         }
-        /*
-         * The menu item has been removed. Reinsert it at the top of the list only if the file has been closed.
-         * But save in the preferences in all cases, in case the application shutdown without closing the files.
-         */
-        final StringJoiner s = new StringJoiner(System.lineSeparator());
-        int count = 0;
         if (closed) {
             if (item == null) {
                 if (size >= MAX_COUNT) {
-                    item = items.remove(size-1);
+                    item = items.remove(size-1);                // Recycle existing menu item.
                     item.setText(file.getName());
                     item.setUserData(file);
-                    item.setDisable(false);
                 } else {
                     item = createItem(file);
                 }
             }
-            items.add(0, item);
-        } else {
-            s.add(file.getPath());          // Explicit saved because that item is no longer in the menu.
-            count = 1;
+            items.add(0, item);     // Reinsert the removed menu item at the head of the list.
         }
         /*
          * At this point the menu items has been updated.
-         * Now save the file list in user preferences.
+         * Now update the array of files (both opened and closed) and save in user preferences.
          */
-        for (final MenuItem i : items) {
-            s.add(((File) i.getUserData()).getPath());
-            if (++count >= MAX_COUNT) break;
+        int i = 0;      // Index of file to discard (either because null, last or moved to head).
+        do {
+            final File f = allFiles[i];
+            if (f == null || file.equals(f)) break;
+        } while (++i < MAX_COUNT-1);
+        System.arraycopy(allFiles, 0, allFiles, 1, i);
+        allFiles[0] = file;
+        final StringJoiner s = new StringJoiner(System.lineSeparator());
+        for (final File f : allFiles) {
+            if (f == null) break;
+            s.add(f.getPath());
         }
         RecentChoices.setFiles(s.toString());
     }

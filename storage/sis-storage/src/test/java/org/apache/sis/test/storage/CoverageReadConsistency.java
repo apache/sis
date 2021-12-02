@@ -48,7 +48,8 @@ import static org.junit.Assert.*;
 
 /**
  * Base class for testing the consistency of grid coverage read operations.
- * The test reads the grid coverage in full, then reads random sub-regions.
+ * The test reads the whole grid coverage at full resolution,
+ * then reads random sub-regions at random resolutions.
  * The sub-regions pixels are compared with the original image.
  *
  * <h2>Assumptions</h2>
@@ -205,7 +206,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @Test
     @DependsOnMethod({"testSubsamplingAtOrigin", "testSubRegionsAnywhere"})
     public void testSubsamplingAnywhere() throws DataStoreException {
-        allowOffsets      = true;
+        allowOffsets     = true;
         allowSubsampling = true;
         readAndCompareRandomRegions("Subsampling");
     }
@@ -244,10 +245,10 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @Test
     @DependsOnMethod({"testBandSubsetAnywhere", "testSubsamplingAnywhere"})
     public void testAllAnywhere() throws DataStoreException {
-        allowOffsets      = true;
-        allowBandSubset   = true;
+        allowOffsets     = true;
+        allowBandSubset  = true;
         allowSubsampling = true;
-        readAndCompareRandomRegions("All (ms)");
+        readAndCompareRandomRegions("All");
     }
 
     /**

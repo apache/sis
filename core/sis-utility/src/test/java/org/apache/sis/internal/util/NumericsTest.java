@@ -34,12 +34,40 @@ import static org.junit.Assert.*;
  * Tests the {@link Numerics} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 public final strictfp class NumericsTest extends TestCase {
+    /**
+     * Verifies the value of {@link Numerics#LONG_SHIFT}.
+     */
+    @Test
+    public void verifyMaxDimension() {
+        assertEquals(Long.SIZE, 1 << Numerics.LONG_SHIFT);
+        for (int i=350; i<400; i += 17) {
+            assertEquals(i / Long.SIZE, i >> Numerics.LONG_SHIFT);
+            assertEquals(i * Long.SIZE, i << Numerics.LONG_SHIFT);
+        }
+    }
+
+    /**
+     * Tests {@link Numerics#bitmask(int)}.
+     */
+    @Test
+    public void testBitmask() {
+        assertEquals( 1L, Numerics.bitmask(0));
+        assertEquals( 2L, Numerics.bitmask(1));
+        assertEquals(32L, Numerics.bitmask(5));
+        assertEquals(Long.SIZE, Numerics.bitmask(Numerics.LONG_SHIFT));
+        assertEquals(Long.MIN_VALUE, Numerics.bitmask(Long.SIZE - 1));
+        assertEquals( 0L, Numerics.bitmask(Long.SIZE));
+        assertEquals( 0L, Numerics.bitmask(100));
+        assertEquals( 0L, Numerics.bitmask(-1));
+        assertEquals( 0L, Numerics.bitmask(-256));
+    }
+
     /**
      * Tests {@link Numerics#ceilDiv(int, int)} and {@link Numerics#ceilDiv(long, long)}.
      */

@@ -16,9 +16,11 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Hashtable;
 import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.function.Function;
 import java.nio.Buffer;
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
@@ -37,6 +39,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
@@ -247,7 +250,10 @@ public class ImageRenderer {
     private int[] bankIndices;
 
     /**
-     * The band to be made visible (usually 0). All other bands, if any will be ignored.
+     * The band to use for defining pixel colors when the image is displayed on screen.
+     * All other bands, if any, will exist in the raster but be ignored at display time.
+     *
+     * @see #setVisibleBand(int)
      */
     private int visibleBand;
 
@@ -256,6 +262,15 @@ public class ImageRenderer {
      * If non-null, {@link DataBuffer#getNumBanks()} must be equal to {@link #bands} array length.
      */
     private DataBuffer buffer;
+
+    /**
+     * The colors to use for each category. Never {@code null}.
+     * The function may return {@code null}, which means transparent.
+     * The default value is {@link Colorizer#GRAYSCALE}.
+     *
+     * @see #setCategoryColors(Function)
+     */
+    private Function<Category,Color[]> colors;
 
     /**
      * The properties to give to the image, or {@code null} if none.
@@ -347,6 +362,7 @@ public class ImageRenderer {
         this.pixelStride    = toIntExact(pixelStride);
         this.scanlineStride = toIntExact(scanlineStride);
         this.offsetZ        = offsetZ;
+        this.colors         = Colorizer.GRAYSCALE;
     }
 
     /**
@@ -603,6 +619,53 @@ public class ImageRenderer {
     }
 
     /**
+     * Specifies the band to use for defining pixel colors when the image is displayed on screen.
+     * All other bands, if any, will exist in the raster but be ignored at display time.
+     * The default value is 0, the first (and often only) band.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * an {@link java.awt.image.IndexColorModel} will be used for displaying the image.</div>
+     *
+     * @param  band  the band to use for display purpose.
+     * @throws IllegalArgumentException if the given band is not between 0 (inclusive)
+     *         and {@link #getNumBands()} (exclusive).
+     *
+     * @since 1.2
+     */
+    public void setVisibleBand(final int band) {
+        ArgumentChecks.ensureBetween("band", 0, getNumBands() - 1, band);
+        visibleBand = band;
+    }
+
+    /**
+     * Specifies the colors to apply for each category in a sample dimension.
+     * The given function can return {@code null}, which means transparent.
+     * If this method is never invoked, then the default is a grayscale for
+     * {@linkplain Category#isQuantitative() quantitative categories} and
+     * transparent for qualitative categories (typically "no data" values).
+     *
+     * <h4>Example</h4>
+     * the following code specifies a color palette from blue to red with white in the middle.
+     * This is useful for data with a clear 0 (white) in the middle of the range,
+     * with a minimal value equals to the negative of the maximal value.
+     *
+     * {@preformat java
+     *     setCategoryColors((category) -> category.isQuantitative() ? new Color[] {
+     *         Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED
+     *     } : null);
+     * }
+     *
+     * @param colors  the colors to use for each category. The {@code colors} argument can not be null,
+     *                but {@code colors.apply(Category)} can return null.
+     *
+     * @since 1.2
+     */
+    public void setCategoryColors(final Function<Category,Color[]> colors) {
+        ArgumentChecks.ensureNonNull("colors", colors);
+        this.colors = colors;
+    }
+
+    /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
      * The raster upper-left corner is located at the position given by {@link #getBounds()}.
      * The returned raster is often an instance of {@link WritableRaster}, but read-only rasters are also allowed.
@@ -666,7 +729,7 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {
         final Raster raster = createRaster();
-        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final Colorizer colorizer = new Colorizer(colors);
         final ColorModel colors;
         if (colorizer.initialize(bands[visibleBand]) || colorizer.initialize(raster.getSampleModel(), visibleBand)) {
             colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);

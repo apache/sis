@@ -26,6 +26,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
 import java.util.Vector;
+import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -101,7 +102,7 @@ import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -162,12 +163,12 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * <p>Values should be instances of <code>{@linkplain org.apache.sis.math.Statistics}[]</code>.
      * The array length should be the number of bands. If this property is not provided, Apache SIS
-     * may have to {@linkplain ImageProcessor#statistics(RenderedImage, Shape) compute statistics itself}
+     * may have to {@linkplain ImageProcessor#statistics compute statistics itself}
      * (by iterating over pixel values) when needed.</p>
      *
      * <p>Statistics are only indicative. They may be computed on an image sub-region.</p>
      *
-     * @see ImageProcessor#statistics(RenderedImage, Shape)
+     * @see ImageProcessor#statistics(RenderedImage, Shape, DoubleUnaryOperator...)
      */
     public static final String STATISTICS_KEY = "org.apache.sis.Statistics";
 
@@ -516,20 +517,31 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * <p>The default implementation may return the following identifiers, in that order
      * (i.e. this method returns the identifier of the first test that fail):</p>
-     * <ul>
-     *   <li>{@code "SampleModel"} — Sample model is incompatible with color model.</li>
-     *   <li>{@code "tileWidth"}   — tile width is greater than sample model width.</li>
-     *   <li>{@code "tileHeight"}  — tile height is greater than sample model height.</li>
-     *   <li>{@code "numXTiles"}   — number of tiles on the X axis is inconsistent with image width.</li>
-     *   <li>{@code "width"}       — image width is not an integer multiple of tile width.</li>
-     *   <li>{@code "numYTiles"}   — number of tiles on the Y axis is inconsistent with image height.</li>
-     *   <li>{@code "height"}      — image height is not an integer multiple of tile height.</li>
-     *   <li>{@code "tileX"}       — {@code minTileX} and/or {@code tileGridXOffset} is inconsistent.</li>
-     *   <li>{@code "tileY"}       — {@code minTileY} and/or {@code tileGridYOffset} is inconsistent.</li>
-     * </ul>
      *
-     * Subclasses may perform additional checks. For example some subclasses also check specifically
-     * for {@code "minX"}, {@code "minY"}, {@code "tileGridXOffset"} and {@code "tileGridYOffset"}.
+     * <table class="sis">
+     *   <caption>Identifiers of inconsistent values</caption>
+     *   <tr><th>Identifier</th>            <th>Meaning</th></tr>
+     *   <tr><td>{@code "SampleModel"}</td> <td>Sample model is incompatible with color model.</td></tr>
+     *   <tr><td>{@code "tileWidth"}</td>   <td>Tile width is greater than sample model width.</td></tr>
+     *   <tr><td>{@code "tileHeight"}</td>  <td>Tile height is greater than sample model height.</td></tr>
+     *   <tr><td>{@code "numXTiles"}</td>   <td>Number of tiles on the X axis is inconsistent with image width.</td></tr>
+     *   <tr><td>{@code "numYTiles"}</td>   <td>Number of tiles on the Y axis is inconsistent with image height.</td></tr>
+     *   <tr><td>{@code "tileX"}</td>       <td>{@code minTileX} and/or {@code tileGridXOffset} is inconsistent.</td></tr>
+     *   <tr><td>{@code "tileY"}</td>       <td>{@code minTileY} and/or {@code tileGridYOffset} is inconsistent.</td></tr>
+     *   <tr><td>{@code "width"}</td>       <td>image width is not an integer multiple of tile width.</td></tr>
+     *   <tr><td>{@code "height"}</td>      <td>Image height is not an integer multiple of tile height.</td></tr>
+     * </table>
+     *
+     * Subclasses may perform additional checks. For example some subclasses have specialized checks
+     * for {@code "minX"}, {@code "minY"}, {@code "tileGridXOffset"} and {@code "tileGridYOffset"}
+     * values before to fallback on the more generic {@code "tileX"} and {@code "tileY"} above checks.
+     *
+     * <h4>Ignorable inconsistency</h4>
+     * Inconsistency in {@code "width"} and {@code "height"} values may be acceptable
+     * if all other verifications pass (in particular the {@code "numXTiles"} and {@code "numYTiles"} checks).
+     * It happens when tiles in the last row or last column have some unused space compared to the image size.
+     * This is legal in TIFF format for example. For this reason, the {@code "width"} and {@code "height"}
+     * values should be checked last, after all other values have been verified consistent.
      *
      * @return {@code null} if image layout information are consistent,
      *         or the name of inconsistent attribute if a problem is found.

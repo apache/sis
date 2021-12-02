@@ -31,7 +31,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
-import java.util.function.Supplier;
+import jdk.javadoc.doclet.StandardDoclet;
 
 
 /**
@@ -39,7 +39,7 @@ import java.util.function.Supplier;
  * Taglets are assumed inline by default.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -73,7 +73,7 @@ abstract class Taglet implements jdk.javadoc.doclet.Taglet {
      */
     @Override
     public void init(final DocletEnvironment env, final Doclet doclet) {
-        reporter = (Reporter) ((Supplier<?>) doclet).get();
+        reporter = ((StandardDoclet) doclet).getReporter();
         trees = env.getDocTrees();
     }
 

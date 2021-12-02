@@ -26,6 +26,7 @@ import javafx.scene.layout.BorderPane;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.measure.Units;
 
 
@@ -33,7 +34,7 @@ import org.apache.sis.measure.Units;
  * Shows category table built by {@link CoverageStyling} with arbitrary data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -78,7 +79,8 @@ public final strictfp class CoverageStylingApp extends Application {
 
         final CoverageStyling styling = new CoverageStyling(null);
         styling.setARGB(band.getCategories().get(1), new int[] {0xFF607080});
-        final TableView<Category> table = styling.createCategoryTable(Vocabulary.getResources((Locale) null));
+        final TableView<Category> table = styling.createCategoryTable(
+                Resources.forLocale(null), Vocabulary.getResources((Locale) null));
         table.getItems().setAll(band.getCategories());
         return table;
     }

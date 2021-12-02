@@ -29,8 +29,9 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
@@ -52,7 +53,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * A viewer for property value. The property may be of various class (array, image, <i>etc</i>).
  * If the type is unrecognized, the property is shown as text.
  *
- * <p>This class extends {@link CompoundFormat} for implementation convenience only.</p>
+ * <p>This class extends {@link CompoundFormat} and implements {@code ChangeListener} for
+ * implementation convenience only. Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -60,7 +62,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
-public final class PropertyView extends CompoundFormat<Object> {
+public final class PropertyView extends CompoundFormat<Object> implements ChangeListener<Number> {
     /**
      * The current property value. This is used for detecting changes.
      */
@@ -120,9 +122,10 @@ public final class PropertyView extends CompoundFormat<Object> {
     private Rectangle visibleImageBounds;
 
     /**
-     * If a work is under progress, that work. Otherwise {@code null}.
+     * The work which is under progress in a background thread (running) or
+     * which is waiting for execution (pending), or {@code null} if none.
      */
-    private Task<?> runningTask;
+    private ImageConverter runningTask, pendingTask;
 
     /**
      * Creates a new property view.
@@ -131,6 +134,7 @@ public final class PropertyView extends CompoundFormat<Object> {
      * @param  view        the property where to set the node showing the value.
      * @param  background  the image background color, or {@code null} if none.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
         super(locale, null);
         this.view = view;
@@ -138,6 +142,8 @@ public final class PropertyView extends CompoundFormat<Object> {
         if (background != null) {
             imageCanvas.backgroundProperty().bind(background);
         }
+        imageCanvas.widthProperty() .addListener(this);
+        imageCanvas.heightProperty().addListener(this);
     }
 
     /**
@@ -210,25 +216,34 @@ public final class PropertyView extends CompoundFormat<Object> {
      * @param  visibleBounds  if the property is an image, currently visible region. Can be {@code null}.
      */
     public void set(final Object newValue, final Rectangle visibleBounds) {
-        if (newValue != value || !Objects.equals(visibleBounds, visibleImageBounds)) {
-            if (runningTask != null) {
-                runningTask.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
-                runningTask = null;
-            }
+        final boolean boundsChanged = !Objects.equals(visibleBounds, visibleImageBounds);
+        if (newValue != value || boundsChanged) {
             visibleImageBounds = visibleBounds;
             final Node content;
-            if (newValue == null) {
-                content = null;
-            } else if (newValue instanceof RenderedImage) {
-                content = setImage((RenderedImage) newValue);
-            } else if (newValue instanceof Throwable) {
-                content = setText((Throwable) newValue);
-            } else if (newValue instanceof Collection<?>) {
-                content = setList(((Collection<?>) newValue).toArray());
-            } else if (newValue.getClass().isArray()) {
-                content = setList(newValue);
+            if (newValue instanceof RenderedImage) {
+                content = setImage((RenderedImage) newValue, boundsChanged);
             } else {
-                content = setText(formatValue(newValue));
+                /*
+                 * The `setImage(…)` method manages itself the `runningTaks` and `pendingTask` fields.
+                 * But if the new property requires a different method, we need to cancel everything.
+                 */
+                final ImageConverter task = runningTask;
+                if (task != null) {
+                    runningTask = null;
+                    pendingTask = null;
+                    task.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
+                }
+                if (newValue == null) {
+                    content = null;
+                } else if (newValue instanceof Throwable) {
+                    content = setText((Throwable) newValue);
+                } else if (newValue instanceof Collection<?>) {
+                    content = setList(((Collection<?>) newValue).toArray());
+                } else if (newValue.getClass().isArray()) {
+                    content = setList(newValue);
+                } else {
+                    content = setText(formatValue(newValue));
+                }
             }
             view.set(content);
             value = newValue;           // Assign only on success.
@@ -278,8 +293,11 @@ public final class PropertyView extends CompoundFormat<Object> {
 
     /**
      * Sets the property value to the given image.
+     *
+     * @param  image          the property value to set, or {@code null}.
+     * @param  boundsChanged  whether {@link #visibleImageBounds} changed since last call.
      */
-    private Node setImage(final RenderedImage image) {
+    private Node setImage(final RenderedImage image, final boolean boundsChanged) {
         ImageView node = imageView;
         if (node == null) {
             node = new ImageView();
@@ -310,22 +328,45 @@ public final class PropertyView extends CompoundFormat<Object> {
             imagePane.setHgap(0);
             imageView = node;
         }
-        final ImageConverter converter = new ImageConverter(image, visibleImageBounds, node);
-        converter.setOnSucceeded((e) -> taskCompleted(converter.getValue()));
-        converter.setOnFailed((e) -> {
-            taskCompleted(null);
-            view.set(setText(e.getSource().getException()));
-        });
-        runningTask = converter;
-        BackgroundThreads.execute(converter);
+        final ImageConverter converter = new ImageConverter(image, visibleImageBounds, node, imageCanvas);
+        if (converter.needsRun(boundsChanged)) {
+            converter.setOnSucceeded((e) -> taskCompleted(converter.getValue()));
+            converter.setOnFailed((e) -> {
+                taskCompleted(null);
+                view.set(setText(e.getSource().getException()));
+            });
+            /*
+             * If an image rendering is already in progress, we will wait for its completion before to start
+             * a new background thread. That way, if many `setImage(…)` invocations happen before the current
+             * rendering finished, we will start only one new rendering process instead of as many processes
+             * as they were `setImage(…)` invocations.
+             */
+            if (runningTask != null) {
+                pendingTask = converter;
+            } else {
+                runningTask = converter;
+                BackgroundThreads.execute(converter);
+            }
+        }
         return imagePane;
     }
 
     /**
      * Invoked when {@link #runningTask} completed its work, either successfully or with a failure.
+     * This method updates the text containing statistic values in the status bar below the image.
+     * If new rendering request happened during the time the task was running, start the last request.
+     *
+     * @param  statistics  statistics for each band of the source image (before conversion to JavaFX).
      */
     private void taskCompleted(final Statistics[] statistics) {
-        runningTask  = null;
+        runningTask = pendingTask;
+        pendingTask = null;
+        if (runningTask != null) {
+            BackgroundThreads.execute(runningTask);
+        }
+        /*
+         * Update the status bar with statistics computed by background thread.
+         */
         String range = null;
         String mean  = null;
         if (statistics != null && statistics.length != 0) {
@@ -350,12 +391,32 @@ public final class PropertyView extends CompoundFormat<Object> {
     }
 
     /**
+     * Invoked when the image canvas size changed. If the previous canvas size was 0, the image could not be rendered
+     * during the previous call to {@link #setImage(RenderedImage, boolean)}, so we need to call that method again now
+     * that the image size is known. In addition we also need to move the image to canvas center.
+     *
+     * @param  property  the image canvas property that changed (width or height).
+     * @param  oldValue  the old width or height value.
+     * @param  newValue  the new width or height value.
+     */
+    @Override
+    public void changed(final ObservableValue<? extends Number> property, final Number oldValue, final Number newValue) {
+        if (value instanceof RenderedImage) {
+            setImage((RenderedImage) value, false);
+        }
+    }
+
+    /**
      * Clears all content. This can be used for giving a chance to the garbage collector to release memory.
      */
     public void clear() {
         value = null;
         view.set(null);
-        if (textView  != null) textView .setText (null);
-        if (imageView != null) imageView.setImage(null);
+        if (textView != null) {
+            textView .setText (null);
+        }
+        if (imageView != null) {
+            ImageConverter.clear(imageView);
+        }
     }
 }

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.NavigableMap;
 import java.util.function.Function;
 import java.util.logging.LogRecord;
+import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.Rectangle;
@@ -537,18 +538,50 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
-     * Invoking this method is equivalent to invoking {@link #statistics(RenderedImage, Shape)} and
-     * extracting immediately the statistics property value, except that errors are handled by the
-     * {@linkplain #getErrorHandler() error handler}.
+     * Builds an operator which can be used for filtering "no data" sample values.
+     * Calls to the operator {@code applyAsDouble(x)} will return {@link Double#NaN}
+     * if the <var>x</var> value is equal to one of the given no-data {@code values},
+     * and will return <var>x</var> unchanged otherwise.
      *
-     * <p>If {@code areaOfInterest} is {@code null}, then the default is as below:</p>
+     * <h4>Usage</h4>
+     * This operator can be used as a {@code sampleFilters} argument in calls to
+     * {@link #statistics statistics(…)} or {@link #valueOfStatistics valueOfStatistics(…)} methods.
+     * It is redundant with {@linkplain SampleDimension#getTransferFunction() transfer function} work,
+     * but can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
+     *
+     * @param  values  the "no data" values, or {@code null} if none. Null and NaN elements are ignored.
+     * @return an operator for filtering the given "no data" values,
+     *         or {@code null} if there is no non-NaN value to filter.
+     *
+     * @see #statistics(RenderedImage, Shape, DoubleUnaryOperator[])
+     * @see SampleDimension#getTransferFunction()
+     *
+     * @since 1.2
+     */
+    public DoubleUnaryOperator filterNodataValues(final Number... values) {
+        return (values != null) ? StatisticsCalculator.filterNodataValues(values) : null;
+    }
+
+    /**
+     * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
+     * Invoking this method is equivalent to invoking the {@link #statistics statistics(…)} method and
+     * extracting immediately the statistics property value, except that custom
+     * {@linkplain #setErrorHandler error handlers} are supported.
+     *
+     * <p>If {@code areaOfInterest} is null and {@code sampleFilters} is {@code null} or empty,
+     * then the default behavior is as below:</p>
      * <ul>
-     *   <li>If the {@value StatisticsCalculator#STATISTICS_KEY} property value exists in the given image,
+     *   <li>If the {@value PlanarImage#STATISTICS_KEY} property value exists in the given image,
      *       then that value is returned. Note that they are not necessarily statistics for the whole image.
-     *       They are whatever statistics the property provided considered as representative.</li>
+     *       They are whatever statistics the property provider considered as representative.</li>
      *   <li>Otherwise statistics are computed for the whole image.</li>
      * </ul>
+     *
+     * <h4>Sample converters</h4>
+     * An arbitrary {@link DoubleUnaryOperator} can be applied on sample values before to add them to statistics.
+     * The main purpose is to replace "no-data values" by {@link Double#NaN} values for instructing
+     * {@link Statistics#accept(double)} to ignore them. The {@link #filterNodataValues(Number...)}
+     * convenience method can be used for building an operator filtering "no data" sample values.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -563,17 +596,23 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  source          the image for which to compute statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
+     * @param  sampleFilters   converters to apply on sample values before to add them to statistics, or
+     *         {@code null} or an empty array if none. The array may have any length and may contain null elements.
+     *         For all {@code i < numBands}, non-null {@code sampleFilters[i]} are applied to band <var>i</var>.
      * @return the statistics of sample values in each band.
      * @throws ImagingOpException if an error occurred during calculation
      *         and the error handler is {@link ErrorHandler#THROW}.
      *
-     * @see #statistics(RenderedImage, Shape)
-     * @see StatisticsCalculator#STATISTICS_KEY
+     * @see #statistics(RenderedImage, Shape, DoubleUnaryOperator...)
+     * @see #filterNodataValues(Number...)
+     * @see PlanarImage#STATISTICS_KEY
      */
-    public Statistics[] valueOfStatistics(final RenderedImage source, final Shape areaOfInterest) {
+    public Statistics[] valueOfStatistics(final RenderedImage source, final Shape areaOfInterest,
+                                          final DoubleUnaryOperator... sampleFilters)
+    {
         ArgumentChecks.ensureNonNull("source", source);
-        if (areaOfInterest == null) {
-            final Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
+        if (areaOfInterest == null && (sampleFilters == null || ArraysExt.allEquals(sampleFilters, null))) {
+            final Object property = source.getProperty(PlanarImage.STATISTICS_KEY);
             if (property instanceof Statistics[]) {
                 return (Statistics[]) property;
             }
@@ -590,8 +629,8 @@ public class ImageProcessor implements Cloneable {
          * The way AnnotatedImage cache mechanism is implemented, if statistics results already
          * exist, they will be used.
          */
-        final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, parallel, failOnException);
-        final Object property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
+        final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, sampleFilters, parallel, failOnException);
+        final Object property = calculator.getProperty(PlanarImage.STATISTICS_KEY);
         calculator.logAndClearError(ImageProcessor.class, "valueOfStatistics", errorListener);
         return (Statistics[]) property;
     }
@@ -600,15 +639,32 @@ public class ImageProcessor implements Cloneable {
      * Returns an image with statistics (minimum, maximum, mean, standard deviation) on each bands.
      * The property value will be computed when first requested (it is not computed immediately by this method).
      *
-     * <p>If {@code areaOfInterest} is {@code null}, then the default is as below:</p>
+     * <p>If {@code areaOfInterest} is null and {@code sampleFilters} is {@code null} or empty,
+     * then the default is as below:</p>
      * <ul>
-     *   <li>If the {@value StatisticsCalculator#STATISTICS_KEY} property value exists in the given image,
+     *   <li>If the {@value PlanarImage#STATISTICS_KEY} property value exists in the given image,
      *       then that image is returned as-is. Note that the existing property value is not necessarily
      *       statistics for the whole image.
      *       They are whatever statistics the property provider considers as representative.</li>
-     *   <li>Otherwise an image augmented with a {@value StatisticsCalculator#STATISTICS_KEY} property value
+     *   <li>Otherwise an image augmented with a {@value PlanarImage#STATISTICS_KEY} property value
      *       is returned.</li>
      * </ul>
+     *
+     * <h4>Sample converters</h4>
+     * An arbitrary {@link DoubleUnaryOperator} can be applied on sample values before to add them to statistics.
+     * The main purpose is to replace "no-data values" by {@link Double#NaN} values for instructing
+     * {@link Statistics#accept(double)} to ignore them. The {@link #filterNodataValues(Number...)}
+     * convenience method can be used for building an operator filtering "no data" sample values.
+     *
+     * <div class="note"><b>API design note:</b>
+     * the {@code areaOfInterest} and {@code sampleFilters} arguments are complementary.
+     * Both of them filter the data accepted for statistics. In ISO 19123 terminology,
+     * the {@code areaOfInterest} argument filters the <cite>coverage domain</cite> while
+     * the {@code sampleFilters} argument filters the <cite>coverage range</cite>.
+     * Another connection with OGC/ISO standards is that {@link DoubleUnaryOperator} in this context
+     * does the same work than {@linkplain SampleDimension#getTransferFunction() transfer function}.
+     * It can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
+     * </div>
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -619,15 +675,23 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  source          the image for which to provide statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
-     * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
+     * @param  sampleFilters   converters to apply on sample values before to add them to statistics, or
+     *         {@code null} or an empty array if none. The array may have any length and may contain null elements.
+     *         For all {@code i < numBands}, non-null {@code sampleFilters[i]} are applied to band <var>i</var>.
+     * @return an image with an {@value PlanarImage#STATISTICS_KEY} property.
      *         May be {@code image} if the given argument already has a statistics property.
      *
-     * @see #valueOfStatistics(RenderedImage, Shape)
-     * @see StatisticsCalculator#STATISTICS_KEY
+     * @see #valueOfStatistics(RenderedImage, Shape, DoubleUnaryOperator...)
+     * @see #filterNodataValues(Number...)
+     * @see PlanarImage#STATISTICS_KEY
      */
-    public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest) {
+    public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest,
+                                    final DoubleUnaryOperator... sampleFilters)
+    {
         ArgumentChecks.ensureNonNull("source", source);
-        if (areaOfInterest == null && ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)) {
+        if (areaOfInterest == null && (sampleFilters == null || ArraysExt.allEquals(sampleFilters, null))
+                && ArraysExt.contains(source.getPropertyNames(), PlanarImage.STATISTICS_KEY))
+        {
             return source;
         }
         final boolean parallel, failOnException;
@@ -635,7 +699,7 @@ public class ImageProcessor implements Cloneable {
             parallel        = parallel(source);
             failOnException = failOnException();
         }
-        return new StatisticsCalculator(source, areaOfInterest, parallel, failOnException).unique();
+        return new StatisticsCalculator(source, areaOfInterest, sampleFilters, parallel, failOnException).unique();
     }
 
     /**
@@ -647,7 +711,7 @@ public class ImageProcessor implements Cloneable {
      * mapped to their colors.
      *
      * <p>The minimum and maximum value can be either specified explicitly,
-     * or determined from {@link #valueOfStatistics(RenderedImage, Shape) statistics} on the image.
+     * or determined from {@link #valueOfStatistics statistics} on the image.
      * In the later case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
      * and {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
      * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.</p>
@@ -689,6 +753,10 @@ public class ImageProcessor implements Cloneable {
      *     <td>{@code "areaOfInterest"}</td>
      *     <td>Pixel coordinates of the region for which to compute statistics.</td>
      *     <td>{@link Shape}</td>
+     *   </tr><tr>
+     *     <td>{@code "nodataValues"}</td>
+     *     <td>Values to ignore in statistics.</td>
+     *     <td>{@link Number} or {@code Number[]}</td>
      *   </tr><tr>
      *     <td>{@code "sampleDimensions"}</td>
      *     <td>Meaning of pixel values.</td>

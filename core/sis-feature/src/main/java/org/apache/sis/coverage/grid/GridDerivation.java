@@ -499,20 +499,23 @@ public class GridDerivation {
                 return this;
             }
             final MathTransform mapCenters;
-            final GridExtent domain = areaOfInterest.getExtent();       // May throw IncompleteGridGeometryException.
+            final GridExtent domain = areaOfInterest.extent;
+            final CoordinateOperationFinder finder = new CoordinateOperationFinder(areaOfInterest, base);
+            finder.verifyPresenceOfCRS(false);
             try {
-                final CoordinateOperationFinder finder = new CoordinateOperationFinder(areaOfInterest, base);
-                final MathTransform mapCorners = finder.gridToGrid();
+                final MathTransform mapCorners = (domain != null) ? finder.gridToGrid() : null;
                 finder.setAnchor(PixelInCell.CELL_CENTER);
                 finder.nowraparound();
                 mapCenters = finder.gridToGrid();                               // We will use only the scale factors.
-                setBaseExtentClipped(domain.toCRS(mapCorners, mapCenters, null));
+                if (domain != null) {
+                    setBaseExtentClipped(domain.toCRS(mapCorners, mapCenters, null));
+                    if (baseExtent != base.extent && baseExtent.equals(domain)) {
+                        baseExtent = domain;                                    // Share common instance.
+                    }
+                }
                 subGridSetter = "subgrid";
             } catch (FactoryException | TransformException e) {
                 throw new IllegalGridGeometryException(e, "areaOfInterest");
-            }
-            if (baseExtent != base.extent && baseExtent.equals(areaOfInterest.extent)) {
-                baseExtent = areaOfInterest.extent;                                         // Share common instance.
             }
             // The `domain` extent must be the source of the `mapCenters` transform.
             scales = GridGeometry.resolution(mapCenters, domain);
@@ -535,7 +538,7 @@ public class GridDerivation {
     }
 
     /**
-     * Requests a grid geometry over a sub-envelope and optionally with a different a coarser resolution.
+     * Requests a grid geometry over a sub-envelope and optionally with a coarser resolution.
      * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
      * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS of the base grid geometry};
      * coordinate conversions or transformations will be applied as needed.

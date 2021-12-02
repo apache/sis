@@ -26,7 +26,7 @@ import org.junit.runners.Suite;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -96,6 +96,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.InterpolationTest.class,
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,
+    org.apache.sis.image.MaskedImageTest.class,
     org.apache.sis.image.BandedSampleConverterTest.class,
     org.apache.sis.image.ImageCombinerTest.class,
     org.apache.sis.image.ImageProcessorTest.class,

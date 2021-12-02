@@ -19,6 +19,7 @@ package org.apache.sis.image;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
+import java.util.function.DoubleUnaryOperator;
 import java.awt.Shape;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
@@ -42,7 +43,7 @@ import org.apache.sis.measure.NumberRange;
  * for {@link ImageProcessor}, defined here for reducing {@link ImageProcessor} size.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -115,13 +116,15 @@ final class RecoloredImage extends ImageAdapter {
          * Main use case: color model is (probably) an IndexColorModel or ScaledColorModel instance,
          * or something we can handle in the same way.
          */
-        RenderedImage statsSource   = source;
-        Statistics[]  statsAllBands = null;
-        Statistics    statistics    = null;
-        double        minimum       = Double.NaN;
-        double        maximum       = Double.NaN;
-        double        deviations    = Double.POSITIVE_INFINITY;
-        SampleDimension range       = null;
+        RenderedImage   statsSource    = source;
+        Statistics[]    statsAllBands  = null;
+        Statistics      statistics     = null;
+        Shape           areaOfInterest = null;
+        Number[]        nodataValues   = null;
+        SampleDimension range          = null;
+        double          minimum        = Double.NaN;
+        double          maximum        = Double.NaN;
+        double          deviations     = Double.POSITIVE_INFINITY;
         /*
          * Extract and validate parameter values.
          * No calculation started at this stage.
@@ -141,7 +144,18 @@ final class RecoloredImage extends ImageAdapter {
                     ArgumentChecks.ensureStrictlyPositive("multStdDev", deviations);
                 }
             }
-            Object value = modifiers.get("statistics");
+            areaOfInterest = Containers.property(modifiers, "areaOfInterest", Shape.class);
+            Object value = modifiers.get("nodataValues");
+            if (value != null) {
+                if (value instanceof Number) {
+                    nodataValues = new Number[] {(Number) value};
+                } else if (value instanceof Number[]) {
+                    nodataValues = (Number[]) value;
+                } else {
+                    throw illegalPropertyType(modifiers, "nodataValues", value);
+                }
+            }
+            value = modifiers.get("statistics");
             if (value != null) {
                 if (value instanceof RenderedImage) {
                     statsSource = (RenderedImage) value;
@@ -177,9 +191,9 @@ final class RecoloredImage extends ImageAdapter {
         if (Double.isNaN(minimum) || Double.isNaN(maximum)) {
             if (statistics == null) {
                 if (statsAllBands == null) {
-                    final Object areaOfInterest = modifiers.get("areaOfInterest");
-                    statsAllBands = processor.valueOfStatistics(statsSource,
-                            (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null);
+                    final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[visibleBand + 1];
+                    sampleFilters[visibleBand] = processor.filterNodataValues(nodataValues);
+                    statsAllBands = processor.valueOfStatistics(statsSource, areaOfInterest, sampleFilters);
                 }
                 if (statsAllBands != null && visibleBand < statsAllBands.length) {
                     statistics = statsAllBands[visibleBand];
@@ -196,7 +210,7 @@ final class RecoloredImage extends ImageAdapter {
             return source;
         }
         /*
-         * finished to collect information. Derive a new color model from the existing one.
+         * Finished to collect information. Derive a new color model from the existing one.
          */
         final ColorModel cm;
         if (source.getColorModel() instanceof IndexColorModel) {
@@ -211,8 +225,8 @@ final class RecoloredImage extends ImageAdapter {
             final int size = icm.getMapSize();
             int validMin = 0;
             int validMax = size - 1;        // Inclusive.
-            double span = 0;
             if (range != null) {
+                double span = 0;
                 for (final Category category : range.getCategories()) {
                     if (category.isQuantitative()) {
                         final NumberRange<?> r = category.getSampleRange();
@@ -231,12 +245,12 @@ final class RecoloredImage extends ImageAdapter {
              * Create a copy of RGB codes and replace values in the range of the quantitative category.
              * Values for other categories (qualitative) are left unmodified.
              */
-            final int   end   = Math.max(Math.min((int) maximum, validMax), validMin);      // Inclusive.
-            final int   start = Math.min(Math.max((int) minimum, validMin), end);
+            final int   start = Math.max((int) minimum, validMin);
+            final int   end   = Math.min((int) maximum, validMax);          // Inclusive.
             final int[] ARGB  = new int[size];
-            icm.getRGBs(ARGB);
-            Arrays.fill(ARGB, validMin, start, icm.getRGB(validMin));
-            Arrays.fill(ARGB, end+1, validMax, icm.getRGB(validMax));
+            icm.getRGBs(ARGB);                                              // Initialize to a copy of current colors.
+            Arrays.fill(ARGB, validMin, start,   icm.getRGB(validMin));     // Part of quantitative category outside the new range.
+            Arrays.fill(ARGB, end+1, validMax+1, icm.getRGB(validMax));
             final float scale = (float) ((validMax - validMin) / (maximum - minimum));
             for (int i = start; i <= end; i++) {
                 final float s = (i - start) * scale + validMin;

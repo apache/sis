@@ -75,6 +75,11 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     /**
      * Converts {@linkplain Map#entrySet() map entries} to an array of {@code ColorsForRange} entries.
      * The {@link #category} of each entry is left to null.
+     *
+     * @param  colors  the colors to use for each range of sample values.
+     *                 A {@code null} entry value means transparent.
+     * @return colors to use for each range of values in the source image.
+     *         Never null and does not contain null elements.
      */
     static ColorsForRange[] list(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors) {
         final ColorsForRange[] entries = new ColorsForRange[colors.size()];
@@ -87,7 +92,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
 
     /**
      * Returns {@code true} if this entry should be taken as data, or {@code false} if it should be ignored.
-     * Entry to ignore and entries associated to NaN values.
+     * Entry to ignore are entries associated to NaN values.
      */
     final boolean isData() {
         return category == null || category.isQuantitative();

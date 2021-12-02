@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -38,6 +39,14 @@ import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.CommonExecutor;
 import org.apache.sis.internal.util.Strings;
+
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.incrementExact;
+import static java.lang.Math.decrementExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.toIntExact;
+import static java.lang.Math.floorDiv;
 
 
 /**
@@ -69,7 +78,7 @@ import org.apache.sis.internal.util.Strings;
  * method. Those methods are inspired from {@link java.util.stream.Stream#collect(Collector)} API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -80,6 +89,13 @@ public class TileOpExecutor {
      * @see #getTileIndices()
      */
     private final int minTileX, minTileY, maxTileX, maxTileY;
+
+    /**
+     * If the processing should be restricted to a non-rectangular shape, the region in pixel coordinates.
+     * Otherwise {@code null}. This shape should not be a rectangle because otherwise it would be redundant
+     * with minimum/maximum tile X/Y fields.
+     */
+    private Shape areaOfInterest;
 
     /**
      * Where to report exceptions, or {@link TileErrorHandler#THROW} for throwing them.
@@ -106,16 +122,48 @@ public class TileOpExecutor {
             final int  tileHeight      = image.getTileHeight();
             final long tileGridXOffset = image.getTileGridXOffset();   // We want 64 bits arithmetic in operations below.
             final long tileGridYOffset = image.getTileGridYOffset();
-            minTileX = Math.toIntExact(Math.floorDiv(aoi.x                     - tileGridXOffset, tileWidth ));
-            minTileY = Math.toIntExact(Math.floorDiv(aoi.y                     - tileGridYOffset, tileHeight));
-            maxTileX = Math.toIntExact(Math.floorDiv(aoi.x + (aoi.width  - 1L) - tileGridXOffset, tileWidth ));
-            maxTileY = Math.toIntExact(Math.floorDiv(aoi.y + (aoi.height - 1L) - tileGridYOffset, tileHeight));
+            minTileX = toIntExact(floorDiv(aoi.x                     - tileGridXOffset, tileWidth ));
+            minTileY = toIntExact(floorDiv(aoi.y                     - tileGridYOffset, tileHeight));
+            maxTileX = toIntExact(floorDiv(aoi.x + (aoi.width  - 1L) - tileGridXOffset, tileWidth ));
+            maxTileY = toIntExact(floorDiv(aoi.y + (aoi.height - 1L) - tileGridYOffset, tileHeight));
         } else {
             minTileX = image.getMinTileX();
             minTileY = image.getMinTileY();
-            maxTileX = Math.addExact(minTileX, image.getNumXTiles() - 1);
-            maxTileY = Math.addExact(minTileY, image.getNumYTiles() - 1);
+            maxTileX = addExact(minTileX, image.getNumXTiles() - 1);
+            maxTileY = addExact(minTileY, image.getNumYTiles() - 1);
         }
+    }
+
+    /**
+     * Sets the area of interest as an irregular shape.
+     * This executor will skip calculations in all tiles that do not intersect the given AOI.
+     * There is no benefit if this AOI is the same than the rectangle given to the constructor.
+     * But if the AOI is non-rectangular, then specifying it may help to skip a few more tiles.
+     * Skipping tiles saves not only {@code TileOpExecutor} computation time, but can save also
+     * computation time of source image if the source is itself the result of another computation.
+     *
+     * @param  image  the image for which to set an AOI, or {@code null} if unknown.
+     * @param  aoi    the non-rectangular AOI, or {@code null} if none.
+     *
+     * @since 1.2
+     */
+    public final void setAreaOfInterest(final RenderedImage image, Shape aoi) {
+        if (aoi != null && image != null) {
+            /*
+             * Compute the bounds of the region where iteration will happen, but with only one pixel in
+             * the tiles on the border (left, top, bottom, right). If AOI interior contains entirely
+             * those bounds, then the AOI does not help to reduce the amount of tiles to compute.
+             */
+            final Rectangle bounds = getTileIndices();
+            bounds.x = decrementExact(ImageUtilities.tileToPixelX(image, incrementExact(bounds.x)) - 1);
+            bounds.y = decrementExact(ImageUtilities.tileToPixelY(image, incrementExact(bounds.y)) - 1);
+            bounds.width  = addExact(multiplyExact(bounds.width,  image.getTileWidth()  - 2), 2);
+            bounds.height = addExact(multiplyExact(bounds.height, image.getTileHeight() - 2), 2);
+            if (aoi.contains(bounds)) {
+                aoi = null;
+            }
+        }
+        areaOfInterest = aoi;
     }
 
     /**
@@ -161,8 +209,8 @@ public class TileOpExecutor {
      */
     public final Rectangle getTileIndices() {
         return new Rectangle(minTileX, minTileY,
-                Math.incrementExact(Math.subtractExact(maxTileX, minTileX)),
-                Math.incrementExact(Math.subtractExact(maxTileY, minTileY)));
+                incrementExact(subtractExact(maxTileX, minTileX)),
+                incrementExact(subtractExact(maxTileY, minTileY)));
     }
 
     /**
@@ -575,7 +623,7 @@ public class TileOpExecutor {
         Cursor(final RI image, final Collector<?,A,?> collector, final boolean stopOnError) {
             this.image       = image;
             this.combiner    = collector.combiner();
-            this.numXTiles   = Math.incrementExact(Math.subtractExact(maxTileX, minTileX));
+            this.numXTiles   = incrementExact(subtractExact(maxTileX, minTileX));
             this.stopOnError = stopOnError;
             this.errors      = new ErrorHandler.Report();
         }
@@ -601,11 +649,31 @@ public class TileOpExecutor {
         final boolean next(final Worker<RI,?,A> indices) {
             final int index = getAndIncrement();
             if (index >= 0) {
-                indices.tx = Math.addExact(minTileX, index % numXTiles);
-                indices.ty = Math.addExact(minTileY, index / numXTiles);
+                indices.tx = addExact(minTileX, index % numXTiles);
+                indices.ty = addExact(minTileY, index / numXTiles);
                 return indices.ty <= maxTileY;
             }
             return false;
+        }
+
+        /**
+         * Returns {@code true} if current tile of given worker intersects the area of interest.
+         * This is a finer check than the AOI specified at {@link TileOpExecutor} construction time,
+         * because the AOI tested here can be an irregular shape.
+         *
+         * @param  indices  the worker to test.
+         * @return whether current worker tile intersect the area of interest.
+         *
+         * @see #setAreaOfInterest(RenderedImage, Shape)
+         */
+        final boolean intersectAOI(final Worker<RI,?,A> indices) {
+            if (areaOfInterest == null) {
+                return true;
+            }
+            final Rectangle bounds = new Rectangle(image.getTileWidth(), image.getTileHeight());
+            bounds.x = addExact(multiplyExact(indices.tx, bounds.width),  image.getTileGridXOffset());
+            bounds.y = addExact(multiplyExact(indices.ty, bounds.height), image.getTileGridYOffset());
+            return areaOfInterest.intersects(bounds);
         }
 
         /**
@@ -711,8 +779,8 @@ public class TileOpExecutor {
             final int index = get();
             String tile = "done";
             if (index >= 0) {
-                final int tx = Math.addExact(minTileX, index % numXTiles);
-                final int ty = Math.addExact(minTileY, index / numXTiles);
+                final int tx = addExact(minTileX, index % numXTiles);
+                final int ty = addExact(minTileY, index / numXTiles);
                 if (ty <= maxTileY) {
                     tile = "(" + tx + ", " + ty + ')';
                 }
@@ -786,7 +854,9 @@ public class TileOpExecutor {
         @Override
         public final void run() {
             while (cursor.next(this)) try {
-                executeOnCurrentTile();
+                if (cursor.intersectAOI(this)) {
+                    executeOnCurrentTile();
+                }
             } catch (Exception ex) {
                 cursor.recordError(new Point(tx, ty), trimImagingWrapper(ex));
             }

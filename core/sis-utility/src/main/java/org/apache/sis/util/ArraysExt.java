@@ -1993,7 +1993,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all values in the specified array are equal to the specified value,
-     * which may be {@code null}.
+     * which may be {@code null}. If the given array is empty, then this method returns {@code true}.
      *
      * @param  array  the array to check.
      * @param  value  the expected value.

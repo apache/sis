@@ -27,7 +27,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import org.apache.sis.gui.dataset.LogViewer;
 import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.ResourceLoader;
+import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.io.FileAccessView;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.util.resources.Vocabulary;
@@ -46,7 +46,7 @@ final class SystemMonitor implements EventHandler<WindowEvent> {
      * The provider of wrappers around channels used for reading data.
      * Those wrappers are used for listening to file accesses.
      *
-     * @see ResourceLoader#setFactoryWrapper(UnaryOperator)
+     * @see DataStoreOpener#setFactoryWrapper(UnaryOperator)
      */
     private final UnaryOperator<ChannelFactory> listener;
 
@@ -72,7 +72,7 @@ final class SystemMonitor implements EventHandler<WindowEvent> {
         } else {
             return;
         }
-        ResourceLoader.setFactoryWrapper(wrapper);
+        DataStoreOpener.setFactoryWrapper(wrapper);
     }
 
     /**
@@ -102,6 +102,8 @@ final class SystemMonitor implements EventHandler<WindowEvent> {
         w.setTitle(resources.getString(Resources.Keys.SystemMonitor) + " — Apache SIS");
         w.getIcons().setAll(parent.getIcons());
         w.setScene(new Scene(panes));
+        w.setMinWidth (400);
+        w.setMinHeight(500);        // For preventing logging details to hide logging message table.
         w.setWidth (800);
         w.setHeight(600);
         /*

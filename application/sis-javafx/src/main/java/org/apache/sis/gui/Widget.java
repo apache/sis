@@ -16,7 +16,9 @@
  */
 package org.apache.sis.gui;
 
+import java.util.Locale;
 import javafx.scene.layout.Region;
+import org.apache.sis.util.Localized;
 
 
 /**
@@ -36,11 +38,11 @@ import javafx.scene.layout.Region;
  * {@link org.apache.sis.gui.map.MapCanvas}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
-public abstract class Widget {
+public abstract class Widget implements Localized {
     /**
      * Creates a new widget.
      */
@@ -54,4 +56,18 @@ public abstract class Widget {
      * @return the JavaFX component to insert in a scene graph.
      */
     public abstract Region getView();
+
+    /**
+     * Returns the locale for controls and messages. This is usually the
+     * {@linkplain Locale#getDefault() default locale} but some widgets allow alternative locale.
+     * This is indicative; there is no guarantee that this locale will be honored by all controls.
+     *
+     * @return the locale for controls in this widget.
+     *
+     * @since 1.2
+     */
+    @Override
+    public Locale getLocale() {
+        return Locale.getDefault(Locale.Category.DISPLAY);
+    }
 }

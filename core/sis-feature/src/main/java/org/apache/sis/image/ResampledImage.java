@@ -438,19 +438,19 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Verifies whether image layout information are consistent. This method performs all verifications
-     * {@linkplain ComputedImage#verify() documented in parent class}, then verifies that source coordinates
+     * Verifies whether image layout information are consistent. This method verifies that source coordinates
      * required by this image (computed by converting {@linkplain #getBounds() this image bounds} using the
      * {@link #toSource} transform) intersects the bounds of the source image. If this is not the case, then
      * this method returns {@code "toSource"} for signaling that the transform may have a problem.
+     * Otherwise this method completes the check with all verifications
+     * {@linkplain ComputedImage#verify() documented in parent class}
      *
      * @return {@code null} if image layout information are consistent,
      *         or the name of inconsistent attribute if a problem is found.
      */
     @Override
     public String verify() {
-        String error = super.verify();
-        if (error == null && toSource instanceof MathTransform2D) try {
+        if (toSource instanceof MathTransform2D) try {
             final Rectangle bounds = getBounds();
             final Rectangle2D tb = Shapes2D.transform((MathTransform2D) toSource, bounds, bounds);
             if (!ImageUtilities.getBounds(getSource()).intersects(tb)) {
@@ -460,7 +460,7 @@ public class ResampledImage extends ComputedImage {
             recoverableException("verify", e);
             return "toSource";
         }
-        return error;
+        return super.verify();      // "width" and "height" properties should be checked last.
     }
 
     /**

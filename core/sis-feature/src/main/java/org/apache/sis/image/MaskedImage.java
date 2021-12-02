@@ -39,6 +39,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.internal.util.Numerics.LONG_SHIFT;
 
 
 /**
@@ -256,10 +257,12 @@ final class MaskedImage extends SourceAlignedImage {
          */
         final Rectangle maskBounds = this.maskBounds;
         final LongBuffer mask = getMask().asLongBuffer();
+        final int xmax   = xmin + source.getTileWidth();
+        final int ymax   = ymin + source.getTileHeight();
+        final int xEnd   = Math.min(xmax, maskBounds.x + maskBounds.width);
+        final int yEnd   = Math.min(ymax, maskBounds.y + maskBounds.height);
         final int xStart = Math.max(xmin, maskBounds.x);
         final int yStart = Math.max(ymin, maskBounds.y);
-        final int xEnd   = Math.min(xmin + source.getTileWidth(),  maskBounds.x + maskBounds.width);
-        final int yEnd   = Math.min(ymin + source.getTileHeight(), maskBounds.y + maskBounds.height);
         final int imax   = xEnd   - maskBounds.x;                   // Maximum x index in mask, exclusive.
         final int xoff   = xStart - maskBounds.x;
         Raster    data   = null;
@@ -275,9 +278,9 @@ final class MaskedImage extends SourceAlignedImage {
          */
         for (int y=yStart; y<yEnd; y++) {
             int index = (y - maskBounds.y) * maskScanlineStride;    // Index in unit of bits for now (converted later).
-            final int emax  = (index +  imax) /  Long.SIZE;         // Last index in unit of long elements, inclusive.
+            final int emax  = (index +  imax) >>> LONG_SHIFT;       // Last index in unit of long elements, inclusive.
             final int shift = (index += xoff) & (Long.SIZE-1);      // First bit to read in the long, 0 = highest bit.
-            index /= Long.SIZE;                                     // Convert from bit (pixel) index to long[] index.
+            index >>>= LONG_SHIFT;                                  // Convert from bit (pixel) index to long[] index.
             /*
              * We want a value such as `base + index*Long.SIZE + lower` is equal to `xStart`
              * when all variables point to the first potentially masked pixel of the tile:
@@ -366,17 +369,30 @@ final class MaskedImage extends SourceAlignedImage {
         }
         /*
          * The tile is fetched only if at least one pixel needs to be copied from the source tile.
-         * If the source tile is still null at this point, it means that target tile is fully empty.
-         * Note that the target tile may be non-null because it was an argument to this method.
+         * If the source tile is still null at this point, it means that masked region is fully empty.
+         * Note that the `target` variable may be non-null because it was an argument to this method.
          */
+        final boolean isFullTile = (xStart == xmin && yStart == ymin && xEnd == xmax && yEnd == ymax);
         if (data == null) {
-            return createEmptyTile(xmin, ymin);
+            if (isFullTile) {
+                return createEmptyTile(xmin, ymin);
+            }
+            data = source.getTile(tileX, tileY);
+            boolean clean = needCreate(tile, data);
+            if (clean) {
+                tile = createTile(tileX, tileY);
+                clean = fillValues.isFullyZero;
+            }
+            if (!clean) {
+                fillValues.fill(tile);
+            }
         }
         /*
          * If no bit from the `present` mask have been cleared, then it means that all pixels
          * have been copied. In such case the source tile can be returned directly.
          */
-        if (present == -1) {
+        assert data.getMinX() == xmin && data.getMinY() == ymin;
+        if (present == -1 && (isFullTile | maskInside)) {
             return data;
         }
         /*
@@ -384,11 +400,8 @@ final class MaskedImage extends SourceAlignedImage {
          * there is some pixels that we need to copy here.
          */
         if (maskInside) {
-            final int width  = tile.getWidth();
-                  int height = tile.getHeight();
-            final int xmax   = xmin + width;
-            final int ymax   = ymin + height;
-            height -= (yStart - ymin) + (ymax - yEnd);
+            final int width  = xmax - xmin;
+            final int height = yEnd - yStart;
 complete:   for (int border = 0; ; border++) {
                 final int start, span;
                 switch (border) {

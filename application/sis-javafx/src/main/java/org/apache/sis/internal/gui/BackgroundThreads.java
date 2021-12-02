@@ -164,7 +164,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
              */
             interrupted("stop", e);
         }
-        ResourceLoader.closeAll();
+        DataStoreOpener.closeAll();
     }
 
     /**

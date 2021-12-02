@@ -19,8 +19,6 @@ package org.apache.sis.internal.doclet;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.function.Supplier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.File;
@@ -46,11 +44,11 @@ import jdk.javadoc.doclet.StandardDoclet;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.5
  * @module
  */
-public final class Doclet extends StandardDoclet implements Supplier<Reporter> {
+public final class Doclet extends StandardDoclet {
     /**
      * The name of the SIS-specific stylesheet file.
      */
@@ -62,38 +60,9 @@ public final class Doclet extends StandardDoclet implements Supplier<Reporter> {
     private String outputDirectory;
 
     /**
-     * Where to report warnings, or {@code null} if unknown.
-     */
-    private Reporter reporter;
-
-    /**
      * Invoked by the Javadoc tools for instantiating the custom doclet.
      */
     public Doclet() {
-    }
-
-    /**
-     * Invoked by the Javadoc tools for initializing the doclet.
-     *
-     * @param locale    the locale to use for formatting HTML content.
-     * @param reporter  where to report warnings and errors.
-     */
-    @Override
-    public void init(final Locale locale, final Reporter reporter) {
-        super.init(locale, reporter);
-        this.reporter = reporter;
-    }
-
-    /**
-     * Returns the {@link Reporter} associated to this doclet environment.
-     * This method is hack for giving that information to the taglets. We have to use a standard Java interfaces
-     * because the class loader of this {@code Doclet} will not be the same than the {@link Taglet} class loader.
-     *
-     * @return implementation-dependent information to give to taglets.
-     */
-    @Override
-    public Reporter get() {
-        return reporter;
     }
 
     /**
@@ -225,6 +194,7 @@ public final class Doclet extends StandardDoclet implements Supplier<Reporter> {
      */
     @SuppressWarnings("CallToPrintStackTrace")
     private void error(final IOException e) {
+        final Reporter reporter = getReporter();
         if (reporter != null) {
             final StringWriter buffer = new StringWriter();
             final PrintWriter p = new PrintWriter(buffer);

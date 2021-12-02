@@ -16,12 +16,15 @@
  */
 package org.apache.sis.internal.earth.netcdf;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
+import java.util.function.Function;
+import java.awt.Color;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -41,6 +44,7 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
@@ -69,7 +73,7 @@ import ucar.nc2.constants.CF;
  *         variables:
  *             ushort SST(1599, 1250)                   // Note: different size than (latitude, longitude) variables.
  *                 string dim0 = "Line grids"
- *                 string dim1 = "Piexl grids"              // Note: typo in "Pixel"
+ *                 string dim1 = "Piexl grids"          // Note: typo in "Pixel"
  *                 ushort Error_DN           = 65535
  *                 ushort Land_DN            = 65534
  *                 ushort Cloud_error_DN     = 65533
@@ -113,7 +117,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_c/">SHIKISAI (GCOM-C) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -126,6 +130,11 @@ public final class GCOM_C extends Convention {
      * Sentinel value to search in the {@code "Satellite"} attribute for determining if GCOM-C conventions apply.
      */
     private static final Pattern SENTINEL_VALUE = Pattern.compile(".*\\bGCOM-C\\b.*");
+
+    /**
+     * Name of the variable storing data quality flags.
+     */
+    private static final String QA_FLAG = "QA_flag";
 
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-C.
@@ -238,7 +247,7 @@ public final class GCOM_C extends Convention {
      */
     @Override
     public VariableRole roleOf(final Variable variable) {
-        VariableRole role = super.roleOf(variable);
+        final VariableRole role = super.roleOf(variable);
         if (role == VariableRole.COVERAGE) {
             /*
              * Exclude (for now) some variables associated to longitude and latitude: Obs_time, Sensor_zenith, Solar_zenith.
@@ -246,7 +255,10 @@ public final class GCOM_C extends Convention {
              */
             final String group = variable.getGroupName();
             if (GEOMETRY_DATA.equalsIgnoreCase(group)) {
-                role = VariableRole.OTHER;
+                return VariableRole.OTHER;
+            }
+            if (QA_FLAG.equals(variable.getName())) {
+                return VariableRole.DISCRETE_COVERAGE;
             }
         }
         return role;
@@ -272,7 +284,7 @@ public final class GCOM_C extends Convention {
     public String nameOfDimension(final Variable dataOrAxis, final int index) {
         String name = super.nameOfDimension(dataOrAxis, index);
         if (name == null) {
-            if ("QA_flag".equals(dataOrAxis.getName())) {
+            if (QA_FLAG.equals(dataOrAxis.getName())) {
                 /*
                  * The "QA_flag" variable is missing "Dim0" and "Dim1" attribute in GCOM-C version 1.00.
                  * However not all GCOM-C files use a localization grid. We use the presence of spatial
@@ -527,5 +539,32 @@ public final class GCOM_C extends Convention {
             }
         }
         return super.getUnitFallback(data);
+    }
+
+    /**
+     * Returns the colors to use for each category, or {@code null} for the default colors.
+     *
+     * @param  data  the variable for which to get the colors.
+     * @return colors to use for each category, or {@code null} for the default.
+     */
+    @Override
+    public Function<Category,Color[]> getColors(final Variable data) {
+        if (QA_FLAG.equals(data.getName())) {
+            return (category) -> {
+                final NumberRange<?> range = category.getSampleRange();
+                if (Objects.equals(range.getMinValue(), range.getMaxValue())) {
+                    return null;        // A "no data" value.
+                }
+                /*
+                 * Following colors are not really appropriate for "QA_flag" because that variable is a bitmask
+                 * rather than a continuous coverage. Following code may be replaced by a better color palette
+                 * in a future version.
+                 */
+                return new Color[] {
+                    Color.BLUE, Color.CYAN, Color.YELLOW, Color.RED
+                };
+            };
+        }
+        return super.getColors(data);
     }
 }

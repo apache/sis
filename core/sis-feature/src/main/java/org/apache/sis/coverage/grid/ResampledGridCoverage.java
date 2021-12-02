@@ -16,9 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.List;
 import java.util.Arrays;
-import java.util.Optional;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
@@ -31,10 +29,10 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -54,7 +52,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -122,17 +120,8 @@ final class ResampledGridCoverage extends GridCoverage {
          * If no background value is declared, default is 0 for integer data or
          * NaN for floating point values.
          */
-        final List<SampleDimension> bands = getSampleDimensions();
-        final Number[] fillValues = new Number[bands.size()];
-        for (int i=fillValues.length; --i >= 0;) {
-            final SampleDimension band = bands.get(i);
-            final Optional<Number> bg = band.getBackground();
-            if (bg.isPresent()) {
-                fillValues[i] = bg.get();
-            }
-        }
         processor = processor.clone();
-        processor.setFillValues(fillValues);
+        processor.setFillValues(SampleDimensions.backgrounds(getSampleDimensions()));
         changeOfCRS.setAccuracyOf(processor);
         imageProcessor = GridCoverageProcessor.unique(processor);
         final Dimension s = imageProcessor.getInterpolation().getSupportSize();
@@ -282,6 +271,7 @@ final class ResampledGridCoverage extends GridCoverage {
     {
         final GridGeometry sourceGG = source.getGridGeometry();
         final CoordinateOperationFinder changeOfCRS = new CoordinateOperationFinder(sourceGG, target);
+        changeOfCRS.verifyPresenceOfCRS(true);
         /*
          * Compute the transform from source pixels to target CRS (to be completed to target pixels later).
          * The following lines may throw IncompleteGridGeometryException, which is desired because if that

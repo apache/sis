@@ -25,6 +25,9 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
+ *
+ * @see org.apache.sis.internal.gui.DataStoreOpener
+ *
  * @since   1.2
  * @module
  */

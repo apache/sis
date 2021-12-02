@@ -96,7 +96,7 @@ final class CellFormat extends SimpleStringProperty {
      * method to invoke, which {@code NumberFormat.format(…)} method to invoke, and whether to set a format pattern
      * with fraction digits.
      */
-    boolean dataTypeisInteger;
+    boolean dataTypeIsInteger;
 
     /**
      * Temporarily set to {@code true} when the user selects or enters a new pattern in a GUI control, then
@@ -231,7 +231,7 @@ final class CellFormat extends SimpleStringProperty {
      * @param  band   index of the band to show in this grid view.
      */
     final void configure(final RenderedImage image, final int band) {
-        if (dataTypeisInteger) {
+        if (dataTypeIsInteger) {
             cellFormat.setMaximumFractionDigits(0);
         } else {
             int n = getFractionDigits(image, band).orElse(1);
@@ -285,7 +285,7 @@ final class CellFormat extends SimpleStringProperty {
      */
     final String format(final Raster tile, final int x, final int y, final int b) {
         buffer.setLength(0);
-        if (dataTypeisInteger) {
+        if (dataTypeIsInteger) {
             final int  integer = tile.getSample(x, y, b);
             final double value = integer;
             if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {

@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Converts an {@link IdentifiedObject} to {@link String} representation to shown in JavaFX control.
+ * Converts an {@link IdentifiedObject} to {@link String} representation to show in JavaFX control.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

@@ -1583,6 +1583,10 @@ final class ImageFileDirectory extends DataCube {
                     }
                     double min = 0;
                     double max = Numerics.bitmask(bitsPerSample);                   // Exclusive.
+                    if (sampleFormat != UNSIGNED) {
+                        max /= 2;
+                        min = -max;
+                    }
                     if (minValues != null) min = Math.max(min, minValues.doubleValue(visibleBand));
                     if (maxValues != null) max = Math.min(max, maxValues.doubleValue(visibleBand) + 1);
                     colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
