@@ -143,7 +143,7 @@ abstract class ViewAndControls {
 
     /**
      * Returns the main component, which is showing coverage data or image.
-     * This is the component to shown on the right (largest) part of the split pane.
+     * This is the component to show on the right (largest) part of the split pane.
      */
     abstract Region view();
 

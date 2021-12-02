@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public final class ColorRamp {
     /**
-     * The type of colors to shown in a cell.
+     * The type of colors to show in a cell.
      * The type determines how user can choose a value.
      */
     public enum Type {
@@ -140,7 +140,7 @@ public final class ColorRamp {
      * If this item has many colors (for example because it uses a gradient),
      * then an arbitrary color is returned.
      *
-     * @return single color to shown in table cell, or {@code null} if none.
+     * @return single color to show in table cell, or {@code null} if none.
      */
     public final Color color() {
         if (color == null) {

@@ -18,7 +18,7 @@ package org.apache.sis.internal.setup;
 
 
 /**
- * An identifier of the page to shown in {@link Wizard}.
+ * An identifier of the page to show in {@link Wizard}.
  * Pages are shown in enumeration order.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -100,7 +100,7 @@ enum WizardPage {
     final String title;
 
     /**
-     * The text to shown on the page.
+     * The text to show on the page.
      */
     final String text;
 

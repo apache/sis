@@ -83,7 +83,7 @@ public class RecentReferenceSystems {
     private static final int NUM_CORE_ITEMS = 1;
 
     /**
-     * Number of reference systems to shown in {@link ChoiceBox} or {@link MenuItem}s.
+     * Number of reference systems to show in {@link ChoiceBox} or {@link MenuItem}s.
      * The {@value #NUM_CORE_ITEMS} core systems are included but not {@link #OTHER}.
      */
     private static final int NUM_SHOWN_ITEMS = 9;

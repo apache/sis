@@ -632,7 +632,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
             /*
              * Add a tolerance factor of ½ pixel when computing the number of significant
-             * fraction digits to shown in coordinates.
+             * fraction digits to show in coordinates.
              */
             if (geometry.isDefined(GridGeometry.EXTENT)) {
                 final GridExtent extent = geometry.getExtent();

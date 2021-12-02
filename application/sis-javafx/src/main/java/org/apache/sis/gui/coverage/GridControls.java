@@ -98,7 +98,7 @@ final class GridControls extends ViewAndControls {
 
     /**
      * Creates a new slider for the given range of values and bound to the specified properties.
-     * This is used for creating the sliders to shown in the "Display" pane.
+     * This is used for creating the sliders to show in the "Display" pane.
      */
     private static Slider createSlider(final DoubleProperty property, final double min, final double max) {
         final Slider slider = new Slider(min, max, property.getValue());

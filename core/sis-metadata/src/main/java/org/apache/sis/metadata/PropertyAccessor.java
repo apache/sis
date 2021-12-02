@@ -143,7 +143,7 @@ class PropertyAccessor {
     private final int allCount;
 
     /**
-     * Numbers of methods to shown to the user. This is always equal or lower than {@link #allCount}.
+     * Numbers of methods to show to the user. This is always equal or lower than {@link #allCount}.
      * This count may be lower than {@code allCount} for two reasons:
      *
      * <ul>

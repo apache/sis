@@ -206,7 +206,7 @@ public class DataViewer extends Application {
     }
 
     /**
-     * Creates the file filters for the dialog box to shown in "File" ▶ "Open" and "File" ▶ "Save" menus.
+     * Creates the file filters for the dialog box to show in "File" ▶ "Open" and "File" ▶ "Save" menus.
      *
      * @todo Iterate only over the classes in JDK9, without initializing the providers.
      */
