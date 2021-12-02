@@ -17,8 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Control;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -70,7 +68,7 @@ final class CoverageControls extends ViewAndControls {
     /**
      * The controls for changing {@link #view}.
      */
-    private final Accordion controls;
+    private final TitledPane[] controls;
 
     /**
      * The image together with the status bar.
@@ -148,11 +146,12 @@ final class CoverageControls extends ViewAndControls {
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
-        final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane);
-        final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane);
-        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
-        controls = new Accordion(p1, p2, p3);
-        controls.setExpandedPane(p1);
+        controls = new TitledPane[] {
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
+        };
+        final TitledPane delayed = controls[2];     // Control to be built only if requested.
         /*
          * Set listeners: changes on `CoverageCanvas` properties are propagated to the corresponding
          * `CoverageExplorer` properties. This constructor does not install listeners in the opposite
@@ -160,7 +159,7 @@ final class CoverageControls extends ViewAndControls {
          */
         view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
         view.coverageProperty.addListener((p,o,n) -> onPropertySet(null, n));
-        p3.expandedProperty().addListener(new PropertyPaneCreator(view, p3));
+        delayed.expandedProperty().addListener(new PropertyPaneCreator(view, delayed));
     }
 
     /**
@@ -213,9 +212,11 @@ final class CoverageControls extends ViewAndControls {
 
     /**
      * Returns the controls for controlling the view of tabular data.
+     * This method does not clone the returned array; do not modify!
      */
     @Override
-    final Control controls() {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final TitledPane[] controlPanes() {
         return controls;
     }
 }

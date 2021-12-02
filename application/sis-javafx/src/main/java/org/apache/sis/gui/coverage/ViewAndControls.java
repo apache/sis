@@ -20,6 +20,9 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -63,6 +66,15 @@ abstract class ViewAndControls {
      * This is initialized after construction and only if a button bar exists.
      */
     Toggle selector;
+
+    /**
+     * The controls put together in an accordion. Built only if requested
+     * (may never be requested if the caller creates its own accordion with additional panes,
+     * as {@link org.apache.sis.gui.dataset.ResourceExplorer} does).
+     *
+     * @see #controls()
+     */
+    private Accordion controls;
 
     /**
      * The widget which contain this view. This is the widget to inform when the coverage changed.
@@ -136,10 +148,27 @@ abstract class ViewAndControls {
     abstract Region view();
 
     /**
-     * Returns the controls for controlling the view.
-     * This is the component to shown on the left (smaller) part of the split pane.
+     * Returns the list of control panels for controlling the view.
+     * They are the components to show on the left (smaller) part of the split pane.
+     * Callers will typically put those components in an {@link javafx.scene.control.Accordion}.
+     *
+     * @return the controls. This method does not clone the returned array; do not modify!
      */
-    abstract Control controls();
+    abstract TitledPane[] controlPanes();
+
+    /**
+     * Returns the controls for controlling the view.
+     * This is the component to show on the left (smaller) part of the split pane.
+     */
+    final Accordion controls() {
+        if (controls == null) {
+            final TitledPane[] panes = controlPanes();
+            controls = new Accordion(panes);
+            controls.setExpandedPane(panes[0]);
+            SplitPane.setResizableWithParent(controls, Boolean.FALSE);
+        }
+        return controls;
+    }
 
     /**
      * Sets the view content to the given resource, coverage or image.

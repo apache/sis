@@ -18,8 +18,6 @@ package org.apache.sis.gui.coverage;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Control;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
@@ -52,7 +50,7 @@ final class GridControls extends ViewAndControls {
     /**
      * The controls for changing {@link #view}.
      */
-    private final Accordion controls;
+    private final TitledPane[] controls;
 
     /**
      * The control showing sample dimensions for the current coverage.
@@ -90,13 +88,12 @@ final class GridControls extends ViewAndControls {
                     labelOfGroup(vocabulary, Vocabulary.Keys.Cells, gp, false), gp);
         }
         /*
-         * Put all sections together and have the first one expanded by default.
+         * All sections put together.
          */
-        controls = new Accordion(
+        controls = new TitledPane[] {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane)
             // TODO: more controls to be added in a future version.
-        );
-        controls.setExpandedPane(controls.getPanes().get(0));
+        };
     }
 
     /**
@@ -150,9 +147,11 @@ final class GridControls extends ViewAndControls {
 
     /**
      * Returns the controls for controlling the view of tabular data.
+     * This method does not clone the returned array; do not modify!
      */
     @Override
-    final Control controls() {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final TitledPane[] controlPanes() {
         return controls;
     }
 }

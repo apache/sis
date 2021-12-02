@@ -25,6 +25,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Toggle;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
@@ -259,8 +260,7 @@ public class CoverageExplorer extends Widget {
                 case IMAGE: c = new CoverageControls(this); break;
                 default: throw new AssertionError(type);
             }
-            SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
-            SplitPane.setResizableWithParent(c.view(),     Boolean.TRUE);
+            SplitPane.setResizableWithParent(c.view(), Boolean.TRUE);
             views.put(type, c);
             load = true;
         }
@@ -342,17 +342,16 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * Returns the region containing only the controls, without data visualization component.
-     * The {@link Region} subclass returned by this method is implementation dependent and may
-     * change in any future version.
+     * Returns the panes containing the controls, without data visualization component.
+     * The {@link TitledPane} contents are implementation dependent and may change in any future version.
      *
      * @param  type  whether to obtain controls for {@link GridView} or {@link CoverageCanvas}.
      * @return the controls on specified data view.
      */
-    public final Region getControls(final View type) {
+    public final TitledPane[] getControls(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).controls();
+        return getViewAndControls(type, false).controlPanes().clone();
     }
 
     /**

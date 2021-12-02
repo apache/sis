@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -112,6 +113,20 @@ public class ResourceExplorer extends WindowManager {
     private FeatureTable features;
 
     /**
+     * The type of view (image or table) for the coverage, or {@code null} if the coverage is not currently shown.
+     * We save this information because we need to know what was the previous view when a new view is selected.
+     *
+     * @see #getCoverageView()
+     */
+    private CoverageExplorer.View coverageView;
+
+    /**
+     * The pane which is expanded for a given type of view.
+     * This is used for restoring the expanded tab when user switch tab.
+     */
+    private final EnumMap<CoverageExplorer.View, TitledPane> expandedPane;
+
+    /**
      * Controls for the image or tabular data. The first titled pane on top contains the
      * {@link #resources} tree and all other panes below are resource-dependent controls.
      *
@@ -166,6 +181,7 @@ public class ResourceExplorer extends WindowManager {
         final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
         controls = new Accordion(resourcesPane);
         controls.setExpandedPane(resourcesPane);
+        expandedPane = new EnumMap<>(CoverageExplorer.View.class);
         /*
          * "Summary" tab showing a summary of resource metadata.
          */
@@ -417,6 +433,7 @@ public class ResourceExplorer extends WindowManager {
      * Returns the enumeration value that describe the kind of content to show in {@link CoverageExplorer}.
      * The type depends on which tab is visible. If no coverage data tab is visible, then returns null.
      *
+     * @see #coverageView
      * @see #dataShown
      */
     private CoverageExplorer.View getCoverageView() {
@@ -436,14 +453,14 @@ public class ResourceExplorer extends WindowManager {
      * @see #updateDataTabWithDefault(Resource)
      */
     private boolean updateDataTab(final Resource resource) {
-        Region        image = null;
-        Region        table = null;
-        FeatureSet    data  = null;
-        ImageRequest  grid  = null;
-        Region controlPanel = null;
-        CoverageExplorer.View type = null;
+        Region       image  = null;
+        Region       table  = null;
+        FeatureSet   data   = null;
+        ImageRequest grid   = null;
+        TitledPane[] cpanes = null;
+        final CoverageExplorer.View type = getCoverageView();
         if (resource instanceof GridCoverageResource) {
-            type = getCoverageView();       // A null value here would be a violation of method contract.
+            // A null `type` value here would be a violation of method contract.
             if (coverage == null) {
                 coverage = new CoverageExplorer(type);
             } else {
@@ -455,7 +472,7 @@ public class ResourceExplorer extends WindowManager {
                 case TABLE: table = view; break;
             }
             grid = new ImageRequest((GridCoverageResource) resource, null, null);
-            controlPanel = coverage.getControls(type);
+            cpanes = coverage.getControls(type);
         } else if (resource instanceof FeatureSet) {
             data = (FeatureSet) resource;
             if (features == null) {
@@ -474,23 +491,27 @@ public class ResourceExplorer extends WindowManager {
         final boolean isEmpty = (image == null & table == null);
         setNewWindowDisabled(isEmpty);
         /*
-         * Adds or removes controls for the selected view.
+         * Add or remove controls for the selected view.
+         * Information about the expanded pane needs to be saved before to remove controls,
+         * and restored (for a potentially different view) after new controls have been added.
          */
+        TitledPane expanded = controls.getExpandedPane();
+        if (expanded != null && coverageView != null) {
+            expandedPane.put(coverageView, expanded);
+        }
         final ObservableList<TitledPane> items = controls.getPanes();
         final int size = items.size();
         items.remove(1, size);
-        if (controlPanel != null) {
-            if (controlPanel instanceof Accordion) {
-                /*
-                 * It is okay to use the same controls in another JavaFX node because the `controlPanel` will
-                 * never be shown (we will only show its components). The children are in only one scene graph.
-                 */
-                items.addAll(((Accordion) controlPanel).getPanes());
-            } else {
-                items.add(new TitledPane(Vocabulary.getResources(getLocale())
-                        .getString(Vocabulary.Keys.Controls), controlPanel));
+        if (cpanes != null) {
+            items.addAll(cpanes);
+            if (!items.contains(expanded)) {
+                expanded = expandedPane.get(type);
+                if (expanded != null) {
+                    controls.setExpandedPane(expanded);
+                }
             }
         }
+        coverageView = type;
         return !isEmpty | (resource == null);
     }
 
