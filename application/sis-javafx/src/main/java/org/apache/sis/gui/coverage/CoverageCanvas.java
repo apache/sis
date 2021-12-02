@@ -284,6 +284,14 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
+     * Returns the resource to preserve when the coverage is adjusting. If the coverage is set for another reason
+     * than adjustment, then the resource should be set to null as specified in {@link #resourceProperty} contract.
+     */
+    final GridCoverageResource getResourceIfAdjusting() {
+        return isCoverageAdjusting ? getResource() : null;
+    }
+
+    /**
      * Returns the source of coverages for this viewer.
      * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
      *
@@ -350,15 +358,17 @@ public class CoverageCanvas extends MapCanvasAWT {
      * If both are non-null, then it is caller's responsibility to ensure that they are consistent.
      */
     final void setCoverage(final GridCoverageResource resource, final GridCoverage coverage) {
-        final boolean p = isCoverageAdjusting;
-        try {
-            isCoverageAdjusting = true;
-            setResource(resource);
-            setCoverage(coverage);
-        } finally {
-            isCoverageAdjusting = p;
+        if (getResource() != resource || getCoverage() != coverage) {
+            final boolean p = isCoverageAdjusting;
+            try {
+                isCoverageAdjusting = true;
+                setResource(resource);
+                setCoverage(coverage);
+            } finally {
+                isCoverageAdjusting = p;
+            }
+            onPropertySpecified(resource, coverage, null);
         }
-        onPropertySpecified(resource, coverage, null);
     }
 
     /**

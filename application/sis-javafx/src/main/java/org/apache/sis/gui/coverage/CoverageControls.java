@@ -52,8 +52,10 @@ import org.apache.sis.util.resources.Vocabulary;
 final class CoverageControls extends ViewAndControls {
     /**
      * The component for showing sample values.
+     *
+     * @see CoverageExplorer#getCanvas()
      */
-    private final CoverageCanvas view;
+    final CoverageCanvas view;
 
     /**
      * The control showing categories and their colors for the current coverage.
@@ -158,7 +160,7 @@ final class CoverageControls extends ViewAndControls {
          * direction; instead `CoverageExplorer` will invoke `load(ImageRequest)`.
          */
         view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
-        view.coverageProperty.addListener((p,o,n) -> onPropertySet(null, n));
+        view.coverageProperty.addListener((p,o,n) -> onPropertySet(view.getResourceIfAdjusting(), n));
         delayed.expandedProperty().addListener(new PropertyPaneCreator(view, delayed));
     }
 

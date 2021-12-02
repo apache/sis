@@ -18,9 +18,7 @@ package org.apache.sis.gui.dataset;
 
 import java.util.EventObject;
 import javafx.scene.layout.Region;
-import javafx.scene.control.MenuItem;
 import org.apache.sis.gui.coverage.CoverageExplorer;
-import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.internal.gui.Resources;
 
 
@@ -38,17 +36,11 @@ import org.apache.sis.internal.gui.Resources;
  * resource may change in any future version of this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 final class SelectedData {
-    /**
-     * Key of a property for storing {@link CoverageExplorer.View} value
-     * specifying the initial view of new windows.
-     */
-    private static final String COVERAGE_VIEW_KEY = "org.apache.sis.gui.CoverageView";
-
     /**
      * A title to use for windows and menu items.
      */
@@ -64,7 +56,7 @@ final class SelectedData {
      * The request for coverage data, or {@code null} if the selected data are not coverage.
      * Only one of {@link #features} and {@link #coverage} shall be non-null.
      */
-    private final ImageRequest coverage;
+    private final CoverageExplorer coverage;
 
     /**
      * Localized resources, for convenience only.
@@ -74,20 +66,11 @@ final class SelectedData {
     /**
      * Creates a snapshot of selected data.
      */
-    SelectedData(final String title, final FeatureTable features, final ImageRequest coverage, final Resources localized) {
+    SelectedData(final String title, final FeatureTable features, final CoverageExplorer coverage, final Resources localized) {
         this.title     = title;
         this.features  = features;
         this.coverage  = coverage;
         this.localized = localized;
-    }
-
-    /**
-     * Specifies that the given menu item should create a window initialized to tabular data
-     * instead of the image.
-     */
-    static MenuItem setTabularView(final MenuItem item) {
-        item.getProperties().put(COVERAGE_VIEW_KEY, CoverageExplorer.View.TABLE);
-        return item;
     }
 
     /**
@@ -99,19 +82,7 @@ final class SelectedData {
         if (features != null) {
             return new FeatureTable(features);
         } else {
-            CoverageExplorer.View view = CoverageExplorer.View.IMAGE;
-            if (event != null) {
-                final Object source = event.getSource();
-                if (source instanceof MenuItem) {
-                    final Object value = ((MenuItem) source).getProperties().get(COVERAGE_VIEW_KEY);
-                    if (value instanceof CoverageExplorer.View) {
-                        view = (CoverageExplorer.View) value;
-                    }
-                }
-            }
-            final CoverageExplorer ce = new CoverageExplorer(view);
-            ce.setCoverage(coverage);
-            return ce.getView();
+            return new CoverageExplorer(coverage).getView();
         }
     }
 }

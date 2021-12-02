@@ -245,6 +245,29 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
+     * Creates an explorer initialized with the same coverage or resource than the given explorer.
+     *
+     * @param  source  the source explorer from which to take the initial coverage or resource.
+     *
+     * @since 1.2
+     */
+    public CoverageExplorer(final CoverageExplorer source) {
+        this(source.getViewType());
+        setCoverage(new ImageRequest(source.getResource(), source.getCoverage()));
+    }
+
+    /**
+     * Returns the canvas where the image is shown.
+     *
+     * @return the canvas where the image is shown.
+     *
+     * @since 1.2
+     */
+    public final CoverageCanvas getCanvas() {
+        return ((CoverageControls) getViewAndControls(View.IMAGE, false)).view;
+    }
+
+    /**
      * Returns the view-control pair for the given view type.
      * The view-control pair is created when first needed.
      * Invoking this method may cause data to be loaded in a background thread.
@@ -447,7 +470,7 @@ public class CoverageExplorer extends Widget {
     public final void setResource(final GridCoverageResource resource) {
         resourceProperty.set(resource);
         /*
-         * `onCoverageSpecified(…)` is indirectly invoked,
+         * `this.onPropertySet(…)` is indirectly invoked,
          * which in turn invokes `setCoverage(ImageRequest)`.
          */
     }
@@ -485,7 +508,7 @@ public class CoverageExplorer extends Widget {
     public final void setCoverage(final GridCoverage coverage) {
         coverageProperty.set(coverage);
         /*
-         * `onCoverageSpecified(…)` is indirectly invoked,
+         * `this.onPropertySet(…)` is indirectly invoked,
          * which in turn invokes `setCoverage(ImageRequest)`.
          */
     }
@@ -502,14 +525,11 @@ public class CoverageExplorer extends Widget {
      */
     public final void setCoverage(final ImageRequest source) {
         assert Platform.isFxApplicationThread();
-        final ViewAndControls current = views.get(getViewType());
+        final ViewAndControls current = getViewAndControls(getViewType(), false);
         for (final ViewAndControls c : views.values()) {
             c.load(c == current ? source : null);
         }
-        if (current == null) {
-            notifyDataChanged(null, null);
-        }
-        // Else `notifyDataChanged(…)` will be invoked later after background thread finishes its work.
+        // `notifyDataChanged(…)` will be invoked later after background thread finishes its work.
     }
 
     /**

@@ -191,12 +191,12 @@ public class ResourceExplorer extends WindowManager {
          * "Visual" tab showing the raster data as an image.
          */
         viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
-        viewTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
+        viewTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
         /*
          * "Data" tab showing raster data as a table.
          */
         tableTab = new Tab(vocabulary.getString(Vocabulary.Keys.Data));
-        tableTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
+        tableTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
         /*
          * "Metadata" tab showing ISO 19115 metadata as a tree.
          */
@@ -525,13 +525,16 @@ public class ResourceExplorer extends WindowManager {
         if (resource == null) {
             return null;
         }
-        ImageRequest grid  = null;
-        FeatureTable table = null;
+        FeatureTable     table = null;
+        CoverageExplorer grid  = null;
         if (resource instanceof GridCoverageResource) {
             /*
              * Want the full coverage in all bands (sample dimensions).
              */
-            grid = new ImageRequest((GridCoverageResource) resource, null, null);
+            if (coverage == null) {
+                updateDataTab(resource);                // For forcing creation of CoverageExplorer.
+            }
+            grid = coverage;
         } else if (resource instanceof FeatureSet) {
             /*
              * We will not set features in an initially empty `FeatureTable` (to be newly created),

@@ -339,12 +339,13 @@ public class RenderingData implements Cloneable {
      * @throws FactoryException if the CRS changed but the transform from old to new CRS can not be determined.
      * @throws TransformException if an error occurred while transforming coordinates from old to new CRS.
      */
-    public final void ensureImageLoaded(final GridCoverage coverage, final GridExtent sliceExtent)
+    public final void ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent)
             throws FactoryException, TransformException
     {
         if (data != null || coverage == null) {
             return;
         }
+        coverage = coverage.forConvertedValues(true);
         final GridGeometry old = dataGeometry;
         final List<SampleDimension> ranges = coverage.getSampleDimensions();
         final RenderedImage image = coverage.render(sliceExtent);
