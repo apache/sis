@@ -24,7 +24,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
-import org.apache.sis.storage.Query;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -192,18 +191,9 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
         return source().setLoadingStrategy(strategy);
     }
 
-    /**
-     * Requests a subset of the coverage.
-     * The default implementation delegates to the source.
-     *
-     * @param  query  definition of domain (grid extent) and range (sample dimensions) filtering applied at reading time.
-     * @return resulting coverage resource (never {@code null}).
-     * @throws DataStoreException if an error occurred while processing the query.
+    /*
+     * Do not override `subset(Query)`. We want the subset to delegate to this wrapper.
      */
-    @Override
-    public GridCoverageResource subset(final Query query) throws DataStoreException {
-        return source().subset(query);
-    }
 
     /**
      * Registers a listener to notify when the specified kind of event occurs in this resource or in children.
