@@ -31,7 +31,6 @@ import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.storage.StoreResource;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 
 
@@ -42,7 +41,7 @@ import org.apache.sis.math.Vector;
  * or a pyramid of images with their overviews used when low resolution images is requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -206,7 +205,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                 coverage = preload(coverage);
             }
         } catch (RuntimeException e) {
-            throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, filename()), e);
+            throw reader.store.errorIO(e);
         }
         logReadOperation(reader.store.path, coverage.getGridGeometry(), startTime);
         return coverage;

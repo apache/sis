@@ -36,6 +36,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Compression;
@@ -73,7 +74,7 @@ import org.apache.sis.image.DataType;
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  *
@@ -95,7 +96,14 @@ final class ImageFileDirectory extends DataCube {
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
 
     /**
-     * Index of this Image File Directory.
+     * Index of the (potentially pyramided) image containing this Image File Directory (IFD).
+     * All reduced-resolution (overviews) images are ignored when computing this index value.
+     * If the TIFF file does not contain reduced-resolution (overview) images, then
+     * {@code index} value is the same as the index of this IFD in the TIFF file.
+     *
+     * <p>If this IFD is a reduced-resolution (overview) image, then this index is off by one.
+     * It has the value of the next pyramid. This is an artifact of the way index is computed
+     * but should be invisible to user because they should not handle overviews directly.</p>
      */
     private final int index;
 
@@ -124,11 +132,26 @@ final class ImageFileDirectory extends DataCube {
     private boolean isValidated;
 
     /**
+     * A general indication of the kind of data contained in this subfile, mainly useful when there
+     * are multiple subfiles in a single TIFF file. This field is made up of a set of 32 flag bits.
+     *
+     * Bit 0 is 1 if the image is a reduced-resolution version of another image in this TIFF file.
+     * Bit 1 is 1 if the image is a single page of a multi-page image (see PageNumber).
+     * Bit 2 is 1 if the image defines a transparency mask for another image in this TIFF file (see PhotometricInterpretation).
+     * Bit 4 indicates MRC imaging model as described in ITU-T recommendation T.44 [T.44] (See ImageLayer tag) - RFC 2301.
+     *
+     * @see #isReducedResolution()
+     */
+    private int subfileType;
+
+    /**
      * The size of the image described by this FID, or -1 if the information has not been found.
      * The image may be much bigger than the memory capacity, in which case the image shall be tiled.
      *
      * <p><b>Note:</b>
      * the {@link #imageHeight} attribute is named {@code ImageLength} in TIFF specification.</p>
+     *
+     * @see #getExtent()
      */
     private long imageWidth = -1, imageHeight = -1;
 
@@ -399,10 +422,18 @@ final class ImageFileDirectory extends DataCube {
      */
     private GridGeometryBuilder referencing() {
         if (referencing == null) {
-            referencing = new GridGeometryBuilder(reader);
+            referencing = new GridGeometryBuilder();
         }
         return referencing;
     }
+
+    /**
+     * The grid geometry created by {@link GridGeometryBuilder#build(Reader, long, long)}.
+     * It has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
+     *
+     * @see #getGridGeometry()
+     */
+    private GridGeometry gridGeometry;
 
     /**
      * The sample dimensions, or {@code null} if not yet created.
@@ -428,9 +459,10 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Creates a new image file directory.
+     * The index arguments is used for metadata identifier only.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
-     * @param index   the image index as a sequence number starting with 0 for the first image.
+     * @param index   the pyramided image index as a sequence number starting with 0 for the first pyramid.
      */
     ImageFileDirectory(final Reader reader, final int index) {
         super(reader);
@@ -453,28 +485,25 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Returns the identifier, creating it when first needed.
-     * This method must be invoked in a synchronized block.
-     */
-    private GenericName identifier() throws DataStoreException {
-        if (identifier == null) {
-            final GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), String.valueOf(index + 1));
-            identifier = reader.store.customizer.customize(index, name);
-            if (identifier == null) identifier = name;
-        }
-        return identifier;
-    }
-
-    /**
-     * Returns the identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
-     * The first image has the sequence number "1".
+     * Returns the identifier in the namespace of the {@link GeoTiffStore}.
+     * The first image has the sequence number "1", optionally customized.
+     * Reduced-resolution (overviews) images have no identifier.
      *
      * @see #getMetadata()
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            return Optional.of(identifier());
+            if (identifier == null) {
+                if (isReducedResolution()) {
+                    return Optional.empty();
+                }
+                final String id = String.valueOf(index + 1);
+                final GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), id);
+                identifier = reader.store.customizer.customize(index, name);
+                if (identifier == null) identifier = name;
+            }
+            return Optional.of(identifier);
         }
     }
 
@@ -765,7 +794,7 @@ final class ImageFileDirectory extends DataCube {
              * Bit 4 indicates MRC imaging model as described in ITU-T recommendation T.44 [T.44] (See ImageLayer tag) - RFC 2301.
              */
             case Tags.NewSubfileType: {
-                // TODO
+                subfileType = type.readInt(input(), count);
                 break;
             }
             /*
@@ -775,7 +804,13 @@ final class ImageFileDirectory extends DataCube {
              * 3 = a single page of a multi-page image (see PageNumber).
              */
             case Tags.SubfileType: {
-                // TODO
+                final int value = type.readInt(input(), count);
+                switch (value) {
+                    default: return value;                          // Warning to be reported by the caller.
+                    case 1:  subfileType &= ~1; break;
+                    case 2:  subfileType |=  1; break;
+                    case 3:  subfileType |=  2; break;
+                }
                 break;
             }
 
@@ -1316,7 +1351,16 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        metadata.addTitle(identifier().toString());
+        final MetadataBuilder metadata = this.metadata;
+        if (metadata == null) {
+            /*
+             * We enter in this block only if an exception occurred during the first attempt to build metadata.
+             * If the user insists for getting metadata, fallback on the default (less complete) implementation.
+             */
+            return super.createMetadata();
+        }
+        this.metadata = null;     // Clear now in case an exception happens.
+        getIdentifier().ifPresent((id) -> metadata.addTitle(id.toString()));
         /*
          * Add information about the file format.
          *
@@ -1333,7 +1377,8 @@ final class ImageFileDirectory extends DataCube {
          *
          * Destination: metadata/contentInfo/attributeGroup/attribute
          */
-        metadata.newCoverage(reader.store.customizer.isElectromagneticMeasurement(index));
+        final boolean isIndexValid = !isReducedResolution();
+        metadata.newCoverage(isIndexValid && reader.store.customizer.isElectromagneticMeasurement(index));
         final List<SampleDimension> sampleDimensions = getSampleDimensions();
         for (int band = 0; band < samplesPerPixel; band++) {
             metadata.addNewBand(sampleDimensions.get(band));
@@ -1392,16 +1437,45 @@ final class ImageFileDirectory extends DataCube {
             } catch (TransformException e) {
                 warning(e);
             }
-            referencing.completeMetadata(metadata);         // Must be after `getGridGeometry()`.
+            referencing.completeMetadata(gridGeometry, metadata);
         }
         /*
          * End of metadata construction from TIFF tags.
          */
         final DefaultMetadata md = metadata.build(false);
-        final Metadata c = reader.store.customizer.customize(index, md);
-        md.transitionTo(DefaultMetadata.State.FINAL);
-        metadata = null;
-        return (c != null) ? c : md;
+        if (isIndexValid) {
+            final Metadata c = reader.store.customizer.customize(index, md);
+            md.transitionTo(DefaultMetadata.State.FINAL);
+            if (c != null) return c;
+        }
+        return md;
+    }
+
+    /**
+     * Returns {@code true} if this image is a reduced resolution (overview) version
+     * of another image in this TIFF file.
+     */
+    final boolean isReducedResolution() {
+        return (subfileType & 1) != 0;
+    }
+
+    /**
+     * If this IFD has no grid geometry information, derives a grid geometry by applying a scale factor
+     * on the grid geometry of another IFD. Information about bands are also copied if compatible.
+     * This method should be invoked only when {@link #isReducedResolution()} is {@code true}.
+     *
+     * @param  fullResolution  the full-resolution image.
+     * @param  scales  <var>size of full resolution image</var> / <var>size of this image</var> for each grid axis.
+     */
+    final void initReducedResolution(final ImageFileDirectory fullResolution, final double[] scales)
+            throws DataStoreException, TransformException
+    {
+        if (referencing == null) {
+            gridGeometry = new GridGeometry(fullResolution.getGridGeometry(), getExtent(), MathTransforms.scale(scales));
+        }
+        if (samplesPerPixel == fullResolution.samplesPerPixel) {
+            sampleDimensions = fullResolution.getSampleDimensions();
+        }
     }
 
     /**
@@ -1411,23 +1485,34 @@ final class ImageFileDirectory extends DataCube {
      * <h4>Thread-safety</h4>
      * This method is thread-safe because it can be invoked directly by user.
      *
+     * @see #getExtent()
      * @see #getTileSize()
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreContentException {
         synchronized (getSynchronizationLock()) {
-            if (referencing != null) {
-                GridGeometry gridGeometry = referencing.gridGeometry;
-                if (gridGeometry == null) try {
-                    gridGeometry = referencing.build(imageWidth, imageHeight);
+            if (gridGeometry == null) {
+                if (referencing != null) try {
+                    gridGeometry = referencing.build(reader, imageWidth, imageHeight);
                 } catch (FactoryException e) {
                     throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
+                } else {
+                    // Fallback if the TIFF file has no GeoKeys.
+                    gridGeometry = new GridGeometry(getExtent(), null, null);
                 }
-                return gridGeometry;
-            } else {
-                return new GridGeometry(new GridExtent(imageWidth, imageHeight), null, null);
             }
+            return gridGeometry;
         }
+    }
+
+    /**
+     * Returns the image width and height without building the full grid geometry.
+     *
+     * @see #getTileSize()
+     * @see #getGridGeometry()
+     */
+    final GridExtent getExtent() {
+        return new GridExtent(imageWidth, imageHeight);
     }
 
     /**
@@ -1443,15 +1528,22 @@ final class ImageFileDirectory extends DataCube {
             if (sampleDimensions == null) {
                 final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
                 final SampleDimension.Builder builder = new SampleDimension.Builder();
-                for (int band = 0; band < samplesPerPixel;) {
+                final boolean isIndexValid = !isReducedResolution();
+                for (int band = 0; band < dimensions.length; band++) {
                     NumberRange<?> sampleRange = null;
                     if (minValues != null && maxValues != null) {
                         sampleRange = NumberRange.createBestFit(sampleFormat == FLOAT,
                                 minValues.get(Math.min(band, minValues.size()-1)), true,
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
-                    dimensions[band] = reader.store.customizer.customize(index, band,
-                                        sampleRange, getFillValue(true), builder.setName(++band));
+                    builder.setName(band + 1);
+                    final SampleDimension sd;
+                    if (isIndexValid) {
+                        sd = reader.store.customizer.customize(index, band, sampleRange, getFillValue(true), builder);
+                    } else {
+                        sd = builder.build();
+                    }
+                    dimensions[band] = sd;
                     builder.clear();
                 }
                 sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
@@ -1495,6 +1587,7 @@ final class ImageFileDirectory extends DataCube {
      * Returns the size of tiles. This is also the size of the image sample model.
      * The number of dimensions is always 2 for {@code ImageFileDirectory}.
      *
+     * @see #getExtent()
      * @see #getSampleModel()
      */
     @Override

@@ -75,16 +75,11 @@ import org.apache.sis.math.Vector;
  * So compared to the {@code CELL_CORNER} case, the {@code CELL_CENTER} case has a translation of +0.5 × scale.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
 final class GridGeometryBuilder extends GeoKeysLoader {
-    /**
-     * The reader for which we will create coordinate reference systems.
-     * This is used for reporting warnings.
-     */
-    private final Reader reader;
 
     ////////////////////////////////////////////////////////////////////////////////////////
     ////                                                                                ////
@@ -173,31 +168,22 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * The grid geometry to be created by {@link #build(long, long)}.
-     * It has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
-     */
-    public GridGeometry gridGeometry;
-
-    /**
      * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
-     * This information is obtained as a side-effect of {@link #build(long, long)} call.
+     * This information is obtained as a side-effect of {@link #build(Reader, long, long)} call.
      */
     private String description;
 
     /**
      * {@code POINT} if {@link GeoKeys#RasterType} is {@link GeoCodes#RasterPixelIsPoint},
      * {@code AREA} if it is {@link GeoCodes#RasterPixelIsArea}, or null if unspecified.
-     * This information is obtained as a side-effect of {@link #build(long, long)} call.
+     * This information is obtained as a side-effect of {@link #build(Reader, long, long)} call.
      */
     private CellGeometry cellGeometry;
 
     /**
      * Creates a new builder.
-     *
-     * @param reader  where to report warnings if any.
      */
-    GridGeometryBuilder(final Reader reader) {
-        this.reader = reader;
+    GridGeometryBuilder() {
     }
 
     /**
@@ -266,16 +252,16 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     /**
      * Creates the grid geometry and collect related metadata.
      * This method shall be invoked exactly once after {@link #validateMandatoryTags()}.
-     * After this method call (if successful), {@link #gridGeometry} is guaranteed non-null
+     * After this method call (if successful), the returned value is guaranteed non-null
      * and can be used as a flag for determining that the build has been completed.
      *
      * @param  width   the image width in pixels.
      * @param  height  the image height in pixels.
-     * @return {@link #gridGeometry}, guaranteed non-null.
+     * @return the grid geometry, guaranteed non-null.
      * @throws FactoryException if an error occurred while creating a CRS or a transform.
      */
     @SuppressWarnings("fallthrough")
-    public GridGeometry build(final long width, final long height) throws FactoryException {
+    public GridGeometry build(final Reader reader, final long width, final long height) throws FactoryException {
         CoordinateReferenceSystem crs = null;
         if (keyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
@@ -291,7 +277,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
                 reader.store.warning(reader.resources().getString(key, reader.store.getDisplayName()), e);
             } catch (IllegalArgumentException | NoSuchElementException | ClassCastException e) {
                 if (!helper.alreadyReported) {
-                    canNotCreate(e);
+                    canNotCreate(reader, e);
                 }
             }
         }
@@ -312,6 +298,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
         final GridExtent extent = new GridExtent(axisTypes, null, high, true);
         boolean pixelIsPoint = CellGeometry.POINT.equals(cellGeometry);
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        GridGeometry gridGeometry;
         try {
             MathTransform gridToCRS;
             if (affine != null) {
@@ -329,7 +316,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
                 envelope.setToNaN();
             }
             gridGeometry = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETY);
-            canNotCreate(e);
+            canNotCreate(reader, e);
             /*
              * Note: we catch TransformExceptions because they may be caused by erroneous data in the GeoTIFF file,
              * but let FactoryExceptions propagate because they are more likely to be a SIS configuration problem.
@@ -348,7 +335,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
      *
      * <h4>Pre-requite</h4>
      * <ul>
-     *   <li>{@link #build(long, long)} must have been invoked successfully before this method.</li>
+     *   <li>{@link #build(Reader, long, long)} must have been invoked successfully before this method.</li>
      *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
      * </ul>
      *
@@ -362,10 +349,11 @@ final class GridGeometryBuilder extends GeoKeysLoader {
      *   <li>{@code metadata/referenceSystemInfo}</li>
      * </ul>
      *
-     * @param  metadata  the helper class where to write metadata values.
+     * @param  gridGeometry  the grid geometry computed by {@link #build(Reader, long, long)}.
+     * @param  metadata      the helper class where to write metadata values.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      */
-    public void completeMetadata(final MetadataBuilder metadata) {
+    public void completeMetadata(final GridGeometry gridGeometry, final MetadataBuilder metadata) {
         if (metadata.addSpatialRepresentation(description, gridGeometry, true)) {
             /*
              * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
@@ -391,7 +379,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     /**
      * Logs a warning telling that we can not create a grid geometry for the given reason.
      */
-    private void canNotCreate(final Exception e) {
+    private static void canNotCreate(final Reader reader, final Exception e) {
         reader.store.warning(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, reader.input.filename), e);
     }
 }
