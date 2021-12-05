@@ -809,7 +809,9 @@ public class CoverageCanvas extends MapCanvasAWT {
                     data.coverageLoader = MultiResolutionImageLoader.getInstance(resource, data.coverageLoader);
                     coverage = data.ensureCoverageLoaded(objectiveToDisplay, objectivePOI);
                 }
-                data.ensureImageLoaded(coverage, sliceExtent);
+                if (data.ensureImageLoaded(coverage, sliceExtent)) {
+                    recoloredImage = null;
+                }
                 /*
                  * Find whether resampling to apply is different than the resampling used last time that the image
                  * has been rendered, ignoring translations. Translations do not require new resampling operations
