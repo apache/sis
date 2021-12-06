@@ -28,6 +28,7 @@ import java.awt.image.RenderedImage;
 import java.util.Vector;
 import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
@@ -507,6 +508,18 @@ public abstract class PlanarImage implements RenderedImage {
             }
         };
         executor.readFrom(this);
+    }
+
+    /**
+     * Notifies this image that tiles will be computed soon in the given region.
+     * The method contract is given by {@link ComputedImage#prefetch(Rectangle)}.
+     *
+     * @param  tiles  indices of the tiles which will be prefetched.
+     * @return handler on which to invoke {@code dispose()} after the prefetch operation
+     *         completed (successfully or not), or {@code null} if none.
+     */
+    Disposable prefetch(Rectangle tiles) {
+        return null;
     }
 
     /**

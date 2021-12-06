@@ -43,6 +43,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -874,6 +875,33 @@ public class ResampledImage extends ComputedImage {
             }
         }
         return tile;
+    }
+
+    /**
+     * Notifies the source image that tiles will be computed soon in the given region.
+     * If the source image is an instance of {@link ComputedImage}, then this method
+     * forwards the notification to it. Otherwise default implementation does nothing.
+     *
+     * @since 1.2
+     */
+    @Override
+    protected Disposable prefetch(final Rectangle tiles) {
+        final RenderedImage source = getSource();
+        if (source instanceof PlanarImage) try {
+            final Dimension s = interpolation.getSupportSize();
+            Rectangle pixels = ImageUtilities.tilesToPixels(this, tiles);
+            final Rectangle2D bounds = new Rectangle2D.Double(
+                    pixels.x      -  0.5  *  s.width,
+                    pixels.y      -  0.5  *  s.height,
+                    pixels.width  + (double) s.width,
+                    pixels.height + (double) s.height);
+            pixels = (Rectangle) Shapes2D.transform(MathTransforms.bidimensional(toSource), bounds, pixels);
+            ImageUtilities.clipBounds(source, pixels);
+            return ((PlanarImage) source).prefetch(ImageUtilities.pixelsToTiles(source, pixels));
+        } catch (TransformException e) {
+            recoverableException("prefetch", e);
+        }
+        return super.prefetch(tiles);
     }
 
     /**

@@ -40,6 +40,10 @@ import org.apache.sis.util.resources.Vocabulary;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
+import static java.lang.Math.floorDiv;
+import static java.lang.Math.addExact;
+import static java.lang.Math.toIntExact;
+import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
 
 
@@ -49,7 +53,7 @@ import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
  * (see {@code *Factory} classes for creating those objects).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -498,7 +502,7 @@ public final class ImageUtilities extends Static {
      * @return tile index for the given pixel coordinate.
      */
     public static int pixelToTileX(final RenderedImage image, final int x) {
-        return Math.toIntExact(Math.floorDiv((x - (long) image.getTileGridXOffset()), image.getTileWidth()));
+        return toIntExact(floorDiv((x - (long) image.getTileGridXOffset()), image.getTileWidth()));
     }
 
     /**
@@ -509,7 +513,7 @@ public final class ImageUtilities extends Static {
      * @return tile index for the given pixel coordinate.
      */
     public static int pixelToTileY(final RenderedImage image, final int y) {
-        return Math.toIntExact(Math.floorDiv((y - (long) image.getTileGridYOffset()), image.getTileHeight()));
+        return toIntExact(floorDiv((y - (long) image.getTileGridYOffset()), image.getTileHeight()));
     }
 
     /**
@@ -517,11 +521,12 @@ public final class ImageUtilities extends Static {
      * The returned value is a coordinate of the pixel in upper-left corner.
      *
      * @param  image  the image containing tiles.
-     * @param  tileX  the tile coordinate for which to get pixel coordinate.
+     * @param  tileX  the tile index for which to get pixel coordinate.
      * @return smallest <var>x</var> pixel coordinate inside the tile.
      */
     public static int tileToPixelX(final RenderedImage image, final int tileX) {
-        return Math.addExact(Math.multiplyExact(tileX, image.getTileWidth()), image.getTileGridXOffset());
+        // Following `long` arithmetic never overflows even if all values are `Integer.MAX_VALUE`.
+        return toIntExact(multiplyFull(tileX, image.getTileWidth()) + image.getTileGridXOffset());
     }
 
     /**
@@ -529,11 +534,63 @@ public final class ImageUtilities extends Static {
      * The returned value is a coordinate of the pixel in upper-left corner.
      *
      * @param  image  the image containing tiles.
-     * @param  tileY  the tile coordinate for which to get pixel coordinate.
+     * @param  tileY  the tile index for which to get pixel coordinate.
      * @return smallest <var>y</var> pixel coordinate inside the tile.
      */
     public static int tileToPixelY(final RenderedImage image, final int tileY) {
-        return Math.addExact(Math.multiplyExact(tileY, image.getTileHeight()), image.getTileGridYOffset());
+        return toIntExact(multiplyFull(tileY, image.getTileHeight()) + image.getTileGridYOffset());
+    }
+
+    /**
+     * Converts pixel coordinates to pixel indices.
+     * This method does <strong>not</strong> clip the rectangle to image bounds.
+     *
+     * @param  image   the image containing tiles.
+     * @param  pixels  the pixel coordinates for which to get tile indices.
+     * @return tile indices that fully contain the pixel coordinates.
+     */
+    public static Rectangle pixelsToTiles(final RenderedImage image, final Rectangle pixels) {
+        final Rectangle r = new Rectangle();
+        if (!pixels.isEmpty()) {
+            int  size;
+            long offset, shifted;
+            size     = image.getTileWidth();
+            offset   = image.getTileGridXOffset();
+            shifted  = pixels.x - offset;
+            r.x      = toIntExact(floorDiv(shifted, size));
+            r.width  = toIntExact(floorDiv(shifted + (pixels.width - 1), size) - r.x + 1);
+            size     = image.getTileHeight();
+            offset   = image.getTileGridYOffset();
+            shifted  = pixels.y - offset;
+            r.y      = toIntExact(floorDiv(shifted, size));
+            r.height = toIntExact(floorDiv(shifted + (pixels.height - 1), size) - r.y + 1);
+        }
+        return r;
+    }
+
+    /**
+     * Converts tile indices to pixel coordinate inside the tiles.
+     * Tiles will be fully included in the returned range of pixel indices.
+     * This method does <strong>not</strong> clip the rectangle to image bounds.
+     *
+     * @param  image  the image containing tiles.
+     * @param  tiles  the tile indices for which to get pixel coordinates.
+     * @return pixel coordinates that fully contain the tiles.
+     */
+    public static Rectangle tilesToPixels(final RenderedImage image, final Rectangle tiles) {
+        final Rectangle r = new Rectangle();
+        if (!tiles.isEmpty()) {
+            int size, offset;
+            size     = image.getTileWidth();
+            offset   = image.getTileGridXOffset();
+            r.x      = toIntExact(multiplyFull(tiles.x, size) + offset);
+            r.width  = toIntExact(((((long) tiles.x) + tiles.width) * size) + offset - r.x);
+            size     = image.getTileHeight();
+            offset   = image.getTileGridYOffset();
+            r.y      = toIntExact(multiplyFull(tiles.y, size) + offset);
+            r.height = toIntExact(((((long) tiles.y) + tiles.height) * size) + offset - r.y);
+        }
+        return r;
     }
 
     /**
@@ -553,7 +610,7 @@ public final class ImageUtilities extends Static {
         if (bounds.isEmpty()) {
             throw new RasterFormatException(Resources.format(Resources.Keys.EmptyTileOrImageRegion));
         }
-        final int afterLastRow = Math.addExact(bounds.y, bounds.height);
+        final int afterLastRow = addExact(bounds.y, bounds.height);
         int size;
         try {
             size = DataBuffer.getDataTypeSize(dataType);
