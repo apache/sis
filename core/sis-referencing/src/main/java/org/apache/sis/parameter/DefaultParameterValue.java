@@ -117,7 +117,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -836,7 +836,7 @@ convert:            if (componentType != null) {
                 if (getClass() == object.getClass()) {
                     final DefaultParameterValue<?> that = (DefaultParameterValue<?>) object;
                     return Objects.equals(descriptor, that.descriptor) &&
-                           Objects.equals(value,      that.value) &&
+                           Objects.deepEquals(value,  that.value) &&
                            Objects.equals(unit,       that.unit);
                 }
             } else if (object instanceof ParameterValue<?>) {
