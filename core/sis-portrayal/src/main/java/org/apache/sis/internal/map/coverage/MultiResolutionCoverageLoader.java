@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -143,6 +144,7 @@ public class MultiResolutionCoverageLoader {
             }
         }
         coverages = new Reference[Math.max(resolutions.length, 1)];
+        resource.setLoadingStrategy(RasterLoadingStrategy.AT_GET_TILE_TIME);
     }
 
     /**

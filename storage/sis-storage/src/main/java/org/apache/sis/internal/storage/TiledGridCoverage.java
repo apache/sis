@@ -196,6 +196,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected final Number fillValue;
 
     /**
+     * Whether the reading of tiles is deferred to {@link RenderedImage#getTile(int, int)} time.
+     */
+    private final boolean deferredTileReading;
+
+    /**
      * Creates a new tiled grid coverage. All parameters should have been validated before this call.
      *
      * @param  subset  description of the {@link TiledGridResource} subset to cover.
@@ -205,6 +210,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         super(subset.domain, subset.ranges);
         final GridExtent extent = subset.domain.getExtent();
         final int dimension = subset.sourceExtent.getDimension();
+        deferredTileReading = subset.deferredTileReading();
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
         subsamplingOffsets  = subset.subsamplingOffsets;
@@ -389,7 +395,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             // TODO
             throw new UnsupportedOperationException("Non-horizontal slices not yet implemented.");
         }
-        final TiledImage image;
+        final RenderedImage image;
         try {
             final int[] tileLower = new int[dimension];         // Indices of first tile to read, inclusive.
             final int[] tileUpper = new int[dimension];         // Indices of last tile to read, exclusive.
@@ -420,17 +426,23 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 tileUpper[i] = toIntExact(subtractExact(tileUp, tmcOfFirstTile[i]));
             }
             /*
-             * Get all tiles in the specified region. I/O operations, if needed, happen here.
-             */
-            final Raster[] result = readTiles(new AOI(tileLower, tileUpper, offsetAOI, dimension));
-            /*
-             * Wraps in an image all the tiles that we just read, together with the following properties:
+             * Prepare an iterator over all tiles to read, together with the following properties:
              *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
              */
+            final AOI iterator = new AOI(tileLower, tileUpper, offsetAOI, dimension);
             final Map<String,Object> properties = DeferredProperty.forGridGeometry(getGridGeometry(), selectedDimensions);
-            image = new TiledImage(properties, colors,
-                    imageSize[X_DIMENSION], imageSize[Y_DIMENSION],
-                    tileLower[X_DIMENSION], tileLower[Y_DIMENSION], result);
+            if (deferredTileReading) {
+                image = new TiledDeferredImage(imageSize, tileLower, properties, iterator);
+            } else {
+                /*
+                 * If the loading strategy is not `RasterLoadingStrategy.AT_GET_TILE_TIME`, get all tiles
+                 * in the area of interest now. I/O operations, if needed, happen in `readTiles(…)` call.
+                 */
+                final Raster[] result = readTiles(iterator);
+                image = new TiledImage(properties, colors,
+                        imageSize[X_DIMENSION], imageSize[Y_DIMENSION],
+                        tileLower[X_DIMENSION], tileLower[Y_DIMENSION], result);
+            }
         } catch (Exception e) {     // Too many exception types for listing them all.
             throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
                     Resources.Keys.CanNotRenderImage_1, getDisplayName()), e);
@@ -511,7 +523,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * converts the `tileLower` coordinates to index in the `tileOffsets` and `tileByteCounts` vectors.
              */
             indexInTileVector = indexOfFirstTile;
-            int tileCountInQuery   =  1;
+            int tileCountInQuery = 1;
             for (int i=0; i<dimension; i++) {
                 final int lower   = tileLower[i];
                 final int count   = subtractExact(tileUpper[i], lower);
@@ -529,6 +541,37 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
             this.tileCountInQuery = tileCountInQuery;
             this.tmcInSubset      = tileLower.clone();
+        }
+
+        /**
+         * Returns a new {@code AOI} instance over a sub-region of this Area Of Interest.
+         * The region is specified by tile indices, with (0,0) being the first tile of the enclosing grid coverage.
+         * The given region is intersected with the region of this {@code AOI}.
+         * The {@code tileLower} and {@code tileUpper} array can have any length;
+         * extra indices are ignored and missing indices are inherited from this AOI.
+         * This method is independent to the iterator position of this {@code AOI}.
+         *
+         * @param  tileLower  indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
+         * @param  tileUpper  indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
+         * @return a new {@code AOI} instance for the specified sub-region.
+         */
+        public AOI subset(final int[] tileLower, final int[] tileUpper) {
+            final int[] offset = this.offsetAOI.clone();
+            final int[] lower  = this.tileLower.clone();
+            for (int i = Math.min(tileLower.length, lower.length); --i >= 0;) {
+                final int base = lower[i];
+                final int s = tileLower[i];
+                if (s > base) {
+                    lower[i] = s;
+                    // Use of `ceilDiv(…)` is for consistency with `getTileOrigin(int)`.
+                    offset[i] = addExact(offset[i], ceilDiv(multiplyExact(s - base, tileSize[i]), subsampling[i]));
+                }
+            }
+            final int[] upper = this.tileUpper.clone();
+            for (int i = Math.min(tileUpper.length, upper.length); --i >= 0;) {
+                upper[i] = Math.max(lower[i], Math.min(upper[i], tileUpper[i]));
+            }
+            return new AOI(lower, upper, offset, offset.length);
         }
 
         /**
@@ -787,7 +830,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * shall start at the given {@code iterator.offsetAOI} values.
      *
-     * <p>This method must be thread-safe.</p>
+     * <p>This method must be thread-safe. It is implementer responsibility to ensure synchronization,
+     * for example using {@link TiledGridResource#getSynchronizationLock()}.</p>
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
      * @return tiles decoded from the {@link TiledGridResource}.
