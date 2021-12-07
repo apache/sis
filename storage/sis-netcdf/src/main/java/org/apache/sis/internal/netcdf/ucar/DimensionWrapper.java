@@ -18,7 +18,8 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.stream.Collectors;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.ArraysExt;
 import ucar.nc2.Dimension;
 
 
@@ -29,7 +30,7 @@ import ucar.nc2.Dimension;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -38,7 +39,13 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
      * Wraps all given dimensions.
      */
     static List<org.apache.sis.internal.netcdf.Dimension> wrap(final Collection<Dimension> dimensions) {
-        return dimensions.stream().map(DimensionWrapper::new).collect(Collectors.toList());
+        final DimensionWrapper[] wrappers = new DimensionWrapper[dimensions.size()];
+        int i = 0;
+        for (final Dimension dim : dimensions) {
+            wrappers[i] = new DimensionWrapper(dim, i);
+            i++;
+        }
+        return UnmodifiableArrayList.wrap(ArraysExt.resize(wrappers, i));
     }
 
     /**
@@ -58,14 +65,26 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     private final Dimension netcdf;
 
     /**
+     * Index of the dimension in the variable, or -1 if unknown. Used during comparisons of
+     * dimensions that are private to a variable, because those dimensions may be unnamed.
+     * Consequently value -1 should be used only for shared dimensions.
+     *
+     * <a href="https://github.com/Unidata/netcdf-java/issues/951">Issue #951 on netcdf-java</a>
+     */
+    private final int index;
+
+    /**
      * Wraps the given netCDF dimension object.
      */
-    DimensionWrapper(final Dimension netcdf) {
+    DimensionWrapper(final Dimension netcdf, final int index) {
         this.netcdf = netcdf;
+        this.index  = index;
     }
 
     /**
-     * Returns the name of this netCDF dimension.
+     * Returns the name of this netCDF dimension, or {@code null} if none.
+     * Should always be non-null if {@link Dimension#isShared()} is {@code true},
+     * but may be null for non-shared dimensions (i.e. dimensions private to a variable).
      */
     @Override
     public String getName() {
@@ -91,22 +110,38 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
 
     /**
      * Returns {@code true} if the given object represents the same dimension than this object.
+     * If the dimension is shared, then it has a unique name and {@link Dimension#equals(Object)}
+     * can distinguish dimensions based on their name. But if the dimension is private to a variable,
+     * then the dimension name can be null and the only remaining discriminant is the dimension length.
+     * A problem is that the length may by coincidence be the same for different dimensions.
+     * Consequently for non-shared dimensions we need to add {@link #index} in the comparison.
      *
-     * @param  other  the other object to compare with this dimension.
+     * @param  obj  the other object to compare with this dimension.
      * @return whether the other object wraps the same netCDF dimension than this object.
      */
     @Override
-    public boolean equals(final Object other) {
-        return (other instanceof DimensionWrapper) && netcdf.equals(((DimensionWrapper) other).netcdf);
+    public boolean equals(final Object obj) {
+        if (obj instanceof DimensionWrapper) {
+            final DimensionWrapper other = (DimensionWrapper) obj;
+            if (netcdf.equals(other.netcdf)) {
+                return netcdf.isShared() || other.index == index;
+            }
+        }
+        return false;
     }
 
     /**
      * Returns a hash code value for this dimension.
+     * See {@link #equals(Object)} for a discussion about the use of {@link #index}.
      *
      * @return a hash code value.
      */
     @Override
     public int hashCode() {
-        return ~netcdf.hashCode();
+        int code = ~netcdf.hashCode();
+        if (!netcdf.isShared()) {
+            code += 37 * index;
+        }
+        return code;
     }
 }

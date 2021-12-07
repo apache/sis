@@ -280,7 +280,7 @@ public class Convention {
      *
      * @param  data  the variable for which the list of axis variables are desired, in CRS order.
      * @return names of the variables containing axis values, or {@code null} if this
-     *         method performs applies no special convention for the given variable.
+     *         method applies no special convention for the given variable.
      */
     public String[] namesOfAxisVariables(Variable data) {
         return null;
