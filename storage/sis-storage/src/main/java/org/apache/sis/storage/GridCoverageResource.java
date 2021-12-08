@@ -111,7 +111,7 @@ public interface GridCoverageResource extends DataSet {
     /**
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
      * If the storage supports pyramid, then the list should contain the resolution at each pyramid level
-     * ordered from coarsest (largest numbers) to finest (smallest numbers) resolution.
+     * ordered from finest (smallest numbers) to coarsest (largest numbers) resolution.
      * Otherwise the list contains a single element which is the {@linkplain #getGridGeometry() grid geometry}
      * resolution, or an empty list if no resolution is applicable to the coverage (e.g. because non-constant).
      *

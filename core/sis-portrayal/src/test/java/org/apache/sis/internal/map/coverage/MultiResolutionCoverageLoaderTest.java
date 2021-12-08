@@ -100,7 +100,7 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
 
     /**
      * A dummy resource with arbitrary resolutions for testing purpose.
-     * Resolutions are ordered from coarsest (largest numbers) to finest (smallest numbers).
+     * Resolutions are ordered from finest (smallest numbers) to coarsest (largest numbers).
      */
     private static final class DummyResource extends AbstractGridResource {
         /** Creates a dummy resource. */
@@ -111,9 +111,9 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
         /** Returns the preferred resolutions in units of CRS axes. */
         @Override public List<double[]> getResolutions() {
             return Arrays.asList(
-                    new double[] {8, 9, 5},
+                    new double[] {2, 3, 1},
                     new double[] {4, 4, 3},
-                    new double[] {2, 3, 1});
+                    new double[] {8, 9, 5});
         }
 
         /** Returns a grid geometry with the resolution of finest level. */

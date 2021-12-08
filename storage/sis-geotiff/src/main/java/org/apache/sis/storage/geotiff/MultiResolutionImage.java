@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.io.IOException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -142,6 +141,7 @@ final class MultiResolutionImage extends GridResourceWrapper {
 
     /**
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
+     * Elements are ordered from finest (smallest numbers) to coarsest (largest numbers) resolution.
      */
     @Override
     public List<double[]> getResolutions() throws DataStoreException {
@@ -151,7 +151,6 @@ final class MultiResolutionImage extends GridResourceWrapper {
                 copy[i] = resolution(i).clone();
             }
         }
-        ArraysExt.reverse(copy);
         return Arrays.asList(copy);
     }
 

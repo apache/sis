@@ -38,7 +38,6 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -88,8 +87,8 @@ public class MultiResolutionCoverageLoader {
 
     /**
      * Squares of resolution at each pyramid level, from finest (smaller numbers) to coarsest (largest numbers).
-     * Note that this is the reverse order of {@link GridCoverageResource#getResolutions()}. For a given level,
-     * the array {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
+     * This is same same order than {@link GridCoverageResource#getResolutions()}. For a given level, the array
+     * {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
      */
     private final double[][] resolutionSquared;
 
@@ -128,7 +127,6 @@ public class MultiResolutionCoverageLoader {
         areaOfInterest = domain;
         readRanges     = range;
         double[][] resolutions = CollectionsExt.toArray(resource.getResolutions(), double[].class);
-        ArraysExt.reverse(resolutions);                     // From finest to coarsest resolution.
         if (resolutions.length <= 1) {
             final GridGeometry gg = resource.getGridGeometry();
             if (resolutions.length != 0) {
@@ -248,7 +246,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                 }
                 /*
                  * Can not use `Arrays.binarySearch(…)` because elements are not guaranteed to be sorted.
-                 * Even if `GridCoverageResource.getResolutions()` contract said "coarsest to finest",
+                 * Even if `GridCoverageResource.getResolutions()` contract said "finest to coarsest",
                  * it may not be possible to respect this condition on all dimensions in same time.
                  * The main goal is to have a `level` value as high as possible while having a resolution
                  * equals or better than `sum`.
