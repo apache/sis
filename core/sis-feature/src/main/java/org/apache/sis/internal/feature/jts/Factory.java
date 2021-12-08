@@ -360,7 +360,9 @@ public final class Factory extends Geometries<Geometry> {
     @Override
     public GeometryWrapper<Geometry> parseWKT(final String wkt) throws ParseException {
         // WKTReader(GeometryFactory) constructor is cheap.
-        return new Wrapper(new WKTReader(factory).read(wkt));
+        final WKTReader reader = new WKTReader(factory);
+        reader.setIsOldJtsCoordinateSyntaxAllowed(false);
+        return new Wrapper(reader.read(wkt));
     }
 
     /**

@@ -151,11 +151,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      */
     @Override
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        final int dimension = ReferencingUtilities.getDimension(crs);
-        if (dimension != Factory.BIDIMENSIONAL) {
-            // The check for 2-dimensional case is for backward compatibility. May be temporary.
-            ArgumentChecks.ensureDimensionMatches("crs", getCoordinatesDimension(geometry), crs);
-        }
+        ArgumentChecks.ensureDimensionMatches("crs", getCoordinatesDimension(geometry), crs);
         JTS.setCoordinateReferenceSystem(geometry, crs);
     }
 
