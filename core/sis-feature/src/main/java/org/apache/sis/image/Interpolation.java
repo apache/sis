@@ -25,19 +25,25 @@ import java.nio.DoubleBuffer;
  * of pixels using a local neighborhood. The sampling is performed by the {@link ResampledImage} class, which
  * gives the sample values to the {@code interpolate(…)} method of this interpolation.
  *
- * <p>All methods in this interface shall be safe for concurrent use in multi-threading context.
+ * <p>All methods in this class shall be safe for concurrent use in multi-threading context.
  * For example interpolations may be executed in a different thread for each tile in an image.</p>
  *
- * <p>This interface is designed for interpolations in a two-dimensional space only.</p>
+ * <p>This class is designed for interpolations in a two-dimensional space only.</p>
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
-public interface Interpolation {
+public abstract class Interpolation {
+    /**
+     * Creates a new interpolation.
+     */
+    protected Interpolation() {
+    }
+
     /**
      * Returns the size of the area over which the resampling function needs to provide values.
      * Common values are:
@@ -53,7 +59,7 @@ public interface Interpolation {
      *
      * @return number of sample values required for interpolations.
      */
-    Dimension getSupportSize();
+    public abstract Dimension getSupportSize();
 
     /**
      * Interpolates sample values for all bands using the given pixel values in local neighborhood.
@@ -97,12 +103,12 @@ public interface Interpolation {
      * @param  writeTo        the array where this method shall write interpolated values.
      * @param  writeToOffset  index of the first value to put in the {@code writeTo} array.
      */
-    void interpolate(DoubleBuffer source, int numBands, double xfrac, double yfrac, double[] writeTo, int writeToOffset);
+    public abstract void interpolate(DoubleBuffer source, int numBands, double xfrac, double yfrac, double[] writeTo, int writeToOffset);
 
     /**
      * A nearest-neighbor interpolation using 1×1 pixel.
      */
-    Interpolation NEAREST = new Interpolation() {
+    public static final Interpolation NEAREST = new Interpolation() {
         /** Interpolation name for debugging purpose. */
         @Override public String toString() {
             return "NEAREST";
@@ -128,7 +134,7 @@ public interface Interpolation {
      * A bilinear interpolation using 2×2 pixels.
      * If the interpolation result is NaN, this method fallbacks on nearest-neighbor.
      */
-    Interpolation BILINEAR = new Interpolation() {
+    public static final Interpolation BILINEAR = new Interpolation() {
         /** Interpolation name for debugging purpose. */
         @Override public String toString() {
             return "BILINEAR";
@@ -167,5 +173,5 @@ public interface Interpolation {
      *
      * @see <a href="https://en.wikipedia.org/wiki/Lanczos_resampling">Lanczos resampling on Wikipedia</a>
      */
-    Interpolation LANCZOS = new LanczosInterpolation(3);
+    public static final Interpolation LANCZOS = new LanczosInterpolation(3);
 }

@@ -317,7 +317,7 @@ final class Visualization extends ResampledImage {
      * destination image. This class is used for combining {@link ResampledImage} and {@link BandedSampleConverter}
      * in a single operation.
      */
-    static class InterpConvert implements Interpolation {
+    static class InterpConvert extends Interpolation {
         /**
          * The object to use for performing interpolations.
          *
