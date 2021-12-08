@@ -17,7 +17,7 @@
 package org.apache.sis.internal.feature.jts;
 
 import org.apache.sis.internal.feature.GeometriesTestCase;
-import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.MultiLineString;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -58,16 +58,16 @@ public final strictfp class FactoryTest extends GeometriesTestCase {
      * If there is more than 2 geometries, it is caller responsibility to verify the other ones.
      */
     private static void verifyTwoFirstGeometries(final MultiLineString mp) {
-        assertArrayEquals(new Coordinate[] {
-                new Coordinate(4, 5),
-                new Coordinate(7, 9),
-                new Coordinate(9, 3),
-                new Coordinate(4, 5)}, mp.getGeometryN(0).getCoordinates());
+        assertArrayEquals(new CoordinateXY[] {
+                new CoordinateXY(4, 5),
+                new CoordinateXY(7, 9),
+                new CoordinateXY(9, 3),
+                new CoordinateXY(4, 5)}, mp.getGeometryN(0).getCoordinates());
 
-        assertArrayEquals(new Coordinate[] {
-                new Coordinate(-3, -2),
-                new Coordinate(-2, -5),
-                new Coordinate(-1, -6)}, mp.getGeometryN(1).getCoordinates());
+        assertArrayEquals(new CoordinateXY[] {
+                new CoordinateXY(-3, -2),
+                new CoordinateXY(-2, -5),
+                new CoordinateXY(-1, -6)}, mp.getGeometryN(1).getCoordinates());
     }
 
     /**
@@ -80,10 +80,10 @@ public final strictfp class FactoryTest extends GeometriesTestCase {
         final MultiLineString mp = (MultiLineString) geometry;
         assertEquals("numGeometries", 3, mp.getNumGeometries());
         verifyTwoFirstGeometries(mp);
-        assertArrayEquals(new Coordinate[] {
-                new Coordinate(13, 11),
-                new Coordinate(14, 12),
-                new Coordinate(15, 11),
-                new Coordinate(13, 10)}, mp.getGeometryN(2).getCoordinates());
+        assertArrayEquals(new CoordinateXY[] {
+                new CoordinateXY(13, 11),
+                new CoordinateXY(14, 12),
+                new CoordinateXY(15, 11),
+                new CoordinateXY(13, 10)}, mp.getGeometryN(2).getCoordinates());
     }
 }

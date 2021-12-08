@@ -17,14 +17,19 @@
 package org.apache.sis.internal.feature.jts;
 
 import java.util.Collections;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -36,7 +41,7 @@ import static org.junit.Assert.*;
  * Tests {@link JTS} implementation.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -49,7 +54,7 @@ public final strictfp class JTSTest extends TestCase {
     @Test
     public void testGetCoordinateReferenceSystem() throws FactoryException {
         final GeometryFactory factory = new GeometryFactory();
-        final Geometry geometry = factory.createPoint(new Coordinate(5, 6));
+        final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
 
         CoordinateReferenceSystem crs = JTS.getCoordinateReferenceSystem(geometry);
         assertNull(crs);
@@ -72,6 +77,109 @@ public final strictfp class JTSTest extends TestCase {
     }
 
     /**
+     * Tests {@link Wrapper#setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
+     */
+    @Test
+    public void testSetCoordinateReferenceSystem() {
+        final GeometryFactory factory = new GeometryFactory();
+        final CoordinateReferenceSystem crs2D = CommonCRS.WGS84.geographic();
+        final CoordinateReferenceSystem crs3D = CommonCRS.WGS84.geographic3D();
+
+        {   /*
+             * Test setting a 2D CRS on a 2 dimensional geometry.
+             */
+            final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            wrapper.setCoordinateReferenceSystem(crs2D);
+            assertEquals(crs2D, wrapper.getCoordinateReferenceSystem());
+        }
+
+        {   /*
+             * Test setting a 2D CRS on a 3 dimensional geometry.
+             * This case is tolerated for backward compatibility.
+             */
+            final Geometry geometry = factory.createPoint(new Coordinate(5, 6, 7));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            wrapper.setCoordinateReferenceSystem(crs2D);
+            assertEquals(crs2D, wrapper.getCoordinateReferenceSystem());
+        }
+
+        {   /*
+             * Test setting a 3D CRS on a 3 dimensional geometry.
+             */
+            final Geometry geometry = factory.createPoint(new Coordinate(5, 6, 7));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            wrapper.setCoordinateReferenceSystem(crs3D);
+            assertEquals(crs3D, wrapper.getCoordinateReferenceSystem());
+        }
+
+        {   /*
+             * Test setting a 3D CRS on a 2 dimensional geometry.
+             */
+            final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            try {
+                wrapper.setCoordinateReferenceSystem(crs3D);
+                fail("Setting a 3D crs on a 2D geometry must fail.");
+            } catch (MismatchedDimensionException ex) {
+                assertTrue(ex.getMessage().contains("crs"));
+                // ok
+            }
+        }
+    }
+
+    /**
+     * Tests {@link Wrapper#getEnvelope()}.
+     */
+    @Test
+    public void testGetEnvelope() {
+        final GeometryFactory factory = new GeometryFactory();
+
+        {   /*
+             * Test 2D Envelope on a 2 dimensional geometry.
+             */
+            final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
+            final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            wrapper.setCoordinateReferenceSystem(crs);
+            final GeneralEnvelope envelope = wrapper.getEnvelope();
+            assertEquals(crs, envelope.getCoordinateReferenceSystem());
+            assertArrayEquals(new double[] {5, 6}, envelope.getLowerCorner().getCoordinate(), STRICT);
+            assertArrayEquals(new double[] {5, 6}, envelope.getUpperCorner().getCoordinate(), STRICT);
+        }
+
+        {   /*
+             * Test 2D Envelope on a 3 dimensional geometry.
+             * This case is tolerated for backward compatibility.
+             */
+            final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
+            final Geometry geometry = factory.createPoint(new Coordinate(5, 6, 7));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            wrapper.setCoordinateReferenceSystem(crs);
+            final GeneralEnvelope envelope = wrapper.getEnvelope();
+            assertEquals(crs, envelope.getCoordinateReferenceSystem());
+            assertArrayEquals(new double[] {5, 6}, envelope.getLowerCorner().getCoordinate(), STRICT);
+            assertArrayEquals(new double[] {5, 6}, envelope.getUpperCorner().getCoordinate(), STRICT);
+        }
+
+        {   /*
+             * Test 3D Envelope on a 3 dimensional geometry.
+             *
+             * TODO: JTS does not set the Z values for geometry internal envelope.
+             *       Should we loop over all coordinates in the geometry?
+             */
+            final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+            final Geometry geometry = factory.createPoint(new Coordinate(5, 6, 7));
+            final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).get();
+            wrapper.setCoordinateReferenceSystem(crs);
+            final GeneralEnvelope envelope = wrapper.getEnvelope();
+            assertEquals(crs, envelope.getCoordinateReferenceSystem());
+            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getLowerCorner().getCoordinate(), STRICT);
+            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getUpperCorner().getCoordinate(), STRICT);
+        }
+    }
+
+    /**
      * Tests various {@code transform} methods. This includes (sometime indirectly):
      *
      * <ul>
@@ -86,7 +194,7 @@ public final strictfp class JTSTest extends TestCase {
     @Test
     public void testTransform() throws FactoryException, TransformException {
         final GeometryFactory factory = new GeometryFactory();
-        final Geometry in = factory.createPoint(new Coordinate(5, 6));
+        final Geometry in = factory.createPoint(new CoordinateXY(5, 6));
         /*
          * Test transforming geometry without CRS.
          */

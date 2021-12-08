@@ -46,6 +46,7 @@ import org.apache.sis.util.Debug;
 
 // Optional dependencies
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -72,7 +73,7 @@ import org.opengis.filter.DistanceOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -152,10 +153,47 @@ final class Wrapper extends GeometryWrapper<Geometry> {
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
         final int dimension = ReferencingUtilities.getDimension(crs);
         if (dimension != Factory.BIDIMENSIONAL) {
-            ArgumentChecks.ensureDimensionMatches("crs",
-                    (dimension <= Factory.BIDIMENSIONAL) ? Factory.BIDIMENSIONAL : 3, crs);
+            // The check for 2-dimensional case is for backward compatibility. May be temporary.
+            ArgumentChecks.ensureDimensionMatches("crs", getCoordinatesDimension(geometry), crs);
         }
         JTS.setCoordinateReferenceSystem(geometry, crs);
+    }
+
+    /**
+     * Gets the number of dimensions of geometry vertex (sequence of coordinate points), which can be 2 or 3.
+     * Note that this is different than the {@linkplain Geometry#getDimension() geometry topological dimension},
+     * which can be 0, 1 or 2.
+     *
+     * @param  geometry  the geometry for which to get <em>vertex</em> (not topological) dimension.
+     * @return vertex dimension of the given geometry.
+     * @throws IllegalArgumentException if the type of the given geometry is not recognized.
+     */
+    private static int getCoordinatesDimension(final Geometry geometry) {
+        final CoordinateSequence cs;
+        if (geometry instanceof Point) {
+            // Most efficient method (no allocation) in JTS 1.18.
+            cs = ((Point) geometry).getCoordinateSequence();
+        } else if (geometry instanceof LineString) {
+            // Most efficient method (no allocation) in JTS 1.18.
+            cs = ((LineString) geometry).getCoordinateSequence();
+        } else if (geometry instanceof Polygon) {
+            return getCoordinatesDimension(((Polygon) geometry).getExteriorRing());
+        } else if (geometry instanceof GeometryCollection) {
+            final GeometryCollection gc = (GeometryCollection) geometry;
+            final int n = gc.getNumGeometries();
+            if (n == 0) {
+                return Factory.TRIDIMENSIONAL;      // Undefined coordinates, JTS assumes 3 for empty geometries.
+            }
+            for (int i=0; i<n; i++) {
+                // If at least one geometry is 3D, consider the whole geometry as 3D.
+                final int d = getCoordinatesDimension(gc.getGeometryN(i));
+                if (d > Factory.BIDIMENSIONAL) return d;
+            }
+            return Factory.BIDIMENSIONAL;
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, geometry.getGeometryType()));
+        }
+        return cs.getDimension();
     }
 
     /**

@@ -33,6 +33,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Optional dependencies
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -54,7 +55,7 @@ import org.locationtech.jts.io.WKTReader;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -143,7 +144,7 @@ public final class Factory extends Geometries<Geometry> {
      */
     @Override
     public Object createPoint(final double x, final double y) {
-        return factory.createPoint(new Coordinate(x, y));
+        return factory.createPoint(new CoordinateXY(x, y));
     }
 
     /**
@@ -185,7 +186,7 @@ public final class Factory extends Geometries<Geometry> {
                         if (is3D) {
                             c = new Coordinate(x, y, v.doubleValue(i++));
                         } else {
-                            c = new Coordinate(x, y);
+                            c = new CoordinateXY(x, y);
                         }
                         coordList.add(c);
                     } else {

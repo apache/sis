@@ -58,7 +58,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <G> root class of geometry implementation.
  *
@@ -176,7 +176,7 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
     }
 
     /**
-     * Creates a function where all parameters are literal values, the evaluate the function.
+     * Creates a function where all parameters are literal values, then evaluate the function.
      * The function is stored in the {@link #function} field.
      *
      * @param  name    name of the function to create.

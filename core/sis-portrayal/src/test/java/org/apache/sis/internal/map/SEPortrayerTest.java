@@ -51,7 +51,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -91,14 +91,14 @@ public class SEPortrayerTest extends TestCase {
         fishbuilder.addAttribute(String.class).setName("description");
         final FeatureType fishType = fishbuilder.build();
 
-        final Point point1 = gf.createPoint(new Coordinate(0, 0));
+        final Point point1 = gf.createPoint(new CoordinateXY(0, 0));
         point1.setUserData(crs);
         final Feature fish1 = fishType.newInstance();
         fish1.setPropertyValue("id", "1");
         fish1.setPropertyValue("geom", point1);
         fish1.setPropertyValue("description", "A red fish");
 
-        final Point point2 = gf.createPoint(new Coordinate(10, 20));
+        final Point point2 = gf.createPoint(new CoordinateXY(10, 20));
         point2.setUserData(crs);
         final Feature fish2 = fishType.newInstance();
         fish2.setPropertyValue("id", "2");
@@ -113,7 +113,7 @@ public class SEPortrayerTest extends TestCase {
         sharkbuilder.addAttribute(Double.class).setName("length");
         final FeatureType sharkType = sharkbuilder.build();
 
-        final Point point3 = gf.createPoint(new Coordinate(30, 40));
+        final Point point3 = gf.createPoint(new CoordinateXY(30, 40));
         point3.setUserData(crs);
         final Feature shark1 = sharkType.newInstance();
         shark1.setPropertyValue("id", "100");
@@ -131,14 +131,16 @@ public class SEPortrayerTest extends TestCase {
         boatbuilder.addAttribute(String.class).setName("description");
         final FeatureType boatType = boatbuilder.build();
 
-        final Polygon poly1 = gf.createPolygon(gf.createLinearRing(new Coordinate[]{new Coordinate(0, 0),new Coordinate(0, 1),new Coordinate(1, 1),new Coordinate(0, 0)}));
+        final Polygon poly1 = gf.createPolygon(gf.createLinearRing(new CoordinateXY[] {
+            new CoordinateXY(0, 0), new CoordinateXY(0, 1), new CoordinateXY(1, 1), new CoordinateXY(0, 0)}));
         poly1.setUserData(crs);
         final Feature boat1 = boatType.newInstance();
         boat1.setPropertyValue("id", "10");
         boat1.setPropertyValue("geom", poly1);
         boat1.setPropertyValue("description", "A fishing boat");
 
-        final Polygon poly2 = gf.createPolygon(gf.createLinearRing(new Coordinate[]{new Coordinate(0, 0),new Coordinate(0, 1),new Coordinate(1, 1),new Coordinate(0, 0)}));
+        final Polygon poly2 = gf.createPolygon(gf.createLinearRing(new CoordinateXY[] {
+            new CoordinateXY(0, 0), new CoordinateXY(0, 1), new CoordinateXY(1, 1), new CoordinateXY(0, 0)}));
         poly2.setUserData(crs);
         final Feature boat2 = boatType.newInstance();
         boat2.setPropertyValue("id", "20");
