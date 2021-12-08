@@ -128,8 +128,15 @@ public abstract class BatchComputedImage extends ComputedImage {
 
     /**
      * Computes immediately and returns all tiles in the given ranges of tile indices.
+     * Tiles shall be returned in row-major order.
      * It is implementer responsibility to ensure that all rasters have consistent
      * {@link Raster#getMinX()}/{@code getMinY()} values.
+     *
+     * @todo The return type should be changed to something more reactive, maybe {@link java.util.concurrent.Flow}.
+     *       It would allow processing (e.g. map reprojection) of some tiles as soon as they become available,
+     *       without waiting for all tiles to be available. Note that the tiles can be returned in any order.
+     *       For example the TIFF reader is reading tiles in arbitrary order, then rearranges them in the array.
+     *       So the "row-major" order in above javadoc could not apply anymore.
      *
      * @param  tiles  range of tile indices for which to precompute tiles.
      * @return precomputed tiles for the given indices, in row-major fashion.
@@ -139,7 +146,8 @@ public abstract class BatchComputedImage extends ComputedImage {
 
     /**
      * Invoked when a single tile need to be computed.
-     * The default implementation delegates to {@link #computeTiles(Rectangle)}.
+     * This method first searches for the tile in the regions prepared by calls to {@link #prefetch(Rectangle)}.
+     * If the requested tile is not already fetched, then this method delegates to {@link #computeTiles(Rectangle)}.
      *
      * @param  tileX     the column index of the tile to compute.
      * @param  tileY     the row index of the tile to compute.
