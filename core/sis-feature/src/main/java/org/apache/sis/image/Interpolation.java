@@ -17,6 +17,8 @@
 package org.apache.sis.image;
 
 import java.awt.Dimension;
+import java.awt.image.RenderedImage;
+import java.awt.image.IndexColorModel;
 import java.nio.DoubleBuffer;
 
 
@@ -106,6 +108,25 @@ public abstract class Interpolation {
     public abstract void interpolate(DoubleBuffer source, int numBands, double xfrac, double yfrac, double[] writeTo, int writeToOffset);
 
     /**
+     * Returns {@link #NEAREST} if interpolations on the given image should be restricted to nearest-neighbor.
+     * If the given image uses an index color model, interpolating the indexed values does not produce the
+     * expected colors. Safest approach is to disable completely interpolations in that case.
+     *
+     * <div class="note"><b>Note:</b>
+     * we could interpolate if we knew that all index values, without exception (i.e. no index for missing values),
+     * are related to measurements by a linear function. In practice it rarely happens, because there is usually
+     * at least one index value reserved for missing values. Scientific data in SIS are usually stored as floating
+     * point type (with missing values mapped to NaN), which can not be associated to {@link IndexColorModel}.
+     * For now we do not try to perform a more sophisticated detection of which interpolations are allowed,
+     * but a future SIS version may revisit this policy if needed.</div>
+     *
+     * @return {@link #NEAREST} if interpolations should be restricted to nearest-neighbor, or {@code this} otherwise.
+     */
+    Interpolation toCompatible(final RenderedImage source) {
+        return (source.getColorModel() instanceof IndexColorModel) ? NEAREST : this;
+    }
+
+    /**
      * A nearest-neighbor interpolation using 1×1 pixel.
      */
     public static final Interpolation NEAREST = new Interpolation() {
@@ -127,6 +148,11 @@ public abstract class Interpolation {
             source.mark();
             source.get(writeTo, writeToOffset, numBands);
             source.reset();
+        }
+
+        /** This interpolation never need to be disabled. */
+        @Override Interpolation toCompatible(final RenderedImage source) {
+            return this;
         }
     };
 
