@@ -285,14 +285,17 @@ final class Wrapper extends GeometryWrapper<Geometry> {
     protected Geometry mergePolylines(final Iterator<?> polylines) {
         final List<Coordinate> coordinates = new ArrayList<>();
         final List<Geometry> lines = new ArrayList<>();
+        boolean isFloat = true;
 add:    for (Geometry next = geometry;;) {
             if (next instanceof Point) {
                 final Coordinate pt = ((Point) next).getCoordinate();
                 if (!Double.isNaN(pt.x) && !Double.isNaN(pt.y)) {
+                    isFloat = Factory.isFloat(isFloat, (Point) next);
                     coordinates.add(pt);
                 } else {
-                    Factory.INSTANCE.toLineString(coordinates, lines, false);
+                    Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
                     coordinates.clear();
+                    isFloat = true;
                 }
             } else {
                 final int n = next.getNumGeometries();
@@ -301,21 +304,23 @@ add:    for (Geometry next = geometry;;) {
                     if (coordinates.isEmpty()) {
                         lines.add(ls);
                     } else {
+                        if (isFloat) isFloat = Factory.isFloat(ls.getCoordinateSequence());
                         coordinates.addAll(Arrays.asList(ls.getCoordinates()));
-                        Factory.INSTANCE.toLineString(coordinates, lines, false);
+                        Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
                         coordinates.clear();
+                        isFloat = true;
                     }
                 }
             }
             /*
-             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * `polylines.hasNext()` check is conceptually part of `for` instruction,
              * except that we need to skip this condition during the first iteration.
              */
             do if (!polylines.hasNext()) break add;
             while ((next = (Geometry) polylines.next()) == null);
         }
-        Factory.INSTANCE.toLineString(coordinates, lines, false);
-        return Factory.INSTANCE.toGeometry(lines, false);
+        Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
+        return Factory.INSTANCE.toGeometry(lines, false, isFloat);
     }
 
     /**

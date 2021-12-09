@@ -276,9 +276,12 @@ public abstract class Geometries<G> implements Serializable {
     /**
      * Returns whether this library can produce geometry backed by the {@code float} primitive type
      * instead of the {@code double} primitive type. If single-precision mode is supported, using
-     * that mode may reduce memory usage.
+     * that mode may reduce memory usage. This method is used for checking whether it is worth to
+     * invoke {@link Vector#isSinglePrecision()} for example.
      *
      * @return whether the library support single-precision values.
+     *
+     * @see Vector#isSinglePrecision()
      */
     public boolean supportSinglePrecision() {
         return false;
