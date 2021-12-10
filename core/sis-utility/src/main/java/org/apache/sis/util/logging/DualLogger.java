@@ -30,7 +30,11 @@ import java.util.logging.Logger;
  * @version 0.3
  * @since   0.3
  * @module
+ *
+ * @deprecated Will be removed since there is now other mechanisms for redirecting logging.
+ *             See <a href="https://issues.apache.org/jira/browse/SIS-531">SIS-531</a>.
  */
+@Deprecated
 @SuppressWarnings("ClassWithMultipleLoggers")
 final class DualLogger extends LoggerAdapter {
     /**

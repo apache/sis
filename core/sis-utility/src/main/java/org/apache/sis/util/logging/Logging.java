@@ -152,7 +152,11 @@ public final class Logging extends Static {
      *
      * @param  name  the logger name.
      * @return a logger for the specified name.
+     *
+     * @deprecated Use the standard {@link Logger#getLogger(String)} method instead.
+     *             See <a href="https://issues.apache.org/jira/browse/SIS-531">SIS-531</a>.
      */
+    @Deprecated
     public static Logger getLogger(final String name) {
         ArgumentChecks.ensureNonNull("name", name);
         final LoggerFactory<?> factory = Logging.factory;
