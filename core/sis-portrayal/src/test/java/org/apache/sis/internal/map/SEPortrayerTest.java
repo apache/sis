@@ -81,7 +81,7 @@ public class SEPortrayerTest extends TestCase {
     public SEPortrayerTest() {
         filterFactory = DefaultFilterFactory.forFeatures();
 
-        final GeometryFactory gf = new GeometryFactory();
+        final GeometryFactory gf = org.apache.sis.internal.feature.jts.Factory.INSTANCE.factory(false);
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
 
         final FeatureTypeBuilder fishbuilder = new FeatureTypeBuilder();

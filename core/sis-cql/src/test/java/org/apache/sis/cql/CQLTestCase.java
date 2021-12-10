@@ -47,6 +47,6 @@ abstract strictfp class CQLTestCase extends TestCase {
      */
     CQLTestCase() {
         FF = DefaultFilterFactory.forFeatures();
-        GF = new GeometryFactory();
+        GF = org.apache.sis.internal.feature.jts.Factory.INSTANCE.factory(false);
     }
 }

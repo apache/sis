@@ -65,14 +65,18 @@ final class PackedCoordinateSequenceFactory implements CoordinateSequenceFactory
     @Override
     public CoordinateSequence create(final Coordinate[] coordinates) {
         int dimension = Factory.TRIDIMENSIONAL;
-        int measures  = -1;
-        int size      =  0;
+        int measures  = 0;
+        int size      = 0;
+        boolean first = true;
         if (coordinates != null) {
             size = coordinates.length;
             for (final Coordinate c : coordinates) {
                 final int m = Coordinates.measures(c);
                 dimension = Math.min(dimension, Coordinates.dimension(c) - m);
-                if (m < measures || measures < 0) measures = m;
+                if (first | m < measures) {
+                    measures = m;
+                    first = false;
+                }
             }
         }
         dimension += measures;

@@ -53,7 +53,7 @@ public final strictfp class JTSTest extends TestCase {
      */
     @Test
     public void testGetCoordinateReferenceSystem() throws FactoryException {
-        final GeometryFactory factory = new GeometryFactory();
+        final GeometryFactory factory = Factory.INSTANCE.factory(false);
         final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
 
         CoordinateReferenceSystem crs = JTS.getCoordinateReferenceSystem(geometry);
@@ -81,7 +81,7 @@ public final strictfp class JTSTest extends TestCase {
      */
     @Test
     public void testSetCoordinateReferenceSystem() {
-        final GeometryFactory factory = new GeometryFactory();
+        final GeometryFactory factory = Factory.INSTANCE.factory(false);
         final CoordinateReferenceSystem crs2D = CommonCRS.WGS84.geographic();
         final CoordinateReferenceSystem crs3D = CommonCRS.WGS84.geographic3D();
 
@@ -137,7 +137,7 @@ public final strictfp class JTSTest extends TestCase {
      */
     @Test
     public void testGetEnvelope() {
-        final GeometryFactory factory = new GeometryFactory();
+        final GeometryFactory factory = Factory.INSTANCE.factory(false);
 
         {   /*
              * Test 2D Envelope on a 2 dimensional geometry.
@@ -183,7 +183,7 @@ public final strictfp class JTSTest extends TestCase {
      */
     @Test
     public void testTransform() throws FactoryException, TransformException {
-        final GeometryFactory factory = new GeometryFactory();
+        final GeometryFactory factory = Factory.INSTANCE.factory(false);
         final Geometry in = factory.createPoint(new CoordinateXY(5, 6));
         /*
          * Test transforming geometry without CRS.
