@@ -17,6 +17,7 @@
 package org.apache.sis.internal.feature.jts;
 
 import java.util.Map;
+import java.awt.Shape;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -33,8 +34,10 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 
 /**
@@ -47,7 +50,7 @@ import org.locationtech.jts.geom.Geometry;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -293,5 +296,48 @@ public final class JTS extends Static {
             geometry = gct.transform(geometry);
         }
         return geometry;
+    }
+
+    /**
+     * Returns a view of the given JTS geometry as a Java2D shape.
+     *
+     * @param  geometry  the geometry to view as a shape, not {@code null}.
+     * @return the Java2D shape view.
+     */
+    public static Shape asShape(final Geometry geometry) {
+        ArgumentChecks.ensureNonNull("geometry", geometry);
+        return new JTSShape(geometry);
+    }
+
+    /**
+     * Returns a view of the given JTS geometry as a Java2D shape with a decimation applied on-the-fly.
+     *
+     * @param  geometry   the geometry to view as a shape, not {@code null}.
+     * @param  resolution decimation resolution as an array of length 2, or {@code null}.
+     * @return the Java2D shape view.
+     */
+    public static Shape asDecimatedShape(final Geometry geometry, final double[] resolution) {
+        ArgumentChecks.ensureNonNull("geometry", geometry);
+        final Shape shape = new JTSShape(geometry);
+        if (resolution != null) {
+            final DecimateJTSShape decimated = new DecimateJTSShape(shape, resolution);
+            if (decimated.isValid()) return decimated;
+        }
+        return shape;
+    }
+
+    /**
+     * Converts a Java2D shape to a JTS geometry. If the given shape is a view created by {@link #asShape(Geometry)},
+     * then the original geometry is returned. Otherwise a new geometry is created with a copy (not a view) of the
+     * shape coordinates.
+     *
+     * @param  factory   factory to use for creating the geometry, or {@code null} for the default.
+     * @param  shape     the Java2D shape to convert. Can not be {@code null}.
+     * @param  flatness  the maximum distance that line segments are allowed to deviate from curves.
+     * @return JTS geometry with shape coordinates. Never null but can be empty.
+     */
+    public static Geometry fromAWT(final GeometryFactory factory, final Shape shape, final double flatness) {
+        ArgumentChecks.ensureNonNull("shape", shape);
+        return ShapeConverter.create(factory, shape, flatness);
     }
 }

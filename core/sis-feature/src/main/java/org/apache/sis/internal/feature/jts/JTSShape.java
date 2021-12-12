@@ -14,22 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.feature.jts;
+
+import org.locationtech.jts.geom.Geometry;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
+import org.apache.sis.internal.feature.j2d.EmptyShape;
+
 
 /**
- * Centralizes usages of some (not all) Java2D geometry API by Apache SIS.
- * We use this class for isolating dependencies from the {@code org.apache.feature} package to Java2D API.
+ * A thin wrapper that adapts a JTS geometry to the Shape interface so that the
+ * geometry can be used by java2d without coordinate cloning.
  *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @version 1.2
- *
- * @see org.apache.sis.internal.referencing.j2d
- *
- * @since 1.0
+ * @since   1.2
  * @module
  */
-package org.apache.sis.internal.feature.j2d;
+class JTSShape extends AbstractJTSShape {
+
+    public JTSShape(final Geometry geom) {
+        super(geom);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PathIterator getPathIterator(final AffineTransform at) {
+        if (geometry.isEmpty()) {
+            return EmptyShape.INSTANCE;
+        } else {
+            return new JTSPathIterator(geometry, at);
+        }
+    }
+}

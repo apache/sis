@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
  * An empty shape.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -37,7 +37,7 @@ public final class EmptyShape implements Shape, PathIterator {
     /**
      * The unique empty shape instance.
      */
-    public static final Shape INSTANCE = new EmptyShape();
+    public static final EmptyShape INSTANCE = new EmptyShape();
 
     /**
      * For {@link #INSTANCE} construction only.

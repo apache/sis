@@ -276,6 +276,12 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
             coordinates = original.coordinates.clone();
         }
 
+        /** Creates a new coordinate sequence with given values. */
+        Double(final double[] array, final int length) {
+            super(Factory.BIDIMENSIONAL, 0);
+            coordinates = Arrays.copyOf(array, length);
+        }
+
         /** Creates a new coordinate sequence for the given number of tuples. */
         Double(final int size, final int dimension, final int measures) {
             super(dimension, measures);
@@ -355,6 +361,12 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
         private Float(final Float original) {
             super(original);
             coordinates = original.coordinates.clone();
+        }
+
+        /** Creates a new coordinate sequence with given values. */
+        Float(final float[] array, final int length) {
+            super(Factory.BIDIMENSIONAL, 0);
+            coordinates = Arrays.copyOf(array, length);
         }
 
         /** Creates a new coordinate sequence for the given number of tuples. */
