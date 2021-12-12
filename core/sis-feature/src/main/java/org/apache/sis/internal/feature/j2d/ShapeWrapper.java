@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
+import java.io.Serializable;
 import org.apache.sis.internal.referencing.j2d.AbstractShape;
 
 
@@ -34,7 +35,12 @@ import org.apache.sis.internal.referencing.j2d.AbstractShape;
  * @since   1.2
  * @module
  */
-abstract class ShapeWrapper extends AbstractShape {
+abstract class ShapeWrapper extends AbstractShape implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -3917772814285085629L;
+
     /**
      * The source of coordinate values.
      */

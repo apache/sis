@@ -21,6 +21,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.util.NoSuchElementException;
 import org.apache.sis.internal.referencing.j2d.AbstractShape;
 
@@ -33,7 +35,12 @@ import org.apache.sis.internal.referencing.j2d.AbstractShape;
  * @since   1.1
  * @module
  */
-public final class EmptyShape extends AbstractShape implements PathIterator {
+public final class EmptyShape extends AbstractShape implements Serializable, PathIterator {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -45089382216341034L;
+
     /**
      * The unique empty shape instance.
      */
@@ -61,4 +68,14 @@ public final class EmptyShape extends AbstractShape implements PathIterator {
     @Override public void         next()                                               {throw new NoSuchElementException();}
     @Override public int          currentSegment( float[] coords)                      {throw new NoSuchElementException();}
     @Override public int          currentSegment(double[] coords)                      {throw new NoSuchElementException();}
+
+    /**
+     * Invoked at deserialization time for obtaining the unique instance of this shape.
+     *
+     * @return the unique {@code Shape} instance for this class.
+     * @throws ObjectStreamException if the object state is invalid.
+     */
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
 }

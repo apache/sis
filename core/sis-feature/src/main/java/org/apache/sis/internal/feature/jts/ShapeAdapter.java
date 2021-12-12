@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 import org.apache.sis.internal.feature.j2d.EmptyShape;
 import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
@@ -47,7 +48,12 @@ import org.locationtech.jts.geom.Point;
  * @since   1.2
  * @module
  */
-final class ShapeAdapter extends AbstractShape {
+final class ShapeAdapter extends AbstractShape implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -8536828815289601141L;
+
     /**
      * A lightweight JTS geometry factory using the default
      * {@link org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory}.

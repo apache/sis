@@ -37,6 +37,11 @@ import java.awt.geom.AffineTransform;
  */
 public final class DecimatedShape extends ShapeWrapper {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 3842608333341518892L;
+
+    /**
      * The desired resolution on each axis.
      */
     private final double xRes, yRes;
