@@ -207,4 +207,25 @@ public final strictfp class JTSTest extends TestCase {
         assertEquals(15, ((Point) out).getX(), STRICT);
         assertEquals(26, ((Point) out).getY(), STRICT);
     }
+
+    /**
+     * Tests various {@code transform} method with a three-dimensional geometry.
+     *
+     * @throws FactoryException if an EPSG code can not be resolved.
+     * @throws TransformException if a coordinate can not be transformed.
+     */
+    @Test
+    public void testTransform3D() throws FactoryException, TransformException {
+        final GeometryFactory factory = Factory.INSTANCE.factory(false);
+        final Point in = factory.createPoint(new Coordinate(5, 6, 2));
+        assertEquals(Factory.TRIDIMENSIONAL, in.getCoordinateSequence().getDimension());
+        assertSame(in, JTS.transform(in, CommonCRS.WGS84.geographic()));
+
+        in.setUserData(CommonCRS.WGS84.geographic3D());
+        final Point out = (Point) JTS.transform(in, CommonCRS.WGS84.geographic());
+        assertEquals(5, out.getX(), STRICT);
+        assertEquals(6, out.getY(), STRICT);
+        assertEquals(CommonCRS.WGS84.geographic(), out.getUserData());
+        assertEquals(Factory.BIDIMENSIONAL, out.getCoordinateSequence().getDimension());
+    }
 }

@@ -30,7 +30,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -208,7 +208,10 @@ public final class JTS extends Static {
         DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
         try {
             final Envelope e = areaOfInterest.getEnvelopeInternal();
-            bbox.setBounds(new Envelope2D(sourceCRS, e.getMinX(), e.getMinY(), e.getWidth(), e.getHeight()));
+            final GeneralEnvelope env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
+            env.setRange(0, e.getMinX(), e.getMaxX());
+            env.setRange(1, e.getMinY(), e.getMaxY());
+            bbox.setBounds(env);
         } catch (TransformException ex) {
             bbox = null;
             Logging.ignorableException(Logging.getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
