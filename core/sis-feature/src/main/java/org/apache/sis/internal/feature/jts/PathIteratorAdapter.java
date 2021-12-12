@@ -33,6 +33,7 @@ import org.locationtech.jts.geom.Point;
 
 /**
  * Java2D path iterator for JTS geometry.
+ * This iterator gets coordinates from the {@link CoordinateSequence} associated to each geometry.
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,7 +41,7 @@ import org.locationtech.jts.geom.Point;
  * @since   1.2
  * @module
  */
-final class JTSPathIterator implements PathIterator {
+final class PathIteratorAdapter implements PathIterator {
     /**
      * The transform to apply on returned coordinate values.
      * Never null (may be the identity transform instead).
@@ -79,7 +80,7 @@ final class JTSPathIterator implements PathIterator {
      * @param  geometry  the geometry on which to iterator.
      * @param  at  the transform to apply, or {@code null} for the identity transform.
      */
-    JTSPathIterator(final Geometry geometry, final AffineTransform at) {
+    PathIteratorAdapter(final Geometry geometry, final AffineTransform at) {
         this.at = (at != null) ? at : new AffineTransform();
         sequences = iterator(geometry);
         nextSequence();

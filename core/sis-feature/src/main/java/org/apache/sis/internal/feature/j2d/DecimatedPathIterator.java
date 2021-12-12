@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature.jts;
+package org.apache.sis.internal.feature.j2d;
 
 import java.awt.geom.PathIterator;
 
@@ -30,7 +30,7 @@ import java.awt.geom.PathIterator;
  * @since   1.2
  * @module
  */
-final class DecimateJTSPathIterator implements PathIterator {
+final class DecimatedPathIterator implements PathIterator {
     /**
      * The source of line segments.
      */
@@ -49,7 +49,7 @@ final class DecimateJTSPathIterator implements PathIterator {
     /**
      * Creates a new iterator.
      */
-    DecimateJTSPathIterator(final PathIterator source, final double xRes, final double yRes) {
+    DecimatedPathIterator(final PathIterator source, final double xRes, final double yRes) {
         this.source = source;
         this.xRes   = xRes;
         this.yRes   = yRes;

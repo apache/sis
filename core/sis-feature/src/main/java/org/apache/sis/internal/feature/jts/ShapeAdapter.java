@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import org.apache.sis.internal.feature.j2d.EmptyShape;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -42,7 +43,7 @@ import org.locationtech.jts.geom.LinearRing;
  * @since   1.2
  * @module
  */
-abstract class AbstractJTSShape implements Shape {
+final class ShapeAdapter implements Shape {
     /**
      * A lightweight JTS geometry factory using the default
      * {@link org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory}.
@@ -63,7 +64,7 @@ abstract class AbstractJTSShape implements Shape {
      *
      * @param  geometry  the JTS geometry to wrap.
      */
-    protected AbstractJTSShape(final Geometry geometry) {
+    protected ShapeAdapter(final Geometry geometry) {
         this.geometry = geometry;
     }
 
@@ -163,5 +164,20 @@ abstract class AbstractJTSShape implements Shape {
     @Override
     public PathIterator getPathIterator(final AffineTransform at, final double flatness) {
         return getPathIterator(at);
+    }
+
+    /**
+     * Returns an iterator for the shape outline geometry.
+     *
+     * @param  at  optional transform to apply on coordinate values.
+     * @return an iterator for the shape outline geometry.
+     */
+    @Override
+    public PathIterator getPathIterator(final AffineTransform at) {
+        if (geometry.isEmpty()) {
+            return EmptyShape.INSTANCE;
+        } else {
+            return new PathIteratorAdapter(geometry, at);
+        }
     }
 }

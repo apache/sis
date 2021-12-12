@@ -110,8 +110,8 @@ abstract class ShapeConverter {
      * @return JTS geometry with shape coordinates. Never null but can be empty.
      */
     static Geometry create(final GeometryFactory factory, final Shape shape, final double flatness) {
-        if (shape instanceof JTSShape) {
-            return ((JTSShape) shape).geometry;
+        if (shape instanceof ShapeAdapter) {
+            return ((ShapeAdapter) shape).geometry;
         }
         final PathIterator iterator = shape.getPathIterator(null, flatness);
         final ShapeConverter converter;

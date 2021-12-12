@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature.jts;
+package org.apache.sis.internal.feature.j2d;
 
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 
 /**
  * A shape that apply a simple decimation on-the-fly for faster drawing.
+ *
+ * <h2>Limitations</h2>
  * Current implementation assumes that the shape is flattened.
  * There is some tolerance for quadratic and cubic curves,
  * but the result may not be correct.
@@ -36,12 +35,7 @@ import java.awt.geom.Rectangle2D;
  * @since   1.2
  * @module
  */
-final class DecimateJTSShape implements Shape {
-    /**
-     * The shape to decimate.
-     */
-    private final Shape source;
-
+public final class DecimatedShape extends ShapeWrapper {
     /**
      * The desired resolution on each axis.
      */
@@ -50,68 +44,37 @@ final class DecimateJTSShape implements Shape {
     /**
      * Creates a new wrapper which will decimate the coordinates of the given source.
      *
-     * @param  source  the shape to decimate.
+     * @param  source      the shape to decimate.
+     * @param  resolution  the desired resolution on each axis.
      */
-    public DecimateJTSShape(final Shape source, final double[] resolution) {
-        this.source = source;
+    public DecimatedShape(final Shape source, final double[] resolution) {
+        super(source);
         xRes = Math.abs(resolution[0]);
         yRes = Math.abs(resolution[1]);
     }
 
     /**
      * Returns {@code true} if resolutions are strictly positive and finite numbers.
+     *
+     * @return whether this object can effectively apply decimation.
      */
-    final boolean isValid() {
+    public boolean isValid() {
         return xRes > 0 && yRes > 0 && xRes < Double.MAX_VALUE && yRes < Double.MAX_VALUE;
     }
 
-    @Override
-    public Rectangle getBounds() {
-        return source.getBounds();
-    }
-
-    @Override
-    public Rectangle2D getBounds2D() {
-        return source.getBounds2D();
-    }
-
-    @Override
-    public boolean contains(double x, double y) {
-        return source.contains(x, y);
-    }
-
-    @Override
-    public boolean contains(Point2D p) {
-        return source.contains(p);
-    }
-
-    @Override
-    public boolean intersects(double x, double y, double w, double h) {
-        return source.intersects(x, y, w, h);
-    }
-
-    @Override
-    public boolean intersects(Rectangle2D r) {
-        return source.intersects(r);
-    }
-
-    @Override
-    public boolean contains(double x, double y, double w, double h) {
-        return source.contains(x, y, w, h);
-    }
-
-    @Override
-    public boolean contains(Rectangle2D r) {
-        return source.contains(r);
-    }
-
+    /**
+     * Returns an iterator over the coordinates of this shape after decimation.
+     */
     @Override
     public PathIterator getPathIterator(final AffineTransform at) {
-        return new DecimateJTSPathIterator(source.getPathIterator(at), xRes, yRes);
+        return new DecimatedPathIterator(source.getPathIterator(at), xRes, yRes);
     }
 
+    /**
+     * Returns an iterator over the coordinates of this shape, approximated by decimated line segments.
+     */
     @Override
     public PathIterator getPathIterator(final AffineTransform at, final double flatness) {
-        return new DecimateJTSPathIterator(source.getPathIterator(at, flatness), xRes, yRes);
+        return new DecimatedPathIterator(source.getPathIterator(at, flatness), xRes, yRes);
     }
 }

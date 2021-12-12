@@ -18,6 +18,7 @@ package org.apache.sis.internal.feature.jts;
 
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
+import org.apache.sis.internal.feature.j2d.DecimatedShape;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -31,14 +32,14 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link JTSShape}.
+ * Tests {@link ShapeAdapter}.
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-public final strictfp class JTSShapeTest extends TestCase {
+public final strictfp class ShapeAdapterTest extends TestCase {
     /**
      * The geometry factory used by the tests.
      */
@@ -57,7 +58,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     /**
      * Build a new test case.
      */
-    public JTSShapeTest() {
+    public ShapeAdapterTest() {
         factory = new GeometryFactory();
         buffer  = new double[2];
     }
@@ -66,7 +67,7 @@ public final strictfp class JTSShapeTest extends TestCase {
      * Initializes the test with the given geometry.
      */
     private void initialize(final Geometry geometry) {
-        final Shape shape = new JTSShape(geometry);
+        final Shape shape = new ShapeAdapter(geometry);
         iterator = shape.getPathIterator(null);
     }
 
@@ -97,7 +98,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     }
 
     /**
-     * Tests {@link JTSShape} with a point.
+     * Tests {@link ShapeAdapter} with a point.
      */
     @Test
     public void testPoint() {
@@ -107,7 +108,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     }
 
     /**
-     * Tests {@link JTSShape} with a line string.
+     * Tests {@link ShapeAdapter} with a line string.
      */
     @Test
     public void testLineString() {
@@ -123,7 +124,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     }
 
     /**
-     * Tests {@link JTSShape} with a multi line string.
+     * Tests {@link ShapeAdapter} with a multi line string.
      */
     @Test
     public void testMultiLineString() {
@@ -146,7 +147,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     }
 
     /**
-     * Tests {@link JTSShape} with a polygon.
+     * Tests {@link ShapeAdapter} with a polygon.
      */
     @Test
     public void testPolygon() {
@@ -165,7 +166,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     }
 
     /**
-     * Tests {@link JTSShape} with a multi-polygon.
+     * Tests {@link ShapeAdapter} with a multi-polygon.
      */
     @Test
     public void testMultiPolygon() {
@@ -200,7 +201,7 @@ public final strictfp class JTSShapeTest extends TestCase {
     }
 
     /**
-     * Tests {@link JTS#asDecimatedShape(Geometry, double[])} with a line string.
+     * Tests {@link ShapeAdapter} with the addition of a decimation.
      */
     @Test
     public void testAsDecimatedShapeLineString() {
@@ -209,7 +210,8 @@ public final strictfp class JTSShapeTest extends TestCase {
             new Coordinate(1, 0),
             new Coordinate(2, 0)
         });
-        final Shape shape = JTS.asDecimatedShape(line, new double[] {1.5, 1.5});
+        final DecimatedShape shape = new DecimatedShape(new ShapeAdapter(line), new double[] {1.5, 1.5});
+        assertTrue(shape.isValid());
         iterator = shape.getPathIterator(null);
 
         assertSegmentEquals(PathIterator.SEG_MOVETO, 0, 0);

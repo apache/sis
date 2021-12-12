@@ -282,7 +282,7 @@ public final class JTS extends Static {
     }
 
     /**
-     * Transform the given geometry using the given math transform.
+     * Transforms the given geometry using the given math transform.
      * If the geometry or the transform is null or identity, then the geometry is returned unchanged.
      *
      * @param  geometry   the geometry to transform, or {@code null}.
@@ -306,24 +306,7 @@ public final class JTS extends Static {
      */
     public static Shape asShape(final Geometry geometry) {
         ArgumentChecks.ensureNonNull("geometry", geometry);
-        return new JTSShape(geometry);
-    }
-
-    /**
-     * Returns a view of the given JTS geometry as a Java2D shape with a decimation applied on-the-fly.
-     *
-     * @param  geometry   the geometry to view as a shape, not {@code null}.
-     * @param  resolution decimation resolution as an array of length 2, or {@code null}.
-     * @return the Java2D shape view.
-     */
-    public static Shape asDecimatedShape(final Geometry geometry, final double[] resolution) {
-        ArgumentChecks.ensureNonNull("geometry", geometry);
-        final Shape shape = new JTSShape(geometry);
-        if (resolution != null) {
-            final DecimateJTSShape decimated = new DecimateJTSShape(shape, resolution);
-            if (decimated.isValid()) return decimated;
-        }
-        return shape;
+        return new ShapeAdapter(geometry);
     }
 
     /**
