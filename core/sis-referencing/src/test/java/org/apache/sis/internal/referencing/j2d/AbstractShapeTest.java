@@ -14,23 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.referencing.j2d;
+
+import java.awt.geom.Point2D;
+import java.awt.geom.Line2D;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.opengis.test.Assert.*;
+
 
 /**
- * A set of helper classes having a dependency to Java2D.
- * We keep those classes in a separated package for making easier to identify
- * which parts may need to be replaced in a JavaFX applications.
- *
- * <strong>Do not use!</strong>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Tests the {@link AbstractShape} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- *
- * @see org.apache.sis.internal.feature.j2d
- *
- * @since 0.3
+ * @since   1.2
  * @module
  */
-package org.apache.sis.internal.referencing.j2d;
+public final strictfp class AbstractShapeTest extends TestCase {
+    /**
+     * Tests {@link ShapeUtilities#isFloat(Object)}.
+     */
+    @Test
+    public void testIsFloat() {
+        assertTrue (AbstractShape.isFloat(new Point2D.Float()));
+        assertFalse(AbstractShape.isFloat(new Point2D.Double()));
+        assertTrue (AbstractShape.isFloat(new Line2D.Float()));
+        assertFalse(AbstractShape.isFloat(new Line2D.Double()));
+    }
+}

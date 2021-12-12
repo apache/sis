@@ -23,12 +23,16 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import org.apache.sis.internal.feature.j2d.EmptyShape;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Point;
 
 
 /**
@@ -43,7 +47,7 @@ import org.locationtech.jts.geom.LinearRing;
  * @since   1.2
  * @module
  */
-final class ShapeAdapter implements Shape {
+final class ShapeAdapter extends AbstractShape {
     /**
      * A lightweight JTS geometry factory using the default
      * {@link org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory}.
@@ -66,6 +70,22 @@ final class ShapeAdapter implements Shape {
      */
     protected ShapeAdapter(final Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    /**
+     * Returns {@code true} if this shape backed by primitive {@code float} values.
+     */
+    @Override
+    protected boolean isFloat() {
+        final CoordinateSequence cs;
+        if (geometry instanceof Point) {
+            cs = ((Point) geometry).getCoordinateSequence();
+        } else if (geometry instanceof LineString) {
+            cs = ((LineString) geometry).getCoordinateSequence();
+        } else {
+            return super.isFloat();
+        }
+        return Factory.isFloat(cs);
     }
 
     /**

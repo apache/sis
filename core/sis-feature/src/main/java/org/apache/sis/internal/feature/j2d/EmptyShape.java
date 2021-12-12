@@ -16,13 +16,13 @@
  */
 package org.apache.sis.internal.feature.j2d;
 
-import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.util.NoSuchElementException;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 
 
 /**
@@ -33,7 +33,7 @@ import java.util.NoSuchElementException;
  * @since   1.1
  * @module
  */
-public final class EmptyShape implements Shape, PathIterator {
+public final class EmptyShape extends AbstractShape implements PathIterator {
     /**
      * The unique empty shape instance.
      */

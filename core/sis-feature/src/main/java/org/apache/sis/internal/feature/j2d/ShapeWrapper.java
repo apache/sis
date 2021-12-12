@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 
 
 /**
@@ -33,7 +34,7 @@ import java.awt.geom.AffineTransform;
  * @since   1.2
  * @module
  */
-abstract class ShapeWrapper implements Shape {
+abstract class ShapeWrapper extends AbstractShape {
     /**
      * The source of coordinate values.
      */
@@ -46,6 +47,14 @@ abstract class ShapeWrapper implements Shape {
      */
     protected ShapeWrapper(final Shape source) {
         this.source = source;
+    }
+
+    /**
+     * Returns {@code true} if this shape backed by primitive {@code float} values.
+     */
+    @Override
+    protected boolean isFloat() {
+        return isFloat(source);
     }
 
     /**

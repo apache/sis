@@ -34,6 +34,7 @@ import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -163,7 +164,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
      * Implementation of {@link #mergePolylines(Iterator)} also shared by {@link PointWrapper}.
      */
     static Shape mergePolylines(Object next, final Iterator<?> polylines) {
-        boolean isFloat = ShapeUtilities.isFloat(next);
+        boolean isFloat = AbstractShape.isFloat(next);
         Path2D path = isFloat ? new Path2D.Float() : new Path2D.Double();
         boolean lineTo = false;
 add:    for (;;) {
@@ -191,7 +192,7 @@ add:    for (;;) {
             /*
              * Convert the path from single-precision to double-precision if needed.
              */
-            if (isFloat && !ShapeUtilities.isFloat(next)) {
+            if (isFloat && !AbstractShape.isFloat(next)) {
                 path = new Path2D.Double(path);
                 isFloat = false;
             }

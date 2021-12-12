@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
 import org.apache.sis.internal.jdk9.JDK9;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -115,7 +115,7 @@ abstract class ShapeConverter {
         }
         final PathIterator iterator = shape.getPathIterator(null, flatness);
         final ShapeConverter converter;
-        if (ShapeUtilities.isFloat(shape)) {
+        if (AbstractShape.isFloat(shape)) {
             converter = new ShapeConverter.Float(factory, iterator);
         } else {
             converter = new ShapeConverter.Double(factory, iterator);
