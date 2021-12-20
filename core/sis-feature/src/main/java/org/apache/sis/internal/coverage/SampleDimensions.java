@@ -23,6 +23,8 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Static;
 
 
@@ -108,5 +110,44 @@ public final class SampleDimensions extends Static {
             }
         }
         return sampleFilters;
+    }
+
+    /**
+     * Adds categories to the given sample dimension builder for an image having no explicit transfer function.
+     * This method creates a default transfer function only if needed, for example if a "no data" value exists.
+     * If the transfer function would be identity, then this method does not add it even if {@code sampleRange}
+     * was non-null. This conservative policy is because the purpose of this method is only to avoid that image
+     * operations such as resampling do their calculations on wrong values. If we can avoid to create artificial
+     * information that did not existed in the original data, it is better.
+     *
+     * @param  sampleSize   size of sample values in bits, or 0 if unknown or if sample are floating-point values.
+     * @param  isUnsigned   whether sample values are unsigned integers. Ignored if {@code sampleSize} is 0.
+     * @param  sampleRange  minimum and maximum sample values, or {@code null} if unknown.
+     * @param  fillValue    the "no data" value, or {@code null} if none. May intersect {@code sampleRange}.
+     * @param  dest         where to add the categories.
+     */
+    public static void addDefaultCategories(final int sampleSize, final boolean isUnsigned, NumberRange<?> sampleRange,
+                                            final Number fillValue, final SampleDimension.Builder dest)
+    {
+        if (fillValue != null) {
+            dest.setBackground(null, fillValue);
+            if (sampleRange == null && sampleSize != 0) {
+                long min = 0, max = Numerics.bitmask(sampleSize) - 1;
+                if (!isUnsigned) {
+                    max >>>= 1;
+                    min = ~max;
+                }
+                sampleRange = NumberRange.createBestFit(min, true, max, true);
+            }
+            if (sampleRange != null && sampleRange.containsAny(fillValue)) {
+                final double fill = fillValue.doubleValue();
+                if (sampleRange.getMaxDouble() - fill < fill - sampleRange.getMinDouble()) {
+                    sampleRange = NumberRange.createBestFit(sampleRange.getMinValue(), sampleRange.isMinIncluded(), fill, false);
+                } else {
+                    sampleRange = NumberRange.createBestFit(fill, false, sampleRange.getMaxValue(), sampleRange.isMaxIncluded());
+                }
+                dest.addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Values), sampleRange, sampleRange);
+            }
+        }
     }
 }

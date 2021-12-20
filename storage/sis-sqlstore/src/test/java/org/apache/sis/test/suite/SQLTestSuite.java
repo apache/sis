@@ -27,6 +27,9 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.internal.sql.feature.EWKBTest.class,
     org.apache.sis.internal.sql.feature.SelectionClauseWriterTest.class,
+    org.apache.sis.internal.sql.postgis.BandTest.class,
+    org.apache.sis.internal.sql.postgis.RasterReaderTest.class,
+    org.apache.sis.internal.sql.postgis.RasterWriterTest.class,
     org.apache.sis.internal.sql.postgis.PostgresTest.class,
     org.apache.sis.storage.sql.SQLStoreTest.class
 })
