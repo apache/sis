@@ -17,6 +17,10 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -25,20 +29,27 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -48,6 +59,7 @@ import org.apache.sis.util.Localized;
  * <ul>
  *   <li>Searching for geometric information using SQL queries specialized for Simple Feature table.</li>
  *   <li>Fetching a Coordinate Reference System (CRS) from a SRID.</li>
+ *   <li>Finding a SRID from a Coordinate Reference System (CRS).</li>
  * </ul>
  *
  * This class is <strong>not</strong> thread-safe. Each instance should be used in a single thread.
@@ -55,7 +67,7 @@ import org.apache.sis.util.Localized;
  *
  * @author Alexis Manin (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
- * @since  1.1
+ * @since  1.2
  *
  * @see <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access — Part 2: SQL option</a>
  *
@@ -112,6 +124,11 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @see <a href="http://postgis.refractions.net/documentation/manual-1.3/ch04.html#id2571265">PostGIS documentation</a>
      */
     private PreparedStatement wktFromSrid;
+
+    /**
+     * The statement for fetching a SRID from a CRS and its set of authority codes.
+     */
+    private PreparedStatement sridFromCRS;
 
     /**
      * The object to use for parsing Well-Known Text (WKT), created when first needed.
@@ -312,13 +329,9 @@ public class InfoStatements implements Localized, AutoCloseable {
                 CoordinateReferenceSystem fromWKT = null;
                 final String wkt = result.getString(3);
                 if (wkt != null && !wkt.isEmpty()) {
-                    if (wktReader == null) {
-                        wktReader = new WKTFormat(null, null);
-                        wktReader.setConvention(Convention.WKT1_COMMON_UNITS);
-                    }
                     final Object parsed;
                     try {
-                        parsed = wktReader.parseObject(wkt);
+                        parsed = wktReader().parseObject(wkt);
                     } catch (ParseException e) {
                         if (authorityError != null) {
                             e.addSuppressed(authorityError);
@@ -401,7 +414,110 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
-     * Closes all prepared statements.This method does <strong>not</strong> close the connection.
+     * Finds a SRID code from the spatial reference systems table for the given CRS.
+     *
+     * @param  crs  the CRS for which to find a SRID, or {@code null}.
+     * @return SRID for the given CRS, or 0 if the given CRS was null.
+     * @throws Exception if an SQL error, parsing error or other error occurred.
+     */
+    public final int findSRID(final CoordinateReferenceSystem crs) throws Exception {
+        if (crs == null) {
+            return 0;
+        }
+        synchronized (database.cacheOfSRID) {
+            final Integer srid = database.cacheOfSRID.get(crs);
+            if (srid != null) {
+                return srid;
+            }
+        }
+        final Set<SimpleImmutableEntry<String,String>> done = new HashSet<>();
+        Iterator<IdentifiedObject> alternatives = null;
+        IdentifiedObject candidate = crs;
+        Exception error = null;
+        for (;;) {
+            /*
+             * First, iterate over the identifiers declared in the CRS object.
+             * If we can not find an identifier that we can map to a SRID, then this loop may be
+             * executed more times with CRS from EPSG database that are equal, ignore axis order.
+             */
+            for (final Identifier id : candidate.getIdentifiers()) {
+                final String authority = id.getCodeSpace();
+                if (authority == null) continue;
+                final String code = id.getCode();
+                if (!done.add(new SimpleImmutableEntry<>(authority, code))) {
+                    continue;                           // Skip "authority:code" that we already tried.
+                }
+                final int codeValue;
+                try {
+                    codeValue = Integer.parseInt(code);
+                } catch (NumberFormatException e) {
+                    if (error == null) error = e;
+                    else error.addSuppressed(e);
+                    continue;                           // Ignore codes that are not integers.
+                }
+                /*
+                 * Found an "authority:code" pair that we did not tested before.
+                 * Get the WKT and verifies if the CRS is approximately equal.
+                 */
+                if (sridFromCRS == null) {
+                    final SQLBuilder sql = new SQLBuilder(database);
+                    sql.append("SELECT srtext, srid");
+                    appendFrom(sql, SPATIAL_REF_SYS);
+                    sql.append("auth_name=? AND auth_srid=?");
+                    sridFromCRS = connection.prepareStatement(sql.toString());
+                }
+                sridFromCRS.setString(1, authority);
+                sridFromCRS.setInt(2, codeValue);
+                try (ResultSet result = sridFromCRS.executeQuery()) {
+                    while (result.next()) {
+                        final String wkt = result.getString(1);
+                        if (wkt != null && !wkt.isEmpty()) try {
+                            final Object parsed = wktReader().parseObject(wkt);
+                            if (Utilities.equalsApproximately(parsed, crs)) {
+                                final int srid = result.getInt(2);
+                                synchronized (database.cacheOfSRID) {
+                                    database.cacheOfSRID.put(crs, srid);
+                                }
+                                return srid;
+                            }
+                        } catch (ParseException e) {
+                            if (error == null) error = e;
+                            else error.addSuppressed(e);
+                        }
+                    }
+                }
+            }
+            /*
+             * Tried all identifiers associated to the CRS and found no match.
+             * It may be because the CRS has no identifier at all. Search for
+             * possible identifiers in the EPSG database, then try them.
+             */
+            if (alternatives == null) {
+                final IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(Constants.EPSG);
+                finder.setIgnoringAxes(true);
+                alternatives = finder.find(crs).iterator();
+            }
+            if (!alternatives.hasNext()) break;
+            candidate = alternatives.next();
+        }
+        throw new DataStoreReferencingException(Resources.format(
+                Resources.Keys.CanNotFindSRID_1, IdentifiedObjects.getDisplayName(crs, null)), error);
+    }
+
+    /**
+     * Returns the object to use for parsing Well Known Text (CRS).
+     * The parser is created when first needed.
+     */
+    private WKTFormat wktReader() {
+        if (wktReader == null) {
+            wktReader = new WKTFormat(null, null);
+            wktReader.setConvention(Convention.WKT1_COMMON_UNITS);
+        }
+        return wktReader;
+    }
+
+    /**
+     * Closes all prepared statements. This method does <strong>not</strong> close the connection.
      *
      * @throws SQLException if an error occurred while closing a connection.
      */
@@ -414,6 +530,10 @@ public class InfoStatements implements Localized, AutoCloseable {
         if (wktFromSrid != null) {
             wktFromSrid.close();
             wktFromSrid = null;
+        }
+        if (sridFromCRS != null) {
+            sridFromCRS.close();
+            sridFromCRS = null;
         }
     }
 }

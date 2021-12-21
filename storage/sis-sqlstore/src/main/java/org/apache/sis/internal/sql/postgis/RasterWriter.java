@@ -35,18 +35,15 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.sql.feature.Resources;
 import org.apache.sis.internal.sql.feature.InfoStatements;
 import org.apache.sis.internal.storage.io.ChannelDataOutput;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.util.resources.Errors;
 
@@ -121,9 +118,10 @@ public final class RasterWriter extends RasterFormat {
      *
      * @param  gg  the grid to CRS conversion together with target CRS.
      * @throws IllegalArgumentException if the "grid to CRS" transform is not affine.
-     * @throws FactoryException if an error occurred during the search for SRID code.
+     * @throws Exception if an error occurred during the search for SRID code.
+     *         May be SQL error, WKT parsing error, factory error, <i>etc.</i>
      */
-    public void setGridToCRS(final GridGeometry gg) throws FactoryException {
+    public void setGridToCRS(final GridGeometry gg) throws Exception {
         if (gg.isDefined(GridGeometry.CRS)) {
             final CoordinateReferenceSystem crs = gg.getCoordinateReferenceSystem();
             /*
@@ -131,21 +129,16 @@ public final class RasterWriter extends RasterFormat {
              * Otherwise use EPSG code only as a starting point, ignoring axis order,
              * and search for the corresponding SRID.
              */
-            Integer epsg;
-            if (spatialRefSys == null) {
-                epsg = IdentifiedObjects.lookupEPSG(crs);
+            if (spatialRefSys != null) {
+                srid = spatialRefSys.findSRID(crs);
             } else {
-                epsg = null;
-                final IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(Constants.EPSG);
-                finder.setIgnoringAxes(true);
-                for (final IdentifiedObject candidate : finder.find(crs)) {
-                    // TODO
+                final Integer epsg = IdentifiedObjects.lookupEPSG(crs);
+                if (epsg == null) {
+                    throw new IllegalArgumentException(Resources.format(
+                            Resources.Keys.CanNotFindSRID_1, IdentifiedObjects.getDisplayName(crs, null)));
                 }
+                srid = epsg;
             }
-            if (epsg == null) {
-                throw new IllegalArgumentException("Can not find an identifier in the database for the Coordinate Reference System.");
-            }
-            srid = epsg;
         } else {
             srid = 0;
         }
@@ -176,9 +169,10 @@ public final class RasterWriter extends RasterFormat {
      * @param  output    where to write the bytes.
      * @throws RasterFormatException if the raster to write is not supported.
      * @throws IOException in an error occurred while writing to the given output.
-     * @throws FactoryException if an error occurred during the search for SRID code.
+     * @throws Exception if an error occurred during the search for SRID code.
+     *         May be SQL error, WKT parsing error, factory error, <i>etc.</i>
      */
-    public void write(final GridCoverage coverage, final ChannelDataOutput output) throws IOException, FactoryException {
+    public void write(final GridCoverage coverage, final ChannelDataOutput output) throws Exception {
         setGridToCRS(coverage.getGridGeometry());
         setNodataValues(coverage.getSampleDimensions());
         write(coverage.render(null), output);

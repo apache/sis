@@ -69,7 +69,7 @@ enum TestRaster {
     /**
      * Name of the file where the WKB raster is stored.
      */
-    private final String filename;
+    final String filename;
 
     /**
      * Expected file size in bytes.

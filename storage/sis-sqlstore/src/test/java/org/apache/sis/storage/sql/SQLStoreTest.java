@@ -61,7 +61,7 @@ public final strictfp class SQLStoreTest extends TestCase {
     /**
      * The schema where will be stored the features to test.
      */
-    private static final String SCHEMA = "features";
+    public static final String SCHEMA = "features";
 
     /**
      * Data used in the {@code Features.sql} test file.
@@ -163,8 +163,8 @@ public final strictfp class SQLStoreTest extends TestCase {
             scripts[0] = null;      // Omit the "CREATE SCHEMA" statement if the schema already exists.
         }
         try (TestDatabase tmp = database) {                 // TODO: omit `tmp` with JDK16.
-            tmp.executeSQL(SQLStoreTest.class, scripts);
-            final StorageConnector connector = new StorageConnector(tmp.source);
+            database.executeSQL(SQLStoreTest.class, scripts);
+            final StorageConnector connector = new StorageConnector(database.source);
             final ResourceDefinition table = ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities");
             testTableQuery(connector, table);
             /*

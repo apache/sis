@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.awt.image.RenderedImage;
 import java.awt.image.DataBufferUShort;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -49,12 +50,19 @@ public final strictfp class RasterReaderTest extends TestCase {
     }
 
     /**
-     * Reads the file for the given test enumeration
-     * and compares with the expected raster.
+     * Reads the file for the given test enumeration and compares with the expected raster.
      */
-    private void compareReadResult(final TestRaster test) throws Exception {
-        final RasterReader reader = new RasterReader(null);
-        final GridCoverage coverage = reader.readAsCoverage(test.input());
+    private static void compareReadResult(final TestRaster test) throws Exception {
+        compareReadResult(test, new RasterReader(null), test.input());
+    }
+
+    /**
+     * Reads the file for the given test enumeration and compares with the expected raster.
+     * The given reader and input are used for reading the raster. The input will be closed.
+     */
+    static void compareReadResult(final TestRaster test, final RasterReader reader, final ChannelDataInput input) throws Exception {
+        final GridCoverage coverage = reader.readAsCoverage(input);
+        input.channel.close();
         final RenderedImage image = coverage.render(null);
         assertEquals(TestRaster.SRID, reader.getSRID());
         assertEquals(TestRaster.getGridToCRS(), reader.getGridToCRS());

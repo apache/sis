@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.WeakHashMap;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.logging.LogRecord;
@@ -90,7 +91,7 @@ import org.apache.sis.util.Debug;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -181,6 +182,13 @@ public class Database<G> extends Syntax  {
     final Cache<Integer, CoordinateReferenceSystem> cacheOfCRS;
 
     /**
+     * Cache of SRID for a given Coordinate Reference System.
+     * This is the converse of {@link #cacheOfCRS}.
+     * Accesses to this map must be synchronized on the map itself.
+     */
+    final WeakHashMap<CoordinateReferenceSystem, Integer> cacheOfSRID;
+
+    /**
      * Creates a new handler for a spatial database.
      *
      * @param  source       provider of (pooled) connections to the database.
@@ -213,6 +221,7 @@ public class Database<G> extends Syntax  {
         this.geomLibrary   = geomLibrary;
         this.listeners     = listeners;
         this.cacheOfCRS    = new Cache<>(7, 2, false);
+        this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
         supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();

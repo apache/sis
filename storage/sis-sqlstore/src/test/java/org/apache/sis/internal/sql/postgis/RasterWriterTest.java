@@ -19,7 +19,6 @@ package org.apache.sis.internal.sql.postgis;
 import java.awt.image.Raster;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
-import org.opengis.util.FactoryException;
 import org.apache.sis.internal.storage.io.ChannelDataOutput;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -43,10 +42,10 @@ public final strictfp class RasterWriterTest extends TestCase {
      * the expected sequence of bytes provided by {@code "raster-ushort.wkb"} file.
      *
      * @throws IOException if an error occurred while writing the test file.
-     * @throws FactoryException if an error occurred during the search for SRID code.
+     * @throws Exception if an error occurred during the search for SRID code.
      */
     @Test
-    public void testUShort() throws IOException, FactoryException {
+    public void testUShort() throws Exception {
         compareWriteResult(TestRaster.USHORT);
     }
 
@@ -54,7 +53,7 @@ public final strictfp class RasterWriterTest extends TestCase {
      * Writes the raster for the given test enumeration
      * and compares with the expected sequence of bytes.
      */
-    private void compareWriteResult(final TestRaster test) throws IOException, FactoryException {
+    private static void compareWriteResult(final TestRaster test) throws Exception {
         final Raster raster = test.createRaster();
         final RasterWriter writer = new RasterWriter(null);
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream(test.length);

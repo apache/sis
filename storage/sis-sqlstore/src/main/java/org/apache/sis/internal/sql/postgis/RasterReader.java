@@ -314,6 +314,9 @@ public final class RasterReader extends RasterFormat {
                 final int sampleSize = ((MultiPixelPackedSampleModel) sm).getPixelBitStride();
                 maximum = (1 << sampleSize) - 1;
                 minimum = 0;
+            } else if (dataType == DataBuffer.TYPE_BYTE) {
+                minimum = 0;
+                maximum = 0xFF;
             } else {
                 final Band band = bands[visibleBand];
                 final NumberRange<?> range = Vector.create(band.data, band.isUnsigned()).range();
