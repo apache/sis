@@ -70,7 +70,7 @@ public final class Column {
     String propertyName;
 
     /**
-     * Type of values as one of the constant enumerated in {@link Types} class.
+     * Type of values as one of the constants enumerated in {@link Types} class.
      *
      * @see Reflection#DATA_TYPE
      */
@@ -124,7 +124,7 @@ public final class Column {
      * This method does not change cursor position.
      *
      * @param  analyzer  the analyzer which is creating this column.
-     * @param  metadata  the
+     * @param  metadata  the result of {@code DatabaseMetaData.getColumns(…)}.
      * @throws SQLException if an error occurred while fetching metadata.
      *
      * @see DatabaseMetaData#getColumns(String, String, String, String)

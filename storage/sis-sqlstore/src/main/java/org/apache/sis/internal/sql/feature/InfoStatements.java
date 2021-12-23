@@ -375,7 +375,6 @@ public class InfoStatements implements Localized, AutoCloseable {
          * Finished to parse entries from the "SPATIAL_REF_SYS" table.
          * Reports warning if any, then return the non-null CRS.
          */
-        wktFromSrid.clearParameters();
         if (crs == null) {
             if (authorityError != null) {
                 throw authorityError;

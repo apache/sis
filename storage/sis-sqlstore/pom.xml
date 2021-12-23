@@ -144,6 +144,11 @@
       <artifactId>jts-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

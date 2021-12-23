@@ -46,7 +46,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -129,13 +129,20 @@ public abstract class ValueGetter<T> {
      * This getter delegates to {@link ResultSet#getBytes(int)} and returns that value with no change.
      */
     static final class AsBytes extends ValueGetter<byte[]> {
-        /** The unique instance of this accessor. */
-        public static final AsBytes INSTANCE = new AsBytes();
-        private AsBytes() {super(byte[].class);}
+        /** The encoding of bytes returned by JDBC driver. */
+        private final BinaryEncoding encoding;
+
+        /** The instance of this accessor for array of bytes without encoding. */
+        public static final AsBytes INSTANCE    = new AsBytes(BinaryEncoding.RAW);
+        public static final AsBytes HEXADECIMAL = new AsBytes(BinaryEncoding.HEXADECIMAL);
+        private AsBytes(final BinaryEncoding encoding) {
+            super(byte[].class);
+            this.encoding = encoding;
+        }
 
         /** Fetches the value from the specified column in the given result set. */
         @Override public byte[] getValue(ResultSet source, int columnIndex) throws SQLException {
-            return source.getBytes(columnIndex);
+            return encoding.getBytes(source, columnIndex);
         }
     }
 

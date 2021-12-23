@@ -17,6 +17,7 @@
 package org.apache.sis.internal.sql.postgis;
 
 import java.util.Set;
+import java.sql.Types;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -25,6 +26,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import java.util.logging.Level;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.sql.feature.BinaryEncoding;
 import org.apache.sis.internal.sql.feature.InfoStatements;
 import org.apache.sis.internal.sql.feature.Column;
 import org.apache.sis.internal.sql.feature.Database;
@@ -42,7 +44,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -115,6 +117,19 @@ public final class Postgres<G> extends Database<G> {
             return forGeometry(columnDefinition);
         }
         return super.getMapping(columnDefinition);
+    }
+
+    /**
+     * Returns an identifier of the way binary data are encoded by the JDBC driver.
+     * Data stored as PostgreSQL {@code BYTEA} type are encoded in hexadecimal.
+     */
+    @Override
+    protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
+        if (columnDefinition.type == Types.BLOB) {
+            return super.getBinaryEncoding(columnDefinition);
+        } else {
+            return BinaryEncoding.HEXADECIMAL;
+        }
     }
 
     /**

@@ -501,14 +501,32 @@ public class Database<G> extends Syntax  {
             case Types.TIMESTAMP:                 return ValueGetter.AsInstant.INSTANCE;
             case Types.TIME_WITH_TIMEZONE:        return ValueGetter.AsOffsetTime.INSTANCE;
             case Types.TIMESTAMP_WITH_TIMEZONE:   return ValueGetter.AsOffsetDateTime.INSTANCE;
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:             return ValueGetter.AsBytes.INSTANCE;
+            case Types.BLOB:                      return ValueGetter.AsBytes.INSTANCE;
             case Types.ARRAY:                     // TODO
             case Types.OTHER:
             case Types.JAVA_OBJECT:               return ValueGetter.AsObject.INSTANCE;
-            default:                              return null;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY: {
+                final BinaryEncoding encoding = getBinaryEncoding(columnDefinition);
+                switch (encoding) {
+                    case RAW:         return ValueGetter.AsBytes.INSTANCE;
+                    case HEXADECIMAL: return ValueGetter.AsBytes.HEXADECIMAL;
+                    default: throw new AssertionError(encoding);
+                }
+            }
+            default: return null;
         }
+    }
+
+    /**
+     * Returns an identifier of the way binary data are encoded by the JDBC driver.
+     *
+     * @param  columnDefinition  information about the column to extract binary values from.
+     * @return how the binary data are returned by the JDBC driver.
+     */
+    protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
+        return BinaryEncoding.RAW;
     }
 
     /**
@@ -521,12 +539,8 @@ public class Database<G> extends Syntax  {
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
         final GeometryType type = columnDefinition.getGeometryType();
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
-        /*
-         * TODO: verify if the condition below works. We should have `hexadecimal = true` on PostGIS.
-         */
-        final boolean hexadecimal = (columnDefinition.type != Types.BLOB);
-        return new EWKBReader<>(geomLibrary, geometryClass, columnDefinition.getGeometryCRS(), hexadecimal);
-        // TODO: need to invoke EWKBReader.setSridResolver(statements(…)) somewhere.
+        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getGeometryCRS(), getBinaryEncoding(columnDefinition));
+        // TODO: need to invoke GeometryGetter.setSridResolver(statements(…)) somewhere.
     }
 
     /**

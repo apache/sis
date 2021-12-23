@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-sqlstore} module, in rough dependency order.
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.sql.feature.EWKBTest.class,
+    org.apache.sis.internal.sql.feature.GeometryGetterTest.class,
     org.apache.sis.internal.sql.feature.SelectionClauseWriterTest.class,
     org.apache.sis.internal.sql.postgis.BandTest.class,
     org.apache.sis.internal.sql.postgis.RasterReaderTest.class,

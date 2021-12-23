@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Method;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.setup.OptionKey;
@@ -31,6 +32,8 @@ import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.sql.feature.BinaryEncoding;
+import org.apache.sis.internal.sql.feature.GeometryGetterTest;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.DependsOn;
@@ -87,7 +90,8 @@ public final strictfp class PostgresTest extends TestCase {
                      ExtendedInfo info = new ExtendedInfo(pg, connection))
                 {
                     testInfoStatements(info);
-//                  testRasterReader(TestRaster.USHORT, info, connection);
+                    testGeometryGetter(info, connection);
+                    testRasterReader(TestRaster.USHORT, info, connection);
                 }
             }
         }
@@ -104,16 +108,28 @@ public final strictfp class PostgresTest extends TestCase {
     }
 
     /**
+     * Tests {@link org.apache.sis.internal.sql.feature.GeometryGetter}
+     * in the context of querying a database.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    private void testGeometryGetter(final ExtendedInfo info, final Connection connection) throws Exception {
+        final GeometryGetterTest test = new GeometryGetterTest();
+        test.testFromDatabase(connection, info, BinaryEncoding.HEXADECIMAL);
+    }
+
+    /**
      * Tests {@link RasterReader}.
      */
     private void testRasterReader(final TestRaster test, final ExtendedInfo info, final Connection connection) throws Exception {
+        final BinaryEncoding encoding = BinaryEncoding.HEXADECIMAL;
         final RasterReader reader = new RasterReader(info);
         try (PreparedStatement stmt = connection.prepareStatement("SELECT image FROM features.\"SpatialData\" WHERE filename=?")) {
             stmt.setString(1, test.filename);
             final ResultSet r = stmt.executeQuery();
             assertTrue(r.next());
-            final ChannelDataInput input = new ChannelDataInput(test.filename,
-                    Channels.newChannel(r.getBinaryStream(1)), ByteBuffer.allocate(50), false);
+            final ReadableByteChannel channel = Channels.newChannel(encoding.decode(r.getBinaryStream(1)));
+            final ChannelDataInput input = new ChannelDataInput(test.filename, channel, ByteBuffer.allocate(50), false);
             RasterReaderTest.compareReadResult(test, reader, input);
             assertFalse(r.next());
         }
