@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
@@ -52,7 +51,10 @@ import org.apache.sis.internal.feature.Geometries;
  * @param <V> the type of geometry objects returned by this getter.
  *
  * @version 1.2
- * @since   1.1
+ *
+ * @see org.apache.sis.internal.sql.postgis.RasterGetter
+ *
+ * @since 1.1
  * @module
  */
 final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
@@ -74,13 +76,12 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
 
     /**
      * Creates a new reader. The same instance can be reused for parsing an arbitrary
-     * amount of geometries sharing the same CRS.
+     * amount of geometries sharing the same default CRS.
      *
      * @param  geometryFactory  the factory to use for creating geometries from WKB definitions.
      * @param  geometryClass    the type of geometry to be returned by this {@code ValueGetter}.
      * @param  defaultCRS       the CRS to use if none can be mapped from the SRID, or {@code null} if none.
      * @param  encoding         the way binary data are encoded in the geometry column.
-     * @return a WKB reader resolving SRID with the specified mapper and default CRS.
      */
     GeometryGetter(final Geometries<G> geometryFactory, final Class<V> geometryClass,
             final CoordinateReferenceSystem defaultCRS, final BinaryEncoding encoding)
@@ -89,15 +90,6 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
         this.geometryFactory = geometryFactory;
         this.defaultCRS      = defaultCRS;
         this.encoding        = encoding;
-    }
-
-    /**
-     * Returns the default coordinate reference system for this column.
-     * The default CRS is declared in the {@code "GEOMETRY_COLUMNS"} table.
-     */
-    @Override
-    public Optional<CoordinateReferenceSystem> getDefaultCRS() {
-        return Optional.ofNullable(defaultCRS);
     }
 
     /**

@@ -125,6 +125,11 @@ final class Table extends AbstractFeatureSet {
     final boolean hasGeometry;
 
     /**
+     * {@code true} if this table contains at least one raster column.
+     */
+    final boolean hasRaster;
+
+    /**
      * Map from attribute name to columns. This is built from {@link #columns} array when first needed.
      *
      * @see #getColumn(String)
@@ -169,6 +174,7 @@ final class Table extends AbstractFeatureSet {
         primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes(…)`.
         featureType   = analyzer.buildFeatureType();
         hasGeometry   = analyzer.hasGeometry;
+        hasRaster     = analyzer.hasRaster;
     }
 
     /**
@@ -191,6 +197,7 @@ final class Table extends AbstractFeatureSet {
         exportedKeys = parent.exportedKeys;
         featureType  = parent.featureType;
         hasGeometry  = parent.hasGeometry;
+        hasRaster    = parent.hasRaster;
     }
 
     /**

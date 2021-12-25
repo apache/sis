@@ -89,16 +89,38 @@ public class InfoStatements implements Localized, AutoCloseable {
     static final String GEOMETRY_COLUMNS = "GEOMETRY_COLUMNS";
 
     /**
-     * Parameter value for telling that {@code "GEOMETRY_TYPE"} column is expected to contain an integer value.
-     * This is the encoding used in OGC standard.
+     * Specifies how the geometry type is encoded in the {@code "GEOMETRY_TYPE"} column.
+     * The OGC standard defines numeric values, but PostGIS uses textual values.
+     *
+     * @see #configureSpatialColumns(PreparedStatement, TableReference, Map, GeometryTypeEncoding)
      */
-    protected static final int COLUMN_TYPE_IS_NUMERIC = 1;
+    protected enum GeometryTypeEncoding {
+        /**
+         * {@code "GEOMETRY_TYPE"} column is expected to contain an integer value.
+         * This is the encoding used in OGC standard.
+         */
+        NUMERIC,
 
-    /**
-     * Parameter value for telling that {@code "GEOMETRY_TYPE"} column is expected to contain a textual value.
-     * This is the encoding used by PostGIS, but naming the column as {@code "TYPE"} for avoiding confusion.
-     */
-    protected static final int COLUMN_TYPE_IS_TEXTUAL = 2;
+        /**
+         * {@code "GEOMETRY_TYPE"} column is expected to contain a textual value.
+         * This is the encoding used by PostGIS, but using a different column name
+         * ({@code "TYPE"} instead of {@code "GEOMETRY_TYPE"}) for avoiding confusion.
+         */
+        TEXTUAL() {
+            @Override GeometryType parse(final ResultSet result, final int columnIndex) throws SQLException {
+                return GeometryType.forName(result.getString(columnIndex));
+            }
+        };
+
+        /**
+         * Decodes the geometry type encoded in the specified column of the given result set.
+         * If there is no type information, then this method returns {@code null}.
+         */
+        GeometryType parse(final ResultSet result, final int columnIndex) throws SQLException {
+            final int code = result.getInt(columnIndex);
+            return result.wasNull() ? null : GeometryType.forBinaryType(code);
+        }
+    }
 
     /**
      * The database that created this set of cached statements. This object includes the
@@ -173,29 +195,43 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
-     * Prepares the statement for fetching information about all geometry columns in a specified table.
-     * This method is for {@link #completeGeometryColumns(TableReference, Map)} implementations.
+     * Appends a statement after {@code "WHERE"} such as {@code ""F_TABLE_NAME = ?"}.
      *
-     * @param  table   name of the geometry table.  Standard value is {@code "GEOMETRY_COLUMNS"}.
-     * @param  column  name of the geometry column. Standard value is {@code "F_GEOMETRY_COLUMN"}.
-     * @param  type    name of the type column.     Standard value is {@code "GEOMETRY_TYPE"}.
+     * @param  sql     the builder where to add the SQL statement.
+     * @param  prefix  the column name prefix: {@code 'F'} for features or {@code 'R'} for rasters.
+     * @param  column  the column name (e.g. {@code "TABLE_NAME"}.
+     * @return the given SQL builder.
+     */
+    private static SQLBuilder appendCondition(final SQLBuilder sql, final char prefix, final String column) {
+        return sql.append(prefix).append('_').append(column).append(" = ?");
+    }
+
+    /**
+     * Prepares the statement for fetching information about all geometry or raster columns in a specified table.
+     * This method is for {@link #completeIntrospection(TableReference, Map)} implementations.
+     *
+     * @param  table        name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
+     * @param  prefix       column name prefix: {@code 'F'} for features or {@code 'R'} for rasters.
+     * @param  column       name of the geometry column without prefix. Standard value is {@code "GEOMETRY_COLUMN"}.
+     * @param  otherColumn  additional columns or {@code null} if none. Standard value is {@code "GEOMETRY_TYPE"}.
      * @return the prepared statement for querying the geometry table.
      * @throws SQLException if the statement can not be created.
      */
-    protected final PreparedStatement prepareGeometryStatement(final String table, final String column, final String type)
-            throws SQLException
+    protected final PreparedStatement prepareIntrospectionStatement(final String table,
+            final char prefix, final String column, final String otherColumn) throws SQLException
     {
         final SQLBuilder sql = new SQLBuilder(database).append(SQLBuilder.SELECT)
-                .append(column).append(", ").append(type).append(", SRID ");
+                .append(prefix).append('_').append(column).append(", SRID ");
+        if (otherColumn != null) sql.append(", ").append(otherColumn);
         appendFrom(sql, table);
-        if (database.supportsCatalogs) sql.append("F_TABLE_CATALOG = ? AND ");
-        if (database.supportsSchemas)  sql.append("F_TABLE_SCHEMA = ? AND ");
-        sql.append("F_TABLE_NAME = ?");
+        if (database.supportsCatalogs) appendCondition(sql, prefix, "TABLE_CATALOG").append(" AND ");
+        if (database.supportsSchemas)  appendCondition(sql, prefix, "TABLE_SCHEMA" ).append(" AND ");
+        appendCondition(sql, prefix, "TABLE_NAME");
         return connection.prepareStatement(sql.toString());
     }
 
     /**
-     * Gets all geometry columns for the given table and sets the geometry information on the corresponding columns.
+     * Gets all geometry and raster columns for the given table and sets information on the corresponding columns.
      * Column instances in the {@code columns} map are modified in-place (the map itself is not modified).
      * This method should be invoked before the {@link Column#valueGetter} field is set.
      *
@@ -205,21 +241,23 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @throws ParseException if the WKT can not be parsed.
      * @throws SQLException if a SQL error occurred.
      */
-    public void completeGeometryColumns(final TableReference source, final Map<String,Column> columns) throws Exception {
+    public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
         if (geometryColumns == null) {
-            geometryColumns = prepareGeometryStatement(GEOMETRY_COLUMNS, "F_GEOMETRY_COLUMN", "GEOMETRY_TYPE");
+            geometryColumns = prepareIntrospectionStatement(GEOMETRY_COLUMNS, 'F', "GEOMETRY_COLUMN", "GEOMETRY_TYPE");
         }
-        completeGeometryColumns(geometryColumns, source, columns, COLUMN_TYPE_IS_NUMERIC);
+        configureSpatialColumns(geometryColumns, source, columns, GeometryTypeEncoding.NUMERIC);
     }
 
     /**
-     * Implementation of {@link #completeGeometryColumns(TableReference, Map)}, as a separated methods
-     * for allowing sub-classes to override above-cited method.
+     * Implementation of {@link #completeIntrospection(TableReference, Map)} for geometries,
+     * as a separated methods for allowing sub-classes to override above-cited method.
+     * May also be used for non-geometric columns such as rasters, in which case the
+     * {@code typeValueKind} argument shall be {@code null}.
      *
-     * @param  columnQuery    a statement prepared by {@link #prepareGeometryStatement(String, String, String)}.
+     * @param  columnQuery    a statement prepared by {@link #prepareIntrospectionStatement(String, char, String, String)}.
      * @param  source         the table for which to get all geometry columns.
      * @param  columns        all columns for the specified table. Keys are column names.
-     * @param  typeValueKind  {@link #COLUMN_TYPE_IS_NUMERIC}, {@link #COLUMN_TYPE_IS_TEXTUAL} or 0 if none.
+     * @param  typeValueKind  {@code NUMERIC}, {@code TEXTUAL} or {@code null} if none.
      * @throws DataStoreContentException if a logical error occurred in processing data.
      * @throws ParseException if the WKT can not be parsed.
      * @throws SQLException if a SQL error occurred.
@@ -229,8 +267,8 @@ public class InfoStatements implements Localized, AutoCloseable {
      *       unless user has statically defined its column to match a specific geometry type/SRID.
      *       Source: https://gis.stackexchange.com/a/376947/182809
      */
-    protected final void completeGeometryColumns(final PreparedStatement columnQuery, final TableReference source,
-                                       final Map<String,Column> columns, final int typeValueKind) throws Exception
+    protected final void configureSpatialColumns(final PreparedStatement columnQuery, final TableReference source,
+            final Map<String,Column> columns, final GeometryTypeEncoding typeValueKind) throws Exception
     {
         int p = 0;
         if (database.supportsCatalogs) columnQuery.setString(++p, source.catalog);
@@ -240,22 +278,15 @@ public class InfoStatements implements Localized, AutoCloseable {
             while (result.next()) {
                 final Column target = columns.get(result.getString(1));
                 if (target != null) {
+                    final CoordinateReferenceSystem crs = fetchCRS(result.getInt(2));
                     GeometryType type = null;
-                    switch (typeValueKind) {
-                        case COLUMN_TYPE_IS_TEXTUAL: {
-                            type = GeometryType.forName(result.getString(2));
-                            break;
-                        }
-                        case COLUMN_TYPE_IS_NUMERIC: {
-                            final int code = result.getInt(2);
-                            if (!result.wasNull()) {
-                                type = GeometryType.forBinaryType(code);
-                            }
-                            break;
+                    if (typeValueKind != null) {
+                        type = typeValueKind.parse(result, 3);
+                        if (type == null) {
+                            type = GeometryType.GEOMETRY;
                         }
                     }
-                    final CoordinateReferenceSystem crs = fetchCRS(result.getInt(3));
-                    target.setGeometryInfo(this, type, crs);
+                    target.makeSpatial(this, type, crs);
                 }
             }
         }

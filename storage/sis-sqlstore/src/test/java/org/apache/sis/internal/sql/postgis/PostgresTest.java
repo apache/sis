@@ -33,11 +33,13 @@ import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.sql.SQLStoreTest;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.sql.feature.BinaryEncoding;
 import org.apache.sis.internal.sql.feature.GeometryGetterTest;
 import org.apache.sis.internal.feature.jts.JTS;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.DependsOn;
@@ -163,12 +165,15 @@ public final strictfp class PostgresTest extends TestCase {
      * This method performs only a superficial verification of geometries.
      */
     private static void validate(final Feature feature) {
-        final String   filename = feature.getPropertyValue("filename").toString();
-        final Geometry geometry = (Geometry) feature.getPropertyValue("geometry");
-        final int      geomSRID;
+        final String       filename = feature.getPropertyValue("filename").toString();
+        final Geometry     geometry = (Geometry) feature.getPropertyValue("geometry");
+        final GridCoverage raster   = (GridCoverage) feature.getPropertyValue("image");
+        final int geomSRID;
         switch (filename) {
             case "raster-ushort.wkb": {
                 assertNull(geometry);
+                RasterReaderTest.compareReadResult(TestRaster.USHORT, raster);
+                assertSame(CommonCRS.WGS84.normalizedGeographic(), raster.getCoordinateReferenceSystem());
                 return;
             }
             case "point-prj": {
@@ -190,5 +195,6 @@ public final strictfp class PostgresTest extends TestCase {
         } catch (FactoryException e) {
             throw new AssertionError(e);
         }
+        assertNull(raster);
     }
 }

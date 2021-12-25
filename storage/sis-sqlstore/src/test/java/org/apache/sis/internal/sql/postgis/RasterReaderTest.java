@@ -46,14 +46,14 @@ public final strictfp class RasterReaderTest extends TestCase {
      */
     @Test
     public void testUShort() throws Exception {
-        compareReadResult(TestRaster.USHORT);
+        RasterReaderTest.compareReadResult(TestRaster.USHORT);
     }
 
     /**
      * Reads the file for the given test enumeration and compares with the expected raster.
      */
     private static void compareReadResult(final TestRaster test) throws Exception {
-        compareReadResult(test, new RasterReader(null), test.input());
+        RasterReaderTest.compareReadResult(test, new RasterReader(null), test.input());
     }
 
     /**
@@ -63,9 +63,16 @@ public final strictfp class RasterReaderTest extends TestCase {
     static void compareReadResult(final TestRaster test, final RasterReader reader, final ChannelDataInput input) throws Exception {
         final GridCoverage coverage = reader.readAsCoverage(input);
         input.channel.close();
-        final RenderedImage image = coverage.render(null);
         assertEquals(TestRaster.SRID, reader.getSRID());
         assertEquals(TestRaster.getGridToCRS(), reader.getGridToCRS());
+        compareReadResult(test, coverage);
+    }
+
+    /**
+     * Compares the given image with the expected raster.
+     */
+    static void compareReadResult(final TestRaster test, final GridCoverage coverage) {
+        final RenderedImage image = coverage.render(null);
         final DataBufferUShort expected = (DataBufferUShort) test.createRaster().getDataBuffer();
         final DataBufferUShort actual   = (DataBufferUShort) image.getTile(0, 0).getDataBuffer();
         assertTrue(Arrays.deepEquals(expected.getBankData(), actual.getBankData()));

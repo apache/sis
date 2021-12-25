@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Optional;
 import java.util.Calendar;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +28,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.math.BigDecimal;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -88,20 +86,6 @@ public abstract class ValueGetter<T> {
      * @throws Exception if an error occurred. May be an SQL error, a WKB parsing error, <i>etc.</i>
      */
     public abstract T getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws Exception;
-
-    /**
-     * Returns the default coordinate reference system for this column.
-     * The default CRS is declared in the {@code "GEOMETRY_COLUMNS"} table.
-     *
-     * <div class="note"><b>Note:</b>
-     * this method could be used not only for geometric fields, but also on numeric ones representing 1D systems.
-     * </div>
-     *
-     * @return the default coordinate reference system for values in this column.
-     */
-    public Optional<CoordinateReferenceSystem> getDefaultCRS() {
-        return Optional.empty();
-    }
 
     /**
      * A getter of {@link Object} values from the current row of a {@link ResultSet}.

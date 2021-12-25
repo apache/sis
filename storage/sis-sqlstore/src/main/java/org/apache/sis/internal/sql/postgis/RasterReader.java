@@ -19,6 +19,8 @@ package org.apache.sis.internal.sql.postgis;
 import java.util.List;
 import java.util.Arrays;
 import java.nio.ByteOrder;
+import java.nio.ByteBuffer;
+import java.io.InputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.awt.image.ColorModel;
@@ -35,6 +37,7 @@ import java.awt.image.DataBufferDouble;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
+import java.nio.channels.Channels;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -81,6 +84,12 @@ public final class RasterReader extends RasterFormat {
     private AffineTransform2D gridToCRS;
 
     /**
+     * The default Coordinate Reference System (CRS) if the raster does not specify a CRS.
+     * This is {@code null} if there is no default.
+     */
+    public CoordinateReferenceSystem defaultCRS;
+
+    /**
      * The spatial reference identifier, or 0 if undefined.
      * Note that this is a primary key in the {@code "spatial_ref_sys"} table, not necessarily an EPSG code.
      */
@@ -96,6 +105,12 @@ public final class RasterReader extends RasterFormat {
      * This is effective when reading may rasters of the same type and size.
      */
     private transient SampleModel cachedModel;
+
+    /**
+     * A temporary buffer for the bytes in the process of being decoded.
+     * Initially null and created when first needed.
+     */
+    private ByteBuffer buffer;
 
     /**
      * Creates a new reader. If the {@code spatialRefSys} argument is non-null,
@@ -342,14 +357,15 @@ public final class RasterReader extends RasterFormat {
         if (image == null) {
             return null;
         }
-        final CoordinateReferenceSystem crs;
+        CoordinateReferenceSystem crs = null;
         final int srid = getSRID();
         if (spatialRefSys != null) {
             crs = spatialRefSys.fetchCRS(srid);
         } else if (srid > 0) {
             crs = CRS.forCode(Constants.EPSG + ':' + srid);
-        } else {
-            crs = null;
+        }
+        if (crs == null) {
+            crs = defaultCRS;
         }
         final GridExtent   extent = new GridExtent(image.getWidth(), image.getHeight());
         final GridGeometry domain = new GridGeometry(extent, ANCHOR, getGridToCRS(), crs);
@@ -374,5 +390,21 @@ public final class RasterReader extends RasterFormat {
             range = Arrays.asList(sd);
         }
         return new GridCoverage2D(domain, range, image);
+    }
+
+    /**
+     * Wraps the given input stream into a channel that can be used by {@code read(…)} methods in this class.
+     * The returned channel should be used and discarded before to create a new {@code ChannelDataInput},
+     * because this method recycles the same {@link ByteBuffer}.
+     *
+     * @param  input  the input stream to wrap.
+     * @return a channel together with a buffer.
+     * @throws IOException if an error occurred while reading data from the input stream.
+     */
+    public ChannelDataInput channel(final InputStream input) throws IOException {
+        if (buffer == null) {
+            buffer = ByteBuffer.allocate(8192);
+        }
+        return new ChannelDataInput("raster", Channels.newChannel(input), buffer, false);
     }
 }

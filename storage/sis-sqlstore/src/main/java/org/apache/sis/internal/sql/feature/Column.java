@@ -110,10 +110,12 @@ public final class Column {
     private GeometryType geometryType;
 
     /**
-     * If this column is a geometry column, the Coordinate Reference System (CRS). Otherwise {@code null}.
+     * If this column is a geometry or raster column, the Coordinate Reference System (CRS). Otherwise {@code null}.
      * This is determined from the geometry Spatial Reference Identifier (SRID).
+     *
+     * @see #getDefaultCRS()
      */
-    private CoordinateReferenceSystem geometryCRS;
+    private CoordinateReferenceSystem defaultCRS;
 
     /**
      * Converter from {@link ResultSet} column value to value stored in the feature instance.
@@ -161,24 +163,26 @@ public final class Column {
     }
 
     /**
-     * Modifies this column for declaring it as a geometry column.
+     * Modifies this column for declaring it as a geometry or raster column.
      * This method is invoked during inspection of the {@code "GEOMETRY_COLUMNS"} table of a spatial database.
+     * It can also be invoked during the inspection of {@code "GEOGRAPHY_COLUMNS"} or {@code "RASTER_COLUMNS"}
+     * tables, which are PostGIS extensions. In the raster case, the geometry {@code type} argument shall be null.
      *
      * @param  caller  provider of the locale for error message, if any.
-     * @param  type    the type of values in the column, or {@code null} if unknown.
+     * @param  type    the type of values in the column, or {@code null} if not geometric.
      * @param  crs     the Coordinate Reference System (CRS), or {@code null} if unknown.
      */
-    final void setGeometryInfo(final Localized caller, final GeometryType type, final CoordinateReferenceSystem crs)
+    final void makeSpatial(final Localized caller, final GeometryType type, final CoordinateReferenceSystem crs)
             throws DataStoreContentException
     {
         final String property;
         if (geometryType != null && !geometryType.equals(type)) {
             property = "geometryType";
-        } else if (geometryCRS != null && !geometryCRS.equals(crs)) {
-            property = "geometryCRS";
+        } else if (defaultCRS != null && !defaultCRS.equals(crs)) {
+            property = "defaultCRS";
         } else {
             geometryType = type;
-            geometryCRS = crs;
+            defaultCRS = crs;
             return;
         }
         throw new DataStoreContentException(Errors.getResources(caller.getLocale())
@@ -187,22 +191,24 @@ public final class Column {
 
     /**
      * If this column is a geometry column, returns the type of the geometry objects.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null} (including the case where this is a raster column).
+     * Note that if this column is a geometry column but the geometry type was not defined,
+     * then {@link GeometryType#GEOMETRY} is returned as a fallback.
      *
-     * @return type of geometry objects, or {@code null} if unknown or not applicable.
+     * @return type of geometry objects, or {@code null} if this column is not a geometry column.
      */
     public final GeometryType getGeometryType() {
         return geometryType;
     }
 
     /**
-     * If this column is a geometry column, returns the coordinate reference system.
+     * If this column is a geometry or raster column, returns the default coordinate reference system.
      * Otherwise returns {@code null}. The CRS may also be null even for a geometry column if it is unspecified.
      *
-     * @return CRS of geometries in this column, or {@code null} if unknown or not applicable.
+     * @return CRS of geometries or rasters in this column, or {@code null} if unknown or not applicable.
      */
-    public final CoordinateReferenceSystem getGeometryCRS() {
-        return geometryCRS;
+    public final CoordinateReferenceSystem getDefaultCRS() {
+        return defaultCRS;
     }
 
     /**
@@ -221,7 +227,7 @@ public final class Column {
         if (isNullable) {
             attribute.setMinimumOccurs(0);
         }
-        valueGetter.getDefaultCRS().ifPresent(attribute::setCRS);
+        attribute.setCRS(defaultCRS);
         return attribute;
     }
 

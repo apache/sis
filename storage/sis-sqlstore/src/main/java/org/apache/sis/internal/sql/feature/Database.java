@@ -155,6 +155,14 @@ public class Database<G> extends Syntax  {
     private boolean hasGeometry;
 
     /**
+     * {@code true} if this database contains at least one raster column.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
+     *
+     * @see #hasRaster()
+     */
+    private boolean hasRaster;
+
+    /**
      * Catalog and schema of the {@value InfoStatements#GEOMETRY_COLUMNS} and
      * {@value InfoStatements#SPATIAL_REF_SYS} tables, or null or empty string if none.
      */
@@ -366,6 +374,7 @@ public class Database<G> extends Syntax  {
         for (final Table table : analyzer.finish()) {
             tablesByNames.add(store, table.featureType.getName(), table);
             hasGeometry |= table.hasGeometry;
+            hasRaster   |= table.hasRaster;
         }
         tables = tableList.toArray(new Table[tableList.size()]);
     }
@@ -480,11 +489,22 @@ public class Database<G> extends Syntax  {
 
     /**
      * Returns {@code true} if this database contains at least one geometry column.
+     * This information can be used for metadata purpose.
      *
      * @return whether at least one geometry column has been found.
      */
     public final boolean hasGeometry() {
         return hasGeometry;
+    }
+
+    /**
+     * Returns {@code true} if this database contains at least one raster column.
+     * This information can be used for metadata purpose.
+     *
+     * @return whether at least one raster column has been found.
+     */
+    public final boolean hasRaster() {
+        return hasRaster;
     }
 
     /**
@@ -563,7 +583,7 @@ public class Database<G> extends Syntax  {
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
         final GeometryType type = columnDefinition.getGeometryType();
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
-        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getGeometryCRS(), getBinaryEncoding(columnDefinition));
+        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS(), getBinaryEncoding(columnDefinition));
     }
 
     /**

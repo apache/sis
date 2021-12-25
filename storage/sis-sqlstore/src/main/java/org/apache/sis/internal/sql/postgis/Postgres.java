@@ -116,6 +116,9 @@ public final class Postgres<G> extends Database<G> {
         if ("geography".equalsIgnoreCase(columnDefinition.typeName)) {
             return forGeometry(columnDefinition);
         }
+        if ("raster".equalsIgnoreCase(columnDefinition.typeName)) {
+            return new RasterGetter(columnDefinition.getDefaultCRS(), getBinaryEncoding(columnDefinition));
+        }
         return super.getMapping(columnDefinition);
     }
 

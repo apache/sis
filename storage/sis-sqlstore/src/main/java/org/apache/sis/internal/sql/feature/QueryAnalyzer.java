@@ -168,7 +168,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
         final InfoStatements spatialInformation = analyzer.spatialInformation;
         if (spatialInformation != null) {
             for (final Map.Entry<TableReference, Map<String,Column>> entry : columnsPerTable.entrySet()) {
-                spatialInformation.completeGeometryColumns(entry.getKey(), entry.getValue());
+                spatialInformation.completeIntrospection(entry.getKey(), entry.getValue());
             }
         }
         /*
