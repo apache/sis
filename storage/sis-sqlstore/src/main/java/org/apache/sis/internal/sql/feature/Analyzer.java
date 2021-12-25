@@ -125,12 +125,10 @@ final class Analyzer {
      * @param  database    information about the spatial database.
      * @param  connection  an existing connection to the database, used only for the lifetime of this {@code Analyzer}.
      * @param  metadata    value of {@code connection.getMetaData()} (provided because already known by caller).
-     * @param  isSpatial   whether the database contains "GEOMETRY_COLUMNS" and "SPATIAL_REF_SYS" tables.
      * @param  customizer  user-specified modification to the features, or {@code null} if none.
      */
     Analyzer(final Database<?> database, final Connection connection, final DatabaseMetaData metadata,
-             final boolean isSpatial, final SchemaModifier customizer)
-            throws SQLException
+             final SchemaModifier customizer) throws SQLException
     {
         this.database      = database;
         this.tables        = new HashMap<>();
@@ -140,7 +138,7 @@ final class Analyzer {
         this.metadata      = metadata;
         this.escape        = metadata.getSearchStringEscape();
         this.nameFactory   = DefaultFactories.forBuildin(NameFactory.class);
-        spatialInformation = isSpatial ? database.createInfoStatements(connection) : null;
+        spatialInformation = database.isSpatial() ? database.createInfoStatements(connection) : null;
     }
 
     /**
@@ -269,7 +267,7 @@ final class Analyzer {
 
     /**
      * Initializes the value getter on the given column.
-     * This method shall be invoked only after geometry columns have been identifier.
+     * This method shall be invoked only after geometry columns have been identified.
      */
     final ValueGetter<?> setValueGetter(final Column column) {
         ValueGetter<?> getter = database.getMapping(column);

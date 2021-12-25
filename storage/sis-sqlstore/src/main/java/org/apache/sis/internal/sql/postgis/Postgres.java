@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.sql.postgis;
 
-import java.util.Set;
+import java.util.Map;
 import java.sql.Types;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -150,10 +150,10 @@ public final class Postgres<G> extends Database<G> {
      * @param  ignoredTables  where to add names of tables to ignore.
      */
     @Override
-    protected void addIgnoredTables(final Set<String> ignoredTables) {
-        ignoredTables.add("geography_columns");     // Postgis 1+
-        ignoredTables.add("raster_columns");        // Postgis 2
-        ignoredTables.add("raster_overviews");
+    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
+        ignoredTables.put("geography_columns", Boolean.TRUE);     // Postgis 1+
+        ignoredTables.put("raster_columns",    Boolean.TRUE);     // Postgis 2
+        ignoredTables.put("raster_overviews",  Boolean.FALSE);
     }
 
     /**

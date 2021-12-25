@@ -17,8 +17,10 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Set;
+import java.util.Map;
 import java.util.List;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.WeakHashMap;
 import java.util.ArrayList;
@@ -75,7 +77,7 @@ import org.apache.sis.util.Debug;
  * <ul>
  *   <li>{@link #getMapping(Column)}                for adding column types to recognize.</li>
  *   <li>{@link #createInfoStatements(Connection)}  for more info about spatial information.</li>
- *   <li>{@link #addIgnoredTables(Set)}             for specifying more tables to ignore.</li>
+ *   <li>{@link #addIgnoredTables(Map)}             for specifying more tables to ignore.</li>
  * </ul>
  *
  * <h2>Multi-threading</h2>
@@ -135,9 +137,18 @@ public class Database<G> extends Syntax  {
     private Table[] tables;
 
     /**
+     * Whether the database contains "GEOMETRY_COLUMNS" and/or "SPATIAL_REF_SYS" tables.
+     * May also be set to {@code true} if some database-specific tables are found such as
+     * {@code "geography_columns"} and {@code "raster_columns"} in PostGIS.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
+     *
+     * @see #isSpatial()
+     */
+    private boolean isSpatial;
+
+    /**
      * {@code true} if this database contains at least one geometry column.
-     * This field is initialized by {@link #analyze(SQLStore, Connection, ResourceDefinition...)}
-     * and shall not be modified after that point.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      *
      * @see #hasGeometry()
      */
@@ -303,23 +314,23 @@ public class Database<G> extends Syntax  {
             tableCRS  = tableCRS .toLowerCase(Locale.US).intern();
             tableGeom = tableGeom.toLowerCase(Locale.US).intern();
         }
-        final Set<String> ignoredTables = new HashSet<>(8);
-        ignoredTables.add(tableCRS);
-        ignoredTables.add(tableGeom);
+        final Map<String,Boolean> ignoredTables = new HashMap<>(8);
+        ignoredTables.put(tableCRS,  Boolean.TRUE);
+        ignoredTables.put(tableGeom, Boolean.TRUE);
         addIgnoredTables(ignoredTables);
-        final boolean isSpatial = hasTable(metadata, tableTypes, ignoredTables);
+        isSpatial = hasTable(metadata, tableTypes, ignoredTables);
         /*
          * Collect the names of all tables specified by user, ignoring the tables
          * used for database internal working (for example by PostGIS).
          */
-        final Analyzer analyzer = new Analyzer(this, connection, metadata, isSpatial, customizer);
+        final Analyzer analyzer = new Analyzer(this, connection, metadata, customizer);
         final Set<TableReference> declared = new LinkedHashSet<>();
         for (final GenericName tableName : tableNames) {
             final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
                     final String table = analyzer.getUniqueString(reflect, Reflection.TABLE_NAME);
-                    if (ignoredTables.contains(table)) {
+                    if (ignoredTables.containsKey(table)) {
                         continue;
                     }
                     declared.add(new TableReference(
@@ -376,8 +387,8 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns {@code true} if the database contains all specified tables. This method updates
-     * {@link #schemaOfSpatialTables} and {@link #catalogOfSpatialTables} for the tables found.
+     * Returns {@code true} if the database contains at least one specified tables associated to {@code Boolean.TRUE}.
+     * This method updates {@link #schemaOfSpatialTables} and {@link #catalogOfSpatialTables} for the tables found.
      * If many occurrences of the same table are found, this method searches for a common pair
      * of catalog and schema names. All tables should be in the same (catalog, schema) pair.
      * If this is not the case, no (catalog,schema) will be used and the search for the tables
@@ -388,23 +399,26 @@ public class Database<G> extends Syntax  {
      * @param  tables      name of the table to search.
      * @return whether the given table has been found.
      */
-    private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Set<String> tables)
+    private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Map<String,Boolean> tables)
             throws SQLException
     {
         // `SimpleImmutableEntry` used as a way to store a (catalog,schema) pair of strings.
         final FrequencySortedSet<SimpleImmutableEntry<String,String>> schemas = new FrequencySortedSet<>(true);
         int count = 0;
-        for (final String name : tables) {
-            boolean found = false;
-            try (ResultSet reflect = metadata.getTables(null, null, name, tableTypes)) {
-                while (reflect.next()) {
-                    found = true;
-                    schemas.add(new SimpleImmutableEntry<>(
-                            reflect.getString(Reflection.TABLE_CAT),
-                            reflect.getString(Reflection.TABLE_SCHEM)));
+        for (final Map.Entry<String,Boolean> entry : tables.entrySet()) {
+            if (entry.getValue()) {
+                String name = entry.getKey();
+                boolean found = false;
+                try (ResultSet reflect = metadata.getTables(null, null, name, tableTypes)) {
+                    while (reflect.next()) {
+                        found = true;
+                        schemas.add(new SimpleImmutableEntry<>(
+                                reflect.getString(Reflection.TABLE_CAT),
+                                reflect.getString(Reflection.TABLE_SCHEM)));
+                    }
                 }
+                if (found) count++;
             }
-            if (found) count++;
         }
         if (count == 0) {
             return false;
@@ -452,6 +466,16 @@ public class Database<G> extends Syntax  {
      */
     public final FeatureSet findTable(final SQLStore store, final String name) throws IllegalNameException {
         return tablesByNames.get(store, name);
+    }
+
+    /**
+     * Returns {@code true} if this database is a spatial database.
+     * Tables such as "SPATIAL_REF_SYS" are used as sentinel values.
+     *
+     * @return whether this database is a spatial database.
+     */
+    public final boolean isSpatial() {
+        return isSpatial;
     }
 
     /**
@@ -540,7 +564,6 @@ public class Database<G> extends Syntax  {
         final GeometryType type = columnDefinition.getGeometryType();
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
         return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getGeometryCRS(), getBinaryEncoding(columnDefinition));
-        // TODO: need to invoke GeometryGetter.setSridResolver(statements(…)) somewhere.
     }
 
     /**
@@ -555,13 +578,16 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Adds to the given set a list of tables to ignore when searching for feature tables.
-     * The given set already contains the {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}
+     * Adds to the given map a list of tables to ignore when searching for feature tables.
+     * The given map already contains the {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}
      * entries when this method is invoked. The default implementation adds nothing.
+     *
+     * <p>Values tells whether the table can be used as a sentinel value for determining
+     * that this database {@linkplain #isSpatial is a spatial database}.</p>
      *
      * @param  ignoredTables  where to add names of tables to ignore.
      */
-    protected void addIgnoredTables(final Set<String> ignoredTables) {
+    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
     }
 
     /**

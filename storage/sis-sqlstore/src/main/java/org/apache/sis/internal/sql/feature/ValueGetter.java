@@ -38,9 +38,12 @@ import org.apache.sis.util.ArgumentChecks;
  * The {@code ValueGetter} getter method will typically delegate to the most appropriate {@link ResultSet} getter
  * method for the column type, but may also perform some conversions such as parsing geometry Well-Known Binary (WKB).
  *
- * <p>The {@link #getValue(ResultSet, int)} method is invoked with the result set cursor placed on the row of interest.
- * The index of the column to read must be specified. It allows to reuse the same {@code ValueGetter} instance for an
- * arbitrary amount of columns.</p>
+ * <p>The {@link #getValue(InfoStatements, ResultSet, int)} method is invoked with the result set cursor placed on the
+ * row of interest. The index of the column to read must be specified. It allows to reuse the same {@code ValueGetter}
+ * instance for an arbitrary amount of columns.</p>
+ *
+ * <h2>Multi-threading</h2>
+ * {@code ValueGetter} instances shall be thread-safe.
  *
  * @param  <T>  type of values in the column.
  *
@@ -73,12 +76,18 @@ public abstract class ValueGetter<T> {
      * The given result set must have its cursor position on the line to read.
      * This method does not modify the cursor position.
      *
+     * <div class="note"><b>Note:</b>
+     * The {@code stmts} is the same reference for all features created by a new {@link FeatureIterator} instance,
+     * including its dependencies. But the {@code source} will vary depending on whether we are iterating over the
+     * main feature or one of its dependencies.</div>
+     *
+     * @param  stmts        prepared statements for fetching CRS from SRID, or {@code null} if none.
      * @param  source       the result set from which to get the value.
      * @param  columnIndex  index of the column in which to get the value.
      * @return value in the given column. May be {@code null}.
      * @throws Exception if an error occurred. May be an SQL error, a WKB parsing error, <i>etc.</i>
      */
-    public abstract T getValue(ResultSet source, int columnIndex) throws Exception;
+    public abstract T getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws Exception;
 
     /**
      * Returns the default coordinate reference system for this column.
@@ -90,7 +99,7 @@ public abstract class ValueGetter<T> {
      *
      * @return the default coordinate reference system for values in this column.
      */
-    public Optional<CoordinateReferenceSystem> getCRS() {
+    public Optional<CoordinateReferenceSystem> getDefaultCRS() {
         return Optional.empty();
     }
 
@@ -104,7 +113,7 @@ public abstract class ValueGetter<T> {
         private AsObject() {super(Object.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Object getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Object getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             return source.getObject(columnIndex);
         }
     }
@@ -119,7 +128,7 @@ public abstract class ValueGetter<T> {
         private AsString() {super(String.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public String getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public String getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             return source.getString(columnIndex);
         }
     }
@@ -141,7 +150,7 @@ public abstract class ValueGetter<T> {
         }
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public byte[] getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public byte[] getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             return encoding.getBytes(source, columnIndex);
         }
     }
@@ -157,7 +166,7 @@ public abstract class ValueGetter<T> {
         private AsByte() {super(Byte.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Byte getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Byte getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             byte value = source.getByte(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -174,7 +183,7 @@ public abstract class ValueGetter<T> {
         private AsShort() {super(Short.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Short getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Short getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             short value = source.getShort(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -191,7 +200,7 @@ public abstract class ValueGetter<T> {
         private AsInteger() {super(Integer.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Integer getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Integer getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             int value = source.getInt(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -208,7 +217,7 @@ public abstract class ValueGetter<T> {
         private AsLong() {super(Long.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Long getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Long getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             long value = source.getLong(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -225,7 +234,7 @@ public abstract class ValueGetter<T> {
         private AsFloat() {super(Float.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Float getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Float getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             float value = source.getFloat(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -242,7 +251,7 @@ public abstract class ValueGetter<T> {
         private AsDouble() {super(Double.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Double getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Double getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             double value = source.getDouble(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -258,7 +267,7 @@ public abstract class ValueGetter<T> {
         private AsBigDecimal() {super(BigDecimal.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public BigDecimal getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public BigDecimal getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             return source.getBigDecimal(columnIndex);
         }
     }
@@ -274,7 +283,7 @@ public abstract class ValueGetter<T> {
         private AsBoolean() {super(Boolean.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Boolean getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Boolean getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             boolean value = source.getBoolean(columnIndex);
             return source.wasNull() ? null : value;
         }
@@ -292,7 +301,7 @@ public abstract class ValueGetter<T> {
         private AsDate() {super(Date.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Date getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Date getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             return source.getDate(columnIndex);
         }
     }
@@ -310,7 +319,7 @@ public abstract class ValueGetter<T> {
         private AsLocalTime() {super(LocalTime.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public LocalTime getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public LocalTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Time time = source.getTime(columnIndex);
             return (time != null) ? time.toLocalTime() : null;
         }
@@ -329,7 +338,7 @@ public abstract class ValueGetter<T> {
         private AsInstant() {super(Instant.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Instant getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public Instant getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Timestamp time = source.getTimestamp(columnIndex);
             return (time != null) ? time.toInstant() : null;
         }
@@ -348,7 +357,7 @@ public abstract class ValueGetter<T> {
         private AsOffsetDateTime() {super(OffsetDateTime.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public OffsetDateTime getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public OffsetDateTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Timestamp time = source.getTimestamp(columnIndex);
             if (time == null) return null;
             final int offsetMinute = time.getTimezoneOffset();
@@ -369,7 +378,7 @@ public abstract class ValueGetter<T> {
         private AsOffsetTime() {super(OffsetTime.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public OffsetTime getValue(ResultSet source, int columnIndex) throws SQLException {
+        @Override public OffsetTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Time time = source.getTime(columnIndex);
             if (time == null) return null;
             final int offsetMinute = time.getTimezoneOffset();

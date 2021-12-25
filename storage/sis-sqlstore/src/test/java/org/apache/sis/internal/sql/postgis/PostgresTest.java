@@ -23,9 +23,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Method;
-import org.opengis.referencing.crs.ProjectedCRS;
+import java.util.stream.Stream;
+import org.opengis.util.FactoryException;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.sql.ResourceDefinition;
@@ -34,6 +36,8 @@ import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.sql.feature.BinaryEncoding;
 import org.apache.sis.internal.sql.feature.GeometryGetterTest;
+import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.DependsOn;
@@ -41,7 +45,14 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Version;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+
+// Optional dependencies
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Geometry;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -92,6 +103,7 @@ public final strictfp class PostgresTest extends TestCase {
                     testInfoStatements(info);
                     testGeometryGetter(info, connection);
                     testRasterReader(TestRaster.USHORT, info, connection);
+                    testFeatures(store);
                 }
             }
         }
@@ -102,9 +114,9 @@ public final strictfp class PostgresTest extends TestCase {
      *
      * @throws Exception if an error occurred while testing the database.
      */
-    private void testInfoStatements(final ExtendedInfo info) throws Exception {
+    private static void testInfoStatements(final ExtendedInfo info) throws Exception {
         assertEquals("findSRID", 4326, info.findSRID(HardCodedCRS.WGS84));
-        assertInstanceOf("fetchCRS", ProjectedCRS.class, info.fetchCRS(3395));
+        assertSame("fetchCRS", CRS.forCode("EPSG:3395"), info.fetchCRS(3395));
     }
 
     /**
@@ -113,15 +125,17 @@ public final strictfp class PostgresTest extends TestCase {
      *
      * @throws Exception if an error occurred while testing the database.
      */
-    private void testGeometryGetter(final ExtendedInfo info, final Connection connection) throws Exception {
+    private static void testGeometryGetter(final ExtendedInfo info, final Connection connection) throws Exception {
         final GeometryGetterTest test = new GeometryGetterTest();
         test.testFromDatabase(connection, info, BinaryEncoding.HEXADECIMAL);
     }
 
     /**
-     * Tests {@link RasterReader}.
+     * Tests {@link RasterReader} in the context of a database.
      */
-    private void testRasterReader(final TestRaster test, final ExtendedInfo info, final Connection connection) throws Exception {
+    private static void testRasterReader(final TestRaster test, final ExtendedInfo info, final Connection connection)
+            throws Exception
+    {
         final BinaryEncoding encoding = BinaryEncoding.HEXADECIMAL;
         final RasterReader reader = new RasterReader(info);
         try (PreparedStatement stmt = connection.prepareStatement("SELECT image FROM features.\"SpatialData\" WHERE filename=?")) {
@@ -132,6 +146,49 @@ public final strictfp class PostgresTest extends TestCase {
             final ChannelDataInput input = new ChannelDataInput(test.filename, channel, ByteBuffer.allocate(50), false);
             RasterReaderTest.compareReadResult(test, reader, input);
             assertFalse(r.next());
+        }
+    }
+
+    /**
+     * Tests the construction of feature instances.
+     */
+    private static void testFeatures(final SQLStore store) throws DataStoreException {
+        try (Stream<Feature> features = store.findResource("SpatialData").features(false)) {
+            features.forEach(PostgresTest::validate);
+        }
+    }
+
+    /**
+     * Invoked for each feature instances for performing some checks on the feature.
+     * This method performs only a superficial verification of geometries.
+     */
+    private static void validate(final Feature feature) {
+        final String   filename = feature.getPropertyValue("filename").toString();
+        final Geometry geometry = (Geometry) feature.getPropertyValue("geometry");
+        final int      geomSRID;
+        switch (filename) {
+            case "raster-ushort.wkb": {
+                assertNull(geometry);
+                return;
+            }
+            case "point-prj": {
+                final Point p = (Point) geometry;
+                assertEquals(2, p.getX(), STRICT);
+                assertEquals(3, p.getY(), STRICT);
+                geomSRID = 3395;
+                break;
+            }
+            case "polygon-prj": geomSRID = 3395; break;
+            case "linestring":
+            case "polygon":
+            case "multi-linestring":
+            case "multi-polygon": geomSRID = 4326; break;
+            default: throw new AssertionError(filename);
+        }
+        try {
+            assertEquals(GeometryGetterTest.getExpectedCRS(geomSRID), JTS.getCoordinateReferenceSystem(geometry));
+        } catch (FactoryException e) {
+            throw new AssertionError(e);
         }
     }
 }

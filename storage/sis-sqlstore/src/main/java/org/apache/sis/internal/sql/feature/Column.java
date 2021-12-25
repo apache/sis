@@ -39,6 +39,10 @@ import org.apache.sis.util.Localized;
  * possibly completed with information about a geometry column.
  * The aim is to describe all information about a column that is needed for mapping to feature model.
  *
+ * <h2>Multi-threading</h2>
+ * {@code Column} instances shall be kept unmodified after all fields have been initialized.
+ * The same instances may be read concurrently by many threads.
+ *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -217,7 +221,7 @@ public final class Column {
         if (isNullable) {
             attribute.setMinimumOccurs(0);
         }
-        valueGetter.getCRS().ifPresent(attribute::setCRS);
+        valueGetter.getDefaultCRS().ifPresent(attribute::setCRS);
         return attribute;
     }
 

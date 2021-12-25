@@ -20,10 +20,14 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.internal.feature.GeometryWithCRS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -103,9 +107,18 @@ public strictfp final class GeometryGetterTest extends TestCase {
 
         // Read the point.
         point.rewind();
-        final GeometryWrapper<?> read = createReader(library, BinaryEncoding.RAW).read(point.array());
-        assertSame(HardCodedCRS.WGS84, read.getCoordinateReferenceSystem());
-        assertEquals(GF.createPoint(42.2, 43.3), read.implementation());
+        final ResultSet r = ResultSetMock.create(point.array());
+        final Object geometry = createReader(library, BinaryEncoding.RAW).getValue(null, r, 1);
+        assertEquals(GF.createPoint(42.2, 43.3), geometry);
+        final GeometryWrapper<?> wrapper = Geometries.implementation(library).castOrWrap(geometry);
+        /*
+         * If the wrapper is an instance of `GeometryWithCRS`, then the CRS is stored
+         * with the wrapper instead of the geometry implementation. In such case, the
+         * CRS is lost on `GeometryWrapper.implementation()` and can not be tested.
+         */
+        if (!(wrapper instanceof GeometryWithCRS)) {
+            assertSame(HardCodedCRS.WGS84, wrapper.getCoordinateReferenceSystem());
+        }
     }
 
     /**
@@ -115,25 +128,43 @@ public strictfp final class GeometryGetterTest extends TestCase {
      * another test class} having a connection to a database.
      *
      * @param  connection     connection to the database.
-     * @param  spatialRefSys  helper method for fetching CRS from SRID codes.
+     * @param  fromSridToCRS  the resolver of Spatial Reference Identifier (SRID) to CRS, or {@code null}.
      * @param  encoding       the way binary data are encoded (raw or hexadecimal).
      * @throws Exception if an error occurred while querying the database or parsing the WKT or WKB.
      */
-    public void testFromDatabase(final Connection connection, final InfoStatements spatialRefSys,
+    public void testFromDatabase(final Connection connection, final InfoStatements fromSridToCRS,
             final BinaryEncoding encoding) throws Exception
     {
         final GeometryGetter<?,?> reader = createReader(GeometryLibrary.JTS, encoding);
-        reader.setSridResolver(spatialRefSys);
         try (Statement stmt = connection.createStatement();
-             ResultSet results = stmt.executeQuery("SELECT \"WKT\",\"WKB\" FROM features.\"Geometries\""))
+             ResultSet results = stmt.executeQuery("SELECT \"WKT\",\"WKB\",\"SRID\" FROM features.\"Geometries\""))
         {
             while (results.next()) {
                 final String wkt = results.getString(1);
-                final Geometry geometry = (Geometry) reader.getValue(results, 2);
+                final Geometry geometry = (Geometry) reader.getValue(fromSridToCRS, results, 2);
                 final GeometryWrapper<?> expected = GF.parseWKT(wkt);
                 assertEquals("WKT and WKB parsings gave different results.", expected.implementation(), geometry);
-                assertSame("SRID", CommonCRS.WGS84.normalizedGeographic(), GF.castOrWrap(geometry).getCoordinateReferenceSystem());
+                assertSame("SRID", getExpectedCRS(results.getInt(3)),
+                           GF.castOrWrap(geometry).getCoordinateReferenceSystem());
             }
+        }
+    }
+
+    /**
+     * Returns the expected CRS for the given SRID. Note that a SRID is not necessary an EPSG code.
+     * This method accepts only the SRID used in the {@code "SpatialFeatures"} test schema.
+     * The mapping from SRID to CRS is hard-coded to the same mapping than the spatial database
+     * used for the test. Other databases may have different mapping.
+     *
+     * @param  srid  the SRID for which to get the CRS.
+     * @return the CRS for the given SRID.
+     * @throws FactoryException if an error occurred while fetching the CRS.
+     */
+    public static CoordinateReferenceSystem getExpectedCRS(final int srid) throws FactoryException {
+        switch (srid) {
+            case 3395: return CRS.forCode("EPSG:3395");
+            case 4326: return CommonCRS.WGS84.normalizedGeographic();
+            default:   throw new AssertionError(srid);
         }
     }
 }

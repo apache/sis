@@ -318,15 +318,16 @@ final class FeatureAdapter {
      * Creates a feature with attribute values initialized to values fetched from the given result set.
      * This method does not follow associations.
      *
+     * @param  stmts   prepared statements for fetching CRS from SRID, or {@code null} if none.
      * @param  result  the result set from which to get attribute values.
      * @return the feature with attribute values initialized.
      * @throws Exception if an error occurred while reading the database or converting values.
      */
-    final Feature createFeature(final ResultSet result) throws Exception {
+    final Feature createFeature(final InfoStatements stmts, final ResultSet result) throws Exception {
         final Feature feature = featureType.newInstance();
         for (int i=0; i<attributes.length; i++) {
             final Column column = attributes[i];
-            final Object value = column.valueGetter.getValue(result, i+1);
+            final Object value = column.valueGetter.getValue(stmts, result, i+1);
             if (value != null) {
                 feature.setPropertyValue(column.propertyName, value);
             }

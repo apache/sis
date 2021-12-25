@@ -41,6 +41,9 @@ import org.apache.sis.internal.feature.Geometries;
  *   <li><a href="http://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT">PostGIS extended format</a></li>
  * </ul>
  *
+ * <h2>Multi-threading</h2>
+ * {@code GeometryGetter} instances shall be thread-safe.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -59,14 +62,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     private final Geometries<G> geometryFactory;
 
     /**
-     * The mapper to use for resolving a Spatial Reference Identifier (SRID) integer
-     * as Coordinate Reference System (CRS) object.
-     * This is {@code null} if there is no mapping to apply.
-     */
-    private InfoStatements fromSridToCRS;
-
-    /**
-     * The Coordinate Reference System if {@link #fromSridToCRS} can not map the SRID.
+     * The Coordinate Reference System if {@link InfoStatements} can not map the SRID.
      * This is {@code null} if there is no default.
      */
     private final CoordinateReferenceSystem defaultCRS;
@@ -96,21 +92,11 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     }
 
     /**
-     * Sets the mapper to use for resolving a Spatial Reference Identifier (SRID) integer
-     * as Coordinate Reference System (CRS) object.
-     *
-     * @param  fromSridToCRS  mapper for resolving SRID integers as CRS objects, or {@code null} if none.
-     */
-    final void setSridResolver(final InfoStatements fromSridToCRS) {
-        this.fromSridToCRS = fromSridToCRS;
-    }
-
-    /**
      * Returns the default coordinate reference system for this column.
      * The default CRS is declared in the {@code "GEOMETRY_COLUMNS"} table.
      */
     @Override
-    public Optional<CoordinateReferenceSystem> getCRS() {
+    public Optional<CoordinateReferenceSystem> getDefaultCRS() {
         return Optional.ofNullable(defaultCRS);
     }
 
@@ -119,6 +105,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
      * The given result set must have its cursor position on the line to read.
      * This method does not modify the cursor position.
      *
+     * @param  stmts        prepared statements for fetching CRS from SRID, or {@code null} if none.
      * @param  source       the result set from which to get the value.
      * @param  columnIndex  index of the column in which to get the value.
      * @return geometry value in the given column. May be {@code null}.
@@ -128,32 +115,20 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
      *       find a way to ensure that SQL queries use {@code ST_AsBinary} function.
      */
     @Override
-    public V getValue(final ResultSet source, final int columnIndex) throws Exception {
+    public V getValue(final InfoStatements stmts, final ResultSet source, final int columnIndex) throws Exception {
         final byte[] wkb = encoding.getBytes(source, columnIndex);
         if (wkb == null) return null;
-        final GeometryWrapper<G> geom = read(wkb);
-        return valueType.cast(geom.implementation());
-    }
-
-    /**
-     * Parses a WKB stored in the given byte array.
-     *
-     * @param  wkb  the array containing the WKB to decode. Should neither be null nor empty.
-     * @return geometry parsed from the given array of bytes. Never null, never empty.
-     * @throws Exception if the WKB can not be parsed. The exception type depends on the geometry implementation.
-     */
-    final GeometryWrapper<G> read(final byte[] wkb) throws Exception {
-        final GeometryWrapper<G> wrapper = geometryFactory.parseWKB(ByteBuffer.wrap(wkb));
+        final GeometryWrapper<G> geom = geometryFactory.parseWKB(ByteBuffer.wrap(wkb));
         CoordinateReferenceSystem crs = defaultCRS;
-        if (fromSridToCRS != null) {
-            final OptionalInt srid = wrapper.getSRID();
+        if (stmts != null) {
+            final OptionalInt srid = geom.getSRID();
             if (srid.isPresent()) {
-                crs = fromSridToCRS.fetchCRS(srid.getAsInt());
+                crs = stmts.fetchCRS(srid.getAsInt());
             }
         }
         if (crs != null) {
-            wrapper.setCoordinateReferenceSystem(crs);
+            geom.setCoordinateReferenceSystem(crs);
         }
-        return wrapper;
+        return valueType.cast(geom.implementation());
     }
 }

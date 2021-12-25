@@ -32,16 +32,16 @@ INSERT INTO features."SpatialData" ("filename", "image") VALUES
 -- Geometries with arbitrary coordinate values.
 --
 INSERT INTO features."SpatialData" ("filename", "geometry") VALUES
-  ('hexa-wkb.csv:1', ST_GeomFromText('POINT(0 0)', 4326)),
-  ('hexa-wkb.csv:2', ST_GeomFromText('LINESTRING(-71.160281 42.258729,-71.160837 42.259113,-71.161144 42.25932)', 4326)),
-  ('hexa-wkb.csv:3', ST_GeomFromText('POLYGON((0 0,0 1,1 1,1 0,0 0))', 4326)),
-  ('hexa-wkb.csv:4', ST_GeomFromText('POLYGON'
+  ('point-prj',   ST_GeomFromText('POINT(2 3)', 3395)),
+  ('linestring',  ST_GeomFromText('LINESTRING(-71.160281 42.258729,-71.160837 42.259113,-71.161144 42.25932)', 4326)),
+  ('polygon-prj', ST_GeomFromText('POLYGON((0 0,0 1,1 1,1 0,0 0))', 3395)),
+  ('polygon',     ST_GeomFromText('POLYGON'
    || '((-71.1776585052917 42.3902909739571,-71.1776820268866 42.3903701743239,-71.1776063012595 42.3903825660754,'
    ||   '-71.1775826583081 42.3903033653531,-71.1776585052917 42.3902909739571))', 4326)),
-  ('hexa-wkb.csv:5', ST_GeomFromText('MULTILINESTRING'
+  ('multi-linestring', ST_GeomFromText('MULTILINESTRING'
    || '((-71.160281 42.258729,-71.160837 42.259113,-71.161144 42.25932),'
    ||  '(-71.1031627617667 42.3152960829043,-71.102923838298 42.3149156848307))', 4326)),
-  ('hexa-wkb.csv:6', ST_GeomFromText('MULTIPOLYGON('
+  ('multi-polygon', ST_GeomFromText('MULTIPOLYGON('
    || '((-71.1031880899493 42.3152774590236,-71.1031627617667 42.3152960829043,-71.102923838298 42.3149156848307,'
    ||   '-71.1023097974109 42.3151969047397,-71.1019285062273 42.3147384934248,-71.102505233663 42.3144722937587,'
    ||   '-71.1027748747100 42.3141658254797,-71.1031139451630 42.3142739188902,-71.103248764160 42.3140248998700,'
@@ -65,6 +65,6 @@ INSERT INTO features."SpatialData" ("filename", "geometry") VALUES
 -- Used for parsing the same geometry in two ways and comparing the results.
 --
 CREATE VIEW features."Geometries" AS
-  SELECT ST_AsText(geometry) AS "WKT", geometry AS "WKB"
+  SELECT ST_AsText(geometry) AS "WKT", geometry AS "WKB", ST_SRID(geometry) AS "SRID"
   FROM   features."SpatialData"
   WHERE  geometry IS NOT NULL;
