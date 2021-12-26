@@ -167,8 +167,10 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
         }
 
         /**
-         * If the evaluated property is a link, replaces this expression
-         * by a more direct reference to the target property.
+         * If the evaluated property is a link, replaces this expression by a more direct reference
+         * to the target property. This optimization is important for allowing {@code SQLStore} to
+         * put the column name in the SQL {@code WHERE} clause. It makes the difference between
+         * using or not the database index.
          */
         @Override
         public Expression<Feature,?> optimize(final Optimization optimization) {

@@ -405,6 +405,8 @@ final class FeatureStream extends DeferredStream<Feature> {
 
     /**
      * Returns a string representation of this stream for debugging purposes.
+     * The returned string tells whether filtering and sorting are done using
+     * SQL statement, Java code, or a mix of both.
      */
     @Override
     public String toString() {

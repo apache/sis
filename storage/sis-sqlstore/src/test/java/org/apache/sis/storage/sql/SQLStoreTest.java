@@ -445,11 +445,20 @@ public final strictfp class SQLStoreTest extends TestCase {
         final FeatureSet   countries   = dataset.findResource("Countries");
         final FeatureQuery query       = new FeatureQuery();
         query.setSelection(FF.equal(FF.property("sis:identifier"), FF.literal("CAN")));
+        final String executionMode;
         final Object[] names;
         try (Stream<Feature> features = countries.subset(query).features(false)) {
+            executionMode = features.toString();
             names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
         }
         assertArrayEquals(expectedValues, names);
+        /*
+         * Verify that the query is executed with a SQL statement, not with Java code.
+         * The use of SQL is made possible by the replacement of "sis:identifier" link
+         * by a reference to "code" column. If that replacement is not properly done,
+         * then the "predicates" value would be "Java" instead of "SQL".
+         */
+        assertEquals("FeatureStream[table=“Countries”, predicates=“SQL”]", executionMode);
     }
 
     /**
