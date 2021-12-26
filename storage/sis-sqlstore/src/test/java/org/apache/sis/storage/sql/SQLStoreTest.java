@@ -207,6 +207,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             verifySimpleQuerySorting(store);
             verifySimpleQueryWithLimit(store);
             verifySimpleWhere(store);
+            verifyWhereOnLink(store);
             verifyStreamOperations(store.findResource("Cities"));
         }
         canada = null;
@@ -429,6 +430,26 @@ public final strictfp class SQLStoreTest extends TestCase {
             names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
         }
         assertSetEquals(Arrays.asList(expectedValues), Arrays.asList(names));
+    }
+
+    /**
+     * Requests a new set of features filtered by a condition on the "sis:identifier" property.
+     * The optimizer should replace that link by a condition on the actual column.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifyWhereOnLink(SQLStore dataset) throws Exception {
+        final String   desiredProperty = "native_name";
+        final String[] expectedValues  = {"Canada"};
+        final FeatureSet   countries   = dataset.findResource("Countries");
+        final FeatureQuery query       = new FeatureQuery();
+        query.setSelection(FF.equal(FF.property("sis:identifier"), FF.literal("CAN")));
+        final Object[] names;
+        try (Stream<Feature> features = countries.subset(query).features(false)) {
+            names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
+        }
+        assertArrayEquals(expectedValues, names);
     }
 
     /**

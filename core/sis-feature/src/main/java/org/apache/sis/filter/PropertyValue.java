@@ -16,8 +16,10 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Optional;
 import java.util.Collection;
 import java.util.Collections;
+import org.apache.sis.feature.Features;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -45,7 +47,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <V>  the type of value computed by the expression.
  *
@@ -136,7 +138,9 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
      * An expression fetching property values as {@code Object}.
      * This expression does not need to apply any type conversion.
      */
-    private static final class AsObject extends PropertyValue<Object> {
+    private static final class AsObject extends PropertyValue<Object>
+            implements Optimization.OnExpression<Feature,Object>
+    {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2854731969723006038L;
 
@@ -160,6 +164,21 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
                 // Null will be returned below.
             }
             return null;
+        }
+
+        /**
+         * If the evaluated property is a link, replaces this expression
+         * by a more direct reference to the target property.
+         */
+        @Override
+        public Expression<Feature,?> optimize(final Optimization optimization) {
+            final FeatureType type = optimization.getFeatureType();
+            if (type != null) try {
+                return Features.getLinkTarget(type.getProperty(name)).map(AsObject::new).orElse(this);
+            } catch (PropertyNotFoundException e) {
+                warning(e, true);
+            }
+            return this;
         }
     }
 
@@ -186,6 +205,14 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
         protected Converted(final Class<V> type, final String name) {
             super(name);
             this.type = type;
+        }
+
+        /**
+         * Creates a new {@code Converted} fetching values for a property of different name.
+         * The given name should be the target of a link that the caller has resolved.
+         */
+        protected Converted<V> rename(final String target) {
+            return new Converted<>(type, target);
         }
 
         /**
@@ -222,12 +249,24 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
         public final Expression<Feature, ? extends V> optimize(final Optimization optimization) {
             final FeatureType featureType = optimization.getFeatureType();
             if (featureType != null) try {
-                final PropertyType property = featureType.getProperty(name);
+                String targetName = name;
+                PropertyType property = featureType.getProperty(targetName);
+                Optional<String> target = Features.getLinkTarget(property);
+                if (target.isPresent()) try {
+                    targetName = target.get();
+                    property = featureType.getProperty(targetName);
+                } catch (PropertyNotFoundException e) {
+                    targetName = name;
+                    warning(e, true);
+                }
                 if (property instanceof AttributeType<?>) {
                     final Class<?> source = ((AttributeType<?>) property).getValueClass();
                     if (source != null && source != Object.class && !source.isAssignableFrom(getSourceClass())) {
-                        return new CastedAndConverted<>(source, type, name);
+                        return new CastedAndConverted<>(source, type, targetName);
                     }
+                }
+                if (!targetName.equals(name)) {
+                    return rename(targetName);
                 }
             } catch (PropertyNotFoundException e) {
                 warning(e, true);
@@ -299,6 +338,22 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
             super(type, name);
             this.source = source;
             converter = ObjectConverters.find(source, type);
+        }
+
+        /** Creates a new expression derived from an existing one except for the target name. */
+        private CastedAndConverted(final CastedAndConverted<S,V> other, final String name) {
+            super(other.type, name);
+            source = other.source;
+            converter = other.converter;
+        }
+
+        /**
+         * Creates a new {@code CastedAndConverted} fetching values for a property of different name.
+         * The given name should be the target of a link that the caller has resolved.
+         */
+        @Override
+        protected Converted<V> rename(final String target) {
+            return new CastedAndConverted<>(this, target);
         }
 
         /**
