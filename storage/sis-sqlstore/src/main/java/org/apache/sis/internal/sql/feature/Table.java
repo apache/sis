@@ -25,6 +25,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
@@ -309,6 +310,31 @@ final class Table extends AbstractFeatureSet {
     @Override
     public final FeatureType getType() {
         return featureType;
+    }
+
+    /**
+     * Returns an estimation of the envelope of all geometry columns in this table.
+     * The returned envelope shall contain at least the two-dimensional spatial components.
+     * Whether other dimensions (vertical and temporal) and present or not depends on the implementation.
+     *
+     * <h2>Departure from interface contract</h2>
+     * {@link org.apache.sis.storage.DataSet#getEnvelope()} contract allows estimated envelope to be larger than
+     * actual envelope (similar to Java2D {@link java.awt.Shape#getBounds()} contract), but smaller envelope are
+     * discouraged. Despite that, this method may return smaller envelopes because the computation is done using
+     * a subset of all data.
+     *
+     * @return an estimation of the spatiotemporal resource extent.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        if (hasGeometry) try {
+            return Optional.ofNullable(database.getEstimatedExtent(name, attributes));
+        } catch (SQLException e) {
+            throw new DataStoreException(e);
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**

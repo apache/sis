@@ -35,7 +35,7 @@ import static org.apache.sis.internal.util.Strings.trimOrNull;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -53,7 +53,7 @@ public class TableReference {
      * Names are stored here as they were given by JDBC because those names are sometime
      * compared with other JDBC metadata or used for fetching more table metadata.
      */
-    final String catalog, schema, table;
+    public final String catalog, schema, table;
 
     /**
      * Ignored by this class; reserved for caller and subclasses usage.

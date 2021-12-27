@@ -24,10 +24,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.sql.ResourceDefinition;
@@ -105,8 +106,17 @@ public final strictfp class PostgresTest extends TestCase {
                     testInfoStatements(info);
                     testGeometryGetter(info, connection);
                     testRasterReader(TestRaster.USHORT, info, connection);
-                    testFeatures(store);
                 }
+                /*
+                 * Tests through public API.
+                 */
+                final FeatureSet resource = store.findResource("SpatialData");
+                try (Stream<Feature> features = resource.features(false)) {
+                    features.forEach(PostgresTest::validate);
+                }
+                final Envelope envelope = resource.getEnvelope().get();
+                assertEquals(envelope.getMinimum(0), -72, 1);
+                assertEquals(envelope.getMaximum(1),  43, 1);
             }
         }
     }
@@ -148,15 +158,6 @@ public final strictfp class PostgresTest extends TestCase {
             final ChannelDataInput input = new ChannelDataInput(test.filename, channel, ByteBuffer.allocate(50), false);
             RasterReaderTest.compareReadResult(test, reader, input);
             assertFalse(r.next());
-        }
-    }
-
-    /**
-     * Tests the construction of feature instances.
-     */
-    private static void testFeatures(final SQLStore store) throws DataStoreException {
-        try (Stream<Feature> features = store.findResource("SpatialData").features(false)) {
-            features.forEach(PostgresTest::validate);
         }
     }
 

@@ -182,16 +182,12 @@ public class InfoStatements implements Localized, AutoCloseable {
      * The table name will be prefixed by catalog and schema name if applicable.
      */
     private void appendFrom(final SQLBuilder sql, final String table) {
-        sql.append(" FROM ");
-        final String schema = database.schemaOfSpatialTables;
-        if (schema != null && !schema.isEmpty()) {
-            final String catalog = database.catalogOfSpatialTables;
-            if (catalog != null && !catalog.isEmpty()) {
-                sql.appendIdentifier(catalog).append('.');
-            }
-            sql.appendIdentifier(schema).append('.');
-        }
-        sql.append(table).append(" WHERE ");        // Intentionally no quotes for table name.
+        /*
+         * Despite its name, `appendFunctionCall(…)` can also be used for formatting
+         * table names provided that we want unquoted names (which is the case here).
+         */
+        database.appendFunctionCall(sql.append(" FROM "), table);
+        sql.append(" WHERE ");
     }
 
     /**

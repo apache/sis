@@ -106,6 +106,8 @@ public final class Column {
 
     /**
      * If this column is a geometry column, the type of the geometry objects. Otherwise {@code null}.
+     *
+     * @see #getGeometryType()
      */
     private GeometryType geometryType;
 

@@ -68,8 +68,11 @@ public interface DataSet extends Resource {
      * If this resource uses many different CRS with none of them covering all data, then the envelope should use a
      * global system (typically a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geographic CRS}).
      *
-     * <p>The returned envelope is not necessarily the smallest bounding box encompassing all data.
-     * If the smallest envelope is too costly to compute, this method may conservatively return a larger envelope.</p>
+     * <h4>Estimated envelopes</h4>
+     * The returned envelope is not necessarily the smallest bounding box encompassing all data.
+     * If the smallest envelope is too costly to compute, this method may conservatively return a larger envelope.
+     * The converse (returning a smaller envelope) should be avoided, but is not strictly forbidden
+     * because some resources may compute the envelope using only a subset of all the resource data.
      *
      * @return the spatiotemporal resource extent. May be absent if none or too costly to compute.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.

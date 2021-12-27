@@ -34,11 +34,13 @@ import java.sql.SQLException;
 import java.sql.Types;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.metadata.sql.Syntax;
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
@@ -188,7 +190,7 @@ public class Database<G> extends Syntax  {
      *
      * @see #log(LogRecord)
      */
-    final StoreListeners listeners;
+    public final StoreListeners listeners;
 
     /**
      * Cache of Coordinate Reference Systems created for a given SRID.
@@ -478,6 +480,26 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Appends a call to a function defined in the spatial schema.
+     * The function name will be prefixed by catalog and schema name if applicable.
+     * The function will not be quoted.
+     *
+     * @param  sql       the SQL builder where to add the spatial function name.
+     * @param  function  the function to append.
+     */
+    public final void appendFunctionCall(final SQLBuilder sql, final String function) {
+        final String schema = schemaOfSpatialTables;
+        if (schema != null && !schema.isEmpty()) {
+            final String catalog = catalogOfSpatialTables;
+            if (catalog != null && !catalog.isEmpty()) {
+                sql.appendIdentifier(catalog).append('.');
+            }
+            sql.appendIdentifier(schema).append('.');
+        }
+        sql.append(function);
+    }
+
+    /**
      * Returns {@code true} if this database is a spatial database.
      * Tables such as "SPATIAL_REF_SYS" are used as sentinel values.
      *
@@ -571,6 +593,22 @@ public class Database<G> extends Syntax  {
      */
     protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
         return BinaryEncoding.RAW;
+    }
+
+    /**
+     * Computes an estimation of the envelope of all geometry columns in the given table.
+     * The returned envelope shall contain at least the two-dimensional spatial components.
+     * Whether other dimensions (vertical and temporal) and present or not depends on the implementation.
+     * This method is invoked only if the {@code columns} array contains at least one geometry column.
+     *
+     * @param  table    the table for which to compute an estimation of the envelope.
+     * @param  columns  all columns in the table. Implementation should ignore non-geometry columns.
+     *                  This is a reference to an internal array; <strong>do not modify</strong>.
+     * @return an estimation of the spatiotemporal resource extent, or {@code null} if none.
+     * @throws SQLException if an error occurred while fetching the envelope.
+     */
+    protected Envelope getEstimatedExtent(TableReference table, Column[] columns) throws SQLException {
+        return null;
     }
 
     /**
