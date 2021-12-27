@@ -573,6 +573,28 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
+     * Notifies this image that tiles will be computed soon in the given region.
+     * This method is invoked by {@link ImageProcessor#prefetch(RenderedImage, Rectangle)}
+     * before to request (potentially in multi-threads) all tiles in the area of interest.
+     * If the returned {@code Disposable} is non-null, {@code ImageProcessor} guarantees
+     * that the {@link Disposable#dispose()} method will be invoked after the prefetch
+     * operation completed, successfully or not.
+     *
+     * <p>The default implementation does nothing. Subclasses can override this method
+     * if they need to allocate and release resources once for a group of tiles.</p>
+     *
+     * @param  tiles  indices of the tiles which will be prefetched.
+     * @return handler on which to invoke {@code dispose()} after the prefetch operation
+     *         completed (successfully or not), or {@code null} if none.
+     *
+     * @since 1.2
+     */
+    @Override
+    protected Disposable prefetch(Rectangle tiles) {
+        return null;
+    }
+
+    /**
      * Returns whether any tile is under computation or is checked out for writing.
      * There is two reasons why this method may return {@code true}:
      *

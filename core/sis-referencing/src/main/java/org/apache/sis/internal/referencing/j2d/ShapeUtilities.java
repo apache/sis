@@ -35,7 +35,7 @@ import static java.lang.Double.isInfinite;
  * Static methods operating on shapes from the {@link java.awt.geom} package.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -408,7 +408,7 @@ public final class ShapeUtilities extends Static {
                     final int code = it.currentSegment(buffer);
                     it.next();
                     if (it.isDone()) {
-                        if (isFloat(path)) {
+                        if (AbstractShape.isFloat(path)) {
                             switch (code) {
                                 case PathIterator.SEG_LINETO:  return new       Line2D.Float((float) x1, (float) y1, (float) buffer[0], (float) buffer[1]);
                                 case PathIterator.SEG_QUADTO:  return new  QuadCurve2D.Float((float) x1, (float) y1, (float) buffer[0], (float) buffer[1], (float) buffer[2], (float) buffer[3]);
@@ -426,17 +426,5 @@ public final class ShapeUtilities extends Static {
             }
         }
         return path;
-    }
-
-    /**
-     * Returns {@code true} if the given shape is presumed backed by primitive {@code float} values.
-     * The given object should be an instance of {@link Shape} or {@link Point2D}.
-     * This method use heuristic rules based on class name used in Java2D library.
-     *
-     * @param  path  the shape for which to determine the backing primitive type.
-     * @return {@code true} if the given shape is presumed backed by {@code float} type.
-     */
-    public static boolean isFloat(final Object path) {
-        return path.getClass().getSimpleName().equals("Float");
     }
 }

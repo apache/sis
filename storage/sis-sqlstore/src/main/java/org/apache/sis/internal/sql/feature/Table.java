@@ -25,6 +25,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
@@ -124,6 +125,11 @@ final class Table extends AbstractFeatureSet {
     final boolean hasGeometry;
 
     /**
+     * {@code true} if this table contains at least one raster column.
+     */
+    final boolean hasRaster;
+
+    /**
      * Map from attribute name to columns. This is built from {@link #columns} array when first needed.
      *
      * @see #getColumn(String)
@@ -150,6 +156,14 @@ final class Table extends AbstractFeatureSet {
     private WeakValueHashMap<?,Object> instanceForPrimaryKeys;
 
     /**
+     * {@code true} if {@link #getEnvelope()} has been invoked at least once on this table.
+     * This is used for performing only once operations such as PosthreSQL {@code ANALYZE}.
+     *
+     * @see #getEnvelope()
+     */
+    private boolean isEnvelopeAnalyzed;
+
+    /**
      * Creates a description of the table analyzed by the given object.
      *
      * @param  database  information about the database (syntax for building SQL statements, …).
@@ -168,6 +182,7 @@ final class Table extends AbstractFeatureSet {
         primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes(…)`.
         featureType   = analyzer.buildFeatureType();
         hasGeometry   = analyzer.hasGeometry;
+        hasRaster     = analyzer.hasRaster;
     }
 
     /**
@@ -190,6 +205,7 @@ final class Table extends AbstractFeatureSet {
         exportedKeys = parent.exportedKeys;
         featureType  = parent.featureType;
         hasGeometry  = parent.hasGeometry;
+        hasRaster    = parent.hasRaster;
     }
 
     /**
@@ -301,6 +317,41 @@ final class Table extends AbstractFeatureSet {
     @Override
     public final DefaultFeatureType getType() {
         return featureType;
+    }
+
+    /**
+     * Returns an estimation of the envelope of all geometry columns in this table.
+     * The returned envelope shall contain at least the two-dimensional spatial components.
+     * Whether other dimensions (vertical and temporal) and present or not depends on the implementation.
+     *
+     * <h2>Departure from interface contract</h2>
+     * {@link org.apache.sis.storage.DataSet#getEnvelope()} contract allows estimated envelope to be larger than
+     * actual envelope (similar to Java2D {@link java.awt.Shape#getBounds()} contract), but smaller envelope are
+     * discouraged. Despite that, this method may return smaller envelopes because the computation is done using
+     * a subset of all data.
+     *
+     * <h2>Limitations</h2>
+     * The exact behavior is database-dependent.
+     * For example PostGIS implementation assumes that all geometries in the same column are in the same CRS.
+     * If geometries in different <em>rows</em> use different CRS, coordinate transformations are <em>not</em>
+     * applied and the result is likely to be invalid. However if different <em>column</em> use different CRS,
+     * coordinate transformations between columns is applied and the result is in the CRS of the first column
+     * having at least one geometry.
+     *
+     * @return an estimation of the spatiotemporal resource extent.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        if (hasGeometry) try {
+            final boolean recall = isEnvelopeAnalyzed;
+            isEnvelopeAnalyzed = true;
+            return Optional.ofNullable(database.getEstimatedExtent(name, attributes, recall));
+        } catch (SQLException e) {
+            throw new DataStoreException(e);
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**

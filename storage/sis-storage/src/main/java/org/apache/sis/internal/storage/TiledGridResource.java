@@ -435,6 +435,21 @@ public abstract class TiledGridResource extends AbstractGridResource {
         public boolean isXContiguous() {
             return includedBands == null && subsampling[X_DIMENSION] == 1;
         }
+
+        /**
+         * Whether the reading of tiles is deferred to {@link RenderedImage#getTile(int, int)} time.
+         */
+        final boolean deferredTileReading() {
+            if (loadingStrategy != RasterLoadingStrategy.AT_GET_TILE_TIME) {
+                return false;
+            }
+            for (int i = subsampling.length; --i >= 0;) {
+                if (subsampling[i] >= tileSize[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     /**
@@ -449,7 +464,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
     protected final GridCoverage preload(final GridCoverage coverage) throws DataStoreException {
         assert Thread.holdsLock(getSynchronizationLock());
         // Note: `loadingStrategy` may still be null if unitialized.
-        if (loadingStrategy != RasterLoadingStrategy.AT_RENDER_TIME) {
+        if (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME) {
             /*
              * In theory the following condition is redundant with `supportImmediateLoading()`.
              * We apply it anyway in case the coverage geometry is not what was announced.
@@ -484,6 +499,8 @@ public abstract class TiledGridResource extends AbstractGridResource {
 
     /**
      * Whether this resource supports immediate loading of raster data.
+     * Current implementation does not support immediate loading if the data cube has more than 2 dimensions.
+     * Non-immediate loading allows users to specify two-dimensional slices.
      */
     private boolean supportImmediateLoading() {
         return getTileSize().length == TiledGridCoverage.BIDIMENSIONAL;
@@ -516,7 +533,9 @@ public abstract class TiledGridResource extends AbstractGridResource {
     @Override
     public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (strategy != null) {
+            if (strategy == RasterLoadingStrategy.AT_GET_TILE_TIME) {
+                loadingStrategy = strategy;
+            } else if (strategy != null) {
                 setLoadingStrategy(strategy == RasterLoadingStrategy.AT_READ_TIME && supportImmediateLoading());
             }
             return super.setLoadingStrategy(strategy);

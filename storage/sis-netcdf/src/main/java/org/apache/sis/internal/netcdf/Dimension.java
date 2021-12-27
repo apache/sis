@@ -45,8 +45,9 @@ public abstract class Dimension extends NamedElement {
 
     /**
      * Returns the name of this netCDF dimension.
+     * Note that dimensions in HDF5 files may be unnamed.
      *
-     * @return the name of this netCDF dimension.
+     * @return the name of this netCDF dimension, or {@code null} if unnamed.
      */
     @Override
     public abstract String getName();

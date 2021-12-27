@@ -311,8 +311,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             setFormatInfo(builder);
             int n = 0;
             try {
-                ImageFileDirectory dir;
-                while ((dir = reader.getImageFileDirectory(n++)) != null) {
+                GridCoverageResource dir;
+                while ((dir = reader.getImage(n++)) != null) {
                     builder.addFromComponent(dir.getMetadata());
                 }
             } catch (IOException e) {
@@ -369,9 +369,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the exception to throw when an I/O error occurred.
+     * Returns the exception to throw when an I/O or other kind of error occurred.
+     * This method wraps the exception with a {@literal "Can not read <filename>"} message.
      */
-    private DataStoreException errorIO(final IOException e) {
+    final DataStoreException errorIO(final Exception e) {
         return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
     }
 
@@ -446,7 +447,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         /** Returns element at the given index or returns {@code null} if the index is invalid. */
         private GridCoverageResource getImageFileDirectory(final int index) {
             try {
-                return reader().getImageFileDirectory(index);
+                return reader().getImage(index);
             } catch (IOException e) {
                 throw new BackingStoreException(errorIO(e));
             } catch (DataStoreException e) {
@@ -474,7 +475,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             cause = e;
         }
         if (index > 0) try {
-            ImageFileDirectory image = reader().getImageFileDirectory(index - 1);
+            GridCoverageResource image = reader().getImage(index - 1);
             if (image != null) return image;
         } catch (IOException e) {
             throw errorIO(e);

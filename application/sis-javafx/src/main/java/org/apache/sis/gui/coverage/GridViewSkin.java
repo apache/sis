@@ -108,7 +108,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     double headerWidth, cellWidth;
 
     /**
-     * Width of the region where to write the text in a cell. Should be equals or slightly smaller
+     * Width of the region where to write the text in a cell. Should be equal or slightly smaller
      * than {@link #cellWidth}. We use a smaller width for leaving a small margin between cells.
      *
      * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.

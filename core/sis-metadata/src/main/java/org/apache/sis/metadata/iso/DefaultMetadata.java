@@ -1027,7 +1027,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Sets the date(s) associated with the metadata.
-     * The collection should contains at least an element for {@link DateType#CREATION}.
+     * The collection should contain at least an element for {@link DateType#CREATION}.
      *
      * @param  newValues  new dates associated with the metadata.
      *

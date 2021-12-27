@@ -104,7 +104,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * in this class perform the following checks:
  *
  * <ul>
- *   <li>The number of CRS dimensions must be equals to <code>this.{@linkplain #getDimension()}</code>.</li>
+ *   <li>The number of CRS dimensions must be equal to <code>this.{@linkplain #getDimension()}</code>.</li>
  *   <li>For each dimension <var>i</var>,
  *       <code>{@linkplain #getLower(int) getLower}(i) &gt; {@linkplain #getUpper(int) getUpper}(i)</code> is allowed
  *       only if the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() coordinate

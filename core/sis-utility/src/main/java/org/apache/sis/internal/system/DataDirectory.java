@@ -59,7 +59,7 @@ public enum DataDirectory {
     /**
      * The {@code "Schemas"} directory.
      * This directory contains XML schemas published by ISO. If this directory is present,
-     * it should contains a {@code "iso/19115/-3"} sub-directory among others.
+     * it should contain a {@code "iso/19115/-3"} sub-directory among others.
      *
      * @see <a href="https://standards.iso.org/iso/19115/-3/">ISO schemas for metadata</a>
      */

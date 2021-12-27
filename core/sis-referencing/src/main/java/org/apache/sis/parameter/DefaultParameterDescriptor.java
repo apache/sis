@@ -166,7 +166,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * <ul>
      *   <li>The range shall be non-{@linkplain Range#isEmpty() empty}.</li>
-     *   <li><code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code> shall be equals
+     *   <li><code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code> shall be equal
      *       to one of the following:
      *     <ul>
      *       <li>to {@code valueClass} if the later is not an array,</li>

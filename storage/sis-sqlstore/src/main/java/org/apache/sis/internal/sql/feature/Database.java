@@ -17,9 +17,12 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Set;
+import java.util.Map;
 import java.util.List;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.WeakHashMap;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.logging.LogRecord;
@@ -31,11 +34,13 @@ import java.sql.SQLException;
 import java.sql.Types;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.metadata.sql.Syntax;
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
@@ -74,7 +79,7 @@ import org.apache.sis.util.Debug;
  * <ul>
  *   <li>{@link #getMapping(Column)}                for adding column types to recognize.</li>
  *   <li>{@link #createInfoStatements(Connection)}  for more info about spatial information.</li>
- *   <li>{@link #addIgnoredTables(Set)}             for specifying more tables to ignore.</li>
+ *   <li>{@link #addIgnoredTables(Map)}             for specifying more tables to ignore.</li>
  * </ul>
  *
  * <h2>Multi-threading</h2>
@@ -90,7 +95,7 @@ import org.apache.sis.util.Debug;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -134,13 +139,30 @@ public class Database<G> extends Syntax  {
     private Table[] tables;
 
     /**
+     * Whether the database contains "GEOMETRY_COLUMNS" and/or "SPATIAL_REF_SYS" tables.
+     * May also be set to {@code true} if some database-specific tables are found such as
+     * {@code "geography_columns"} and {@code "raster_columns"} in PostGIS.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
+     *
+     * @see #isSpatial()
+     */
+    private boolean isSpatial;
+
+    /**
      * {@code true} if this database contains at least one geometry column.
-     * This field is initialized by {@link #analyze(SQLStore, Connection, ResourceDefinition...)}
-     * and shall not be modified after that point.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      *
      * @see #hasGeometry()
      */
     private boolean hasGeometry;
+
+    /**
+     * {@code true} if this database contains at least one raster column.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
+     *
+     * @see #hasRaster()
+     */
+    private boolean hasRaster;
 
     /**
      * Catalog and schema of the {@value InfoStatements#GEOMETRY_COLUMNS} and
@@ -168,7 +190,7 @@ public class Database<G> extends Syntax  {
      *
      * @see #log(LogRecord)
      */
-    final StoreListeners listeners;
+    public final StoreListeners listeners;
 
     /**
      * Cache of Coordinate Reference Systems created for a given SRID.
@@ -179,6 +201,13 @@ public class Database<G> extends Syntax  {
      * For that reason, a distinct cache exists for each database.</p>
      */
     final Cache<Integer, CoordinateReferenceSystem> cacheOfCRS;
+
+    /**
+     * Cache of SRID for a given Coordinate Reference System.
+     * This is the converse of {@link #cacheOfCRS}.
+     * Accesses to this map must be synchronized on the map itself.
+     */
+    final WeakHashMap<CoordinateReferenceSystem, Integer> cacheOfSRID;
 
     /**
      * Creates a new handler for a spatial database.
@@ -213,6 +242,7 @@ public class Database<G> extends Syntax  {
         this.geomLibrary   = geomLibrary;
         this.listeners     = listeners;
         this.cacheOfCRS    = new Cache<>(7, 2, false);
+        this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
         supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
@@ -294,23 +324,23 @@ public class Database<G> extends Syntax  {
             tableCRS  = tableCRS .toLowerCase(Locale.US).intern();
             tableGeom = tableGeom.toLowerCase(Locale.US).intern();
         }
-        final Set<String> ignoredTables = new HashSet<>(8);
-        ignoredTables.add(tableCRS);
-        ignoredTables.add(tableGeom);
+        final Map<String,Boolean> ignoredTables = new HashMap<>(8);
+        ignoredTables.put(tableCRS,  Boolean.TRUE);
+        ignoredTables.put(tableGeom, Boolean.TRUE);
         addIgnoredTables(ignoredTables);
-        final boolean isSpatial = hasTable(metadata, tableTypes, ignoredTables);
+        isSpatial = hasTable(metadata, tableTypes, ignoredTables);
         /*
          * Collect the names of all tables specified by user, ignoring the tables
          * used for database internal working (for example by PostGIS).
          */
-        final Analyzer analyzer = new Analyzer(this, connection, metadata, isSpatial, customizer);
+        final Analyzer analyzer = new Analyzer(this, connection, metadata, customizer);
         final Set<TableReference> declared = new LinkedHashSet<>();
         for (final GenericName tableName : tableNames) {
             final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
                     final String table = analyzer.getUniqueString(reflect, Reflection.TABLE_NAME);
-                    if (ignoredTables.contains(table)) {
+                    if (ignoredTables.containsKey(table)) {
                         continue;
                     }
                     declared.add(new TableReference(
@@ -346,19 +376,23 @@ public class Database<G> extends Syntax  {
         for (final Table table : analyzer.finish()) {
             tablesByNames.add(store, table.featureType.getName(), table);
             hasGeometry |= table.hasGeometry;
+            hasRaster   |= table.hasRaster;
         }
         tables = tableList.toArray(new Table[tableList.size()]);
     }
 
     /**
-     * Returns the "TABLE" and "VIEW" keywords for table type, with unsupported keywords omitted.
+     * Returns the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
      */
     private static String[] getTableTypes(final DatabaseMetaData metadata) throws SQLException {
         final Set<String> types = new HashSet<>(4);
         try (ResultSet reflect = metadata.getTableTypes()) {
             while (reflect.next()) {
+               /*
+                 * Derby, HSQLDB and PostgreSQL uses the "TABLE" type, but H2 uses "BASE TABLE".
+                 */
                 final String type = reflect.getString(Reflection.TABLE_TYPE);
-                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type)) {
+                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type) || "BASE TABLE".equalsIgnoreCase(type)) {
                     types.add(type);
                 }
             }
@@ -367,8 +401,8 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns {@code true} if the database contains all specified tables. This method updates
-     * {@link #schemaOfSpatialTables} and {@link #catalogOfSpatialTables} for the tables found.
+     * Returns {@code true} if the database contains at least one specified tables associated to {@code Boolean.TRUE}.
+     * This method updates {@link #schemaOfSpatialTables} and {@link #catalogOfSpatialTables} for the tables found.
      * If many occurrences of the same table are found, this method searches for a common pair
      * of catalog and schema names. All tables should be in the same (catalog, schema) pair.
      * If this is not the case, no (catalog,schema) will be used and the search for the tables
@@ -379,23 +413,26 @@ public class Database<G> extends Syntax  {
      * @param  tables      name of the table to search.
      * @return whether the given table has been found.
      */
-    private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Set<String> tables)
+    private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Map<String,Boolean> tables)
             throws SQLException
     {
         // `SimpleImmutableEntry` used as a way to store a (catalog,schema) pair of strings.
         final FrequencySortedSet<SimpleImmutableEntry<String,String>> schemas = new FrequencySortedSet<>(true);
         int count = 0;
-        for (final String name : tables) {
-            boolean found = false;
-            try (ResultSet reflect = metadata.getTables(null, null, name, tableTypes)) {
-                while (reflect.next()) {
-                    found = true;
-                    schemas.add(new SimpleImmutableEntry<>(
-                            reflect.getString(Reflection.TABLE_CAT),
-                            reflect.getString(Reflection.TABLE_SCHEM)));
+        for (final Map.Entry<String,Boolean> entry : tables.entrySet()) {
+            if (entry.getValue()) {
+                String name = entry.getKey();
+                boolean found = false;
+                try (ResultSet reflect = metadata.getTables(null, null, name, tableTypes)) {
+                    while (reflect.next()) {
+                        found = true;
+                        schemas.add(new SimpleImmutableEntry<>(
+                                reflect.getString(Reflection.TABLE_CAT),
+                                reflect.getString(Reflection.TABLE_SCHEM)));
+                    }
                 }
+                if (found) count++;
             }
-            if (found) count++;
         }
         if (count == 0) {
             return false;
@@ -446,12 +483,53 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Appends a call to a function defined in the spatial schema.
+     * The function name will be prefixed by catalog and schema name if applicable.
+     * The function will not be quoted.
+     *
+     * @param  sql       the SQL builder where to add the spatial function name.
+     * @param  function  the function to append.
+     */
+    public final void appendFunctionCall(final SQLBuilder sql, final String function) {
+        final String schema = schemaOfSpatialTables;
+        if (schema != null && !schema.isEmpty()) {
+            final String catalog = catalogOfSpatialTables;
+            if (catalog != null && !catalog.isEmpty()) {
+                sql.appendIdentifier(catalog).append('.');
+            }
+            sql.appendIdentifier(schema).append('.');
+        }
+        sql.append(function);
+    }
+
+    /**
+     * Returns {@code true} if this database is a spatial database.
+     * Tables such as "SPATIAL_REF_SYS" are used as sentinel values.
+     *
+     * @return whether this database is a spatial database.
+     */
+    public final boolean isSpatial() {
+        return isSpatial;
+    }
+
+    /**
      * Returns {@code true} if this database contains at least one geometry column.
+     * This information can be used for metadata purpose.
      *
      * @return whether at least one geometry column has been found.
      */
     public final boolean hasGeometry() {
         return hasGeometry;
+    }
+
+    /**
+     * Returns {@code true} if this database contains at least one raster column.
+     * This information can be used for metadata purpose.
+     *
+     * @return whether at least one raster column has been found.
+     */
+    public final boolean hasRaster() {
+        return hasRaster;
     }
 
     /**
@@ -492,14 +570,49 @@ public class Database<G> extends Syntax  {
             case Types.TIMESTAMP:                 return ValueGetter.AsInstant.INSTANCE;
             case Types.TIME_WITH_TIMEZONE:        return ValueGetter.AsOffsetTime.INSTANCE;
             case Types.TIMESTAMP_WITH_TIMEZONE:   return ValueGetter.AsOffsetDateTime.INSTANCE;
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:             return ValueGetter.AsBytes.INSTANCE;
+            case Types.BLOB:                      return ValueGetter.AsBytes.INSTANCE;
             case Types.ARRAY:                     // TODO
             case Types.OTHER:
             case Types.JAVA_OBJECT:               return ValueGetter.AsObject.INSTANCE;
-            default:                              return null;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY: {
+                final BinaryEncoding encoding = getBinaryEncoding(columnDefinition);
+                switch (encoding) {
+                    case RAW:         return ValueGetter.AsBytes.INSTANCE;
+                    case HEXADECIMAL: return ValueGetter.AsBytes.HEXADECIMAL;
+                    default: throw new AssertionError(encoding);
+                }
+            }
+            default: return null;
         }
+    }
+
+    /**
+     * Returns an identifier of the way binary data are encoded by the JDBC driver.
+     *
+     * @param  columnDefinition  information about the column to extract binary values from.
+     * @return how the binary data are returned by the JDBC driver.
+     */
+    protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
+        return BinaryEncoding.RAW;
+    }
+
+    /**
+     * Computes an estimation of the envelope of all geometry columns in the given table.
+     * The returned envelope shall contain at least the two-dimensional spatial components.
+     * Whether other dimensions (vertical and temporal) and present or not depends on the implementation.
+     * This method is invoked only if the {@code columns} array contains at least one geometry column.
+     *
+     * @param  table    the table for which to compute an estimation of the envelope.
+     * @param  columns  all columns in the table. Implementation should ignore non-geometry columns.
+     *                  This is a reference to an internal array; <strong>do not modify</strong>.
+     * @param  recall   if it is at least the second time that this method is invoked for the specified table.
+     * @return an estimation of the spatiotemporal resource extent, or {@code null} if none.
+     * @throws SQLException if an error occurred while fetching the envelope.
+     */
+    protected Envelope getEstimatedExtent(TableReference table, Column[] columns, boolean recall) throws SQLException {
+        return null;
     }
 
     /**
@@ -512,12 +625,7 @@ public class Database<G> extends Syntax  {
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
         final GeometryType type = columnDefinition.getGeometryType();
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
-        /*
-         * TODO: verify if the condition below works. We should have `hexadecimal = true` on PostGIS.
-         */
-        final boolean hexadecimal = (columnDefinition.type != Types.BLOB);
-        return new EWKBReader<>(geomLibrary, geometryClass, columnDefinition.getGeometryCRS(), hexadecimal);
-        // TODO: need to invoke EWKBReader.setSridResolver(statements(…)) somewhere.
+        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS(), getBinaryEncoding(columnDefinition));
     }
 
     /**
@@ -532,13 +640,16 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Adds to the given set a list of tables to ignore when searching for feature tables.
-     * The given set already contains the {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}
+     * Adds to the given map a list of tables to ignore when searching for feature tables.
+     * The given map already contains the {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}
      * entries when this method is invoked. The default implementation adds nothing.
+     *
+     * <p>Values tells whether the table can be used as a sentinel value for determining
+     * that this database {@linkplain #isSpatial is a spatial database}.</p>
      *
      * @param  ignoredTables  where to add names of tables to ignore.
      */
-    protected void addIgnoredTables(final Set<String> ignoredTables) {
+    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
     }
 
     /**

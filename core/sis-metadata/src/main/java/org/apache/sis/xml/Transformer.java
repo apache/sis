@@ -142,7 +142,7 @@ abstract class Transformer {
     /**
      * List of encountered XML tags, used for backtracking. Elements are removed from this list when they are closed.
      * Names should be the ones we get after conversion from namespaces used in XML document to namespaces used in
-     * JAXB annotations. For example given the following XML, this list should contains {@code cit:CI_Citation},
+     * JAXB annotations. For example given the following XML, this list should contain {@code cit:CI_Citation},
      * {@code cit:date} and {@code cit:CI_Date} (in that order) when the (un)marshalling reaches the "…" location.
      *
      * {@preformat xml

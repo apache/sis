@@ -582,11 +582,11 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             for (int j=0; j<numSubRow; j++) {
                 elements[(j + firstAffectedCoordinate) * numCol + numColOut] = subMatrix.getNumber(j, numSubCol);
             }
-            // Copy the last row as a safety, but it should contains only 0.
+            // Copy the last row as a safety, but it should contain only 0.
             for (int i=0; i<numSubCol; i++) {
                 elements[numRowOut * numCol + (i + firstAffectedCoordinate)] = subMatrix.getNumber(numSubRow, i);
             }
-            // Copy the lower right corner, which should contains only 1.
+            // Copy the lower right corner, which should contain only 1.
             elements[numRowOut * numCol + numColOut] = subMatrix.getNumber(numSubRow, numSubCol);
         }
         return Matrices.create(numRow, numCol, elements);

@@ -92,7 +92,11 @@ import org.apache.sis.util.Debug;
  *
  * @since 0.3
  * @module
+ *
+ * @deprecated Will be removed since there is now other mechanisms for redirecting logging.
+ *             See <a href="https://issues.apache.org/jira/browse/SIS-531">SIS-531</a>.
  */
+@Deprecated
 public abstract class LoggerAdapter extends Logger {
     /**
      * The pattern to use for detecting {@link MessageFormat}.

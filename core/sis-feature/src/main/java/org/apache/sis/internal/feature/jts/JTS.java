@@ -17,6 +17,7 @@
 package org.apache.sis.internal.feature.jts;
 
 import java.util.Map;
+import java.awt.Shape;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -29,12 +30,14 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 
 /**
@@ -47,7 +50,7 @@ import org.locationtech.jts.geom.Geometry;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -205,7 +208,10 @@ public final class JTS extends Static {
         DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
         try {
             final Envelope e = areaOfInterest.getEnvelopeInternal();
-            bbox.setBounds(new Envelope2D(sourceCRS, e.getMinX(), e.getMinY(), e.getWidth(), e.getHeight()));
+            final GeneralEnvelope env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
+            env.setRange(0, e.getMinX(), e.getMaxX());
+            env.setRange(1, e.getMinY(), e.getMaxY());
+            bbox.setBounds(env);
         } catch (TransformException ex) {
             bbox = null;
             Logging.ignorableException(Logging.getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
@@ -279,7 +285,7 @@ public final class JTS extends Static {
     }
 
     /**
-     * Transform the given geometry using the given math transform.
+     * Transforms the given geometry using the given math transform.
      * If the geometry or the transform is null or identity, then the geometry is returned unchanged.
      *
      * @param  geometry   the geometry to transform, or {@code null}.
@@ -293,5 +299,31 @@ public final class JTS extends Static {
             geometry = gct.transform(geometry);
         }
         return geometry;
+    }
+
+    /**
+     * Returns a view of the given JTS geometry as a Java2D shape.
+     *
+     * @param  geometry  the geometry to view as a shape, not {@code null}.
+     * @return the Java2D shape view.
+     */
+    public static Shape asShape(final Geometry geometry) {
+        ArgumentChecks.ensureNonNull("geometry", geometry);
+        return new ShapeAdapter(geometry);
+    }
+
+    /**
+     * Converts a Java2D shape to a JTS geometry. If the given shape is a view created by {@link #asShape(Geometry)},
+     * then the original geometry is returned. Otherwise a new geometry is created with a copy (not a view) of the
+     * shape coordinates.
+     *
+     * @param  factory   factory to use for creating the geometry, or {@code null} for the default.
+     * @param  shape     the Java2D shape to convert. Can not be {@code null}.
+     * @param  flatness  the maximum distance that line segments are allowed to deviate from curves.
+     * @return JTS geometry with shape coordinates. Never null but can be empty.
+     */
+    public static Geometry fromAWT(final GeometryFactory factory, final Shape shape, final double flatness) {
+        ArgumentChecks.ensureNonNull("shape", shape);
+        return ShapeConverter.create(factory, shape, flatness);
     }
 }

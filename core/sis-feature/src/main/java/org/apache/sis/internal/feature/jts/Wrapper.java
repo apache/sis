@@ -46,6 +46,7 @@ import org.apache.sis.util.Debug;
 
 // Optional dependencies
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -72,7 +73,7 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -150,12 +151,45 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      */
     @Override
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        final int dimension = ReferencingUtilities.getDimension(crs);
-        if (dimension != Factory.BIDIMENSIONAL) {
-            ArgumentChecks.ensureDimensionMatches("crs",
-                    (dimension <= Factory.BIDIMENSIONAL) ? Factory.BIDIMENSIONAL : 3, crs);
-        }
+        ArgumentChecks.ensureDimensionMatches("crs", getCoordinatesDimension(geometry), crs);
         JTS.setCoordinateReferenceSystem(geometry, crs);
+    }
+
+    /**
+     * Gets the number of dimensions of geometry vertex (sequence of coordinate points), which can be 2 or 3.
+     * Note that this is different than the {@linkplain Geometry#getDimension() geometry topological dimension},
+     * which can be 0, 1 or 2.
+     *
+     * @param  geometry  the geometry for which to get <em>vertex</em> (not topological) dimension.
+     * @return vertex dimension of the given geometry.
+     * @throws IllegalArgumentException if the type of the given geometry is not recognized.
+     */
+    private static int getCoordinatesDimension(final Geometry geometry) {
+        final CoordinateSequence cs;
+        if (geometry instanceof Point) {
+            // Most efficient method (no allocation) in JTS 1.18.
+            cs = ((Point) geometry).getCoordinateSequence();
+        } else if (geometry instanceof LineString) {
+            // Most efficient method (no allocation) in JTS 1.18.
+            cs = ((LineString) geometry).getCoordinateSequence();
+        } else if (geometry instanceof Polygon) {
+            return getCoordinatesDimension(((Polygon) geometry).getExteriorRing());
+        } else if (geometry instanceof GeometryCollection) {
+            final GeometryCollection gc = (GeometryCollection) geometry;
+            final int n = gc.getNumGeometries();
+            if (n == 0) {
+                return Factory.TRIDIMENSIONAL;      // Undefined coordinates, JTS assumes 3 for empty geometries.
+            }
+            for (int i=0; i<n; i++) {
+                // If at least one geometry is 3D, consider the whole geometry as 3D.
+                final int d = getCoordinatesDimension(gc.getGeometryN(i));
+                if (d > Factory.BIDIMENSIONAL) return d;
+            }
+            return Factory.BIDIMENSIONAL;
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, geometry.getGeometryType()));
+        }
+        return cs.getDimension();
     }
 
     /**
@@ -251,14 +285,17 @@ final class Wrapper extends GeometryWrapper<Geometry> {
     protected Geometry mergePolylines(final Iterator<?> polylines) {
         final List<Coordinate> coordinates = new ArrayList<>();
         final List<Geometry> lines = new ArrayList<>();
+        boolean isFloat = true;
 add:    for (Geometry next = geometry;;) {
             if (next instanceof Point) {
                 final Coordinate pt = ((Point) next).getCoordinate();
                 if (!Double.isNaN(pt.x) && !Double.isNaN(pt.y)) {
+                    isFloat = Factory.isFloat(isFloat, (Point) next);
                     coordinates.add(pt);
                 } else {
-                    Factory.INSTANCE.toLineString(coordinates, lines, false);
+                    Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
                     coordinates.clear();
+                    isFloat = true;
                 }
             } else {
                 final int n = next.getNumGeometries();
@@ -267,21 +304,23 @@ add:    for (Geometry next = geometry;;) {
                     if (coordinates.isEmpty()) {
                         lines.add(ls);
                     } else {
+                        if (isFloat) isFloat = Factory.isFloat(ls.getCoordinateSequence());
                         coordinates.addAll(Arrays.asList(ls.getCoordinates()));
-                        Factory.INSTANCE.toLineString(coordinates, lines, false);
+                        Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
                         coordinates.clear();
+                        isFloat = true;
                     }
                 }
             }
             /*
-             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * `polylines.hasNext()` check is conceptually part of `for` instruction,
              * except that we need to skip this condition during the first iteration.
              */
             do if (!polylines.hasNext()) break add;
             while ((next = (Geometry) polylines.next()) == null);
         }
-        Factory.INSTANCE.toLineString(coordinates, lines, false);
-        return Factory.INSTANCE.toGeometry(lines, false);
+        Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
+        return Factory.INSTANCE.toGeometry(lines, false, isFloat);
     }
 
     /**

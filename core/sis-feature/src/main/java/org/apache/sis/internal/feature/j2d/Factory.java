@@ -29,6 +29,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.math.Vector;
@@ -243,7 +244,7 @@ public final class Factory extends Geometries<Shape> {
         }
         boolean isFloat = true;
         for (final Shape geometry : shapes) {
-            if (!ShapeUtilities.isFloat(geometry)) {
+            if (!AbstractShape.isFloat(geometry)) {
                 isFloat = false;
                 break;
             }
@@ -286,7 +287,7 @@ public final class Factory extends Geometries<Shape> {
         if (geometry == null) {
             boolean isFloat = true;
             for (final Object component : data) {
-                isFloat = ShapeUtilities.isFloat(component);
+                isFloat = AbstractShape.isFloat(component);
                 if (!isFloat) break;
             }
             final Path2D path = createPath(isFloat, 20);

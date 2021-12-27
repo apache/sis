@@ -282,7 +282,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * <p>This method will be removed after we removed the deprecated public methods.</p>
      *
-     * @param  phones  the collection which should contains this telephone number.
+     * @param  phones  the collection which should contain this telephone number.
      * @return {@code this}, or a copy of this instance if we conservatively choose to not modify this instance.
      */
     final DefaultTelephone setOwner(final Collection<Telephone> phones) {

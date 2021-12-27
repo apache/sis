@@ -36,6 +36,7 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.WriteSupport;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
@@ -61,7 +62,7 @@ import org.apache.sis.measure.NumberRange;
  * In such case, writing converted values will cause the corresponding source values to be updated too.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -339,6 +340,23 @@ class BandedSampleConverter extends ComputedImage {
         }
         Transferer.create(getSource(), target).compute(converters);
         return target;
+    }
+
+    /**
+     * Notifies the source image that tiles will be computed soon in the given region.
+     * If the source image is an instance of {@link PlanarImage}, then this method
+     * forwards the notification to it. Otherwise default implementation does nothing.
+     */
+    @Override
+    protected Disposable prefetch(final Rectangle tiles) {
+        final RenderedImage source = getSource();
+        if (source instanceof PlanarImage) {
+            final Rectangle pixels = ImageUtilities.tilesToPixels(this, tiles);
+            ImageUtilities.clipBounds(source, pixels);
+            return ((PlanarImage) source).prefetch(ImageUtilities.pixelsToTiles(source, pixels));
+        } else {
+            return super.prefetch(tiles);
+        }
     }
 
     /**

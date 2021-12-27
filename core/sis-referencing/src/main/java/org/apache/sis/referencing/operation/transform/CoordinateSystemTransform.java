@@ -151,7 +151,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
 
     /**
      * Returns the number of dimensions in the source coordinate points.
-     * Shall be equals to {@code getSourceCS().getDimension()}.
+     * Shall be equal to {@code getSourceCS().getDimension()}.
      */
     @Override
     public final int getSourceDimensions() {
@@ -160,7 +160,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
 
     /**
      * Returns the number of dimensions in the target coordinate points.
-     * Shall be equals to {@code getTargetCS().getDimension()}.
+     * Shall be equal to {@code getTargetCS().getDimension()}.
      */
     @Override
     public final int getTargetDimensions() {

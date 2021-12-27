@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.ParseException;
 import org.opengis.util.NameFactory;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
@@ -81,6 +82,12 @@ final class Reader extends GeoTIFF {
     final byte intSizeExpansion;
 
     /**
+     * The last <cite>Image File Directory</cite> (IFD) read, or {@code null} if none.
+     * This is used when we detected the end of a pyramid and the beginning of next one.
+     */
+    private ImageFileDirectory lastIFD;
+
+    /**
      * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD)
      * to read, or 0 if we have finished to read all of them.
      *
@@ -98,10 +105,12 @@ final class Reader extends GeoTIFF {
     private final Set<Long> doneIFD;
 
     /**
-     * Positions of each <cite>Image File Directory</cite> (IFD) in this file.
-     * Those positions are fetched when first needed.
+     * Information about each (potentially pyramided) image in this file.
+     * Those objects are created when first needed.
+     *
+     * @see #getImage(int)
      */
-    private final List<ImageFileDirectory> imageFileDirectories = new ArrayList<>();
+    private final List<GridCoverageResource> images = new ArrayList<>();
 
     /**
      * Entries having a value that can not be read immediately, but instead have a pointer
@@ -229,90 +238,94 @@ final class Reader extends GeoTIFF {
     }
 
     /**
-     * Returns the <cite>Image File Directory</cite> (IFD) at the given index.
-     * If the IFD has already been read, then it is returned.
-     * Otherwise this method reads the IFD now and returns it.
+     * Returns the next <cite>Image File Directory</cite> (IFD), or {@code null} if we reached the last IFD.
+     * The IFD consists of a 2 (classical) or 8 (BigTiff)-bytes count of the number of directory entries,
+     * followed by a sequence of 12-byte field entries, followed by a pointer to the next IFD (or 0 if none).
      *
-     * <p>The IFD consists of a 2 (classical) or 8 (BigTiff)-bytes count of the number of directory entries,
-     * followed by a sequence of 12-byte field entries, followed by a pointer to the next IFD (or 0 if none).</p>
-     *
-     * @return the IFD if we found it, or {@code null} if there is no more IFD at the given index.
+     * @param  index  index of the (potentially pyramided) image, not counting reduced-resolution (overview) images.
+     * @return the IFD if we found it, or {@code null} if there is no more IFD.
      * @throws ArithmeticException if the pointer to a next IFD is too far.
+     *
+     * @see #getImage(int)
      */
-    final ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException {
-        while (index >= imageFileDirectories.size()) {
-            if (nextIFD == 0) {
-                return null;
-            }
-            resolveDeferredEntries(null, nextIFD);
-            input.seek(Math.addExact(origin, nextIFD));
-            nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
+    private ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException {
+        if (nextIFD == 0) {
+            return null;
+        }
+        resolveDeferredEntries(null, nextIFD);
+        input.seek(Math.addExact(origin, nextIFD));
+        nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
+        /*
+         * Design note: we parse the Image File Directory entry now because even if we were
+         * not interrested in that IFD, we need to go anyway after its last record in order
+         * to get the pointer to the next IFD.
+         */
+        final int offsetSize = Integer.BYTES << intSizeExpansion;
+        final ImageFileDirectory dir = new ImageFileDirectory(this, index);
+        for (long remaining = readUnsignedShort(); --remaining >= 0;) {
             /*
-             * Design note: we parse the Image File Directory entry now because even if we were
-             * not interrested in that IFD, we need to go anyway after its last record in order
-             * to get the pointer to the next IFD.
+             * Each entry in the Image File Directory has the following format:
+             *   - The tag that identifies the field (see constants in the Tags class).
+             *   - The field type (see constants inherited from the GeoTIFF class).
+             *   - The number of values of the indicated type.
+             *   - The value, or the file offset to the value elswhere in the file.
              */
-            final int offsetSize = Integer.BYTES << intSizeExpansion;
-            final ImageFileDirectory dir = new ImageFileDirectory(this, index);
-            for (long remaining = readUnsignedShort(); --remaining >= 0;) {
+            final short tag  = (short) input.readUnsignedShort();
+            final Type type  = Type.valueOf(input.readShort());        // May be null.
+            final long count = readUnsignedInt();
+            final long size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
+            if (size <= offsetSize) {
                 /*
-                 * Each entry in the Image File Directory has the following format:
-                 *   - The tag that identifies the field (see constants in the Tags class).
-                 *   - The field type (see constants inherited from the GeoTIFF class).
-                 *   - The number of values of the indicated type.
-                 *   - The value, or the file offset to the value elswhere in the file.
+                 * If the value can fit inside the number of bytes given by `offsetSize`, then the value is
+                 * stored directly at that location. This is the most common way TIFF tag values are stored.
                  */
-                final short tag  = (short) input.readUnsignedShort();
-                final Type type  = Type.valueOf(input.readShort());        // May be null.
-                final long count = readUnsignedInt();
-                final long size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
-                if (size <= offsetSize) {
-                    /*
-                     * If the value can fit inside the number of bytes given by `offsetSize`, then the value is
-                     * stored directly at that location. This is the most common way TIFF tag values are stored.
-                     */
-                    final long position = input.getStreamPosition();
-                    if (size != 0) {
-                        Object error;
-                        try {
-                            /*
-                             * A size of zero means that we have an unknown type, in which case the TIFF specification
-                             * recommends to ignore it (for allowing them to add new types in the future), or an entry
-                             * without value (count = 0) - in principle illegal but we make this reader tolerant.
-                             */
-                            error = dir.addEntry(tag, type, count);
-                        } catch (ParseException | RuntimeException e) {
-                            error = e;
-                        }
-                        if (error != null) {
-                            warning(tag, error);
-                        }
+                final long position = input.getStreamPosition();
+                if (size != 0) {
+                    Object error;
+                    try {
+                        /*
+                         * A size of zero means that we have an unknown type, in which case the TIFF specification
+                         * recommends to ignore it (for allowing them to add new types in the future), or an entry
+                         * without value (count = 0) - in principle illegal but we make this reader tolerant.
+                         */
+                        error = dir.addEntry(tag, type, count);
+                    } catch (ParseException | RuntimeException e) {
+                        error = e;
                     }
-                    input.seek(position + offsetSize);      // Usually just move the buffer position by a few bytes.
-                } else {
-                    // Offset from beginning of TIFF file where the values are stored.
-                    deferredEntries.add(new DeferredEntry(dir, tag, type, count, readUnsignedInt()));
-                    dir.hasDeferredEntries = true;
-                    deferredNeedsSort = true;
+                    if (error != null) {
+                        warning(tag, error);
+                    }
                 }
+                input.seek(position + offsetSize);      // Usually just move the buffer position by a few bytes.
+            } else {
+                // Offset from beginning of TIFF file where the values are stored.
+                deferredEntries.add(new DeferredEntry(dir, tag, type, count, readUnsignedInt()));
+                dir.hasDeferredEntries = true;
+                deferredNeedsSort = true;
             }
-            imageFileDirectories.add(dir);
-            readNextImageOffset();                          // Zero if the IFD that we just read was the last one.
         }
         /*
          * At this point we got the requested IFD. But maybe some deferred entries need to be read.
          * The values of those entries may be anywhere in the TIFF file, in any order. Given that
          * seek operations in the input stream may be costly or even not possible, we try to read
          * all values in sequential order, including values of other IFD if there is some before
-         * our IFD of interest.
+         * our IFD of interest. This is the purpose of `resolveDeferredEntries(…)`.
          */
-        final ImageFileDirectory dir = imageFileDirectories.get(index);
+        readNextImageOffset();                          // Zero if the IFD that we just read was the last one.
+        return dir;
+    }
+
+    /**
+     * Reads all entries that were deferred.
+     *
+     * @param dir  the IFD for which to resolve deferred entries regardless stream position or {@code ignoreAfter} value.
+     */
+    final void resolveDeferredEntries(final ImageFileDirectory dir) throws IOException, DataStoreException {
         if (dir.hasDeferredEntries) {
             resolveDeferredEntries(dir, Long.MAX_VALUE);
             dir.hasDeferredEntries = false;
         }
         dir.validateMandatoryTags();
-        return dir;
     }
 
     /**
@@ -358,6 +371,58 @@ final class Reader extends GeoTIFF {
             }
             if (entry == stopAfter) break;
         }
+    }
+
+    /**
+     * Returns the potentially pyramided <cite>Image File Directories</cite> (IFDs) at the given index.
+     * If the pyramid has already been initialized, then it is returned.
+     * Otherwise this method initializes the pyramid now and returns it.
+     *
+     * <p>This method assumes that the first IFD is the full resolution image and all following IFDs having
+     * {@link ImageFileDirectory#isReducedResolution()} flag set are the same image at lower resolutions.
+     * This is the <cite>cloud optimized GeoTIFF</cite> convention.</p>
+     *
+     * @return the pyramid if we found it, or {@code null} if there is no more pyramid at the given index.
+     * @throws ArithmeticException if the pointer to a next IFD is too far.
+     */
+    final GridCoverageResource getImage(final int index) throws IOException, DataStoreException {
+        while (index >= images.size()) {
+            int imageIndex = images.size();
+            ImageFileDirectory fullResolution = lastIFD;
+            if (fullResolution == null) {
+                fullResolution = getImageFileDirectory(imageIndex);
+                if (fullResolution == null) {
+                    return null;
+                }
+            }
+            lastIFD = null;     // Clear now in case of error.
+            imageIndex++;       // In case next image is full-resolution.
+            ImageFileDirectory image;
+            final List<ImageFileDirectory> overviews = new ArrayList<>();
+            while ((image = getImageFileDirectory(imageIndex)) != null) {
+                if (image.isReducedResolution()) {
+                    overviews.add(image);
+                } else {
+                    lastIFD = image;
+                    break;
+                }
+            }
+            /*
+             * All pyramid levels have been read. If there is only one level,
+             * use the image directly. Otherwise create the pyramid.
+             */
+            if (overviews.isEmpty()) {
+                images.add(fullResolution);
+            } else {
+                overviews.add(0, fullResolution);
+                images.add(new MultiResolutionImage(overviews));
+            }
+        }
+        final GridCoverageResource image = images.get(index);
+        if (image instanceof ImageFileDirectory) {
+            resolveDeferredEntries((ImageFileDirectory) image);
+        }
+        return image;
     }
 
     /**

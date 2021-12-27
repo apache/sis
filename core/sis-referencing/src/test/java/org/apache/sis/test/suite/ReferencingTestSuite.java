@@ -25,13 +25,14 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.referencing.LazySetTest.class,
     org.apache.sis.internal.referencing.FormulasTest.class,
+    org.apache.sis.internal.referencing.j2d.AbstractShapeTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,

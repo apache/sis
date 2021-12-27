@@ -73,6 +73,8 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.feature.esri.FactoryTest.class,
     org.apache.sis.internal.feature.jts.FactoryTest.class,
     org.apache.sis.internal.feature.jts.JTSTest.class,
+    org.apache.sis.internal.feature.jts.ShapeAdapterTest.class,
+    org.apache.sis.internal.feature.jts.ShapeConverterTest.class,
     org.apache.sis.feature.builder.CharacteristicTypeBuilderTest.class,
     org.apache.sis.feature.builder.AttributeTypeBuilderTest.class,
     org.apache.sis.feature.builder.AssociationRoleBuilderTest.class,

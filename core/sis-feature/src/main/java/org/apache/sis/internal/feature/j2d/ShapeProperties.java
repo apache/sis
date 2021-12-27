@@ -23,7 +23,7 @@ import java.lang.reflect.Array;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.apache.sis.util.StringBuilders;
 
 
@@ -96,7 +96,7 @@ final class ShapeProperties {
     private List<?> coordinates(final double flatness) {
         final PathIterator it = geometry.getPathIterator(null, flatness);
         isPolygon = true;
-        if (ShapeUtilities.isFloat(geometry)) {
+        if (AbstractShape.isFloat(geometry)) {
             return coordinatesAsFloats(it);
         } else {
             return coordinatesAsDoubles(it);

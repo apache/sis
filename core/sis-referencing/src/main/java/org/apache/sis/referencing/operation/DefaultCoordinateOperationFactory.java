@@ -646,7 +646,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * </table>
      *
      * @param  properties  the properties to be given to the identified object.
-     * @param  operations  the sequence of operations. Shall contains at least two operations.
+     * @param  operations  the sequence of operations. Shall contain at least two operations.
      * @return the concatenated operation created from the given arguments.
      * @throws FactoryException if the object creation failed.
      */

@@ -65,13 +65,13 @@ enum Option {
     COLORS(true),
 
     /**
-     * Whether the output should contains only brief information.
+     * Whether the output should contain only brief information.
      * This option expects no value.
      */
     BRIEF(false),
 
     /**
-     * Whether the output should contains more detailed information.
+     * Whether the output should contain more detailed information.
      * This option expects no value.
      */
     VERBOSE(false),

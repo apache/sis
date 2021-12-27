@@ -60,7 +60,7 @@ public abstract class GeographicEnvelope extends AbstractEnvelope implements Geo
 
     /**
      * Returns the number of dimensions, which is assumed to be 2.
-     * The value returned by this method shall be equals to the value returned by
+     * The value returned by this method shall be equal to the value returned by
      * {@code getCoordinateReferenceSystem().getCoordinateSystem().getDimension()}.
      *
      * @return the number of dimensions in this envelope.

@@ -39,6 +39,10 @@ import org.apache.sis.util.Localized;
  * possibly completed with information about a geometry column.
  * The aim is to describe all information about a column that is needed for mapping to feature model.
  *
+ * <h2>Multi-threading</h2>
+ * {@code Column} instances shall be kept unmodified after all fields have been initialized.
+ * The same instances may be read concurrently by many threads.
+ *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -70,7 +74,7 @@ public final class Column {
     String propertyName;
 
     /**
-     * Type of values as one of the constant enumerated in {@link Types} class.
+     * Type of values as one of the constants enumerated in {@link Types} class.
      *
      * @see Reflection#DATA_TYPE
      */
@@ -102,14 +106,18 @@ public final class Column {
 
     /**
      * If this column is a geometry column, the type of the geometry objects. Otherwise {@code null}.
+     *
+     * @see #getGeometryType()
      */
     private GeometryType geometryType;
 
     /**
-     * If this column is a geometry column, the Coordinate Reference System (CRS). Otherwise {@code null}.
+     * If this column is a geometry or raster column, the Coordinate Reference System (CRS). Otherwise {@code null}.
      * This is determined from the geometry Spatial Reference Identifier (SRID).
+     *
+     * @see #getDefaultCRS()
      */
-    private CoordinateReferenceSystem geometryCRS;
+    private CoordinateReferenceSystem defaultCRS;
 
     /**
      * Converter from {@link ResultSet} column value to value stored in the feature instance.
@@ -124,15 +132,16 @@ public final class Column {
      * This method does not change cursor position.
      *
      * @param  analyzer  the analyzer which is creating this column.
-     * @param  metadata  the
+     * @param  metadata  the result of {@code DatabaseMetaData.getColumns(…)}.
+     * @param  quote     value of {@code DatabaseMetaData.getIdentifierQuoteString()}.
      * @throws SQLException if an error occurred while fetching metadata.
      *
      * @see DatabaseMetaData#getColumns(String, String, String, String)
      */
-    Column(final Analyzer analyzer, final ResultSet metadata) throws SQLException {
+    Column(final Analyzer analyzer, final ResultSet metadata, final String quote) throws SQLException {
         label = name = analyzer.getUniqueString(metadata, Reflection.COLUMN_NAME);
         type         = metadata.getInt(Reflection.DATA_TYPE);
-        typeName     = metadata.getString(Reflection.TYPE_NAME);
+        typeName     = localPart(metadata.getString(Reflection.TYPE_NAME), quote);
         precision    = metadata.getInt(Reflection.COLUMN_SIZE);
         isNullable   = Boolean.TRUE.equals(SQLUtilities.parseBoolean(metadata.getString(Reflection.IS_NULLABLE)));
         propertyName = label;
@@ -142,39 +151,61 @@ public final class Column {
      * Creates a new column from the result of a query.
      *
      * @param  metadata  value of {@link ResultSet#getMetaData()}.
+     * @param  column    index of the column for which to get metadata.
+     * @param  quote     value of {@code DatabaseMetaData.getIdentifierQuoteString()}.
      * @throws SQLException if an error occurred while fetching metadata.
      *
      * @see ResultSet#getMetaData()
      */
-    Column(final ResultSetMetaData metadata, final int column) throws SQLException {
+    Column(final ResultSetMetaData metadata, final int column, final String quote) throws SQLException {
         name         = metadata.getColumnName(column);
         label        = metadata.getColumnLabel(column);
         type         = metadata.getColumnType(column);
-        typeName     = metadata.getColumnTypeName(column);
+        typeName     = localPart(metadata.getColumnTypeName(column), quote);
         precision    = metadata.getPrecision(column);
         isNullable   = metadata.isNullable(column) == ResultSetMetaData.columnNullable;
         propertyName = label;
     }
 
     /**
-     * Modifies this column for declaring it as a geometry column.
+     * PostgreSQL JDBC drivers sometime gives the fully qualified type name.
+     * For example we sometime get {@code "public"."geometry"} (including the quotes)
+     * instead of a plain {@code geometry}. If this is the case, keep only the local part.
+     */
+    private static String localPart(String type, final String quote) {
+        if (type != null && quote != null) {
+            int end = type.lastIndexOf(quote);
+            if (end >= 0) {
+                int start = type.lastIndexOf(quote, end - 1);
+                if (start >= 0 && end > (start += quote.length())) {
+                    type = type.substring(start, end);
+                }
+            }
+        }
+        return type;
+    }
+
+    /**
+     * Modifies this column for declaring it as a geometry or raster column.
      * This method is invoked during inspection of the {@code "GEOMETRY_COLUMNS"} table of a spatial database.
+     * It can also be invoked during the inspection of {@code "GEOGRAPHY_COLUMNS"} or {@code "RASTER_COLUMNS"}
+     * tables, which are PostGIS extensions. In the raster case, the geometry {@code type} argument shall be null.
      *
      * @param  caller  provider of the locale for error message, if any.
-     * @param  type    the type of values in the column, or {@code null} if unknown.
+     * @param  type    the type of values in the column, or {@code null} if not geometric.
      * @param  crs     the Coordinate Reference System (CRS), or {@code null} if unknown.
      */
-    final void setGeometryInfo(final Localized caller, final GeometryType type, final CoordinateReferenceSystem crs)
+    final void makeSpatial(final Localized caller, final GeometryType type, final CoordinateReferenceSystem crs)
             throws DataStoreContentException
     {
         final String property;
         if (geometryType != null && !geometryType.equals(type)) {
             property = "geometryType";
-        } else if (geometryCRS != null && !geometryCRS.equals(crs)) {
-            property = "geometryCRS";
+        } else if (defaultCRS != null && !defaultCRS.equals(crs)) {
+            property = "defaultCRS";
         } else {
             geometryType = type;
-            geometryCRS = crs;
+            defaultCRS = crs;
             return;
         }
         throw new DataStoreContentException(Errors.getResources(caller.getLocale())
@@ -183,22 +214,24 @@ public final class Column {
 
     /**
      * If this column is a geometry column, returns the type of the geometry objects.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null} (including the case where this is a raster column).
+     * Note that if this column is a geometry column but the geometry type was not defined,
+     * then {@link GeometryType#GEOMETRY} is returned as a fallback.
      *
-     * @return type of geometry objects, or {@code null} if unknown or not applicable.
+     * @return type of geometry objects, or {@code null} if this column is not a geometry column.
      */
     public final GeometryType getGeometryType() {
         return geometryType;
     }
 
     /**
-     * If this column is a geometry column, returns the coordinate reference system.
+     * If this column is a geometry or raster column, returns the default coordinate reference system.
      * Otherwise returns {@code null}. The CRS may also be null even for a geometry column if it is unspecified.
      *
-     * @return CRS of geometries in this column, or {@code null} if unknown or not applicable.
+     * @return CRS of geometries or rasters in this column, or {@code null} if unknown or not applicable.
      */
-    public final CoordinateReferenceSystem getGeometryCRS() {
-        return geometryCRS;
+    public final CoordinateReferenceSystem getDefaultCRS() {
+        return defaultCRS;
     }
 
     /**
@@ -217,7 +250,7 @@ public final class Column {
         if (isNullable) {
             attribute.setMinimumOccurs(0);
         }
-        valueGetter.getCRS().ifPresent(attribute::setCRS);
+        attribute.setCRS(defaultCRS);
         return attribute;
     }
 

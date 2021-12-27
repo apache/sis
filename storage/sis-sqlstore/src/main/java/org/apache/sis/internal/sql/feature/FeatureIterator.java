@@ -43,9 +43,13 @@ import org.apache.sis.internal.geoapi.filter.SortBy;
  * Each {@code FeatureIterator} iterator is created for one specific SQL query
  * and can be used for only one iteration.
  *
+ * <h2>Parallelism</h2>
+ * Current implementation of {@code FeatureIterator} does not support parallelism.
+ * This iterator is not thread-safe and the {@link #trySplit()} method always returns {@code null}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -83,6 +87,13 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
     private final long estimatedSize;
 
     /**
+     * A cache of statements for fetching spatial information such as geometry columns or SRID.
+     * This is non-null only if the {@linkplain Database#isSpatial() database is spatial}.
+     * The same instance is shared by all dependencies of this {@code FeatureIterator}.
+     */
+    private final InfoStatements spatialInformation;
+
+    /**
      * The feature sets referenced through foreigner keys, or an empty array if none.
      * This includes the associations inferred from both the imported and exported keys.
      * The first {@link FeatureAdapter#importCount} iterators are for imported keys,
@@ -110,6 +121,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
             throws SQLException, InternalDataStoreException
     {
         adapter = table.adapter(connection);
+        spatialInformation = table.database.isSpatial() ? table.database.createInfoStatements(connection) : null;
         String sql = adapter.sql;
         if (distinct || filter != null || sort != null || offset > 0 || count > 0) {
             final SQLBuilder builder = new SQLBuilder(table.database).append(sql);
@@ -153,7 +165,10 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
      * @param offset      number of rows to skip in underlying SQL query, or ≤ 0 for none.
      * @param count       maximum number of rows to return, or ≤ 0 for no limit.
      */
-    private FeatureIterator(final FeatureAdapter adapter, final Connection connection) throws SQLException {
+    private FeatureIterator(final FeatureAdapter adapter, final Connection connection,
+                            final InfoStatements spatialInformation) throws SQLException
+    {
+        this.spatialInformation = spatialInformation;
         this.adapter  = adapter;
         statement     = connection.prepareStatement(adapter.sql);
         dependencies  = new FeatureIterator[adapter.dependencies.length];
@@ -166,7 +181,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
     private FeatureIterator dependency(final int i) throws SQLException {
         FeatureIterator dependency = dependencies[i];
         if (dependency == null) {
-            dependency = new FeatureIterator(adapter.dependencies[i], result.getStatement().getConnection());
+            dependency = new FeatureIterator(adapter.dependencies[i], result.getStatement().getConnection(), spatialInformation);
             dependencies[i] = dependency;
         }
         return dependency;
@@ -236,7 +251,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
      */
     private boolean fetch(final Consumer<? super AbstractFeature> action, final boolean all) throws Exception {
         while (result.next()) {
-            final AbstractFeature feature = adapter.createFeature(result);
+            final AbstractFeature feature = adapter.createFeature(spatialInformation, result);
             for (int i=0; i < dependencies.length; i++) {
                 WeakValueHashMap<?,Object> instances = null;
                 Object key = null, value = null;
@@ -311,6 +326,9 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
      */
     @Override
     public void close() throws SQLException {
+        if (spatialInformation != null) {
+            spatialInformation.close();
+        }
         /*
          * Only one of `statement` and `result` should be non-null. The connection should be closed by
          * the `FeatureIterator` instance having a non-null `result` because it is the main one created

@@ -248,6 +248,9 @@ public class SQLStore extends DataStore implements Aggregate {
                 if (model.hasGeometry()) {
                     builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
                 }
+                if (model.hasRaster()) {
+                    builder.addSpatialRepresentation(SpatialRepresentationType.GRID);
+                }
                 model.listTables(c.getMetaData(), builder);
             } catch (DataStoreException e) {
                 throw e;

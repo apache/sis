@@ -336,14 +336,15 @@ public class RenderingData implements Cloneable {
      * @param  coverage     the coverage from which to read data, or {@code null} if the coverage did not changed.
      * @param  sliceExtent  a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
      *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
+     * @return whether the {@linkpalin #data} changed.
      * @throws FactoryException if the CRS changed but the transform from old to new CRS can not be determined.
      * @throws TransformException if an error occurred while transforming coordinates from old to new CRS.
      */
-    public final void ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent)
+    public final boolean ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent)
             throws FactoryException, TransformException
     {
         if (data != null || coverage == null) {
-            return;
+            return false;
         }
         coverage = coverage.forConvertedValues(true);
         final GridGeometry old = dataGeometry;
@@ -383,6 +384,7 @@ public class RenderingData implements Cloneable {
             cornerToObjective = MathTransforms.concatenate(forward, cornerToObjective);
             objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, inverse);
         }
+        return true;
     }
 
     /**

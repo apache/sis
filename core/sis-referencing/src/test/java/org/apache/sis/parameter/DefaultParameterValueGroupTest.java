@@ -272,7 +272,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertTrue(expected.add(g3));
         /*
          * A newly created group should be initialized with 4 GeneralParameterValue instances because of
-         * the mandatory ones. After we added our own instances created above, the group should contains
+         * the mandatory ones. After we added our own instances created above, the group should contain
          * 6 instances (one more than what we added) because of the "Mandatory 1" parameter that we did
          * not provided. Note that the element order in the 'values' collection does not need to be the
          * order in which we provided our GeneralParameterValue instances.

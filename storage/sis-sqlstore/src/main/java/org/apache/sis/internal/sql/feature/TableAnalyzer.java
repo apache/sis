@@ -153,13 +153,14 @@ final class TableAnalyzer extends FeatureAnalyzer {
     @Override
     final Column[] createAttributes() throws Exception {
         /*
-         * Get all columns in advance because `completeGeometryColumns(…)`
+         * Get all columns in advance because `completeIntrospection(…)`
          * needs to be invoked before to invoke `database.getMapping(column)`.
          */
         final Map<String,Column> columns = new LinkedHashMap<>();
+        final String quote = analyzer.metadata.getIdentifierQuoteString();
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
-                final Column column = new Column(analyzer, reflect);
+                final Column column = new Column(analyzer, reflect, quote);
                 if (columns.put(column.name, column) != null) {
                     throw duplicatedColumn(column);
                 }
@@ -167,7 +168,7 @@ final class TableAnalyzer extends FeatureAnalyzer {
         }
         final InfoStatements spatialInformation = analyzer.spatialInformation;
         if (spatialInformation != null) {
-            spatialInformation.completeGeometryColumns(id, columns);
+            spatialInformation.completeIntrospection(id, columns);
         }
         /*
          * Analyze the type of each column, which may be geometric as a consequence of above call.

@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.sql.postgis;
 
-import java.util.Set;
+import java.util.Map;
+import java.sql.Types;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -24,8 +25,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import java.util.logging.Level;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.sql.feature.BinaryEncoding;
 import org.apache.sis.internal.sql.feature.InfoStatements;
+import org.apache.sis.internal.sql.feature.TableReference;
 import org.apache.sis.internal.sql.feature.Column;
 import org.apache.sis.internal.sql.feature.Database;
 import org.apache.sis.internal.sql.feature.ValueGetter;
@@ -42,7 +46,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -114,7 +118,23 @@ public final class Postgres<G> extends Database<G> {
         if ("geography".equalsIgnoreCase(columnDefinition.typeName)) {
             return forGeometry(columnDefinition);
         }
+        if ("raster".equalsIgnoreCase(columnDefinition.typeName)) {
+            return new RasterGetter(columnDefinition.getDefaultCRS(), getBinaryEncoding(columnDefinition));
+        }
         return super.getMapping(columnDefinition);
+    }
+
+    /**
+     * Returns an identifier of the way binary data are encoded by the JDBC driver.
+     * Data stored as PostgreSQL {@code BYTEA} type are encoded in hexadecimal.
+     */
+    @Override
+    protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
+        if (columnDefinition.type == Types.BLOB) {
+            return super.getBinaryEncoding(columnDefinition);
+        } else {
+            return BinaryEncoding.HEXADECIMAL;
+        }
     }
 
     /**
@@ -135,10 +155,10 @@ public final class Postgres<G> extends Database<G> {
      * @param  ignoredTables  where to add names of tables to ignore.
      */
     @Override
-    protected void addIgnoredTables(final Set<String> ignoredTables) {
-        ignoredTables.add("geography_columns");     // Postgis 1+
-        ignoredTables.add("raster_columns");        // Postgis 2
-        ignoredTables.add("raster_overviews");
+    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
+        ignoredTables.put("geography_columns", Boolean.TRUE);     // Postgis 1+
+        ignoredTables.put("raster_columns",    Boolean.TRUE);     // Postgis 2
+        ignoredTables.put("raster_overviews",  Boolean.FALSE);
     }
 
     /**
@@ -147,5 +167,29 @@ public final class Postgres<G> extends Database<G> {
     @Override
     protected SelectionClauseWriter getFilterToSQL() {
         return ExtendedClauseWriter.INSTANCE;
+    }
+
+    /**
+     * Computes an estimation of the envelope of all geometry columns using PostgreSQL statistics if available.
+     * Uses the PostGIS {@code ST_EstimatedExtent(…)} function to get a rough estimation of column extent.
+     * This method is invoked only if the {@code columns} array contains at least one geometry column.
+     *
+     * @param  table    the table for which to compute an estimation of the envelope.
+     * @param  columns  all columns in the table (including non-geometry columns).
+     *                  This is a reference to an internal array; <strong>do not modify</strong>.
+     * @param  recall   if it is at least the second time that this method is invoked for the specified table.
+     * @return an estimation of the spatiotemporal resource extent, or {@code null} if none.
+     * @throws SQLException if an error occurred while fetching the envelope.
+     *
+     * @see <a href="https://postgis.net/docs/ST_EstimatedExtent.html">ST_EstimatedExtent</a>
+     */
+    @Override
+    protected Envelope getEstimatedExtent(final TableReference table, final Column[] columns, final boolean recall)
+            throws SQLException
+    {
+        final ExtentEstimator ex = new ExtentEstimator(this, table, columns);
+        try (Connection c = source.getConnection(); Statement statement = c.createStatement()) {
+            return ex.estimate(statement, recall);
+        }
     }
 }

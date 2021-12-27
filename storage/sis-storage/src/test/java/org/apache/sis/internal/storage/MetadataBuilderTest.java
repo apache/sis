@@ -74,7 +74,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
 
     /**
      * Verifies the metadata that contains the result of parsing a copyright statement.
-     * Should contains the "John Smith" name and 1992 year.
+     * Should contain the "John Smith" name and 1992 year.
      *
      * @param notice  the copyright statement to parse.
      */

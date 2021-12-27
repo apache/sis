@@ -247,7 +247,7 @@ public final class DecimalFunctions extends Static {
          * For reasons explained later we will actually use c/10 instead of c, so the range will be
          * (0.1 … 1) instead of (1 … 10). The exponent of 0.1 in base 2 is -4. Consequently for any
          * value between 0.1 and 1, scaling the value by 56 binary places guarantee that the result
-         * will be equals or greater than 2^52. At that threshold, 'double' values can not have
+         * will be equal or greater than 2^52. At that threshold, 'double' values can not have
          * fraction digits.
          */
         final int PRECISION = SIGNIFICAND_SIZE + 4;               // Number of bits to use for scaling to integers.
