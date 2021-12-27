@@ -135,6 +135,16 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     /**
+     * Tests on H2.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnH2() throws Exception {
+        test(TestDatabase.createOnH2("SQLStore"), true);
+    }
+
+    /**
      * Tests on PostgreSQL.
      *
      * @throws Exception if an error occurred while testing the database.

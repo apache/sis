@@ -382,14 +382,17 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns the "TABLE" and "VIEW" keywords for table type, with unsupported keywords omitted.
+     * Returns the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
      */
     private static String[] getTableTypes(final DatabaseMetaData metadata) throws SQLException {
         final Set<String> types = new HashSet<>(4);
         try (ResultSet reflect = metadata.getTableTypes()) {
             while (reflect.next()) {
+               /*
+                 * Derby, HSQLDB and PostgreSQL uses the "TABLE" type, but H2 uses "BASE TABLE".
+                 */
                 final String type = reflect.getString(Reflection.TABLE_TYPE);
-                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type)) {
+                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type) || "BASE TABLE".equalsIgnoreCase(type)) {
                     types.add(type);
                 }
             }
