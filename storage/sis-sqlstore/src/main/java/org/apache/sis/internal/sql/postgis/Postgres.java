@@ -177,16 +177,19 @@ public final class Postgres<G> extends Database<G> {
      * @param  table    the table for which to compute an estimation of the envelope.
      * @param  columns  all columns in the table (including non-geometry columns).
      *                  This is a reference to an internal array; <strong>do not modify</strong>.
+     * @param  recall   if it is at least the second time that this method is invoked for the specified table.
      * @return an estimation of the spatiotemporal resource extent, or {@code null} if none.
      * @throws SQLException if an error occurred while fetching the envelope.
      *
      * @see <a href="https://postgis.net/docs/ST_EstimatedExtent.html">ST_EstimatedExtent</a>
      */
     @Override
-    protected Envelope getEstimatedExtent(final TableReference table, final Column[] columns) throws SQLException {
+    protected Envelope getEstimatedExtent(final TableReference table, final Column[] columns, final boolean recall)
+            throws SQLException
+    {
         final ExtentEstimator ex = new ExtentEstimator(this, table, columns);
         try (Connection c = source.getConnection(); Statement statement = c.createStatement()) {
-            return ex.estimate(statement);
+            return ex.estimate(statement, recall);
         }
     }
 }

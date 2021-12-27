@@ -604,10 +604,11 @@ public class Database<G> extends Syntax  {
      * @param  table    the table for which to compute an estimation of the envelope.
      * @param  columns  all columns in the table. Implementation should ignore non-geometry columns.
      *                  This is a reference to an internal array; <strong>do not modify</strong>.
+     * @param  recall   if it is at least the second time that this method is invoked for the specified table.
      * @return an estimation of the spatiotemporal resource extent, or {@code null} if none.
      * @throws SQLException if an error occurred while fetching the envelope.
      */
-    protected Envelope getEstimatedExtent(TableReference table, Column[] columns) throws SQLException {
+    protected Envelope getEstimatedExtent(TableReference table, Column[] columns, boolean recall) throws SQLException {
         return null;
     }
 

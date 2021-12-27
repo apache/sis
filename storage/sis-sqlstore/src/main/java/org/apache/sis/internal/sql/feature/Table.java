@@ -157,6 +157,14 @@ final class Table extends AbstractFeatureSet {
     private WeakValueHashMap<?,Object> instanceForPrimaryKeys;
 
     /**
+     * {@code true} if {@link #getEnvelope()} has been invoked at least once on this table.
+     * This is used for performing only once operations such as PosthreSQL {@code ANALYZE}.
+     *
+     * @see #getEnvelope()
+     */
+    private boolean isEnvelopeAnalyzed;
+
+    /**
      * Creates a description of the table analyzed by the given object.
      *
      * @param  database  information about the database (syntax for building SQL statements, …).
@@ -323,13 +331,23 @@ final class Table extends AbstractFeatureSet {
      * discouraged. Despite that, this method may return smaller envelopes because the computation is done using
      * a subset of all data.
      *
+     * <h2>Limitations</h2>
+     * The exact behavior is database-dependent.
+     * For example PostGIS implementation assumes that all geometries in the same column are in the same CRS.
+     * If geometries in different <em>rows</em> use different CRS, coordinate transformations are <em>not</em>
+     * applied and the result is likely to be invalid. However if different <em>column</em> use different CRS,
+     * coordinate transformations between columns is applied and the result is in the CRS of the first column
+     * having at least one geometry.
+     *
      * @return an estimation of the spatiotemporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
     public Optional<Envelope> getEnvelope() throws DataStoreException {
         if (hasGeometry) try {
-            return Optional.ofNullable(database.getEstimatedExtent(name, attributes));
+            final boolean recall = isEnvelopeAnalyzed;
+            isEnvelopeAnalyzed = true;
+            return Optional.ofNullable(database.getEstimatedExtent(name, attributes, recall));
         } catch (SQLException e) {
             throw new DataStoreException(e);
         } else {

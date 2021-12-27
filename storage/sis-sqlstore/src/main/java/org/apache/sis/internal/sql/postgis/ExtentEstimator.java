@@ -31,6 +31,13 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
 /**
  * Estimation of the extent of geometries in a given table or column using statistics if available.
  * Uses the PostGIS {@code ST_EstimatedExtent(…)} function to get a rough estimation of column extent.
+ * If {@code ST_EstimatedExtent(…)} gave no result and it was the first attempt on the specified table,
+ * then this class executes {@code ANALYZE} and tries again to get the extent. This strategy works well
+ * when requesting envelope on newly created tables.
+ *
+ * <h2>Design notes</h2>
+ * We do not use the most accurate {@code ST_Extent} function because it is costly on large tables.
+ * At the time of writing this class (December 2021), {@code ST_Extent} does not use column index.
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -88,12 +95,13 @@ final class ExtentEstimator {
      * If there is no statistics available, then this method executes {@code ANALYZE}
      * and tries again.
      *
-     * @param statement  statement to use for executing queries. Shall be closed by caller.
+     * @param  statement  statement to use for executing queries. Shall be closed by caller.
+     * @param  recall     if it is at least the second time that this method is invoked for the table.
      * @return an estimation of the union of extents in given columns, or {@code null} if unknown.
      */
-    GeneralEnvelope estimate(final Statement statement) throws SQLException {
+    GeneralEnvelope estimate(final Statement statement, final boolean recall) throws SQLException {
         query(statement);
-        if (envelope == null) {
+        if (envelope == null && !recall) {
             builder.append("ANALYZE ").appendIdentifier(table.catalog, table.schema, table.table);
             final String sql = builder.toString();
             builder.clear();
@@ -110,7 +118,7 @@ final class ExtentEstimator {
      * Estimates the extent in the specified columns using current statistics.
      * If there is no statistics available, then this method returns {@code null}.
      *
-     * @param statement  statement to use for executing queries. Shall be closed by caller.
+     * @param  statement  statement to use for executing queries. Shall be closed by caller.
      * @return an estimation of the union of extents in given columns, or {@code null} if unknown.
      */
     private void query(final Statement statement) throws SQLException {
