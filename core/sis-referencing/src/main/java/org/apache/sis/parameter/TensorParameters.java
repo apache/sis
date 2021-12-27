@@ -409,7 +409,7 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * Returns the parameter descriptor for a matrix or tensor element at the given indices.
-     * The length of the given {@code indices} array shall be equals to the {@linkplain #rank() rank}.
+     * The length of the given {@code indices} array shall be equal to the {@linkplain #rank() rank}.
      * That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]}
      * is the <var>column</var> index.
      *

@@ -761,7 +761,7 @@ class CoordinateOperationRegistry {
             throws IllegalArgumentException, IncommensurableException, FactoryException
     {
         /*
-         * Assertion: source and target CRS must be equals, ignoring change in axis order or units.
+         * Assertion: source and target CRS must be equal, ignoring change in axis order or units.
          * The first line is for disabling this check if the number of dimensions are not the same
          * (e.g. as in the "geographic 3D to geographic 2D" conversion) because ALLOW_VARIANT mode
          * still requires a matching number of dimensions.

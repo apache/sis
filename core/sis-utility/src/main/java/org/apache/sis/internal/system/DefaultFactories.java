@@ -156,7 +156,7 @@ public final class DefaultFactories extends SystemListener {
     public static <T, I extends T> I forBuildin(final Class<T> type, final Class<I> impl) {
         final T factory = forBuildin(type);
         if (!impl.isInstance(factory)) {
-            throw new ServiceConfigurationError("The “META-INF/services/" + type.getName() + "” file should contains only “"
+            throw new ServiceConfigurationError("The “META-INF/services/" + type.getName() + "” file should contain only “"
                 + impl.getName() + "” in the Apache SIS namespace, but we found “" + factory.getClass().getName() + "”.");
         }
         return impl.cast(factory);

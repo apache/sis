@@ -139,9 +139,9 @@ public strictfp class DocumentComparator {
      *
      * <ul>
      *   <li>If {@code NamespaceAware} is {@code true}, then this {@code ignoredAttributes} collection
-     *       shall contains {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.</li>
+     *       shall contain {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.</li>
      *   <li>If {@code NamespaceAware} is {@code false}, then this {@code ignoredAttributes} collection
-     *       shall contains {@code "xsi:schemaLocation"}, assuming that {@code "xsi"} is the prefix for
+     *       shall contain {@code "xsi:schemaLocation"}, assuming that {@code "xsi"} is the prefix for
      *       {@code "http://www.w3.org/2001/XMLSchema-instance"}.</li>
      * </ul>
      *

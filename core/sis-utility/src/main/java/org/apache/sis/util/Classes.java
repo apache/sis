@@ -463,7 +463,7 @@ next:       for (final Class<?> candidate : candidates) {
         types.remove(null);
         /*
          * Removes every classes in the types collection which are assignable from an other
-         * class from the same collection. As a result, the collection should contains only
+         * class from the same collection. As a result, the collection should contain only
          * leaf classes.
          */
         for (final Iterator<Class<?>> it=types.iterator(); it.hasNext();) {

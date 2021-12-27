@@ -520,7 +520,7 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.add(-20, -10));
         assertTrue(ranges.add( 40,  50));
         final RangeSet<Integer> clone = ranges.clone();
-        assertEquals("The clone shall be equals to the original set.", ranges, clone);
+        assertEquals("The clone shall be equal to the original set.", ranges, clone);
         assertTrue(ranges.add(60, 70));
         assertFalse("Modifying the original set shall not modify the clone.", ranges.equals(clone));
     }

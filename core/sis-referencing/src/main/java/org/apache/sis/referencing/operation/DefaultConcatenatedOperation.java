@@ -101,7 +101,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * </table>
      *
      * @param  properties  the properties to be given to the identified object.
-     * @param  operations  the sequence of operations. Shall contains at least two operations.
+     * @param  operations  the sequence of operations. Shall contain at least two operations.
      * @param  mtFactory   the math transform factory to use for math transforms concatenation.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
@@ -202,7 +202,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             ArgumentChecks.ensureNonNullElement("operations", i, op);
             /*
              * Verify consistency of user argument: for each coordinate operation, the number of dimensions of the
-             * source CRS shall be equals to the number of dimensions of the target CRS in the previous operation.
+             * source CRS shall be equal to the number of dimensions of the target CRS in the previous operation.
              */
             final CoordinateReferenceSystem next = op.getSourceCRS();
             if (previous != null && next != null) {

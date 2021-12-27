@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * </ol>
  *
  * Note that the Miller projection is typically used with spherical formulas. However the Apache SIS implementation
- * supports also the ellipsoidal formulas. If spherical formulas are desired, then the parameters shall contains
+ * supports also the ellipsoidal formulas. If spherical formulas are desired, then the parameters shall contain
  * semi-major and semi-minor axis lengths of equal length.
  *
  * <h2>Additional identifiers</h2>
