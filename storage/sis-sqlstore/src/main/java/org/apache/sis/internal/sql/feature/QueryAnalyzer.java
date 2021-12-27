@@ -75,12 +75,13 @@ final class QueryAnalyzer extends FeatureAnalyzer {
          * Get the list of all columns in the query. We do that now because we will need this list
          * for finding primary keys (below) and also before `getForeignerKeys(…)` can be executed.
          */
+        final String quote = analyzer.metadata.getIdentifierQuoteString();
         try (PreparedStatement stmt = analyzer.metadata.getConnection().prepareStatement(query)) {
             final ResultSetMetaData meta = stmt.getMetaData();
             columns = new Column[meta.getColumnCount()];
             columnsPerTable = new HashMap<>();
             for (int i=1; i <= columns.length; i++) {
-                final Column column = new Column(meta, i);
+                final Column column = new Column(meta, i, quote);
                 columns[i-1] = column;
                 /*
                  * In order to identify geometry columns, we need to know the table where the column come from.

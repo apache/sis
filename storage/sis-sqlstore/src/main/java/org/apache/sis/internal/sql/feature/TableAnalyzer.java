@@ -157,9 +157,10 @@ final class TableAnalyzer extends FeatureAnalyzer {
          * needs to be invoked before to invoke `database.getMapping(column)`.
          */
         final Map<String,Column> columns = new LinkedHashMap<>();
+        final String quote = analyzer.metadata.getIdentifierQuoteString();
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
-                final Column column = new Column(analyzer, reflect);
+                final Column column = new Column(analyzer, reflect, quote);
                 if (columns.put(column.name, column) != null) {
                     throw duplicatedColumn(column);
                 }

@@ -133,14 +133,15 @@ public final class Column {
      *
      * @param  analyzer  the analyzer which is creating this column.
      * @param  metadata  the result of {@code DatabaseMetaData.getColumns(…)}.
+     * @param  quote     value of {@code DatabaseMetaData.getIdentifierQuoteString()}.
      * @throws SQLException if an error occurred while fetching metadata.
      *
      * @see DatabaseMetaData#getColumns(String, String, String, String)
      */
-    Column(final Analyzer analyzer, final ResultSet metadata) throws SQLException {
+    Column(final Analyzer analyzer, final ResultSet metadata, final String quote) throws SQLException {
         label = name = analyzer.getUniqueString(metadata, Reflection.COLUMN_NAME);
         type         = metadata.getInt(Reflection.DATA_TYPE);
-        typeName     = metadata.getString(Reflection.TYPE_NAME);
+        typeName     = localPart(metadata.getString(Reflection.TYPE_NAME), quote);
         precision    = metadata.getInt(Reflection.COLUMN_SIZE);
         isNullable   = Boolean.TRUE.equals(SQLUtilities.parseBoolean(metadata.getString(Reflection.IS_NULLABLE)));
         propertyName = label;
@@ -150,18 +151,38 @@ public final class Column {
      * Creates a new column from the result of a query.
      *
      * @param  metadata  value of {@link ResultSet#getMetaData()}.
+     * @param  column    index of the column for which to get metadata.
+     * @param  quote     value of {@code DatabaseMetaData.getIdentifierQuoteString()}.
      * @throws SQLException if an error occurred while fetching metadata.
      *
      * @see ResultSet#getMetaData()
      */
-    Column(final ResultSetMetaData metadata, final int column) throws SQLException {
+    Column(final ResultSetMetaData metadata, final int column, final String quote) throws SQLException {
         name         = metadata.getColumnName(column);
         label        = metadata.getColumnLabel(column);
         type         = metadata.getColumnType(column);
-        typeName     = metadata.getColumnTypeName(column);
+        typeName     = localPart(metadata.getColumnTypeName(column), quote);
         precision    = metadata.getPrecision(column);
         isNullable   = metadata.isNullable(column) == ResultSetMetaData.columnNullable;
         propertyName = label;
+    }
+
+    /**
+     * PostgreSQL JDBC drivers sometime gives the fully qualified type name.
+     * For example we sometime get {@code "public"."geometry"} (including the quotes)
+     * instead of a plain {@code geometry}. If this is the case, keep only the local part.
+     */
+    private static String localPart(String type, final String quote) {
+        if (type != null && quote != null) {
+            int end = type.lastIndexOf(quote);
+            if (end >= 0) {
+                int start = type.lastIndexOf(quote, end - 1);
+                if (start >= 0 && end > (start += quote.length())) {
+                    type = type.substring(start, end);
+                }
+            }
+        }
+        return type;
     }
 
     /**
