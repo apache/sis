@@ -631,7 +631,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *        └                    ┘
      * }
      *
-     * The length of the given vector must be equals to the number of columns in this matrix.
+     * The length of the given vector must be equal to the number of columns in this matrix.
      * The last vector element is 1 for an affine transform, but other values are allowed.
      * This matrix will be modified in-place.
      *

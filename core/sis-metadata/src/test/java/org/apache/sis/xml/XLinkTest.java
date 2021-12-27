@@ -122,7 +122,7 @@ public final strictfp class XLinkTest extends TestCase {
             link.setLabel("SomeLabel");
             fail("Should not be allowed to set the label.");
         } catch (IllegalStateException e) {
-            // This is the expected exception. The message should contains the type name.
+            // This is the expected exception. The message should contain the type name.
             assertTrue(e.getMessage().contains("label"));
             assertTrue(e.getMessage().contains("simple"));
         }
@@ -131,7 +131,7 @@ public final strictfp class XLinkTest extends TestCase {
             link.setType(XLink.Type.EXTENDED);
             fail("Should not be allowed to set a type that does not include HREF.");
         } catch (IllegalStateException e) {
-            // This is the expected exception. The message should contains the type name.
+            // This is the expected exception. The message should contain the type name.
             assertTrue(e.getMessage().contains("extended"));
         }
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());

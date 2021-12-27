@@ -145,7 +145,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      *                               └                  ┘
      * }
      *
-     * There is an issue about whether the full row shall contains NaN, or only the last element (the translation
+     * There is an issue about whether the full row shall contain NaN, or only the last element (the translation
      * term) as in the above example.  The current implementation inserts a NaN value in the translation term and
      * sets all other values to 0 on the assumption that if (x₂,y₂) do not depend on (z,t), then conversely (z,t)
      * do not depend on (x₂,y₂) neither. Setting the scale factor to zero expresses that fact, while setting them

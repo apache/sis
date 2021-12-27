@@ -56,8 +56,8 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code --timezone}  </td><td>The timezone for the dates to be formatted.</td></tr>
  * <tr><td>{@code --encoding}  </td><td>The encoding to use for the command outputs and some inputs.</td></tr>
  * <tr><td>{@code --colors}    </td><td>Whether colorized output shall be enabled.</td></tr>
- * <tr><td>{@code --brief}     </td><td>Whether the output should contains only brief information.</td></tr>
- * <tr><td>{@code --verbose}   </td><td>Whether the output should contains more detailed information.</td></tr>
+ * <tr><td>{@code --brief}     </td><td>Whether the output should contain only brief information.</td></tr>
+ * <tr><td>{@code --verbose}   </td><td>Whether the output should contain more detailed information.</td></tr>
  * <tr><td>{@code --debug}     </td><td>Prints full stack trace in case of failure.</td></tr>
  * <tr><td>{@code --help}      </td><td>Lists the options available for a specific command.</td></tr>
  * </table></blockquote>

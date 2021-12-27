@@ -337,8 +337,11 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
      *
      * @see GridDerivation#subgrid(Envelope, double...)
+     *
+     * @since 1.2
      */
-    GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
+    public GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
+        ArgumentChecks.ensureNonNull("other", other);
         final int dimension = other.getDimension();
         this.extent = extent;
         ensureDimensionMatches(dimension, extent);

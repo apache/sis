@@ -64,6 +64,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotFetchCRS_1 = 8;
 
         /**
+         * Can not find an identifier in the database for the reference system “{0}”.
+         */
+        public static final short CanNotFindSRID_1 = 15;
+
+        /**
          * Provider of connections to the database.
          */
         public static final short DataSource = 1;

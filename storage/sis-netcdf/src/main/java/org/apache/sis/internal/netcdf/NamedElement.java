@@ -45,8 +45,9 @@ public abstract class NamedElement {
 
     /**
      * Returns the dimension, variable or attribute name.
+     * Note that dimensions in HDF5 files may be unnamed.
      *
-     * @return the name of this element.
+     * @return the name of this element, or {@code null} if unnamed.
      */
     public abstract String getName();
 

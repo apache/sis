@@ -25,6 +25,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Disposable;
 
 
 /**
@@ -41,7 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
  * and forward {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -122,6 +123,24 @@ abstract class ImageAdapter extends PlanarImage {
     @Override public final Raster         getData()                  {return source.getData();}
     @Override public final Raster         getData(Rectangle region)  {return source.getData(region);}
     @Override public final WritableRaster copyData(WritableRaster r) {return source.copyData(r);}
+
+    /**
+     * Notifies the source image that tiles will be computed soon in the given region.
+     * If the source image is an instance of {@link PlanarImage}, then this method
+     * forwards the notification to it. Otherwise default implementation does nothing.
+     */
+    @Override
+    protected Disposable prefetch(final Rectangle tiles) {
+        if (source instanceof PlanarImage) {
+            /*
+             * Forwarding directly is possible because the contract
+             * of this class said that tile indices must be the same.
+             */
+            return ((PlanarImage) source).prefetch(tiles);
+        } else {
+            return super.prefetch(tiles);
+        }
+    }
 
     /**
      * Compares the given object with this image for equality. This method should be quick and compare

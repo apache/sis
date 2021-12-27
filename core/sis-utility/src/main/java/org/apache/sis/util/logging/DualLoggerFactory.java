@@ -29,7 +29,11 @@ import java.util.logging.Logger;
  * @version 0.3
  * @since   0.3
  * @module
+ *
+ * @deprecated Will be removed since there is now other mechanisms for redirecting logging.
+ *             See <a href="https://issues.apache.org/jira/browse/SIS-531">SIS-531</a>.
  */
+@Deprecated
 final class DualLoggerFactory extends LoggerFactory<DualLogger> {
     /**
      * The factories of loggers on which to delegate logging events.

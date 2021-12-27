@@ -65,7 +65,7 @@ import static org.junit.Assume.assumeTrue;
  * This class does not write anything to disk (except maybe some temporary files).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -159,6 +159,23 @@ public final strictfp class EPSGInstallerTest extends TestCase {
             verifyParameterValues(db.source);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:EPSGInstaller");
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests the creation of an EPSG database on H2.
+     * This test is skipped if the SQL scripts are not found.
+     *
+     * @throws Exception if an error occurred while creating the database.
+     */
+    @Test
+    public void testCreationOnH2() throws Exception {
+        final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
+        try (TestDatabase db = TestDatabase.createOnH2("EPSGInstaller")) {
+            createAndTest(db.source, scripts);
+            verifyParameterValues(db.source);
+        }
+        loggings.assertNextLogContains("EPSG", "jdbc:h2:mem:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
     }
 

@@ -28,7 +28,7 @@ import org.opengis.referencing.operation.TransformException;
  * This class is not thread-safe.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -74,7 +74,7 @@ final class GeometryCoordinateTransform extends GeometryTransform {
         final int maxDim   = Math.max(srcDim, tgtDim);
         final int count    = sequence.size();
         final int capacity = Math.max(4, Math.min(100, count));
-        final CoordinateSequence out = coordinateFactory.create(count, sequence.getDimension());
+        final CoordinateSequence out = coordinateFactory.create(count, tgtDim);
         if (coordinates == null || coordinates.length / maxDim < capacity) {
             coordinates = new double[capacity * maxDim];
         }

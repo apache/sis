@@ -172,7 +172,7 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
-     * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
+     * The elements array size must be equal to {@code numRow*numCol}. Column indices vary fastest.
      *
      * <div class="note"><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
@@ -200,7 +200,7 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given numbers.
-     * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
+     * The elements array size must be equal to {@code numRow*numCol}. Column indices vary fastest.
      *
      * @param  numRow    number of rows.
      * @param  numCol    number of columns.

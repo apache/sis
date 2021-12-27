@@ -61,7 +61,7 @@ public final strictfp class SQLStoreTest extends TestCase {
     /**
      * The schema where will be stored the features to test.
      */
-    private static final String SCHEMA = "features";
+    public static final String SCHEMA = "features";
 
     /**
      * Data used in the {@code Features.sql} test file.
@@ -135,6 +135,16 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     /**
+     * Tests on H2.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnH2() throws Exception {
+        test(TestDatabase.createOnH2("SQLStore"), true);
+    }
+
+    /**
      * Tests on PostgreSQL.
      *
      * @throws Exception if an error occurred while testing the database.
@@ -163,8 +173,8 @@ public final strictfp class SQLStoreTest extends TestCase {
             scripts[0] = null;      // Omit the "CREATE SCHEMA" statement if the schema already exists.
         }
         try (TestDatabase tmp = database) {                 // TODO: omit `tmp` with JDK16.
-            tmp.executeSQL(SQLStoreTest.class, scripts);
-            final StorageConnector connector = new StorageConnector(tmp.source);
+            database.executeSQL(SQLStoreTest.class, scripts);
+            final StorageConnector connector = new StorageConnector(database.source);
             final ResourceDefinition table = ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities");
             testTableQuery(connector, table);
             /*
@@ -207,6 +217,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             verifySimpleQuerySorting(store);
             verifySimpleQueryWithLimit(store);
             verifySimpleWhere(store);
+            verifyWhereOnLink(store);
             verifyStreamOperations(store.findResource("Cities"));
         }
         canada = null;
@@ -429,6 +440,35 @@ public final strictfp class SQLStoreTest extends TestCase {
             names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
         }
         assertSetEquals(Arrays.asList(expectedValues), Arrays.asList(names));
+    }
+
+    /**
+     * Requests a new set of features filtered by a condition on the "sis:identifier" property.
+     * The optimizer should replace that link by a condition on the actual column.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifyWhereOnLink(SQLStore dataset) throws Exception {
+        final String   desiredProperty = "native_name";
+        final String[] expectedValues  = {"Canada"};
+        final FeatureSet   countries   = dataset.findResource("Countries");
+        final FeatureQuery query       = new FeatureQuery();
+        query.setSelection(FF.equal(FF.property("sis:identifier"), FF.literal("CAN")));
+        final String executionMode;
+        final Object[] names;
+        try (Stream<Feature> features = countries.subset(query).features(false)) {
+            executionMode = features.toString();
+            names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
+        }
+        assertArrayEquals(expectedValues, names);
+        /*
+         * Verify that the query is executed with a SQL statement, not with Java code.
+         * The use of SQL is made possible by the replacement of "sis:identifier" link
+         * by a reference to "code" column. If that replacement is not properly done,
+         * then the "predicates" value would be "Java" instead of "SQL".
+         */
+        assertEquals("FeatureStream[table=“Countries”, predicates=“SQL”]", executionMode);
     }
 
     /**

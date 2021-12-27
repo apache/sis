@@ -32,6 +32,7 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.stream.DeferredStream;
 import org.apache.sis.internal.stream.PaginedStream;
 import org.apache.sis.internal.filter.SortByComparator;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
@@ -75,7 +76,7 @@ final class FeatureStream extends DeferredStream<Feature> {
     /**
      * The SQL fragment on the right side of the {@code WHERE} keyword.
      * This buffer does not including the {@code WHERE} keyword.
-     * IT is created when first needed.
+     * It is created when first needed and discarded after the iterator is created.
      */
     private SelectionClause selection;
 
@@ -392,8 +393,7 @@ final class FeatureStream extends DeferredStream<Feature> {
     @Override
     protected Spliterator<Feature> createSourceIterator() throws Exception {
         final String filter = (selection != null && !selection.isEmpty()) ? selection.toString() : null;
-        selection   = null;     // Let the garbage collector do its work.
-        filterToSQL = null;
+        selection = null;             // Let the garbage collector do its work.
 
         final Connection connection = getConnection();
         setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
@@ -401,5 +401,20 @@ final class FeatureStream extends DeferredStream<Feature> {
         final FeatureIterator features = new FeatureIterator(table, connection, distinct, filter, sort, offset, count);
         setCloseHandler(features);
         return features;
+    }
+
+    /**
+     * Returns a string representation of this stream for debugging purposes.
+     * The returned string tells whether filtering and sorting are done using
+     * SQL statement, Java code, or a mix of both.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "table", table.name.table,
+                "predicates", hasPredicates ? (filterToSQL != null ? "mixed" : "Java") : (filterToSQL != null ? "SQL" : null),
+                "comparator", hasComparator ? (sort != null ? "mixed" : "Java") : (sort != null ? "SQL" : null),
+                "distinct",   distinct ? Boolean.TRUE : null,
+                "offset",     offset != 0 ? offset : null,
+                "count",      count  != 0 ? count  : null);
     }
 }

@@ -31,7 +31,7 @@ import org.apache.sis.internal.sql.feature.InfoStatements;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.1
+ * @since   1.2
  * @version 1.1
  * @module
  */
@@ -41,6 +41,16 @@ final class ExtendedInfo extends InfoStatements {
      * This statement is used for objects of type "Geography", which is a data type specific to PostGIS.
      */
     private PreparedStatement geographyColumns;
+
+    /**
+     * A statement for fetching raster information for a specific column.
+     */
+    protected PreparedStatement rasterColumns;
+
+    /**
+     * The object for reading a raster, or {@code null} if not yet created.
+     */
+    private RasterReader rasterReader;
 
     /**
      * Creates an initially empty {@code PostgisStatements} which will use
@@ -57,15 +67,29 @@ final class ExtendedInfo extends InfoStatements {
      * @param  columns  all columns for the specified table. Keys are column names.
      */
     @Override
-    public void completeGeometryColumns(final TableReference source, final Map<String,Column> columns) throws Exception {
+    public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
         if (geometryColumns == null) {
-            geometryColumns = prepareGeometryStatement("geometry_columns", "f_geometry_column", "type");
+            geometryColumns = prepareIntrospectionStatement("geometry_columns", 'f', "geometry_column", "type");
         }
         if (geographyColumns == null) {
-            geographyColumns = prepareGeometryStatement("geography_columns", "f_geography_column", "type");
+            geographyColumns = prepareIntrospectionStatement("geography_columns", 'f', "geography_column", "type");
         }
-        completeGeometryColumns(geometryColumns,  source, columns, COLUMN_TYPE_IS_TEXTUAL);
-        completeGeometryColumns(geographyColumns, source, columns, COLUMN_TYPE_IS_TEXTUAL);
+        if (rasterColumns == null) {
+            rasterColumns = prepareIntrospectionStatement("raster_columns", 'r', "raster_column", null);
+        }
+        configureSpatialColumns(geometryColumns,  source, columns, GeometryTypeEncoding.TEXTUAL);
+        configureSpatialColumns(geographyColumns, source, columns, GeometryTypeEncoding.TEXTUAL);
+        configureSpatialColumns(rasterColumns,    source, columns, null);
+    }
+
+    /**
+     * Returns a reader for decoding PostGIS Raster binary format to grid coverage instances.
+     */
+    final RasterReader getRasterReader() {
+        if (rasterReader == null) {
+            rasterReader = new RasterReader(this);
+        }
+        return rasterReader;
     }
 
     /**

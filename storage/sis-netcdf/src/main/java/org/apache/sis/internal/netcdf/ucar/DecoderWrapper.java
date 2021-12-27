@@ -58,7 +58,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -498,7 +498,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     protected Dimension findDimension(final String dimName) {
         final ucar.nc2.Dimension dimension = file.findDimension(dimName);
-        return (dimension != null) ? new DimensionWrapper(dimension) : null;
+        return (dimension != null) ? new DimensionWrapper(dimension, -1) : null;
     }
 
     /**

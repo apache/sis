@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.sql.SQLException;
 import org.opengis.util.GenericName;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -124,6 +125,13 @@ abstract class FeatureAnalyzer {
      * @see Database#hasGeometry
      */
     boolean hasGeometry;
+
+    /**
+     * Whether this table or view contains at least one raster column.
+     *
+     * @see Database#hasRaster
+     */
+    boolean hasRaster;
 
     /**
      * Creates a new analyzer.
@@ -228,11 +236,12 @@ abstract class FeatureAnalyzer {
              * If geometry columns are found, the first one will be defined as the default geometry.
              * Note: a future version may allow user to select which column should be the default.
              */
-            if (Geometries.isKnownType(getter.valueType)) {
-                if (!hasGeometry) {
-                    hasGeometry = true;
-                    attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
-                }
+            if (!hasGeometry && Geometries.isKnownType(getter.valueType)) {
+                hasGeometry = true;
+                attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
+            }
+            if (!hasRaster) {
+                hasRaster = GridCoverage.class.isAssignableFrom(getter.valueType);
             }
         }
         /*

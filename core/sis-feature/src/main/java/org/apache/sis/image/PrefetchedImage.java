@@ -30,6 +30,7 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Disposable;
 
 
 /**
@@ -118,10 +119,23 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
         numYTiles = ti.height;
         tiles     = new Raster[Math.multiplyExact(numYTiles, numXTiles)];
         worker.setErrorHandler(errorHandler, ImageProcessor.class, "prefetch");
-        if (parallel) {
-            worker.parallelReadFrom(source);
-        } else {
-            worker.readFrom(source);
+        final Disposable ph = (source instanceof PlanarImage) ? ((PlanarImage) source).prefetch(ti) : null;
+        try {
+            if (parallel) {
+                worker.parallelReadFrom(source);
+            } else {
+                worker.readFrom(source);
+            }
+        } catch (Throwable ex) {
+            if (ph != null) try {
+                ph.dispose();
+            } catch (Throwable e) {
+                ex.addSuppressed(e);
+            }
+            throw ex;
+        }
+        if (ph != null) {
+            ph.dispose();
         }
         /*
          * If an error occurred during a tile computation, the array element corresponding

@@ -24,7 +24,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -43,6 +42,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -244,17 +244,8 @@ public class ResampledImage extends ComputedImage {
         /*
          * If the image uses an index color model, interpolating the indexed values does not produce
          * the expected colors. Safest approach is to disable completely interpolations in that case.
-         *
-         * Note: we could interpolate if we knew that all index values, without exception (i.e. no index for
-         * missing values), are related to measurements by a linear function. It practice it rarely happens,
-         * because there is usually at least one index value reserved for missing values. Scientific data in
-         * SIS are usually stored as floating point type (with missing values mapped to NaN), which can not
-         * be associated to `IndexColorModel`. For now we don't try to perform a more sophisticated detection
-         * of which interpolations are allowed, but a future SIS version may revisit this policy if needed.
          */
-        if (source.getColorModel() instanceof IndexColorModel) {
-            interpolation = Interpolation.NEAREST;
-        }
+        interpolation = interpolation.toCompatible(source);
         /*
          * If the interpolation requires more than 2×2 pixels, we will need to shift the transform
          * to source image. For example if the interpolation requires 4×4 pixels, the interpolation
@@ -874,6 +865,33 @@ public class ResampledImage extends ComputedImage {
             }
         }
         return tile;
+    }
+
+    /**
+     * Notifies the source image that tiles will be computed soon in the given region.
+     * If the source image is an instance of {@link ComputedImage}, then this method
+     * forwards the notification to it. Otherwise default implementation does nothing.
+     *
+     * @since 1.2
+     */
+    @Override
+    protected Disposable prefetch(final Rectangle tiles) {
+        final RenderedImage source = getSource();
+        if (source instanceof PlanarImage) try {
+            final Dimension s = interpolation.getSupportSize();
+            Rectangle pixels = ImageUtilities.tilesToPixels(this, tiles);
+            final Rectangle2D bounds = new Rectangle2D.Double(
+                    pixels.x      -  0.5  *  s.width,
+                    pixels.y      -  0.5  *  s.height,
+                    pixels.width  + (double) s.width,
+                    pixels.height + (double) s.height);
+            pixels = (Rectangle) Shapes2D.transform(MathTransforms.bidimensional(toSource), bounds, pixels);
+            ImageUtilities.clipBounds(source, pixels);
+            return ((PlanarImage) source).prefetch(ImageUtilities.pixelsToTiles(source, pixels));
+        } catch (TransformException e) {
+            recoverableException("prefetch", e);
+        }
+        return super.prefetch(tiles);
     }
 
     /**

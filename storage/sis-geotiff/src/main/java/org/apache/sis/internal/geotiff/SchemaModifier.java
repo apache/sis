@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.geotiff;
 
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.opengis.metadata.Metadata;
@@ -29,6 +29,11 @@ import org.opengis.util.GenericName;
 
 /**
  * Modifies the metadata and bands inferred from GeoTIFF tags.
+ *
+ * <h2>Image indices</h2>
+ * All image {@code index} arguments in this interfaces starts with 0 for the first (potentially pyramided) image
+ * are are incremented by 1 after each <em>pyramid</em>, as defined by the cloud Optimized GeoTIFF specification.
+ * Consequently those indices may differ from TIFF <cite>Image File Directory</cite> (IFD) indices.
  *
  * @todo May move to public API (in revised form) in a future version.
  *
@@ -89,18 +94,7 @@ public interface SchemaModifier {
     default SampleDimension customize(final int image, final int band, NumberRange<?> sampleRange,
                                       final Number fillValue, final SampleDimension.Builder dimension)
     {
-        if (fillValue != null) {
-            dimension.setBackground(null, fillValue);
-            if (sampleRange != null && sampleRange.containsAny(fillValue)) {
-                final double fill = fillValue.doubleValue();
-                if (sampleRange.getMaxDouble() - fill < fill - sampleRange.getMinDouble()) {
-                    sampleRange = NumberRange.createBestFit(sampleRange.getMinValue(), sampleRange.isMinIncluded(), fill, false);
-                } else {
-                    sampleRange = NumberRange.createBestFit(fill, false, sampleRange.getMaxValue(), sampleRange.isMaxIncluded());
-                }
-                dimension.addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Values), sampleRange, sampleRange);
-            }
-        }
+        SampleDimensions.addDefaultCategories(0, false, sampleRange, fillValue, dimension);
         return dimension.build();
     }
 

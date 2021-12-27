@@ -755,7 +755,7 @@ class PropertyAccessor {
             }
         } catch (IllegalAccessException e) {
             /*
-             * Should never happen since 'getters' should contains only public methods.
+             * Should never happen since 'getters' should contain only public methods.
              */
             throw new AssertionError(method.toString(), e);
         } catch (InvocationTargetException e) {
@@ -908,7 +908,7 @@ class PropertyAccessor {
         try {
             setter.invoke(metadata, newValues);
         } catch (IllegalAccessException e) {
-            // Should never happen since 'setters' should contains only public methods.
+            // Should never happen since 'setters' should contain only public methods.
             throw new AssertionError(e);
         } catch (InvocationTargetException e) {
             final Throwable cause = e.getTargetException();

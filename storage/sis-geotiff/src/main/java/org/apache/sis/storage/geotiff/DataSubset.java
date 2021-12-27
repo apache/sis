@@ -288,7 +288,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * will start at the given {@code offsetAOI} values.
      *
-     * <p>This method is thread-safe.</p>
+     * <p>This method is thread-safe. Synchronization is done on {@link DataCube#getSynchronizationLock()}.</p>
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
      * @return tiles decoded from the TIFF file.

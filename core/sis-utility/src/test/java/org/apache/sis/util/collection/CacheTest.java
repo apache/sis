@@ -308,7 +308,7 @@ public final strictfp class CacheTest extends TestCase {
          */
         final Statistics afterGC = validateStressEntries("After GC", cache);
         out.println("Statistics on the keys before and after garbage collection.");
-        out.println("The minimum value shall always be equals or greater after GC.");
+        out.println("The minimum value shall always be equal or greater after GC.");
         out.println("The mean value is usually greater too, except by coincidence.");
         final StatisticsFormat format = StatisticsFormat.getInstance();
         format.setBorderWidth(1);

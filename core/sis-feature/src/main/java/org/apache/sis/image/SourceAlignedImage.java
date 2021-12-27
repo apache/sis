@@ -17,10 +17,12 @@
 package org.apache.sis.image;
 
 import java.util.Set;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.jdk9.JDK9;
 
@@ -184,4 +186,23 @@ abstract class SourceAlignedImage extends ComputedImage {
     @Override public final int getTileHeight()      {return getSource().getTileHeight();}
     @Override public final int getTileGridXOffset() {return getSource().getTileGridXOffset();}
     @Override public final int getTileGridYOffset() {return getSource().getTileGridYOffset();}
+
+    /**
+     * Notifies the source image that tiles will be computed soon in the given region.
+     * If the source image is an instance of {@link PlanarImage}, then this method
+     * forwards the notification to it. Otherwise default implementation does nothing.
+     */
+    @Override
+    protected Disposable prefetch(final Rectangle tiles) {
+        final RenderedImage source = getSource();
+        if (source instanceof PlanarImage) {
+            /*
+             * Forwarding directly is possible because the contract
+             * of this class said that tile indices must be the same.
+             */
+            return ((PlanarImage) source).prefetch(tiles);
+        } else {
+            return super.prefetch(tiles);
+        }
+    }
 }

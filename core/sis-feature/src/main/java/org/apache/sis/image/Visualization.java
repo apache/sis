@@ -30,7 +30,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
-import java.awt.image.DataBuffer;
 import java.nio.DoubleBuffer;
 import javax.measure.Quantity;
 import org.apache.sis.coverage.Category;
@@ -250,18 +249,6 @@ final class Visualization extends ResampledImage {
                 colorizer.initialize(statistics.minimum(), statistics.maximum());
             }
             /*
-             * At this point we finished to configure the colorizer; we are ready to build the `ColorModel`.
-             * If the source image uses unsigned integer types and there is no resampling operation, we can
-             * update the color model without changing sample values. This is much cheaper and as accurate.
-             */
-            final int dataType = source.getSampleModel().getDataType();
-            if (dataType == DataBuffer.TYPE_BYTE || dataType == DataBuffer.TYPE_USHORT) {
-                if (toSource != null && !toSource.isIdentity()) {
-                    source = processor.resample(source, bounds, toSource);
-                }
-                return RecoloredImage.create(source, colorizer.createColorModel(dataType, NUM_BANDS, VISIBLE_BAND));
-            }
-            /*
              * If we reach this point, sample values need to be converted to integers in [0 … 255] range.
              * Skip any previous `RecoloredImage` since we are replacing the `ColorModel` by a new one.
              */
@@ -284,7 +271,7 @@ final class Visualization extends ResampledImage {
                 layout        = ImageLayout.fixedSize(source);
                 interpolation = Interpolation.NEAREST;
             } else {
-                interpolation = combine(interpolation, converters);
+                interpolation = combine(interpolation.toCompatible(source), converters);
                 converters    = null;
             }
             /*
@@ -317,7 +304,7 @@ final class Visualization extends ResampledImage {
      * destination image. This class is used for combining {@link ResampledImage} and {@link BandedSampleConverter}
      * in a single operation.
      */
-    static class InterpConvert implements Interpolation {
+    static class InterpConvert extends Interpolation {
         /**
          * The object to use for performing interpolations.
          *
@@ -364,6 +351,11 @@ final class Visualization extends ResampledImage {
             } catch (TransformException e) {
                 throw new BackingStoreException(e);     // Will be unwrapped by computeTile(…).
             }
+        }
+
+        /** This interpolation never need to be disabled. */
+        @Override Interpolation toCompatible(final RenderedImage source) {
+            return this;
         }
     }
 

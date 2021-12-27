@@ -25,8 +25,6 @@ import java.sql.SQLException;
 import java.sql.SQLDataException;
 import org.postgresql.PGProperty;
 import org.postgresql.ds.PGSimpleDataSource;
-import org.hsqldb.jdbc.JDBCDataSource;
-import org.hsqldb.jdbc.JDBCPool;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.sis.internal.metadata.sql.LocalDataSource;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
@@ -66,13 +64,13 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */
 public strictfp class TestDatabase implements AutoCloseable {
     /**
-     * Data source to an alternative database to use for testing purpose.
+     * Data source for connection to an alternative database for testing purpose.
      * If {@code null}, an in-memory Derby database will be used.
      *
      * This field is occasionally set to a non-null value (e.g. a connection to a PostgreSQL database) only for
@@ -150,14 +148,14 @@ public strictfp class TestDatabase implements AutoCloseable {
      */
     public static TestDatabase createOnHSQLDB(final String name, final boolean pooled) throws SQLException {
         final DataSource ds;
-        final JDBCPool pool;
+        final org.hsqldb.jdbc.JDBCPool pool;
         final String url = "jdbc:hsqldb:mem:".concat(name);
         if (pooled) {
-            pool = new JDBCPool();
+            pool = new org.hsqldb.jdbc.JDBCPool();
             pool.setURL(url);
             ds = pool;
         } else {
-            final JDBCDataSource simple = new JDBCDataSource();
+            final org.hsqldb.jdbc.JDBCDataSource simple = new org.hsqldb.jdbc.JDBCDataSource();
             simple.setURL(url);
             ds = simple;
             pool = null;
@@ -169,6 +167,32 @@ public strictfp class TestDatabase implements AutoCloseable {
                 }
                 if (pool != null) {
                     pool.close(2);
+                }
+            }
+        };
+    }
+
+    /**
+     * Creates a in-memory database on H2. The database can optionally use a connection pool.
+     *
+     * @param  name  the database name (without {@code "jdbc:h2:mem:"} prefix).
+     * @return connection to the test database.
+     * @throws SQLException if an error occurred while creating the database.
+     *
+     * @since 1.2
+     */
+    public static TestDatabase createOnH2(final String name) throws SQLException {
+        /*
+         * By default closing the last connection to a database causes the content to be lost.
+         * The DB_CLOSE_DELAY=-1 parameter keeps the database alive until SHUTDOWN is invoked.
+         */
+        final String url = "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1";
+        final org.h2.jdbcx.JdbcDataSource ds = new org.h2.jdbcx.JdbcDataSource();
+        ds.setURL(url);
+        return new TestDatabase(ds) {
+            @Override public void close() throws SQLException {
+                try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
+                    s.execute("SHUTDOWN");
                 }
             }
         };
