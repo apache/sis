@@ -502,6 +502,12 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.orbisgis</groupId>     <!-- LGPL but used only for tests. No code depends on it. -->
+        <artifactId>h2gis</artifactId>
+        <version>1.5.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>42.3.1</version>
