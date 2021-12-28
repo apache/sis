@@ -303,6 +303,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Open = 28;
 
         /**
+         * Open containing folder
+         */
+        public static final short OpenContainingFolder = 66;
+
+        /**
          * Open data file
          */
         public static final short OpenDataFile = 29;
