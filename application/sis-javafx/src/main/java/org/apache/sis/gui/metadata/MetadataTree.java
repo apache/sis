@@ -29,15 +29,23 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.PropertyFormat;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
@@ -64,7 +72,7 @@ import org.apache.sis.util.logging.Logging;
  *       For changing content, use the {@link #contentProperty} instead.</li>
  * </ul>
  *
- * @todo Add a panel for controlling the number/date/angle format pattern.
+ * @todo Add menu items for controlling the number/date/angle format pattern.
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -89,7 +97,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * The column for metadata property value in the model.
      * This is usually {@link TableColumn#VALUE} or {@link TableColumn#VALUE_AS_TEXT}.
      */
-    TableColumn<?> valueSourceColumn;
+    private TableColumn<?> valueSourceColumn;
 
     /**
      * The data shown in this tree table. The {@link ObjectProperty#set(Object)} method requires
@@ -146,7 +154,7 @@ check:      if (data != null) {
      * Creates a new initially empty metadata tree.
      */
     public MetadataTree() {
-        this(null, false);
+        this(null);
     }
 
     /**
@@ -157,6 +165,8 @@ check:      if (data != null) {
      */
     public MetadataTree(final MetadataSummary controller) {
         this(controller, false);
+        setRowFactory(Row::new);
+        setShowRoot(false);
     }
 
     /**
@@ -183,9 +193,6 @@ check:      if (data != null) {
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
         contentProperty.addListener(MetadataTree::applyChange);
-        if (!standard) {
-            setShowRoot(false);
-        }
     }
 
     /**
@@ -373,6 +380,68 @@ check:      if (data != null) {
                 // Leave `value` as-is. It will be formatted using `Object.toString()`.
             }
             return new ReadOnlyObjectWrapper<>(value);
+        }
+    }
+
+    /**
+     * A row in a metadata tree view, used for adding contextual menu on a row-by-row basis.
+     */
+    static class Row extends TreeTableRow<TreeTable.Node> implements EventHandler<ActionEvent> {
+        /**
+         * The context menu, to be added only if this row is non-empty.
+         */
+        protected final ContextMenu menu;
+
+        /**
+         * The menu item for copying current row.
+         */
+        protected final MenuItem copy;
+
+        /**
+         * Creates a new row for the given tree table.
+         */
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
+        Row(final TreeTableView<TreeTable.Node> view) {
+            final MetadataTree md = (MetadataTree) view;
+            final Resources localized = Resources.forLocale(md.getLocale());
+            copy = new MenuItem(localized.getString(Resources.Keys.Copy));
+            menu = new ContextMenu(copy);
+            copy.setOnAction(this);
+        }
+
+        /**
+         * Invoked when a new row is selected. This method sets the contextual menu on the row.
+         */
+        @Override
+        protected void updateItem​(final TreeTable.Node item, final boolean empty) {
+            super.updateItem(item, empty);
+            setContextMenu(empty ? null : menu);
+            copy.setDisable(empty || getValue() == null);
+        }
+
+        /**
+         * Returns the object in the "value" column of current row, or {@code null} if none.
+         */
+        private Object getValue() {
+            final TreeTable.Node node = getItem();
+            if (node != null) {
+                final Object obj = node.getUserObject();
+                return (obj != null) ? obj : node.getValue(((MetadataTree) getTreeTableView()).valueSourceColumn);
+            }
+            return null;
+        }
+
+        /**
+         * Invoked when user selected a menu item.
+         */
+        @Override
+        public void handle(final ActionEvent event) {
+            final Object value = getValue();
+            if (value != null) {
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(value.toString());
+                Clipboard.getSystemClipboard().setContent(content);
+            }
         }
     }
 }

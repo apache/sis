@@ -20,12 +20,9 @@ import java.util.Collections;
 import java.io.StringWriter;
 import javax.xml.transform.stream.StreamResult;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import org.opengis.metadata.Metadata;
@@ -67,16 +64,11 @@ import org.apache.sis.xml.XML;
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 public class StandardMetadataTree extends MetadataTree {
-    /**
-     * The "copy" and "copy as" localized string, used for contextual menus.
-     */
-    private final String copy, copyAs;
-
     /**
      * Creates a new initially empty metadata tree.
      */
@@ -94,24 +86,9 @@ public class StandardMetadataTree extends MetadataTree {
      */
     public StandardMetadataTree(final MetadataSummary controller) {
         super(controller, true);
-        final Resources localized = Resources.forLocale(getLocale());
-        copy   = localized.getString(Resources.Keys.Copy);
-        copyAs = localized.getString(Resources.Keys.CopyAs);
         setRowFactory(Row::new);
         if (controller != null) {
             controller.metadataProperty.addListener((p,o,n) -> setContent(n));
-        }
-    }
-
-    /**
-     * Returns the given metadata as a tree table.
-     */
-    private static TreeTable toTree(final Object metadata) {
-        if (metadata instanceof AbstractMetadata) {
-            return ((AbstractMetadata) metadata).asTreeTable();
-        } else {
-            // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
-            return MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
         }
     }
 
@@ -122,25 +99,29 @@ public class StandardMetadataTree extends MetadataTree {
      * @param  metadata  the metadata to show in this tree table view, or {@code null} if none.
      */
     public void setContent(final Metadata metadata) {
-        setContent(metadata == null ? null : toTree(metadata));
+        final TreeTable tree;
+        if (metadata == null) {
+            tree = null;
+        } else if (metadata instanceof AbstractMetadata) {
+            tree = ((AbstractMetadata) metadata).asTreeTable();
+        } else {
+            // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
+            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
+        }
+        setContent(tree);
     }
 
     /**
      * A row in a metadata tree view, used for adding contextual menu on a row-by-row basis.
      */
-    private static final class Row extends TreeTableRow<TreeTable.Node> implements EventHandler<ActionEvent> {
-        /**
-         * The context menu, to be added only if this row is non-empty.
-         */
-        private final ContextMenu menu;
-
+    private static final class Row extends MetadataTree.Row {
         /**
          * The menu items for XML or WKT formats.
          */
         private final MenuItem copyAsXML, copyAsLegacy, copyAsWKT;
 
         /**
-         * The menu items for copying in XML formats, to be disabled if we can not do this export.
+         * The group of menu items for copying in various formats, to be disabled if we can not do this export.
          */
         private final Menu copyAs;
 
@@ -149,21 +130,21 @@ public class StandardMetadataTree extends MetadataTree {
          */
         @SuppressWarnings("ThisEscapedInObjectConstruction")
         Row(final TreeTableView<TreeTable.Node> view) {
+            super(view);
             final StandardMetadataTree md = (StandardMetadataTree) view;
-            final MenuItem copy;
-            copy         = new MenuItem(md.copy);
+            final Resources localized = Resources.forLocale(md.getLocale());
             copyAsXML    = new MenuItem();
             copyAsWKT    = new MenuItem("WKT — Well Known Text");
             copyAsLegacy = new MenuItem("XML — Metadata (2007)");
-            copyAs       = new Menu(md.copyAs, null, copyAsWKT, copyAsXML, copyAsLegacy);
-            menu         = new ContextMenu(copy, copyAs);
+            copyAs       = new Menu(localized.getString(Resources.Keys.CopyAs), null, copyAsWKT, copyAsXML, copyAsLegacy);
+            menu        .getItems().add(copyAs);
             copyAsLegacy.setOnAction(this);
             copyAsXML   .setOnAction(this);
-            copy        .setOnAction(this);
+            copyAsWKT   .setOnAction(this);
         }
 
         /**
-         * Invoked when a new row is selected. This method enable or disable the "copy as" menu
+         * Invoked when a new row is selected. This method enables or disables the "copy as" menu
          * depending on whether or not we can format XML document for currently selected row.
          */
         @Override
@@ -190,7 +171,6 @@ public class StandardMetadataTree extends MetadataTree {
                 }
                 copyAs.setDisable(disabled);
             }
-            setContextMenu(empty ? null : menu);
         }
 
         /**
@@ -203,7 +183,9 @@ public class StandardMetadataTree extends MetadataTree {
             final TreeTable.Node node = getItem();
             if (node != null) {
                 final Object obj = node.getUserObject();
-                if (obj != null) {
+                if (obj == null) {
+                    super.handle(event);
+                } else {
                     final Object source = event.getSource();
                     final ClipboardContent content = new ClipboardContent();
                     final String text;
@@ -220,21 +202,16 @@ public class StandardMetadataTree extends MetadataTree {
                                     Collections.singletonMap(XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
                             text = output.toString();
                             content.put(DataFormats.ISO_19139, text);
-                        } else if (MetadataStandard.ISO_19115.isMetadata(obj.getClass())) {
-                            text = toTree(obj).toString();
                         } else {
-                            final Object value = node.getValue(((MetadataTree) getTreeTableView()).valueSourceColumn);
-                            if (value == null) return;
-                            text = value.toString();
+                            text = obj.toString();
                         }
+                        content.putString(text);
+                        Clipboard.getSystemClipboard().setContent(content);
                     } catch (Exception e) {
                         final Resources localized = Resources.forLocale(((MetadataTree) getTreeTableView()).getLocale());
                         ExceptionReporter.show(this, localized.getString(Resources.Keys.ErrorExportingData),
                                                      localized.getString(Resources.Keys.CanNotCreateXML), e);
-                        return;
                     }
-                    content.putString(text);
-                    Clipboard.getSystemClipboard().setContent(content);
                 }
             }
         }
