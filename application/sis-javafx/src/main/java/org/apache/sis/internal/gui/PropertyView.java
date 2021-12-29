@@ -32,6 +32,7 @@ import java.awt.image.RenderedImage;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
@@ -70,8 +71,9 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
 
     /**
      * The node used for showing {@link #value}.
+     * The node is created by {@link #set(Object, Rectangle)}.
      */
-    private final ObjectProperty<Node> view;
+    public final ObjectProperty<Node> view;
 
     /**
      * Shows the {@linkplain #value} as plain text.
@@ -94,8 +96,10 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     /**
      * The pane containing {@link #imageView}. We use that pane for allowing a background color to be specified.
      * A future version may also use that pane for putting more visual components on top or below the image.
+     *
+     * @see #getImageCanvas()
      */
-    private final Pane imageCanvas;
+    private Pane imageCanvas;
 
     /**
      * The group of all components related to image, created when first needed.
@@ -131,19 +135,19 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
      * Creates a new property view.
      *
      * @param  locale      the locale for numbers formatting.
-     * @param  view        the property where to set the node showing the value.
+     * @param  view        the property where to set the node showing the value, or {@code null} for a default one.
      * @param  background  the image background color, or {@code null} if none.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
+    public PropertyView(final Locale locale, ObjectProperty<Node> view, final ObjectProperty<Background> background) {
         super(locale, null);
-        this.view = view;
-        imageCanvas = new Pane();
-        if (background != null) {
-            imageCanvas.backgroundProperty().bind(background);
+        if (view == null) {
+            view = new SimpleObjectProperty<>(this, "view");
         }
-        imageCanvas.widthProperty() .addListener(this);
-        imageCanvas.heightProperty().addListener(this);
+        this.view = view;
+        if (background != null) {
+            getImageCanvas().backgroundProperty().bind(background);
+        }
     }
 
     /**
@@ -292,12 +296,25 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     }
 
     /**
+     * Returns the pane containing {@link #imageView}.
+     */
+    private Pane getImageCanvas() {
+        if (imageCanvas == null) {
+            imageCanvas = new Pane();
+            imageCanvas.widthProperty() .addListener(this);
+            imageCanvas.heightProperty().addListener(this);
+        }
+        return imageCanvas;
+    }
+
+    /**
      * Sets the property value to the given image.
      *
      * @param  image          the property value to set, or {@code null}.
      * @param  boundsChanged  whether {@link #visibleImageBounds} changed since last call.
      */
     private Node setImage(final RenderedImage image, final boolean boundsChanged) {
+        final Pane imageCanvas = getImageCanvas();
         ImageView node = imageView;
         if (node == null) {
             node = new ImageView();
@@ -413,7 +430,10 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
         value = null;
         view.set(null);
         if (textView != null) {
-            textView .setText (null);
+            textView.setText(null);
+        }
+        if (listView != null) {
+            listView.getItems().clear();
         }
         if (imageView != null) {
             ImageConverter.clear(imageView);

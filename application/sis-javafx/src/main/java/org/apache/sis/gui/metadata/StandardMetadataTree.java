@@ -203,7 +203,7 @@ public class StandardMetadataTree extends MetadataTree {
                             text = output.toString();
                             content.put(DataFormats.ISO_19139, text);
                         } else {
-                            text = obj.toString();
+                            text = toString(obj);
                         }
                         content.putString(text);
                         Clipboard.getSystemClipboard().setContent(content);

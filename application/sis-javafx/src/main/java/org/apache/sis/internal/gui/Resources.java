@@ -318,6 +318,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Orthographic = 52;
 
         /**
+         * Property value
+         */
+        public static final short PropertyValue = 68;
+
+        /**
          * Range of values…
          */
         public static final short RangeOfValues = 56;
@@ -366,6 +371,11 @@ public final class Resources extends IndexedResourceBundle {
          * Universal Transverse Mercator
          */
         public static final short UTM = 45;
+
+        /**
+         * View
+         */
+        public static final short View = 67;
 
         /**
          * Visualize

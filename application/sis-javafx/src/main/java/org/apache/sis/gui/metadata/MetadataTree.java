@@ -29,6 +29,9 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
@@ -46,6 +49,8 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.PropertyFormat;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.PropertyView;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
@@ -107,6 +112,19 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * @see #setContent(TreeTable)
      */
     public final ObjectProperty<TreeTable> contentProperty;
+
+    /**
+     * Content of a dialog showing the value of selected row.
+     *
+     * @see #showPropertyValue(Object)
+     */
+    private PropertyView propertyViewer;
+
+    /**
+     * The dialog showing the property value. We keep the instance for preserving
+     * its size and position if the user modifies them.
+     */
+    private Dialog<Void> propertyDialog;
 
     /**
      * Implementation of {@link MetadataTree#contentProperty} as a named class for more readable stack trace.
@@ -246,6 +264,9 @@ check:      if (data != null) {
                                     final TreeTable oldValue, final TreeTable  newValue)
     {
         final MetadataTree s = (MetadataTree) ((ContentProperty) property).getBean();
+        if (s.propertyViewer != null) {
+            s.propertyViewer.clear();
+        }
         TreeItem<TreeTable.Node> root = null;
         if (newValue != null) {
             root = new Item(newValue.getRoot());
@@ -393,30 +414,35 @@ check:      if (data != null) {
         protected final ContextMenu menu;
 
         /**
-         * The menu item for copying current row.
+         * The menu item for copying current row or viewing in a dialog box.
          */
-        protected final MenuItem copy;
+        private final MenuItem view, copy;
 
         /**
          * Creates a new row for the given tree table.
          */
         @SuppressWarnings("ThisEscapedInObjectConstruction")
-        Row(final TreeTableView<TreeTable.Node> view) {
-            final MetadataTree md = (MetadataTree) view;
+        Row(final TreeTableView<TreeTable.Node> owner) {
+            final MetadataTree md = (MetadataTree) owner;
             final Resources localized = Resources.forLocale(md.getLocale());
+            view = new MenuItem(localized.getString(Resources.Keys.View));
             copy = new MenuItem(localized.getString(Resources.Keys.Copy));
-            menu = new ContextMenu(copy);
+            menu = new ContextMenu(view, copy);
             copy.setOnAction(this);
+            view.setOnAction((h) -> ((MetadataTree) getTreeTableView()).showPropertyValue(getValue()));
         }
 
         /**
-         * Invoked when a new row is selected. This method sets the contextual menu on the row.
+         * Invoked when a new row is selected.
+         * This method sets the contextual menu on the row and updates the disabled state.
          */
         @Override
         protected void updateItem​(final TreeTable.Node item, final boolean empty) {
             super.updateItem(item, empty);
             setContextMenu(empty ? null : menu);
-            copy.setDisable(empty || getValue() == null);
+            final boolean disabled = empty || getValue() == null;
+            view.setDisable(disabled);
+            copy.setDisable(disabled);
         }
 
         /**
@@ -432,16 +458,47 @@ check:      if (data != null) {
         }
 
         /**
-         * Invoked when user selected a menu item.
+         * Invoked when user selected a "Copy" or "Copy as" menu item.
+         * The default implementation handles the "Copy" action,
+         * but subclasses can override for handling other copy variants.
          */
         @Override
         public void handle(final ActionEvent event) {
             final Object value = getValue();
             if (value != null) {
                 final ClipboardContent content = new ClipboardContent();
-                content.putString(value.toString());
+                content.putString(toString(value));
                 Clipboard.getSystemClipboard().setContent(content);
             }
         }
+
+        /**
+         * Returns a string representation of the given object
+         * for the purpose of a "copy to clipboard" operation.
+         */
+        static String toString(final Object obj) {
+            if (obj instanceof Throwable) {
+                return ExceptionReporter.getStackTrace((Throwable) obj);
+            }
+            return obj.toString();
+        }
+    }
+
+    /**
+     * Shows the given value in a dialog box.
+     */
+    private void showPropertyValue(final Object value) {
+        if (propertyViewer == null) {
+            propertyViewer = new PropertyView(getLocale(), null, null);
+            propertyDialog = new Dialog<>();
+            propertyDialog.setResizable(true);
+            propertyDialog.setTitle(Resources.forLocale(getLocale()).getString(Resources.Keys.PropertyValue));
+            propertyDialog.initOwner(getScene().getWindow());
+            final DialogPane pane = propertyDialog.getDialogPane();
+            pane.contentProperty().bind(propertyViewer.view);
+            pane.getButtonTypes().add(ButtonType.CLOSE);
+        }
+        propertyViewer.set(value, null);
+        propertyDialog.show();
     }
 }
