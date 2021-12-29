@@ -418,6 +418,7 @@ public class RenderingData implements Cloneable {
 
     /**
      * Returns the position at the center of source data, or {@code null} if none.
+     * The coordinates are expressed in the CRS of the source coverage.
      */
     private DirectPosition getSourceMedian() {
         if (dataGeometry.isDefined(GridGeometry.ENVELOPE)) {
@@ -585,13 +586,23 @@ public class RenderingData implements Cloneable {
     /**
      * Conversion or transformation from {@linkplain PlanarCanvas#getObjectiveCRS() objective CRS} to
      * {@linkplain #data} CRS. This transform will include {@code WraparoundTransform} steps if needed.
+     *
+     * @param  transform     the transform to concatenate with a "wraparound" operation.
+     * @param  sourceMedian  point of interest in the <em>source</em> CRS of given transform.
+     * @param  targetMedian  point of interest after wraparound.
+     * @param  targetCRS     the target CRS of the given transform.
      */
-    private static MathTransform applyWraparound(final MathTransform transform, final DirectPosition sourceMedian,
+    private static MathTransform applyWraparound(final MathTransform transform, DirectPosition sourceMedian,
             final DirectPosition targetMedian, final CoordinateReferenceSystem targetCRS) throws TransformException
     {
         if (targetMedian == null) {
             return transform;
         }
+        /*
+         * This method is invoked with `sourceMedian` expressed in the transform source CRS.
+         * But by contract, `WraparoundApplicator` needs that point in the transform target CRS.
+         */
+        sourceMedian = transform.transform(sourceMedian, null);
         return new WraparoundApplicator(sourceMedian, targetMedian, targetCRS.getCoordinateSystem()).forDomainOfUse(transform);
     }
 

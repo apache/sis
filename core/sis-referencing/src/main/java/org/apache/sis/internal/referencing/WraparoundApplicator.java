@@ -38,13 +38,15 @@ import org.apache.sis.measure.Units;
  * Each {@code WraparoundTransform} instance should be used only once.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 public final class WraparoundApplicator {
     /**
      * Coordinates at the center of source envelope, or {@code null} if none.
+     * This coordinate shall be expressed in the source CRS of the {@link WraparoundTransform},
+     * not in the source CRS of the concatenated transform to be created by this applicator.
      */
     private final DirectPosition sourceMedian;
 
@@ -60,7 +62,9 @@ public final class WraparoundApplicator {
     private final CoordinateSystem targetCS;
 
     /**
-     * Creates a new applicator.
+     * Creates a new applicator. The median coordinates are optional and can be null.
+     * Coordinates shall be in the source and target CRS of the {@link WraparoundTransform},
+     * not in the source CRS of the concatenated transform to be created by this applicator.
      *
      * @param  sourceMedian  the coordinates at the center of source envelope, or {@code null} if none.
      * @param  targetMedian  the coordinates to put at the center of new range, or {@code null} for standard axis center.
@@ -97,13 +101,16 @@ public final class WraparoundApplicator {
     /**
      * Returns the given transform augmented with a "wrap around" behavior if applicable.
      * The wraparound is applied on target coordinates and aims to clamp coordinate values
-     * in a range centered on the given median.
+     * in a range centered on the target median given at construction time.
      *
      * <p>The centered ranges may be different than the range declared by the coordinate system axes.
      * In such case, the wraparound range applied by this method will have a translation compared to
      * the range declared by the axis. This translation is useful when the target domain is known
      * (e.g. when transforming a raster) and we want that output coordinates to be continuous
      * in that domain, independently of axis ranges.</p>
+     *
+     * <p>If a non-null {@code sourceMedian} position has been specified at construction time,
+     * those coordinates shall be expressed in the <em>target</em> CRS of given transform.</p>
      *
      * @param  tr  the transform to augment with "wrap around" behavior.
      * @return the math transform with wraparound if needed.
@@ -133,30 +140,32 @@ public final class WraparoundApplicator {
         if (!(period > 0 && period != Double.POSITIVE_INFINITY)) {
             return tr;
         }
-        double m;
-        if (targetMedian == null) {
-            final CoordinateSystemAxis axis = targetCS.getAxis(wraparoundDimension);
-            m = (axis.getMinimumValue() + axis.getMaximumValue()) / 2;
-        } else try {
-            m = targetMedian.getOrdinate(wraparoundDimension);
+        double m, sm;
+        try {
+            if (targetMedian == null) {
+                final CoordinateSystemAxis axis = targetCS.getAxis(wraparoundDimension);
+                m = (axis.getMinimumValue() + axis.getMaximumValue()) / 2;
+            } else {
+                m = targetMedian.getOrdinate(wraparoundDimension);
+            }
+            if (!Double.isFinite(m)) {
+                if (targetMedian != null) {
+                    // Invalid median value. Assume caller means "no wrap".
+                    return tr;
+                }
+                /*
+                 * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
+                 * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
+                 * Use 0 as the range center (e.g. center of [-180 … 180]° longitude range).
+                 */
+                m = 0;
+            }
+            sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) : Double.NaN;
         } catch (BackingStoreException e) {
-            // Some implementations compute coordinates only when first needed.
+            // Some `DirectPosition` implementations compute coordinates only when first needed.
             throw e.unwrapOrRethrow(TransformException.class);
         }
-        if (!Double.isFinite(m)) {
-            if (targetMedian != null) {
-                // Invalid median value. Assume caller means "no wrap".
-                return tr;
-            }
-            /*
-             * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
-             * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
-             * Use 0 as the range center (e.g. center of [-180 … 180]° longitude range).
-             */
-            m = 0;
-        }
-        final MathTransform wraparound = WraparoundTransform.create(tr.getTargetDimensions(), wraparoundDimension,
-                period, (sourceMedian == null) ? Double.NaN : sourceMedian.getOrdinate(wraparoundDimension), m);
+        final MathTransform wraparound = WraparoundTransform.create(tr.getTargetDimensions(), wraparoundDimension, period, sm, m);
         return MathTransforms.concatenate(tr, wraparound);
     }
 
