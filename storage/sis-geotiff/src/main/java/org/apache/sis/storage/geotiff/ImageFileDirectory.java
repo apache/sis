@@ -46,6 +46,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -948,7 +949,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case Tags.ImageDescription: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    metadata.addTitle(value);
+                    metadata.addTitle(Strings.singleLine(" ", value));
                 }
                 break;
             }
