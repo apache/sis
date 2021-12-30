@@ -501,7 +501,7 @@ public final strictfp class CCITTRLETest extends TestCase {
         final CCITTRLE decoder = new CCITTRLE(
                 new ChannelDataInput("sequenceOfAllWords", null, sequenceOfAllWords, true),
                 sequenceOfAllWords.limit());
-        decoder.setInput(0, sequenceOfAllWords.limit());
+        decoder.setInputRegion(0, sequenceOfAllWords.limit());
         int runLength = 0;
         do {
             assertEquals(decoder.getRunLength(tree), runLength);

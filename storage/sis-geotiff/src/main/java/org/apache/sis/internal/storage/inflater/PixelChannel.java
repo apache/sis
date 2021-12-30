@@ -33,7 +33,7 @@ import java.nio.channels.ReadableByteChannel;
  * The {@link #close()} method shall be invoked when this channel is no longer used.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -51,5 +51,5 @@ abstract class PixelChannel implements ReadableByteChannel {
      * @param  byteCount  number of byte to read from the input.
      * @throws IOException if the stream can not be seek to the given start position.
      */
-    public abstract void setInput(long start, long byteCount) throws IOException;
+    public abstract void setInputRegion(long start, long byteCount) throws IOException;
 }
