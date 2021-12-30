@@ -418,7 +418,6 @@ reuse:  if (source != null) {
         for (int i=0; i<count; i++) {
             final ColorsForRange entry = entries[i];
             NumberRange<?> sourceRange = entry.sampleRange;
-            final double s = sourceRange.getSpan();
             if (!entry.isData()) {
                 if (lower >= MAX_VALUE) {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
@@ -444,15 +443,18 @@ reuse:  if (source != null) {
                         themes = (themes != null) ? themes.unionAny(sourceRange) : sourceRange;
                     }
                 }
-            } else if (s > 0) {
-                // Range of real values: defer processing to next loop.
-                span += s;
-                System.arraycopy(entries, deferred, entries, deferred + 1, i - deferred);
-                entries[deferred++] = entry;
             } else {
-                // Invalid range: silently discard.
-                System.arraycopy(entries, i+1, entries, i, --count - i);
-                entries[count] = null;
+                final double s = sourceRange.getSpan();
+                if (s > 0) {
+                    // Range of real values: defer processing to next loop.
+                    span += s;
+                    System.arraycopy(entries, deferred, entries, deferred + 1, i - deferred);
+                    entries[deferred++] = entry;
+                } else {
+                    // Invalid range: silently discard.
+                    System.arraycopy(entries, i+1, entries, i, --count - i);
+                    entries[count] = null;
+                }
             }
         }
         /*

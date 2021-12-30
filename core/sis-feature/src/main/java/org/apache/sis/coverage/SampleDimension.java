@@ -77,7 +77,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see org.opengis.metadata.content.SampleDimension
  *
@@ -591,6 +591,22 @@ public class SampleDimension implements Serializable {
         }
 
         /**
+         * Returns the name specified by the last call to a {@code setName(…)} method.
+         * If {@code setName(…)} has not been invoked or if {@link #clear()} has been invoked after,
+         * then this method returns {@code null}. In that case the {@link #build()} method will default
+         * to the name of the first quantitative category if present, or "Untitled" (localized) otherwise.
+         *
+         * @return the name explicitly set by last call to {@code setName(…)}, or {@code null} if none or cleared.
+         *
+         * @see SampleDimension#getName()
+         *
+         * @since 1.2
+         */
+        public GenericName getName() {
+            return dimensionName;
+        }
+
+        /**
          * Sets an identification of the sample dimension.
          * This is the value to be returned by {@link SampleDimension#getName()}.
          * If this method is invoked more than once, then the last specified name prevails
@@ -680,22 +696,35 @@ public class SampleDimension implements Serializable {
         }
 
         /**
-         * Returns the background value to use by default if none were explicitly defined.
-         * This method is invoked at {@linkplain #build() build} time
-         * if the {@link #setBackground(CharSequence, Number)} method has never been invoked
-         * since {@code Builder} construction or since the last call to {@link #clear()}.
-         * The background value returned by this method is not associated to any category.
+         * Returns the value specified by the last call to a {@code setBackground(…)} method.
+         * If {@code setBackground(…)} has not been invoked or if {@link #clear()} has been invoked after,
+         * then this method returns {@code null}.
          *
-         * <p>The default implementation returns {@code null}.
-         * Subclasses can override this method and compute a background value
-         * for example by analyzing the content of {@link #categories()} list.</p>
+         * @return the value set by last call to {@code setBackground(…)}, or {@code null} if none or cleared.
          *
-         * @return the default background value, or {@code null} if none.
+         * @see SampleDimension#getBackground()
          *
          * @since 1.2
          */
-        protected Number defaultBackground() {
-            return null;
+        public Number getBackground() {
+            return toNaN.background;
+        }
+
+        /**
+         * Sets the background value without creating a category (typically for RGB images).
+         * An image without category is interpreted as an image for visualization purposes only,
+         * without values that we can associate to a unit of measurement or a qualitative meaning.
+         * This {@code setBackground(Number)} method can be invoked when the caller nevertheless
+         * wants to declare a background value used for filling empty spaces (e.g. in image corners).
+         *
+         * @param  sample  the background value, or {@code null} if none.
+         * @return {@code this}, for method call chaining.
+         *
+         * @since 1.2
+         */
+        public Builder setBackground(final Number sample) {
+            toNaN.background = sample;
+            return this;
         }
 
         /**
@@ -705,7 +734,7 @@ public class SampleDimension implements Serializable {
          * (previous values become ordinary qualitative categories).
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
-         *                 or {@code null} for a default "fill value" name.
+         *                 or {@code null} for a default "fill value" (localized) name.
          * @param  sample  the background value.
          * @return {@code this}, for method call chaining.
          */
@@ -998,19 +1027,12 @@ public class SampleDimension implements Serializable {
             ArgumentChecks.ensureNonNull("samples", samples);
             ArgumentChecks.ensureNonNull("converted", converted);
             /*
-             * We need to perform calculation using the same "included versus excluded" characteristics for sample and converted
-             * values. We pickup the characteristics of the range using floating point values because it is easier to adjust the
-             * bounds of the range using integer values (we just add or subtract 1 for integers, while the amount to add to real
-             * numbers is not so clear). If both ranges use floating point values, arbitrarily adjust the converted values.
+             * We need to perform calculation using the same "included versus excluded" characteristics for sample
+             * and converted values. We pickup the characteristics of the sample values range (except for avoiding
+             * a division by zero) because it is the range that describes the source data.
              */
-            final boolean isMinIncluded, isMaxIncluded;
-            if (Numbers.isInteger(samples.getElementType())) {
-                isMinIncluded = converted.isMinIncluded();                         // This is the usual case.
-                isMaxIncluded = converted.isMaxIncluded();
-            } else {
-                isMinIncluded = samples.isMinIncluded();                            // Less common case.
-                isMaxIncluded = samples.isMaxIncluded();
-            }
+            final boolean isMinIncluded = samples.isMinIncluded();
+            final boolean isMaxIncluded = samples.isMaxIncluded() && samples.getSpan() > 0;     // `isEmpty()` is not sufficient.
             final double minValue  = converted.getMinDouble(isMinIncluded);
             final double Δvalue    = converted.getMaxDouble(isMaxIncluded) - minValue;
             final double minSample =   samples.getMinDouble(isMinIncluded);
@@ -1174,9 +1196,6 @@ defName:    if (name == null) {
                     }
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
-            }
-            if (toNaN.background == null) {
-                toNaN.background = defaultBackground();
             }
             return new SampleDimension(name, toNaN.background, UnmodifiableArrayList.wrap(categories, 0, count));
         }

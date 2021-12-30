@@ -325,7 +325,7 @@ public class RenderingData implements Cloneable {
         }
         data = null;
         currentPyramidLevel = level;
-        return coverageLoader.getOrLoad(level).forConvertedValues(true);
+        return coverageLoader.getOrLoad(level);
     }
 
     /**

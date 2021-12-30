@@ -20,7 +20,6 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.opengis.metadata.Metadata;
@@ -76,25 +75,22 @@ public interface SchemaModifier {
     /**
      * Invoked when a sample dimension is created for a band in an image.
      * {@code GeoTiffStore} invokes this method with a builder initialized to band number as
-     * {@linkplain SampleDimension.Builder#setName(int) dimension name} and with no category.
-     * Implementations can override this method for setting a better name or for declaring the
-     * meaning of sample values (by adding "categories").
-     *
-     * <p>The default implementation creates categories only if {@code fillValue} is non-null.
-     * In such case, the fill value is also defined as the background value.</p>
+     * {@linkplain SampleDimension.Builder#setName(int) dimension name}, with the fill value
+     * declared as {@linkplain SampleDimension.Builder#setBackground(Number) background} and
+     * with no category. Implementations can override this method for setting a better name
+     * or for declaring the meaning of sample values (by adding "categories").
      *
      * @param  image        index of the image for which to create sample dimension.
      * @param  band         index of the band for which to create sample dimension.
      * @param  sampleRange  minimum and maximum values declared in the TIFF tags, or {@code null} if unknown.
-     * @param  fillValue    the "no data" value, or {@code null} if none. May intersect {@code sampleRange}.
+     *                      This range may contain the background value.
      * @param  dimension    a sample dimension builder initialized with band number as the dimension name.
      *                      This builder can be modified in-place.
      * @return the sample dimension to use.
      */
     default SampleDimension customize(final int image, final int band, NumberRange<?> sampleRange,
-                                      final Number fillValue, final SampleDimension.Builder dimension)
+                                      final SampleDimension.Builder dimension)
     {
-        SampleDimensions.addDefaultCategories(0, false, sampleRange, fillValue, dimension);
         return dimension.build();
     }
 

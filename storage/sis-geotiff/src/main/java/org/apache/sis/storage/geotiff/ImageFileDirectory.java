@@ -1537,10 +1537,10 @@ final class ImageFileDirectory extends DataCube {
                                 minValues.get(Math.min(band, minValues.size()-1)), true,
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
-                    builder.setName(band + 1);
+                    builder.setName(band + 1).setBackground(getFillValue(true));
                     final SampleDimension sd;
                     if (isIndexValid) {
-                        sd = reader.store.customizer.customize(index, band, sampleRange, getFillValue(true), builder);
+                        sd = reader.store.customizer.customize(index, band, sampleRange, builder);
                     } else {
                         sd = builder.build();
                     }
@@ -1692,7 +1692,7 @@ final class ImageFileDirectory extends DataCube {
                         throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
                     }
                     final boolean hasAlpha = (numBands >= 4);
-                    final boolean packed = sm instanceof SinglePixelPackedSampleModel;
+                    final boolean packed = (sm instanceof SinglePixelPackedSampleModel);
                     colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
                     break;
                 }
