@@ -505,6 +505,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Extent = 81;
 
         /**
+         * False
+         */
+        public static final short False = 264;
+
+        /**
          * File
          */
         public static final short File = 82;
@@ -1238,6 +1243,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Transparent
          */
         public static final short Transparent = 249;
+
+        /**
+         * True
+         */
+        public static final short True = 265;
 
         /**
          * Truncated Julian

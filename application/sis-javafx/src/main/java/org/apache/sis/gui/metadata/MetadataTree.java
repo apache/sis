@@ -46,10 +46,10 @@ import javafx.scene.input.ClipboardContent;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.util.PropertyFormat;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.PropertyView;
+import org.apache.sis.internal.gui.PropertyValueFormatter;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -353,29 +353,14 @@ check:      if (data != null) {
      * Formatter for metadata property value in a tree cell. This formatter handles in a special way
      * many object classes like {@link InternationalString}, <i>etc</i>.
      */
-    private static final class Formatter extends PropertyFormat
+    private static final class Formatter extends PropertyValueFormatter
             implements Callback<CellDataFeatures<TreeTable.Node, Object>, ObservableValue<Object>>
     {
-        /**
-         * The locale to use for texts. This is usually {@link Locale#getDefault()}.
-         * This value is given to {@link InternationalString#toString(Locale)} calls.
-         */
-        private final Locale locale;
-
         /**
          * Creates a new formatter for the given locale.
          */
         Formatter(final Locale locale) {
-            super(new StringBuilder());
-            this.locale = locale;
-        }
-
-        /**
-         * The locale to use for formatting textual content.
-         */
-        @Override
-        public Locale getLocale() {
-            return locale;
+            super(new StringBuilder(), locale);
         }
 
         /**

@@ -21,8 +21,6 @@ import java.util.Objects;
 import java.util.Collection;
 import java.lang.reflect.Array;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -44,6 +42,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.internal.util.Numerics;
@@ -241,6 +240,8 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
                     content = null;
                 } else if (newValue instanceof Throwable) {
                     content = setText((Throwable) newValue);
+                } else if (newValue instanceof IdentifiedObject) {
+                    content = setCRS((IdentifiedObject) newValue);
                 } else if (newValue instanceof Collection<?>) {
                     content = setList(((Collection<?>) newValue).toArray());
                 } else if (newValue.getClass().isArray()) {
@@ -273,9 +274,7 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
      * Sets the text to the stack trace of given exception.
      */
     private Node setText(final Throwable ex) {
-        final StringWriter out = new StringWriter();
-        ex.printStackTrace(new PrintWriter(out));
-        return setText(out.toString());
+        return setText(ExceptionReporter.getStackTrace(ex));
     }
 
     /**
@@ -293,6 +292,14 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
         }
         listView.getItems().setAll(list);
         return node;
+    }
+
+    /**
+     * Sets the viewer for a coordinate reference system. Shown as Well-Known Text (WKT) for now,
+     * but a future version may provide a more sophisticated viewer.
+     */
+    private Node setCRS(final IdentifiedObject crs) {
+        return setText(crs.toString());
     }
 
     /**
