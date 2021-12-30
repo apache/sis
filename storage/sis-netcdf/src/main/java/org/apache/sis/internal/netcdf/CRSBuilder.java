@@ -80,11 +80,17 @@ import org.apache.sis.measure.Units;
  * which is a {@linkplain Axis#abbreviation controlled vocabulary} for this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
+    /**
+     * An arbitrary limit on the number of dimensions, for catching what may be malformed data.
+     * We rarely have more than 4 dimensions.
+     */
+    private static final int MAXDIM = 1000;
+
     /**
      * The type of datum as a GeoAPI sub-interface of {@link Datum}.
      * Used for verifying the type of cached datum at {@link #datumIndex}.
@@ -102,19 +108,19 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * The datum type at that index must be an instance of {@link #datumType}. We cache only the datum because they do
      * not depend on the netCDF file content in the common case where the CRS is not explicitly specified.
      */
-    private final byte datumIndex;
+    private final int datumIndex;
 
     /**
      * Specify the range of valid number of dimensions, inclusive.
      * The {@link #dimension} value shall be in that range.
      */
-    private final byte minDim, maxDim;
+    private final int minDim, maxDim;
 
     /**
      * Number of valid elements in the {@link #axes} array. The count should not be larger than 3,
      * even if the netCDF file has more axes, because each {@code CRSBuilder} is only for a subset.
      */
-    private byte dimension;
+    private int dimension;
 
     /**
      * The axes to use for creating the coordinate reference system.
@@ -158,7 +164,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * @param  minDim      minimum number of dimensions (usually 1, 2 or 3).
      * @param  maxDim      maximum number of dimensions (usually 1, 2 or 3).
      */
-    private CRSBuilder(final Class<D> datumType, final String datumBase, final byte datumIndex, final byte minDim, final byte maxDim) {
+    private CRSBuilder(final Class<D> datumType, final String datumBase, final int datumIndex, final int minDim, final int maxDim) {
         this.datumType  = datumType;
         this.datumBase  = datumBase;
         this.datumIndex = datumIndex;
@@ -321,9 +327,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * @throws DataStoreContentException if the given axis can not be added in this builder.
      */
     private void add(final Axis axis) throws DataStoreContentException {
-        if (dimension == Byte.MAX_VALUE) {
+        if (dimension > MAXDIM) {
             throw new DataStoreContentException(getFirstAxis().coordinates.errors()
-                    .getString(Errors.Keys.ExcessiveListSize_2, "axes", (short) (Byte.MAX_VALUE + 1)));
+                    .getString(Errors.Keys.ExcessiveListSize_2, "axes", dimension));
         }
         if (dimension >= axes.length) {
             axes = Arrays.copyOf(axes, dimension * 2);        // Should not happen (see method javadoc).
@@ -556,8 +562,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
          *
          * @param  minDim  minimum number of dimensions (2 or 3).
          */
-        Geodetic(final byte minDim) {
-            super(GeodeticDatum.class, "GRS 1980", (byte) 0, minDim, (byte) 3);
+        Geodetic(final int minDim) {
+            super(GeodeticDatum.class, "GRS 1980", 0, minDim, 3);
         }
 
         /**
@@ -610,7 +616,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Creates a new builder (invoked by lambda function).
          */
         public Spherical() {
-            super((byte) 3);
+            super(3);
         }
 
         /**
@@ -662,7 +668,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Creates a new builder (invoked by lambda function).
          */
         public Geographic() {
-            super((byte) 2);
+            super(2);
         }
 
         /**
@@ -755,7 +761,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Creates a new builder (invoked by lambda function).
          */
         public Projected() {
-            super((byte) 2);
+            super(2);
         }
 
         /**
@@ -810,7 +816,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Creates a new builder (invoked by lambda function).
          */
         public Vertical() {
-            super(VerticalDatum.class, "Mean Sea Level", (byte) 1, (byte) 1, (byte) 1);
+            super(VerticalDatum.class, "Mean Sea Level", 1, 1, 1);
         }
 
         /**
@@ -870,7 +876,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Creates a new builder (invoked by lambda function).
          */
         public Temporal() {
-            super(TemporalDatum.class, "", (byte) 2, (byte) 1, (byte) 1);
+            super(TemporalDatum.class, "", 2, 1, 1);
         }
 
         /**
@@ -948,7 +954,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Creates a new builder (invoked by lambda function).
          */
         public Engineering() {
-            super(EngineeringDatum.class, "affine coordinate system", (byte) 3, (byte) 2, (byte) 3);
+            super(EngineeringDatum.class, "affine coordinate system", 3, 1, 3);
         }
 
         /**
@@ -969,10 +975,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             try {
-                if (axes.length > 2) {
-                    coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1], axes[2]);
-                } else {
-                    coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1]);
+                switch (axes.length) {
+                    case 0:  break;     // Should never happen but we are paranoiac.
+                    case 1:  coordinateSystem = factory.createParametricCS(properties, axes[0]); return;
+                    case 2:  coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1]); return;
+                    default: coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1], axes[2]); return;
                 }
             } catch (InvalidGeodeticParameterException e) {
                 /*
@@ -980,9 +987,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
                  * Cartesian or affine coordinate system.  The fallback object created below is not abstract in
                  * the Java sense, but in the sense that we don't have more specific information on the CS type.
                  */
-                coordinateSystem = new AbstractCS(properties, axes);
                 recoverableException(e);
             }
+            coordinateSystem = new AbstractCS(properties, axes);
         }
 
         /**

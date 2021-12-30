@@ -602,7 +602,9 @@ public class RenderingData implements Cloneable {
          * This method is invoked with `sourceMedian` expressed in the transform source CRS.
          * But by contract, `WraparoundApplicator` needs that point in the transform target CRS.
          */
-        sourceMedian = transform.transform(sourceMedian, null);
+        if (sourceMedian != null && !transform.isIdentity()) {
+            sourceMedian = transform.transform(sourceMedian, null);
+        }
         return new WraparoundApplicator(sourceMedian, targetMedian, targetCRS.getCoordinateSystem()).forDomainOfUse(transform);
     }
 
