@@ -17,6 +17,8 @@
 package org.apache.sis.storage;
 
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -35,9 +37,10 @@ import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Classes;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.resources.Vocabulary;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -218,9 +221,12 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             for (int i=0; i<properties.length; i++) {
                 final NamedExpression c = properties[i];
                 ArgumentChecks.ensureNonNullElement("properties", i, c);
-                final Object key = c.alias != null ? c.alias : c.expression;
+                Object key = (c.alias != null) ? c.alias : c.expression;
                 final Integer p = uniques.putIfAbsent(key, i);
                 if (p != null) {
+                    if (key instanceof Expression) {
+                        key = label((Expression) key);
+                    }
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.DuplicatedQueryProperty_3, key, p, i));
                 }
             }
@@ -396,6 +402,9 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * An expression to be retrieved by a {@code Query}, together with the name to assign to it.
      * In relational database terminology, subset of columns is called <cite>projection</cite>.
      * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
+     *
+     * @version 1.2
+     * @since   1.1
      */
     public static class NamedExpression implements Serializable {
         /**
@@ -451,30 +460,6 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         }
 
         /**
-         * Adds in the given builder the type of results computed by this column.
-         *
-         * @param  column     index of this column. Used for error message only.
-         * @param  valueType  the type of features to be evaluated by the expression in this column.
-         * @param  addTo      where to add the type of properties evaluated by expression in this column.
-         * @throws IllegalArgumentException if this method can operate only on some feature types
-         *         and the given type is not one of them.
-         * @throws InvalidFilterValueException if this method can not determine the result type of the expression
-         *         in this column. It may be because that expression is backed by an unsupported implementation.
-         *
-         * @see FeatureQuery#expectedType(FeatureType)
-         */
-        final void expectedType(final int column, final FeatureType valueType, final FeatureTypeBuilder addTo) {
-            final PropertyTypeBuilder resultType = FeatureExpression.expectedType(expression, valueType, addTo);
-            if (resultType == null) {
-                throw new InvalidFilterValueException(Resources.format(Resources.Keys.InvalidExpression_2,
-                            expression.getFunctionName().toInternationalString(), column));
-            }
-            if (alias != null && !alias.equals(resultType.getName())) {
-                resultType.setName(alias);
-            }
-        }
-
-        /**
          * Returns a hash code value for this column.
          *
          * @return a hash code value.
@@ -524,12 +509,29 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             } else if (expression instanceof ValueReference<?,?>) {
                 buffer.append(((ValueReference<?,?>) expression).getXPath());
             } else {
-                buffer.append(Classes.getShortClassName(expression));   // Class name with enclosing class if any.
+                buffer.append(expression.getFunctionName());
             }
             if (alias != null) {
                 buffer.append(" AS “").append(alias).append('”');
             }
         }
+    }
+
+    /**
+     * Returns a label for the given expression for reporting to human (e.g. in exception messages).
+     * This method uses the value reference (XPath) or literal value if applicable, truncated to an
+     * arbitrary length.
+     */
+    private static String label(final Expression<?,?> expression) {
+        final String text;
+        if (expression instanceof Literal<?,?>) {
+            text = String.valueOf(((Literal<?,?>) expression).getValue());
+        } else if (expression instanceof ValueReference<?,?>) {
+            text = ((ValueReference<?,?>) expression).getXPath();
+        } else {
+            return expression.getFunctionName().toString();
+        }
+        return CharSequences.shortSentence(text, 40).toString();
     }
 
     /**
@@ -565,6 +567,13 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
 
     /**
      * Returns the type of values evaluated by this query when executed on features of the given type.
+     * If some expressions have no name, default names are computed as below:
+     *
+     * <ul>
+     *   <li>If the expression is an instance of {@link ValueReference},
+     *       the tip of the {@linkplain ValueReference#getXPath() x-path}.</li>
+     *   <li>Otherwise the localized string "Unnamed #1" with increasing numbers.</li>
+     * </ul>
      *
      * @param  valueType  the type of features to be evaluated by the expressions in this query.
      * @return type resulting from expressions evaluation (never null).
@@ -577,9 +586,55 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         if (projection == null) {
             return valueType;           // All columns included: result is of the same type.
         }
+        int unnamedNumber = 0;          // Sequential number for unnamed expressions.
+        Set<String> names = null;       // Names already used, for avoiding collisions.
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
-        for (int i=0; i<projection.length; i++) {
-            projection[i].expectedType(i, valueType, ftb);
+        for (int column = 0; column < projection.length; column++) {
+            /*
+             * For each property, get the expected type (mandatory) and its name (optional).
+             * A default name will be computed if no alias were explicitly given by user.
+             */
+            GenericName name = projection[column].alias;
+            final Expression<?,?> expression = projection[column].expression;
+            final PropertyTypeBuilder resultType = FeatureExpression.expectedType(expression, valueType, ftb);
+            if (resultType == null) {
+                throw new InvalidFilterValueException(Resources.format(Resources.Keys.InvalidExpression_2,
+                            expression.getFunctionName().toInternationalString(), column));
+            }
+            if (name == null) {
+                /*
+                 * Build a list of aliases declared by the user, for making sure that we do not collide with them.
+                 * No check for `GenericName` collision here because it was already verified by `setProjection(…)`.
+                 * We may have collision of their `String` representations however, which is okay.
+                 */
+                if (names == null) {
+                    names = new HashSet<>(Containers.hashMapCapacity(projection.length));
+                    for (final NamedExpression p : projection) {
+                        if (p.alias != null) {
+                            names.add(p.alias.tip().toString());
+                        }
+                    }
+                }
+                /*
+                 * The rules for creating a default name are documented in this method Javadoc.
+                 * Note that despite the use of `Vocabulary` resources, the name will be unlocalized
+                 * (for easier programmatic use) because `GenericName` implementation is designed for
+                 * providing localized names only if explicitly requested.
+                 */
+                CharSequence text = null;
+                if (expression instanceof ValueReference<?,?>) {
+                    String xpath = ((ValueReference<?,?>) expression).getXPath().trim();
+                    xpath = xpath.substring(xpath.lastIndexOf('/') + 1);    // Works also if '/' is not found.
+                    if (!(xpath.isEmpty() || names.contains(xpath))) {
+                        text = xpath;
+                    }
+                }
+                if (text == null) do {
+                    text = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed_1, ++unnamedNumber);
+                } while (!names.add(text.toString()));
+                name = Names.createLocalName(null, null, text);
+            }
+            resultType.setName(name);
         }
         return ftb.build();
     }

@@ -692,6 +692,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new {@code AttributeType} builder initialized to the same characteristics than the given template.
+     * If the new attribute duplicates an existing one (for example if the same template is used many times),
+     * caller should use the returned builder for modifying some attributes.
      *
      * @param  <V>       the compile-time type of values in the {@code template} argument.
      * @param  template  an existing attribute type to use as a template.
@@ -795,7 +797,9 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new {@code FeatureAssociationRole} builder initialized to the same characteristics
-     * than the given template.
+     * than the given template. If the new association duplicates an existing one (for example if the
+     * same template is used many times), caller should use the returned builder for modifying some
+     * associations.
      *
      * @param  template  an existing feature association to use as a template.
      * @return a builder for an {@code FeatureAssociationRole}, initialized with the values of the given template.
@@ -813,6 +817,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Adds the given property in the feature type properties.
      * The given property shall be an instance of one of the following types:
+     *
      * <ul>
      *   <li>{@link AttributeType}, in which case this method delegate to {@link #addAttribute(AttributeType)}.</li>
      *   <li>{@link FeatureAssociationRole}, in which case this method delegate to {@link #addAssociation(FeatureAssociationRole)}.</li>
@@ -820,8 +825,12 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *       this builder does not create new operations.</li>
      * </ul>
      *
+     * This method does not verify if the given property duplicates an existing property.
+     * If the same template is used many times, then the caller should use the returned builder
+     * for modifying some properties.
+     *
      * @param  template  the property to add to the feature type.
-     * @return a builder initialized to the given builder.
+     * @return a builder initialized to the given template.
      *         In the {@code Operation} case, the builder is a read-only accessor on the operation properties.
      *
      * @see #properties()

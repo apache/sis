@@ -18,6 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
@@ -37,13 +38,16 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
 import org.opengis.filter.SortOrder;
+import org.opengis.filter.SortProperty;
 
 
 /**
  * Tests {@link FeatureQuery} and (indirectly) {@link FeatureSubset}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -208,5 +212,25 @@ public final strictfp class FeatureQueryTest extends TestCase {
         final Feature result = TestUtilities.getSingleton(fs.features(false).collect(Collectors.toList()));
         final PropertyType p = TestUtilities.getSingleton(result.getType().getProperties(true));
         assertEquals("value2", p.getName().toString());
+    }
+
+    /**
+     * Tests the creation of default column names when no alias where explicitly specified.
+     * Note that the string representations of default names shall be unlocalized.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testDefaultColumnName() throws DataStoreException {
+        final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(
+                ff.add(ff.property("value1", Number.class), ff.literal(1)),
+                ff.add(ff.property("value2", Number.class), ff.literal(1)));
+        final FeatureSet subset = featureSet.subset(query);
+        final FeatureType type = subset.getType();
+        final Iterator<? extends PropertyType> properties = type.getProperties(true).iterator();
+        assertEquals("Unnamed #1", properties.next().getName().toString());
+        assertEquals("Unnamed #2", properties.next().getName().toString());
+        assertFalse(properties.hasNext());
     }
 }
