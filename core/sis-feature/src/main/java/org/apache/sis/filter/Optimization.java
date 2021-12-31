@@ -475,7 +475,7 @@ public class Optimization {
 
     /**
      * Creates a constant, literal value that can be used in expressions.
-     * This is a helper methods for optimizations that simplified an expression to a constant value.
+     * This is a helper methods for optimizations which simplified an expression to a constant value.
      *
      * @param  <R>    the type of resources used as inputs.
      * @param  <V>    the type of the value of the literal.

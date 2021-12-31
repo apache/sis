@@ -570,8 +570,8 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * If some expressions have no name, default names are computed as below:
      *
      * <ul>
-     *   <li>If the expression is an instance of {@link ValueReference},
-     *       the tip of the {@linkplain ValueReference#getXPath() x-path}.</li>
+     *   <li>If the expression is an instance of {@link ValueReference}, the name of the
+     *       property referenced by the {@linkplain ValueReference#getXPath() x-path}.</li>
      *   <li>Otherwise the localized string "Unnamed #1" with increasing numbers.</li>
      * </ul>
      *
@@ -596,8 +596,9 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
              */
             GenericName name = projection[column].alias;
             final Expression<?,?> expression = projection[column].expression;
-            final PropertyTypeBuilder resultType = FeatureExpression.expectedType(expression, valueType, ftb);
-            if (resultType == null) {
+            final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
+            final PropertyTypeBuilder resultType;
+            if (fex == null || (resultType = fex.expectedType(valueType, ftb)) == null) {
                 throw new InvalidFilterValueException(Resources.format(Resources.Keys.InvalidExpression_2,
                             expression.getFunctionName().toInternationalString(), column));
             }
@@ -611,24 +612,33 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                     names = new HashSet<>(Containers.hashMapCapacity(projection.length));
                     for (final NamedExpression p : projection) {
                         if (p.alias != null) {
-                            names.add(p.alias.tip().toString());
+                            names.add(p.alias.toString());
                         }
                     }
                 }
                 /*
-                 * The rules for creating a default name are documented in this method Javadoc.
-                 * Note that despite the use of `Vocabulary` resources, the name will be unlocalized
-                 * (for easier programmatic use) because `GenericName` implementation is designed for
-                 * providing localized names only if explicitly requested.
+                 * If the expression is a `ValueReference`, the `PropertyType` instance can be taken directly
+                 * from the source feature (the Apache SIS implementation does just that). If the name is set,
+                 * then we assume that it is correct. Otherwise we take the tip of the XPath.
                  */
                 CharSequence text = null;
                 if (expression instanceof ValueReference<?,?>) {
+                    final GenericName current = resultType.getName();
+                    if (current != null && names.add(current.toString())) {
+                        continue;
+                    }
                     String xpath = ((ValueReference<?,?>) expression).getXPath().trim();
                     xpath = xpath.substring(xpath.lastIndexOf('/') + 1);    // Works also if '/' is not found.
                     if (!(xpath.isEmpty() || names.contains(xpath))) {
                         text = xpath;
                     }
                 }
+                /*
+                 * If we still have no name at this point, create a name like "Unnamed #1".
+                 * Note that despite the use of `Vocabulary` resources, the name will be unlocalized
+                 * (for easier programmatic use) because `GenericName` implementation is designed for
+                 * providing localized names only if explicitly requested.
+                 */
                 if (text == null) do {
                     text = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed_1, ++unnamedNumber);
                 } while (!names.add(text.toString()));

@@ -37,7 +37,7 @@ import org.opengis.feature.FeatureType;
  * Expression whose results are converted to a different type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
@@ -157,12 +157,16 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     }
 
     /**
-     * Provides the expected type of values produced by this expression
-     * when a feature of the given type is evaluated.
+     * Provides the type of values produced by this expression when a feature of the given type is evaluated.
+     * May return {@code null} if the type can not be determined.
      */
     @Override
     public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
-        final PropertyTypeBuilder p = FeatureExpression.expectedType(expression, valueType, addTo);
+        final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
+        if (fex == null) {
+            return null;
+        }
+        final PropertyTypeBuilder p = fex.expectedType(valueType, addTo);
         if (p instanceof AttributeTypeBuilder<?>) {
             return ((AttributeTypeBuilder<?>) p).setValueClass(getValueClass());
         }
