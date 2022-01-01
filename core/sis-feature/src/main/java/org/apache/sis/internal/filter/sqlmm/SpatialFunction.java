@@ -180,11 +180,11 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      */
     @Override
     @SuppressWarnings("unchecked")
-    public final <N> Expression<R,N> toValueType(final Class<N> type) {
-        if (type.isAssignableFrom(getValueClass())) {
+    public final <N> Expression<R,N> toValueType(final Class<N> target) {
+        if (target.isAssignableFrom(getValueClass())) {
             return (Expression<R,N>) this;
         } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertValue_2, getFunctionName(), type));
+            throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
         }
     }
 

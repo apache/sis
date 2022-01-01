@@ -177,25 +177,25 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      * Returns an expression doing the same evaluation than this method, but returning results as values
      * of the specified type. The result may be {@code this}.
      *
-     * @param  <N>   compile-time value of {@code type}.
-     * @param  type  desired type of expression results.
+     * @param  <N>     compile-time value of {@code type}.
+     * @param  target  desired type of expression results.
      * @return expression doing the same operation this this expression but with results of the specified type.
      * @throws ClassCastException if the specified type is not a target type supported by implementation.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <N> Expression<R,N> toValueType(final Class<N> type) {
-        if (type.isAssignableFrom(getValueClass())) {
+    public <N> Expression<R,N> toValueType(final Class<N> target) {
+        if (target.isAssignableFrom(getValueClass())) {
             return (Expression<R,N>) this;
         }
         final Class<? super S> source = converter.getSourceClass();
-        if (type.isAssignableFrom(source)) {
+        if (target.isAssignableFrom(source)) {
             return (Expression<R,N>) expression;
         } else try {
-            return new ConvertFunction<>(expression, source, type);
+            return new ConvertFunction<>(expression, source, target);
         } catch (UnconvertibleObjectException e) {
             throw (ClassCastException) new ClassCastException(Errors.format(
-                    Errors.Keys.CanNotConvertValue_2, expression.getFunctionName(), type)).initCause(e);
+                    Errors.Keys.CanNotConvertValue_2, expression.getFunctionName(), target)).initCause(e);
         }
     }
 }

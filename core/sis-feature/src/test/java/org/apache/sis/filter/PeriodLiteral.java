@@ -78,7 +78,7 @@ final strictfp class PeriodLiteral implements Period, Literal<Feature,Period>, S
     @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
     @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
     @Override public Duration         length()                               {throw new UnsupportedOperationException();}
-    @Override public <N> Expression<Feature,N> toValueType(Class<N> type)    {throw new UnsupportedOperationException();}
+    @Override public <N> Expression<Feature,N> toValueType(Class<N> target)  {throw new UnsupportedOperationException();}
 
     /**
      * Hash code value. Used by the tests for checking the results of deserialization.
