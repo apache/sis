@@ -27,15 +27,13 @@ import static org.junit.Assert.*;
  * Tests {@link XPaths}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.4
  * @module
  */
 public final strictfp class XPathsTest extends TestCase {
     /**
      * Tests the {@link XPaths#endOfURI(CharSequence, int)} method.
-     *
-     * @since 0.8
      */
     @Test
     public void testEndOfURI() {
@@ -45,6 +43,17 @@ public final strictfp class XPathsTest extends TestCase {
         assertEquals(-1, XPaths.endOfURI("m/s", 0));
         assertEquals(-1, XPaths.endOfURI("m.s", 0));
         assertEquals(11, XPaths.endOfURI("EPSG" + Characters.NO_BREAK_SPACE + ": 9001", 0));
+    }
+
+    /**
+     * Tests {@link XPaths#split(String)}.
+     */
+    @Test
+    public void testSplit() {
+        assertNull(XPaths.split("property"));
+        assertArrayEquals(new String[] {"/property"},                    XPaths.split("/property").toArray());
+        assertArrayEquals(new String[] {"Feature", "property", "child"}, XPaths.split("Feature/property/child").toArray());
+        assertArrayEquals(new String[] {"/Feature", "property"},         XPaths.split("/Feature/property").toArray());
     }
 
     /**

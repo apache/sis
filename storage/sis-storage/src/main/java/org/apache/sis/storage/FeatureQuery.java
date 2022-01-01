@@ -674,7 +674,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      */
     @Override
     public int hashCode() {
-        return 97 * Arrays.hashCode(projection) + 31 * selection.hashCode()
+        return 97 * Arrays.hashCode(projection) + 31 * Objects.hashCode(selection)
               + 7 * Objects.hashCode(sortBy) + Long.hashCode(limit ^ skip)
               + 3 * Objects.hashCode(linearResolution);
     }
@@ -694,7 +694,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             final FeatureQuery other = (FeatureQuery) obj;
             return skip  == other.skip &&
                    limit == other.limit &&
-                   selection.equals(other.selection) &&
+                   Objects.equals(selection,        other.selection) &&
                    Arrays .equals(projection,       other.projection) &&
                    Objects.equals(sortBy,           other.sortBy) &&
                    Objects.equals(linearResolution, other.linearResolution);
@@ -720,7 +720,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         } else {
             sb.append('*');
         }
-        if (selection != Filter.include()) {
+        if (selection != null) {
             sb.append(" WHERE ").append(selection);
         }
         if (sortBy != null) {
