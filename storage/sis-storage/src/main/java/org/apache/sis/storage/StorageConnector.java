@@ -83,6 +83,10 @@ import org.apache.sis.setup.OptionKey;
  * Once a suitable {@code DataStore} has been found, the {@code StorageConnector} instance is typically
  * discarded since each data store implementation will use their own input/output objects.</p>
  *
+ * <h2>Limitations</h2>
+ * This class is not thread-safe. Not only {@code StorageConnector} should be used by a single thread,
+ * but the objects returned by {@link #getStorageAs(Class)} should also be used by the same thread.
+ *
  * <p>Instances of this class are serializable if the {@code storage} object given at construction time
  * is serializable.</p>
  *
@@ -146,20 +150,20 @@ public class StorageConnector implements Serializable {
      * Each {@code createFoo()} method may be invoked once for opening an input stream, character
      * reader, database connection, <i>etc</i> from user-supplied path, URI, <i>etc</i>.
      *
-     * @param  <T>  the type of input created by this {@code Opener} instance.
+     * @param  <S>  the type of input (source) created by this {@code Opener} instance.
      */
     @FunctionalInterface
-    private interface Opener<T> {
+    private interface Opener<S> {
         /**
          * Invoked when first needed for creating an input of the requested type.
          * This method should invoke {@link #addView(Class, Object, Class, byte)}
          * for caching the result before to return the view.
          */
-        T open(StorageConnector c) throws Exception;
+        S open(StorageConnector c) throws Exception;
     }
 
     /** Helper method for {@link #OPENERS} static initialization. */
-    private static <T> void add(final Class<T> type, final Opener<T> op) {
+    private static <S> void add(final Class<S> type, final Opener<S> op) {
         if (OPENERS.put(type, op) != null) throw new AssertionError(type);
     }
 
@@ -751,7 +755,7 @@ public class StorageConnector implements Serializable {
      * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
-     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  <S>   the compile-time type of the {@code type} argument (the source or storage type).
      * @param  type  the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
      *               class or other type supported by {@code StorageConnector} subclasses.
      * @return the storage as a view of the given type, or {@code null} if the given type is one of the supported
@@ -764,7 +768,7 @@ public class StorageConnector implements Serializable {
      * @see #getStorage()
      * @see #closeAllExcept(Object)
      */
-    public <T> T getStorageAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
+    public <S> S getStorageAs(final Class<S> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         if (views != null && views.isEmpty()) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ClosedStorageConnector));
@@ -792,7 +796,7 @@ public class StorageConnector implements Serializable {
          */
         if (type.isInstance(storage)) {
             @SuppressWarnings("unchecked")
-            T view = (T) storage;
+            S view = (S) storage;
             reset();
             byte cascade = 0;
             if (type == InputStream.class) {
@@ -819,7 +823,7 @@ public class StorageConnector implements Serializable {
          */
         final Opener<?> method = OPENERS.get(type);
         if (method == null) {
-            T view;
+            S view;
             try {
                 view = ObjectConverters.convert(storage, type);
             } catch (UnconvertibleObjectException e) {
@@ -1207,11 +1211,11 @@ public class StorageConnector implements Serializable {
     /**
      * Adds the given view in the cache, without dependencies.
      *
-     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  <S>   the compile-time type of the {@code type} argument.
      * @param  type  the view type.
      * @param  view  the view, or {@code null} if none.
      */
-    private <T> void addView(final Class<T> type, final T view) {
+    private <S> void addView(final Class<S> type, final S view) {
         addView(type, view, null, (byte) 0);
     }
 
@@ -1220,13 +1224,13 @@ public class StorageConnector implements Serializable {
      * For example {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
      * from the later may change position of the former, and closing the later also close the former.
      *
-     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  <S>      the compile-time type of the {@code type} argument.
      * @param  type     the view type.
      * @param  view     the view, or {@code null} if none.
      * @param  source   the type of input that {@code view} is wrapping, or {@code null} for {@link #storage}.
      * @param  cascade  bitwise combination of {@link #CASCADE_ON_CLOSE}, {@link #CASCADE_ON_RESET} or {@link #CLEAR_ON_RESET}.
      */
-    private <T> void addView(final Class<T> type, final T view, final Class<?> source, final byte cascade) {
+    private <S> void addView(final Class<S> type, final S view, final Class<?> source, final byte cascade) {
         if (views == null) {
             views = new IdentityHashMap<>();
             views.put(null, new Coupled(storage));
@@ -1378,7 +1382,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * Returns a string representation of this {@code StorageConnector} for debugging purpose.
-     * This string representation is for debugging purpose only and may change in any future version.
+     * This string representation is for diagnostic and may change in any future version.
      *
      * @return a string representation of this {@code StorageConnector} for debugging purpose.
      */
