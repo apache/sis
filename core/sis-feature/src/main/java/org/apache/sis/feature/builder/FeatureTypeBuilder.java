@@ -697,6 +697,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new {@code AttributeType} builder initialized to the same characteristics than the given template.
+     * If the new attribute duplicates an existing one (for example if the same template is used many times),
+     * caller should use the returned builder for modifying some attributes.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code AttributeType} if and when such interface
@@ -808,7 +810,9 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new {@code FeatureAssociationRole} builder initialized to the same characteristics
-     * than the given template.
+     * than the given template. If the new association duplicates an existing one (for example if the
+     * same template is used many times), caller should use the returned builder for modifying some
+     * associations.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code FeatureAssociationRole} if and when such interface
@@ -830,6 +834,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Adds the given property in the feature type properties.
      * The given property shall be an instance of one of the following types:
+     *
      * <ul>
      *   <li>{@code AttributeType}, in which case this method delegate to {@code addAttribute(AttributeType)}.</li>
      *   <li>{@code FeatureAssociationRole}, in which case this method delegate to {@code addAssociation(FeatureAssociationRole)}.</li>
@@ -837,11 +842,15 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *       this builder does not create new operations.</li>
      * </ul>
      *
+     * This method does not verify if the given property duplicates an existing property.
+     * If the same template is used many times, then the caller should use the returned builder
+     * for modifying some properties.
+     *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the argument type may be changed to the
      * {@code org.opengis.feature.PropertyType} interface. This change is pending GeoAPI revision.</div>
      *
      * @param  template  the property to add to the feature type.
-     * @return a builder initialized to the given builder.
+     * @return a builder initialized to the given template.
      *         In the {@code Operation} case, the builder is a read-only accessor on the operation properties.
      *
      * @see #properties()

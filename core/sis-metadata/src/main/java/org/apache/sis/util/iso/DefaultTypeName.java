@@ -258,7 +258,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
             /*
              * Invoke super.foo() instead of this.foo() because we do not want to invoke any overridden method.
              * This is for ensuring that two TypeNames constructed with the same name will map to the same class.
-             * See 'valueClass' javadoc for more information.
+             * See `valueClass` javadoc for more information.
              */
             try {
                 c = TypeNames.toClass(TypeNames.namespace(super.scope()), super.toString());
@@ -288,7 +288,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
+     * Empty constructor to be used by JAXB only. Despite its `final` declaration,
      * the {@link #name} field will be set by JAXB during unmarshalling.
      */
     private DefaultTypeName() {

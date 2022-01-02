@@ -41,7 +41,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * which is not equivalent to "0011" neither. Consequently we can not parse directly the bits as integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -116,7 +116,7 @@ final class CCITTRLE extends CompressionChannel {
 
     /**
      * Creates a new channel which will decompress data from the given input.
-     * The {@link #setInput(long, long)} method must be invoked after construction
+     * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
      * @param  input        the source of data to decompress.
@@ -135,8 +135,8 @@ final class CCITTRLE extends CompressionChannel {
      * @throws IOException if the stream can not be seek to the given start position.
      */
     @Override
-    public void setInput(final long start, final long byteCount) throws IOException {
-        super.setInput(start, byteCount);
+    public void setInputRegion(final long start, final long byteCount) throws IOException {
+        super.setInputRegion(start, byteCount);
         remainingBitsInRow = bitsPerRow;
         runIsWhite = false;
         runLength  = 0;

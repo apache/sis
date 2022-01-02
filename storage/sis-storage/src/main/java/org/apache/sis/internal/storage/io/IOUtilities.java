@@ -59,7 +59,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -176,6 +176,27 @@ public final class IOUtilities extends Static {
          */
         if (path instanceof File) {
             return ((File) path).getPath();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the given path as a {@link File}, or {@code null} if it can not be converted.
+     *
+     * @param  path  the object to convert to a {@link File}. Can be {@code null}.
+     * @return the given path as a {@link File}, or {@code null} if it can not be converted.
+     */
+    public static File toFile(final Object path) {
+        if (path instanceof File) {
+            return (File) path;
+        } else if (path instanceof Path) try {
+            return ((Path) path).toFile();
+        } catch (UnsupportedOperationException e) {
+            // Ignore.
+        } else if (path instanceof URI) try {
+            return new File((URI) path);
+        } catch (IllegalArgumentException e) {
+            // Ignore.
         }
         return null;
     }

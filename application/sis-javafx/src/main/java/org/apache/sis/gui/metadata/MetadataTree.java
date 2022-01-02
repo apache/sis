@@ -29,15 +29,28 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.util.PropertyFormat;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.PropertyView;
+import org.apache.sis.internal.gui.PropertyValueFormatter;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
@@ -64,7 +77,7 @@ import org.apache.sis.util.logging.Logging;
  *       For changing content, use the {@link #contentProperty} instead.</li>
  * </ul>
  *
- * @todo Add a panel for controlling the number/date/angle format pattern.
+ * @todo Add menu items for controlling the number/date/angle format pattern.
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -89,7 +102,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * The column for metadata property value in the model.
      * This is usually {@link TableColumn#VALUE} or {@link TableColumn#VALUE_AS_TEXT}.
      */
-    TableColumn<?> valueSourceColumn;
+    private TableColumn<?> valueSourceColumn;
 
     /**
      * The data shown in this tree table. The {@link ObjectProperty#set(Object)} method requires
@@ -99,6 +112,19 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * @see #setContent(TreeTable)
      */
     public final ObjectProperty<TreeTable> contentProperty;
+
+    /**
+     * Content of a dialog showing the value of selected row.
+     *
+     * @see #showPropertyValue(Object)
+     */
+    private PropertyView propertyViewer;
+
+    /**
+     * The dialog showing the property value. We keep the instance for preserving
+     * its size and position if the user modifies them.
+     */
+    private Dialog<Void> propertyDialog;
 
     /**
      * Implementation of {@link MetadataTree#contentProperty} as a named class for more readable stack trace.
@@ -146,7 +172,7 @@ check:      if (data != null) {
      * Creates a new initially empty metadata tree.
      */
     public MetadataTree() {
-        this(null, false);
+        this(null);
     }
 
     /**
@@ -157,6 +183,8 @@ check:      if (data != null) {
      */
     public MetadataTree(final MetadataSummary controller) {
         this(controller, false);
+        setRowFactory(Row::new);
+        setShowRoot(false);
     }
 
     /**
@@ -183,9 +211,6 @@ check:      if (data != null) {
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
         contentProperty.addListener(MetadataTree::applyChange);
-        if (!standard) {
-            setShowRoot(false);
-        }
     }
 
     /**
@@ -239,6 +264,9 @@ check:      if (data != null) {
                                     final TreeTable oldValue, final TreeTable  newValue)
     {
         final MetadataTree s = (MetadataTree) ((ContentProperty) property).getBean();
+        if (s.propertyViewer != null) {
+            s.propertyViewer.clear();
+        }
         TreeItem<TreeTable.Node> root = null;
         if (newValue != null) {
             root = new Item(newValue.getRoot());
@@ -325,29 +353,14 @@ check:      if (data != null) {
      * Formatter for metadata property value in a tree cell. This formatter handles in a special way
      * many object classes like {@link InternationalString}, <i>etc</i>.
      */
-    private static final class Formatter extends PropertyFormat
+    private static final class Formatter extends PropertyValueFormatter
             implements Callback<CellDataFeatures<TreeTable.Node, Object>, ObservableValue<Object>>
     {
-        /**
-         * The locale to use for texts. This is usually {@link Locale#getDefault()}.
-         * This value is given to {@link InternationalString#toString(Locale)} calls.
-         */
-        private final Locale locale;
-
         /**
          * Creates a new formatter for the given locale.
          */
         Formatter(final Locale locale) {
-            super(new StringBuilder());
-            this.locale = locale;
-        }
-
-        /**
-         * The locale to use for formatting textual content.
-         */
-        @Override
-        public Locale getLocale() {
-            return locale;
+            super(new StringBuilder(), locale);
         }
 
         /**
@@ -374,5 +387,103 @@ check:      if (data != null) {
             }
             return new ReadOnlyObjectWrapper<>(value);
         }
+    }
+
+    /**
+     * A row in a metadata tree view, used for adding contextual menu on a row-by-row basis.
+     */
+    static class Row extends TreeTableRow<TreeTable.Node> implements EventHandler<ActionEvent> {
+        /**
+         * The context menu, to be added only if this row is non-empty.
+         */
+        protected final ContextMenu menu;
+
+        /**
+         * The menu item for copying current row or viewing in a dialog box.
+         */
+        private final MenuItem view, copy;
+
+        /**
+         * Creates a new row for the given tree table.
+         */
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
+        Row(final TreeTableView<TreeTable.Node> owner) {
+            final MetadataTree md = (MetadataTree) owner;
+            final Resources localized = Resources.forLocale(md.getLocale());
+            view = new MenuItem(localized.getString(Resources.Keys.View));
+            copy = new MenuItem(localized.getString(Resources.Keys.Copy));
+            menu = new ContextMenu(view, copy);
+            copy.setOnAction(this);
+            view.setOnAction((h) -> ((MetadataTree) getTreeTableView()).showPropertyValue(getValue()));
+        }
+
+        /**
+         * Invoked when a new row is selected.
+         * This method sets the contextual menu on the row and updates the disabled state.
+         */
+        @Override
+        protected void updateItem​(final TreeTable.Node item, final boolean empty) {
+            super.updateItem(item, empty);
+            setContextMenu(empty ? null : menu);
+            final boolean disabled = empty || getValue() == null;
+            view.setDisable(disabled);
+            copy.setDisable(disabled);
+        }
+
+        /**
+         * Returns the object in the "value" column of current row, or {@code null} if none.
+         */
+        private Object getValue() {
+            final TreeTable.Node node = getItem();
+            if (node != null) {
+                final Object obj = node.getUserObject();
+                return (obj != null) ? obj : node.getValue(((MetadataTree) getTreeTableView()).valueSourceColumn);
+            }
+            return null;
+        }
+
+        /**
+         * Invoked when user selected a "Copy" or "Copy as" menu item.
+         * The default implementation handles the "Copy" action,
+         * but subclasses can override for handling other copy variants.
+         */
+        @Override
+        public void handle(final ActionEvent event) {
+            final Object value = getValue();
+            if (value != null) {
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(toString(value));
+                Clipboard.getSystemClipboard().setContent(content);
+            }
+        }
+
+        /**
+         * Returns a string representation of the given object
+         * for the purpose of a "copy to clipboard" operation.
+         */
+        static String toString(final Object obj) {
+            if (obj instanceof Throwable) {
+                return ExceptionReporter.getStackTrace((Throwable) obj);
+            }
+            return obj.toString();
+        }
+    }
+
+    /**
+     * Shows the given value in a dialog box.
+     */
+    private void showPropertyValue(final Object value) {
+        if (propertyViewer == null) {
+            propertyViewer = new PropertyView(getLocale(), null, null);
+            propertyDialog = new Dialog<>();
+            propertyDialog.setResizable(true);
+            propertyDialog.setTitle(Resources.forLocale(getLocale()).getString(Resources.Keys.PropertyValue));
+            propertyDialog.initOwner(getScene().getWindow());
+            final DialogPane pane = propertyDialog.getDialogPane();
+            pane.contentProperty().bind(propertyViewer.view);
+            pane.getButtonTypes().add(ButtonType.CLOSE);
+        }
+        propertyViewer.set(value, null);
+        propertyDialog.show();
     }
 }

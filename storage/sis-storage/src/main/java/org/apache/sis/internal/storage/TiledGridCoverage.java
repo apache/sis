@@ -179,9 +179,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final Map<TiledGridResource.CacheKey, Raster> rasters;
 
     /**
-     * The sample model for all rasters. The size of this sample model is the values of two elements
-     * of {@link #tileSize} divided by subsampling and clipped to the domain. If user requested to
-     * read only a subset of the bands, then this sample model is already the subset.
+     * The sample model for all rasters. The width and height of this sample model are the two first elements
+     * of {@link #tileSize} divided by subsampling and clipped to the domain. If user requested to read only
+     * a subset of the bands, then this sample model is already the subset.
      */
     protected final SampleModel model;
 
@@ -600,7 +600,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @see Snapshot#cache(Raster)
          */
         public Raster getCachedTile() {
-            Raster tile = rasters.get(createCacheKey(indexInTileVector));
+            final Raster tile = rasters.get(createCacheKey(indexInTileVector));
             if (tile != null) {
                 /*
                  * Found a tile, but the sample model may be different because band order may be different.
@@ -608,13 +608,22 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  */
                 final int x = getTileOrigin(X_DIMENSION);
                 final int y = getTileOrigin(Y_DIMENSION);
-                if (!model.equals(tile.getSampleModel())) {
-                    tile = Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
-                } else if (tile.getMinX() != x || tile.getMinY() != y) {
-                    tile = tile.createTranslatedChild(x, y);
+                if (model.equals(tile.getSampleModel())) {
+                    if (tile.getMinX() == x && tile.getMinY() == y) {
+                        return tile;
+                    }
+                    return tile.createTranslatedChild(x, y);
+                }
+                if (tile.getWidth() == model.getWidth() && tile.getHeight() == model.getHeight()) {
+                    /*
+                     * It is okay to have a different number of bands if the sample model is
+                     * a view created by `SampleModel.createSubsetSampleModel(int[] bands)`.
+                     * Bands can also be in a different order and still share the same buffer.
+                     */
+                    return Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
                 }
             }
-            return tile;
+            return null;
         }
 
         /**

@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultGeographicBoundingBox}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.4
  * @module
  */
@@ -444,6 +444,7 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
                 "      ├─East bound longitude…… 50°E\n" +
                 "      ├─South bound latitude…… 20°S\n" +
                 "      ├─North bound latitude…… 45°N\n" +
-                "      └─Extent type code……………… true\n", extent.toString());
+                "      └─Extent type code……………… True\n",
+                TestUtilities.formatMetadata(extent.asTreeTable()));
     }
 }

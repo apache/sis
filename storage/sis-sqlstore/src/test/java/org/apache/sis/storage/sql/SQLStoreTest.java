@@ -378,7 +378,7 @@ public final strictfp class SQLStoreTest extends TestCase {
          */
         final FeatureSet   parks = dataset.findResource("Parks");
         final FeatureQuery query = new FeatureQuery();
-        query.setProjection(new FeatureQuery.NamedExpression(FF.property(desiredProperty)));
+        query.setProjection(FF.property(desiredProperty));
         final FeatureSet subset = parks.subset(query);
         /*
          * Verify that all features have the expected property.
@@ -536,7 +536,7 @@ public final strictfp class SQLStoreTest extends TestCase {
              */
             final FeatureQuery query = new FeatureQuery();
             query.setSelection(FF.equal(FF.property("country"), FF.literal("FRA")));
-            query.setProjection(new FeatureQuery.NamedExpression(FF.property("native_name")));
+            query.setProjection(FF.property("native_name"));
             final FeatureSet frenchParks = parks.subset(query);
             /*
              * Verify the feature type.

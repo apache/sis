@@ -28,7 +28,7 @@ import java.lang.reflect.Field;
  * <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a> page.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  *
@@ -119,11 +119,21 @@ final class Tags {
 
 
     /////////////////////////////////////////////////////////
+    //              OGC DGIWG EXTENSION TAGS               //
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Embedded XML-encoded instance documents prepared using 19139-based schema.
+     */
+    public static final short GEO_METADATA = (short) 0xC6DD;
+
+
+    /////////////////////////////////////////////////////////
     //                 GDAL EXTENSION TAGS                 //
     /////////////////////////////////////////////////////////
 
     /**
-     * holds an XML list of name=value 'metadata' values about the image as a whole, and about specific samples.
+     * Holds an XML list of name=value 'metadata' values about the image as a whole, and about specific samples.
      *
      * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags/gdal_metadata.html">TIFF Tag GDAL_METADATA</a>
      */

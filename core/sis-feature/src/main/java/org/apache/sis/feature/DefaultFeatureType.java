@@ -293,7 +293,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         }
         /*
          * Before to resolve cyclic associations, verify that operations depend only on existing properties.
-         * Note: the 'allProperties' collection has been created by computeTransientFields(…) above.
+         * Note: the `allProperties` collection has been created by computeTransientFields(…) above.
          */
         for (final AbstractIdentifiedType property : allProperties) {
             if (property instanceof AbstractOperation) {
@@ -329,7 +329,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         in.defaultReadObject();
         computeTransientFields(properties);
         /*
-         * Set isResolved to a conservative value. The 'resolve' method will compute a more accurate value if needed,
+         * Set isResolved to a conservative value. The `resolve` method will compute a more accurate value if needed,
          * the first time that another DefaultFeatureType will have a dependency to this DefaultFeatureType through a
          * DefaultAssociationRole.
          */
@@ -392,7 +392,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          * name for convenience, provided that it does not create ambiguity.  If a short alias could map to two or
          * more properties, then that alias is not added.
          *
-         * In the 'aliases' map below, null values will be assigned to ambiguous short names.
+         * In the `aliases` map below, null values will be assigned to ambiguous short names.
          */
         final Map<String, AbstractIdentifiedType> aliases = new LinkedHashMap<>();
         for (final AbstractIdentifiedType property : allProperties) {
@@ -411,7 +411,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 if (byName.putIfAbsent(tip, property) == null) {
                     /*
                      * This block is skipped if there is properties named "tip" and "head:tip".
-                     * The 'indices' value may be null if the property is an operation.
+                     * The `indices` value may be null if the property is an operation.
                      */
                     final Integer value = indices.get(property.getName().toString());
                     if (value != null && indices.put(tip, value) != null) {
@@ -530,7 +530,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     private boolean resolve(final DefaultFeatureType feature, final Map<FeatureType,Boolean> previous) {
         /*
          * The isResolved field is used only as a cache for skipping completely the DefaultFeatureType instance if
-         * we have determined that there is no unresolved name.
+         * we have determined that there is no unresolved name.  If the given argument is not a DefaultFeatureType
+         * instance, conservatively assumes `isSimple`. It may cause more calculation than needed, but should not
+         * change the result.
          */
         return feature.isResolved = resolve(feature, feature.properties, previous, feature.isResolved);
     }
@@ -563,7 +565,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     }
                     /*
                      * Resolve recursively the associated features, with a check against infinite recursivity.
-                     * If we fall in a loop (for example A → B → C → A), conservatively returns 'false'. This
+                     * If we fall in a loop (for example A → B → C → A), conservatively returns `false`. This
                      * may not be the most accurate answer, but will not cause any more hurt than checking more
                      * often than necessary.
                      */

@@ -45,11 +45,16 @@ import org.apache.sis.util.Localized;
  * Subclasses need to override {@link #getLocale()}, and should also override {@link #toString(Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 public abstract class PropertyFormat extends LineAppender implements Localized {
+    /**
+     * The string to insert for missing values.
+     */
+    private static final String MISSING = " ";
+
     /**
      * The format for the column in process of being written. This is a format to use for the column as a whole.
      * This field is updated for every new column to write. May be {@code null} if the format is unspecified.
@@ -59,7 +64,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
     /**
      * Creates a new instance which will write to the given appendable.
      *
-     * @param  out  where to format the tree.
+     * @param  out  where to format the objects.
      */
     protected PropertyFormat(final Appendable out) {
         super(out);
@@ -76,7 +81,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
     }
 
     /**
-     * Appends a textual representation of the given value, with a check against nested collections.
+     * Appends a textual representation of the given value, with a check for nested collections.
      *
      * @param  value      the value to format (may be {@code null}).
      * @param  recursive  {@code true} if this method is invoking itself for writing collection values.
@@ -84,7 +89,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
     private void appendValue(final Object value, final boolean recursive) throws IOException {
         final CharSequence text;
         if (value == null) {
-            text = " ";                                             // String for missing value.
+            text = MISSING;
         } else if (columnFormat != null) {
             if (columnFormat instanceof CompoundFormat<?>) {
                 appendCompound((CompoundFormat<?>) columnFormat, value);
@@ -92,13 +97,15 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
             }
             text = columnFormat.format(value);
         } else if (value instanceof InternationalString) {
-            text = ((InternationalString) value).toString(getLocale());
+            text = freeText(((InternationalString) value).toString(getLocale()));
         } else if (value instanceof CharSequence) {
-            text = value.toString();
+            text = freeText(value.toString());
         } else if (value instanceof CodeList<?>) {
             text = MetadataServices.getInstance().getCodeTitle((CodeList<?>) value, getLocale());
         } else if (value instanceof Enum<?>) {
             text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
+        } else if (value instanceof Boolean) {
+            text = Vocabulary.getResources(getLocale()).getString((Boolean) value ? Vocabulary.Keys.True : Vocabulary.Keys.False);
         } else if (value instanceof Type) {
             appendName(((Type) value).getTypeName());
             return;
@@ -155,7 +162,23 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
      * @return the formatted value.
      */
     protected String toString(final Object value) {
-        return value.toString();
+        return freeText(value.toString());
+    }
+
+    /**
+     * Invoked after formatting a text that could be anything. It current version, it includes all kinds of
+     * {@link CharSequence} including {@link InternationalString}, together with {@link Object#toString()}
+     * values computed by the default {@link #toString(Object)} implementation.
+     *
+     * The default {@code freeText(…)} implementation removes white space and control characters.
+     * Subclasses can override for example for making a text shorter.
+     *
+     * @param  text  the free text, or {@code null}.
+     * @return the text to append.
+     */
+    protected String freeText(final String text) {
+        // Really want `trim()` because there is sometime control characters to remove.
+        return (text != null) ? text.trim() : MISSING;
     }
 
     /**

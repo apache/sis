@@ -27,15 +27,13 @@ import static org.junit.Assert.*;
  * Tests {@link XPaths}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.4
  * @module
  */
 public final strictfp class XPathsTest extends TestCase {
     /**
      * Tests the {@link XPaths#endOfURI(CharSequence, int)} method.
-     *
-     * @since 0.8
      */
     @Test
     public void testEndOfURI() {
@@ -48,13 +46,13 @@ public final strictfp class XPathsTest extends TestCase {
     }
 
     /**
-     * Tests {@link XPaths#xpointer(String, String)}.
+     * Tests {@link XPaths#split(String)}.
      */
     @Test
-    public void testXPointer() {
-        assertEquals("m", XPaths.xpointer("uom", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m"));
-        assertEquals("m", XPaths.xpointer("uom", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertEquals("m", XPaths.xpointer("uom", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertEquals("m", XPaths.xpointer("uom", "../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+    public void testSplit() {
+        assertNull(XPaths.split("property"));
+        assertArrayEquals(new String[] {"/property"},                    XPaths.split("/property").toArray());
+        assertArrayEquals(new String[] {"Feature", "property", "child"}, XPaths.split("Feature/property/child").toArray());
+        assertArrayEquals(new String[] {"/Feature", "property"},         XPaths.split("/Feature/property").toArray());
     }
 }

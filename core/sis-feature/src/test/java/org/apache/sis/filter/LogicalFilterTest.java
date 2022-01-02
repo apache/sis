@@ -225,7 +225,7 @@ public final strictfp class LogicalFilterTest extends TestCase {
         assertNotSame(e, opt);
 
         final PropertyValue<?> p = (PropertyValue<?>) opt.getParameters().get(0);
-        assertEquals(String.class,  p.getSourceClass());
-        assertEquals(Integer.class, p.getValueClass());
+        assertEquals(String.class, p.getSourceClass());
+        assertEquals(Number.class, p.getValueClass());
     }
 }

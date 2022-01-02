@@ -55,7 +55,7 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <R>  the type of resources (e.g. {@link AbstractFeature}) to use as inputs.
  * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
@@ -200,6 +200,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
          */
         @Override
         public <V> Expression<AbstractFeature,V> property(final String xpath, final Class<V> type) {
+            ArgumentChecks.ensureNonEmpty("xpath", xpath);
+            ArgumentChecks.ensureNonNull ("type",  type);
             return PropertyValue.create(xpath, type);
         }
     }

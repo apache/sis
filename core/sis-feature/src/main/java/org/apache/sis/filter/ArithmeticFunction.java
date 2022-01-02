@@ -121,14 +121,14 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <N> Expression<R,N> toValueType(final Class<N> type) {
-        if (type.isAssignableFrom(Number.class)) {
+    public <N> Expression<R,N> toValueType(final Class<N> target) {
+        if (target.isAssignableFrom(Number.class)) {
             return (Expression<R,N>) this;
         } else try {
-            return new ConvertFunction<>(this, Number.class, type);
+            return new ConvertFunction<>(this, Number.class, target);
         } catch (UnconvertibleObjectException e) {
             throw (ClassCastException) new ClassCastException(Errors.format(
-                    Errors.Keys.CanNotConvertValue_2, getFunctionName(), type)).initCause(e);
+                    Errors.Keys.CanNotConvertValue_2, getFunctionName(), target)).initCause(e);
         }
     }
 

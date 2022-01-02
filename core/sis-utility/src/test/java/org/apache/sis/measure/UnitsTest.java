@@ -51,7 +51,7 @@ import static org.apache.sis.test.Assert.*;
     UnitFormatTest.class,
     SexagesimalConverterTest.class,
     org.apache.sis.internal.util.DefinitionURITest.class,
-    org.apache.sis.internal.util.XPathsTest.class
+    org.apache.sis.internal.util.XPointerTest.class
 })
 public final strictfp class UnitsTest extends TestCase {
     /**

@@ -1,0 +1,85 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.internal.gui;
+
+import java.util.Date;
+import java.util.Locale;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.util.PropertyFormat;
+
+
+/**
+ * Creates string representation of property values of unknown type.
+ * Tabulations are replaced by spaces and line feeds are replaced by the Pilcrow character.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
+ * @since   1.2
+ * @module
+ */
+public class PropertyValueFormatter extends PropertyFormat {
+    /**
+     * The locale to use for objects. This is usually {@link Locale#getDefault()}.
+     * This value is given to {@link InternationalString#toString(Locale)} calls.
+     */
+    protected final Locale locale;
+
+    /**
+     * Creates a formatter for the specified locale.
+     *
+     * @param  locale  the locale to use for texts, numbers and dates.
+     * @param  buffer  where to format the objects.
+     */
+    public PropertyValueFormatter(final Appendable buffer, final Locale locale) {
+        super(buffer);
+        this.locale = locale;
+        setLineSeparator(" ¶ ");
+    }
+
+    /**
+     * The locale to use for formatting textual content.
+     */
+    @Override
+    public final Locale getLocale() {
+        return locale;
+    }
+
+    /**
+     * Invoked by {@link PropertyFormat} for formatting a value which has not been recognized as one of
+     * the types to be handled in a special way. In particular numbers and dates should be handled here.
+     */
+    @Override
+    protected String toString(final Object value) {
+        if (value instanceof Number || value instanceof Date) {             // See super-class javadoc.
+            return value.toString();
+        }
+        return Classes.getShortClassName(value) + "(…)";
+    }
+
+    /**
+     * Invoked by {@link PropertyFormat} when the property value is any kind of {@link CharSequence}.
+     * This method applies an arbitrary limit for avoiding too long texts.
+     *
+     * @param  text  the text.
+     * @return the text potentially truncated if too long.
+     */
+    @Override
+    protected String freeText(final String text) {
+        return CharSequences.shortSentence(super.freeText(text), 100).toString();
+    }
+}

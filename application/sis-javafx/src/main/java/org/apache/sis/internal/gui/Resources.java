@@ -303,6 +303,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Open = 28;
 
         /**
+         * Open containing folder
+         */
+        public static final short OpenContainingFolder = 66;
+
+        /**
          * Open data file
          */
         public static final short OpenDataFile = 29;
@@ -316,6 +321,11 @@ public final class Resources extends IndexedResourceBundle {
          * Orthographic
          */
         public static final short Orthographic = 52;
+
+        /**
+         * Property value
+         */
+        public static final short PropertyValue = 68;
 
         /**
          * Range of values…
@@ -366,6 +376,11 @@ public final class Resources extends IndexedResourceBundle {
          * Universal Transverse Mercator
          */
         public static final short UTM = 45;
+
+        /**
+         * View
+         */
+        public static final short View = 67;
 
         /**
          * Visualize

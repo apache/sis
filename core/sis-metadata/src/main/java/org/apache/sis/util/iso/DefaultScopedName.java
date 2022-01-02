@@ -150,7 +150,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (i != size) {                                        // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
         }
-        // Following line is safe because 'parsedNames' type is <? extends LocalName>.
+        // Following line is safe because `parsedNames` type is <? extends LocalName>.
         parsedNames = UnmodifiableArrayList.wrap(locals);
     }
 
@@ -214,7 +214,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (index != locals.length) {               // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "tail"));
         }
-        // Following line is safe because 'parsedNames' type is <? extends LocalName>.
+        // Following line is safe because `parsedNames` type is <? extends LocalName>.
         parsedNames = UnmodifiableArrayList.wrap(locals);
         if (tail instanceof LocalName) {
             this.path = path;

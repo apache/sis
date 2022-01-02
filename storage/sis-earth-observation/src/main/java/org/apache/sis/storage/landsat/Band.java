@@ -189,7 +189,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
      */
     @Override
     public SampleDimension customize(final int image, final int band, final NumberRange<?> sampleRange,
-                                     final Number fillValue, final SampleDimension.Builder dimension)
+                                     final SampleDimension.Builder dimension)
     {
         if ((image | band) == 0) {
             dimension.setName(identifier);
