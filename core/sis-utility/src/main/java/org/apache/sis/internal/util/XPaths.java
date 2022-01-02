@@ -19,10 +19,10 @@ package org.apache.sis.internal.util;
 import java.util.List;
 import java.util.ArrayList;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -37,6 +37,11 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 public final class XPaths extends Static {
+    /**
+     * The separator between path components.
+     */
+    public static final char SEPARATOR = '/';
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -71,7 +76,7 @@ scan:   while (offset < length) {
                     case '-':                                           // Valid character in URL.
                     case '%':                                           // Encoded character in URL.
                     case '.':                                           // Domain name separator in URL.
-                    case '/': break;                                    // Path separator, but could also be division as in "m/s".
+                    case SEPARATOR: break;                              // Path separator, but could also be division as in "m/s".
                     case '(': parenthesis++; break;
                     case ')': parenthesis--; break;
                     default: {
@@ -100,7 +105,7 @@ scan:   while (offset < length) {
      * @throws IllegalArgumentException if the XPath contains at least one empty component.
      */
     public static List<String> split(final String xpath) {
-        int next = xpath.indexOf('/');
+        int next = xpath.indexOf(SEPARATOR);
         if (next < 0) {
             return null;
         }
@@ -114,7 +119,7 @@ scan:   while (offset < length) {
             // Keep the `start` position on the leading '/'.
             next++;
         }
-        while ((next = xpath.indexOf('/', next)) >= 0) {
+        while ((next = xpath.indexOf(SEPARATOR, next)) >= 0) {
             components.add(trimWhitespaces(xpath, start, next).toString());
             start = ++next;
         }

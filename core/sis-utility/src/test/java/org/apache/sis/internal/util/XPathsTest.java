@@ -55,15 +55,4 @@ public final strictfp class XPathsTest extends TestCase {
         assertArrayEquals(new String[] {"Feature", "property", "child"}, XPaths.split("Feature/property/child").toArray());
         assertArrayEquals(new String[] {"/Feature", "property"},         XPaths.split("/Feature/property").toArray());
     }
-
-    /**
-     * Tests {@link XPaths#xpointer(String, String)}.
-     */
-    @Test
-    public void testXPointer() {
-        assertEquals("m", XPaths.xpointer("uom", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m"));
-        assertEquals("m", XPaths.xpointer("uom", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertEquals("m", XPaths.xpointer("uom", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertEquals("m", XPaths.xpointer("uom", "../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-    }
 }

@@ -112,9 +112,9 @@ split:  if (path != null) {
              * we interpret that as meaning "property of a feature of any type", which means
              * to relax the restriction about the set of allowed properties.
              */
-            final String head = path.get(0);                // List is guaranteed non-empty.
+            final String head = path.get(0);                // List and items in the list are guaranteed non-empty.
             isVirtual = head.equals("/*");
-            if (isVirtual || head.charAt(0) != '/') {       // Components are guaranteed non-empty.
+            if (isVirtual || head.charAt(0) != XPaths.SEPARATOR) {
                 final int offset = isVirtual ? 1 : 0;       // Skip the "/*/" component at index 0.
                 final int last = path.size() - 1;
                 if (last >= offset) {
