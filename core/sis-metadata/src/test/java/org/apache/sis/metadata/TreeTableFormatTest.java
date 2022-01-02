@@ -96,7 +96,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   │       ├─East bound longitude…… 180°E\n" +
             "  │   │       ├─South bound latitude…… 90°S\n" +
             "  │   │       ├─North bound latitude…… 90°N\n" +
-            "  │   │       └─Extent type code……………… true\n" +
+            "  │   │       └─Extent type code……………… True\n" +
             "  │   ├─Organisation……………………………………………… Kōdansha\n" +
             "  │   └─Role…………………………………………………………………… Editor\n" +
             "  ├─Presentation form (1 of 2)…………………… Document digital\n" +

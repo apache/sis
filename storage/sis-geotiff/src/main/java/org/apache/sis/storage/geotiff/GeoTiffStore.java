@@ -72,7 +72,7 @@ import org.apache.sis.util.resources.Errors;
  */
 public class GeoTiffStore extends DataStore implements Aggregate {
     /**
-     * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
+     * The encoding of strings in the metadata. The TIFF specification said that is shall be US-ASCII,
      * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
      */
     final Charset encoding;

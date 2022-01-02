@@ -17,10 +17,12 @@
 package org.apache.sis.internal.feature;
 
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.opengis.filter.ValueReference;
+import org.apache.sis.filter.Optimization;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 
@@ -34,7 +36,7 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V>  the type of values computed by the expression.
@@ -67,34 +69,35 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
     PropertyTypeBuilder expectedType(FeatureType valueType, FeatureTypeBuilder addTo);
 
     /**
-     * Provides the type of results computed by the given expression.
-     * This method executes the first of the following choices that apply:
+     * Tries to cast or convert the given expression to a {@link FeatureExpression}.
+     * If the given expression can not be casted, then this method creates a copy
+     * provided that the expression is one of the following type:
      *
      * <ol>
-     *   <li>If the expression implements {@link FeatureExpression}, delegate to {@link #expectedType(FeatureType,
-     *       FeatureTypeBuilder)}. Note that the invoked method may throw an {@link IllegalArgumentException}.</li>
-     *   <li>Otherwise if the given feature type contains exactly one property (including inherited properties),
-     *       adds that property to the given builder.</li>
-     *   <li>Otherwise returns {@code null}.</li>
+     *   <li>{@link Literal}.</li>
+     *   <li>{@link ValueReference}, assuming that the expression expects feature instances.</li>
      * </ol>
      *
+     * Otherwise this method returns {@code null}.
      * It is caller's responsibility to verify if this method returns {@code null} and to throw an exception in such case.
      * We leave that responsibility to the caller because (s)he may be able to provide better error messages.
      *
-     * @param  expression  the expression for which to get the result type, or {@code null}.
-     * @param  valueType   the type of features to be evaluated by the given expression.
-     * @param  addTo       where to add the type of properties evaluated by the given expression.
-     * @return builder of the added property, or {@code null} if this method can not add a property.
-     * @throws IllegalArgumentException if this method can operate only on some feature types
-     *         and the given type is not one of them.
+     * @param  candidate  the expression to cast or copy. Can be null.
+     * @return the given expression as a feature expression, or {@code null} if it can not be casted or converted.
      */
-    public static PropertyTypeBuilder expectedType(final Expression<?,?> expression,
-            final FeatureType valueType, final FeatureTypeBuilder addTo)
-    {
-        if (expression instanceof FeatureExpression<?,?>) {
-            return ((FeatureExpression<?,?>) expression).expectedType(valueType, addTo);
+    public static FeatureExpression<?,?> castOrCopy(final Expression<?,?> candidate) {
+        if (candidate instanceof FeatureExpression<?,?>) {
+            return (FeatureExpression<?,?>) candidate;
         }
-        final PropertyType pt = CollectionsExt.singletonOrNull(valueType.getProperties(true));
-        return (pt == null) ? null : addTo.addProperty(pt);
+        final Expression<?,?> copy;
+        if (candidate instanceof Literal<?,?>) {
+            copy = Optimization.literal(((Literal<?,?>) candidate).getValue());
+        } else if (candidate instanceof ValueReference<?,?>) {
+            final String xpath = ((ValueReference<?,?>) candidate).getXPath();
+            copy = DefaultFilterFactory.forFeatures().property(xpath);
+        } else {
+            return null;
+        }
+        return (FeatureExpression<?,?>) copy;
     }
 }

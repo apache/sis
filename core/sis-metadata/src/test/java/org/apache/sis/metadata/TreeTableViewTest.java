@@ -124,6 +124,6 @@ public final strictfp class TreeTableViewTest extends TestCase {
                 "  ├─East bound longitude…… 160°W…… Bounding box crosses the antimeridian.\n" +   // See method javadoc.
                 "  ├─South bound latitude…… 30°S\n" +
                 "  ├─North bound latitude…… 40°N\n" +
-                "  └─Extent type code……………… true\n", text);
+                "  └─Extent type code……………… True\n", text);
     }
 }

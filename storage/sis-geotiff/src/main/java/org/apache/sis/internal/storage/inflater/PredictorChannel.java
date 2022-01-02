@@ -27,7 +27,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * Implementation of a {@link Predictor} to be executed after decompression.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -50,7 +50,7 @@ abstract class PredictorChannel extends PixelChannel {
 
     /**
      * Creates a predictor.
-     * The {@link #setInput(long, long)} method must be invoked after construction
+     * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
      * @param  input  the channel that decompress data.
@@ -68,8 +68,9 @@ abstract class PredictorChannel extends PixelChannel {
      * @throws IOException if the stream can not be seek to the given start position.
      */
     @Override
-    public void setInput(final long start, final long byteCount) throws IOException {
-        input.setInput(start, byteCount);
+    public void setInputRegion(final long start, final long byteCount) throws IOException {
+        input.setInputRegion(start, byteCount);
+        deferredCount = 0;
     }
 
     /**
@@ -78,7 +79,7 @@ abstract class PredictorChannel extends PixelChannel {
      *
      * @param  buffer  the buffer on which to apply the predictor.
      * @param  start   position of first sample value to process.
-     * @return position after the same sample value processed. Should be {@link ByteBuffer#position()},
+     * @return position after the last sample value processed. Should be {@link ByteBuffer#position()},
      *         unless the predictor needs more data for processing the last bytes.
      */
     protected abstract int uncompress(ByteBuffer buffer, int start);

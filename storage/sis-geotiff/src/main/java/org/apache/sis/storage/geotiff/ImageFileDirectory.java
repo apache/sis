@@ -46,6 +46,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -948,7 +949,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case Tags.ImageDescription: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    metadata.addTitle(value);
+                    metadata.addTitle(Strings.singleLine(" ", value));
                 }
                 break;
             }
@@ -1536,10 +1537,10 @@ final class ImageFileDirectory extends DataCube {
                                 minValues.get(Math.min(band, minValues.size()-1)), true,
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
-                    builder.setName(band + 1);
+                    builder.setName(band + 1).setBackground(getFillValue(true));
                     final SampleDimension sd;
                     if (isIndexValid) {
-                        sd = reader.store.customizer.customize(index, band, sampleRange, getFillValue(true), builder);
+                        sd = reader.store.customizer.customize(index, band, sampleRange, builder);
                     } else {
                         sd = builder.build();
                     }
@@ -1691,7 +1692,7 @@ final class ImageFileDirectory extends DataCube {
                         throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
                     }
                     final boolean hasAlpha = (numBands >= 4);
-                    final boolean packed = sm instanceof SinglePixelPackedSampleModel;
+                    final boolean packed = (sm instanceof SinglePixelPackedSampleModel);
                     colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
                     break;
                 }

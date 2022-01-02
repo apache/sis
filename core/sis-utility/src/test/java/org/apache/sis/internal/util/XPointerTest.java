@@ -14,22 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.util;
+
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
- * A set of helper classes for the SIS implementation.
- * contains also classes that may move to the public API someday,
- * but are considered not yet ready.
+ * Tests {@link XPointer}.
  *
- * <p><strong>Do not use!</strong></p>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Alexis Manin (Geomatys)
  * @version 1.2
- * @since   0.7
+ * @since   1.2
  * @module
  */
-package org.apache.sis.internal.feature;
+public final strictfp class XPointerTest extends TestCase {
+    /**
+     * Tests {@link XPointer#UOM}.
+     */
+    @Test
+    public void testUOM() {
+        assertEquals("m", XPointer.UOM.reference("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m"));
+        assertEquals("m", XPointer.UOM.reference("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertEquals("m", XPointer.UOM.reference("http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertEquals("m", XPointer.UOM.reference("../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+    }
+}

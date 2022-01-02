@@ -46,7 +46,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * and band subset.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -225,7 +225,11 @@ public abstract class Inflater implements Closeable {
                 break;
             }
             case HORIZONTAL: {
-                if (pixelsPerElement == 1 && dataType == DataType.BYTE) {
+                if (sourceWidth == 1) {
+                    channel = inflater;     // Horizontal predictor is no-op if image width is 1 pixel.
+                    break;
+                }
+                if (pixelsPerElement == 1) {
                     channel = HorizontalPredictor.create(inflater, dataType, sourcePixelStride, sourceWidth);
                     if (channel != null) break;
                 }
@@ -257,12 +261,12 @@ public abstract class Inflater implements Closeable {
     public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
         /*
          * If the input is a wrapper around a decompression algorithm (PackBits, CCITTRLE, etc),
-         * we need to inform the wrapper about the new operation. The call to `setInput(…)` below
+         * we need to inform the wrapper about the new operation. The call to `setInputRegion(…)`
          * will perform a seek operation. As a consequence the buffer content become invalid and
          * must be emptied.
          */
         if (input.channel instanceof PixelChannel) {
-            ((PixelChannel) input.channel).setInput(start, byteCount);
+            ((PixelChannel) input.channel).setInputRegion(start, byteCount);
             input.buffer.limit(0);
             input.setStreamPosition(start);         // Must be after above call to `limit(0)`.
         }

@@ -446,11 +446,11 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
             /*
              * Create TypeNames outide the synchronized block because the TypeNames constructor will call back
              * methods from this class. Since those methods are overrideable, this could invoke user's code.
-             * Note also that methods in this class use the 'pool', which is itself synchronized, so we are
+             * Note also that methods in this class use the `pool`, which is itself synchronized, so we are
              * better to avoid double synchronization for reducing the risk of dead-lock.
              */
             final TypeNames c = new TypeNames(this);
-            synchronized (this) {                       // Double-check strategy is ok if 'typeNames' is volatile.
+            synchronized (this) {                       // Double-check strategy is ok if `typeNames` is volatile.
                 t = typeNames;
                 if (t == null) {
                     typeNames = t = c;

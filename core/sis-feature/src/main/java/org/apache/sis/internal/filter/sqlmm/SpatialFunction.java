@@ -42,7 +42,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -180,11 +180,11 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      */
     @Override
     @SuppressWarnings("unchecked")
-    public final <N> Expression<R,N> toValueType(final Class<N> type) {
-        if (type.isAssignableFrom(getValueClass())) {
+    public final <N> Expression<R,N> toValueType(final Class<N> target) {
+        if (target.isAssignableFrom(getValueClass())) {
             return (Expression<R,N>) this;
         } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertValue_2, getFunctionName(), type));
+            throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
         }
     }
 
@@ -210,13 +210,16 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
     public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
         AttributeTypeBuilder<?> att;
 cases:  if (operation.isGeometryInOut()) {
-            final PropertyTypeBuilder type = FeatureExpression.expectedType(getParameters().get(0), valueType, addTo);
-            if (type instanceof AttributeTypeBuilder<?>) {
-                att = (AttributeTypeBuilder<?>) type;
-                final Geometries<?> library = Geometries.implementation(att.getValueClass());
-                if (library != null) {
-                    att = att.setValueClass(operation.getReturnType(library));
-                    break cases;
+            final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(getParameters().get(0));
+            if (fex != null) {
+                final PropertyTypeBuilder type = fex.expectedType(valueType, addTo);
+                if (type instanceof AttributeTypeBuilder<?>) {
+                    att = (AttributeTypeBuilder<?>) type;
+                    final Geometries<?> library = Geometries.implementation(att.getValueClass());
+                    if (library != null) {
+                        att = att.setValueClass(operation.getReturnType(library));
+                        break cases;
+                    }
                 }
             }
             throw new InvalidFilterValueException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));

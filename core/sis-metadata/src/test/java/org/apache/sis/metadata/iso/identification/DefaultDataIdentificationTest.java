@@ -142,7 +142,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "  │       ├─East bound longitude…… 180°E\n" +
                 "  │       ├─South bound latitude…… 90°S\n" +
                 "  │       ├─North bound latitude…… 90°N\n" +
-                "  │       └─Extent type code……………… true\n" +
+                "  │       └─Extent type code……………… True\n" +
                 "  ├─Descriptive keywords\n" +
                 "  │   ├─Keyword………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
                 "  │   ├─Type………………………………………………………… Theme\n" +

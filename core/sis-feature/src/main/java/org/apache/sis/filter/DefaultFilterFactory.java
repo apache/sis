@@ -48,7 +48,7 @@ import org.opengis.filter.capability.FilterCapabilities;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) to use as inputs.
  * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
@@ -227,6 +227,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          */
         @Override
         public <V> ValueReference<Feature,V> property(final String xpath, final Class<V> type) {
+            ArgumentChecks.ensureNonEmpty("xpath", xpath);
+            ArgumentChecks.ensureNonNull ("type",  type);
             return PropertyValue.create(xpath, type);
         }
     }

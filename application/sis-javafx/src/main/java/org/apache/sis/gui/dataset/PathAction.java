@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.awt.Desktop;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,25 +38,41 @@ import org.apache.sis.storage.Resource;
 
 
 /**
- * The "Copy file path" action. This class gets the file path of a resource and copies it in the clipboard.
+ * The "Copy file path" or "Open containing folder" action.
+ * This class gets the file path of a resource and copies it in the clipboard
+ * or open the containing folder using native file browser.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
-final class CopyAction implements EventHandler<ActionEvent> {
+final class PathAction implements EventHandler<ActionEvent> {
     /**
      * The cell for which to provide a copy action.
      */
     private final TreeCell<Resource> cell;
 
     /**
-     * Creates a new instance.
+     * {@code true} for opening native file browser, or {@code false} for copying to clipboard.
      */
-    CopyAction(final TreeCell<Resource> source) {
-        this.cell = source;
+    private final boolean browser;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param  browser  {@code true} for opening native file browser, or {@code false} for copying to clipboard.
+     */
+    PathAction(final TreeCell<Resource> source, final boolean browser) {
+        this.cell    = source;
+        this.browser = browser;
     }
+
+    /**
+     * Whether the "Open containing folder" operation is disabled.
+     */
+    static final boolean isBrowseDisabled = !(Desktop.isDesktopSupported() &&
+            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE_FILE_DIR));
 
     /**
      * Invoked when the user selected "Copy file path" item in the contextual menu of a {@link ResourceTree} cell.
@@ -101,6 +118,17 @@ final class CopyAction implements EventHandler<ActionEvent> {
             }
         } catch (URISyntaxException | IllegalArgumentException | UnsupportedOperationException e) {
             // Ignore. The `uri` or `text` field that we failed to assign keep its original value.
+        }
+        /*
+         * If this action is for opening the native file browser, we can do it now.
+         */
+        if (browser) {
+            if (file instanceof File) try {
+                Desktop.getDesktop().browseFileDirectory((File) file);
+            } catch (Exception e) {
+                ExceptionReporter.show(cell.getTreeView(), null, null, e);
+            }
+            return;
         }
         /*
          * Above code obtained a single path, considered the main one. But a resource may also be

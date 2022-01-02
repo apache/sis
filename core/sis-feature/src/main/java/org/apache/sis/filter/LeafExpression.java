@@ -117,13 +117,13 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          */
         @Override
         @SuppressWarnings("unchecked")
-        public <N> Expression<R,N> toValueType(final Class<N> type) {
+        public <N> Expression<R,N> toValueType(final Class<N> target) {
             try {
-                final N c = ObjectConverters.convert(value, type);
+                final N c = ObjectConverters.convert(value, target);
                 return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
             } catch (UnconvertibleObjectException e) {
                 throw (ClassCastException) new ClassCastException(Errors.format(
-                        Errors.Keys.CanNotConvertValue_2, getFunctionName(), type)).initCause(e);
+                        Errors.Keys.CanNotConvertValue_2, getFunctionName(), target)).initCause(e);
             }
         }
 
@@ -200,17 +200,17 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          */
         @Override
         @SuppressWarnings("unchecked")
-        public <N> Expression<R,N> toValueType(final Class<N> type) {
+        public <N> Expression<R,N> toValueType(final Class<N> target) {
             // Same implementation than `super.toValueType(type)` except for exception handling.
             try {
-                final N c = ObjectConverters.convert(value, type);
+                final N c = ObjectConverters.convert(value, target);
                 return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
             } catch (UnconvertibleObjectException e) {
                 try {
-                    return original.toValueType(type);
+                    return original.toValueType(target);
                 } catch (RuntimeException bis) {
                     final ClassCastException c = new ClassCastException(Errors.format(
-                            Errors.Keys.CanNotConvertValue_2, getFunctionName(), type));
+                            Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
                     c.initCause(e);
                     c.addSuppressed(bis);
                     throw c;

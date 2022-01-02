@@ -139,18 +139,18 @@ public class DefaultLocalName extends AbstractName implements LocalName {
                  * flavor instead of InternationalString (this is done by name.toString() at
                  * the end of this constructor). It will not cause any lost of information since
                  * SimpleInternationalString contains only one String. This simplification allows
-                 * the equals(Object) method to return "true" for DefaultLocalName that would
+                 * the equals(Object) method to return `true` for `DefaultLocalName` that would
                  * otherwise be considered different.
                  *
                  * In order to reduce the amount of objects created, we retain the full
-                 * InternationalString in the "asString" field, which is NOT considered
+                 * InternationalString in the `asString` field, which is NOT considered
                  * by equals(Object). This is the value returned by toInternationalString().
                  */
                 asString = name;
             } else {
                 /*
                  * For any InternationalString that are not SimpleInternationalString, we retain
-                 * the given name and we do NOT set the "asString" field. It will be computed on
+                 * the given name and we do NOT set the `asString` field. It will be computed on
                  * the fly when first needed.
                  */
                 this.name = name;
@@ -365,7 +365,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
 
     /**
      * Empty constructor to be used by JAXB only, or by sub-classes empty constructors
-     * themselves used only by JAXB. Despite its "final" declaration, the {@link #name}
+     * themselves used only by JAXB. Despite its `final` declaration, the {@link #name}
      * field will be set by JAXB during unmarshalling.
      */
     DefaultLocalName() {

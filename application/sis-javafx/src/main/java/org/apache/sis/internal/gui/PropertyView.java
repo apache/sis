@@ -21,8 +21,6 @@ import java.util.Objects;
 import java.util.Collection;
 import java.lang.reflect.Array;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -32,6 +30,7 @@ import java.awt.image.RenderedImage;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
@@ -43,6 +42,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.internal.util.Numerics;
@@ -70,8 +70,9 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
 
     /**
      * The node used for showing {@link #value}.
+     * The node is created by {@link #set(Object, Rectangle)}.
      */
-    private final ObjectProperty<Node> view;
+    public final ObjectProperty<Node> view;
 
     /**
      * Shows the {@linkplain #value} as plain text.
@@ -94,8 +95,10 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     /**
      * The pane containing {@link #imageView}. We use that pane for allowing a background color to be specified.
      * A future version may also use that pane for putting more visual components on top or below the image.
+     *
+     * @see #getImageCanvas()
      */
-    private final Pane imageCanvas;
+    private Pane imageCanvas;
 
     /**
      * The group of all components related to image, created when first needed.
@@ -131,19 +134,19 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
      * Creates a new property view.
      *
      * @param  locale      the locale for numbers formatting.
-     * @param  view        the property where to set the node showing the value.
+     * @param  view        the property where to set the node showing the value, or {@code null} for a default one.
      * @param  background  the image background color, or {@code null} if none.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
+    public PropertyView(final Locale locale, ObjectProperty<Node> view, final ObjectProperty<Background> background) {
         super(locale, null);
-        this.view = view;
-        imageCanvas = new Pane();
-        if (background != null) {
-            imageCanvas.backgroundProperty().bind(background);
+        if (view == null) {
+            view = new SimpleObjectProperty<>(this, "view");
         }
-        imageCanvas.widthProperty() .addListener(this);
-        imageCanvas.heightProperty().addListener(this);
+        this.view = view;
+        if (background != null) {
+            getImageCanvas().backgroundProperty().bind(background);
+        }
     }
 
     /**
@@ -237,6 +240,8 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
                     content = null;
                 } else if (newValue instanceof Throwable) {
                     content = setText((Throwable) newValue);
+                } else if (newValue instanceof IdentifiedObject) {
+                    content = setCRS((IdentifiedObject) newValue);
                 } else if (newValue instanceof Collection<?>) {
                     content = setList(((Collection<?>) newValue).toArray());
                 } else if (newValue.getClass().isArray()) {
@@ -269,9 +274,7 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
      * Sets the text to the stack trace of given exception.
      */
     private Node setText(final Throwable ex) {
-        final StringWriter out = new StringWriter();
-        ex.printStackTrace(new PrintWriter(out));
-        return setText(out.toString());
+        return setText(ExceptionReporter.getStackTrace(ex));
     }
 
     /**
@@ -292,12 +295,33 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     }
 
     /**
+     * Sets the viewer for a coordinate reference system. Shown as Well-Known Text (WKT) for now,
+     * but a future version may provide a more sophisticated viewer.
+     */
+    private Node setCRS(final IdentifiedObject crs) {
+        return setText(crs.toString());
+    }
+
+    /**
+     * Returns the pane containing {@link #imageView}.
+     */
+    private Pane getImageCanvas() {
+        if (imageCanvas == null) {
+            imageCanvas = new Pane();
+            imageCanvas.widthProperty() .addListener(this);
+            imageCanvas.heightProperty().addListener(this);
+        }
+        return imageCanvas;
+    }
+
+    /**
      * Sets the property value to the given image.
      *
      * @param  image          the property value to set, or {@code null}.
      * @param  boundsChanged  whether {@link #visibleImageBounds} changed since last call.
      */
     private Node setImage(final RenderedImage image, final boolean boundsChanged) {
+        final Pane imageCanvas = getImageCanvas();
         ImageView node = imageView;
         if (node == null) {
             node = new ImageView();
@@ -413,7 +437,10 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
         value = null;
         view.set(null);
         if (textView != null) {
-            textView .setText (null);
+            textView.setText(null);
+        }
+        if (listView != null) {
+            listView.getItems().clear();
         }
         if (imageView != null) {
             ImageConverter.clear(imageView);

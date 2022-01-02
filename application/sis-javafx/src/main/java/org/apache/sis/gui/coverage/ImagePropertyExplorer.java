@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +58,8 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.PropertyView;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
+import org.apache.sis.internal.gui.PropertyValueFormatter;
 import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.util.PropertyFormat;
 
 
 /**
@@ -639,7 +638,16 @@ public class ImagePropertyExplorer extends Widget {
             String text = null;
             Color  fill = Styles.NORMAL_TEXT;
             if (image != null) {
-                text = getClassName(image.getClass());
+                /*
+                 * Gets a simple top-level class name for an image class. If the image is an enclosed class,
+                 * searches for a parent class because enclosed class names are often not very informative.
+                 * For example `ImageRenderer.Untitled` is a `BufferedImage` subclass.
+                 */
+                Class<?> type = image.getClass();
+                while (type.getEnclosingClass() != null) {
+                    type = type.getSuperclass();
+                }
+                text = type.getSimpleName();
                 if (image instanceof PlanarImage) {
                     final String check = ((PlanarImage) image).verify();
                     if (check != null) {
@@ -653,19 +661,6 @@ public class ImagePropertyExplorer extends Widget {
             setText(text);
             setTextFill(fill);
         }
-    }
-
-    /**
-     * Gets a simple top-level class name for an image class. If the given type is an enclosed class,
-     * searches for a parent class instead because enclosed class names are often not very informative.
-     * For example {@code ImageRenderer.Untitled} which is a {@code BufferedImage} subclass:
-     * the enclosing class name is not suitable in that example.
-     */
-    private static String getClassName(Class<?> type) {
-        while (type.getEnclosingClass() != null) {
-            type = type.getSuperclass();
-        }
-        return type.getSimpleName();
     }
 
     /**
@@ -701,30 +696,7 @@ public class ImagePropertyExplorer extends Widget {
         /**
          * The formatter to use for producing a short string representation of a property value.
          */
-        private final ValueFormat format;
-
-        /** {@link PropertyCell#format} implementation. */
-        private static final class ValueFormat extends PropertyFormat {
-            /** The locale to use for objects such as international strings. */
-            private final Locale locale;
-
-            /** Creates a new formatter which will write in the given buffer. */
-            ValueFormat(final Locale locale, final StringBuilder buffer) {
-                super(buffer);
-                this.locale = locale;
-            }
-
-            /** Returns the locale specified at construction time. */
-            @Override public Locale getLocale() {return locale;}
-
-            /** Invoked by {@link PropertyFormat} for values of unrecognized type. */
-            @Override protected String toString(final Object value) {
-                if (value instanceof Number || value instanceof Date) {     // See super-class javadoc.
-                    return value.toString();
-                }
-                return getClassName(value.getClass()) + "[…]";
-            }
-        }
+        private final PropertyValueFormatter format;
 
         /**
          * Temporary buffer user when formatting property values.
@@ -736,7 +708,7 @@ public class ImagePropertyExplorer extends Widget {
          */
         PropertyCell(final Locale locale) {
             buffer = new StringBuilder();
-            format = new ValueFormat(locale, buffer);
+            format = new PropertyValueFormatter(buffer, locale);
         }
 
         /**

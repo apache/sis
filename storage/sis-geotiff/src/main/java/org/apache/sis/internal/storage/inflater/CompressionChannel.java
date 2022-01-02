@@ -29,7 +29,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * <p>The {@link #close()} method shall be invoked when this channel is no longer used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -51,7 +51,7 @@ abstract class CompressionChannel extends PixelChannel {
 
     /**
      * Creates a new channel which will decompress data from the given input.
-     * The {@link #setInput(long, long)} method must be invoked after construction
+     * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
      * @param  input  the source of data to decompress.
@@ -68,7 +68,7 @@ abstract class CompressionChannel extends PixelChannel {
      * @throws IOException if the stream can not be seek to the given start position.
      */
     @Override
-    public void setInput(final long start, final long byteCount) throws IOException {
+    public void setInputRegion(final long start, final long byteCount) throws IOException {
         endPosition = Math.addExact(start, byteCount);
         input.seek(start);
     }

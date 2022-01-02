@@ -28,7 +28,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * Values packed on 4, 2 or 1 bits are not yet supported.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -41,7 +41,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
     /**
      * Number of <em>bytes</em> between a sample value of a pixel and the same sample value of the next pixel.
      * Contrarily to similar fields in other classes, the value in this class is expressed in <em>bytes</em>
-     * rather than a count of sample values because this stride we be applied to {@link ByteBuffer} no matter
+     * rather than a count of sample values because this stride will be applied to {@link ByteBuffer} no matter
      * the data type.
      */
     protected final int pixelStride;
@@ -49,37 +49,53 @@ abstract class HorizontalPredictor extends PredictorChannel {
     /**
      * Number of <em>bytes</em> between a column in a row and the same column in the next row.
      * Contrarily to similar fields in other classes, the value in this class is expressed in <em>bytes</em>
-     * rather than a count of sample values because this stride we be applied to {@link ByteBuffer} no matter
+     * rather than a count of sample values because this stride will be applied to {@link ByteBuffer} no matter
      * the data type.
+     *
+     * <p>Invariants:</p>
+     * <ul>
+     *   <li>This is a multiple of {@link #pixelStride}.</li>
+     *   <li>Must be strictly greater than {@link #pixelStride}
+     *       (i.e. image width must be at least 2 pixels).</li>
+     * </ul>
      */
     private final int scanlineStride;
 
     /**
      * Column index (as a count of <em>bytes</em>, not a count of sample values or pixels).
-     * Used for detecting when the decoding process starts a new row.
+     * Used for detecting when the decoding process starts a new row. It shall always be a
+     * multiple of the data size (in bytes) and between 0 to {@link #scanlineStride}.
      */
     private int column;
 
     /**
-     * Creates a new predictor.
-     * The {@link #setInput(long, long)} method must be invoked after construction
+     * The mask to apply for truncating a position to a multiple of data type size.
+     * For example if the data type is unsigned short, then the mask shall truncate
+     * positions to a multiple of {@value Short#BYTES}.
+     */
+    private final int truncationMask;
+
+    /**
+     * Creates a new predictor which will read compressed data from the given channel.
+     * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
-     * @param  input        the channel that decompress data.
-     * @param  pixelStride  number of sample values per pixel in the source image.
-     * @param  width        number of pixels in the source image.
-     * @param  sampleSize   number of bytes in a sample value.
+     * @param  input            the channel that decompress data.
+     * @param  samplesPerPixel  number of sample values per pixel in the source image.
+     * @param  width            number of pixels in the source image.
+     * @param  sampleSize       number of bytes in a sample value.
      */
-    HorizontalPredictor(final CompressionChannel input, final int pixelStride, final int width, final int sampleSize) {
+    HorizontalPredictor(final CompressionChannel input, final int samplesPerPixel, final int width, final int sampleSize) {
         super(input);
-        this.sampleSizeM1   = sampleSize - Byte.BYTES;
-        this.pixelStride    = pixelStride * sampleSize;
-        this.scanlineStride = Math.multiplyExact(width, this.pixelStride);
+        sampleSizeM1   = sampleSize - Byte.BYTES;
+        truncationMask = ~sampleSizeM1;
+        pixelStride    = samplesPerPixel * sampleSize;
+        scanlineStride = Math.multiplyExact(width, pixelStride);
     }
 
     /**
-     * Creates a new predictor. The {@link #setInput(long, long)} method must
-     * be invoked after construction before a reading process can start.
+     * Creates a new predictor. The {@link #setInputRegion(long, long)} method
+     * must be invoked after construction before a reading process can start.
      *
      * @param  input        the channel that decompress data.
      * @param  dataType     primitive type used for storing data elements in the bank.
@@ -110,8 +126,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
      * @throws IOException if the stream can not be seek to the given start position.
      */
     @Override
-    public void setInput(final long start, final long byteCount) throws IOException {
-        super.setInput(start, byteCount);
+    public final void setInputRegion(final long start, final long byteCount) throws IOException {
+        super.setInputRegion(start, byteCount);
         column = 0;
     }
 
@@ -121,88 +137,103 @@ abstract class HorizontalPredictor extends PredictorChannel {
      *
      * @param  buffer  the buffer on which to apply the predictor.
      * @param  start   position of first byte to process.
-     * @return position after the same sample value processed. Should be {@code limit},
+     * @return position after the last sample value processed. Should be {@code limit},
      *         unless the predictor needs more data for processing the last bytes.
      */
     @Override
-    protected int uncompress(final ByteBuffer buffer, final int start) {
-        final int limit = buffer.position() - sampleSizeM1;
+    protected final int uncompress(final ByteBuffer buffer, final int start) {
+        final int limit   = buffer.position();
+        final int limitMS = limit - sampleSizeM1;       // Limit with enough space for last sample value.
+        /*
+         * Pixels in the first column are left unchanged. The column index is not necessarily zero
+         * because during the previous invocation of this method, the buffer may have stopped in the
+         * middle of the first column (this method does not have control about where the buffer stops).
+         */
         int position = start;
-        while (position < limit) {
-            /*
-             * This loop body should be executed on a row-by-row basis. But the `startOfRow` and `endOfRow` indices
-             * may not be the real start/end of row if the previous call to this method finished before end of row,
-             * or if current call to this method also finishes before end of row (because of buffer limit).
-             */
-            final int startOfRow    = position;
-            final int endOfRow      = Math.min(position + (scanlineStride - column), limit);
-            final int endOfDeferred = Math.min(position + pixelStride, endOfRow);
-            if (column < pixelStride) {
+        if (column < pixelStride) {
+            position += Math.min(pixelStride - column, (limit - position) & truncationMask);
+        }
+        /*
+         * For the first pixel in the buffer, we can not combine with previous values from the buffer
+         * because the buffer does not contain those values anymore.  We have to use the values saved
+         * at the end of the last invocation of this method. Note that this will perform no operation
+         * if the block above skipped fully the pixel in the first column.
+         */
+        position = applyOnFirst(buffer, position, Math.min(start + pixelStride, limitMS), position - start);
+        if ((column += position - start) >= scanlineStride) {
+            column = 0;
+        }
+        /*
+         * This loop body should be executed on a row-by-row basis. But the `startOfRow` and `endOfRow` indices
+         * may not be the real start/end of row if the previous call to this method finished before end of row,
+         * or if current call to this method also finishes before end of row (because of buffer limit).
+         */
+        while (position < limitMS) {
+            assert (column & ~truncationMask) == 0 : column;
+            if (column == 0) {
                 // Pixels in the first column are left unchanged.
-                position += Math.min(pixelStride - column, endOfRow - position);
+                column = Math.min(pixelStride, (limit - position) & truncationMask);
+                position += column;
             }
-            position = applyOnRow(buffer, startOfRow, position, endOfDeferred, endOfRow);
-            column += position - startOfRow;
-            if (column >= scanlineStride) {
+            final int startOfRow = position;
+            position = applyOnRow(buffer, position, Math.min(position + (scanlineStride - column), limitMS));
+            if ((column += position - startOfRow) >= scanlineStride) {
                 column = 0;
             }
         }
         /*
-         * Save the last bytes for next invocation of this method.
+         * Save the last bytes for next invocation of this method. There is two cases:
+         *
+         *   - In the usual case where the above call to `applyOnFirst(…)` used all `savedValues` elements
+         *     (this is true when at least `pixelStride` bytes have been used), the `keep` value below will
+         *     be zero and the call to `saveLastPixel(…)` will store the last `pixelStride` bytes.
+         *
+         *   - If the above call to `applyOnFirst(…)` had to stop prematurely before the `limit` position,
+         *     the `while` loop is never executed and the `savedValues` array has some residual elements.
+         *     The number of residual bytes is given by `keep`.
          */
-        final int capacity = position - start;
-        if (capacity >= pixelStride) {
-            saveLastPixel(buffer, position - pixelStride);
-        } else {
-            saveLastPixel(buffer, pixelStride - capacity, start, capacity);
-        }
+        int from = position - pixelStride;
+        int keep = Math.max(start - from, 0);
+        assert (keep & ~truncationMask) == 0 : keep;
+        saveLastPixel(buffer, keep, from + keep);
         return position;
     }
 
     /**
-     * Applies the predictor on the specified region of the given buffer.
-     * The region to process is divided in two parts:
-     *
-     * <ul>
-     *   <li>From {@code position} to {@code deferred}: values that need to be added with values
-     *       from a previous invocation of {@link #uncompress(ByteBuffer, int)}.</li>
-     *   <li>From {@code deferred} to {@code endOfRow}: values to be added with values available
-     *       at a previous position in the current buffer.</li>
-     * </ul>
-     *
-     * All integer arguments given to this method are in bytes, with increasing values from left to right.
-     *
-     * @param  buffer         the buffer on which to apply the predictor.
-     * @param  startOfRow     position of the start of the (possibly truncated) row.
-     * @param  position       position of the first value to modify.
-     * @param  endOfDeferred  position after the last value combined with values saved from previous batch.
-     * @param  endOfRow       position after the last value to process in this {@code apply(…)} call.
-     * @return value of {@code position} after the last sample values processed by this method.
-     *         Should be equal to {@code endOfRow}, unless this method needs more byte for processing
-     *         the last sample value.
-     */
-    abstract int applyOnRow(ByteBuffer buffer, int startOfRow, int position, int endOfDeferred, int endOfRow);
-
-    /**
-     * Saves the sample values of the last pixel, starting from given buffer position.
-     * Those values will be needed for processing the first pixel in the next invocation
+     * Applies the predictor on the specified region of the given buffer, but using {@code savedValues}
+     * array as the source of previous values. This is used only for the first pixel in a new invocation
      * of {@link #uncompress(ByteBuffer, int)}.
      *
-     * @param  buffer    buffer from which to save sample values.
-     * @param  position  position in the buffer of the first byte to save.
+     * @param  buffer    the buffer on which to apply the predictor.
+     * @param  position  position of the first value to modify in the given buffer.
+     * @param  end       position after the last value to process in this {@code apply(…)} call.
+     * @param  offset    offset (in bytes) of the first saved value to use.
+     * @return value of {@code position} after the last sample values processed by this method.
      */
-    abstract void saveLastPixel(ByteBuffer buffer, int position);
+    abstract int applyOnFirst(ByteBuffer buffer, int position, int end, int offset);
 
     /**
-     * Saves some sample values of the last pixel, starting from given position.
-     * This method is invoked when there is not enough space in the buffer for saving a complete pixel.
+     * Applies the predictor on the specified region of the given buffer.
+     * All integer arguments given to this method are in bytes, with increasing values from left to right.
+     * This method shall increment the position by a multiple of data type size (e.g. 2 for short integers).
+     *
+     * @param  buffer    the buffer on which to apply the predictor.
+     * @param  position  position of the first value to modify in the given buffer.
+     * @param  end       position after the last value to process in this {@code apply(…)} call.
+     * @return value of {@code position} after the last sample values processed by this method.
+     */
+    abstract int applyOnRow(ByteBuffer buffer, int position, int end);
+
+    /**
+     * Saves {@link #pixelStride} bytes making the sample values of the last pixel.
+     * The first sample value to read from the buffer is given by {@code position}.
+     * In rare occasions, some previously saved values may need to be reused.
      *
      * @param  buffer    buffer from which to save sample values.
      * @param  keep      number of bytes to keep in the currently saved values.
-     * @param  position  position in the buffer of the first byte to save.
-     * @param  length    number of bytes to save.
+     * @param  position  position in the buffer of the first byte to save, after the values to keep.
      */
-    abstract void saveLastPixel(ByteBuffer buffer, int keep, int position, int length);
+    abstract void saveLastPixel(ByteBuffer buffer, int keep, int position);
 
 
 
@@ -211,51 +242,53 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Bytes extends HorizontalPredictor {
         /**
-         * Data in the previous column. The length of this array is the pixel stride.
+         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
+         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
-        private final byte[] previousColumns;
+        private final byte[] savedValues;
 
         /**
          * Creates a new predictor.
          */
-        Bytes(final CompressionChannel input, final int pixelStride, final int width) {
-            super(input, pixelStride, width, Byte.BYTES);
-            previousColumns = new byte[pixelStride];
+        Bytes(final CompressionChannel input, final int samplesPerPixel, final int width) {
+            super(input, samplesPerPixel, width, Byte.BYTES);
+            savedValues = new byte[samplesPerPixel];
         }
 
         /**
-         * Applies the predictor on a row of bytes.
+         * Saves {@link #pixelStride} bytes making the sample values of the last pixel.
+         * The first sample value to read from the buffer is given by {@code position}.
          */
         @Override
-        int applyOnRow(final ByteBuffer buffer, final int startOfRow, int position, final int endOfDeferred, final int endOfRow) {
-            while (position < endOfDeferred) {
-                buffer.put(position, (byte) (buffer.get(position) + previousColumns[position - startOfRow]));
-                position++;
-            }
-            while (position < endOfRow) {
-                buffer.put(position, (byte) (buffer.get(position) + buffer.get(position - pixelStride)));
+        void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
+            JDK9.get(buffer, position, savedValues, offset, savedValues.length - offset);
+        }
+
+        /**
+         * Applies the predictor, using {@link #savedValues} as the source of previous values.
+         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         */
+        @Override
+        int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            while (position < end) {
+                buffer.put(position, (byte) (buffer.get(position) + savedValues[offset++]));
                 position++;
             }
             return position;
         }
 
         /**
-         * Saves the sample values of the last pixel, starting from given buffer position.
-         * Needed for processing the first pixel in next {@code uncompress(…)} invocation.
+         * Applies the predictor on a row of bytes.
          */
         @Override
-        void saveLastPixel(final ByteBuffer buffer, final int position) {
-            JDK9.get(buffer, position, previousColumns);
-        }
-
-        /**
-         * Saves some sample values of the last pixel, starting from given buffer position.
-         * Invoked when there is not enough space in the buffer for saving a complete pixel.
-         */
-        @Override
-        void saveLastPixel(final ByteBuffer buffer, final int keep, final int position, final int length) {
-            System.arraycopy(previousColumns, keep, previousColumns, 0, length);
-            JDK9.get(buffer, position, previousColumns, keep, length);
+        int applyOnRow(final ByteBuffer buffer, int position, final int end) {
+            while (position < end) {
+                buffer.put(position, (byte) (buffer.get(position) + buffer.get(position - pixelStride)));
+                position++;
+            }
+            return position;
         }
     }
 
@@ -266,60 +299,58 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Shorts extends HorizontalPredictor {
         /**
-         * Data in the previous column. The length of this array is the pixel stride.
+         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
+         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
-        private final short[] previousColumns;
+        private final short[] savedValues;
 
         /**
          * Creates a new predictor.
          */
-        Shorts(final CompressionChannel input, final int pixelStride, final int width) {
-            super(input, pixelStride, width, Short.BYTES);
-            previousColumns = new short[pixelStride];
+        Shorts(final CompressionChannel input, final int samplesPerPixel, final int width) {
+            super(input, samplesPerPixel, width, Short.BYTES);
+            savedValues = new short[samplesPerPixel];
         }
 
         /**
-         * Applies the predictor on a row of short integers.
+         * Saves {@link #pixelStride} bytes making the sample values of the last pixel.
+         * The first sample value to read from the buffer is given by {@code position}.
          */
         @Override
-        int applyOnRow(final ByteBuffer buffer, final int startOfRow, int position, final int endOfDeferred, final int endOfRow) {
-            while (position < endOfDeferred) {
-                buffer.putShort(position, (short) (buffer.getShort(position) + previousColumns[position - startOfRow]));
+        void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            offset /= Short.BYTES;
+            System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
+            while (offset < savedValues.length) {
+                savedValues[offset++] = buffer.getShort(position);
                 position += Short.BYTES;
             }
-            while (position < endOfRow) {
-                buffer.putShort(position, (short) (buffer.getShort(position) + buffer.getShort(position - pixelStride)));
+        }
+
+        /**
+         * Applies the predictor, using {@link #savedValues} as the source of previous values.
+         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         */
+        @Override
+        int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            offset /= Short.BYTES;
+            while (position < end) {
+                buffer.putShort(position, (short) (buffer.getShort(position) + savedValues[offset++]));
                 position += Short.BYTES;
             }
             return position;
         }
 
         /**
-         * Saves the sample values of the last pixel, starting from given buffer position.
-         * Needed for processing the first pixel in next {@code uncompress(…)} invocation.
+         * Applies the predictor on a row of short integers.
          */
         @Override
-        void saveLastPixel(final ByteBuffer buffer, int position) {
-            for (int i=0; i<previousColumns.length; i++) {
-                previousColumns[i] = buffer.getShort(position);
+        int applyOnRow(final ByteBuffer buffer, int position, final int end) {
+            while (position < end) {
+                buffer.putShort(position, (short) (buffer.getShort(position) + buffer.getShort(position - pixelStride)));
                 position += Short.BYTES;
             }
-        }
-
-        /**
-         * Saves some sample values of the last pixel, starting from given buffer position.
-         * Invoked when there is not enough space in the buffer for saving a complete pixel.
-         */
-        @Override
-        void saveLastPixel(final ByteBuffer buffer, int keep, int position, int length) {
-            keep   /= Short.BYTES;
-            length /= Short.BYTES;
-            System.arraycopy(previousColumns, keep, previousColumns, 0, length);
-            length += keep;
-            while (keep < length) {
-                previousColumns[keep++] = buffer.get(position);
-                position += Short.BYTES;
-            }
+            return position;
         }
     }
 
@@ -330,60 +361,58 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Integers extends HorizontalPredictor {
         /**
-         * Data in the previous column. The length of this array is the pixel stride.
+         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
+         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
-        private final int[] previousColumns;
+        private final int[] savedValues;
 
         /**
          * Creates a new predictor.
          */
-        Integers(final CompressionChannel input, final int pixelStride, final int width) {
-            super(input, pixelStride, width, Integer.BYTES);
-            previousColumns = new int[pixelStride];
+        Integers(final CompressionChannel input, final int samplesPerPixel, final int width) {
+            super(input, samplesPerPixel, width, Integer.BYTES);
+            savedValues = new int[samplesPerPixel];
         }
 
         /**
-         * Applies the predictor on a row of integers.
+         * Saves {@link #pixelStride} bytes making the sample values of the last pixel.
+         * The first sample value to read from the buffer is given by {@code position}.
          */
         @Override
-        int applyOnRow(final ByteBuffer buffer, final int startOfRow, int position, final int endOfDeferred, final int endOfRow) {
-            while (position < endOfDeferred) {
-                buffer.putInt(position, buffer.getInt(position) + previousColumns[position - startOfRow]);
+        void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            offset /= Integer.BYTES;
+            System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
+            while (offset < savedValues.length) {
+                savedValues[offset++] = buffer.getInt(position);
                 position += Integer.BYTES;
             }
-            while (position < endOfRow) {
-                buffer.putInt(position, buffer.getInt(position) + buffer.getInt(position - pixelStride));
+        }
+
+        /**
+         * Applies the predictor, using {@link #savedValues} as the source of previous values.
+         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         */
+        @Override
+        int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            offset /= Integer.BYTES;
+            while (position < end) {
+                buffer.putInt(position, buffer.getInt(position) + savedValues[offset++]);
                 position += Integer.BYTES;
             }
             return position;
         }
 
         /**
-         * Saves the sample values of the last pixel, starting from given buffer position.
-         * Needed for processing the first pixel in next {@code uncompress(…)} invocation.
+         * Applies the predictor on a row of integers.
          */
         @Override
-        void saveLastPixel(final ByteBuffer buffer, int position) {
-            for (int i=0; i<previousColumns.length; i++) {
-                previousColumns[i] = buffer.getInt(position);
+        int applyOnRow(final ByteBuffer buffer, int position, final int end) {
+            while (position < end) {
+                buffer.putInt(position, buffer.getInt(position) + buffer.getInt(position - pixelStride));
                 position += Integer.BYTES;
             }
-        }
-
-        /**
-         * Saves some sample values of the last pixel, starting from given buffer position.
-         * Invoked when there is not enough space in the buffer for saving a complete pixel.
-         */
-        @Override
-        void saveLastPixel(final ByteBuffer buffer, int keep, int position, int length) {
-            keep   /= Integer.BYTES;
-            length /= Integer.BYTES;
-            System.arraycopy(previousColumns, keep, previousColumns, 0, length);
-            length += keep;
-            while (keep < length) {
-                previousColumns[keep++] = buffer.get(position);
-                position += Integer.BYTES;
-            }
+            return position;
         }
     }
 
@@ -394,60 +423,58 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Floats extends HorizontalPredictor {
         /**
-         * Data in the previous column. The length of this array is the pixel stride.
+         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
+         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
-        private final float[] previousColumns;
+        private final float[] savedValues;
 
         /**
          * Creates a new predictor.
          */
-        Floats(final CompressionChannel input, final int pixelStride, final int width) {
-            super(input, pixelStride, width, Float.BYTES);
-            previousColumns = new float[pixelStride];
+        Floats(final CompressionChannel input, final int samplesPerPixel, final int width) {
+            super(input, samplesPerPixel, width, Float.BYTES);
+            savedValues = new float[samplesPerPixel];
         }
 
         /**
-         * Applies the predictor on a row of floating point values.
+         * Saves {@link #pixelStride} bytes making the sample values of the last pixel.
+         * The first sample value to read from the buffer is given by {@code position}.
          */
         @Override
-        int applyOnRow(final ByteBuffer buffer, final int startOfRow, int position, final int endOfDeferred, final int endOfRow) {
-            while (position < endOfDeferred) {
-                buffer.putFloat(position, buffer.getFloat(position) + previousColumns[position - startOfRow]);
+        void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            offset /= Float.BYTES;
+            System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
+            while (offset < savedValues.length) {
+                savedValues[offset++] = buffer.getFloat(position);
                 position += Float.BYTES;
             }
-            while (position < endOfRow) {
-                buffer.putFloat(position, buffer.getFloat(position) + buffer.getFloat(position - pixelStride));
+        }
+
+        /**
+         * Applies the predictor, using {@link #savedValues} as the source of previous values.
+         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         */
+        @Override
+        int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            offset /= Float.BYTES;
+            while (position < end) {
+                buffer.putFloat(position, buffer.getFloat(position) + savedValues[offset++]);
                 position += Float.BYTES;
             }
             return position;
         }
 
         /**
-         * Saves the sample values of the last pixel, starting from given buffer position.
-         * Needed for processing the first pixel in next {@code uncompress(…)} invocation.
+         * Applies the predictor on a row of floating point values.
          */
         @Override
-        void saveLastPixel(final ByteBuffer buffer, int position) {
-            for (int i=0; i<previousColumns.length; i++) {
-                previousColumns[i] = buffer.getFloat(position);
+        int applyOnRow(final ByteBuffer buffer, int position, final int end) {
+            while (position < end) {
+                buffer.putFloat(position, buffer.getFloat(position) + buffer.getFloat(position - pixelStride));
                 position += Float.BYTES;
             }
-        }
-
-        /**
-         * Saves some sample values of the last pixel, starting from given buffer position.
-         * Invoked when there is not enough space in the buffer for saving a complete pixel.
-         */
-        @Override
-        void saveLastPixel(final ByteBuffer buffer, int keep, int position, int length) {
-            keep   /= Float.BYTES;
-            length /= Float.BYTES;
-            System.arraycopy(previousColumns, keep, previousColumns, 0, length);
-            length += keep;
-            while (keep < length) {
-                previousColumns[keep++] = buffer.get(position);
-                position += Float.BYTES;
-            }
+            return position;
         }
     }
 
@@ -458,60 +485,58 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Doubles extends HorizontalPredictor {
         /**
-         * Data in the previous column. The length of this array is the pixel stride.
+         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
+         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
-        private final double[] previousColumns;
+        private final double[] savedValues;
 
         /**
          * Creates a new predictor.
          */
-        Doubles(final CompressionChannel input, final int pixelStride, final int width) {
-            super(input, pixelStride, width, Double.BYTES);
-            previousColumns = new double[pixelStride];
+        Doubles(final CompressionChannel input, final int samplesPerPixel, final int width) {
+            super(input, samplesPerPixel, width, Double.BYTES);
+            savedValues = new double[samplesPerPixel];
         }
 
         /**
-         * Applies the predictor on a row of floating point values.
+         * Saves {@link #pixelStride} bytes making the sample values of the last pixel.
+         * The first sample value to read from the buffer is given by {@code position}.
          */
         @Override
-        int applyOnRow(final ByteBuffer buffer, final int startOfRow, int position, final int endOfDeferred, final int endOfRow) {
-            while (position < endOfDeferred) {
-                buffer.putDouble(position, buffer.getDouble(position) + previousColumns[position - startOfRow]);
+        void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            offset /= Double.BYTES;
+            System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
+            while (offset < savedValues.length) {
+                savedValues[offset++] = buffer.getDouble(position);
                 position += Double.BYTES;
             }
-            while (position < endOfRow) {
-                buffer.putDouble(position, buffer.getDouble(position) + buffer.getDouble(position - pixelStride));
+        }
+
+        /**
+         * Applies the predictor, using {@link #savedValues} as the source of previous values.
+         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         */
+        @Override
+        int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            offset /= Double.BYTES;
+            while (position < end) {
+                buffer.putDouble(position, buffer.getDouble(position) + savedValues[offset++]);
                 position += Double.BYTES;
             }
             return position;
         }
 
         /**
-         * Saves the sample values of the last pixel, starting from given buffer position.
-         * Needed for processing the first pixel in next {@code uncompress(…)} invocation.
+         * Applies the predictor on a row of floating point values.
          */
         @Override
-        void saveLastPixel(final ByteBuffer buffer, int position) {
-            for (int i=0; i<previousColumns.length; i++) {
-                previousColumns[i] = buffer.getDouble(position);
+        int applyOnRow(final ByteBuffer buffer, int position, final int end) {
+            while (position < end) {
+                buffer.putDouble(position, buffer.getDouble(position) + buffer.getDouble(position - pixelStride));
                 position += Double.BYTES;
             }
-        }
-
-        /**
-         * Saves some sample values of the last pixel, starting from given buffer position.
-         * Invoked when there is not enough space in the buffer for saving a complete pixel.
-         */
-        @Override
-        void saveLastPixel(final ByteBuffer buffer, int keep, int position, int length) {
-            keep   /= Double.BYTES;
-            length /= Double.BYTES;
-            System.arraycopy(previousColumns, keep, previousColumns, 0, length);
-            length += keep;
-            while (keep < length) {
-                previousColumns[keep++] = buffer.get(position);
-                position += Double.BYTES;
-            }
+            return position;
         }
     }
 }

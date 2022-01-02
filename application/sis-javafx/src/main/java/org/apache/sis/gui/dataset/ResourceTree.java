@@ -685,8 +685,9 @@ public class ResourceTree extends TreeView<Resource> {
                         menu = new ContextMenu();
                         final Resources localized = tree.localized();
                         final MenuItem[] items = new MenuItem[CLOSE + 1];
-                        items[COPY_PATH] = localized.menu(Resources.Keys.CopyFilePath, new CopyAction(this));
-                        items[CLOSE] = localized.menu(Resources.Keys.Close, (e) -> {
+                        items[COPY_PATH]   = localized.menu(Resources.Keys.CopyFilePath, new PathAction(this, false));
+                        items[OPEN_FOLDER] = localized.menu(Resources.Keys.OpenContainingFolder, new PathAction(this, true));
+                        items[CLOSE]       = localized.menu(Resources.Keys.Close, (e) -> {
                             ((ResourceTree) getTreeView()).removeAndClose(getItem());
                         });
                         menu.getItems().setAll(items);
@@ -703,6 +704,7 @@ public class ResourceTree extends TreeView<Resource> {
                         unexpectedException("updateItem", e);
                     }
                     menu.getItems().get(COPY_PATH).setDisable(!IOUtilities.isKindOfPath(path));
+                    menu.getItems().get(OPEN_FOLDER).setDisable(PathAction.isBrowseDisabled || IOUtilities.toFile(path) == null);
                 }
             }
             setText(text);
@@ -715,7 +717,7 @@ public class ResourceTree extends TreeView<Resource> {
          * Position of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
          * Above method assumes that {@link #CLOSE} is the last menu item.
          */
-        private static final int COPY_PATH = 0, CLOSE = 1;
+        private static final int COPY_PATH = 0, OPEN_FOLDER = 1, CLOSE = 2;
     }
 
 

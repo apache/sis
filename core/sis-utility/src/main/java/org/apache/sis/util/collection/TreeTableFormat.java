@@ -703,7 +703,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          */
         @Override
         public Locale getLocale() {
-            return getDisplayLocale();
+            return TreeTableFormat.this.getLocale();
         }
 
         /**

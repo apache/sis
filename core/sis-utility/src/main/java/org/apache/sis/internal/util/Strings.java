@@ -21,6 +21,7 @@ import java.util.Formatter;
 import java.util.FormattableFlags;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 
@@ -30,7 +31,7 @@ import org.apache.sis.util.CharSequences;
  * Most of those methods are for {@link Object#toString()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -269,6 +270,31 @@ public final class Strings extends Static {
             buffer.insert(i + lineSeparator.length(), c);
             c = CONTINUATION_MARK;
         }
+    }
+
+    /**
+     * Concatenates a potentially multi-lines text to a single line.
+     * White spaces at the beginning and end of each line are removed.
+     *
+     * @param  delimiter  the separator to insert between lines.
+     * @param  text       the multi-lines text to convert to single line, or {@code null}.
+     * @return the        the text on a single line text, or {@code null} if none.
+     */
+    public static String singleLine(final String delimiter, final CharSequence text) {
+        if (text != null) {
+            final CharSequence[] lines = CharSequences.splitOnEOL(text);
+            int count = 0;
+            for (int i=0; i<lines.length; i++) {
+                CharSequence line = CharSequences.trimWhitespaces(lines[i]);
+                if (line.length() != 0) lines[count++] = line;          // TODO: use !line.isEmpty() with JDK15.
+            }
+            switch (count) {
+                case 0:  break;
+                case 1:  return lines[0].toString();
+                default: return String.join(delimiter, ArraysExt.resize(lines, count));
+            }
+        }
+        return null;
     }
 
     /**

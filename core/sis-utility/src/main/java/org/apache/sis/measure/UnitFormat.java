@@ -38,6 +38,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.FinalFieldSetter;
+import org.apache.sis.internal.util.XPointer;
 import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
@@ -1144,7 +1145,7 @@ appPow: if (unit == null) {
              * error index to be reported in case of parsing failure. We will rather try to adjust the indices
              * (and replace 'symbols' only in last resort).
              */
-            code = XPaths.xpointer("uom", uom);
+            code = XPointer.UOM.reference(uom);
             if (code != null) {
                 final int base = start;
                 start = endOfURI - code.length();

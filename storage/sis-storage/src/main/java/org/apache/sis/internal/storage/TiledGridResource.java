@@ -393,6 +393,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
                 bands = Arrays.asList(rangeIndices.select(bands));
                 loadAllBands = !getDissociableBands();
                 if (!loadAllBands) {
+                    sharedCache = false;
                     includedBands = new int[rangeIndices.getNumBands()];
                     for (int i=0; i<includedBands.length; i++) {
                         includedBands[i] = rangeIndices.getSourceIndex(i);

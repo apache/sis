@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-utility} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -89,6 +89,7 @@ import org.junit.BeforeClass;
     // GeoAPI most basic types.
     org.apache.sis.internal.util.DefinitionURITest.class,
     org.apache.sis.internal.util.XPathsTest.class,
+    org.apache.sis.internal.util.XPointerTest.class,
     org.apache.sis.util.SimpleInternationalStringTest.class,
     org.apache.sis.util.DefaultInternationalStringTest.class,
     org.apache.sis.internal.util.LocalizedParseExceptionTest.class,

@@ -380,7 +380,7 @@ public final strictfp class SQLStoreTest extends TestCase {
          */
         final FeatureSet   parks = dataset.findResource("Parks");
         final FeatureQuery query = new FeatureQuery();
-        query.setProjection(new FeatureQuery.NamedExpression(FF.property(desiredProperty)));
+        query.setProjection(FF.property(desiredProperty));
         query.setSortBy(FF.sort(FF.property("country"),       SortOrder.DESCENDING),
                         FF.sort(FF.property(desiredProperty), SortOrder.ASCENDING));
         final FeatureSet subset = parks.subset(query);
@@ -541,7 +541,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             final FeatureQuery query = new FeatureQuery();
             query.setSortBy(FF.sort(FF.property("native_name"), SortOrder.DESCENDING));
             query.setSelection(FF.equal(FF.property("country"), FF.literal("FRA")));
-            query.setProjection(new FeatureQuery.NamedExpression(FF.property("native_name")));
+            query.setProjection(FF.property("native_name"));
             final FeatureSet frenchParks = parks.subset(query);
             /*
              * Verify the feature type.

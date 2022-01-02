@@ -1028,6 +1028,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnsupportedType_1 = 163;
 
         /**
+         * XPath “{0}” is not supported.
+         */
+        public static final short UnsupportedXPath_1 = 195;
+
+        /**
          * A value is already defined for “{0}”.
          */
         public static final short ValueAlreadyDefined_1 = 164;

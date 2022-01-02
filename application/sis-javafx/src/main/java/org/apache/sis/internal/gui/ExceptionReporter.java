@@ -134,8 +134,7 @@ public final class ExceptionReporter extends Widget {
      */
     public static String getStackTrace(final Throwable exception) {
         final StringWriter buffer = new StringWriter();
-        final PrintWriter  writer = new PrintWriter(buffer);
-        exception.printStackTrace(writer);
+        exception.printStackTrace(new PrintWriter(buffer));
         return buffer.toString();
     }
 

@@ -164,13 +164,13 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <N> Expression<R,N> toValueType(final Class<N> type) {
-        if (type.isAssignableFrom(library.rootClass)) {
+    public <N> Expression<R,N> toValueType(final Class<N> target) {
+        if (target.isAssignableFrom(library.rootClass)) {
             return (Expression<R,N>) expression;
-        } else if (type.isAssignableFrom(GeometryWrapper.class)) {
+        } else if (target.isAssignableFrom(GeometryWrapper.class)) {
             return (Expression<R,N>) this;
         } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.UnsupportedType_1, type));
+            throw new ClassCastException(Errors.format(Errors.Keys.UnsupportedType_1, target));
         }
     }
 }

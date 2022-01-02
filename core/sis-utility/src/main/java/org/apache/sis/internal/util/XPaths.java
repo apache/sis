@@ -16,21 +16,32 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.List;
+import java.util.ArrayList;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
 
 
 /**
- * Utility methods related to x-paths.
+ * Utility methods related to x-paths. This is intended to be only a lightweight support;
+ * this is not a replacement for {@link javax.xml.xpath} implementations. This is used as
+ * a place where to centralize XPath handling for possible replacement by a more advanced
+ * framework in the future.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.4
  * @module
  */
 public final class XPaths extends Static {
+    /**
+     * The separator between path components.
+     */
+    public static final char SEPARATOR = '/';
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -50,8 +61,6 @@ public final class XPaths extends Static {
      * @param  offset  index of the first character to verify.
      * @return index after the last character of the presumed URI, or -1 if this
      *         method thinks that the given character sequence is not a URI.
-     *
-     * @since 0.8
      */
     public static int endOfURI(final CharSequence uri, int offset) {
         boolean isURI = false;
@@ -67,7 +76,7 @@ scan:   while (offset < length) {
                     case '-':                                           // Valid character in URL.
                     case '%':                                           // Encoded character in URL.
                     case '.':                                           // Domain name separator in URL.
-                    case '/': break;                                    // Path separator, but could also be division as in "m/s".
+                    case SEPARATOR: break;                              // Path separator, but could also be division as in "m/s".
                     case '(': parenthesis++; break;
                     case ')': parenthesis--; break;
                     default: {
@@ -80,6 +89,45 @@ scan:   while (offset < length) {
             offset += Character.charCount(c);
         }
         return isURI ? offset : -1;
+    }
+
+    /**
+     * Splits the given URL around the {@code '/'} separator, or returns {@code null} if there is no separator.
+     * By convention if the URL is absolute, then the leading {@code '/'} character is kept in the first element.
+     * For example {@code "/∗/property"} is splitted as two elements: {@code "/∗"} and {@code "property"}.
+     *
+     * <p>This method trims the whitespaces of components except the last one (the tip),
+     * for consistency with the case where this method returns {@code null}.</p>
+     *
+     * @param  xpath  the URL to split.
+     * @return the splitted URL with the heading separator kept in the first element, or {@code null}
+     *         if there is no separator. If non-null, the list always contains at least one element.
+     * @throws IllegalArgumentException if the XPath contains at least one empty component.
+     */
+    public static List<String> split(final String xpath) {
+        int next = xpath.indexOf(SEPARATOR);
+        if (next < 0) {
+            return null;
+        }
+        final List<String> components = new ArrayList<>(4);
+        int start = skipLeadingWhitespaces(xpath, 0, next);
+        if (start < next) {
+            // No leading '/' (the characters before it are a path element, added below).
+            components.add(xpath.substring(start, skipTrailingWhitespaces(xpath, start, next)));
+            start = ++next;
+        } else {
+            // Keep the `start` position on the leading '/'.
+            next++;
+        }
+        while ((next = xpath.indexOf(SEPARATOR, next)) >= 0) {
+            components.add(trimWhitespaces(xpath, start, next).toString());
+            start = ++next;
+        }
+        components.add(xpath.substring(start));         // No whitespace trimming.
+        if (components.stream().anyMatch(String::isEmpty)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedXPath_1, xpath));
+        }
+        return components;
     }
 
     /**

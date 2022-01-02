@@ -63,12 +63,12 @@ final class NativeMetadata extends GeoKeysLoader {
      * Column for the name associated to the tag.
      * Value may be null if the name is unknown.
      */
-    private static final TableColumn<CharSequence> NAME = TableColumn.NAME;
+    static final TableColumn<CharSequence> NAME = TableColumn.NAME;
 
     /**
      * Column for the value associated to the tag.
      */
-    private static final TableColumn<Object> VALUE = TableColumn.VALUE;
+    static final TableColumn<Object> VALUE = TableColumn.VALUE;
 
     /**
      * The stream from which to read the data.
@@ -137,8 +137,8 @@ final class NativeMetadata extends GeoKeysLoader {
                     boolean visible;
                     /*
                      * Exclude the tags about location of tiles in the GeoTIFF files.
-                     * Values of those tags are potentially large and rarely useful
-                     * for human reading.
+                     * Values of those tags are potentially large and rarely useful for human reading.
+                     * This switch is only about tags to skip; special handlings of some tags are done later.
                      */
                     switch (tag) {
                         case Tags.TileOffsets:
@@ -152,7 +152,12 @@ final class NativeMetadata extends GeoKeysLoader {
                             final long offset = readInt(false);
                             input.seek(Math.addExact(reader.origin, offset));
                         }
+                        /*
+                         * Some tags need to be handle in a special way. The main cases are GeoTIFF keys.
+                         * But other cases exist (e.g. GEO_METADATA and GDAL_METADATA).
+                         */
                         Object value = null;
+                        XMLMetadata children = null;
                         switch (tag) {
                             case Tags.GeoKeyDirectory: {
                                 writeGeoKeys();             // Flush previous keys if any (should never happen).
@@ -168,6 +173,15 @@ final class NativeMetadata extends GeoKeysLoader {
                             case Tags.GeoAsciiParams: {
                                 setAsciiParameters(type.readString(input, count, reader.store.encoding));
                                 visible = false;
+                                break;
+                            }
+                            case Tags.GDAL_METADATA:
+                            case Tags.GEO_METADATA: {
+                                children = new XMLMetadata(reader, type, count, tag == Tags.GDAL_METADATA);
+                                if (children.isEmpty()) {
+                                    // Fallback on showing array of numerical values.
+                                    value = type.readVector(input, count);
+                                }
                                 break;
                             }
                             default: {
@@ -191,10 +205,16 @@ final class NativeMetadata extends GeoKeysLoader {
                             }
                         }
                         if (visible) {
-                            final TreeTable.Node node = image.newChild();
-                            node.setValue(CODE,  Short.toUnsignedInt(tag));
-                            node.setValue(NAME,  Tags.name(tag));
-                            node.setValue(VALUE, value);
+                            final String name = Tags.name(tag);
+                            final TreeTable.Node node;
+                            if (children != null) {
+                                node = new XMLMetadata.Root(children, (DefaultTreeTable.Node) image, name);
+                            } else {
+                                node = image.newChild();
+                                node.setValue(NAME,  name);
+                                node.setValue(VALUE, value);
+                            }
+                            node.setValue(CODE, Short.toUnsignedInt(tag));
                             if (tag == Tags.GeoKeyDirectory) {
                                 geoNode = node;
                             }
