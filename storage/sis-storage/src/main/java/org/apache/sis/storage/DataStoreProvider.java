@@ -16,18 +16,24 @@
  */
 package org.apache.sis.storage;
 
+import java.io.Reader;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import javax.imageio.stream.ImageInputStream;
 import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.simple.SimpleFormat;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.io.Markable;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -59,7 +65,8 @@ import org.apache.sis.util.Version;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -227,7 +234,8 @@ public abstract class DataStoreProvider {
 
     /**
      * Indicates if the given storage appears to be supported by the {@code DataStore}s created by this provider.
-     * The most typical return values are:
+     * Implementations will typically check the first bytes of the input stream for a "magic number" associated
+     * with the format. The most typical return values are:
      *
      * <ul>
      *   <li>{@link ProbeResult#SUPPORTED} if the {@code DataStore}s created by this provider
@@ -240,46 +248,211 @@ public abstract class DataStoreProvider {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * <p>Implementers are responsible for restoring the input to its original stream position on return of this method.
-     * Implementers can use a mark/reset pair for this purpose. Marks are available as
-     * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
-     * {@link javax.imageio.stream.ImageInputStream#mark()}.</p>
-     *
-     * <div class="note"><b>Implementation example</b>:
-     * implementations will typically check the first bytes of the stream for a "magic number" associated
-     * with the format, as in the following example:
-     *
-     * {@preformat java
-     *     public ProbeResult probeContent(StorageConnector storage) throws DataStoreException {
-     *         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
-     *         if (buffer == null) {
-     *             // If StorageConnector can not provide a ByteBuffer, then the storage is
-     *             // probably not a File, URL, URI, InputStream neither a ReadableChannel.
-     *             return ProbeResult.UNSUPPORTED_STORAGE;
-     *         }
-     *         if (buffer.remaining() < Integer.BYTES) {
-     *             // If the buffer does not contain enough bytes for the integer type, this is not
-     *             // necessarily because the file is truncated. It may be because the data were not
-     *             // yet available at the time this method has been invoked.
-     *             return ProbeResult.INSUFFICIENT_BYTES;
-     *         }
-     *         if (buffer.getInt(buffer.position()) != MAGIC_NUMBER) {
-     *             // We used ByteBuffer.getInt(int) instead of ByteBuffer.getInt() above
-     *             // in order to keep the buffer position unchanged after this method call.
-     *             return ProbeResult.UNSUPPORTED_STORAGE;
-     *         }
-     *         return ProbeResult.SUPPORTED;
-     *     }
-     * }
+     * <div class="note"><b>Note for implementers</b>:
+     * Implementations are responsible for restoring the storage object to its original position
+     * on return of this method. Implementers can use the mark/reset mechanism for this purpose.
+     * Marks are available as {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)}
+     * and {@link javax.imageio.stream.ImageInputStream#mark()}.
+     * Alternatively the {@link #probeContent(StorageConnector, Class, Prober)}
+     * helper method manages automatically the marks for a set of known types.
      * </div>
      *
-     * @param  connector information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable by the {@code DataStore}
      *         instances created by this provider.
      * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
      *         structure of the storage.
      */
     public abstract ProbeResult probeContent(StorageConnector connector) throws DataStoreException;
+
+    /**
+     * Applies the specified test on the storage content without modifying buffer or input stream position.
+     * This is a helper method for {@link #probeContent(StorageConnector)} implementations,
+     * providing an alternative safer than {@link StorageConnector#getStorageAs(Class)}
+     * for performing an arbitrary number of independent tests on the same {@code StorageConnector}.
+     * Current implementation accepts the following types (this list may be expanded in future versions):
+     *
+     * <blockquote>
+     * {@link java.nio.ByteBuffer},
+     * {@link java.io.InputStream},
+     * {@link java.io.DataInput},
+     * {@link javax.imageio.stream.ImageInputStream} and
+     * {@link java.io.Reader}.
+     * </blockquote>
+     *
+     * The following types are also accepted for completeness but provide no additional safety
+     * compared to direct use of {@link StorageConnector#getStorageAs(Class)}:
+     *
+     * <blockquote>
+     * {@link java.net.URI},
+     * {@link java.net.URL},
+     * {@link java.io.File},
+     * {@link java.nio.file.Path} and
+     * {@link String} (interpreted as a file path).
+     * </blockquote>
+     *
+     * This method {@linkplain InputStream#mark(int) marks} and {@linkplain InputStream#reset() resets}
+     * streams automatically with an arbitrary read-ahead limit (typically okay for the first 8 kilobytes).
+     *
+     * <h4>Usage example</h4>
+     * {@link #probeContent(StorageConnector)} implementations often check the first bytes of the
+     * input stream for a "magic number" associated with the format, as in the following example:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
+     *         return probeContent(connector, ByteBuffer.class, (buffer) -> {
+     *             if (buffer.remaining() >= Integer.BYTES) {
+     *                 if (buffer.getInt() == MAGIC_NUMBER) {
+     *                     return ProbeResult.SUPPORTED;
+     *                 }
+     *                 return ProbeResult.UNSUPPORTED_STORAGE;
+     *             }
+     *             // If the buffer does not contain enough bytes for the integer type, this is not
+     *             // necessarily because the file is truncated. It may be because the data were not
+     *             // yet available at the time this method has been invoked.
+     *             return ProbeResult.INSUFFICIENT_BYTES;
+     *         });
+     *     }
+     * }
+     *
+     * @param  <S>        the compile-time type of the {@code type} argument (the source or storage type).
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  type       the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
+     *                    class or other types documented in {@link #getStorageAs(Class)}.
+     * @param  prober     the test to apply on the source of the given type.
+     * @return the result of executing the probe action with a source of the given type,
+     *         or {@link ProbeResult#UNSUPPORTED_STORAGE} if the given type is supported
+     *         but no view can be created for the source given at construction time.
+     * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types.
+     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
+     * @throws DataStoreException if an error occurred while opening a stream or database connection,
+     *         or during the execution of the probe action.
+     *
+     * @see #probeContent(StorageConnector)
+     * @see StorageConnector#getStorageAs(Class)
+     *
+     * @since 1.2
+     */
+    protected <S> ProbeResult probeContent(final StorageConnector connector,
+            final Class<S> type, final Prober<? super S> prober) throws DataStoreException
+    {
+        ArgumentChecks.ensureNonNull("prober", prober);
+        /*
+         * Synchronization is not a documented feature for now because the policy may change in future version.
+         * Current version uses the storage source as the synchronization lock because using `StorageConnector`
+         * as the lock is not sufficient; the stream may be in use outside the connector. We have no way to know
+         * which lock (if any) is used by the source. But `InputStream` for example uses `this`.
+         */
+        synchronized (connector.storage) {
+            final S input = connector.getStorageAs(type);
+            if (input == null) {        // Means that the given type is valid but not applicable for current storage.
+                return ProbeResult.UNSUPPORTED_STORAGE;
+            }
+            if (input == connector.storage && !StorageConnector.isSupportedType(type)) {
+                /*
+                 * The given type is not one of the types known to `StorageConnector` (the list of supported types
+                 * is hard-coded). We could give the input as-is to the prober, but we have no idea how to fulfill
+                 * the method contract saying that the use of the input is safe. We throw an exception for telling
+                 * to the users that they should manage the input themselves.
+                 */
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, type));
+            }
+            ProbeResult result = null;
+            try {
+                if (input instanceof ByteBuffer) {
+                    /*
+                     * No need to save buffer position because `asReadOnlyBuffer()`
+                     * creates an independent buffer with its own mark and position.
+                     * Byte order of the view is intentionally left to the default
+                     * because we expect the callers to set the order that they need.
+                     */
+                    final ByteBuffer buffer = (ByteBuffer) input;
+                    result = prober.test(type.cast(buffer.asReadOnlyBuffer()));
+                } else if (input instanceof Markable) {
+                    /*
+                     * `Markable` stream can nest an arbitrary number of marks. So we allow users to create
+                     * their own marks. In principle a single call to `reset()` is enough, but we check the
+                     * position in case the user has done some marks without resets.
+                     */
+                    final Markable stream = (Markable) input;
+                    final long position = stream.getStreamPosition();
+                    stream.mark();
+                    result = prober.test(input);
+                    do stream.reset();
+                    while (stream.getStreamPosition() != position);
+                } else if (input instanceof ImageInputStream) {
+                    /*
+                     * `ImageInputStream` supports an arbitrary number of marks as well,
+                     * but we use absolute positioning for simplicity.
+                     */
+                    final ImageInputStream stream = (ImageInputStream) input;
+                    final long position = stream.getStreamPosition();
+                    result = prober.test(input);
+                    stream.seek(position);
+                } else if (input instanceof InputStream) {
+                    /*
+                     * `InputStream` supports at most one mark. So we keep it for ourselve
+                     * and wrap the stream in an object that prevent user from using marks.
+                     */
+                    final ProbeInputStream stream = new ProbeInputStream(connector, (InputStream) input);
+                    result = prober.test(type.cast(stream));
+                    stream.close();                 // Reset (not close) the wrapped stream.
+                } else if (input instanceof Reader) {
+                    final Reader stream = new ProbeReader(connector, (Reader) input);
+                    result = prober.test(type.cast(stream));
+                    stream.close();                 // Reset (not close) the wrapped reader.
+                } else {
+                    /*
+                     * All other cases are objects like File, URL, etc. which can be used without mark/reset.
+                     * Note that if the type was not known to be safe, an exception would have been thrown at
+                     * the beginning of this method.
+                     */
+                    result = prober.test(input);
+                }
+            } catch (DataStoreException e) {
+                throw e;
+            } catch (Exception e) {
+                final String message = Errors.format(Errors.Keys.CanNotRead_1, connector.getStorageName());
+                if (result != null) {
+                    throw new ForwardOnlyStorageException(message, e);
+                }
+                throw new CanNotProbeException(this, connector, e);
+            }
+            return result;
+        }
+    }
+
+    /**
+     * An action to execute for testing if a {@link StorageConnector} input can be read.
+     * This action is invoked by {@link #probeContent(StorageConnector, Class, Prober)}
+     * with an input of the type {@code <S>} specified to the {@code probe(…)} method.
+     * The {@code DataStoreProvider} is responsible for restoring the input to its initial position
+     * after the probe action completed.
+     *
+     * @param  <S>  the source type as one of {@code ByteBuffer}, {@code DataInput} or other classes
+     *              documented in {@link StorageConnector#getStorageAs(Class)}.
+     *
+     * @version 1.2
+     *
+     * @see #probeContent(StorageConnector, Class, Prober)
+     *
+     * @since 1.2
+     */
+    @FunctionalInterface
+    public interface Prober<S> {
+        /**
+         * Probes the given input and returns an indication about whether that input is supported.
+         * This method may return {@code SUPPORTED} if there is reasonable chance of success based
+         * on a brief inspection of the given input;
+         * the supported status does not need to be guaranteed.
+         *
+         * @param  input  the input to probe. This is for example a {@code ByteBuffer} or a {@code DataInput}.
+         * @return the result of executing the probe action with the given source. Should not be null.
+         * @throws Exception if an error occurred during the execution of the probe action.
+         */
+        ProbeResult test(S input) throws Exception;
+    }
 
     /**
      * Returns a data store implementation associated with this provider.

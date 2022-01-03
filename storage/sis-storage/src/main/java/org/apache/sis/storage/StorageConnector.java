@@ -84,13 +84,15 @@ import org.apache.sis.setup.OptionKey;
  * discarded since each data store implementation will use their own input/output objects.</p>
  *
  * <h2>Limitations</h2>
- * This class is not thread-safe. Not only {@code StorageConnector} should be used by a single thread,
+ * This class is not thread-safe.
+ * Not only {@code StorageConnector} should be used by a single thread,
  * but the objects returned by {@link #getStorageAs(Class)} should also be used by the same thread.
  *
  * <p>Instances of this class are serializable if the {@code storage} object given at construction time
  * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.3
  * @module
@@ -104,6 +106,11 @@ public class StorageConnector implements Serializable {
     /**
      * The default size of the {@link ByteBuffer} to be created.
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
+     *
+     * <p>This buffer capacity is also used as read-ahead limit for mark operations.
+     * The rational is to allow as many bytes as contained in buffers of default size.
+     * For increasing the chances to meet that goal, this size should be the same than
+     * {@link java.io.BufferedInputStream} default buffer size.</p>
      *
      * @see RewindableLineReader#BUFFER_SIZE
      */
@@ -651,6 +658,14 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns {@code true} if the given type is one of the types supported by {@code StorageConnector}.
+     * The list of supported types is hard-coded and may change in any future version.
+     */
+    static boolean isSupportedType(final Class<?> type) {
+        return OPENERS.containsKey(type);
+    }
+
+    /**
      * Returns the storage as a view of the given type if possible, or {@code null} otherwise.
      * The default implementation accepts the following types:
      *
@@ -749,15 +764,18 @@ public class StorageConnector implements Serializable {
      *   </li>
      * </ul>
      *
+     * <h4>Usage for probing operations</h4>
      * Multiple invocations of this method on the same {@code StorageConnector} instance will try
      * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations of
      * {@link DataStoreProvider#probeContent(StorageConnector)} methods shall not close the stream or
      * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
+     * For an easier and safer way to ensure that the storage position is not modified,
+     * see {@link DataStoreProvider#probeContent(StorageConnector, Class, Prober)}.
      *
      * @param  <S>   the compile-time type of the {@code type} argument (the source or storage type).
      * @param  type  the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
-     *               class or other type supported by {@code StorageConnector} subclasses.
+     *               class or other types supported by {@code StorageConnector} subclasses.
      * @return the storage as a view of the given type, or {@code null} if the given type is one of the supported
      *         types listed in javadoc but no view can be created for the source given at construction time.
      * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types
@@ -767,6 +785,7 @@ public class StorageConnector implements Serializable {
      *
      * @see #getStorage()
      * @see #closeAllExcept(Object)
+     * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
      */
     public <S> S getStorageAs(final Class<S> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
@@ -1033,6 +1052,8 @@ public class StorageConnector implements Serializable {
         /*
          * First, try to create the ChannelDataInput if it does not already exists.
          * If successful, this will create a ByteBuffer companion as a side effect.
+         * Byte order of the view is intentionally left to the default (big endian)
+         * because we expect the callers to set the order that they need.
          */
         final ChannelDataInput c = getStorageAs(ChannelDataInput.class);
         ByteBuffer asByteBuffer = null;
@@ -1267,6 +1288,47 @@ public class StorageConnector implements Serializable {
      */
     private Coupled getView(final Class<?> type) {
         return (views != null) ? views.get(type) : null;
+    }
+
+    /**
+     * Returns the storage as a view of the given type and closes all other views.
+     * Invoking this method is equivalent to invoking {@link #getStorageAs(Class)}
+     * followed by {@link #closeAllExcept(Object)} except that the later method is
+     * always invoked (in a way similar to "try with resource") and that this method
+     * never returns {@code null}.
+     *
+     * @param  <S>     the compile-time type of the {@code type} argument (the source or storage type).
+     * @param  type    the desired type as one of the types documented in {@link #getStorageAs(Class)}
+     *                 (example: {@code ByteBuffer}, {@code DataInput}, {@code Connection}).
+     * @param  format  short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     *                 Used for information purpose in error messages if needed.
+     * @return the storage as a view of the given type. Never {@code null}.
+     * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types.
+     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
+     * @throws DataStoreException if an error occurred while opening a stream or database connection.
+     *
+     * @see #getStorageAs(Class)
+     * @see #closeAllExcept(Object)
+     *
+     * @since 1.2
+     */
+    public <S> S commit(final Class<S> type, final String format) throws IllegalArgumentException, DataStoreException {
+        final S view;
+        try {
+            view = getStorageAs(type);
+        } catch (Throwable ex) {
+            try {
+                closeAllExcept(null);
+            } catch (Throwable se) {
+                ex.addSuppressed(se);
+            }
+            throw ex;
+        }
+        closeAllExcept(view);
+        if (view == null) {
+            throw new UnsupportedStorageException(null, format, storage, getOption(OptionKey.OPEN_OPTIONS));
+        }
+        return view;
     }
 
     /**

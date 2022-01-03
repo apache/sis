@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.io;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.InvalidMarkException;
 import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -129,8 +128,9 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
         try {
             testedStream.reset();
             fail("Expected no remaining marks.");
-        } catch (InvalidMarkException e) {
+        } catch (IOException e) {
             // This is the expected exception.
+            assertNotNull(e.getMessage());
         }
         assertStreamContentEquals();
     }

@@ -97,7 +97,7 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
     /**
      * Repositions this stream to the position at the time the {@code mark} method was last called.
      *
-     * @throws IOException if an I/O error occurs.
+     * @throws IOException if this stream can not move to the last mark position.
      */
     @Override
     public void reset() throws IOException {

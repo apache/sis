@@ -21,6 +21,7 @@ import java.io.DataInput;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
@@ -45,7 +46,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link StorageConnector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -58,6 +60,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
 
     /**
      * Beginning of the first sentence in {@value #FILENAME}.
+     *
+     * @see #getFirstExpectedBytes()
      */
     private static final String FIRST_SENTENCE = "The purpose of this file";
 
@@ -67,10 +71,10 @@ public final strictfp class StorageConnectorTest extends TestCase {
     private static final int MAGIC_NUMBER = ('T' << 24) | ('h' << 16) | ('e' << 8) | ' ';
 
     /**
-     * Creates the instance to test. This method uses the {@code "test.txt"} ASCII file as
+     * Creates the instance to test. This method uses the {@code "Any.txt"} ASCII file as
      * the resource to test. The resource can be provided either as a URL or as a stream.
      */
-    private static StorageConnector create(final boolean asStream) {
+    static StorageConnector create(final boolean asStream) {
         final Class<?> c = StorageConnectorTest.class;
         final Object storage = asStream ? c.getResourceAsStream(FILENAME) : c.getResource(FILENAME);
         assertNotNull(storage);
@@ -78,6 +82,35 @@ public final strictfp class StorageConnectorTest extends TestCase {
         connector.setOption(OptionKey.ENCODING, StandardCharsets.US_ASCII);
         connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
         return connector;
+    }
+
+    /**
+     * Returns the first bytes expected to be found in the {@value #FILENAME} file.
+     */
+    static byte[] getFirstExpectedBytes() {
+        return FIRST_SENTENCE.getBytes(StandardCharsets.US_ASCII);
+    }
+
+    /**
+     * Reads the first bytes from the given input stream and verifies
+     * that they are equal to the expected content.
+     */
+    static void assertExpectedBytes(final InputStream stream) throws IOException {
+        final byte[] expected = getFirstExpectedBytes();
+        final byte[] content = new byte[expected.length];
+        assertEquals(content.length, stream.read(content));
+        assertArrayEquals(expected, content);
+    }
+
+    /**
+     * Reads the first characters from the given reader and verifies
+     * that they are equal to the expected content.
+     */
+    static void assertExpectedChars(final Reader stream) throws IOException {
+        final char[] expected = FIRST_SENTENCE.toCharArray();
+        final char[] content = new char[expected.length];
+        assertEquals(content.length, stream.read(content));
+        assertArrayEquals(expected, content);
     }
 
     /**
@@ -139,6 +172,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
      */
     private void testGetAsDataInput(final boolean asStream) throws DataStoreException, IOException {
         final StorageConnector connector = create(asStream);
+        assertEquals(asStream, connector.getStorageAs(URI.class)  == null);
+        assertEquals(asStream, connector.getStorageAs(Path.class) == null);
         final DataInput input = connector.getStorageAs(DataInput.class);
         assertSame("Value shall be cached.", input, connector.getStorageAs(DataInput.class));
         assertInstanceOf("Needs the SIS implementation.", ChannelImageInputStream.class, input);
@@ -242,11 +277,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
     public void testGetAsReader() throws DataStoreException, IOException {
         final StorageConnector connector = create(true);
         final Reader in = connector.getStorageAs(Reader.class);
-        final char[] expected = FIRST_SENTENCE.toCharArray();
-        final char[] actual = new char[expected.length];
         in.mark(1000);
-        assertEquals("Number of characters read.", expected.length, in.read(actual));
-        assertArrayEquals("First sentence.", expected, actual);
+        assertExpectedChars(in);
         assertSame("Expected cached value.", in, connector.getStorageAs(Reader.class));
         in.reset();
         /*
@@ -263,8 +295,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
          */
         final Reader in2 = connector.getStorageAs(Reader.class);
         assertNotSame("Expected a new Reader instance.", in, in2);
-        assertEquals("Number of characters read.", expected.length, in.read(actual));
-        assertArrayEquals("First sentence.", expected, actual);
+        assertExpectedChars(in2);
         assertSame("Expected cached value.", in2, connector.getStorageAs(Reader.class));
         connector.closeAllExcept(null);
     }
@@ -389,5 +420,42 @@ public final strictfp class StorageConnectorTest extends TestCase {
         connector.closeAllExcept(input);
         assertTrue("channel.isOpen()", channel.isOpen());
         channel.close();
+    }
+
+    /**
+     * Tests the {@link StorageConnector#commit(Class, String)} method.
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
+     */
+    @Test
+    @DependsOnMethod("testCloseAllExcept")
+    public void testCommit() throws DataStoreException, IOException {
+        final StorageConnector connector = create(false);
+        final InputStream stream = connector.commit(InputStream.class, "Test");
+        try {
+            connector.getStorageAs(ByteBuffer.class);
+            fail("Connector should be closed.");
+        } catch (IllegalStateException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertExpectedBytes(stream);
+        stream.close();                 // No "try-with-resource" for easier debugging if needed.
+    }
+
+    /**
+     * Verifies that the {@link StorageConnector#closeAllExcept(Object)} method is idempotent
+     * (i.e. calls after the first call have no effect).
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while closing the test file.
+     */
+    @Test
+    public void testCloseIsIdempotent() throws DataStoreException, IOException {
+        final StorageConnector connector = StorageConnectorTest.create(true);
+        final InputStream stream = connector.commit(InputStream.class, "Test");
+        connector.closeAllExcept(null);
+        assertExpectedBytes(stream);
+        stream.close();                 // No "try-with-resource" for easier debugging if needed.
     }
 }
