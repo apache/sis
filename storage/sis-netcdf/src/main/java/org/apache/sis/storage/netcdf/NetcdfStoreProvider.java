@@ -192,6 +192,11 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         boolean isSupported = false;
         final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
+            /*
+             * This block is written as if `ByteBuffer` was an immutable object.
+             * In particular we use the "absolute position" variants of `get(…)`.
+             * Consequently we do not need to mark and reset buffer position.
+             */
             if (buffer.remaining() < Integer.BYTES) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }

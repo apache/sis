@@ -259,11 +259,11 @@ public abstract class StaxDataStore extends URIDataStore {
     }
 
     /**
-     * Resets the stream position to the mark created at construction time, then marks again the stream
-     * for allowing future resets.
+     * Resets the stream position to the mark created at construction time,
+     * then marks again the stream for allowing future resets.
      *
      * @return {@code true} of success, or {@code false} if the stream can not be reset.
-     * @throws IOException if an error occurred while reseting the stream.
+     * @throws IOException if an error occurred while resetting the stream.
      */
     private boolean reset() throws IOException {
         if (streamPosition >= 0) try {

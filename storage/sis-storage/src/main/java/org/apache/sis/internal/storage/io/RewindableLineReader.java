@@ -25,7 +25,7 @@ import org.apache.sis.io.InvalidSeekException;
 
 
 /**
- * A {@link LineNumberReader} which may be rewinded to its original position even if the mark is no longer valid.
+ * A {@link LineNumberReader} which may be rewound to its original position even if the mark is no longer valid.
  * This class assumes that {@link #mark(int)} has not been invoked, or has been invoked at the position where to
  * rewind. A call to {@link #rewind()} performs the following actions:
  *
@@ -49,7 +49,7 @@ public final class RewindableLineReader extends LineNumberReader {
      * The input stream, or {@code null} if this reader can not rewind anymore.
      *
      * <div class="note"><b>Note:</b> we do not use the more generic {@link java.io.InputStream} class
-     * because this whole {@code ReaderFactory} class is useless if we can not seek in this stream.</div>
+     * because this whole {@code RewindableLineReader} class is useless if we can not seek in this stream.</div>
      */
     private InputStreamAdapter input;
 
@@ -82,7 +82,7 @@ public final class RewindableLineReader extends LineNumberReader {
     }
 
     /**
-     * Returns a reader rewinded to the beginning of data to read. This method invokes {@link #reset()} first.
+     * Returns a reader rewound to the beginning of data to read. This method invokes {@link #reset()} first.
      * If that call succeed, then this method returns {@code this}. Otherwise this method returns a new reader.
      * In the later case, {@code this} reader should not be used anymore.
      *

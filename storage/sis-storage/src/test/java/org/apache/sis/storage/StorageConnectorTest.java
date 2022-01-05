@@ -227,7 +227,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
         data.readFully(sample);
         /*
          * Request again the InputStream and read the same amount of bytes than above. The intent of this test
-         * is to verify that StorageConnector has reseted the InputStream position before to return it.
+         * is to verify that StorageConnector has reset the InputStream position before to return it.
          * Note that this test requires InputStream implementations supporting mark/reset operations
          * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),
          * otherwise the call to connector.getStorageAs(…) throws a DataStoreException.
@@ -236,7 +236,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
         assertSame(in, connector.getStorageAs(InputStream.class));
         final byte[] actual = new byte[sample.length];
         assertEquals("Should read all requested bytes.", actual.length, in.read(actual));
-        assertArrayEquals("InputStream shall be reseted to the beginning of the stream.", sample, actual);
+        assertArrayEquals("InputStream shall be reset to the beginning of the stream.", sample, actual);
         connector.closeAllExcept(null);
     }
 

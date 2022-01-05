@@ -135,7 +135,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that before reseting the {@code view}, we need to reset the {@code source} first. This flag should
+     * telling that before resetting the {@code view}, we need to reset the {@code source} first. This flag should
      * can be unset if any change in the position of {@code view} is immediately reflected in the position of
      * {@code source}, and vice-versa.
      *
@@ -145,7 +145,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that {@code view} can not be reseted, so it should be set to {@code null} instead. This implies
+     * telling that {@code view} can not be reset, so it should be set to {@code null} instead. This implies
      * that a new view of the same type will be recreated next time it will be requested.
      *
      * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set at the same time.</p>
@@ -794,7 +794,7 @@ public class StorageConnector implements Serializable {
         }
         /*
          * Verify if the cache contains an instance created by a previous invocation of this method.
-         * Note that InputStream may need to be reseted if it has been used indirectly by other kind
+         * Note that InputStream may need to be reset if it has been used indirectly by other kind
          * of stream (for example a java.io.Reader). Example:
          *
          *    1) The storage specified at construction time is a java.nio.file.Path.
@@ -810,7 +810,7 @@ public class StorageConnector implements Serializable {
         }
         /*
          * If the storage is already an instance of the requested type, returns the storage as-is.
-         * We check if the storage needs to be reseted in the same way than in getStorage() method.
+         * We check if the storage needs to be reset in the same way than in getStorage() method.
          * As a special case, we ensure that InputStream and Reader can be marked.
          */
         if (type.isInstance(storage)) {
@@ -886,7 +886,7 @@ public class StorageConnector implements Serializable {
      * <div class="note"><b>Rational:</b>
      * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementers reset the
      * input stream themselves. However if {@link ChannelDataInput} or {@link InputStreamReader} has been used,
-     * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reseted
+     * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reset
      * the underlying input stream. So we need to perform the missing {@link InputStream#reset()} here, then
      * synchronize the {@code ChannelDataInput} position accordingly.</div>
      *
@@ -914,7 +914,7 @@ public class StorageConnector implements Serializable {
     /**
      * Resets the root {@link #storage} object.
      *
-     * @throws DataStoreException if the storage can not be reseted.
+     * @throws DataStoreException if the storage can not be reset.
      */
     private void reset() throws DataStoreException {
         if (views != null && !views.isEmpty() && !reset(views.get(null))) {

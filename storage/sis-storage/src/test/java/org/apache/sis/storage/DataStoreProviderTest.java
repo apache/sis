@@ -87,7 +87,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
     public void testProbeWithByteBuffer() throws DataStoreException {
         /*
          * Change the buffer position for simulating a read operation
-         * without reseting the buffer position.
+         * without resetting the buffer position.
          */
         final StorageConnector connector = StorageConnectorTest.create(false);
         assertEquals(provider.probeContent(connector, ByteBuffer.class, buffer -> {
