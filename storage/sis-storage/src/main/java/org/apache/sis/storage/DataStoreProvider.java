@@ -27,6 +27,7 @@ import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.simple.SimpleFormat;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.io.Markable;
+import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
@@ -392,12 +393,22 @@ public abstract class DataStoreProvider {
                     stream.seek(position);
                 } else if (input instanceof InputStream) {
                     /*
-                     * `InputStream` supports at most one mark. So we keep it for ourselve
-                     * and wrap the stream in an object that prevent user from using marks.
+                     * `InputStream` supports at most one mark. So we keep it for ourselves
+                     * and wrap the stream in an object that prevent users from using marks.
                      */
                     final ProbeInputStream stream = new ProbeInputStream(connector, (InputStream) input);
                     result = prober.test(type.cast(stream));
                     stream.close();                 // Reset (not close) the wrapped stream.
+                } else if (input instanceof RewindableLineReader) {
+                    /*
+                     * `Reader` supports at most one mark. So we keep it for ourselves and prevent users
+                     * from using marks, but without wrapper if we can safely expose a `BufferedReader`
+                     * (because users may want to use the `BufferedReader.readLine()` method).
+                     */
+                    final RewindableLineReader r = (RewindableLineReader) input;
+                    r.protectedMark();
+                    result = prober.test(input);
+                    r.protectedReset();
                 } else if (input instanceof Reader) {
                     final Reader stream = new ProbeReader(connector, (Reader) input);
                     result = prober.test(type.cast(stream));

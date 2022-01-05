@@ -26,6 +26,7 @@ import org.apache.sis.internal.storage.Resources;
 /**
  * A temporary input stream used for probing purposes.
  * This stream does not allow mark/reset operations because the mark is reserved for this class.
+ * The {@link #close()} method closes this stream but not the wrapped stream, which is only reset.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

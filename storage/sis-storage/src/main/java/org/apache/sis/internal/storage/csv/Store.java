@@ -66,7 +66,6 @@ import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.setup.OptionKey;
@@ -235,12 +234,7 @@ final class Store extends URIDataStore implements FeatureSet {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        final Reader r = connector.getStorageAs(Reader.class);
-        connector.closeAllExcept(r);
-        if (r == null) {
-            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
-                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
-        }
+        final Reader r = connector.commit(Reader.class, StoreProvider.NAME);
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
         dissociate = FoliationRepresentation.FRAGMENTED.equals(connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION));
@@ -317,6 +311,8 @@ final class Store extends URIDataStore implements FeatureSet {
      * which is set after the last header line. If the mark is no longer valid, then we have to create a new line reader.
      * In this later case, we have to skip the header lines (i.e. we reproduce the constructor loop, but without parsing
      * metadata).
+     *
+     * @todo Not yet used. This is planned for a future version of {@link #features(boolean)} method implementation.
      */
     private void rewind() throws IOException {
         final BufferedReader reader = source;

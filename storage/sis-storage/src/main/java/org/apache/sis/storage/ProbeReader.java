@@ -26,6 +26,10 @@ import org.apache.sis.internal.storage.Resources;
 /**
  * A temporary character reader used for probing purposes.
  * This reader does not allow mark/reset operations because the mark is reserved for this class.
+ * The {@link #close()} method closes this reader but not the wrapped reader, which is only reset.
+ *
+ * <p>Note: this wrapper is not used if the reader is an instance of
+ * {@link org.apache.sis.internal.storage.io.RewindableLineReader}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
