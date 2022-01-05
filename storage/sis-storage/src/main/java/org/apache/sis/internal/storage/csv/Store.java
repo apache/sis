@@ -52,6 +52,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
@@ -87,7 +88,7 @@ import org.opengis.feature.AttributeType;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -384,8 +385,8 @@ final class Store extends URIDataStore implements FeatureSet {
                             ordinal++;  // Fall through
                     case 3: lowerCorner = CharSequences.parseDoubles(element, ORDINATE_SEPARATOR); continue;
                     case 4: upperCorner = CharSequences.parseDoubles(element, ORDINATE_SEPARATOR); continue;
-                    case 5: startTime   = Instant.parse(element); continue;
-                    case 6: endTime     = Instant.parse(element); continue;
+                    case 5: startTime   = StandardDateFormat.parseInstantUTC(element); continue;
+                    case 6: endTime     = StandardDateFormat.parseInstantUTC(element); continue;
                     case 7: switch (element.toLowerCase(Locale.US)) {
                                 case "sec":
                                 case "second":   /* Already SECOND. */    continue;
