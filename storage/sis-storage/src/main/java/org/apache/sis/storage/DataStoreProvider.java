@@ -274,7 +274,7 @@ public abstract class DataStoreProvider {
      * Current implementation accepts the following types (this list may be expanded in future versions):
      *
      * <blockquote>
-     * {@link java.nio.ByteBuffer},
+     * {@link java.nio.ByteBuffer} (default byte order fixed to {@link java.nio.ByteOrder#BIG_ENDIAN BIG_ENDIAN}),
      * {@link java.io.InputStream},
      * {@link java.io.DataInput},
      * {@link javax.imageio.stream.ImageInputStream} and
@@ -363,10 +363,9 @@ public abstract class DataStoreProvider {
             try {
                 if (input instanceof ByteBuffer) {
                     /*
-                     * No need to save buffer position because `asReadOnlyBuffer()`
-                     * creates an independent buffer with its own mark and position.
-                     * Byte order of the view is intentionally left to the default
-                     * because we expect the callers to set the order that they need.
+                     * No need to save buffer position because `asReadOnlyBuffer()` creates an independent buffer
+                     * with its own mark and position. Byte order of the view is intentionally fixed to BIG_ENDIAN
+                     * (the default) regardless the byte order of the original buffer.
                      */
                     final ByteBuffer buffer = (ByteBuffer) input;
                     result = prober.test(type.cast(buffer.asReadOnlyBuffer()));
@@ -451,7 +450,7 @@ public abstract class DataStoreProvider {
      * @since 1.2
      */
     @FunctionalInterface
-    public interface Prober<S> {
+    protected interface Prober<S> {
         /**
          * Probes the given input and returns an indication about whether that input is supported.
          * This method may return {@code SUPPORTED} if there is reasonable chance of success based

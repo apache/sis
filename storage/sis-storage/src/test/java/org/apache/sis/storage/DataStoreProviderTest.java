@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.test.DependsOn;
@@ -78,6 +79,38 @@ public final strictfp class DataStoreProviderTest extends TestCase {
             StorageConnectorTest.assertExpectedChars(stream);
             return ProbeResult.SUPPORTED;
         }), ProbeResult.SUPPORTED);
+    }
+
+    /**
+     * Verifies that the {@link ByteBuffer} given to the {@code Prober} always have the default
+     * {@link ByteOrder#BIG_ENDIAN}. Some data store implementations rely on this default value.
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     */
+    @Test
+    public void verifyByteOrder() throws DataStoreException {
+        /*
+         * Creates a byte buffer with an arbitrary position and byte order.
+         */
+        final ByteBuffer original = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+        original.position(3);
+        final StorageConnector connector = new StorageConnector(original);
+        /*
+         * Verify that the byte buffer given to the prober always have the big endian order,
+         * regardless the byte order of the original buffer. This is part of method contract.
+         */
+        assertEquals(provider.probeContent(connector, ByteBuffer.class, buffer -> {
+            assertEquals(ByteOrder.BIG_ENDIAN, buffer.order());
+            assertEquals(3, buffer.position());
+            assertEquals(8, buffer.limit());
+            buffer.position(5).mark();
+            return ProbeResult.UNDETERMINED;
+        }), ProbeResult.UNDETERMINED);
+        /*
+         * Verifies that the origial buffer has its byte order and position unchanged.
+         */
+        assertEquals(ByteOrder.LITTLE_ENDIAN, original.order());
+        assertEquals(3, original.position());
     }
 
     /**
