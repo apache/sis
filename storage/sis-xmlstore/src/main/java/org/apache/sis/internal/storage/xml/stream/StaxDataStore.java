@@ -268,16 +268,10 @@ public abstract class StaxDataStore extends URIDataStore {
     private boolean reset() throws IOException {
         if (streamPosition >= 0) try {
             final Markable m = (Markable) stream;
-            long p;
-            do {
-                m.reset();
-                p = m.getStreamPosition();
-            } while (p > streamPosition);
-            if (p == streamPosition) {
-                m.mark();
-                state = START;
-                return true;
-            }
+            m.reset(streamPosition);
+            m.mark();
+            state = START;
+            return true;
         } catch (InvalidSeekException e) {
             listeners.warning(e);
         }

@@ -35,7 +35,7 @@ import java.io.IOException;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see Readable
  *
@@ -82,4 +82,14 @@ public interface Markable {
      * @see org.apache.sis.io.InvalidSeekException
      */
     void reset() throws IOException;
+
+    /**
+     * Resets the stream position to the mark at the given position. Invoking this method is similar to
+     * invoking {@code seek(mark)} except that it may work on non-seekable stream if a mark has been set
+     * on that position.
+     *
+     * @param  mark  position where to seek. Should be a position where a mark has been created.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    void reset(long mark) throws IOException;
 }

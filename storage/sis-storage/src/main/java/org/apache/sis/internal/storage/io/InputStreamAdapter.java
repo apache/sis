@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.imageio.stream.ImageInputStream;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.internal.storage.Resources;
 
 
@@ -181,7 +182,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * were created by {@link #mark()} or {@link #mark(int)}, except that all marks created by
      * {@link #mark(int)} are ignored except the most recent one.
      *
-     * <p>Implementations of {@code reset()} if Java I/O package does not discard the mark.
+     * <p>Implementations of {@code reset()} in Java I/O package does not discard the mark.
      * The implementation in this {@code InputStreamAdapter} class does not discard the mark
      * neither if the mark done by a call to {@link #mark(int)} is the only mark remaining.
      * Some code depends on the ability to do many {@code reset()} for the same mark.</p>
@@ -200,6 +201,29 @@ public final class InputStreamAdapter extends InputStream implements Markable {
             input.reset();
         } else {
             throw new IOException(Resources.format(Resources.Keys.StreamHasNoMark));
+        }
+    }
+
+    /**
+     * Moves to the given position in the stream and discards all marks at or after that position.
+     * This convolved method exists because of the attempt to conciliate two different APIs in this class
+     * (see {@link #reset()}). This method does not simply call {@link ImageInputStream#seek(long)}
+     * because we need to keep track of the marks.
+     *
+     * @param  mark  position where to seek.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    @Override
+    public synchronized void reset(final long mark) throws IOException {
+        long p;
+        int n;
+        do {
+            n = nestedMarks;
+            reset();
+            p = input.getStreamPosition();
+        } while (p > mark && n > 0);
+        if (p != mark) {
+            throw new InvalidSeekException();
         }
     }
 

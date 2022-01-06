@@ -32,8 +32,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * querying or modifying the stream position. This class does not define any read or write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.5 (derived from 0.3)
+ * @version 1.2
+ * @since   0.3
  * @module
  */
 public abstract class ChannelData implements Markable {
@@ -329,6 +329,28 @@ public abstract class ChannelData implements Markable {
         mark = m.next;
         seek(m.position);
         setBitOffset(m.bitOffset);
+    }
+
+    /**
+     * Moves to the given position in the stream and discards all marks at or after that position.
+     * If a mark exists at the given position, the bit offset is also restored.
+     *
+     * @param  position  position where to seek.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    @Override
+    public final void reset(final long position) throws IOException {
+        Mark lastValid = null;
+        while (mark != null && mark.position >= position) {
+            final boolean found = mark.position == position;
+            if (found) lastValid = mark;
+            mark = mark.next;               // Discard all marks after the specified position.
+            if (found) break;
+        }
+        seek(position);
+        if (lastValid != null) {
+            setBitOffset(lastValid.bitOffset);
+        }
     }
 
     /**

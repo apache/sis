@@ -379,8 +379,7 @@ public abstract class DataStoreProvider {
                     final long position = stream.getStreamPosition();
                     stream.mark();
                     result = prober.test(input);
-                    do stream.reset();
-                    while (stream.getStreamPosition() != position);
+                    stream.reset(position);
                 } else if (input instanceof ImageInputStream) {
                     /*
                      * `ImageInputStream` supports an arbitrary number of marks as well,
