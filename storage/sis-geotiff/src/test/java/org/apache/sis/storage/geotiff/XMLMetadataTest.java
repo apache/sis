@@ -1,0 +1,106 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.storage.geotiff;
+
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.apache.sis.test.Assert.*;
+
+
+/**
+ * Tests the {@link XMLMetadata} enumeration.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
+ * @since   1.2
+ * @module
+ */
+public final strictfp class XMLMetadataTest extends TestCase {
+    /**
+     * A GDAL metadata.
+     */
+    private static final String GDAL_METADATA =
+            "<GDALMetadata>\n" +
+            "  <Item name=\"TITLE\">My image</Item>\n" +
+            "  <Item name=\"SCALE\" sample=\"-3\">0.015</Item>" +
+            "  <Item name=\"acquisitionStartDate\">2018-02-28T04:48:00</Item>\n" +
+            "  <Item name=\"acquisitionEndDate\">2018-02-28T03:04:00</Item>\n" +
+            "  <Foo>bar</Foo>\n" +
+            "</GDALMetadata>\n";
+
+    /**
+     * Tests parsing of GDAL metadata and formatting as a tree table.
+     * THe XML document is like below:
+     *
+     * {@preformat xml
+     *   <GDALMetadata>
+     *     <Item name="SCALE" sample="-3">0.015</Item>
+     *     <Item name="acquisitionStartDate">2018-02-28T04:48:00</Item>
+     *     <Item name="acquisitionEndDate">2018-02-28T03:04:00</Item>
+     *   </GDALMetadata>
+     * }
+     *
+     * The tree table output is expected to <em>not</em> contains the "Item" word,
+     * because this is redundancy repeated for all nodes. Instead "Item" should be
+     * replaced by the value of the "name" attribute.
+     */
+    @Test
+    public void testTreeGDAL() {
+        XMLMetadata xml = new XMLMetadata(GDAL_METADATA, true);
+        assertSame(GDAL_METADATA, xml.toString());
+        assertFalse(xml.isEmpty());
+        DefaultTreeTable     table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
+        DefaultTreeTable.Node root = (DefaultTreeTable.Node ) table.getRoot();
+        DefaultTreeTable.Node node = new XMLMetadata.Root(xml, root, "Test");
+        assertEquals("Test", node.getValue(TableColumn.NAME));
+        root.setValue(TableColumn.NAME, "Root");
+        assertMultilinesEquals(
+                "Root\n" +
+                "  └─Test\n" +
+                "      └─GDALMetadata\n" +
+                "          ├─TITLE…………………………………………… My image\n" +
+                "          ├─SCALE…………………………………………… 0.015\n" +
+                "          │   └─sample……………………………… -3\n" +
+                "          ├─acquisitionStartDate…… 2018-02-28T04:48:00\n" +
+                "          ├─acquisitionEndDate………… 2018-02-28T03:04:00\n" +
+                "          └─Foo………………………………………………… bar\n",
+                table.toString());
+    }
+
+    /**
+     * Tests parsing GDAL metadata and conversion to ISO 19115 metadata.
+     *
+     * @throws Exception if an error occurred during XML parsing.
+     */
+    @Test
+    public void testMetadataGDAL() throws Exception {
+        XMLMetadata xml = new XMLMetadata(GDAL_METADATA, true);
+        MetadataBuilder builder = new MetadataBuilder();
+        xml.appendTo(builder);
+        DefaultMetadata metadata = builder.build(false);
+        assertMultilinesEquals(
+                "Metadata\n" +
+                "  └─Identification info\n" +
+                "      └─Citation………………… My image\n",
+                metadata.toString());
+    }
+}

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.MemberName;
@@ -37,41 +38,18 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Role;
-import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.OnLineFunction;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.spatial.GCP;
-import org.opengis.metadata.spatial.Dimension;
-import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.metadata.spatial.CellGeometry;
-import org.opengis.metadata.spatial.PixelOrientation;
-import org.opengis.metadata.spatial.GeolocationInformation;
-import org.opengis.metadata.spatial.SpatialRepresentation;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.metadata.constraint.Constraints;
-import org.opengis.metadata.constraint.Restriction;
-import org.opengis.metadata.content.ContentInformation;
-import org.opengis.metadata.content.CoverageContentType;
-import org.opengis.metadata.content.TransferFunctionType;
-import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.acquisition.Context;
-import org.opengis.metadata.acquisition.OperationType;
-import org.opengis.metadata.identification.Progress;
-import org.opengis.metadata.identification.KeywordType;
-import org.opengis.metadata.identification.Resolution;
-import org.opengis.metadata.identification.TopicCategory;
-import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.distribution.Distributor;
-import org.opengis.metadata.distribution.Format;
-import org.opengis.metadata.lineage.Lineage;
+import org.opengis.metadata.*;
+import org.opengis.metadata.acquisition.*;
+import org.opengis.metadata.citation.*;
+import org.opengis.metadata.constraint.*;
+import org.opengis.metadata.content.*;
+import org.opengis.metadata.distribution.*;
+import org.opengis.metadata.extent.*;
+import org.opengis.metadata.identification.*;
+import org.opengis.metadata.lineage.*;
+import org.opengis.metadata.maintenance.*;
 import org.opengis.metadata.quality.Element;
+import org.opengis.metadata.spatial.*;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -81,62 +59,24 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.simple.SimpleDuration;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.DefaultMetadataScope;
-import org.apache.sis.metadata.iso.extent.DefaultExtent;
-import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
-import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
-import org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
-import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
-import org.apache.sis.metadata.iso.spatial.DefaultDimension;
-import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
-import org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable;
-import org.apache.sis.metadata.iso.spatial.DefaultGCPCollection;
-import org.apache.sis.metadata.iso.spatial.DefaultGCP;
-import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
-import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
-import org.apache.sis.metadata.iso.content.DefaultBand;
-import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
-import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
-import org.apache.sis.metadata.iso.content.DefaultRangeElementDescription;
-import org.apache.sis.metadata.iso.content.DefaultImageDescription;
-import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.citation.AbstractParty;
-import org.apache.sis.metadata.iso.citation.DefaultSeries;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.metadata.iso.citation.DefaultIndividual;
-import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
-import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
-import org.apache.sis.metadata.iso.identification.DefaultKeywords;
-import org.apache.sis.metadata.iso.identification.DefaultResolution;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.metadata.iso.distribution.DefaultFormat;
-import org.apache.sis.metadata.iso.distribution.DefaultDistributor;
-import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
-import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
-import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
-import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
-import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
-import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
-import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
-import org.apache.sis.metadata.iso.lineage.DefaultLineage;
-import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
-import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
-import org.apache.sis.metadata.iso.lineage.DefaultSource;
-import org.apache.sis.metadata.iso.maintenance.DefaultScope;
-import org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription;
+import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.metadata.iso.*;
+import org.apache.sis.metadata.iso.acquisition.*;
+import org.apache.sis.metadata.iso.citation.*;
+import org.apache.sis.metadata.iso.constraint.*;
+import org.apache.sis.metadata.iso.content.*;
+import org.apache.sis.metadata.iso.distribution.*;
+import org.apache.sis.metadata.iso.extent.*;
+import org.apache.sis.metadata.iso.identification.*;
+import org.apache.sis.metadata.iso.lineage.*;
+import org.apache.sis.metadata.iso.maintenance.*;
+import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.metadata.Merger;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Vocabulary;
@@ -152,8 +92,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 // Branch-dependent imports
 import org.opengis.temporal.Duration;
 import org.opengis.feature.FeatureType;
-import org.opengis.metadata.acquisition.AcquisitionInformation;
-import org.opengis.metadata.citation.Responsibility;
 
 
 /**
@@ -166,7 +104,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -2770,6 +2708,32 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds an event that describe the range of time at which data were acquired.
+     * Current implementation computes the average of given instants.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/operation/significantEvent/time}</li>
+     * </ul>
+     *
+     * @param  startTime  start time, or {@code null} if unknown.
+     * @param  endTime    end time, or {@code null} if unknown.
+     */
+    public final void addAcquisitionTime(final Instant startTime, final Instant endTime) {
+        final Date time;
+        if (startTime == null) {
+            if (endTime == null) return;
+            time = Date.from(endTime);
+        } else if (endTime == null) {
+            time = Date.from(startTime);
+        } else {
+            // Divide by 2 before to add in order to avoid overflow.
+            time = new Date((startTime.toEpochMilli() >> 1) + (endTime.toEpochMilli() >> 1));
+        }
+        addAcquisitionTime(time);
+    }
+
+    /**
      * Adds the identifier of the operation used to acquire the dataset.
      * Examples: "GHRSST", "NOAA CDR", "NASA EOS", "JPSS", "GOES-R".
      * Storage location is:
@@ -3237,6 +3201,49 @@ parse:      for (int i = 0; i < length;) {
         for (Lineage info : component.getResourceLineages()) {
             addIfNotPresent(metadata.getResourceLineages(), info);
         }
+    }
+
+    /**
+     * Merge the given metadata into the metadata created by this builder.
+     * The given source should be an instance of {@link Metadata},
+     * but some types of metadata components are accepted as well.
+     *
+     * @param  source  the source metadata to merge. Will never be modified.
+     * @param  locale  the locale to use for error message in exceptions.
+     * @return {@code true} if the given source has been merged,
+     *         or {@code false} if its type is not managed by this builder.
+     * @throws RuntimeException if the merge failed (may be {@link IllegalArgumentException},
+     *         {@link ClassCastException}, {@link org.apache.sis.metadata.InvalidMetadataException}…)
+     *
+     * @see Merger
+     */
+    public boolean mergeMetadata(final Object source, final Locale locale) {
+        final ModifiableMetadata target;
+             if (source instanceof Metadata)                    target = metadata();
+        else if (source instanceof DataIdentification)          target = identification();
+        else if (source instanceof Citation)                    target = citation();
+        else if (source instanceof Series)                      target = series();
+        else if (source instanceof Responsibility)              target = responsibility();
+        else if (source instanceof Party)                       target = party();
+        else if (source instanceof LegalConstraints)            target = constraints();
+        else if (source instanceof Extent)                      target = extent();
+        else if (source instanceof AcquisitionInformation)      target = acquisition();
+        else if (source instanceof Platform)                    target = platform();
+        else if (source instanceof FeatureCatalogueDescription) target = featureDescription();
+        else if (source instanceof CoverageDescription)         target = coverageDescription();
+        else if (source instanceof AttributeGroup)              target = attributeGroup();
+        else if (source instanceof SampleDimension)             target = sampleDimension();
+        else if (source instanceof GridSpatialRepresentation)   target = gridRepresentation();
+        else if (source instanceof GCPCollection)               target = groundControlPoints();
+        else if (source instanceof Distribution)                target = distribution();
+        else if (source instanceof Format)                      target = format();
+        else if (source instanceof Lineage)                     target = lineage();
+        else if (source instanceof ProcessStep)                 target = processStep();
+        else if (source instanceof Processing)                  target = processing();
+        else return false;
+        final Merger merger = new Merger(locale);
+        merger.copy(source, target);
+        return true;
     }
 
     /**

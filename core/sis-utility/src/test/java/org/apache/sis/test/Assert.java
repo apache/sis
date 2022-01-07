@@ -130,7 +130,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
 
     /**
      * Asserts that two strings are equal, ignoring the differences in EOL characters.
-     * The comparisons is performed one a line-by-line basis. For each line, trailing
+     * The comparisons are performed on a line-by-line basis. For each line, trailing
      * spaces (but not leading spaces) are ignored.
      *
      * @param  expected  the expected string.
