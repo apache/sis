@@ -33,7 +33,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -213,7 +212,6 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
      * @since 0.8
      */
     @Test
-    @Ignore("This operation requires the sis-temporal module.")
     public void testTemporalIntersection() throws TransformException {
         final DefaultTemporalExtent e1 = new DefaultTemporalExtent();
         final DefaultTemporalExtent e2 = new DefaultTemporalExtent();

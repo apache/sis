@@ -21,11 +21,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.nio.charset.Charset;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.InvalidSeekException;
 
 
 /**
- * A {@link LineNumberReader} which may be rewinded to its original position even if the mark is no longer valid.
+ * A {@link LineNumberReader} which may be rewound to its original position even if the mark is no longer valid.
  * This class assumes that {@link #mark(int)} has not been invoked, or has been invoked at the position where to
  * rewind. A call to {@link #rewind()} performs the following actions:
  *
@@ -35,10 +36,11 @@ import org.apache.sis.io.InvalidSeekException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
+@SuppressWarnings("SynchronizeOnNonFinalField")
 public final class RewindableLineReader extends LineNumberReader {
     /**
      * Size of the buffer, in number of characters.
@@ -49,7 +51,7 @@ public final class RewindableLineReader extends LineNumberReader {
      * The input stream, or {@code null} if this reader can not rewind anymore.
      *
      * <div class="note"><b>Note:</b> we do not use the more generic {@link java.io.InputStream} class
-     * because this whole {@code ReaderFactory} class is useless if we can not seek in this stream.</div>
+     * because this whole {@code RewindableLineReader} class is useless if we can not seek in this stream.</div>
      */
     private InputStreamAdapter input;
 
@@ -57,6 +59,15 @@ public final class RewindableLineReader extends LineNumberReader {
      * The character encoding, or {@code null} for the platform default.
      */
     private final Charset encoding;
+
+    /**
+     * Whether calls to {@link #mark(int)} and {@link #reset()} should throw {@link IOException}.
+     * This is initially {@code false} and may be set to {@code true} if the caller wants to block
+     * users from overwriting the mark (s)he just did. This flag changes also the {@link #close()}
+     * behavior. It is used for probing the content of the same file by different data stores and we
+     * want a safety against implementations that do not follow the {@code probeContent(…)} contract.
+     */
+    private boolean isMarkProtected;
 
     /**
      * Creates a line reader wrapping the given input stream.
@@ -72,28 +83,27 @@ public final class RewindableLineReader extends LineNumberReader {
             this.input = (InputStreamAdapter) input;
         }
         this.encoding = encoding;
-        super.mark(BUFFER_SIZE);
         /*
          * By default, this.lock is set to InputStreamReader. But InputStreamReader.lock has itself
          * been set on the given InputStreamAdapter.  So we set this.lock to InputStreamReader.lock
          * in order to have a single synchronization lock.
          */
         lock = input;
+        super.mark(BUFFER_SIZE);
     }
 
     /**
-     * Returns a reader rewinded to the beginning of data to read. This method invokes {@link #reset()} first.
+     * Returns a reader rewound to the beginning of data to read. This method invokes {@link #reset()} first.
      * If that call succeed, then this method returns {@code this}. Otherwise this method returns a new reader.
      * In the later case, {@code this} reader should not be used anymore.
      *
      * @return the reader to use for next read operation (may be {@code this}).
      * @throws IOException if an error occurred while rewinding the reader.
      */
-    @SuppressWarnings("SynchronizeOnNonFinalField")
     public RewindableLineReader rewind() throws IOException {
         synchronized (lock) {
             try {
-                reset();
+                super.reset();
                 return this;
             } catch (IOException e1) {
                 final InputStreamAdapter stream = input;
@@ -114,8 +124,8 @@ public final class RewindableLineReader extends LineNumberReader {
                     stream.keepOpen = false;
                 }
                 /*
-                 * Try to seek to the data origin. Note that 'seek(0)' below does not necessarily
-                 * move to the beginning of file, since ChannelDataInput may contain an offset.
+                 * Try to seek to the data origin. Note that `seek(0)` below does not necessarily
+                 * move to the beginning of file, because `ChannelDataInput` may contain an offset.
                  */
                 try {
                     stream.input.seek(0);
@@ -129,16 +139,92 @@ public final class RewindableLineReader extends LineNumberReader {
     }
 
     /**
-     * Closes this reader.
+     * Marks current stream position and blocks all subsequent calls to {@link #mark(int)},
+     * {@link #reset()} and {@link #close()} until {@link #protectedReset()} is invoked.
+     *
+     * @throws IOException if the stream can not be marked.
+     */
+    public final void protectedMark() throws IOException {
+        synchronized (lock) {
+            super.mark(BUFFER_SIZE);
+            isMarkProtected = true;
+        }
+    }
+
+    /**
+     * Stops the protection given by {@link #protectedMark()} and reset the stream to its marked position.
+     *
+     * @throws IOException if the stream can not be reset.
+     */
+    public final void protectedReset() throws IOException {
+        synchronized (lock) {
+            isMarkProtected = false;
+            super.reset();
+        }
+    }
+
+    /**
+     * Tells whether this stream supports the mark and reset operations.
+     * This is {@code true} by default but can be set to {@code false}
+     * if the mark is reserved to internal usage.
+     *
+     * @return true if this stream supports the mark operation.
+     */
+    @Override
+    public boolean markSupported() {
+        synchronized (lock) {
+            return !isMarkProtected;
+        }
+    }
+
+    /**
+     * Marks the present position in the stream if allowed to do so.
+     * If {@link #isMarkProtected} is {@code true}, then this method throws an exception.
+     *
+     * @param  readlimit  limit on the number of characters that may be read.
+     * @throws IOException if the stream can not be marked.
+     */
+    @Override
+    public void mark(final int readlimit) throws IOException {
+        synchronized (lock) {
+            if (isMarkProtected) {
+                throw new IOException(Errors.format(Errors.Keys.UnsupportedOperation_1, "mark"));
+            }
+            super.mark(readlimit);
+        }
+    }
+
+    /**
+     * Resets the stream if allowed to do so.
+     * If {@link #isMarkProtected} is {@code true}, then this method throws an exception.
+     *
+     * @throws IOException if the stream can not be reset.
+     */
+    @Override
+    public void reset() throws IOException {
+        synchronized (lock) {
+            if (isMarkProtected) {
+                throw new IOException(Errors.format(Errors.Keys.UnsupportedOperation_1, "reset"));
+            }
+            super.reset();
+        }
+    }
+
+    /**
+     * Closes this reader. The underlying stream will be either reset or closed
+     * depending on the {@link #isMarkProtected} mode.
      *
      * @throws IOException if an error occurred while closing the reader.
      */
     @Override
-    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void close() throws IOException {
         synchronized (lock) {
             input = null;
-            super.close();
+            if (isMarkProtected) {
+                super.reset();
+            } else {
+                super.close();
+            }
         }
     }
 }

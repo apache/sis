@@ -783,14 +783,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * If at least one time value above is available, add a temporal extent.
-         * This operation requires the sis-temporal module. If not available,
-         * we will report a warning and leave the temporal extent missing.
          */
-        if (startTime != null || endTime != null) try {
+        if (startTime != null || endTime != null) {
             addTemporalExtent(startTime, endTime);
             hasExtent = true;
-        } catch (UnsupportedOperationException e) {
-            warning(e);
         }
         return hasExtent;
     }

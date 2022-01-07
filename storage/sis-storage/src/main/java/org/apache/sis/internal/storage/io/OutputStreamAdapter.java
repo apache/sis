@@ -24,7 +24,7 @@ import java.io.IOException;
  * Wraps a {@link ChannelDataOutput} as a standard {@link OutputStream}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see InputStreamAdapter
  *
@@ -95,13 +95,24 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
     }
 
     /**
-     * Repositions this stream to the position at the time the {@code mark} method was last called.
+     * Resets this stream to the position at the time the {@code mark} method was last called.
      *
-     * @throws IOException if an I/O error occurs.
+     * @throws IOException if this stream can not move to the last mark position.
      */
     @Override
     public void reset() throws IOException {
         output.reset();
+    }
+
+    /**
+     * Moves to the given position in the stream and discards all marks at or after that position.
+     *
+     * @param  mark  position where to seek.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    @Override
+    public void reset(final long mark) throws IOException {
+        output.reset(mark);
     }
 
     /**

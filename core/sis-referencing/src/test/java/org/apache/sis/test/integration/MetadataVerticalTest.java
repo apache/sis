@@ -89,7 +89,6 @@ public strictfp class MetadataVerticalTest extends TestCase {
      */
     @After
     public void assertNoUnexpectedLog() {
-        loggings.skipNextLogIfContains("sis-temporal");
         loggings.assertNoUnexpectedLog();
     }
 

@@ -58,7 +58,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>
  *     <td><code><b>[EPSGFactory]</b> Connected to the EPSG database version 9.1 on Derby 10.14.</code></td></tr>
  * <tr><td><code>00:12</code></td><td style="background:goldenrod"><code>WARNING</code></td>
- *     <td><code><b>[DefaultTemporalExtent]</b> This operation requires the “sis-temporal” module.</code></td></tr>
+ *     <td><code><b>[NetcdfStore]</b> Read “foo.nc” in 0.2 second.</code></td></tr>
  * </table></blockquote>
  *
  * By default, {@code MonolineFormatter} shows only the level and the message. One or two additional

@@ -540,7 +540,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends in the {@linkplain #buffer} the ANSI escape sequence for reseting the color to the default.
+     * Appends in the {@linkplain #buffer} the ANSI escape sequence for resetting the color to the default.
      * This method does nothing unless syntax coloring has been explicitly enabled.
      */
     private void resetColor() {

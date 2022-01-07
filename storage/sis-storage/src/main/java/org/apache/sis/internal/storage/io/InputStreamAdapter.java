@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.imageio.stream.ImageInputStream;
+import org.apache.sis.io.InvalidSeekException;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**
@@ -34,7 +36,7 @@ import javax.imageio.stream.ImageInputStream;
  * explicit synchronization lock (contrarily to {@link java.io.Reader}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see OutputStreamAdapter
  *
@@ -50,9 +52,17 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     public final ImageInputStream input;
 
     /**
-     * Position of the last mark created by {@link #mark(int)}, or the file beginning if there is no mark.
+     * Position of the last mark created by {@link #mark(int)}. Undefined if {@link #markIndex} is negative.
      */
     private long markPosition;
+
+    /**
+     * Value of {@link #nestedMarks} at the time when {@link #markPosition} has been set, or -1 if none.
+     * Used for differentiating the (single) mark created by {@link #mark(int)} from the (possibly many)
+     * marks created by {@link #mark()}. This complexity exists because {@link #reset()} must comply with
+     * two inconsistent {@code mark(…)} method contracts.
+     */
+    private int markIndex;
 
     /**
      * Count of marks created by {@link #mark()}, not counting the mark created by {@link #mark(int)}.
@@ -77,7 +87,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     public InputStreamAdapter(final ImageInputStream input) throws IOException {
         assert !(input instanceof InputStream);
         this.input = input;
-        markPosition = input.getStreamPosition();
+        markIndex = -1;
     }
 
     /**
@@ -135,7 +145,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     }
 
     /**
-     * Discards all previous marks and marks the current position in this input stream.
+     * Discards the previous mark created by {@code mark(int)} and marks the current stream position.
      * This method is part of {@link InputStream} API, where only one mark can be set and multiple
      * calls to {@code reset()} move to the same position until {@code mark(int)} is invoked again.
      *
@@ -146,8 +156,10 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     public synchronized void mark(final int readlimit) {
         try {
             markPosition = input.getStreamPosition();
-            input.flushBefore(markPosition);
-            nestedMarks = 0;
+            if (nestedMarks == 0) {
+                input.flushBefore(markPosition);
+            }
+            markIndex = nestedMarks;                // Set only on success.
         } catch (IOException e) {
             throw new UncheckedIOException(e);      // InputStream.mark() does not allow us to throw IOException.
         }
@@ -156,7 +168,6 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Marks the current position in this input stream.
      * This method is part of {@link Markable} API, where marks can be nested.
-     * It is okay to invoke this method after {@link #mark(int)} (but not before).
      */
     @Override
     public synchronized void mark() {
@@ -167,27 +178,52 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Repositions this stream to the position at the time the {@code mark} method was last called.
      * This method has to comply with both {@link InputStream#reset()} and {@link Markable#reset()}
-     * contracts. It does that by choosing the first option in following list:
+     * contracts. It does that by pulling from most recent mark to oldest mark regardless if marks
+     * were created by {@link #mark()} or {@link #mark(int)}, except that all marks created by
+     * {@link #mark(int)} are ignored except the most recent one.
      *
-     * <ul>
-     *   <li>If there is nested {@link #mark()} calls, then this {@code reset()} method sets the stream
-     *       position to the most recent unmatched call to {@code mark()}.</li>
-     *   <li>Otherwise if the {@link #mark(int)} method has been invoked, then this method sets the stream
-     *       position to the mark created by the most recent call to {@code mark(int)}. The {@code reset()}
-     *       method can be invoked many time; it will always set the position to the same mark
-     *       (this behavior is required by {@link InputStream} contract).</li>
-     *   <li>Otherwise this method sets the stream position to the position it had when this
-     *       {@code InputStreamAdapter} has been created.</li>
-     * </ul>
+     * <p>Implementations of {@code reset()} in Java I/O package does not discard the mark.
+     * The implementation in this {@code InputStreamAdapter} class does not discard the mark
+     * neither if the mark done by a call to {@link #mark(int)} is the only mark remaining.
+     * Some code depends on the ability to do many {@code reset()} for the same mark.</p>
      *
-     * @throws IOException if an I/O error occurs.
+     * @throws IOException if this stream can not move to the last mark position.
      */
     @Override
     public synchronized void reset() throws IOException {
-        if (--nestedMarks >= 0) {
+        if (markIndex == nestedMarks) {
+            if (markIndex != 0) {           // Do not clear if it is the only mark (see javadoc).
+                markIndex = -1;             // Clear first in case of failure in next line.
+            }
+            input.seek(markPosition);
+        } else if (nestedMarks > 0) {
+            nestedMarks--;
             input.reset();
         } else {
-            input.seek(markPosition);
+            throw new IOException(Resources.format(Resources.Keys.StreamHasNoMark));
+        }
+    }
+
+    /**
+     * Moves to the given position in the stream and discards all marks at or after that position.
+     * This convolved method exists because of the attempt to conciliate two different APIs in this class
+     * (see {@link #reset()}). This method does not simply call {@link ImageInputStream#seek(long)}
+     * because we need to keep track of the marks.
+     *
+     * @param  mark  position where to seek.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    @Override
+    public synchronized void reset(final long mark) throws IOException {
+        long p;
+        int n;
+        do {
+            n = nestedMarks;
+            reset();
+            p = input.getStreamPosition();
+        } while (p > mark && n > 0);
+        if (p != mark) {
+            throw new InvalidSeekException();
         }
     }
 

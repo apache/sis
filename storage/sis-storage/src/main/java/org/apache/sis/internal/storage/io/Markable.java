@@ -35,7 +35,7 @@ import java.io.IOException;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see Readable
  *
@@ -68,14 +68,28 @@ public interface Markable {
      * An {@code IOException} may be be thrown if the previous marked position lies in the
      * discarded portion of the stream.
      *
-     * <p>If there is no mark, then the behavior is undefined.
-     * {@link java.io.InputStream#reset()} specifies that we shall move to the file beginning.
+     * <h4>Behavior if there is no mark</h4>
+     * Calls to {@code reset()} without a corresponding call to {@code mark()}
+     * have different behavior depending on which interface defines the mark/reset methods:
+     * {@link java.io.InputStream#reset()} specifies that we might move to the file beginning or throw an exception.
      * {@link javax.imageio.stream.ImageInputStream#reset()} specifies that we shall do nothing.
-     * {@link ChannelDataInput#reset()} throws {@link java.nio.InvalidMarkException}.</p>
+     * For this {@code Markable} interface we recommend to throw an {@link IOException}.
      *
-     * @throws IOException if a mark was defined but this stream can not move to that position.
+     * @throws IOException if this stream can not move to the last mark position.
      *
+     * @see java.io.InputStream#reset()
      * @see javax.imageio.stream.ImageInputStream#reset()
+     * @see org.apache.sis.io.InvalidSeekException
      */
     void reset() throws IOException;
+
+    /**
+     * Resets the stream position to the mark at the given position. Invoking this method is similar to
+     * invoking {@code seek(mark)} except that it may work on non-seekable stream if a mark has been set
+     * on that position.
+     *
+     * @param  mark  position where to seek. Should be a position where a mark has been created.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    void reset(long mark) throws IOException;
 }

@@ -22,8 +22,8 @@ import org.apache.sis.internal.geoapi.temporal.Period;
 import org.apache.sis.internal.geoapi.temporal.TemporalFactory;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.temporal.DefaultTemporalFactory;
 
 
 /**
@@ -32,20 +32,11 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
 public final class TemporalUtilities extends Static {
-    /**
-     * {@code true} if the SIS library should log the "This operation requires the sis-temporal module" warning.
-     * This flag can be {@code true} during development phase, but should be set to {@code false} in SIS releases
-     * until we can really provide a sis-temporal module.
-     *
-     * This constant will be removed after SIS release a sis-temporal module.
-     */
-    public static final boolean REPORT_MISSING_MODULE = false;
-
     /**
      * Do not allow instantiation of this class.
      */
@@ -63,7 +54,7 @@ public final class TemporalUtilities extends Static {
         if (factory != null) {
             return factory;
         }
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, "sis-temporal"));
+        return DefaultTemporalFactory.INSTANCE;
     }
 
     /**

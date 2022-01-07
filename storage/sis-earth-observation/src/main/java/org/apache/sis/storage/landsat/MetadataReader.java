@@ -816,12 +816,7 @@ final class MetadataReader extends MetadataBuilder {
             sceneTime = null;                   // Clear now in case an exception it thrown below.
             final Date t = StandardDateFormat.toDate(st);
             addAcquisitionTime(t);
-            try {
-                addTemporalExtent(t, t);
-            } catch (UnsupportedOperationException e) {
-                // May happen if the temporal module (which is optional) is not on the classpath.
-                warning(null, null, e);
-            }
+            addTemporalExtent(t, t);
         }
     }
 

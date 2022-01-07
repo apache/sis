@@ -48,7 +48,7 @@ import org.junit.Test;
  * package-private classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -274,10 +274,6 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                 fail("Non writable property: " + accessor + '.' + property);
             }
             if (isWritable) {
-                if (Date.class.isAssignableFrom(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE))) {
-                    // Dates requires sis-temporal module, which is not available for sis-metadata.
-                    continue;
-                }
                 if (isMap) {
                     continue;
                 }

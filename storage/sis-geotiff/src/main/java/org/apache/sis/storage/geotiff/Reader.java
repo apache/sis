@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.text.ParseException;
 import org.opengis.util.NameFactory;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
@@ -289,7 +288,9 @@ final class Reader extends GeoTIFF {
                          * without value (count = 0) - in principle illegal but we make this reader tolerant.
                          */
                         error = dir.addEntry(tag, type, count);
-                    } catch (ParseException | RuntimeException e) {
+                    } catch (IOException | DataStoreException e) {
+                        throw e;
+                    } catch (Exception e) {
                         error = e;
                     }
                     if (error != null) {
@@ -361,7 +362,9 @@ final class Reader extends GeoTIFF {
                 Object error;
                 try {
                     error = entry.owner.addEntry(entry.tag, entry.type, entry.count);
-                } catch (ParseException | RuntimeException e) {
+                } catch (IOException | DataStoreException e) {
+                    throw e;
+                } catch (Exception e) {
                     error = e;
                 }
                 if (error != null) {

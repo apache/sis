@@ -28,6 +28,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.xml.XmlUtilities;
+import org.apache.sis.internal.temporal.DefaultTemporalFactory;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -37,13 +38,15 @@ import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.format;
 
+import org.apache.sis.internal.geoapi.temporal.Instant;
+
 
 /**
  * Tests the {@link TimePeriod} class. The XML fragments used in this test cases are derived from
  * <a href="http://toyoda-eizi.blogspot.fr/2011/02/examples-of-gml-fragment-in-iso.html">here</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -59,6 +62,13 @@ public final strictfp class TimePeriodTest extends TestCase {
      */
     private void createContext() {
         createContext(true, Locale.FRANCE, "CET");
+    }
+
+    /**
+     * Creates a GeoAPI instant object for the given date.
+     */
+    private static Instant instant(final String date) {
+        return DefaultTemporalFactory.INSTANCE.createInstant(date(date));
     }
 
     /**
@@ -121,8 +131,8 @@ public final strictfp class TimePeriodTest extends TestCase {
     @Test
     public void testPeriodGML2() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML2(new DummyInstant(date("1992-01-01 00:00:00")));
-        final TimePeriodBound end   = new TimePeriodBound.GML2(new DummyInstant(date("2007-12-31 00:00:00")));
+        final TimePeriodBound begin = new TimePeriodBound.GML2(instant("1992-01-01 00:00:00"));
+        final TimePeriodBound end   = new TimePeriodBound.GML2(instant("2007-12-31 00:00:00"));
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:begin>\n" +
@@ -173,8 +183,8 @@ public final strictfp class TimePeriodTest extends TestCase {
     @Test
     public void testPeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 00:00:00")), "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-31 00:00:00")), "after");
+        final TimePeriodBound begin = new TimePeriodBound.GML3(instant("1992-01-01 00:00:00"), "before");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(instant("2007-12-31 00:00:00"), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-01T01:00:00+01:00</gml:beginPosition>\n" +
@@ -191,8 +201,8 @@ public final strictfp class TimePeriodTest extends TestCase {
     @Test
     public void testSimplifiedPeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
+        final TimePeriodBound begin = new TimePeriodBound.GML3(instant("1992-01-01 23:00:00"), "before");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(instant("2007-12-30 23:00:00"), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
@@ -210,7 +220,7 @@ public final strictfp class TimePeriodTest extends TestCase {
     public void testBeforePeriodGML3() throws JAXBException {
         createContext();
         final TimePeriodBound begin = new TimePeriodBound.GML3(null, "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(instant("2007-12-30 23:00:00"), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
@@ -227,7 +237,7 @@ public final strictfp class TimePeriodTest extends TestCase {
     @Test
     public void testAfterPeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before");
+        final TimePeriodBound begin = new TimePeriodBound.GML3(instant("1992-01-01 23:00:00"), "before");
         final TimePeriodBound end   = new TimePeriodBound.GML3(null, "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +

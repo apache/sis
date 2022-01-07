@@ -527,9 +527,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              *
              * TODO: syntax like TIMEEXTENT[“Jurassic”, “Quaternary”] is not yet supported.
              * See https://issues.apache.org/jira/browse/SIS-163
-             *
-             * This operation requires the the sis-temporal module. If not available,
-             * we will report a warning and leave the temporal extent missing.
              */
             while ((element = parent.pullElement(OPTIONAL, WKTKeywords.TimeExtent)) != null) {
                 if (element.peekValue() instanceof String) {
@@ -541,14 +538,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     final Date startTime = element.pullDate("startTime");
                     final Date endTime   = element.pullDate("endTime");
                     element.close(ignoredElements);
-                    try {
-                        final DefaultTemporalExtent t = new DefaultTemporalExtent();
-                        t.setBounds(startTime, endTime);
-                        if (extent == null) extent = new DefaultExtent();
-                        extent.getTemporalElements().add(t);
-                    } catch (UnsupportedOperationException e) {
-                        warning(parent, element, null, e);
-                    }
+                    final DefaultTemporalExtent t = new DefaultTemporalExtent();
+                    t.setBounds(startTime, endTime);
+                    if (extent == null) extent = new DefaultExtent();
+                    extent.getTemporalElements().add(t);
                 }
             }
             if (extent != null) {
