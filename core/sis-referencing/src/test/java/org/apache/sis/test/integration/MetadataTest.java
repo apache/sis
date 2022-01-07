@@ -392,7 +392,7 @@ public final strictfp class MetadataTest extends TestCase {
         replace(xml, "<gcol:CharacterString>4326</gcol:CharacterString>",
                      "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">4326</gmx:Anchor>");
         /*
-         * The <gmd:EX_TemporalExtent> block can not be marshalled yet, since it requires the sis-temporal module.
+         * The <gmd:EX_TemporalExtent> block can not be marshalled es expected yet (need a "sis-temporal" module).
          * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
          * now the "gml:id" attribute since SIS generates different values than the ones in our test XML file,
          * and those values may change in future SIS version.

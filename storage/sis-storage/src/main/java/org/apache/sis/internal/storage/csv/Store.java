@@ -650,12 +650,6 @@ final class Store extends URIDataStore implements FeatureSet {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
                 throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, getDisplayName(), source).initCause(e);
-            } catch (UnsupportedOperationException e) {
-                /*
-                 * Failed to set the temporal components if the sis-temporal module was
-                 * not on the classpath, but the other dimensions still have been set.
-                 */
-                listeners.warning(e);
             }
             builder.addFeatureType(featureType, -1);
             addTitleOrIdentifier(builder);

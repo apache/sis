@@ -425,7 +425,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         cit.getDates().add(new DefaultCitationDate(new Date(1523224800000L), DateType.CREATION));
         cit.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "lost-island");
         dataId.setCitation(cit);
-        dataId.setTemporalResolutions(Collections.emptySet());              // TODO: depends on sis-temporal
+        dataId.setTemporalResolutions(Collections.emptySet());          // TODO: need a more complete sis-temporal.
         final Collection<MaintenanceInformation> resourceMaintenances;
         {
             /*

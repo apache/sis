@@ -460,11 +460,7 @@ final class XMLMetadata implements Filter {
          * Writes to {@link MetadataBuilder} all information that were pending parsing completion.
          */
         void flush() {
-            try {
-                metadata.addTemporalExtent(toDate(startTime), toDate(endTime));
-            } catch (UnsupportedOperationException e) {
-                // Ignore (this operation requires "sis-temporal" module).
-            }
+            metadata.addTemporalExtent(toDate(startTime), toDate(endTime));
         }
     }
 

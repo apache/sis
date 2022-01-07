@@ -1876,7 +1876,6 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  startTime  when the data begins, or {@code null} if unbounded.
      * @param  endTime    when the data ends, or {@code null} if unbounded.
-     * @throws UnsupportedOperationException if the temporal module is not on the classpath.
      *
      * @see #addAcquisitionTime(Date)
      */

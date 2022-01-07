@@ -112,7 +112,7 @@ public final strictfp class DefaultExtentTest extends TestUsingFile {
         bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
         final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
         if (PENDING_FUTURE_SIS_VERSION) {
-            // This block needs sis-temporal module.
+            // This block needs a more complete sis-temporal module.
             temporal.setBounds(date("2010-01-27 13:26:10"), date("2010-08-27 13:26:10"));
         }
         final DefaultExtent extent = new DefaultExtent(null, bbox, null, temporal);

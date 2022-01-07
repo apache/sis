@@ -131,7 +131,7 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
             }
             return factory.newDuration(true, years, months, days, hours, minutes, seconds);
         } catch (DatatypeConfigurationException e) {
-            warningOccured("toXML", e);
+            Context.warningOccured(Context.current(), TM_PeriodDuration.class, "toXML", e, true);
         }
         return null;
     }
@@ -150,7 +150,7 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
      * Converts the given Java XML duration into an ISO 19108 duration.
      */
     static PeriodDuration toISO(final Duration duration) {
-        if (duration != null) try {
+        if (duration != null) {
             final TemporalFactory factory = TemporalUtilities.getTemporalFactory();
             InternationalString years = null;
             int value;
@@ -179,22 +179,8 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
                 seconds = new SimpleInternationalString(Integer.toString(value));
             }
             return factory.createPeriodDuration(years, months, weeks, days, hours, minutes, seconds);
-        } catch (UnsupportedOperationException e) {
-            warningOccured("toISO", e);
         }
         return null;
-    }
-
-    /**
-     * Reports a failure to execute the operation because of missing {@code sis-temporal} module.
-     *
-     * @param  methodName  the method name.
-     * @param  e           the exception.
-     */
-    private static void warningOccured(final String methodName, final Exception e) {
-        if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {
-            Context.warningOccured(Context.current(), TM_PeriodDuration.class, methodName, e, true);
-        }
     }
 
     /**
