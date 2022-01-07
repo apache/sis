@@ -29,6 +29,7 @@ import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.TopicCategory;
+import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
@@ -46,7 +47,7 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -85,6 +86,7 @@ public class MetadataReaderTest extends TestCase {
         final ContentVerifier verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");           // Because hard-coded in SIS.
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");        // Very verbose and depends on EPSG connection.
+        verifier.addPropertyToIgnore(TemporalExtent.class, "extent");               // Because currently time-zone sensitive.
         verifier.addMetadataToVerify(actual);
         verifier.addExpectedValues(
             "defaultLocale+otherLocale[0]",                                                          "en",

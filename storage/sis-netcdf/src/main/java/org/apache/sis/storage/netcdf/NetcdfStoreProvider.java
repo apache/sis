@@ -190,12 +190,13 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         int     version     = 0;
         boolean hasVersion  = false;
         boolean isSupported = false;
-        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
+        ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.BYTES) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
-            final int header = buffer.getInt(buffer.position());
+            buffer = buffer.duplicate();                // Get a buffer with ByteOrder.BIG_ENDIAN.
+            final int header = buffer.getInt();
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
                 hasVersion  = true;
                 version     = header & 0xFF;

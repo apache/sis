@@ -83,10 +83,16 @@ import org.apache.sis.setup.OptionKey;
  * Once a suitable {@code DataStore} has been found, the {@code StorageConnector} instance is typically
  * discarded since each data store implementation will use their own input/output objects.</p>
  *
+ * <h2>Limitations</h2>
+ * This class is not thread-safe.
+ * Not only {@code StorageConnector} should be used by a single thread,
+ * but the objects returned by {@link #getStorageAs(Class)} should also be used by the same thread.
+ *
  * <p>Instances of this class are serializable if the {@code storage} object given at construction time
  * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.3
  * @module
@@ -100,6 +106,11 @@ public class StorageConnector implements Serializable {
     /**
      * The default size of the {@link ByteBuffer} to be created.
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
+     *
+     * <p>This buffer capacity is also used as read-ahead limit for mark operations.
+     * The rational is to allow as many bytes as contained in buffers of default size.
+     * For increasing the chances to meet that goal, this size should be the same than
+     * {@link java.io.BufferedInputStream} default buffer size.</p>
      *
      * @see RewindableLineReader#BUFFER_SIZE
      */
@@ -124,7 +135,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that before reseting the {@code view}, we need to reset the {@code source} first. This flag should
+     * telling that before resetting the {@code view}, we need to reset the {@code source} first. This flag should
      * can be unset if any change in the position of {@code view} is immediately reflected in the position of
      * {@code source}, and vice-versa.
      *
@@ -134,7 +145,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that {@code view} can not be reseted, so it should be set to {@code null} instead. This implies
+     * telling that {@code view} can not be reset, so it should be set to {@code null} instead. This implies
      * that a new view of the same type will be recreated next time it will be requested.
      *
      * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set at the same time.</p>
@@ -146,20 +157,20 @@ public class StorageConnector implements Serializable {
      * Each {@code createFoo()} method may be invoked once for opening an input stream, character
      * reader, database connection, <i>etc</i> from user-supplied path, URI, <i>etc</i>.
      *
-     * @param  <T>  the type of input created by this {@code Opener} instance.
+     * @param  <S>  the type of input (source) created by this {@code Opener} instance.
      */
     @FunctionalInterface
-    private interface Opener<T> {
+    private interface Opener<S> {
         /**
          * Invoked when first needed for creating an input of the requested type.
          * This method should invoke {@link #addView(Class, Object, Class, byte)}
          * for caching the result before to return the view.
          */
-        T open(StorageConnector c) throws Exception;
+        S open(StorageConnector c) throws Exception;
     }
 
     /** Helper method for {@link #OPENERS} static initialization. */
-    private static <T> void add(final Class<T> type, final Opener<T> op) {
+    private static <S> void add(final Class<S> type, final Opener<S> op) {
         if (OPENERS.put(type, op) != null) throw new AssertionError(type);
     }
 
@@ -647,6 +658,14 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns {@code true} if the given type is one of the types supported by {@code StorageConnector}.
+     * The list of supported types is hard-coded and may change in any future version.
+     */
+    static boolean isSupportedType(final Class<?> type) {
+        return OPENERS.containsKey(type);
+    }
+
+    /**
      * Returns the storage as a view of the given type if possible, or {@code null} otherwise.
      * The default implementation accepts the following types:
      *
@@ -745,15 +764,18 @@ public class StorageConnector implements Serializable {
      *   </li>
      * </ul>
      *
+     * <h4>Usage for probing operations</h4>
      * Multiple invocations of this method on the same {@code StorageConnector} instance will try
      * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations of
      * {@link DataStoreProvider#probeContent(StorageConnector)} methods shall not close the stream or
      * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
+     * For an easier and safer way to ensure that the storage position is not modified,
+     * see {@link DataStoreProvider#probeContent(StorageConnector, Class, Prober)}.
      *
-     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  <S>   the compile-time type of the {@code type} argument (the source or storage type).
      * @param  type  the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
-     *               class or other type supported by {@code StorageConnector} subclasses.
+     *               class or other types supported by {@code StorageConnector} subclasses.
      * @return the storage as a view of the given type, or {@code null} if the given type is one of the supported
      *         types listed in javadoc but no view can be created for the source given at construction time.
      * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types
@@ -763,15 +785,16 @@ public class StorageConnector implements Serializable {
      *
      * @see #getStorage()
      * @see #closeAllExcept(Object)
+     * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
      */
-    public <T> T getStorageAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
+    public <S> S getStorageAs(final Class<S> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         if (views != null && views.isEmpty()) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ClosedStorageConnector));
         }
         /*
          * Verify if the cache contains an instance created by a previous invocation of this method.
-         * Note that InputStream may need to be reseted if it has been used indirectly by other kind
+         * Note that InputStream may need to be reset if it has been used indirectly by other kind
          * of stream (for example a java.io.Reader). Example:
          *
          *    1) The storage specified at construction time is a java.nio.file.Path.
@@ -787,12 +810,12 @@ public class StorageConnector implements Serializable {
         }
         /*
          * If the storage is already an instance of the requested type, returns the storage as-is.
-         * We check if the storage needs to be reseted in the same way than in getStorage() method.
+         * We check if the storage needs to be reset in the same way than in getStorage() method.
          * As a special case, we ensure that InputStream and Reader can be marked.
          */
         if (type.isInstance(storage)) {
             @SuppressWarnings("unchecked")
-            T view = (T) storage;
+            S view = (S) storage;
             reset();
             byte cascade = 0;
             if (type == InputStream.class) {
@@ -819,7 +842,7 @@ public class StorageConnector implements Serializable {
          */
         final Opener<?> method = OPENERS.get(type);
         if (method == null) {
-            T view;
+            S view;
             try {
                 view = ObjectConverters.convert(storage, type);
             } catch (UnconvertibleObjectException e) {
@@ -863,7 +886,7 @@ public class StorageConnector implements Serializable {
      * <div class="note"><b>Rational:</b>
      * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementers reset the
      * input stream themselves. However if {@link ChannelDataInput} or {@link InputStreamReader} has been used,
-     * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reseted
+     * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reset
      * the underlying input stream. So we need to perform the missing {@link InputStream#reset()} here, then
      * synchronize the {@code ChannelDataInput} position accordingly.</div>
      *
@@ -891,7 +914,7 @@ public class StorageConnector implements Serializable {
     /**
      * Resets the root {@link #storage} object.
      *
-     * @throws DataStoreException if the storage can not be reseted.
+     * @throws DataStoreException if the storage can not be reset.
      */
     private void reset() throws DataStoreException {
         if (views != null && !views.isEmpty() && !reset(views.get(null))) {
@@ -1029,6 +1052,8 @@ public class StorageConnector implements Serializable {
         /*
          * First, try to create the ChannelDataInput if it does not already exists.
          * If successful, this will create a ByteBuffer companion as a side effect.
+         * Byte order of the view is intentionally left to the default (big endian)
+         * because we expect the callers to set the order that they need.
          */
         final ChannelDataInput c = getStorageAs(ChannelDataInput.class);
         ByteBuffer asByteBuffer = null;
@@ -1207,11 +1232,11 @@ public class StorageConnector implements Serializable {
     /**
      * Adds the given view in the cache, without dependencies.
      *
-     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  <S>   the compile-time type of the {@code type} argument.
      * @param  type  the view type.
      * @param  view  the view, or {@code null} if none.
      */
-    private <T> void addView(final Class<T> type, final T view) {
+    private <S> void addView(final Class<S> type, final S view) {
         addView(type, view, null, (byte) 0);
     }
 
@@ -1220,13 +1245,13 @@ public class StorageConnector implements Serializable {
      * For example {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
      * from the later may change position of the former, and closing the later also close the former.
      *
-     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  <S>      the compile-time type of the {@code type} argument.
      * @param  type     the view type.
      * @param  view     the view, or {@code null} if none.
      * @param  source   the type of input that {@code view} is wrapping, or {@code null} for {@link #storage}.
      * @param  cascade  bitwise combination of {@link #CASCADE_ON_CLOSE}, {@link #CASCADE_ON_RESET} or {@link #CLEAR_ON_RESET}.
      */
-    private <T> void addView(final Class<T> type, final T view, final Class<?> source, final byte cascade) {
+    private <S> void addView(final Class<S> type, final S view, final Class<?> source, final byte cascade) {
         if (views == null) {
             views = new IdentityHashMap<>();
             views.put(null, new Coupled(storage));
@@ -1263,6 +1288,47 @@ public class StorageConnector implements Serializable {
      */
     private Coupled getView(final Class<?> type) {
         return (views != null) ? views.get(type) : null;
+    }
+
+    /**
+     * Returns the storage as a view of the given type and closes all other views.
+     * Invoking this method is equivalent to invoking {@link #getStorageAs(Class)}
+     * followed by {@link #closeAllExcept(Object)} except that the later method is
+     * always invoked (in a way similar to "try with resource") and that this method
+     * never returns {@code null}.
+     *
+     * @param  <S>     the compile-time type of the {@code type} argument (the source or storage type).
+     * @param  type    the desired type as one of the types documented in {@link #getStorageAs(Class)}
+     *                 (example: {@code ByteBuffer}, {@code DataInput}, {@code Connection}).
+     * @param  format  short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     *                 Used for information purpose in error messages if needed.
+     * @return the storage as a view of the given type. Never {@code null}.
+     * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types.
+     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
+     * @throws DataStoreException if an error occurred while opening a stream or database connection.
+     *
+     * @see #getStorageAs(Class)
+     * @see #closeAllExcept(Object)
+     *
+     * @since 1.2
+     */
+    public <S> S commit(final Class<S> type, final String format) throws IllegalArgumentException, DataStoreException {
+        final S view;
+        try {
+            view = getStorageAs(type);
+        } catch (Throwable ex) {
+            try {
+                closeAllExcept(null);
+            } catch (Throwable se) {
+                ex.addSuppressed(se);
+            }
+            throw ex;
+        }
+        closeAllExcept(view);
+        if (view == null) {
+            throw new UnsupportedStorageException(null, format, storage, getOption(OptionKey.OPEN_OPTIONS));
+        }
+        return view;
     }
 
     /**
@@ -1378,7 +1444,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * Returns a string representation of this {@code StorageConnector} for debugging purpose.
-     * This string representation is for debugging purpose only and may change in any future version.
+     * This string representation is for diagnostic and may change in any future version.
      *
      * @return a string representation of this {@code StorageConnector} for debugging purpose.
      */

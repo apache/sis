@@ -526,9 +526,7 @@ final class ImageFileDirectory extends DataCube {
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
      * @throws DataStoreException if a logical error is found or an unsupported TIFF feature is used.
      */
-    Object addEntry(final short tag, final Type type, final long count)
-            throws IOException, ParseException, DataStoreException
-    {
+    Object addEntry(final short tag, final Type type, final long count) throws Exception {
         switch (tag) {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1116,10 +1114,16 @@ final class ImageFileDirectory extends DataCube {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
             ////                                                                                        ////
-            ////    Extensions defined by GDAL.                                                         ////
+            ////    Extensions defined by DGIWG or GDAL.                                                ////
             ////                                                                                        ////
             ////////////////////////////////////////////////////////////////////////////////////////////////
 
+            case Tags.GEO_METADATA:
+            case Tags.GDAL_METADATA: {
+                final XMLMetadata parser = new XMLMetadata(reader, type, count, tag == Tags.GDAL_METADATA);
+                parser.appendTo(metadata);
+                break;
+            }
             case Tags.GDAL_NODATA: {
                 noData = type.readDouble(input(), count);
                 break;

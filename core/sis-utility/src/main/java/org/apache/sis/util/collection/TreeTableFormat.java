@@ -898,7 +898,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Creates a new format to use for parsing and formatting values of the given type.
-     * This method is invoked by the first time that a format is needed for the given type.
+     * This method is invoked the first time that a format is needed for the given type.
      * Subclasses can override this method if they want to configure the way dates, numbers
      * or other objects are formatted.
      * See {@linkplain org.apache.sis.io.CompoundFormat#createFormat(Class) parent class documentation}

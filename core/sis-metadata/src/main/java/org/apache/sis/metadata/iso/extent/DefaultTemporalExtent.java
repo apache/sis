@@ -201,13 +201,8 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * Sets the temporal extent to the specified values. This convenience method creates a temporal
      * primitive for the given dates, then invokes {@link #setExtent(TemporalPrimitive)}.
      *
-     * <p><b>Note:</b> this method is available only if the {@code sis-temporal} module is available on the classpath,
-     * or any other module providing an implementation of the {@link org.opengis.temporal.TemporalFactory} interface.</p>
-     *
      * @param  startTime  the start date and time for the content of the dataset, or {@code null} if none.
      * @param  endTime    the end date and time for the content of the dataset, or {@code null} if none.
-     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
-     *         on the classpath.
      */
     public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
         TemporalPrimitive value = null;

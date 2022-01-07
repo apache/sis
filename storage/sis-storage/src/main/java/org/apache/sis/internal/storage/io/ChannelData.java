@@ -18,10 +18,10 @@ package org.apache.sis.internal.storage.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.InvalidMarkException;
 import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.storage.Resources;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
@@ -32,8 +32,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * querying or modifying the stream position. This class does not define any read or write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.5 (derived from 0.3)
+ * @version 1.2
+ * @since   0.3
  * @module
  */
 public abstract class ChannelData implements Markable {
@@ -314,21 +314,43 @@ public abstract class ChannelData implements Markable {
      *
      * <h4>Departure from Image I/O specification</h4>
      * The {@link javax.imageio.stream.ImageInputStream#reset()} contract specifies that if there is no matching mark,
-     * then this method shall do nothing. This method throws {@link InvalidMarkException} instead; silently ignoring
-     * the mismatch is considered too dangerous. This is a departure from {@code ImageInputStream} but is consistent
-     * with {@link java.io.InputStream#reset()} contract.
+     * then this method shall do nothing. This method throws {@link IOException} instead; silently ignoring mismatch
+     * is considered too dangerous. This is a departure from {@code ImageInputStream} but is consistent with
+     * {@link java.io.InputStream#reset()} contract.
      *
-     * @throws IOException if an I/O error occurs.
+     * @throws IOException if this stream can not move to the last mark position.
      */
     @Override
     public final void reset() throws IOException {
         final Mark m = mark;
         if (m == null) {
-            throw new InvalidMarkException();
+            throw new IOException(Resources.format(Resources.Keys.StreamHasNoMark));
         }
         mark = m.next;
         seek(m.position);
         setBitOffset(m.bitOffset);
+    }
+
+    /**
+     * Moves to the given position in the stream and discards all marks at or after that position.
+     * If a mark exists at the given position, the bit offset is also restored.
+     *
+     * @param  position  position where to seek.
+     * @throws IOException if this stream can not move to the specified mark position.
+     */
+    @Override
+    public final void reset(final long position) throws IOException {
+        Mark lastValid = null;
+        while (mark != null && mark.position >= position) {
+            final boolean found = mark.position == position;
+            if (found) lastValid = mark;
+            mark = mark.next;               // Discard all marks after the specified position.
+            if (found) break;
+        }
+        seek(position);
+        if (lastValid != null) {
+            setBitOffset(lastValid.bitOffset);
+        }
     }
 
     /**

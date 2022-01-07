@@ -86,7 +86,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  *
@@ -114,23 +114,7 @@ public final strictfp class MetadataTest extends TestCase {
      */
     @After
     public void assertNoUnexpectedLog() {
-        loggings.skipNextLogIfContains("sis-temporal");
         loggings.assertNoUnexpectedLog();
-    }
-
-    /**
-     * Sets the temporal extent. The current implementation does nothing, because {@code sis-metadata} does not have
-     * any dependency to {@code sis-temporal}. However a future version or an other module may implement this method.
-     *
-     * @param  extent     the extent to set.
-     * @param  startTime  the start time in the {@code "yyyy-MM-dd"} format.
-     * @param  endTime    the end time in the {@code "yyyy-MM-dd"} format.
-     */
-    protected void setTemporalBounds(final DefaultTemporalExtent extent, final String startTime, final String endTime) {
-        /*
-         * Note: if this MetadataTest class is made final and this method removed,
-         *       then testUnmarshalling() can be simplified.
-         */
     }
 
     /**
@@ -272,7 +256,7 @@ public final strictfp class MetadataTest extends TestCase {
                         nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, cs);
 
                 final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
-                setTemporalBounds(temporal, "1990-06-05", "1990-07-02");
+                temporal.setBounds(TestUtilities.date("1990-06-05 00:00:00"), TestUtilities.date("1990-07-02 00:00:00"));
                 identification.setExtents(singleton(new DefaultExtent(
                         null,
                         new DefaultGeographicBoundingBox(1.1666, 1.1667, 36.4, 36.6),
@@ -408,7 +392,7 @@ public final strictfp class MetadataTest extends TestCase {
         replace(xml, "<gcol:CharacterString>4326</gcol:CharacterString>",
                      "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">4326</gmx:Anchor>");
         /*
-         * The <gmd:EX_TemporalExtent> block can not be marshalled yet, since it requires the sis-temporal module.
+         * The <gmd:EX_TemporalExtent> block can not be marshalled es expected yet (need a "sis-temporal" module).
          * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
          * now the "gml:id" attribute since SIS generates different values than the ones in our test XML file,
          * and those values may change in future SIS version.
@@ -432,7 +416,7 @@ public final strictfp class MetadataTest extends TestCase {
     private static void replace(final StringBuffer buffer, final String toSearch, final String replaceBy) {
         final int i = buffer.indexOf(toSearch);
         assertTrue("String to replace not found.", i >= 0);
-        buffer.replace(i, i+toSearch.length(), replaceBy);
+        buffer.replace(i, i + toSearch.length(), replaceBy);
     }
 
     /**

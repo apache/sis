@@ -23,7 +23,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.InvalidMarkException;
 import java.nio.channels.ByteChannel;
 import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.test.DependsOnMethod;
@@ -205,8 +204,9 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         try {
             testedStream.reset();
             fail("Shall not accept reset without mark.");
-        } catch (InvalidMarkException e) {
+        } catch (IOException e) {
             // This is the expected exception.
+            assertNotNull(e.getMessage());
         }
         /*
          * flushBefore(int).

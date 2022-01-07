@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.CanNotProbeException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.io.IOUtilities;
@@ -114,17 +113,23 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
          */
         final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
+            /*
+             * We do not use the safer `probeContent(…)` method because we do not have a mechanism
+             * for telling if `UNSUPPORTED_STORAGE` was determined by this block or if we got that
+             * result because the buffer was null.
+             */
             if (buffer.remaining() < HEADER.length) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
             // Quick check for "<?xml " header.
+            final int p = buffer.position();
             for (int i=0; i<HEADER.length; i++) {
-                if (buffer.get(i) != HEADER[i]) {
+                if (buffer.get(p + i) != HEADER[i]) {       // TODO: use ByteBuffer.mismatch(…) with JDK11.
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }
             // Now check for a more accurate MIME type.
-            buffer.position(HEADER.length);
+            buffer.position(p + HEADER.length);
             final ProbeResult result = new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
                 @Override int read() {
                     if (buffer.hasRemaining()) {
@@ -134,20 +139,17 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
                     return -1;
                 }
             }.probeContent();
-            buffer.position(0);
+            buffer.position(p);
             return result;
         }
         /*
          * We should enter in this block only if the user gave us explicitly a Reader.
          * A common case is a StringReader wrapping a String object.
          */
-        final Reader reader = connector.getStorageAs(Reader.class);
-        if (reader != null) try {
+        return probeContent(connector, Reader.class, (reader) -> {
             // Quick check for "<?xml " header.
-            reader.mark(HEADER.length + READ_AHEAD_LIMIT);
             for (int i=0; i<HEADER.length; i++) {
                 if (reader.read() != HEADER[i]) {
-                    reader.reset();
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }
@@ -158,11 +160,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
                     return (--remaining >= 0) ? IOUtilities.readCodePoint(reader) : -1;
                 }
             }.probeContent();
-            reader.reset();
             return result;
-        } catch (IOException e) {
-            throw new CanNotProbeException(this, connector, e);
-        }
-        return ProbeResult.UNSUPPORTED_STORAGE;
+        });
     }
 }

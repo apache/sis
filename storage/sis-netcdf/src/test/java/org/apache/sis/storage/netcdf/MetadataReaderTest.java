@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
@@ -44,7 +45,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -104,6 +105,7 @@ public final strictfp class MetadataReaderTest extends TestCase {
         final ContentVerifier verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");
+        verifier.addPropertyToIgnore(TemporalExtent.class, "extent");
         verifier.addMetadataToVerify(actual);
         verifier.addExpectedValues(
             // Hard-coded

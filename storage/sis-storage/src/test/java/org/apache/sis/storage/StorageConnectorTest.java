@@ -21,6 +21,7 @@ import java.io.DataInput;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
@@ -45,7 +46,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link StorageConnector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -58,6 +60,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
 
     /**
      * Beginning of the first sentence in {@value #FILENAME}.
+     *
+     * @see #getFirstExpectedBytes()
      */
     private static final String FIRST_SENTENCE = "The purpose of this file";
 
@@ -67,10 +71,10 @@ public final strictfp class StorageConnectorTest extends TestCase {
     private static final int MAGIC_NUMBER = ('T' << 24) | ('h' << 16) | ('e' << 8) | ' ';
 
     /**
-     * Creates the instance to test. This method uses the {@code "test.txt"} ASCII file as
+     * Creates the instance to test. This method uses the {@code "Any.txt"} ASCII file as
      * the resource to test. The resource can be provided either as a URL or as a stream.
      */
-    private static StorageConnector create(final boolean asStream) {
+    static StorageConnector create(final boolean asStream) {
         final Class<?> c = StorageConnectorTest.class;
         final Object storage = asStream ? c.getResourceAsStream(FILENAME) : c.getResource(FILENAME);
         assertNotNull(storage);
@@ -78,6 +82,35 @@ public final strictfp class StorageConnectorTest extends TestCase {
         connector.setOption(OptionKey.ENCODING, StandardCharsets.US_ASCII);
         connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
         return connector;
+    }
+
+    /**
+     * Returns the first bytes expected to be found in the {@value #FILENAME} file.
+     */
+    static byte[] getFirstExpectedBytes() {
+        return FIRST_SENTENCE.getBytes(StandardCharsets.US_ASCII);
+    }
+
+    /**
+     * Reads the first bytes from the given input stream and verifies
+     * that they are equal to the expected content.
+     */
+    static void assertExpectedBytes(final InputStream stream) throws IOException {
+        final byte[] expected = getFirstExpectedBytes();
+        final byte[] content = new byte[expected.length];
+        assertEquals(content.length, stream.read(content));
+        assertArrayEquals(expected, content);
+    }
+
+    /**
+     * Reads the first characters from the given reader and verifies
+     * that they are equal to the expected content.
+     */
+    static void assertExpectedChars(final Reader stream) throws IOException {
+        final char[] expected = FIRST_SENTENCE.toCharArray();
+        final char[] content = new char[expected.length];
+        assertEquals(content.length, stream.read(content));
+        assertArrayEquals(expected, content);
     }
 
     /**
@@ -138,11 +171,13 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Implementation of {@link #testGetAsDataInputFromURL()} and {@link #testGetAsDataInputFromStream()}.
      */
     private void testGetAsDataInput(final boolean asStream) throws DataStoreException, IOException {
-        final StorageConnector connection = create(asStream);
-        final DataInput input = connection.getStorageAs(DataInput.class);
-        assertSame("Value shall be cached.", input, connection.getStorageAs(DataInput.class));
+        final StorageConnector connector = create(asStream);
+        assertEquals(asStream, connector.getStorageAs(URI.class)  == null);
+        assertEquals(asStream, connector.getStorageAs(Path.class) == null);
+        final DataInput input = connector.getStorageAs(DataInput.class);
+        assertSame("Value shall be cached.", input, connector.getStorageAs(DataInput.class));
         assertInstanceOf("Needs the SIS implementation.", ChannelImageInputStream.class, input);
-        assertSame("Instance shall be shared.", input, connection.getStorageAs(ChannelDataInput.class));
+        assertSame("Instance shall be shared.", input, connector.getStorageAs(ChannelDataInput.class));
         /*
          * Reads a single integer for checking that the stream is at the right position, then close the stream.
          * Since the file is a compiled Java class, the integer that we read shall be the Java magic number.
@@ -150,7 +185,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
         final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         assertTrue("channel.isOpen()", channel.isOpen());
         assertEquals("First 4 bytes", MAGIC_NUMBER, input.readInt());
-        connection.closeAllExcept(null);
+        connector.closeAllExcept(null);
         assertFalse("channel.isOpen()", channel.isOpen());
     }
 
@@ -164,10 +199,10 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAsDataInputFromURL")
     public void testGetAsImageInputStream() throws DataStoreException, IOException {
-        final StorageConnector connection = create(false);
-        final ImageInputStream in = connection.getStorageAs(ImageInputStream.class);
-        assertSame(connection.getStorageAs(DataInput.class), in);
-        connection.closeAllExcept(null);
+        final StorageConnector connector = create(false);
+        final ImageInputStream in = connector.getStorageAs(ImageInputStream.class);
+        assertSame(connector.getStorageAs(DataInput.class), in);
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -180,29 +215,29 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAsImageInputStream")
     public void testGetOriginalInputStream() throws DataStoreException, IOException {
-        final StorageConnector connection = create(true);
-        final InputStream in = connection.getStorageAs(InputStream.class);
-        assertSame("The InputStream shall be the one specified to the constructor.", connection.getStorage(), in);
+        final StorageConnector connector = create(true);
+        final InputStream in = connector.getStorageAs(InputStream.class);
+        assertSame("The InputStream shall be the one specified to the constructor.", connector.getStorage(), in);
         /*
          * Ask a different type and request a few bytes. We do not test the ImageInputStream type here as this is
          * not the purpose of this method. But we need a different type before to request again the InputStream.
          */
-        final ImageInputStream data = connection.getStorageAs(ImageInputStream.class);
+        final ImageInputStream data = connector.getStorageAs(ImageInputStream.class);
         final byte[] sample = new byte[32];
         data.readFully(sample);
         /*
          * Request again the InputStream and read the same amount of bytes than above. The intent of this test
-         * is to verify that StorageConnector has reseted the InputStream position before to return it.
+         * is to verify that StorageConnector has reset the InputStream position before to return it.
          * Note that this test requires InputStream implementations supporting mark/reset operations
          * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),
-         * otherwise the call to connection.getStorageAs(…) throws a DataStoreException.
+         * otherwise the call to connector.getStorageAs(…) throws a DataStoreException.
          */
         assumeTrue("Can not use a JAR file entry for this test.", in.markSupported());
-        assertSame(in, connection.getStorageAs(InputStream.class));
+        assertSame(in, connector.getStorageAs(InputStream.class));
         final byte[] actual = new byte[sample.length];
         assertEquals("Should read all requested bytes.", actual.length, in.read(actual));
-        assertArrayEquals("InputStream shall be reseted to the beginning of the stream.", sample, actual);
-        connection.closeAllExcept(null);
+        assertArrayEquals("InputStream shall be reset to the beginning of the stream.", sample, actual);
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -215,19 +250,19 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAsImageInputStream")
     public void testGetAsInputStream() throws DataStoreException, IOException {
-        final StorageConnector connection = create(false);
-        final InputStream in = connection.getStorageAs(InputStream.class);
-        assertNotSame(connection.getStorage(), in);
-        assertSame("Expected cached value.", in, connection.getStorageAs(InputStream.class));
+        final StorageConnector connector = create(false);
+        final InputStream in = connector.getStorageAs(InputStream.class);
+        assertNotSame(connector.getStorage(), in);
+        assertSame("Expected cached value.", in, connector.getStorageAs(InputStream.class));
         assertInstanceOf("Expected Channel backend.", InputStreamAdapter.class, in);
         final ImageInputStream input = ((InputStreamAdapter) in).input;
         assertInstanceOf("Expected Channel backend.", ChannelImageInputStream.class, input);
-        assertSame(input, connection.getStorageAs(DataInput.class));
-        assertSame(input, connection.getStorageAs(ImageInputStream.class));
+        assertSame(input, connector.getStorageAs(DataInput.class));
+        assertSame(input, connector.getStorageAs(ImageInputStream.class));
 
         final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         assertTrue(channel.isOpen());
-        connection.closeAllExcept(null);
+        connector.closeAllExcept(null);
         assertFalse(channel.isOpen());
     }
 
@@ -240,20 +275,17 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod({"testGetAsInputStream", "testGetAsDataInputFromStream"})
     public void testGetAsReader() throws DataStoreException, IOException {
-        final StorageConnector connection = create(true);
-        final Reader in = connection.getStorageAs(Reader.class);
-        final char[] expected = FIRST_SENTENCE.toCharArray();
-        final char[] actual = new char[expected.length];
+        final StorageConnector connector = create(true);
+        final Reader in = connector.getStorageAs(Reader.class);
         in.mark(1000);
-        assertEquals("Number of characters read.", expected.length, in.read(actual));
-        assertArrayEquals("First sentence.", expected, actual);
-        assertSame("Expected cached value.", in, connection.getStorageAs(Reader.class));
+        assertExpectedChars(in);
+        assertSame("Expected cached value.", in, connector.getStorageAs(Reader.class));
         in.reset();
         /*
          * Open as an ImageInputStream and verify that reading starts from the beginning.
          * This operation should force StorageConnector to discard the previous Reader.
          */
-        final ImageInputStream im = connection.getStorageAs(ImageInputStream.class);
+        final ImageInputStream im = connector.getStorageAs(ImageInputStream.class);
         assertInstanceOf("Needs the SIS implementation.", ChannelImageInputStream.class, im);
         im.mark();
         assertEquals("First 4 bytes", MAGIC_NUMBER, im.readInt());
@@ -261,12 +293,11 @@ public final strictfp class StorageConnectorTest extends TestCase {
         /*
          * Get a reader again. It should be a new one, in order to read from the beginning again.
          */
-        final Reader in2 = connection.getStorageAs(Reader.class);
+        final Reader in2 = connector.getStorageAs(Reader.class);
         assertNotSame("Expected a new Reader instance.", in, in2);
-        assertEquals("Number of characters read.", expected.length, in.read(actual));
-        assertArrayEquals("First sentence.", expected, actual);
-        assertSame("Expected cached value.", in2, connection.getStorageAs(Reader.class));
-        connection.closeAllExcept(null);
+        assertExpectedChars(in2);
+        assertSame("Expected cached value.", in2, connector.getStorageAs(Reader.class));
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -280,20 +311,20 @@ public final strictfp class StorageConnectorTest extends TestCase {
      */
     @Test
     public void testGetAsChannelDataInput() throws DataStoreException, IOException {
-        final StorageConnector connection = create(true);
-        final ChannelDataInput input = connection.getStorageAs(ChannelDataInput.class);
+        final StorageConnector connector = create(true);
+        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         assertFalse(input instanceof ChannelImageInputStream);
         assertEquals(MAGIC_NUMBER, input.buffer.getInt());
         /*
          * Get as an image input stream and ensure that the cached value has been replaced.
          */
-        final DataInput stream = connection.getStorageAs(DataInput.class);
+        final DataInput stream = connector.getStorageAs(DataInput.class);
         assertInstanceOf("Needs the SIS implementation", ChannelImageInputStream.class, stream);
         assertNotSame("Expected a new instance.", input, stream);
         assertSame("Shall share the channel.", input.channel, ((ChannelDataInput) stream).channel);
         assertSame("Shall share the buffer.",  input.buffer,  ((ChannelDataInput) stream).buffer);
-        assertSame("Cached valud shall have been replaced.", stream, connection.getStorageAs(ChannelDataInput.class));
-        connection.closeAllExcept(null);
+        assertSame("Cached valud shall have been replaced.", stream, connector.getStorageAs(ChannelDataInput.class));
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -306,12 +337,12 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAsDataInputFromURL")
     public void testGetAsByteBuffer() throws DataStoreException, IOException {
-        final StorageConnector connection = create(false);
-        final ByteBuffer buffer = connection.getStorageAs(ByteBuffer.class);
+        final StorageConnector connector = create(false);
+        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         assertNotNull("getStorageAs(ByteBuffer.class)", buffer);
         assertEquals(StorageConnector.DEFAULT_BUFFER_SIZE, buffer.capacity());
         assertEquals(MAGIC_NUMBER, buffer.getInt());
-        connection.closeAllExcept(null);
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -326,17 +357,17 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAsDataInputFromStream")
     public void testGetAsTemporaryByteBuffer() throws DataStoreException, IOException {
-        StorageConnector connection = create(true);
-        final DataInput in = ImageIO.createImageInputStream(connection.getStorage());
+        StorageConnector connector = create(true);
+        final DataInput in = ImageIO.createImageInputStream(connector.getStorage());
         assertNotNull("ImageIO.createImageInputStream(InputStream)", in);                   // Sanity check.
-        connection = new StorageConnector(in);
-        assertSame(in, connection.getStorageAs(DataInput.class));
+        connector = new StorageConnector(in);
+        assertSame(in, connector.getStorageAs(DataInput.class));
 
-        final ByteBuffer buffer = connection.getStorageAs(ByteBuffer.class);
+        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         assertNotNull("getStorageAs(ByteBuffer.class)", buffer);
         assertEquals(StorageConnector.MINIMAL_BUFFER_SIZE, buffer.capacity());
         assertEquals(MAGIC_NUMBER, buffer.getInt());
-        connection.closeAllExcept(null);
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -346,9 +377,9 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * @throws IOException should never happen since we do not open any file.
      */
     public void testGetAsConnection() throws DataStoreException, IOException {
-        final StorageConnector connection = create(false);
-        assertNull(connection.getStorageAs(Connection.class));
-        connection.closeAllExcept(null);
+        final StorageConnector connector = create(false);
+        assertNull(connector.getStorageAs(Connection.class));
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -359,18 +390,18 @@ public final strictfp class StorageConnectorTest extends TestCase {
      */
     @Test
     public void testGetInvalidObject() throws DataStoreException {
-        final StorageConnector connection = create(true);
-        assertNotNull("getStorageAs(InputStream.class)", connection.getStorageAs(InputStream.class));
-        assertNull   ("getStorageAs(URI.class)",         connection.getStorageAs(URI.class));
-        assertNull   ("getStorageAs(String.class)",      connection.getStorageAs(String.class));
+        final StorageConnector connector = create(true);
+        assertNotNull("getStorageAs(InputStream.class)", connector.getStorageAs(InputStream.class));
+        assertNull   ("getStorageAs(URI.class)",         connector.getStorageAs(URI.class));
+        assertNull   ("getStorageAs(String.class)",      connector.getStorageAs(String.class));
         try {
-            connection.getStorageAs(Float.class);       // Any unconvertible type.
+            connector.getStorageAs(Float.class);       // Any unconvertible type.
             fail("Should not have accepted Float.class");
         } catch (UnconvertibleObjectException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("Float"));
         }
-        connection.closeAllExcept(null);
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -382,12 +413,49 @@ public final strictfp class StorageConnectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAsDataInputFromStream")
     public void testCloseAllExcept() throws DataStoreException, IOException {
-        final StorageConnector connection = create(true);
-        final DataInput input = connection.getStorageAs(DataInput.class);
+        final StorageConnector connector = create(true);
+        final DataInput input = connector.getStorageAs(DataInput.class);
         final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         assertTrue("channel.isOpen()", channel.isOpen());
-        connection.closeAllExcept(input);
+        connector.closeAllExcept(input);
         assertTrue("channel.isOpen()", channel.isOpen());
         channel.close();
+    }
+
+    /**
+     * Tests the {@link StorageConnector#commit(Class, String)} method.
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
+     */
+    @Test
+    @DependsOnMethod("testCloseAllExcept")
+    public void testCommit() throws DataStoreException, IOException {
+        final StorageConnector connector = create(false);
+        final InputStream stream = connector.commit(InputStream.class, "Test");
+        try {
+            connector.getStorageAs(ByteBuffer.class);
+            fail("Connector should be closed.");
+        } catch (IllegalStateException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertExpectedBytes(stream);
+        stream.close();                 // No "try-with-resource" for easier debugging if needed.
+    }
+
+    /**
+     * Verifies that the {@link StorageConnector#closeAllExcept(Object)} method is idempotent
+     * (i.e. calls after the first call have no effect).
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while closing the test file.
+     */
+    @Test
+    public void testCloseIsIdempotent() throws DataStoreException, IOException {
+        final StorageConnector connector = StorageConnectorTest.create(true);
+        final InputStream stream = connector.commit(InputStream.class, "Test");
+        connector.closeAllExcept(null);
+        assertExpectedBytes(stream);
+        stream.close();                 // No "try-with-resource" for easier debugging if needed.
     }
 }

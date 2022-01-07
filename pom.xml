@@ -518,7 +518,7 @@
       <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>cdm-core</artifactId>
-        <version>5.5.1</version>
+        <version>5.5.2</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>

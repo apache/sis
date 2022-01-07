@@ -52,6 +52,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
@@ -66,7 +67,6 @@ import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.setup.OptionKey;
@@ -88,7 +88,7 @@ import org.opengis.feature.AttributeType;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -235,12 +235,7 @@ final class Store extends URIDataStore implements FeatureSet {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        final Reader r = connector.getStorageAs(Reader.class);
-        connector.closeAllExcept(r);
-        if (r == null) {
-            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
-                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
-        }
+        final Reader r = connector.commit(Reader.class, StoreProvider.NAME);
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
         dissociate = FoliationRepresentation.FRAGMENTED.equals(connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION));
@@ -317,6 +312,8 @@ final class Store extends URIDataStore implements FeatureSet {
      * which is set after the last header line. If the mark is no longer valid, then we have to create a new line reader.
      * In this later case, we have to skip the header lines (i.e. we reproduce the constructor loop, but without parsing
      * metadata).
+     *
+     * @todo Not yet used. This is planned for a future version of {@link #features(boolean)} method implementation.
      */
     private void rewind() throws IOException {
         final BufferedReader reader = source;
@@ -388,8 +385,8 @@ final class Store extends URIDataStore implements FeatureSet {
                             ordinal++;  // Fall through
                     case 3: lowerCorner = CharSequences.parseDoubles(element, ORDINATE_SEPARATOR); continue;
                     case 4: upperCorner = CharSequences.parseDoubles(element, ORDINATE_SEPARATOR); continue;
-                    case 5: startTime   = Instant.parse(element); continue;
-                    case 6: endTime     = Instant.parse(element); continue;
+                    case 5: startTime   = StandardDateFormat.parseInstantUTC(element); continue;
+                    case 6: endTime     = StandardDateFormat.parseInstantUTC(element); continue;
                     case 7: switch (element.toLowerCase(Locale.US)) {
                                 case "sec":
                                 case "second":   /* Already SECOND. */    continue;
@@ -653,12 +650,6 @@ final class Store extends URIDataStore implements FeatureSet {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
                 throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, getDisplayName(), source).initCause(e);
-            } catch (UnsupportedOperationException e) {
-                /*
-                 * Failed to set the temporal components if the sis-temporal module was
-                 * not on the classpath, but the other dimensions still have been set.
-                 */
-                listeners.warning(e);
             }
             builder.addFeatureType(featureType, -1);
             addTitleOrIdentifier(builder);

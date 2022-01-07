@@ -16,13 +16,18 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Locale;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.StringJoiner;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -30,10 +35,19 @@ import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
+import javax.xml.transform.stax.StAXSource;
+import javax.xml.bind.JAXBException;
+import javax.xml.namespace.QName;
+import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.XML;
+
+import static org.apache.sis.internal.util.TemporalUtilities.toDate;
 
 
 /**
@@ -57,7 +71,12 @@ import org.apache.sis.util.resources.Errors;
  * @since 1.2
  * @module
  */
-final class XMLMetadata {
+final class XMLMetadata implements Filter {
+    /**
+     * The {@value} string, used in GDAL metadata.
+     */
+    private static final String ITEM = "Item", NAME = "name";
+
     /**
      * The bytes to decode as an XML document.
      * DGIWG specification mandates UTF-8 encoding.
@@ -76,6 +95,11 @@ final class XMLMetadata {
     private String currentElement;
 
     /**
+     * Where to report non-fatal warnings.
+     */
+    private final StoreListeners listeners;
+
+    /**
      * {@code true} if the XML is GDAL metadata. Example:
      *
      * {@preformat xml
@@ -88,6 +112,15 @@ final class XMLMetadata {
     private final boolean isGDAL;
 
     /**
+     * Creates a new instance with the given XML. Used for testing purposes.
+     */
+    XMLMetadata(final String xml, final boolean isGDAL) {
+        this.isGDAL = isGDAL;
+        string = xml;
+        listeners = null;
+    }
+
+    /**
      * Creates new metadata which will decode the given vector of bytes.
      *
      * @param  reader  the TIFF reader.
@@ -97,6 +130,7 @@ final class XMLMetadata {
      */
     XMLMetadata(final Reader reader, final Type type, final long count, final boolean isGDAL) throws IOException {
         this.isGDAL = isGDAL;
+        listeners = reader.store.listeners();
         switch (type) {
             case ASCII: {
                 final String[] cs = type.readString(reader.input, count, reader.store.encoding);
@@ -196,6 +230,7 @@ final class XMLMetadata {
          *
          * @param  source  the XML document to represent as a tree table.
          * @param  target  where to append this root node.
+         * @param  name    name to assign to this root node.
          * @return {@code true} on success, or {@code false} if the XML document could not be decoded.
          */
         Root(final XMLMetadata source, final DefaultTreeTable.Node parent, final String name) {
@@ -239,14 +274,14 @@ final class XMLMetadata {
         final String previous = currentElement;
         currentElement = element.getName().getLocalPart();
         node.setValue(Root.NAME, currentElement);
-        final boolean isItem = isGDAL && currentElement.equals("Item");
+        final boolean isItem = isGDAL && currentElement.equals(ITEM);
         final Iterator<Attribute> attributes = element.getAttributes();
         while (attributes.hasNext()) {
             final Attribute attribute = attributes.next();
             if (attribute.isSpecified()) {
                 final String name  = attribute.getName().getLocalPart();
                 final String value = attribute.getValue();
-                if (isItem && name.equals("name")) {
+                if (isItem && name.equals(NAME)) {
                     /*
                      * GDAL metadata does not really use of XML schema.
                      * Instead, it is a collection of lines like below:
@@ -285,5 +320,156 @@ final class XMLMetadata {
             node.setValue(Root.VALUE, value);
         }
         currentElement = previous;
+    }
+
+    /**
+     * Appends the content of this object to the given metadata builder.
+     *
+     * @param  metadata  the builder where to append the content of this {@code XMLMetadata}.
+     * @throws XMLStreamException if an error occurred while parsing the XML.
+     * @throws JAXBException if an error occurred while parsing the XML.
+     */
+    public void appendTo(final MetadataBuilder metadata) throws XMLStreamException, JAXBException {
+        final XMLEventReader reader = toXML();
+        if (reader != null) {
+            if (isGDAL) {
+                /*
+                 * We expect a list of XML elements as below:
+                 *
+                 *   <Item name="acquisitionEndDate">2016-09-08T15:53:00+05:00</Item>
+                 *
+                 * Those items should be children of <GDALMetadata> node. That node should be the root node,
+                 * but current implementation searches <GDALMetadata> recursively if not found at the root.
+                 */
+                final Parser parser = new Parser(reader, metadata);
+                while (reader.hasNext()) {
+                    final XMLEvent event = reader.nextEvent();
+                    if (event.isStartElement()) {
+                        parser.root(event.asStartElement());
+                    }
+                }
+                parser.flush();
+            } else {
+                /*
+                 * Parse as an ISO 19115 document and get the content as a `Metadata` object.
+                 * Some other types are accepted as well (e.g. `IdentificationInfo`).
+                 * The `mergeMetadata` method applies heuristic rules for adding components.
+                 */
+                metadata.mergeMetadata(XML.unmarshal(new StAXSource(reader),
+                        Collections.singletonMap(XML.WARNING_FILTER, this)),
+                        (listeners != null) ? listeners.getLocale() : null);
+            }
+            reader.close();     // No need to close the underlying input stream.
+        }
+    }
+
+    /**
+     * Parser of GDAL metadata.
+     */
+    private static final class Parser {
+        /** The XML reader from which to get XML elements. */
+        private final XMLEventReader reader;
+
+        /** A qualified name with the {@value #NAME} local part, used for searching attributes. */
+        private final QName name;
+
+        /** A value increased for each level of nested {@code <Item>} element. */
+        private int depth;
+
+        /** Where to write metadata. */
+        private final MetadataBuilder metadata;
+
+        /** Temporary storage for metadata values that need a little processing. */
+        private Instant startTime, endTime;
+
+        /**
+         * Creates a new reader.
+         *
+         * @param reader     the source of XML elements.
+         * @param metadata   the target of metadata elements.
+         */
+        Parser(final XMLEventReader reader, final MetadataBuilder metadata) {
+            this.reader = reader;
+            this.metadata = metadata;
+            name = new QName(NAME);
+        }
+
+        /**
+         * Parses a {@code <GDALMetadata>} element and its children. After this method returns,
+         * the reader is positioned after the closing {@code </GDALMetadata>} tag.
+         *
+         * @param  start  the {@code <GDALMetadata>} element.
+         */
+        void root(final StartElement start) throws XMLStreamException {
+            final boolean parse = start.getName().getLocalPart().equals("GDALMetadata");
+            while (reader.hasNext()) {
+                final XMLEvent event = reader.nextEvent();
+                if (event.isStartElement()) {
+                    if (parse) {
+                        item(event.asStartElement());       // Parse <Item> elements.
+                    } else {
+                        root(event.asStartElement());       // Search a nested <GDALMetadata>.
+                    }
+                } else if (event.isEndElement()) {
+                    break;
+                }
+            }
+        }
+
+        /**
+         * Parses a {@code <Item>} element and its children. After this method returns,
+         * the reader is positioned after the closing {@code </Item>} tag.
+         *
+         * @param  start  the {@code <Item>} element.
+         */
+        private void item(final StartElement start) throws XMLStreamException {
+            String attribute = null;
+            if (depth == 0 && start.getName().getLocalPart().equals(ITEM)) {
+                final Attribute a = start.getAttributeByName(name);
+                if (a != null) attribute = a.getValue();
+            }
+            final StringJoiner buffer = new StringJoiner("");
+            while (reader.hasNext()) {
+                final XMLEvent event = reader.nextEvent();
+                if (event.isEndElement()) {
+                    break;
+                } else if (event.isCharacters()) {
+                    buffer.add(event.asCharacters().getData());
+                } else if (event.isStartElement()) {
+                    depth++;
+                    item(event.asStartElement());
+                    depth--;
+                }
+            }
+            if (attribute != null) {
+                if (Character.isUpperCase(attribute.codePointAt(0))) {
+                    attribute = attribute.toLowerCase(Locale.US);
+                }
+                final String content = buffer.toString();
+                if (!content.isEmpty()) {
+                    switch (attribute) {
+                        case "acquisitionStartDate": startTime = StandardDateFormat.parseInstantUTC(content); break;
+                        case "acquisitionEndDate":   endTime   = StandardDateFormat.parseInstantUTC(content); break;
+                        case "title": metadata.addTitle(content); break;
+                    }
+                }
+            }
+        }
+
+        /**
+         * Writes to {@link MetadataBuilder} all information that were pending parsing completion.
+         */
+        void flush() {
+            metadata.addTemporalExtent(toDate(startTime), toDate(endTime));
+        }
+    }
+
+    /**
+     * Invoked when a non-fatal warning occurs during the parsing of XML document.
+     */
+    @Override
+    public boolean isLoggable(final LogRecord warning) {
+        listeners.warning(warning);
+        return false;
     }
 }

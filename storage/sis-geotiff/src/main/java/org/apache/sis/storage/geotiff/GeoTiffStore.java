@@ -38,7 +38,6 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.event.StoreEvent;
@@ -201,14 +200,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
 
-        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
-        if (input == null) {
-            throw new UnsupportedStorageException(super.getLocale(), Constants.GEOTIFF,
-                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
-        }
         location = connector.getStorageAs(URI.class);
         path = connector.getStorageAs(Path.class);
-        connector.closeAllExcept(input);
+        final ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
         try {
             reader = new Reader(this, input);
         } catch (IOException e) {

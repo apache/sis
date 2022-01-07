@@ -105,29 +105,23 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
-        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
-        if (buffer != null) {
+        return probeContent(connector, ByteBuffer.class, (buffer) -> {
             if (buffer.remaining() < 2 * Short.BYTES) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
-            final int p = buffer.position();
-            final short order = buffer.getShort(p);
-            final boolean isBigEndian = (order == GeoTIFF.BIG_ENDIAN);
-            if (isBigEndian || order == GeoTIFF.LITTLE_ENDIAN) {
-                final ByteOrder old = buffer.order();
-                try {
-                    buffer.order(isBigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-                    switch (buffer.getShort(p + Short.BYTES)) {
+            switch (buffer.getShort()) {
+                case GeoTIFF.LITTLE_ENDIAN: buffer.order(ByteOrder.LITTLE_ENDIAN);      // Fall through
+                case GeoTIFF.BIG_ENDIAN: {  // Default buffer order is big endian.
+                    switch (buffer.getShort()) {
                         case GeoTIFF.CLASSIC:
                         case GeoTIFF.BIG_TIFF: return new ProbeResult(true, MIME_TYPE, VERSION);
                     }
-                } finally {
-                    buffer.order(old);
                 }
             }
-        }
-        return ProbeResult.UNSUPPORTED_STORAGE;
+            return ProbeResult.UNSUPPORTED_STORAGE;
+        });
     }
 
     /**

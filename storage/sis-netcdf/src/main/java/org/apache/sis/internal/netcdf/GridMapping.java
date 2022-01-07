@@ -371,9 +371,10 @@ final class GridMapping {
             if (fallback instanceof IdentifiedObject) {
                 name = ((IdentifiedObject) fallback).getName();
             } else if (fallback != null) {
-                name = fallback;
+                name = fallback.toString();
             } else {
-                name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);
+                name = Vocabulary.format(Vocabulary.Keys.Unnamed);
+                // Note: IdentifiedObject.name does not accept InternationalString.
             }
         }
         return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);

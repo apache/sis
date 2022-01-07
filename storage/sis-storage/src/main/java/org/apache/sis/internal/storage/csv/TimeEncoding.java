@@ -32,7 +32,7 @@ import org.apache.sis.measure.Units;
  * except in the special case of {@link #ABSOLUTE} encoding.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -47,7 +47,7 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
      */
     static final TimeEncoding ABSOLUTE = new TimeEncoding(DEFAULT.datum(), Units.DAY) {
         @Override public Instant apply(final String time) {
-            return Instant.parse(time);
+            return StandardDateFormat.parseInstantUTC(time);
         }
     };
 

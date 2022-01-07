@@ -262,6 +262,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short LoadedGridCoverage_6 = 59;
 
         /**
+         * Marks are not supported on “{0}” stream.
+         */
+        public static final short MarkNotSupported_1 = 62;
+
+        /**
          * Resource “{0}” does not have an identifier.
          */
         public static final short MissingResourceIdentifier_1 = 42;
@@ -320,6 +325,11 @@ public final class Resources extends IndexedResourceBundle {
          * Write operations are not supported.
          */
         public static final short StoreIsReadOnly = 28;
+
+        /**
+         * Stream has not mark.
+         */
+        public static final short StreamHasNoMark = 63;
 
         /**
          * Can not move backward in the “{0}” stream.

@@ -258,6 +258,7 @@ public final class StoreProvider extends DataStoreProvider {
             throw new DataStoreException(Resources.format(errorKey,
                     (path != null) ? path : connector.getStorageName(), isDirectory), e);
         }
+        connector.closeAllExcept(path);
         return store;
     }
 
