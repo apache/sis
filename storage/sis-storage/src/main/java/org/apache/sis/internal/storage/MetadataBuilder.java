@@ -3209,7 +3209,7 @@ parse:      for (int i = 0; i < length;) {
      * but some types of metadata components are accepted as well.
      *
      * @param  source  the source metadata to merge. Will never be modified.
-     * @param  locale  the locale to use for error message in exceptions.
+     * @param  locale  the locale to use for error message in exceptions, or {@code null} for the default locale.
      * @return {@code true} if the given source has been merged,
      *         or {@code false} if its type is not managed by this builder.
      * @throws RuntimeException if the merge failed (may be {@link IllegalArgumentException},

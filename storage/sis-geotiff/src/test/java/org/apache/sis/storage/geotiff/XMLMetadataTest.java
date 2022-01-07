@@ -18,8 +18,10 @@ package org.apache.sis.storage.geotiff;
 
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -36,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class XMLMetadataTest extends TestCase {
     /**
-     * A GDAL metadata.
+     * A GDAL metadata. The format is specific to the GDAL project.
      */
     private static final String GDAL_METADATA =
             "<GDALMetadata>\n" +
@@ -46,6 +48,34 @@ public final strictfp class XMLMetadataTest extends TestCase {
             "  <Item name=\"acquisitionEndDate\">2018-02-28T03:04:00</Item>\n" +
             "  <Foo>bar</Foo>\n" +
             "</GDALMetadata>\n";
+
+    /**
+     * A DGIWG metadata in ISO 19115 format.
+     */
+    private static final String GEO_METADATA =
+            "<gmd:MD_Metadata\n" +
+            "  xmlns:gmd = \"" + LegacyNamespaces.GMD + "\"\n"  +
+            "  xmlns:gml = \"" + Namespaces.GML + "\"\n>" +
+            "  <gmd:identificationInfo>\n" +
+            "    <gmd:MD_DataIdentification>\n" +
+            "      <gmd:extent>\n" +
+            "        <gmd:EX_Extent>\n" +
+            "          <gmd:temporalElement>\n" +
+            "            <gmd:EX_TemporalExtent>\n" +
+            "              <gmd:extent>\n" +
+            "                <gml:TimePeriod>\n" +
+            "                  <gml:description>Acquisition period</gml:description>\n" +
+            "                  <gml:beginPosition>2018-02-28T03:04:00</gml:beginPosition>\n" +
+            "                  <gml:endPosition>2018-02-28T04:48:00</gml:endPosition>\n" +
+            "                </gml:TimePeriod>\n" +
+            "              </gmd:extent>\n" +
+            "            </gmd:EX_TemporalExtent>\n" +
+            "          </gmd:temporalElement>\n" +
+            "        </gmd:EX_Extent>\n" +
+            "      </gmd:extent>\n" +
+            "    </gmd:MD_DataIdentification>\n" +
+            "  </gmd:identificationInfo>\n" +
+            "</gmd:MD_Metadata>\n";
 
     /**
      * Tests parsing of GDAL metadata and formatting as a tree table.
@@ -100,7 +130,30 @@ public final strictfp class XMLMetadataTest extends TestCase {
         assertMultilinesEquals(
                 "Metadata\n" +
                 "  └─Identification info\n" +
-                "      └─Citation………………… My image\n",
+                "      ├─Citation……………………………… My image\n" +
+                "      └─Extent\n" +
+                "          └─Temporal element\n" +
+                "              └─Extent……………… [2018-02-28T04:48:00Z … 2018-02-28T03:04:00Z]\n",
+                metadata.toString());
+    }
+
+    /**
+     * Tests parsing DGIWG metadata and conversion to ISO 19115 metadata.
+     *
+     * @throws Exception if an error occurred during XML parsing.
+     */
+    @Test
+    public void testGeoMetadata() throws Exception {
+        XMLMetadata xml = new XMLMetadata(GEO_METADATA, false);
+        MetadataBuilder builder = new MetadataBuilder();
+        xml.appendTo(builder);
+        DefaultMetadata metadata = builder.build(false);
+        assertMultilinesEquals(
+                "Metadata\n" +
+                "  └─Identification info\n" +
+                "      └─Extent\n" +
+                "          └─Temporal element\n" +
+                "              └─Extent……………… [2018-02-28T02:04:00Z … 2018-02-28T03:48:00Z]\n",
                 metadata.toString());
     }
 }

@@ -356,7 +356,8 @@ final class XMLMetadata implements Filter {
                  * The `mergeMetadata` method applies heuristic rules for adding components.
                  */
                 metadata.mergeMetadata(XML.unmarshal(new StAXSource(reader),
-                        Collections.singletonMap(XML.WARNING_FILTER, this)), listeners.getLocale());
+                        Collections.singletonMap(XML.WARNING_FILTER, this)),
+                        (listeners != null) ? listeners.getLocale() : null);
             }
             reader.close();     // No need to close the underlying input stream.
         }

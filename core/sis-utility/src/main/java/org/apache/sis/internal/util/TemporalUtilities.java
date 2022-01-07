@@ -22,8 +22,8 @@ import org.opengis.temporal.Period;
 import org.opengis.temporal.TemporalFactory;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.temporal.DefaultTemporalFactory;
 
 
 /**
@@ -32,7 +32,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -63,7 +63,7 @@ public final class TemporalUtilities extends Static {
         if (factory != null) {
             return factory;
         }
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, "sis-temporal"));
+        return DefaultTemporalFactory.INSTANCE;
     }
 
     /**
