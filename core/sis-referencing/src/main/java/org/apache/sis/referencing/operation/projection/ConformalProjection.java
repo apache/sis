@@ -176,7 +176,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * <ul>
      *   <li>φ(0)   =   π/2</li>
      *   <li>φ(1)   =   0</li>
-     *   <li>φ(∞)   =  -π/2.</li>
+     *   <li>φ(∞)   =  -π/2</li>
      * </ul>
      *
      * <b>Note:</b> §1.3.3 in Geomatics Guidance Note number 7 part 2 (April 2015) uses a series expansion

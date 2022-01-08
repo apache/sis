@@ -55,7 +55,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see Mercator
  * @see TransverseMercator
@@ -393,6 +393,13 @@ public class ObliqueMercator extends ConformalProjection {
          *             + sin(8χ)⋅(e⁸⋅4279/161280)
          *
          * The calculation of χ and its use in serie expansion is performed by the φ(t) function.
+         *
+         * Note: U shall be in the [−1 … +1] range, otherwise we get φ = NaN. At the limit U = ±1 we get φ = ±π/2
+         * (division by zero is okay: infinite intermediate values produce the correct final result with φ(∞)=-π/2).
+         * Empirical tests suggest that U is inside valid range even with points far outside the projection domain.
+         * We found out-of-range values only at short distances (about 0.01 meter) from pole. In those cases U was
+         * out-of-range only by 1 ULP. The (abs(U) >= 1) check is for handling those cases. Note that if U is NaN,
+         * then we want to use the general formula for propagating the NaN.
          */
         final double x  = srcPts[srcOff  ];
         final double y  = srcPts[srcOff+1];
@@ -403,7 +410,7 @@ public class ObliqueMercator extends ConformalProjection {
         final double V  = sin(y);
         final double U  = (V*cosγ0 + S*sinγ0) / T;
         final double λ  = -atan2((S*cosγ0 - V*sinγ0), cos(y)) / B;
-        final double φ  = φ(pow(H / sqrt((1 + U) / (1 - U)), 1/B));
+        final double φ  = (abs(U) >= 1) ? copySign(PI/2, U) : φ(pow(H / sqrt((1 + U) / (1 - U)), 1/B));
         dstPts[dstOff  ] = λ;
         dstPts[dstOff+1] = φ;
     }
