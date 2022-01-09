@@ -215,7 +215,7 @@ public abstract class Grid extends NamedElement {
                 /*
                  * If an axis has a "wraparound" range (for example a longitude axis where the next value after +180°
                  * may be -180°), we will examine it last. The reason is that if a wraparound occurs in the middle of
-                 * the localization grid, it will confuse the computation based on 'coordinateForAxis(…)' calls below.
+                 * the localization grid, it will confuse the computation based on `coordinateForAxis(…)` calls below.
                  * We are better to resolve the latitude axis first, and then resolve the longitude axis with the code
                  * path checking for dimension collisions, without using coordinateForAxis(…) on longitude axis.
                  */
@@ -449,7 +449,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
              * axes come in pairs.
              */
             final List<GridCacheValue> linearizations = new ArrayList<>();
-            for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
+            for (int i=0; i<nonLinears.size(); i++) {         // Length of `nonLinears` may change in this loop.
                 if (nonLinears.get(i) == null) {
                     for (int j=i; ++j < nonLinears.size();) {
                         if (nonLinears.get(j) == null) {
@@ -487,7 +487,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
                                 if (grid.linearizationTarget != null) {
                                     linearizations.add(grid);
                                 }
-                                break;                                      // Continue the 'i' loop.
+                                break;                                      // Continue the `i` loop.
                             }
                         }
                     }

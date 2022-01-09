@@ -44,7 +44,7 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.4
  * @module
  */
@@ -262,6 +262,22 @@ public final class AxisDirections extends Static {
         if (dir == null) return false;
         final int n  = dir.ordinal() - NORTH.ordinal();
         return n >= 0 && n < COMPASS_COUNT && (n & 3) != 0;
+    }
+
+    /**
+     * Returns {@code true} if the given axis is such as "South along 90°E".
+     *
+     * <p><b>This is a temporary method to be removed!</b>
+     * Latest ISO 19111 revision uses another mechanism for declaring such axis direction.
+     * This method will be removed after we upgraded the API accordingly.
+     *
+     * @param  dir  the axis to test, or {@code null}.
+     * @return {@code true} if the given axis is such as "South along 90°E".
+     *
+     * @since 1.2
+     */
+    public static boolean isAlongMeridian(final AxisDirection dir) {
+        return (dir != null) && !isCompass(dir);
     }
 
     /**

@@ -117,6 +117,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotInstantiateGeodeticObject_1 = 5;
 
         /**
+         * Can not linearize the localization grid.
+         */
+        public static final short CanNotLinearizeLocalizationGrid = 100;
+
+        /**
          * Can not map an axis from the specified coordinate system to the “{0}” direction.
          */
         public static final short CanNotMapAxisToDirection_1 = 6;

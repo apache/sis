@@ -23,7 +23,7 @@ import java.util.List;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -49,8 +49,10 @@ import org.apache.sis.util.ArraysExt;
  * order determined by {@link #targetCRS}. In other words, netCDF dimension order shall be ignored if a
  * linearization is applied.</p>
  *
+ * <p>A new instance of this class shall be created for each netCDF file is read.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder#addLinearizers(Map, boolean, int...)
  *
@@ -58,6 +60,13 @@ import org.apache.sis.util.ArraysExt;
  * @module
  */
 public final class Linearizer {
+    /**
+     * Number of dimensions of the grid.
+     *
+     * @see org.apache.sis.referencing.operation.builder.ResidualGrid#SOURCE_DIMENSION
+     */
+    private static final int SOURCE_DIMENSION = 2;
+
     /**
      * The datum to use as one of the predefined constants. The ellipsoid size do not matter
      * because a linear regression will be applied anyway. However the eccentricity matter.
@@ -74,14 +83,62 @@ public final class Linearizer {
 
     /**
      * The type of projection to create.
-     * Current implementation supports only Universal Transverse Mercator (UTM) projection,
+     * Current implementation supports only Universal Transverse Mercator (UTM) and stereographic projections,
      * but we nevertheless define this enumeration as a place-holder for more types in the future.
      */
     public enum Type {
         /**
-         * Universal Transverse Mercator projection.
+         * Universal Transverse Mercator (UTM) or Polar Stereographic projection, depending on whether the image
+         * is close to a pole or not. The CRS is selected by a call to {@link CommonCRS#universal(double, double)}.
+         * The point given is the {@code universal(…)} is determined as below:
+         *
+         * <ul>
+         *   <li>If the image is far enough from equator (at a latitude of {@value #POLAR_THRESHOLD} or further),
+         *       then the point will be in the center of the border closest to the pole.</li>
+         *   <li>Otherwise the point is in the middle of the image.</li>
+         * </ul>
+         *
+         * <div class="note"><b>Rational:</b>
+         * the intend is to increase the chances to get the Polar Stereographic projection for images close to pole.
+         * This is necessary because longitude values may become far from central meridian at latitudes such as 88°,
+         * causing the Transverse Mercator projection to produce NaN numbers.</div>
          */
-        UTM
+        UNIVERSAL;
+
+        /**
+         * Minimal latitude (in degrees) for forcing the {@link #UNIVERSAL} mode to consider a point
+         * on the border closest to pole for deciding whether to use UTM or stereographic projection.
+         * 60° is the limit of the domain of validity of Polar Stereographic methods.
+         */
+        static final int POLAR_THRESHOLD = 60;
+
+        /**
+         * Returns a coordinate system containing the axes to search and replace in order to build
+         * a "CRS after linearization" from a "CRS before linearization". The caller will use only
+         * the axis directions (not the names) of the returned coordinate system.
+         *
+         * <h4>Rational</h4>
+         * Usually, the source CRS is geographic and the target CRS is projected.
+         * We can generally associate a source axis to a target axis by looking at their directions.
+         * For example the "Longitude" source axis is approximately colinear with the "Easting" target axis.
+         * {@link org.opengis.referencing.cs.AxisDirection#EAST} can be used as a criterion for mapping them.
+         * Note however that axis names can not be used, because they differ in geographic and projected CRS.
+         *
+         * <p>However there is an exception where target axis directions will not work neither.
+         * If the projection is a polar projection with axis directions such as "South along 90°E",
+         * then {@link AxisDirections#indicesOfColinear(CoordinateSystem, CoordinateSystem)} will
+         * not find a match. We can workaround by using arbitrary (East, North) directions instead.</p>
+         *
+         * @param  targetCS  coordinate system of {@link Linearizer#targetCRS}.
+         */
+        final CoordinateSystem getAxisReplacement(final CoordinateSystem targetCS) {
+            for (int i = targetCS.getDimension(); --i >= 0;) {
+                if (AxisDirections.isAlongMeridian(targetCS.getAxis(i).getDirection())) {
+                    return CommonCRS.defaultGeographic().getCoordinateSystem();
+                }
+            }
+            return targetCS;
+        }
     }
 
     /**
@@ -93,7 +150,7 @@ public final class Linearizer {
      * The target coordinate reference system after application of the non-linear transform.
      * May depend on the netCDF file being read (for example for choosing a UTM zone).
      */
-    private CoordinateReferenceSystem targetCRS;
+    private SingleCRS targetCRS;
 
     /**
      * Whether axes need to be swapped in order to have the same direction before and after the transform.
@@ -124,7 +181,7 @@ public final class Linearizer {
     /**
      * Returns the target CRS computed by {@link #gridToTargetCRS gridToTargetCRS(…)}.
      */
-    final CoordinateReferenceSystem getTargetCRS() {
+    final SingleCRS getTargetCRS() {
         return targetCRS;
     }
 
@@ -168,16 +225,36 @@ public final class Linearizer {
                 throw new AssertionError(type);
             }
             /*
-             * Create a Universal Transverse Mercator (UTM) projection for the zone containing a point in
-             * the middle of the grid. We apply `Math.signum(…)` on the latitude for avoiding stereographic
-             * projections near poles and for avoiding Norway and Svalbard special cases.
+             * Create a Universal Transverse Mercator (UTM) projection for the zone containing a point in the grid.
+             * First, we compute an estimation of the bounding box in geographic coordinates (using grid corners).
+             * Then if the box is far enough from equator, we use the point on the side closest to the pole.
              */
-            case UTM: {
+            case UNIVERSAL: {
                 final Envelope bounds = grid.getSourceEnvelope(false);
-                final double[] median = grid.getControlPoint(
-                        (int) Math.round(bounds.getMedian(0)),
-                        (int) Math.round(bounds.getMedian(1)));
-                final ProjectedCRS crs = datum.universal(Math.signum(median[ydim]), median[xdim]);
+                double x, y, ymin, ymax;
+                {   // For keeping `median` variable local.
+                    final double[] median = grid.getControlPoint(
+                            (int) Math.round(bounds.getMedian(0)),
+                            (int) Math.round(bounds.getMedian(1)));
+                    x = median[xdim];
+                    y = median[ydim];
+                    ymin = ymax = y;
+                }
+                final int[] gc = new int[SOURCE_DIMENSION];
+                for (int i=0; i<4; i++) {
+                    for (int d=0; d<SOURCE_DIMENSION; d++) {
+                        gc[d] = (int) Math.round(((i & (1 << d)) == 0) ? bounds.getMinimum(d) : bounds.getMaximum(d));
+                    }
+                    final double yp = grid.getControlPoint(gc[0], gc[1])[ydim];
+                    if (yp < ymin) ymin = yp;
+                    if (yp > ymax) ymax = yp;
+                }
+                /*
+                 * If the image is far from equator, replace the middle point by a point close to pole.
+                 */
+                     if (ymin >= +Type.POLAR_THRESHOLD) y = ymax;
+                else if (ymax <= -Type.POLAR_THRESHOLD) y = ymin;
+                final ProjectedCRS crs = datum.universal(y, x);
                 assert ReferencingUtilities.startsWithNorthEast(crs.getBaseCRS().getCoordinateSystem());
                 transform = crs.getConversionFromBase().getMathTransform();
                 targetCRS = crs;
@@ -245,7 +322,7 @@ public final class Linearizer {
      * <p>This static method is defined here for keeping in a single class all codes related to linearization.</p>
      *
      * @param  components        the components of the compound CRS that {@link CRSBuilder} inferred.
-     * @param  replacements      the {@link #targetCRS} of linearizations.
+     * @param  replacements      the {@link #targetCRS} of linearizations. Usually a list of size 1.
      * @param  reorderGridToCRS  an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
      *         Not used by this method, but modified for taking in account axis order changes caused by replacements.
      */
@@ -253,14 +330,16 @@ public final class Linearizer {
                                      final Matrix reorderGridToCRS) throws DataStoreReferencingException
     {
         Matrix original = null;
-search: for (final GridCacheValue cache : replacements) {
-            final CoordinateReferenceSystem targetCRS = cache.linearizationTarget;
+search: for (final GridCacheValue replacement : replacements) {
+            final SingleCRS targetCRS = replacement.linearizationTarget;
+            final CoordinateSystem targetCS = replacement.linearizationType.getAxisReplacement(targetCRS.getCoordinateSystem());
             int firstDimension = 0;
             for (int i=0; i < components.length; i++) {
                 final SingleCRS sourceCRS = components[i];
-                final int[] r = AxisDirections.indicesOfColinear(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem());
+                final int[] r = AxisDirections.indicesOfColinear(sourceCRS.getCoordinateSystem(), targetCS);
                 if (r != null) {
-                    if (cache.axisSwap) {
+                    components[i] = targetCRS;
+                    if (replacement.axisSwap) {
                         ArraysExt.swap(r, 0, 1);
                     }
                     for (int j=0; j<r.length; j++) {
@@ -275,13 +354,14 @@ search: for (final GridCacheValue cache : replacements) {
                             }
                         }
                     }
-                    components[i] = (ProjectedCRS) targetCRS;
                     continue search;
                 }
                 firstDimension += sourceCRS.getCoordinateSystem().getDimension();
             }
-            // If a replacement can not be applied, fail CRS construction.
-            // May be relaxed in a future version if we have a use case.
+            /*
+             * If a replacement can not be applied, fail CRS construction.
+             * May be relaxed in a future version if we have a use case.
+             */
             throw new DataStoreReferencingException(Resources.format(
                     Resources.Keys.CanNotInjectComponent_1, IdentifiedObjects.getName(targetCRS, null)));
         }

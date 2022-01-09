@@ -89,7 +89,7 @@ import org.apache.sis.util.Classes;
  * That selected projection is given by {@link #linearizer()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see LocalizationGridBuilder
  * @see LinearTransform
@@ -1469,7 +1469,8 @@ search:         for (int j=domain(); --j >= 0;) {
                  * Finished to try all transforms. If all of them failed, wrap the `TransformException`.
                  */
                 if (bestTransform == null) {
-                    throw new FactoryException(ProjectedTransformTry.getError(linearizers));
+                    throw new FactoryException(Resources.format(Resources.Keys.CanNotLinearizeLocalizationGrid),
+                                               ProjectedTransformTry.getError(linearizers));
                 }
                 if (needTargetReplace) {
                     transformedArrays = appliedLinearizer.replaceTransformed(targets, transformedArrays);
