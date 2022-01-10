@@ -35,6 +35,7 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
@@ -53,7 +54,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * reference system associated with the concatenated operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -105,7 +106,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  mtFactory   the math transform factory to use for math transforms concatenation.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
-    public DefaultConcatenatedOperation(final Map<String,?> properties, CoordinateOperation[] operations,
+    public DefaultConcatenatedOperation(final Map<String,?> properties, final CoordinateOperation[] operations,
             final MathTransformFactory mtFactory) throws FactoryException
     {
         super(properties);
@@ -226,7 +227,12 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
              * however that we traverse nested concatenated operations unconditionally at least for checking
              * its consistency.
              */
-            MathTransform step = op.getMathTransform();
+            final MathTransform step = op.getMathTransform();
+            if (step == null) {
+                // May happen if the operation is a defining operation.
+                throw new IllegalArgumentException(Resources.format(
+                        Resources.Keys.OperationHasNoTransform_2, op.getClass(), op.getName()));
+            }
             if (op instanceof ConcatenatedOperation) {
                 final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
                 @SuppressWarnings("SuspiciousToArrayCall")

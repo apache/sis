@@ -496,6 +496,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotFormalProjectionParameter_1 = 60;
 
         /**
+         * Operation “{1}” of class ‘{0}’ has no mathematical transform.
+         */
+        public static final short OperationHasNoTransform_2 = 101;
+
+        /**
          * No parameter named “{1}” has been found in “{0}”.
          */
         public static final short ParameterNotFound_2 = 61;
