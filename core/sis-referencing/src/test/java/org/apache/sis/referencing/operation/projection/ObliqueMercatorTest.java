@@ -37,6 +37,7 @@ import static java.lang.StrictMath.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
+ * @author  Emmanuel Giasson (Thales)
  * @version 1.2
  * @since   1.0
  * @module

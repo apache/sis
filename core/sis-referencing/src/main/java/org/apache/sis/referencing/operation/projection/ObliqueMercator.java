@@ -55,6 +55,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
+ * @author  Emmanuel Giasson (Thales)
  * @version 1.2
  *
  * @see Mercator
