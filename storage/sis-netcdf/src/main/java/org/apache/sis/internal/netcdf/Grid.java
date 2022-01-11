@@ -30,6 +30,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.builder.LocalizationGridException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
@@ -47,7 +48,7 @@ import org.apache.sis.util.ArraysExt;
  * if a variable dimensions should considered as bands instead of spatiotemporal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see Decoder#getGrids()
  *
@@ -563,6 +564,13 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
      * @param  key     one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.
      */
     private void canNotCreate(final Decoder decoder, final String caller, final short key, final Exception ex) {
-        warning(decoder.listeners, Grid.class, caller, ex, null, key, decoder.getFilename(), getName(), ex.getLocalizedMessage());
+        CharSequence message = null;
+        if (ex instanceof LocalizationGridException) {
+            message = ((LocalizationGridException) ex).getPotentialCause();
+        }
+        if (message == null) {
+            message = ex.getLocalizedMessage();
+        }
+        warning(decoder.listeners, Grid.class, caller, ex, null, key, decoder.getFilename(), getName(), message);
     }
 }

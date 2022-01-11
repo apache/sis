@@ -270,7 +270,7 @@ public class LinearTransformBuilder extends TransformBuilder {
         try {
             return (LinearTransform) Linearizer.approximate(gridToCRS, domain);
         } catch (TransformException e) {
-            throw new FactoryException(e);
+            throw new LocalizationGridException(e);
         }
     }
 
@@ -1467,10 +1467,13 @@ search:         for (int j=domain(); --j >= 0;) {
                 }
                 /*
                  * Finished to try all transforms. If all of them failed, wrap the `TransformException`.
+                 * We use a sub-type of `FactoryException` which allows callers to add their own information.
+                 * For example the caller may know that the grid was possibly out of CRS domain of validity
+                 * and wanted to try anyway (it can be difficult to predict in advance if it will work).
                  */
                 if (bestTransform == null) {
-                    throw new FactoryException(Resources.format(Resources.Keys.CanNotLinearizeLocalizationGrid),
-                                               ProjectedTransformTry.getError(linearizers));
+                    throw new LocalizationGridException(Resources.format(Resources.Keys.CanNotLinearizeLocalizationGrid),
+                                                        ProjectedTransformTry.getError(linearizers));
                 }
                 if (needTargetReplace) {
                     transformedArrays = appliedLinearizer.replaceTransformed(targets, transformedArrays);
@@ -1547,7 +1550,7 @@ search:         for (int j=domain(); --j >= 0;) {
                     break;
                 }
                 default: {
-                    throw new FactoryException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
+                    throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
                 }
             }
             correlations[j] = c;

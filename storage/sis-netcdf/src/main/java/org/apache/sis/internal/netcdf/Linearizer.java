@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import org.opengis.geometry.Envelope;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -161,6 +162,14 @@ public final class Linearizer {
     private boolean axisSwap;
 
     /**
+     * The image span in degrees of longitude, or 0 if not computed.
+     * This is used for giving a hint about why a projection may have failed.
+     *
+     * @see #getPotentialCause()
+     */
+    private float longitudeSpan;
+
+    /**
      * Creates a new linearizer working on the specified datum.
      *
      * @param  datum  the datum to use. Should be consistent with {@link Convention#defaultHorizontalCRS(boolean)}.
@@ -194,6 +203,23 @@ public final class Linearizer {
      */
     final boolean axisSwap() {
         return axisSwap;
+    }
+
+    /**
+     * If this linearizer can give a probable reason why it failed to compute the localization grid, returns that reason.
+     * Otherwise returns {@code null}.
+     *
+     * @param  owner  for fetching localized resources.
+     * @return potential error cause, or {@code null} if unknown.
+     */
+    final InternationalString getPotentialCause(final Node owner) {
+        if (longitudeSpan >= 180 - 6) {         // 180° of longitude minus a UTM zone width.
+            final String name = IdentifiedObjects.getDisplayName(targetCRS, owner.getLocale());
+            return org.apache.sis.internal.referencing.Resources.formatInternational(
+                   org.apache.sis.internal.referencing.Resources.Keys.GridLongitudeSpanTooWide_2,
+                   longitudeSpan, (name != null) ? name : type);
+        }
+        return null;
     }
 
     /**
@@ -231,26 +257,32 @@ public final class Linearizer {
              */
             case UNIVERSAL: {
                 final Envelope bounds = grid.getSourceEnvelope(false);
-                double x, y, ymin, ymax;
+                double x, y, xmin, xmax, ymin, ymax;
                 {   // For keeping `median` variable local.
                     final double[] median = grid.getControlPoint(
                             (int) Math.round(bounds.getMedian(0)),
                             (int) Math.round(bounds.getMedian(1)));
-                    x = median[xdim];
-                    y = median[ydim];
-                    ymin = ymax = y;
+                    x = median[xdim]; xmin = xmax = x;
+                    y = median[ydim]; ymin = ymax = y;
                 }
                 final int[] gc = new int[SOURCE_DIMENSION];
                 for (int i=0; i<4; i++) {
                     for (int d=0; d<SOURCE_DIMENSION; d++) {
                         gc[d] = (int) Math.round(((i & (1 << d)) == 0) ? bounds.getMinimum(d) : bounds.getMaximum(d));
                     }
-                    final double yp = grid.getControlPoint(gc[0], gc[1])[ydim];
-                    if (yp < ymin) ymin = yp;
-                    if (yp > ymax) ymax = yp;
+                    final double[] cp = grid.getControlPoint(gc[0], gc[1]);
+                    double c = cp[xdim];
+                    if (c < xmin) xmin = c;
+                    if (c > xmax) xmax = c;
+                    c = cp[ydim];
+                    if (c < ymin) ymin = c;
+                    if (c > ymax) ymax = c;
                 }
+                longitudeSpan = (float) (xmax - xmin);      // For providing a hint in case of failure.
                 /*
                  * If the image is far from equator, replace the middle point by a point close to pole.
+                 * The intend is to avoid using UTM projection for latitudes such as 89°N, because a single
+                 * NaN in transformed coordinates is enough for blocking creation of the localization grid.
                  */
                      if (ymin >= +Type.POLAR_THRESHOLD) y = ymax;
                 else if (ymax <= -Type.POLAR_THRESHOLD) y = ymin;

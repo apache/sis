@@ -44,7 +44,7 @@ public final class Resources extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.8
+     * @since   1.2
      * @module
      */
     public static final class Keys extends KeyConstants {
@@ -189,7 +189,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ConstantProjParameterValue_1 = 12;
 
         /**
-         * Coordinate conversion of transformation from system “{0}” to “{1}” has not been found.
+         * Coordinate operation from system “{0}” to “{1}” has not been found.
          */
         public static final short CoordinateOperationNotFound_2 = 13;
 
@@ -245,6 +245,11 @@ public final class Resources extends IndexedResourceBundle {
          * {0} geodetic dataset version {1} on “{2}” version {3}.
          */
         public static final short GeodeticDataBase_4 = 18;
+
+        /**
+         * The grid spans {0}° of longitude, which may be too wide for the “{1}” domain.
+         */
+        public static final short GridLongitudeSpanTooWide_2 = 102;
 
         /**
          * More than one service provider of type ‘{0}’ are declared for “{1}”. Only the first provider
