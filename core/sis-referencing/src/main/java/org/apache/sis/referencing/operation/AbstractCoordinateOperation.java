@@ -903,7 +903,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                                                                        this.getTargetCRS().getCoordinateSystem()));
                             tr2 = MathTransforms.concatenate(before, tr2, after);
                         } catch (IncommensurableException | RuntimeException e) {
-                            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                            Logging.ignorableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                     AbstractCoordinateOperation.class, "equals", e);
                         }
                         if (deepEquals(tr1, tr2, mode)) return true;
