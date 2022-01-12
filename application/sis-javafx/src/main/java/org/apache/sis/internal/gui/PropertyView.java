@@ -20,11 +20,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Collection;
 import java.lang.reflect.Array;
-import java.io.IOException;
-import java.text.Format;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
-import java.text.ParseException;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import javafx.beans.value.ChangeListener;
@@ -43,9 +38,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.math.Statistics;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -53,16 +47,20 @@ import org.apache.sis.util.resources.Vocabulary;
  * A viewer for property value. The property may be of various class (array, image, <i>etc</i>).
  * If the type is unrecognized, the property is shown as text.
  *
- * <p>This class extends {@link CompoundFormat} and implements {@code ChangeListener} for
- * implementation convenience only. Users should not rely on this implementation details.</p>
+ * <p>This class implements {@code ChangeListener} for implementation convenience only.
+ * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
  * @module
  */
-@SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
-public final class PropertyView extends CompoundFormat<Object> implements ChangeListener<Number> {
+public final class PropertyView implements Localized, ChangeListener<Number> {
+    /**
+     * Provider for {@link java.text.NumberFormat}, {@link java.text.DateFormat}, <i>etc</i>.
+     */
+    private final TextFormats formats;
+
     /**
      * The current property value. This is used for detecting changes.
      */
@@ -131,18 +129,25 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     private ImageConverter runningTask, pendingTask;
 
     /**
-     * Creates a new property view.
+     * Creates a new property view which will use the given formatter for formatting values.
+     *
+     * @param  formatter  the formatter to use for formatting values.
+     */
+    public PropertyView(final PropertyValueFormatter formatter) {
+        formats = formatter.formats;
+        view = new SimpleObjectProperty<>(this, "view");
+    }
+
+    /**
+     * Creates a new property view which will set the node on the given property.
      *
      * @param  locale      the locale for numbers formatting.
-     * @param  view        the property where to set the node showing the value, or {@code null} for a default one.
+     * @param  view        the property where to set the node showing the value.
      * @param  background  the image background color, or {@code null} if none.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public PropertyView(final Locale locale, ObjectProperty<Node> view, final ObjectProperty<Background> background) {
-        super(locale, null);
-        if (view == null) {
-            view = new SimpleObjectProperty<>(this, "view");
-        }
+    public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
+        formats = new TextFormats(locale);
         this.view = view;
         if (background != null) {
             getImageCanvas().backgroundProperty().bind(background);
@@ -150,66 +155,13 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
     }
 
     /**
-     * Required by {@link CompoundFormat} but not used.
+     * Returns the locale for formatting messages and values.
      *
-     * @return the base type of values formatted by this {@code PropertyView} instance.
+     * @return the locale used by formats.
      */
     @Override
-    public Class<? extends Object> getValueType() {
-        return Object.class;
-    }
-
-    /**
-     * Unsupported operation.
-     *
-     * @param  text ignored.
-     * @param  pos  ignored.
-     * @return never return.
-     * @throws ParseException always thrown.
-     */
-    @Override
-    public Object parse(CharSequence text, ParsePosition pos) throws ParseException {
-        throw new ParseException(null, 0);
-    }
-
-    /**
-     * Formats the given property value. Current implementation requires {@code toAppendTo}
-     * to be an instance of {@link StringBuffer}. This method is not intended to be invoked
-     * outside internal usage.
-     *
-     * @param  value       the property value to format.
-     * @param  toAppendTo  where to append the property value.
-     */
-    @Override
-    public void format(final Object value, final Appendable toAppendTo) throws IOException {
-        final Format f = getFormat(value.getClass());
-        if (f != null) {
-            f.format(value, (StringBuffer) toAppendTo, new FieldPosition(0));
-        } else {
-            toAppendTo.append(value.toString());
-        }
-    }
-
-    /**
-     * Formats a single value. This method does the same work than the inherited
-     * {@link #format(Object)} final method but in a more efficient way.
-     */
-    private String formatValue(final Object value) {
-        final Format f = getFormat(value.getClass());
-        if (f == null) {
-            return value.toString();
-        } else if (value instanceof Number) {
-            return Numerics.useScientificNotationIfNeeded(f, value, Format::format);
-        } else {
-            return f.format(value);
-        }
-    }
-
-    /**
-     * Formats the given value, using scientific notation if needed.
-     */
-    private static void format(final Format f, final double value, final StringBuffer buffer, final FieldPosition pos) {
-        Numerics.useScientificNotationIfNeeded(f, value, (nf,v) -> {nf.format(v, buffer, pos); return null;});
+    public Locale getLocale() {
+        return formats.getLocale();
     }
 
     /**
@@ -247,7 +199,7 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
                 } else if (newValue.getClass().isArray()) {
                     content = setList(newValue);
                 } else {
-                    content = setText(formatValue(newValue));
+                    content = setText(formats.formatValue(newValue, true));
                 }
             }
             view.set(content);
@@ -288,7 +240,7 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
         }
         final String[] list = new String[Array.getLength(array)];
         for (int i=0; i<list.length; i++) {
-            list[i] = formatValue(Array.get(array, i));
+            list[i] = formats.formatValue(Array.get(array, i), true);
         }
         listView.getItems().setAll(list);
         return node;
@@ -395,16 +347,12 @@ public final class PropertyView extends CompoundFormat<Object> implements Change
         String mean  = null;
         if (statistics != null && statistics.length != 0) {
             final Statistics s = statistics[0];
-            final FieldPosition pos = new FieldPosition(0);
             final StringBuffer buffer = new StringBuffer();
-            final Format f = getFormat(Number.class);
-            format(f, s.minimum(), buffer, pos); buffer.append(" … ");
-            format(f, s.maximum(), buffer, pos);
+            formats.formatPair(s.minimum(), " … ", s.maximum(), buffer);
             range = buffer.toString();
 
             buffer.setLength(0);
-            format(f, s.mean(), buffer, pos); buffer.append(" ± ");
-            format(f, s.standardDeviation(false), buffer, pos);
+            formats.formatPair(s.mean(), " ± ", s.standardDeviation(false), buffer);
 
             final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
             buffer.append(" (").append(vocabulary.getString(Vocabulary.Keys.StandardDeviation)).append(')');
