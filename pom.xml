@@ -668,7 +668,7 @@
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.9.0</version>
         <configuration>
           <release>${maven.compiler.target}</release>
           <encoding>${project.build.sourceEncoding}</encoding>
@@ -706,7 +706,7 @@
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.2</version>
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
