@@ -106,6 +106,18 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         extends GeodeticAuthorityFactory implements AutoCloseable
 {
     /**
+     * Duration of data access operations that should be logged, in nanoseconds.
+     * Any operation that take longer than this amount of time to execute will have a message logged.
+     * The log level depends on the execution duration as specified in {@link PerformanceLevel}.
+     *
+     * <div class="note"><b>Rational:</b>
+     * we do not unconditionally log all creation messages because they are redundant with more detailed
+     * logs produced by {@link GeodeticObjectFactory}. Their only additional information is the creation
+     * duration, which is not very useful if too close to zero.</div>
+     */
+    private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
+
+    /**
      * Sentinel value when {@link #authority} can not be determined because the data access object
      * can not be constructed.
      */
@@ -469,9 +481,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             /*
              * Log the event. Note: there is no need to check for `Semaphores.FINER_OBJECT_CREATION_LOGS`
              * because this method is not invoked, or is invoked with `type = null`, during execution of
-             * `IdentifiedObjectFinder` seach operations.
+             * `IdentifiedObjectFinder` search operations. The only new information in this log compared
+             * to `GeodeticObjectFactory` logs is the creation duration, not useful if too close to zero
+             * and always useful if too long.
              */
-            if (type != null) {
+            if (time >= DURATION_FOR_LOGGING && type != null) {
                 if (caller == null) {
                     caller = "create".concat(type.getSimpleName());
                 }
