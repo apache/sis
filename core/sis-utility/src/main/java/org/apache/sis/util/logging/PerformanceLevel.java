@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
 import org.apache.sis.util.Configuration;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -65,7 +66,7 @@ public final class PerformanceLevel extends Level {
      * time equals or greater than 1 second are logged at this level. However this threshold can
      * be changed by a call to <code>SLOW.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
-    public static final PerformanceLevel SLOW = new PerformanceLevel("SLOW", 620, 1000_000_000L);
+    public static final PerformanceLevel SLOW = new PerformanceLevel("SLOW", Vocabulary.Keys.Slow, 620, 1000_000_000L);
 
     /**
      * The level for logging only events slower than the ones logged at the {@link #SLOW} level.
@@ -73,12 +74,17 @@ public final class PerformanceLevel extends Level {
      * logged at this level. However this threshold can be changed by a call to
      * <code>SLOWER.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
-    public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", 630, 10_000_000_000L);
+    public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", Vocabulary.Keys.Slower, 630, 10_000_000_000L);
 
     /**
      * The minimal duration (in nanoseconds) for logging the record.
      */
     private volatile long minDuration;
+
+    /**
+     * The key for producing a localized name of this level.
+     */
+    private final short localization;
 
     /**
      * Constructs a new logging level for monitoring performance.
@@ -87,8 +93,9 @@ public final class PerformanceLevel extends Level {
      * @param value     the level value.
      * @param duration  the minimal duration (in nanoseconds) for logging a record.
      */
-    private PerformanceLevel(final String name, final int value, final long duration) {
+    private PerformanceLevel(final String name, final short key, final int value, final long duration) {
         super(name, value);
+        localization = key;
         minDuration = duration;
     }
 
@@ -149,5 +156,17 @@ public final class PerformanceLevel extends Level {
                 SLOWER.minDuration = duration;
             }
         }
+    }
+
+    /**
+     * Return the name of this level for the current default locale.
+     *
+     * @return name of this level for the current locale.
+     *
+     * @since 1.2
+     */
+    @Override
+    public String getLocalizedName() {
+        return Vocabulary.format(localization);
     }
 }
