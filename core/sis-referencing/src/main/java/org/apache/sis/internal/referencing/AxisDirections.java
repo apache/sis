@@ -558,7 +558,7 @@ next:       for (int i=0; i <= limit; i++) {
 
     /**
      * Returns the indices of {@code cs} axes presumed covariant with {@code subCS} axes.
-     * The mapping is based on axis directions only, with collinear axes mapped in priority.
+     * The mapping is based on axis directions only, with colinear axes mapped in priority.
      * If some axes can not be mapped using collinearity criterion, then directions from poles
      * (e.g. <cite>"South along 90°E"</cite>) are arbitrarily handled as if they were covariant
      * with East and North directions, in that order.
