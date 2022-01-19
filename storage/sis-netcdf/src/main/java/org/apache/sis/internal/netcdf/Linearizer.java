@@ -100,7 +100,7 @@ public final class Linearizer {
          * </ul>
          *
          * <div class="note"><b>Rational:</b>
-         * the intend is to increase the chances to get the Polar Stereographic projection for images close to pole.
+         * the intent is to increase the chances to get the Polar Stereographic projection for images close to pole.
          * This is necessary because longitude values may become far from central meridian at latitudes such as 88°,
          * causing the Transverse Mercator projection to produce NaN numbers.</div>
          */
@@ -112,34 +112,6 @@ public final class Linearizer {
          * 60° is the limit of the domain of validity of Polar Stereographic methods.
          */
         static final int POLAR_THRESHOLD = 60;
-
-        /**
-         * Returns a coordinate system containing the axes to search and replace in order to build
-         * a "CRS after linearization" from a "CRS before linearization". The caller will use only
-         * the axis directions (not the names) of the returned coordinate system.
-         *
-         * <h4>Rational</h4>
-         * Usually, the source CRS is geographic and the target CRS is projected.
-         * We can generally associate a source axis to a target axis by looking at their directions.
-         * For example the "Longitude" source axis is approximately colinear with the "Easting" target axis.
-         * {@link org.opengis.referencing.cs.AxisDirection#EAST} can be used as a criterion for mapping them.
-         * Note however that axis names can not be used, because they differ in geographic and projected CRS.
-         *
-         * <p>However there is an exception where target axis directions will not work neither.
-         * If the projection is a polar projection with axis directions such as "South along 90°E",
-         * then {@link AxisDirections#indicesOfColinear(CoordinateSystem, CoordinateSystem)} will
-         * not find a match. We can workaround by using arbitrary (East, North) directions instead.</p>
-         *
-         * @param  targetCS  coordinate system of {@link Linearizer#targetCRS}.
-         */
-        final CoordinateSystem getAxisReplacement(final CoordinateSystem targetCS) {
-            for (int i = targetCS.getDimension(); --i >= 0;) {
-                if (AxisDirections.isAlongMeridian(targetCS.getAxis(i).getDirection())) {
-                    return CommonCRS.defaultGeographic().getCoordinateSystem();
-                }
-            }
-            return targetCS;
-        }
     }
 
     /**
@@ -364,11 +336,20 @@ public final class Linearizer {
         Matrix original = null;
 search: for (final GridCacheValue replacement : replacements) {
             final SingleCRS targetCRS = replacement.linearizationTarget;
-            final CoordinateSystem targetCS = replacement.linearizationType.getAxisReplacement(targetCRS.getCoordinateSystem());
+            final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
             int firstDimension = 0;
             for (int i=0; i < components.length; i++) {
                 final SingleCRS sourceCRS = components[i];
-                final int[] r = AxisDirections.indicesOfColinear(sourceCRS.getCoordinateSystem(), targetCS);
+                /*
+                 * In the most typical cases, the source CRS is geographic and the target CRS is projected.
+                 * We can generally associate a source axis to a target axis by looking at their directions.
+                 * For example the "Longitude" source axis is approximately colinear with the "Easting" target axis.
+                 * However there is a use case where target axis directions can not be matched directly to source:
+                 * if the projection is a polar projection with target axis directions such as "South along 90°E",
+                 * then `AxisDirections.indexOfColinear(CoordinateSystem, CoordinateSystem)} will not find a match.
+                 * We need the more flexible `indicesOfLenientMapping(…)` method.
+                 */
+                final int[] r = AxisDirections.indicesOfLenientMapping(sourceCRS.getCoordinateSystem(), targetCS);
                 if (r != null) {
                     components[i] = targetCRS;
                     if (replacement.axisSwap) {

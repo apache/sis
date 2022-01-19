@@ -70,6 +70,8 @@ public final class AxisDirections extends Static {
     /**
      * Ordinal of the last element in the {@link AxisDirection} code list.
      * This is used for differentiating the standard codes from the user-defined ones.
+     *
+     * @see #isUserDefined(AxisDirection)
      */
     private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
 
@@ -262,22 +264,6 @@ public final class AxisDirections extends Static {
         if (dir == null) return false;
         final int n  = dir.ordinal() - NORTH.ordinal();
         return n >= 0 && n < COMPASS_COUNT && (n & 3) != 0;
-    }
-
-    /**
-     * Returns {@code true} if the given axis is such as "South along 90°E".
-     *
-     * <p><b>This is a temporary method to be removed!</b>
-     * Latest ISO 19111 revision uses another mechanism for declaring such axis direction.
-     * This method will be removed after we upgraded the API accordingly.
-     *
-     * @param  dir  the axis to test, or {@code null}.
-     * @return {@code true} if the given axis is such as "South along 90°E".
-     *
-     * @since 1.2
-     */
-    public static boolean isAlongMeridian(final AxisDirection dir) {
-        return (dir != null) && !isCompass(dir);
     }
 
     /**
@@ -558,37 +544,6 @@ next:       for (int i=0; i <= limit; i++) {
     }
 
     /**
-     * Returns the indices in {@code cs} of axes colinear with the {@code subCS} axes.
-     * If many axes have the same direction (should not happen except for temporal axes),
-     * this method gives precedence to a sequence of consecutive indices.
-     *
-     * <p>This method is similar to {@link #indexOfColinear(CoordinateSystem, CoordinateSystem)} except that it
-     * enumerates the indices instead of returning only the first index. If {@code indexOfColinear(…)} can not
-     * find consecutive indices, then this method fallbacks on a sequence of indices regardless their order.</p>
-     *
-     * @param  cs     the coordinate system which contains all axes, or {@code null}.
-     * @param  subCS  the coordinate system to search into {@code cs}.
-     * @return indices in {@code cs} of axes colinear with {@code subCS} axes in the order they appear in {@code subCS},
-     *         or {@code null} if at least one {@code subCS} axis can not be mapped to a {@code cs} axis.
-     *
-     * @since 1.1
-     */
-    public static int[] indicesOfColinear(final CoordinateSystem cs, final CoordinateSystem subCS) {
-        final int dim = subCS.getDimension();
-        final int index = indexOfColinear(cs, subCS);           // More robust than fallback below.
-        if (index >= 0) {
-            return ArraysExt.range(index, index + dim);
-        }
-        final int[] indices = new int[dim];
-        for (int i=0; i<dim; i++) {
-            if ((indices[i] = indexOfColinear(cs, subCS.getAxis(i).getDirection())) < 0) {
-                return null;
-            }
-        }
-        return indices;
-    }
-
-    /**
      * Returns whether the second axis is colinear with the first axis. This method returns {@code true}
      * if the {@linkplain #absolute absolute} direction of the given directions are equal.
      * For example "down" is considered colinear with "up".
@@ -599,6 +554,30 @@ next:       for (int i=0; i <= limit; i++) {
      */
     public static boolean isColinear(final AxisDirection d1, final AxisDirection d2) {
         return Objects.equals(absolute(d1), absolute(d2));
+    }
+
+    /**
+     * Returns the indices of {@code cs} axes presumed covariant with {@code subCS} axes.
+     * The mapping is based on axis directions only, with collinear axes mapped in priority.
+     * If some axes can not be mapped using collinearity criterion, then directions from poles
+     * (e.g. <cite>"South along 90°E"</cite>) are arbitrarily handled as if they were covariant
+     * with East and North directions, in that order.
+     *
+     * @param  cs     the coordinate system which contains all axes, or {@code null}.
+     * @param  subCS  the coordinate system for which to search axes into {@code cs}.
+     * @return indices in {@code cs} of axes covariant with {@code subCS} axes in the order they appear in {@code subCS},
+     *         or {@code null} if at least one {@code subCS} axis can not be mapped to a {@code cs} axis.
+     *
+     * @see #indexOfColinear(CoordinateSystem, CoordinateSystem)
+     *
+     * @since 1.2
+     */
+    public static int[] indicesOfLenientMapping(final CoordinateSystem cs, final CoordinateSystem subCS) {
+        final int index = indexOfColinear(cs, subCS);           // More robust than fallback below.
+        if (index >= 0) {
+            return ArraysExt.range(index, index + subCS.getDimension());
+        }
+        return AxesMapper.indices(cs, subCS);
     }
 
     /**

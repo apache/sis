@@ -63,7 +63,7 @@ final class DimensionReducer {
                 final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
                 final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
                 if (sourceCS.getDimension() < targetCS.getDimension()) {
-                    dimensions = AxisDirections.indicesOfColinear(targetCS, sourceCS);
+                    dimensions = AxisDirections.indicesOfLenientMapping(targetCS, sourceCS);
                     if (dimensions != null) {
                         Arrays.sort(dimensions);
                         reducedCRS = CRS.reduce(targetCRS, dimensions);

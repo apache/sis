@@ -625,7 +625,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                     if (targetCRS != sourceCRS) {
                         final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
                         final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
-                        sourceDimensions = AxisDirections.indicesOfColinear(sourceCS, targetCS);
+                        sourceDimensions = AxisDirections.indicesOfLenientMapping(sourceCS, targetCS);
                         if (sourceDimensions != null) {
                             final double[] lowerCorner = new double[sourceDimensions.length];
                             final double[] upperCorner = new double[sourceDimensions.length];
