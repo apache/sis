@@ -34,6 +34,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -78,6 +79,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
+
+import static org.apache.sis.referencing.CRS.findOperation;
 
 
 /**
@@ -880,6 +883,52 @@ public class GridGeometry implements LenientComparable, Serializable {
             return envelope;
         }
         throw incomplete(ENVELOPE, (extent == null) ? Resources.Keys.UnspecifiedGridExtent : Resources.Keys.UnspecifiedTransform);
+    }
+
+    /**
+     * Returns the "real world" bounding box of this grid geometry transformed to the given CRS.
+     * This envelope is computed from the {@linkplain #getExtent() grid extent} if available,
+     * or from the {@linkplain #getEnvelope() envelope} otherwise.
+     *
+     * @param  crs  the desired coordinate reference system for the returned envelope.
+     * @return the bounding box in "real world" coordinates (never {@code null}).
+     * @throws IncompleteGridGeometryException if this grid geometry has no extent and no envelope.
+     * @throws TransformException if the envelope can not be transformed to the specified CRS.
+     *
+     * @since 1.2
+     */
+    public Envelope getEnvelope(final CoordinateReferenceSystem crs) throws TransformException {
+        ArgumentChecks.ensureNonNull("crs", crs);
+        final int   bitmask;        // CRS, EXTENT or GRID_TO_CRS
+        final short errorKey;       // Resource key for error message.
+        final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(envelope);
+        if (Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+            return envelope;
+        } else if (sourceCRS == null) {
+            bitmask  = CRS;
+            errorKey = Resources.Keys.UnspecifiedCRS;
+        } else if (extent == null && envelope == null) {
+            bitmask  = EXTENT;
+            errorKey = Resources.Keys.UnspecifiedGridExtent;
+        } else if (cornerToCRS == null && envelope == null) {
+            bitmask  = GRID_TO_CRS;
+            errorKey = Resources.Keys.UnspecifiedTransform;
+        } else try {
+            final CoordinateOperation op = findOperation(sourceCRS, crs, geographicBBox());
+            final Envelope clip = (envelope != null) ? Envelopes.transform(op, envelope) : null;
+            if (extent == null || cornerToCRS == null) {
+                return clip;
+            }
+            MathTransform tr = MathTransforms.concatenate(cornerToCRS, op.getMathTransform());
+            final GeneralEnvelope env = extent.toCRS(tr, tr, clip);
+            env.setCoordinateReferenceSystem(op.getTargetCRS());
+            env.normalize();
+            env.intersect(clip);
+            return env;
+        } catch (FactoryException e) {
+            throw new TransformException(e);
+        }
+        throw incomplete(bitmask, errorKey);
     }
 
     /**
