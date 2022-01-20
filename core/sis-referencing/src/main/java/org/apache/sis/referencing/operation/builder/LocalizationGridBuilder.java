@@ -713,7 +713,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                         step = InterpolatedTransform.createGeodeticTransformation(nonNull(factory), shifts);
                     }
                 } catch (TransformException e) {
-                    throw new FactoryException(e);                                          // Should never happen.
+                    throw new LocalizationGridException(e);                                 // Should never happen.
                 }
             }
             /*

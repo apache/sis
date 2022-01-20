@@ -31,6 +31,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
@@ -58,7 +59,7 @@ import org.apache.sis.util.Utilities;
  * is thread-safe. If concurrent searches are desired, then a new instance should be created for each thread.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#newFinder(String)
@@ -512,17 +513,22 @@ public class IdentifiedObjectFinder {
      */
     Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
         final Set<IdentifiedObject> result = new LinkedHashSet<>();     // We need to preserve order.
-        for (final String code : getCodeCandidates(object)) {
-            final IdentifiedObject candidate;
-            try {
-                candidate = create(code);
-            } catch (FactoryException e) {
-                exceptionOccurred(e);
-                continue;
+        final boolean finer = Semaphores.queryAndSet(Semaphores.FINER_OBJECT_CREATION_LOGS);
+        try {
+            for (final String code : getCodeCandidates(object)) {
+                final IdentifiedObject candidate;
+                try {
+                    candidate = create(code);
+                } catch (FactoryException e) {
+                    exceptionOccurred(e);
+                    continue;
+                }
+                if (match(candidate, object)) {
+                    result.add(candidate);
+                }
             }
-            if (match(candidate, object)) {
-                result.add(candidate);
-            }
+        } finally {
+            Semaphores.clear(Semaphores.FINER_OBJECT_CREATION_LOGS, finer);
         }
         return result;
     }

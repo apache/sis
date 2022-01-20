@@ -1125,6 +1125,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short SlashSeparatedList_2 = 181;
 
         /**
+         * Slow
+         */
+        public static final short Slow = 267;
+
+        /**
+         * Slower
+         */
+        public static final short Slower = 268;
+
+        /**
          * Source
          */
         public static final short Source = 182;

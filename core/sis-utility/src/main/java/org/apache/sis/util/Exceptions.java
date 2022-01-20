@@ -108,7 +108,10 @@ public final class Exceptions extends Static {
      *                   will be happened after the provided message.
      * @return a new exception with the given message, or the given exception if the exception
      *         class does not provide public {@code Exception(String)} constructor.
+     *
+     * @deprecated To be removed with no replacement.
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> T setMessage(final T exception, String message, final boolean append) {
         if (append) {
@@ -155,7 +158,7 @@ public final class Exceptions extends Static {
     }
 
     /**
-     * Returns a string which contain the given message on the first line, followed by the
+     * Returns a string which contains the given message on the first line, followed by the
      * {@linkplain #getLocalizedMessage(Throwable, Locale) localized message} of the given exception
      * on the next line. If the exception has a {@linkplain Throwable#getCause() causes}, then
      * the class name and the localized message of the cause are formatted on the next line

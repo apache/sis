@@ -24,6 +24,8 @@ import java.io.UncheckedIOException;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import com.esri.core.geometry.Point;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -49,7 +51,7 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -85,7 +87,9 @@ public final strictfp class WriterTest extends TestCase {
      * Creates a new GPX data store which will read and write in memory.
      */
     private Store create() throws DataStoreException {
-        return new Store(provider, new StorageConnector(output));
+        final StorageConnector connector = new StorageConnector(output);
+        connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
+        return new Store(provider, connector);
     }
 
     /**
@@ -244,7 +248,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param type   the kind of feature to write: way point, route or track.
      */
     private void testFeatures(final Store store, final Type type) throws Exception {
-        final Types types = Types.DEFAULT;
+        final Types types = store.types;
         /*
          * Way Points as defined in "waypoint.xml" test file.
          * Appear also in "route.xml" and "track.xml" files.
@@ -363,9 +367,10 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testRoutes110")
     public void testInputReplacement() throws Exception {
-        try (Store store = new Store(provider, new StorageConnector(
-                TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"))))
-        {
+        final StorageConnector connector = new StorageConnector(
+                TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"));
+        connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
+        try (Store store = new Store(provider, connector)) {
             /*
              * Read part of the file. We verify its content as a matter of principle,
              * but the main purpose of following code is to advance in the stream.

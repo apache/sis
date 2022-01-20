@@ -1453,10 +1453,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                                 throw (NoSuchAuthorityCodeException) noSuchAuthorityCode(Projection.class, opCode).initCause(e);
                             }
                             final CoordinateReferenceSystem baseCRS;
-                            final boolean resumeParamChecks;
+                            final boolean suspendParamChecks;
                             if (!deprecated) {
                                 baseCRS = owner.createCoordinateReferenceSystem(geoCode);
-                                resumeParamChecks = false;
+                                suspendParamChecks = true;
                             } else {
                                 /*
                                  * If the ProjectedCRS is deprecated, one reason among others may be that it uses one of
@@ -1484,7 +1484,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                  * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
                                  * checks.
                                  */
-                                resumeParamChecks = !Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
+                                suspendParamChecks = Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
                                 // Try block must be immediately after above line (do not insert any code between).
                             }
                             try {
@@ -1501,9 +1501,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                     crs = crsFactory.createDerivedCRS(properties, baseCRS, op, cs);
                                 }
                             } finally {
-                                if (resumeParamChecks) {
-                                    Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK);
-                                }
+                                Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK, suspendParamChecks);
                             }
                         } finally {
                             endOfRecursivity(ProjectedCRS.class, epsg);

@@ -111,26 +111,18 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
         /*
          * Usual case. This includes InputStream, DataInput, File, Path, URL, URI.
          */
-        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
-        if (buffer != null) {
-            /*
-             * We do not use the safer `probeContent(…)` method because we do not have a mechanism
-             * for telling if `UNSUPPORTED_STORAGE` was determined by this block or if we got that
-             * result because the buffer was null.
-             */
+        Prober<ByteBuffer> prober = (buffer) -> {
             if (buffer.remaining() < HEADER.length) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
             // Quick check for "<?xml " header.
-            final int p = buffer.position();
             for (int i=0; i<HEADER.length; i++) {
-                if (buffer.get(p + i) != HEADER[i]) {       // TODO: use ByteBuffer.mismatch(…) with JDK11.
+                if (buffer.get() != HEADER[i]) {              // TODO: use ByteBuffer.mismatch(…) with JDK11.
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }
             // Now check for a more accurate MIME type.
-            buffer.position(p + HEADER.length);
-            final ProbeResult result = new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
+            return new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
                 @Override int read() {
                     if (buffer.hasRemaining()) {
                         return buffer.get();
@@ -139,14 +131,12 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
                     return -1;
                 }
             }.probeContent();
-            buffer.position(p);
-            return result;
-        }
+        };
         /*
-         * We should enter in this block only if the user gave us explicitly a Reader.
-         * A common case is a StringReader wrapping a String object.
+         * We should enter in the "or else" block only if the user gave us explicitly a `Reader`.
+         * A common case is a `StringReader` wrapping a `String` object.
          */
-        return probeContent(connector, Reader.class, (reader) -> {
+        return probeContent(connector, ByteBuffer.class, prober.orElse(Reader.class, (reader) -> {
             // Quick check for "<?xml " header.
             for (int i=0; i<HEADER.length; i++) {
                 if (reader.read() != HEADER[i]) {
@@ -154,13 +144,12 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
                 }
             }
             // Now check for a more accurate MIME type.
-            final ProbeResult result = new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
+            return new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
                 private int remaining = READ_AHEAD_LIMIT;
                 @Override int read() throws IOException {
                     return (--remaining >= 0) ? IOUtilities.readCodePoint(reader) : -1;
                 }
             }.probeContent();
-            return result;
-        });
+        }));
     }
 }

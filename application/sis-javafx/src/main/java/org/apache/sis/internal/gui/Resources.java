@@ -343,6 +343,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short SelectCrsByContextMenu = 49;
 
         /**
+         * Select parent logger
+         */
+        public static final short SelectParentLogger = 69;
+
+        /**
          * Send to
          */
         public static final short SendTo = 31;

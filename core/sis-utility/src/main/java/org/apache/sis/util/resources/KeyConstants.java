@@ -102,7 +102,7 @@ public class KeyConstants {
 
     /**
      * Returns the name of the key at the given index. If there is no name at that given
-     * index, format the index as a decimal number. Those decimal numbers are parsed by
+     * index, formats the index as a decimal number. Those decimal numbers are parsed by
      * our {@link IndexedResourceBundle#handleGetObject(String)} implementation.
      */
     final String getKeyName(final short index) {

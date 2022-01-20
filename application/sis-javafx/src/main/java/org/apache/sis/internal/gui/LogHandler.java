@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,10 +26,13 @@ import java.util.logging.LogRecord;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -56,14 +60,117 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      * May also contain loggings from libraries other than SIS. The length of this list is limited
      * to {@value #LIMIT} elements. This list shall be read and written in JavaFX thread only.
      */
-    private final ObservableList<LogRecord> systemLogs;
+    private final Destination systemLogs;
+
+    /**
+     * Destination where to write log records.
+     */
+    public static final class Destination {
+        /**
+         * The list where to add and remove log records. Logger names shall be unmodified.
+         */
+        private final ObservableList<LogRecord> queue;
+
+        /**
+         * The read-only list of log records. Elements in this list shall not be modified.
+         * This list shall be read in JavaFX thread only.
+         */
+        public final ObservableList<LogRecord> records;
+
+        /**
+         * Names of all logger in the {@link #queue} list, associated to a count of occurrences.
+         * The occurrence count is used for detecting when to remove an entry from the map.
+         */
+        private TreeMap<String,Integer> nameCount;
+
+        /**
+         * Root of a tree of logger names. Created when first needed.
+         *
+         * @see #loggerNames()
+         */
+        private TreeItem<String> loggers;
+
+        /**
+         * Creates a new list of records.
+         */
+        Destination() {
+            queue   = FXCollections.observableArrayList();
+            records = FXCollections.unmodifiableObservableList(queue);
+        }
+
+        /**
+         * Returns the components of the logger name, or an empty array if the logger name is null.
+         */
+        private static String[] path(final LogRecord record) {
+            return (String[]) CharSequences.split(record.getLoggerName(), '.');
+        }
+
+        /**
+         * Adds the given log record. If the number of records exceeds {@value #LIMIT},
+         * then the oldest records are removed. This method shall be invoked in JavaFX thread.
+         *
+         * @param  record  the record to add.
+         */
+        public final void add(final LogRecord record) {
+            if (queue.add(record)) {
+                if (nameCount != null) {
+                    updateTree(record);
+                }
+                while (queue.size() > LIMIT) {
+                    final LogRecord first = queue.remove(0);
+                    if (nameCount != null) {
+                        final String name = first.getLoggerName();
+                        if (name != null) {
+                            final Integer remaining = nameCount.computeIfPresent(name, (k,o) -> {
+                                final int v = o - 1;
+                                return (v > 0) ? v : null;
+                            });
+                            if (remaining == null) {
+                                GUIUtilities.removePathSorted(loggers, path(first));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Adds the given record to the {@link #nameCount} map,
+         * then update the {@link #loggers} tree if needed.
+         */
+        private void updateTree(final LogRecord record) {
+            final String name = record.getLoggerName();
+            if (name != null) {
+                if (nameCount.merge(name, 1, (o,n) -> o+1) == 1) {
+                    GUIUtilities.appendPathSorted(loggers, path(record));
+                }
+            }
+        }
+
+        /**
+         * Returns the root of a tree of logger names. This method shall be invoked in JavaFX thread
+         * and the tree should not be modified by the caller. The tree is created when first needed,
+         * then cached. Its content will be updated automatically when log records are added or removed.
+         *
+         * @return root of a tree of logger names.
+         */
+        public TreeItem<String> loggerNames() {
+            if (loggers == null) {
+                nameCount = new TreeMap<>();
+                loggers   = new TreeItem<>(Vocabulary.format(Vocabulary.Keys.Root));
+                queue.forEach(this::updateTree);
+                loggers.setExpanded(true);
+            }
+            return loggers;
+        }
+    }
 
     /**
      * The list of log records specific to each resource.
      * Read and write operations on this map shall be synchronized on {@code resourceLogs}.
      * Read and write operations on map values shall be done in JavaFX thread only.
      */
-    private final WeakHashMap<Resource, ObservableList<LogRecord>> resourceLogs;
+    private final WeakHashMap<Resource, Destination> resourceLogs;
 
     /**
      * The list of log records for which loading are in progress. Keys are thread identifiers
@@ -71,19 +178,20 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      * in a {@code try ... finally} block. Read and write operations on map values shall be
      * done in JavaFX thread only.
      */
-    private final ConcurrentMap<Long, ObservableList<LogRecord>> inProgress;
+    private final ConcurrentMap<Long, Destination> inProgress;
 
     /**
      * Creates an initially empty collector.
      */
     private LogHandler() {
-        systemLogs   = FXCollections.observableArrayList();
+        systemLogs   = new Destination();
         resourceLogs = new WeakHashMap<>();
         inProgress   = new ConcurrentHashMap<>();
     }
 
     /**
      * Registers or unregisters the unique handler instance on the root logger.
+     * This method should be invoked only at application start and shutdown.
      *
      * @param  enabled  {@code true} for registering or {@code false} for unregistering.
      */
@@ -142,7 +250,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      * @return loggings related to the SIS library as a whole, not specific to any particular resources.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public static ObservableList<LogRecord> getSystemRecords() {
+    public static Destination getSystemRecords() {
         return INSTANCE.systemLogs;
     }
 
@@ -152,20 +260,20 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      * @param  source  the resource for which to get the list of log records, or {@code null}.
      * @return the records for the given resource, or {@code null} if the given source is null.
      */
-    public static ObservableList<LogRecord> getRecords(final Resource source) {
+    public static Destination getRecords(final Resource source) {
         return (source != null) ? INSTANCE.getRecordsNonNull(source) : null;
     }
 
     /**
      * Returns the list of log records for the given resource.
-     * The given resource shall not be null (the check is done by {@link ConcurrentHashMap}).
+     * The given resource shall not be null.
      *
      * @param  source  the resource for which to get the list of log records.
      * @return the records for the given resource.
      */
-    private ObservableList<LogRecord> getRecordsNonNull(final Resource source) {
+    private Destination getRecordsNonNull(final Resource source) {
         synchronized (resourceLogs) {
-            return resourceLogs.computeIfAbsent(source, (k) -> FXCollections.observableArrayList());
+            return resourceLogs.computeIfAbsent(source, (k) -> new Destination());
         }
     }
 
@@ -177,13 +285,16 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      */
     @Override
     public void eventOccured(final WarningEvent event) {
-        final LogRecord log = event.getDescription();
-        if (isLoggable(log)) {
-            final ObservableList<LogRecord> records = getRecordsNonNull(event.getSource());
-            if (Platform.isFxApplicationThread()) {
-                records.add(log);
-            } else {
-                Platform.runLater(() -> records.add(log));
+        final Resource source = event.getSource();
+        if (source != null) {
+            final LogRecord log = event.getDescription();
+            if (isLoggable(log)) {
+                final Destination records = getRecordsNonNull(source);
+                if (Platform.isFxApplicationThread()) {
+                    records.add(log);
+                } else {
+                    Platform.runLater(() -> records.add(log));
+                }
             }
         }
     }
@@ -199,31 +310,21 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
     @Override
     public void publish(final LogRecord log) {
         if (isLoggable(log)) {
-            // TODO: replace by log.getLongThreadId() with JDK16.
-            final Long id = Thread.currentThread().getId();
-            final ObservableList<LogRecord> records = inProgress.get(id);
+            final Long id = log.getLongThreadID();
+            final Destination records = inProgress.get(id);
             if (Platform.isFxApplicationThread()) {
-                add(log, records);
+                systemLogs.add(log);
+                if (records != null) {
+                    records.add(log);
+                }
             } else {
-                Platform.runLater(() -> add(log, records));
+                Platform.runLater(() -> {
+                    systemLogs.add(log);
+                    if (records != null) {
+                        records.add(log);
+                    }
+                });
             }
-        }
-    }
-
-    /**
-     * Adds the given log record to the global (system) list of logs and to the resource-specific
-     * list of logs, if any.
-     *
-     * @param log      the log to add (must be non-null).
-     * @param records  list of resource-specific logs, or {@code null} if none.
-     */
-    private void add(final LogRecord log, final ObservableList<LogRecord> records) {
-        if (systemLogs.size() >= LIMIT) {
-            systemLogs.remove(0);
-        }
-        systemLogs.add(log);
-        if (records != null) {
-            records.add(log);
         }
     }
 

@@ -369,7 +369,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
 
     /**
      * Returns the first error in the given list of linearizers. Errors after the first one are added
-     * as suppressed exception. If no error are found, this method returns {@code null}.
+     * as suppressed exceptions. If no error are found, this method returns {@code null}.
      */
     static TransformException getError(final List<ProjectedTransformTry> linearizers) {
         TransformException error = null;

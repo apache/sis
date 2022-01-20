@@ -34,6 +34,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -78,6 +79,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
+
+import static org.apache.sis.referencing.CRS.findOperation;
 
 
 /**
@@ -625,7 +628,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                     if (targetCRS != sourceCRS) {
                         final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
                         final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
-                        sourceDimensions = AxisDirections.indicesOfColinear(sourceCS, targetCS);
+                        sourceDimensions = AxisDirections.indicesOfLenientMapping(sourceCS, targetCS);
                         if (sourceDimensions != null) {
                             final double[] lowerCorner = new double[sourceDimensions.length];
                             final double[] upperCorner = new double[sourceDimensions.length];
@@ -880,6 +883,67 @@ public class GridGeometry implements LenientComparable, Serializable {
             return envelope;
         }
         throw incomplete(ENVELOPE, (extent == null) ? Resources.Keys.UnspecifiedGridExtent : Resources.Keys.UnspecifiedTransform);
+    }
+
+    /**
+     * Returns the "real world" bounding box of this grid geometry transformed to the given CRS.
+     * This envelope is computed from the {@linkplain #getExtent() grid extent} if available,
+     * or from the {@linkplain #getEnvelope() envelope} otherwise.
+     *
+     * @param  crs  the desired coordinate reference system for the returned envelope.
+     * @return the bounding box in "real world" coordinates (never {@code null}).
+     * @throws IncompleteGridGeometryException if this grid geometry has no extent and no envelope.
+     * @throws TransformException if the envelope can not be transformed to the specified CRS.
+     *
+     * @since 1.2
+     */
+    public Envelope getEnvelope(final CoordinateReferenceSystem crs) throws TransformException {
+        ArgumentChecks.ensureNonNull("crs", crs);
+        final int   bitmask;        // CRS, EXTENT or GRID_TO_CRS
+        final short errorKey;       // Resource key for error message.
+        final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(envelope);
+        if (Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+            return envelope;
+        } else if (sourceCRS == null) {
+            bitmask  = CRS;
+            errorKey = Resources.Keys.UnspecifiedCRS;
+        } else if (extent == null && envelope == null) {
+            bitmask  = EXTENT;
+            errorKey = Resources.Keys.UnspecifiedGridExtent;
+        } else if (cornerToCRS == null && envelope == null) {
+            bitmask  = GRID_TO_CRS;
+            errorKey = Resources.Keys.UnspecifiedTransform;
+        } else try {
+            /*
+             * At this point the envelope should never be null because of invariants enforced by constructors.
+             * But we nevertheless perform some paranoiac checks. If we fail to transform the envelope, its okay.
+             * The main transform is the one operating on grid extent. The envelope transformation is for taking
+             * in account singularity points (mostly poles) and in case this grid geometry is a sub-grid geometry,
+             * in which case the envelope may have been clipped and we want to keep that clip.
+             */
+            final boolean onlyEnvelope = (extent == null || cornerToCRS == null);
+            final CoordinateOperation op = findOperation(sourceCRS, crs, geographicBBox());
+            Envelope clip;
+            try {
+                clip = Envelopes.transform(op, envelope);
+                if (onlyEnvelope) return clip;
+            } catch (TransformException e) {
+                if (onlyEnvelope) throw e;
+                recoverableException("getEnvelope", e);
+                clip = null;
+            }
+            MathTransform tr = MathTransforms.concatenate(cornerToCRS, op.getMathTransform());
+            final GeneralEnvelope env = extent.toCRS(tr, tr, clip);
+            env.setCoordinateReferenceSystem(op.getTargetCRS());
+            env.normalize();
+            if (clip != null) {
+                env.intersect(clip);
+            }
+            return env;
+        } catch (FactoryException e) {
+            throw new TransformException(null, e);
+        }
+        throw incomplete(bitmask, errorKey);
     }
 
     /**

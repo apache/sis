@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -69,6 +69,20 @@ public abstract class Dimension extends NamedElement {
      * @see Variable#isUnlimited()
      */
     protected abstract boolean isUnlimited();
+
+    /**
+     * Returns a dimension with its index decremented by 1. This method is invoked for trailing dimensions
+     * after a previous dimension has been removed from a list. This is useful only for subclasses that
+     * need to know the index of this dimension in a list of dimensions.
+     *
+     * <p>Note: this method may be removed in a future version if we do not need to store index anymore.
+     * See <a href="https://github.com/Unidata/netcdf-java/issues/951">Issue #951 on netcdf-java</a>.</p>
+     *
+     * @return a dimension equals to this one but with its list index (if any) decremented.
+     */
+    protected Dimension decrementIndex() {
+        return this;
+    }
 
     /**
      * Writes in the given buffer the length of this dimension between bracket.

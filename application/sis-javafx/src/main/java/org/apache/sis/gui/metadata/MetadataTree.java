@@ -372,7 +372,7 @@ check:      if (data != null) {
             final MetadataTree view = (MetadataTree) cell.getTreeTableView();
             Object value = getValue(cell, view.valueSourceColumn);
             if (value instanceof IdentifiedObject) {
-                value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, locale);
+                value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, getLocale());
             }
             try {
                 clear();
@@ -474,7 +474,7 @@ check:      if (data != null) {
      */
     private void showPropertyValue(final Object value) {
         if (propertyViewer == null) {
-            propertyViewer = new PropertyView(getLocale(), null, null);
+            propertyViewer = new PropertyView(formatter);
             propertyDialog = new Dialog<>();
             propertyDialog.setResizable(true);
             propertyDialog.setTitle(Resources.forLocale(getLocale()).getString(Resources.Keys.PropertyValue));

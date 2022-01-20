@@ -390,7 +390,7 @@ public abstract class Variable extends Node {
     public final Unit<?> getUnit() {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
-            final String symbols = getUnitsString();
+            String symbols = getUnitsString();
             Exception error = null;
             if (symbols != null) try {
                 unit = parseUnit(symbols);
@@ -402,6 +402,9 @@ public abstract class Variable extends Node {
             } catch (ParserException ex) {
                 if (error == null) error = ex;
                 else error.addSuppressed(ex);
+                if (symbols == null) {
+                    symbols = ex.getParsedString();
+                }
             }
             if (error != null) {
                 error(Variable.class, "getUnit", error, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
@@ -581,8 +584,8 @@ public abstract class Variable extends Node {
         }
         /*
          * Get all dimensions of this variable in netCDF order, then replace them by dimensions from an axis variable.
-         * If we are in the situation #1 documented in javadoc, 'isIncomplete' will be 'false' after execution of this
-         * loop and all dimensions should be the same than the values returned by 'Variable.getGridDimensions()'.
+         * If we are in the situation #1 documented in javadoc, `isIncomplete` will be `false` after execution of this
+         * loop and all dimensions should be the same than the values returned by `Variable.getGridDimensions()`.
          */
         boolean isIncomplete = false;
         final List<Dimension> fromVariable = getGridDimensions();
@@ -605,7 +608,7 @@ public abstract class Variable extends Node {
                     }
                     /*
                      * The first time that we find a label that may allow us to associate this variable dimension with a
-                     * grid dimension, build a map of all labels associated to dimensions. We reuse the existing 'domain'
+                     * grid dimension, build a map of all labels associated to dimensions. We reuse the existing `domain`
                      * map; there is no confusion since the keys are not of the same class.
                      */
                     if (isIncomplete) {
@@ -702,10 +705,10 @@ public abstract class Variable extends Node {
                         Dimension expected = toKeep.get(i);
                         expected = adjustment.gridToVariable.getOrDefault(expected, expected);
                         /*
-                         * At this point, 'expected' is a dimension of the variable that we expect to find at
-                         * current index 'i'. If we do not find that dimension, then the unexpected dimension
+                         * At this point, `expected` is a dimension of the variable that we expect to find at
+                         * current index `i`. If we do not find that dimension, then the unexpected dimension
                          * is assumed to be a band. We usually remove at most one element. If removal results
-                         * in a list too short, it would be a bug in the way we computed 'toKeep'.
+                         * in a list too short, it would be a bug in the way we computed `toKeep`.
                          */
                         while (!expected.equals(dimensions.get(i))) {
                             if (!copied) {
@@ -716,17 +719,20 @@ public abstract class Variable extends Node {
                              * It is possible that we never reach this point if the unexpected dimension is last.
                              * However in such case the dimension to declare is the last one in netCDF order,
                              * which corresponds to the first dimension (i.e. dimension 0) in "natural" order.
-                             * Since the 'bandDimension' field is initialized to zero, its value is correct.
+                             * Since the `bandDimension` field is initialized to zero, its value is correct.
                              */
                             bandDimension = dataDimension - 1 - i;          // Convert netCDF order to "natural" order.
                             dimensions.remove(i);
+                            for (int j = dimensions.size(); --j >= i;) {
+                                dimensions.set(j, dimensions.get(j).decrementIndex());
+                            }
                             if (dimensions.size() < numToKeep) {
                                 throw new InternalDataStoreException();     // Should not happen (see above comment).
                             }
                         }
                     }
                     /*
-                     * At this point 'dimensions' may still be longer than 'toKeep' but it does not matter.
+                     * At this point `dimensions` may still be longer than `toKeep` but it does not matter.
                      * We only need that for any index i < numToKeep, dimensions.get(i) corresponds to the
                      * dimension at the same index in the grid.
                      */

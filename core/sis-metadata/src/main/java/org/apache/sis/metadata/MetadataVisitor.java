@@ -203,9 +203,7 @@ abstract class MetadataVisitor<R> {
                          * We are back to the root metadata (i.e. we finished walking through all children).
                          * Clear thread local variables, which should restore them to their initial value.
                          */
-                        if (!allowNull) {
-                            Semaphores.clear(Semaphores.NULL_COLLECTION);
-                        }
+                        Semaphores.clear(Semaphores.NULL_COLLECTION, allowNull);
                         final ThreadLocal<? extends MetadataVisitor<?>> creator = creator();
                         if (creator != null) creator.remove();
                     }

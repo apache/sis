@@ -65,20 +65,20 @@ public final strictfp class DataStoreProviderTest extends TestCase {
      * Asserts that probing with {@link InputStream} input gives the expected result.
      */
     private void verifyProbeWithInputStream(final StorageConnector connector) throws DataStoreException {
-        assertEquals(provider.probeContent(connector, InputStream.class, stream -> {
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, InputStream.class, stream -> {
             StorageConnectorTest.assertExpectedBytes(stream);
             return ProbeResult.SUPPORTED;
-        }), ProbeResult.SUPPORTED);
+        }));
     }
 
     /**
      * Asserts that probing with {@link Reader} input gives the expected result.
      */
     private void verifyProbeWithReader(final StorageConnector connector) throws DataStoreException {
-        assertEquals(provider.probeContent(connector, Reader.class, stream -> {
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, Reader.class, stream -> {
             StorageConnectorTest.assertExpectedChars(stream);
             return ProbeResult.SUPPORTED;
-        }), ProbeResult.SUPPORTED);
+        }));
     }
 
     /**
@@ -99,13 +99,13 @@ public final strictfp class DataStoreProviderTest extends TestCase {
          * Verify that the byte buffer given to the prober always have the big endian order,
          * regardless the byte order of the original buffer. This is part of method contract.
          */
-        assertEquals(provider.probeContent(connector, ByteBuffer.class, buffer -> {
+        assertEquals(ProbeResult.UNDETERMINED, provider.probeContent(connector, ByteBuffer.class, buffer -> {
             assertEquals(ByteOrder.BIG_ENDIAN, buffer.order());
             assertEquals(3, buffer.position());
             assertEquals(8, buffer.limit());
             buffer.position(5).mark();
             return ProbeResult.UNDETERMINED;
-        }), ProbeResult.UNDETERMINED);
+        }));
         /*
          * Verifies that the origial buffer has its byte order and position unchanged.
          */
@@ -126,23 +126,23 @@ public final strictfp class DataStoreProviderTest extends TestCase {
          * without resetting the buffer position.
          */
         final StorageConnector connector = StorageConnectorTest.create(false);
-        assertEquals(provider.probeContent(connector, ByteBuffer.class, buffer -> {
+        assertEquals(ProbeResult.UNDETERMINED, provider.probeContent(connector, ByteBuffer.class, buffer -> {
             assertEquals(0, buffer.position());
             buffer.position(15).mark();
             return ProbeResult.UNDETERMINED;
-        }), ProbeResult.UNDETERMINED);
+        }));
         /*
          * Read again. The buffer position should be the original position
          * (i.e. above call to `position(15)` shall have no effect below).
          */
-        assertEquals(provider.probeContent(connector, ByteBuffer.class, buffer -> {
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, ByteBuffer.class, buffer -> {
             assertEquals(0, buffer.position());
             final byte[] expected = StorageConnectorTest.getFirstExpectedBytes();
             final byte[] actual = new byte[expected.length];
             buffer.get(actual);
             assertArrayEquals(expected, actual);
             return ProbeResult.SUPPORTED;
-        }), ProbeResult.SUPPORTED);
+        }));
     }
 
     /**
@@ -174,7 +174,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
          * Read a few bytes and verify that user can not overwrite the mark.
          */
         final StorageConnector connector = StorageConnectorTest.create(asStream);
-        assertEquals(provider.probeContent(connector, InputStream.class, stream -> {
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, InputStream.class, stream -> {
             assertEquals(!asStream, stream.markSupported());
             stream.skip(5);
             stream.mark(10);
@@ -188,7 +188,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
                 stream.reset();         // Should be supported if opened from URL.
             }
             return ProbeResult.SUPPORTED;
-        }), ProbeResult.SUPPORTED);
+        }));
         /*
          * Read the first bytes and verify that they are really the
          * beginning of the file despite above reading of some bytes.
@@ -253,7 +253,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
         /*
          * Read a few bytes and verify that user can not overwrite the mark.
          */
-        assertEquals(provider.probeContent(connector, Reader.class, stream -> {
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, Reader.class, stream -> {
             assertEquals(buffered, stream instanceof BufferedReader);
             assertFalse(stream.markSupported());
             stream.skip(5);
@@ -264,7 +264,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
                 assertTrue(e.getMessage().contains("mark"));
             }
             return ProbeResult.SUPPORTED;
-        }), ProbeResult.SUPPORTED);
+        }));
         /*
          * Read the first bytes and verify that they are really the
          * beginning of the file despite above reading of some bytes.

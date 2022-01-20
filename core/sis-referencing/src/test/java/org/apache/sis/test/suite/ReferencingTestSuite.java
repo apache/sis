@@ -34,6 +34,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.AbstractShapeTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
+    org.apache.sis.internal.referencing.AxesMapperTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,

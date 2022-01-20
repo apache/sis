@@ -25,6 +25,7 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.StorageConnector;
@@ -51,7 +52,7 @@ import org.opengis.util.GenericName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -84,7 +85,9 @@ public final strictfp class ReaderTest extends TestCase {
      * @param  resource  name of the test file in a directory relative to {@code "org/apache/sis/internal/gpx"}.
      */
     private static Store create(final String resource) throws DataStoreException {
-        return new Store(provider, new StorageConnector(ReaderTest.class.getResourceAsStream(resource)));
+        final StorageConnector connector = new StorageConnector(ReaderTest.class.getResourceAsStream(resource));
+        connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
+        return new Store(provider, connector);
     }
 
     /**
@@ -567,6 +570,7 @@ public final strictfp class ReaderTest extends TestCase {
      */
     private static Store createFromURL() throws DataStoreException {
         final StorageConnector connector = new StorageConnector(ReaderTest.class.getResource("1.1/route.xml"));
+        connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
         return new Store(provider, connector);
     }

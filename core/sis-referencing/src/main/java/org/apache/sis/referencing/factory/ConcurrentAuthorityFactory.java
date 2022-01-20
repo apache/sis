@@ -95,7 +95,7 @@ import org.apache.sis.util.resources.Messages;
  * Subclasses should select the interfaces that they choose to implement.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
@@ -109,6 +109,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Duration of data access operations that should be logged, in nanoseconds.
      * Any operation that take longer than this amount of time to execute will have a message logged.
      * The log level depends on the execution duration as specified in {@link PerformanceLevel}.
+     *
+     * <div class="note"><b>Rational:</b>
+     * we do not unconditionally log all creation messages because they are redundant with more detailed
+     * logs produced by {@link GeodeticObjectFactory}. Their only additional information is the creation
+     * duration, which is not very useful if too close to zero.</div>
      */
     private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
 
@@ -474,7 +479,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 time = usage.timestamp - time;
             }
             /*
-             * Log only events that take longer than the threshold (e.g. 10 milliseconds).
+             * Log the event. Note: there is no need to check for `Semaphores.FINER_OBJECT_CREATION_LOGS`
+             * because this method is not invoked, or is invoked with `type = null`, during execution of
+             * `IdentifiedObjectFinder` search operations. The only new information in this log compared
+             * to `GeodeticObjectFactory` logs is the creation duration, not useful if too close to zero
+             * and always useful if too long.
              */
             if (time >= DURATION_FOR_LOGGING && type != null) {
                 if (caller == null) {

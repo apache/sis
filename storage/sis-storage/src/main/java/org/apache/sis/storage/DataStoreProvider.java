@@ -119,9 +119,9 @@ public abstract class DataStoreProvider {
 
     /**
      * The logger where to reports warnings or change events. Created when first needed and kept
-     * by strong reference for avoiding configuration lost if the logger if garbage collected.
-     * This strategy assumes that {@code URIDataStore.Provider} instances are kept alive for
-     * the duration of JVM lifetime, which is the case with {@link DataStoreRegistry}.
+     * by strong reference for avoiding configuration lost if the logger is garbage collected.
+     * This strategy assumes that {@code DataStoreProvider} instances are kept alive for the
+     * duration of JVM lifetime, which is the case with {@link DataStoreRegistry}.
      *
      * @see #getLogger()
      */
@@ -339,6 +339,7 @@ public abstract class DataStoreProvider {
             final Class<S> type, final Prober<? super S> prober) throws DataStoreException
     {
         ArgumentChecks.ensureNonNull("prober", prober);
+        boolean undetermined = false;
         /*
          * Synchronization is not a documented feature for now because the policy may change in future version.
          * Current version uses the storage source as the synchronization lock because using `StorageConnector`
@@ -346,90 +347,141 @@ public abstract class DataStoreProvider {
          * which lock (if any) is used by the source. But `InputStream` for example uses `this`.
          */
         synchronized (connector.storage) {
-            final S input = connector.getStorageAs(type);
-            if (input == null) {        // Means that the given type is valid but not applicable for current storage.
-                return ProbeResult.UNSUPPORTED_STORAGE;
+            ProbeResult result = tryProber(connector, type, prober);
+            undetermined = (result == ProbeResult.UNDETERMINED);
+            if (result != null && !undetermined) {
+                return result;
             }
-            if (input == connector.storage && !StorageConnector.isSupportedType(type)) {
-                /*
-                 * The given type is not one of the types known to `StorageConnector` (the list of supported types
-                 * is hard-coded). We could give the input as-is to the prober, but we have no idea how to fulfill
-                 * the method contract saying that the use of the input is safe. We throw an exception for telling
-                 * to the users that they should manage the input themselves.
-                 */
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, type));
-            }
-            ProbeResult result = null;
-            try {
-                if (input instanceof ByteBuffer) {
-                    /*
-                     * No need to save buffer position because `asReadOnlyBuffer()` creates an independent buffer
-                     * with its own mark and position. Byte order of the view is intentionally fixed to BIG_ENDIAN
-                     * (the default) regardless the byte order of the original buffer.
-                     */
-                    final ByteBuffer buffer = (ByteBuffer) input;
-                    result = prober.test(type.cast(buffer.asReadOnlyBuffer()));
-                } else if (input instanceof Markable) {
-                    /*
-                     * `Markable` stream can nest an arbitrary number of marks. So we allow users to create
-                     * their own marks. In principle a single call to `reset()` is enough, but we check the
-                     * position in case the user has done some marks without resets.
-                     */
-                    final Markable stream = (Markable) input;
-                    final long position = stream.getStreamPosition();
-                    stream.mark();
-                    result = prober.test(input);
-                    stream.reset(position);
-                } else if (input instanceof ImageInputStream) {
-                    /*
-                     * `ImageInputStream` supports an arbitrary number of marks as well,
-                     * but we use absolute positioning for simplicity.
-                     */
-                    final ImageInputStream stream = (ImageInputStream) input;
-                    final long position = stream.getStreamPosition();
-                    result = prober.test(input);
-                    stream.seek(position);
-                } else if (input instanceof InputStream) {
-                    /*
-                     * `InputStream` supports at most one mark. So we keep it for ourselves
-                     * and wrap the stream in an object that prevent users from using marks.
-                     */
-                    final ProbeInputStream stream = new ProbeInputStream(connector, (InputStream) input);
-                    result = prober.test(type.cast(stream));
-                    stream.close();                 // Reset (not close) the wrapped stream.
-                } else if (input instanceof RewindableLineReader) {
-                    /*
-                     * `Reader` supports at most one mark. So we keep it for ourselves and prevent users
-                     * from using marks, but without wrapper if we can safely expose a `BufferedReader`
-                     * (because users may want to use the `BufferedReader.readLine()` method).
-                     */
-                    final RewindableLineReader r = (RewindableLineReader) input;
-                    r.protectedMark();
-                    result = prober.test(input);
-                    r.protectedReset();
-                } else if (input instanceof Reader) {
-                    final Reader stream = new ProbeReader(connector, (Reader) input);
-                    result = prober.test(type.cast(stream));
-                    stream.close();                 // Reset (not close) the wrapped reader.
-                } else {
-                    /*
-                     * All other cases are objects like File, URL, etc. which can be used without mark/reset.
-                     * Note that if the type was not known to be safe, an exception would have been thrown at
-                     * the beginning of this method.
-                     */
-                    result = prober.test(input);
+            /*
+             * If the storage connector can not provide the type of source required by the specified prober,
+             * verify if there is any other probers specified by `Prober.orElse(…)`.
+             */
+            Prober<?> next = prober;
+            while (next instanceof ProberList<?,?>) {
+                final ProberList<?,?> list = (ProberList<?,?>) next;
+                result = tryNextProber(connector, list);
+                if (result != null && result != ProbeResult.UNDETERMINED) {
+                    return result;
                 }
-            } catch (DataStoreException e) {
-                throw e;
-            } catch (Exception e) {
-                final String message = Errors.format(Errors.Keys.CanNotRead_1, connector.getStorageName());
-                if (result != null) {
-                    throw new ForwardOnlyStorageException(message, e);
-                }
-                throw new CanNotProbeException(this, connector, e);
+                undetermined |= (result == ProbeResult.UNDETERMINED);
+                next = list.next;
             }
-            return result;
         }
+        return undetermined ? ProbeResult.UNDETERMINED : ProbeResult.UNSUPPORTED_STORAGE;
+    }
+
+    /**
+     * Tries the {@link ProberList#next} probe. This method is defined for type parameterization
+     * (the caller has only {@code <?>} and we need a specific type {@code <N>}).
+     *
+     * @param  <N>        type of input requested by the next probe.
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  list       root of the chained list of next probes.
+     */
+    private <N> ProbeResult tryNextProber(final StorageConnector connector, final ProberList<?,N> list) throws DataStoreException {
+        return tryProber(connector, list.type, list.next);
+    }
+
+    /**
+     * Implementation of {@link #probeContent(StorageConnector, Class, Prober)}
+     * for a single element in a list of probe.
+     *
+     * @param  <S>        the compile-time type of the {@code type} argument (the source or storage type).
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  type       the desired type as one of {@code ByteBuffer}, {@code DataInput}, <i>etc</i>.
+     * @param  prober     the test to apply on the source of the given type.
+     * @return the result of executing the probe action with a source of the given type,
+     *         or {@code null} if the given type is supported but no view can be created.
+     * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types.
+     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
+     * @throws DataStoreException if another kind of error occurred.
+     */
+    private <S> ProbeResult tryProber(final StorageConnector connector,
+            final Class<S> type, final Prober<? super S> prober) throws DataStoreException
+    {
+        final S input = connector.getStorageAs(type);
+        if (input == null) {        // Means that the given type is valid but not applicable for current storage.
+            return null;
+        }
+        if (input == connector.storage && !StorageConnector.isSupportedType(type)) {
+            /*
+             * The given type is not one of the types known to `StorageConnector` (the list of supported types
+             * is hard-coded). We could give the input as-is to the prober, but we have no idea how to fulfill
+             * the method contract saying that the use of the input is safe. We throw an exception for telling
+             * to the users that they should manage the input themselves.
+             */
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, type));
+        }
+        ProbeResult result = null;
+        try {
+            if (input instanceof ByteBuffer) {
+                /*
+                 * No need to save buffer position because `asReadOnlyBuffer()` creates an independent buffer
+                 * with its own mark and position. Byte order of the view is intentionally fixed to BIG_ENDIAN
+                 * (the default) regardless the byte order of the original buffer.
+                 */
+                final ByteBuffer buffer = (ByteBuffer) input;
+                result = prober.test(type.cast(buffer.asReadOnlyBuffer()));
+            } else if (input instanceof Markable) {
+                /*
+                 * `Markable` stream can nest an arbitrary number of marks. So we allow users to create
+                 * their own marks. In principle a single call to `reset()` is enough, but we check the
+                 * position in case the user has done some marks without resets.
+                 */
+                final Markable stream = (Markable) input;
+                final long position = stream.getStreamPosition();
+                stream.mark();
+                result = prober.test(input);
+                stream.reset(position);
+            } else if (input instanceof ImageInputStream) {
+                /*
+                 * `ImageInputStream` supports an arbitrary number of marks as well,
+                 * but we use absolute positioning for simplicity.
+                 */
+                final ImageInputStream stream = (ImageInputStream) input;
+                final long position = stream.getStreamPosition();
+                result = prober.test(input);
+                stream.seek(position);
+            } else if (input instanceof InputStream) {
+                /*
+                 * `InputStream` supports at most one mark. So we keep it for ourselves
+                 * and wrap the stream in an object that prevent users from using marks.
+                 */
+                final ProbeInputStream stream = new ProbeInputStream(connector, (InputStream) input);
+                result = prober.test(type.cast(stream));
+                stream.close();                 // Reset (not close) the wrapped stream.
+            } else if (input instanceof RewindableLineReader) {
+                /*
+                 * `Reader` supports at most one mark. So we keep it for ourselves and prevent users
+                 * from using marks, but without wrapper if we can safely expose a `BufferedReader`
+                 * (because users may want to use the `BufferedReader.readLine()` method).
+                 */
+                final RewindableLineReader r = (RewindableLineReader) input;
+                r.protectedMark();
+                result = prober.test(input);
+                r.protectedReset();
+            } else if (input instanceof Reader) {
+                final Reader stream = new ProbeReader(connector, (Reader) input);
+                result = prober.test(type.cast(stream));
+                stream.close();                 // Reset (not close) the wrapped reader.
+            } else {
+                /*
+                 * All other cases are objects like File, URL, etc. which can be used without mark/reset.
+                 * Note that if the type was not known to be safe, an exception would have been thrown at
+                 * the beginning of this method.
+                 */
+                result = prober.test(input);
+            }
+        } catch (DataStoreException e) {
+            throw e;
+        } catch (Exception e) {
+            final String message = Errors.format(Errors.Keys.CanNotRead_1, connector.getStorageName());
+            if (result != null) {
+                throw new ForwardOnlyStorageException(message, e);
+            }
+            throw new CanNotProbeException(this, connector, e);
+        }
+        return result;
     }
 
     /**
@@ -461,6 +513,64 @@ public abstract class DataStoreProvider {
          * @throws Exception if an error occurred during the execution of the probe action.
          */
         ProbeResult test(S input) throws Exception;
+
+        /**
+         * Returns a composed probe that attempts, in sequence, this probe followed by the alternative probe
+         * if the first probe can not be executed. The alternative probe is tried if and only if one of the
+         * following conditions is true:
+         *
+         * <ul>
+         *   <li>The storage connector can not provide an input of the type requested by this probe.</li>
+         *   <li>This probe {@link #test(S)} method returned {@link ProbeResult#UNDETERMINED}.</li>
+         * </ul>
+         *
+         * If any probe throws an exception, the exception is propagated
+         * (the alternative probe is not a fallback executed if this probe threw an exception).
+         *
+         * @param  <A>          the compile-time type of the {@code type} argument (the source or storage type).
+         * @param  type         the desired type as one of {@code ByteBuffer}, {@code DataInput}, <i>etc</i>.
+         * @param  alternative  the test to apply on the source of the given type.
+         * @return a composed probe that attempts the given probe if this probe can not be executed.
+         */
+        default <A> Prober<S> orElse(final Class<A> type, final Prober<? super A> alternative) {
+            return new ProberList<>(this, type, alternative);
+        }
+    }
+
+    /**
+     * Implementation of the composed probe returned by {@link Prober#orElse(Class, Prober)}.
+     * Instances of this class a nodes in a linked list.
+     *
+     * @param <S>  the source type of the original probe.
+     * @param <N>  the source type of the next probe to try as an alternative.
+     */
+    private static final class ProberList<S,N> implements Prober<S> {
+        /** The main probe to try first. */
+        private final Prober<S> first;
+
+        /** The probe to try next if the {@linkplain #first} probe can not be executed. */
+        Prober<? super N> next;
+
+        /** Type of input expected by the {@linkplain #next} probe. */
+        final Class<N> type;
+
+        /** Creates a new composed probe as a root node of a linked list. */
+        ProberList(final Prober<S> first, final Class<N> type, final Prober<? super N> next) {
+            this.first = first;
+            this.type  = type;
+            this.next  = next;
+        }
+
+        /** Forward to the primary probe. */
+        @Override public ProbeResult test(final S input) throws Exception {
+            return first.test(input);
+        }
+
+        /** Appends a new probe alternative at the end of this linked list. */
+        @Override public <A> Prober<S> orElse(final Class<A> type, final Prober<? super A> prober) {
+            next = next.orElse(type, prober);
+            return this;
+        }
     }
 
     /**

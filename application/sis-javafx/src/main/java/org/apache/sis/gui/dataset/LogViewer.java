@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -37,10 +39,16 @@ import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TreeView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.beans.property.ObjectProperty;
@@ -63,6 +71,7 @@ import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.CharSequences;
 
@@ -92,15 +101,17 @@ public class LogViewer extends Widget {
     private static final int SPACE = 6;
 
     /**
-     * Space between {@link #message} and the log record identification
-     * (the lines ending with {@link #method}).
+     * Space between the (label, button) pairs on the filter bar.
+     *
+     * @see #filteredLevel
+     * @see #filteredLogger
      */
-    private static final Insets MARGIN = new Insets(SPACE, 0, 0, 0);
+    private static final Insets FILTER_MARGIN = new Insets(0, 0, 0, SPACE*4);
 
     /**
-     * Space around the button bar.
+     * Space around the buttons on the filter bar.
      */
-    private static final Insets BAR_INSETS = new Insets(SPACE);
+    private static final Insets BUTTON_MARGIN = new Insets(SPACE);
 
     /**
      * Localized string representations of {@link Level}.
@@ -109,6 +120,16 @@ public class LogViewer extends Widget {
      * @see #toString(Level)
      */
     private static final Map<Level,String> LEVEL_NAMES = new HashMap<>(12);
+
+    /**
+     * The current minimal level of log to show, or {@link Level#ALL} if no filtering.
+     */
+    private Level filteredLevel = Level.FINE;
+
+    /**
+     * The current prefix of loggers to show, or an empty string if no filtering.
+     */
+    private String filteredLogger = "";
 
     /**
      * The table of log records.
@@ -121,6 +142,11 @@ public class LogViewer extends Widget {
      * @see #getView()
      */
     private final VBox view;
+
+    /**
+     * Space between the region containing {@link #level} … {@link #method} and the {@link #message}.
+     */
+    private static final Insets DETAILS_MARGIN = new Insets(SPACE, 0, 0, 0);
 
     /**
      * Details about selected record.
@@ -154,6 +180,13 @@ public class LogViewer extends Widget {
      * @see #isEmptyProperty()
      */
     private final IsEmpty isEmpty;
+
+    /**
+     * The source of the list of logs. This is determined by {@link #source} or {@link #systemLogs}.
+     *
+     * @see #setItems(LogHandler.Destination)
+     */
+    private LogHandler.Destination sourceOfLogs;
 
     /**
      * Whether {@link #source} is modified in reaction to a {@link #systemLogs} change, or conversely.
@@ -239,8 +272,8 @@ public class LogViewer extends Widget {
             message.setMinHeight(100);
             GridPane.setConstraints(textSelector, 0, 5);
             GridPane.setConstraints(message, 1, 5);
-            GridPane.setMargin(textSelector, MARGIN);
-            GridPane.setMargin(message, MARGIN);
+            GridPane.setMargin(textSelector, DETAILS_MARGIN);
+            GridPane.setMargin(message, DETAILS_MARGIN);
             details.getChildren().addAll(textSelector, message);
             details.setVgap(0);
         }
@@ -249,19 +282,27 @@ public class LogViewer extends Widget {
          */
         final HBox bar;
         {
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Level));
+            final Label levelLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.Level));
             final ChoiceBox<Level> levels = new ChoiceBox<>();
-            label.setLabelFor(levels);
-            bar = new HBox(SPACE, label, levels);
-            bar.setAlignment(Pos.CENTER_LEFT);
-            bar.setPadding(BAR_INSETS);
-            VBox.setVgrow(table, Priority.ALWAYS);
-
+            levelLabel.setLabelFor(levels);
             levels.getItems().setAll(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG,
                                      PerformanceLevel.SLOW, Level.FINE, Level.FINER, Level.ALL);
             levels.setConverter(Converter.INSTANCE);
-            levels.getSelectionModel().select(Level.ALL);
-            levels.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> setFilter(n));
+            levels.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> setFilter(n, filteredLogger));
+            levels.getSelectionModel().select(filteredLevel);
+
+            final Label loggerLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.Logger));
+            final Button loggers = new Button();
+            loggerLabel.setPadding(FILTER_MARGIN);
+            loggerLabel.setLabelFor(loggers);
+            loggers.setMinWidth(160);
+            loggers.setAlignment(Pos.CENTER_LEFT);
+            loggers.setOnAction((e) -> loggers.setText(showLoggerTreeDialog()));
+
+            bar = new HBox(SPACE, levelLabel, levels, loggerLabel, loggers);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            bar.setPadding(BUTTON_MARGIN);
+            VBox.setVgrow(table, Priority.ALWAYS);
         }
         /*
          * Put all view components together.
@@ -320,14 +361,21 @@ public class LogViewer extends Widget {
      *
      * @param  records  the new list of records, or {@code null} if none.
      */
-    private void setItems(final ObservableList<LogRecord> records) {
-        if (records == null) {
+    private void setItems(final LogHandler.Destination target) {
+        sourceOfLogs = target;
+        if (target == null) {
             table.setItems(FXCollections.emptyObservableList());
         } else {
-            final boolean e = records.isEmpty();
+            final ObservableList<LogRecord> records = target.records;
             table.setItems(new FilteredList<>(records, filter));
+            final boolean e = records.isEmpty();
             isEmpty.set(e);
             if (e) {
+                /*
+                 * Clear the `isEmpty` flag when the list gets its first log record.
+                 * Note that the list will never become empty after that point,
+                 * so we do not need listener for setting the flag to `true`.
+                 */
                 records.addListener(isEmpty);
             }
         }
@@ -503,23 +551,71 @@ public class LogViewer extends Widget {
     }
 
     /**
-     * Sets the filter to the given setting. Currently sets only the logging level,
+     * Sets the filter to the given setting. Currently sets only the logging level of name,
      * but more configuration may be added in the future.
      *
-     * @param  level  the new level, or {@code null} if unchanged/
+     * @param  level   the new level.
+     * @param  logger  prefix of logger name.
      */
-    private void setFilter(final Level level) {
-        if (level != null) {
-            if (Level.ALL.equals(level)) {
-                filter = null;
-            } else {
-                filter = (log) -> log != null && log.getLevel().intValue() >= level.intValue();
-            }
-            final ObservableList<LogRecord> items = table.getItems();
-            if (items instanceof FilteredList<?>) {
-                ((FilteredList<LogRecord>) items).setPredicate(filter);
-            }
+    private void setFilter(final Level level, final String logger) {
+        filteredLevel  = level;
+        filteredLogger = logger;
+        if (Level.ALL.equals(level) && logger.isEmpty()) {
+            filter = null;
+        } else {
+            filter = (log) -> {
+                if (log != null && log.getLevel().intValue() >= level.intValue()) {
+                    final String name = log.getLoggerName();
+                    return (name == null) || name.startsWith(logger);
+                }
+                return false;
+            };
         }
+        final ObservableList<LogRecord> items = table.getItems();
+        if (items instanceof FilteredList<?>) {
+            ((FilteredList<LogRecord>) items).setPredicate(filter);
+        }
+    }
+
+    /**
+     * Shows the dialog box asking to the user to select a logger name.
+     * The loggers are shown in a tree which is dynamically updated as log records are received.
+     * The selected logger will be used for filtering the logs.
+     *
+     * <h4>Limitations</h4>
+     * Current implementation allows to select only one logger.
+     * A future version may use a tree table with check-boxes.
+     *
+     * @return a display label for the selected logger.
+     */
+    private String showLoggerTreeDialog() {
+        final var loggers = new TreeView<String>(sourceOfLogs.loggerNames());
+        final var dialog  = new Dialog<String>();
+        dialog.initOwner(view.getScene().getWindow());
+        dialog.setTitle(Resources.forLocale(getLocale()).getString(Resources.Keys.SelectParentLogger));
+        dialog.setResultConverter((button) -> {
+            if (!ButtonType.OK.equals(button)) {
+                return null;
+            }
+            final var path = new ArrayList<String>();
+            TreeItem<String> root = loggers.getRoot();
+            TreeItem<String> item = loggers.getSelectionModel().getSelectedItem();
+            while (item != null && item != root) {
+                path.add(item.getValue());
+                item = item.getParent();
+            }
+            final var joiner = new StringJoiner(".");
+            for (int i = path.size(); --i >= 0;) {
+                joiner.add(path.get(i));
+            }
+            return joiner.toString();
+        });
+        dialog.setResizable(true);
+        final DialogPane pane = dialog.getDialogPane();
+        pane.setContent(loggers);
+        pane.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.showAndWait().ifPresent((name) -> setFilter(filteredLevel, name));
+        return filteredLogger.substring(filteredLogger.lastIndexOf('.') + 1);
     }
 
     /**
