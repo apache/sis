@@ -955,6 +955,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws TransformException if the envelope can not be computed with the given transform.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
+     *
+     * @see GridGeometry#getEnvelope(CoordinateReferenceSystem)
      */
     final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
             throws TransformException

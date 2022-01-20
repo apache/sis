@@ -914,16 +914,31 @@ public class GridGeometry implements LenientComparable, Serializable {
             bitmask  = GRID_TO_CRS;
             errorKey = Resources.Keys.UnspecifiedTransform;
         } else try {
+            /*
+             * At this point the envelope should never be null because of invariants enforced by constructors.
+             * But we nevertheless perform some paranoiac checks. If we fail to transform the envelope, its okay.
+             * The main transform is the one operating on grid extent. The envelope transformation is for taking
+             * in account singularity points (mostly poles) and in case this grid geometry is a sub-grid geometry,
+             * in which case the envelope may have been clipped and we want to keep that clip.
+             */
+            final boolean onlyEnvelope = (extent == null || cornerToCRS == null);
             final CoordinateOperation op = findOperation(sourceCRS, crs, geographicBBox());
-            final Envelope clip = (envelope != null) ? Envelopes.transform(op, envelope) : null;
-            if (extent == null || cornerToCRS == null) {
-                return clip;
+            Envelope clip;
+            try {
+                clip = Envelopes.transform(op, envelope);
+                if (onlyEnvelope) return clip;
+            } catch (TransformException e) {
+                if (onlyEnvelope) throw e;
+                recoverableException("getEnvelope", e);
+                clip = null;
             }
             MathTransform tr = MathTransforms.concatenate(cornerToCRS, op.getMathTransform());
             final GeneralEnvelope env = extent.toCRS(tr, tr, clip);
             env.setCoordinateReferenceSystem(op.getTargetCRS());
             env.normalize();
-            env.intersect(clip);
+            if (clip != null) {
+                env.intersect(clip);
+            }
             return env;
         } catch (FactoryException e) {
             throw new TransformException(e);
