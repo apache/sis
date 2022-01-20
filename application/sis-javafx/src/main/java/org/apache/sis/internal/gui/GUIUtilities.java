@@ -99,6 +99,70 @@ public final class GUIUtilities extends Static {
     }
 
     /**
+     * Appends a path in a tree where all children lists are sorted. This method inserts all parents as needed.
+     * If the leaf at the given path already exists, then this method does nothing.
+     *
+     * @param  <T>   type of values in tree nodes.
+     * @param  item  root of the tree where to append a path.
+     * @param  path  path to the leaf to insert, together with all needed parents.
+     */
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> void appendPathSorted(TreeItem<T> item, final T... path) {
+walk:   for (final T search : path) {
+            final ObservableList<TreeItem<T>> children = item.getChildren();
+            int lo = 0, hi = children.size() - 1;
+            while (lo <= hi) {
+                final int m = (lo + hi) >>> 1;      // Safe against overflow.
+                final TreeItem<T> child = children.get(m);
+                final int c = child.getValue().compareTo(search);
+                if (c < 0) {lo = m + 1; continue;}
+                if (c > 0) {hi = m - 1; continue;}
+                item = child;                       // Found existing item, continue down the path.
+                continue walk;
+            }
+            item = new TreeItem<>(search);          // Item not found, insert it where it should be.
+            children.add(lo, item);
+        }
+    }
+
+    /**
+     * Removes a path in a tree where all children lists are sorted.
+     * This method prunes all parents that become empty as a result of this removal.
+     *
+     * @param  <T>   type of values in tree nodes.
+     * @param  item  root of the tree from where to remove a path.
+     * @param  path  path to the leaf to remove, together with its parents if they become empty.
+     */
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> void removePathSorted(TreeItem<T> item, final T... path) {
+        ObservableList<TreeItem<T>> removeFrom = null;
+        int removeIndex = 0;
+walk:   for (final T search : path) {
+            final ObservableList<TreeItem<T>> children = item.getChildren();
+            final int sm = children.size() - 1;
+            int hi = sm, lo = 0;
+            while (lo <= hi) {
+                final int m = (lo + hi) >>> 1;
+                final TreeItem<T> child = children.get(m);
+                final int c = child.getValue().compareTo(search);
+                if (c < 0) {lo = m + 1; continue;}
+                if (c > 0) {hi = m - 1; continue;}
+                if (sm != 0 || removeFrom == null) {    // Found item. Remember to delete it or its parent.
+                    removeFrom  = children;
+                    removeIndex = m;
+                }
+                item = child;
+                continue walk;
+            }
+            if (sm < 0) break;                          // Item not found. Stop the search.
+            else return;
+        }
+        if (removeFrom != null) {
+            removeFrom.remove(removeIndex);
+        }
+    }
+
+    /**
      * Forces a {@link TreeItem} to update the {@code TreeView} when its value has been externally modified.
      * This is a workaround for situations where the item's value is unchanged, but some state of the value
      * has been modified.

@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.test.DependsOn;
@@ -42,7 +43,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link GridGeometry} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -430,6 +431,39 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
         assertNotSame("extent", extent, grid.getExtent());
         verifyGridToCRS(grid);
+    }
+
+    /**
+     * Tests {@link GridGeometry#getEnvelope(CoordinateReferenceSystem)}.
+     *
+     * @throws TransformException if coordinates can not be transformed.
+     */
+    @Test
+    public void testGetEnvelope() throws TransformException {
+        GridGeometry grid = new GridGeometry(
+                new GridExtent(12, 18),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                    0.25, 0,    -2,
+                    0,   -0.25, -3,
+                    0,    0,     1)),
+                HardCodedCRS.WGS84);
+
+        Envelope envelope = grid.getEnvelope(HardCodedCRS.WGS84);
+        assertSame(envelope, grid.getEnvelope());
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-2, -7.5},
+                new double[] { 1, -3.0}), envelope, STRICT);
+
+        envelope = grid.getEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-7.5, -2},
+                new double[] {-3.0,  1}), envelope, STRICT);
+
+        envelope = grid.getEnvelope(HardCodedConversions.mercator());
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-222638.98, -831717.36},
+                new double[] { 111319.49, -331876.53}), envelope, 0.01);
     }
 
     /**

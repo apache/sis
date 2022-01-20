@@ -18,6 +18,8 @@ package org.apache.sis.internal.storage;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
@@ -214,5 +216,22 @@ public class AbstractResource extends StoreListeners implements Resource {
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
             super.addListener(eventType, listener);
         }
+    }
+
+    /**
+     * Returns a log filter that removes the stack trace of filtered given log.
+     * It can be used as argument in a call to {@link StoreListeners#warning(LogRecord, Filter)}
+     * if the caller was to trim the stack trace in log files or console outputs.
+     *
+     * <p>This filter should be used only for filtering {@link LogRecord} created by the caller, because
+     * it modifies the record. Users would not expect this side effect on records created by them.</p>
+     *
+     * @return a filter for trimming stack trace.
+     */
+    public static Filter removeStackTraceInLogs() {
+        return (record) -> {
+            record.setThrown(null);
+            return true;
+        };
     }
 }

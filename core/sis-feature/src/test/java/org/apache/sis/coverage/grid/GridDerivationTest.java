@@ -32,6 +32,7 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -302,6 +303,32 @@ public final strictfp class GridDerivationTest extends TestCase {
         assertExtentEquals(new long[] {15,  3}, new long[] { 49,  9}, grid.getExtent());
         assertMatrixEquals("gridToCRS", new Matrix3(2, 0, -69, 0, 1, 5.5, 0, 0, 1),
                 MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+    }
+
+    /**
+     * Tests {@link GridDerivation#subgrid(Envelope, double...)} on a grid using a polar projection.
+     * The test also uses a geographic envelope with more dimensions than the source grid geometry.
+     * The difficulty is that axis directions do not match directly: the source grid has directions
+     * such as "South along 90° meridian".
+     */
+    @Test
+    public void testSubgridOnPolarProjection() {
+        GeneralEnvelope envelope = new GeneralEnvelope(CommonCRS.WGS84.universal(90, 0));
+        envelope.setRange(0, -1000, 1500);
+        envelope.setRange(1, -2000, 1800);
+        GridGeometry grid = new GridGeometry(new GridExtent(500, 400), envelope, GridOrientation.HOMOTHETY);
+
+        envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        envelope.setRange(0, -45, -44);
+        envelope.setRange(1,  64,  65);
+        envelope.setRange(2,  20,  40);
+        final GridDerivation derivation = grid.derive();
+        grid = derivation.subgrid(envelope, 0.002, 0.001).build();
+        /*
+         * The main test is to check that we reach this point without an exception being thrown.
+         * We add a small arbitrary test below as a matter of principle.
+         */
+        assertTrue(envelope.subEnvelope(0, 2).intersects(grid.getEnvelope()));
     }
 
     /**

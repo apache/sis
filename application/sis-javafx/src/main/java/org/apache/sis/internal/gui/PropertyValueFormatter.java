@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.util.Date;
 import java.util.Locale;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
@@ -34,10 +33,10 @@ import org.apache.sis.internal.util.PropertyFormat;
  */
 public class PropertyValueFormatter extends PropertyFormat {
     /**
-     * The locale to use for objects. This is usually {@link Locale#getDefault()}.
-     * This value is given to {@link InternationalString#toString(Locale)} calls.
+     * The formats to use for objects. Its locale is usually {@link Locale#getDefault()}.
+     * The locale is also given to {@link InternationalString#toString(Locale)} calls.
      */
-    protected final Locale locale;
+    final TextFormats formats;
 
     /**
      * Creates a formatter for the specified locale.
@@ -47,8 +46,8 @@ public class PropertyValueFormatter extends PropertyFormat {
      */
     public PropertyValueFormatter(final Appendable buffer, final Locale locale) {
         super(buffer);
-        this.locale = locale;
         setLineSeparator(" ¶ ");
+        formats = new TextFormats(locale);
     }
 
     /**
@@ -56,7 +55,7 @@ public class PropertyValueFormatter extends PropertyFormat {
      */
     @Override
     public final Locale getLocale() {
-        return locale;
+        return formats.getLocale();
     }
 
     /**
@@ -65,8 +64,9 @@ public class PropertyValueFormatter extends PropertyFormat {
      */
     @Override
     protected String toString(final Object value) {
-        if (value instanceof Number || value instanceof Date) {             // See super-class javadoc.
-            return value.toString();
+        String text = formats.formatValue(value, false);
+        if (text != null) {
+            return text;
         }
         return Classes.getShortClassName(value) + "(…)";
     }

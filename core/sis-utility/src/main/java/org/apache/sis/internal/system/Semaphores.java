@@ -25,7 +25,7 @@ import org.apache.sis.util.Workaround;
  * a {@code try ... finally} block.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -57,8 +57,8 @@ public final class Semaphores {
 
     /**
      * A flag to indicate that {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}
-     * is querying parameters of a {@code MathTransform} enclosed in the operation. This is often in the
-     * intent to format WKT of a {@code "ProjectedCRS"} element.
+     * is querying parameters of a {@code MathTransform} enclosed in the operation. This is often at the
+     * time of formatting the WKT of a {@code "ProjectedCRS"} element.
      */
     public static final int ENCLOSED_IN_OPERATION = 8;
 
@@ -72,6 +72,13 @@ public final class Semaphores {
      */
     @Workaround(library = "EPSG:3752", version = "8.9")        // Deprecated in 2007 but still present in 2016.
     public static final int SUSPEND_PARAMETER_CHECK = 16;
+
+    /**
+     * A flag to indicate that a finer logging level should be used for reporting geodetic object creations.
+     * This flag is used during operations that potentially create a large amount of CRS, for example when
+     * trying many CRS candidates in search for a CRS compliant with some criteria.
+     */
+    public static final int FINER_OBJECT_CREATION_LOGS = 32;
 
     /**
      * The flags per running thread.
@@ -126,6 +133,19 @@ public final class Semaphores {
         final Semaphores s = FLAGS.get();
         if (s != null) {
             s.flags &= ~flag;
+        }
+    }
+
+    /**
+     * Clears the given flag only if it was previously cleared.
+     * This is a convenience method for a common pattern with {@code try … finally} blocks.
+     *
+     * @param  flag      one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
+     * @param  previous  value returned by {@link #queryAndSet(int)}.
+     */
+    public static void clear(final int flag, final boolean previous) {
+        if (!previous) {
+            clear(flag);
         }
     }
 }

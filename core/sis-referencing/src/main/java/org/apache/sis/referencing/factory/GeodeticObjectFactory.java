@@ -54,6 +54,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -192,7 +193,7 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -312,20 +313,25 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Returns a unique instance of the given object. If this method recycles an existing object,
      * then the existing instance is returned silently. Otherwise this method logs a message at
-     * {@link Level#FINE} telling that a new object has been created.
+     * {@link Level#FINE} or {@link Level#FINER} telling that a new object has been created.
+     * The finer level is used if the object has been creating during an operation that creates
+     * a lot of candidates in search for a CRS matching some criterion.
      */
     private <T extends AbstractIdentifiedObject> T unique(final String caller, final T object) {
         final T c = pool.unique(object);
-        if (c == object && LOGGER.isLoggable(Level.FINE)) {
-            final String id = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(c, null));
-            final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINE,
-                    (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
-                                 : Messages.Keys.CreatedNamedObject_2,
-                    c.getInterface(), c.getName().getCode(), id);
-            record.setSourceClassName(GeodeticObjectFactory.class.getCanonicalName());
-            record.setSourceMethodName(caller);
-            record.setLoggerName(LOGGER.getName());
-            LOGGER.log(record);
+        if (c == object) {
+            final Level level = Semaphores.query(Semaphores.FINER_OBJECT_CREATION_LOGS) ? Level.FINER : Level.FINE;
+            if (LOGGER.isLoggable(level)) {
+                final String id = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(c, null));
+                final LogRecord record = Messages.getResources(null).getLogRecord(level,
+                        (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
+                                     : Messages.Keys.CreatedNamedObject_2,
+                        c.getInterface(), c.getName().getCode(), id);
+                record.setSourceClassName(GeodeticObjectFactory.class.getCanonicalName());
+                record.setSourceMethodName(caller);
+                record.setLoggerName(LOGGER.getName());
+                LOGGER.log(record);
+            }
         }
         return c;
     }

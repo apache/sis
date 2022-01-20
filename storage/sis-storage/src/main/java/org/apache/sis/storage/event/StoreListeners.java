@@ -22,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.Filter;
 import java.lang.reflect.Method;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Localized;
@@ -49,8 +50,8 @@ import org.apache.sis.storage.Resource;
  * and additional information like {@linkplain LogRecord#getThrown() stack trace}, timestamp, <i>etc.</i>).
  * This {@code StoreListeners} class provides convenience methods like {@link #warning(String, Exception)},
  * which build {@code LogRecord} from an exception or from a string. But all those {@code warning(…)} methods
- * ultimately delegate to {@link #warning(LogRecord)}, thus providing a single point that subclasses can override.
- * When a warning is emitted, the default behavior is:
+ * ultimately delegate to {@link #warning(LogRecord, Filter)}, thus providing a single point that subclasses
+ * can override. When a warning is emitted, the default behavior is:
  *
  * <ul>
  *   <li>Notify all listeners that are registered for a given {@link WarningEvent} type in this {@code StoreListeners}
@@ -73,7 +74,7 @@ import org.apache.sis.storage.Resource;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -397,16 +398,11 @@ public class StoreListeners implements Localized {
      * If both are non-null, then the exception message will be concatenated after the given message.
      *
      * <h4>Stack trace omission</h4>
-     * If there is no registered listener for the {@link WarningEvent} type, then the {@link #warning(LogRecord)}
-     * method will send the record to a logger but <em>without</em> the stack trace.
+     * If there is no registered listener for the {@link WarningEvent} type,
+     * then the {@link LogRecord} will be sent to a {@link Logger} but <em>without</em> the stack trace.
      * This is done that way because stack traces consume lot of space in the logging files, while being considered
      * implementation details in the context of {@code StoreListeners} (on the assumption that the logging message
-     * provides sufficient information). If the stack trace is desired, then users can either:
-     * <ul>
-     *   <li>invoke {@code warning(LogRecord)} directly, or</li>
-     *   <li>override {@code warning(LogRecord)} and invoke {@link LogRecord#setThrown(Throwable)} explicitly, or</li>
-     *   <li>register a listener which will log the record itself.</li>
-     * </ul>
+     * provides sufficient information).
      *
      * @param  level      the warning level.
      * @param  message    the message to log, or {@code null} if none.
@@ -422,7 +418,8 @@ public class StoreListeners implements Localized {
             if (message == null) {
                 message = exception.toString();
             }
-            record = new QuietLogRecord(level, message, exception);
+            record = new LogRecord(level, message);
+            record.setThrown(exception);
         } else {
             ArgumentChecks.ensureNonEmpty("message", message);
             trace = Thread.currentThread().getStackTrace();         // TODO: on JDK9, use StackWalker instead.
@@ -437,7 +434,7 @@ public class StoreListeners implements Localized {
         } catch (ClassNotFoundException | SecurityException e) {
             Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
         }
-        warning(record);
+        warning(record, AbstractResource.removeStackTraceInLogs());
     }
 
     /**
@@ -464,28 +461,47 @@ public class StoreListeners implements Localized {
     }
 
     /**
+     * Reports a warning described by the given log record. Invoking this method is
+     * equivalent to invoking {@link #warning(LogRecord, Filter)} with a null filter.
+     *
+     * @param  description  warning details provided as a log record.
+     */
+    public void warning(final LogRecord description) {
+        warning(description, null);
+    }
+
+    /**
      * Reports a warning described by the given log record. The default implementation forwards
      * the given record to one of the following destinations, in preference order:
      *
-     * <ul>
+     * <ol>
      *   <li><code>{@linkplain StoreListener#eventOccured StoreListener.eventOccured}(new
      *       {@linkplain WarningEvent}(source, record))</code> on all listeners registered for this kind of event.</li>
-     *   <li>Only if above step found no listener, then <code>{@linkplain Logging#getLogger(String)
-     *       Logging.getLogger}(record.loggerName).{@linkplain Logger#log(LogRecord) log}(record)</code>
-     *       where {@code loggerName} is one of the following:
+     *   <li><code>{@linkplain Filter#isLoggable(LogRecord) onUnhandled.isLoggable(description)}</code>
+     *       if above step found no listener and the {@code onUnhandled} filter is non-null.</li>
+     *   <li><code>{@linkplain Logger#getLogger(String)
+     *       Logger.getLogger}(record.loggerName).{@linkplain Logger#log(LogRecord) log}(record)</code>
+     *       if the filter in above step returned {@code true} (or if the filter is null).
+     *       In that case, {@code loggerName} is one of the following:
      *     <ul>
      *       <li><code>record.{@linkplain LogRecord#getLoggerName() getLoggerName()}</code> if that value is non-null.</li>
      *       <li>Otherwise the value of {@link DataStoreProvider#getLogger()} if the provider is found.</li>
      *       <li>Otherwise the source {@link DataStore} package name.</li>
      *     </ul>
      *   </li>
-     * </ul>
+     * </ol>
      *
      * @param  description  warning details provided as a log record.
+     * @param  onUnhandled  filter invoked if the record has not been handled by a {@link StoreListener},
+     *                      or {@code null} if none.
+     *
+     * @since 1.2
      */
     @SuppressWarnings("unchecked")
-    public void warning(final LogRecord description) {
-        if (!fire(new WarningEvent(source, description), WarningEvent.class)) {
+    public void warning(final LogRecord description, final Filter onUnhandled) {
+        if (!fire(new WarningEvent(source, description), WarningEvent.class) &&
+                (onUnhandled == null || onUnhandled.isLoggable(description)))
+        {
             final String name = description.getLoggerName();
             final Logger logger;
             if (name != null) {
@@ -493,9 +509,6 @@ public class StoreListeners implements Localized {
             } else {
                 logger = getLogger();
                 description.setLoggerName(logger.getName());
-            }
-            if (description instanceof QuietLogRecord) {
-                ((QuietLogRecord) description).clearImplicitThrown();
             }
             logger.log(description);
         }

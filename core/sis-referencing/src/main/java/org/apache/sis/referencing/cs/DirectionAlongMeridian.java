@@ -43,11 +43,8 @@ import org.apache.sis.util.resources.Errors;
  * that contains (through its coordinate system) the axes having those directions. This is consistent with
  * ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting.
  *
- * <h2>Immutability and thread safety</h2>
- * This final class is immutable and thus inherently thread-safe.
- *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.8
+ * @version 1.2
  * @since   0.4
  * @module
  */
@@ -105,6 +102,14 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
         ArgumentChecks.ensureBetween("meridian", Longitude.MIN_VALUE, Longitude.MAX_VALUE, meridian);
         this.baseDirection = baseDirection;
         this.meridian      = meridian;
+    }
+
+    /**
+     * Returns {@code true} if the given direction is non-null
+     * and has a name which seems to be a direction along meridian.
+     */
+    public static boolean matches(final String direction) {
+        return (direction != null) && EPSG.matcher(direction).matches();
     }
 
     /**
@@ -282,7 +287,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
             buffer.append(meridian < 0 ? 'W' : 'E');
         }
         name = buffer.toString();
-        assert EPSG.matcher(name).matches() : name;
+        assert matches(name) : name;
         return name;
     }
 

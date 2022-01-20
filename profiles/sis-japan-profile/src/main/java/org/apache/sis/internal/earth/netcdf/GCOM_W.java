@@ -198,7 +198,7 @@ public final class GCOM_W extends Convention {
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UTM));
+        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
     }
 
     /**

@@ -296,9 +296,9 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             table = TableInfo.CRS;
             if (isInstance(CompoundCRS.class, object)) {
                 final List<CoordinateReferenceSystem> components = ((CompoundCRS) object).getComponents();
-                if (components != null) switch (components.size()) {        // Paranoiac check.
-                    case 1: return getCodeCandidates(components.get(0));    // Should not happen.
-                    case 2: {
+                if (components != null) {       // Paranoiac check.
+                    final int n = components.size();
+                    if (n == 2) {
                         filters = new Condition[2];
                         for (int i=0; i<=1; i++) {
                             if ((filters[i] = dependencies((i==0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE",
@@ -308,6 +308,9 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                             }
                         }
                         break crs;
+                    }
+                    if (n == 1) {               // Should not happen.
+                        return getCodeCandidates(components.get(0));
                     }
                 }
             }

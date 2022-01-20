@@ -564,9 +564,7 @@ class CoordinateOperationRegistry {
                         throw exception.unwrapOrRethrow(FactoryException.class);
                     }
                 } finally {
-                    if (!mdOnly) {
-                        Semaphores.clear(Semaphores.METADATA_ONLY);
-                    }
+                    Semaphores.clear(Semaphores.METADATA_ONLY, mdOnly);
                 }
             }
         }

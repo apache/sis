@@ -23,6 +23,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -32,7 +33,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * All those objects share in common a {@link #getName()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -113,10 +114,9 @@ public abstract class NamedElement {
         record.setSourceClassName(caller.getCanonicalName());
         record.setSourceMethodName(method);
         if (exception != null) {
-            // TODO: avoid reporting the full exception stack trace (maybe leverage QuietLogRecord).
             record.setThrown(exception);
         }
-        listeners.warning(record);
+        listeners.warning(record, AbstractResource.removeStackTraceInLogs());
     }
 
     /**

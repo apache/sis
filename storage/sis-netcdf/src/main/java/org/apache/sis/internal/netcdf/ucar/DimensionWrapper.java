@@ -69,7 +69,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
      * dimensions that are private to a variable, because those dimensions may be unnamed.
      * Consequently value -1 should be used only for shared dimensions.
      *
-     * <a href="https://github.com/Unidata/netcdf-java/issues/951">Issue #951 on netcdf-java</a>
+     * @see <a href="https://github.com/Unidata/netcdf-java/issues/951">Issue #951 on netcdf-java</a>
      */
     private final int index;
 
@@ -106,6 +106,17 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     @Override
     protected boolean isUnlimited() {
         return netcdf.isUnlimited();
+    }
+
+    /**
+     * Returns a dimension with its index decremented by 1. This method is invoked for trailing dimensions
+     * after a previous dimension has been removed from a list.
+     *
+     * @return a dimension equals to this one but with its list index (if any) decremented.
+     */
+    @Override
+    protected org.apache.sis.internal.netcdf.Dimension decrementIndex() {
+        return new DimensionWrapper(netcdf, index - 1);
     }
 
     /**

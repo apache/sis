@@ -76,7 +76,10 @@
             <word>classname</word>
             <word>classnames</word>
             <word>classpath</word>
+            <word>colinear</word>
+            <word>collinearity</word>
             <word>complexify</word>
+            <word>covariant</word>
             <word>deserialization</word>
             <word>deserialized</word>
             <word>endianness</word>
@@ -89,6 +92,7 @@
             <word>initially</word>
             <word>javadoc</word>
             <word>kilometre</word>
+            <word>linearization</word>
             <word>linearizer</word>
             <word>linearizers</word>
             <word>loggings</word>

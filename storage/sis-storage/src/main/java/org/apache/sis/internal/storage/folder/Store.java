@@ -190,10 +190,10 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     private Store(final Store parent, final StorageConnector connector, final NameFactory nameFactory) throws DataStoreException {
         super(parent, parent.getProvider(), connector, false);
         originator        = parent;
-        location          = connector.getStorageAs(Path.class);
         locale            = connector.getOption(OptionKey.LOCALE);
         timezone          = connector.getOption(OptionKey.TIMEZONE);
         encoding          = connector.getOption(OptionKey.ENCODING);
+        location          = connector.commit(Path.class, StoreProvider.NAME);
         children          = parent.children;
         componentProvider = parent.componentProvider;
         identifier        = nameFactory.createLocalName(parent.identifier(nameFactory).scope(), super.getDisplayName());

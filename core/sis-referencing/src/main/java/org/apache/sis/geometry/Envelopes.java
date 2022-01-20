@@ -48,6 +48,7 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -758,7 +759,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
         long isWrapAroundAxis = 0;
         final int dimension = targetCS.getDimension();
 poles:  for (int i=0; i<dimension; i++) {
-            final long dimensionBitMask = 1L << i;
+            final long dimensionBitMask = Numerics.bitmask(i);
             final CoordinateSystemAxis axis = targetCS.getAxis(i);
             if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                 continue;
@@ -857,7 +858,7 @@ poles:  for (int i=0; i<dimension; i++) {
         if (includedBoundsValue != 0) {
             while (isWrapAroundAxis != 0) {
                 final int wrapAroundDimension = Long.numberOfTrailingZeros(isWrapAroundAxis);
-                final long dimensionBitMask = 1L << wrapAroundDimension;
+                final long dimensionBitMask = Numerics.bitmask(wrapAroundDimension);
                 isWrapAroundAxis &= ~dimensionBitMask;              // Clear now the bit, for the next iteration.
                 final CoordinateSystemAxis wrapAroundAxis = targetCS.getAxis(wrapAroundDimension);
                 final double min = wrapAroundAxis.getMinimumValue();
@@ -937,7 +938,7 @@ poles:  for (int i=0; i<dimension; i++) {
          * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. We do not wrap
          * around if the source and target axes use the same range (e.g. the longitude stay [-180 … +180]°) in order
          * to reduce the risk of discontinuities. If the user really wants unconditional wrap around, (s)he can call
-         * GeneralEnvelope.normalize().
+         * `GeneralEnvelope.normalize()`.
          */
         final Set<Integer> wrapAroundChanges;
         if (isOperationComplete && operation instanceof AbstractCoordinateOperation) {
@@ -958,16 +959,16 @@ poles:  for (int i=0; i<dimension; i++) {
      * that every points in a {@code LINESTRING} have the same dimension. However this method
      * ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
-     * <p>Example:</p>
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code BOX(-180 -90, 180 90)} (not really a geometry, but understood by many software products)</li>
      *   <li>{@code POINT(6 10)}</li>
      *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
      * </ul>
+     * </div>
      *
-     * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the
-     * parsing rules.
+     * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the parsing rules.
      *
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @return the envelope of the given geometry.

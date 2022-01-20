@@ -229,7 +229,7 @@ public abstract class StaxDataStore extends URIDataStore {
         if (stream == null && storage instanceof AutoCloseable) {
             stream = (AutoCloseable) storage;
         }
-        channelFactory = connector.getStorageAs(ChannelFactory.class);  // Must be last before 'closeAllExcept'.
+        channelFactory = connector.getStorageAs(ChannelFactory.class);  // Must be last before `closeAllExcept(…)`.
         connector.closeAllExcept(stream);
         /*
          * If possible, remember the position where data begin in the stream in order to allow reading
@@ -329,7 +329,7 @@ public abstract class StaxDataStore extends URIDataStore {
         public void report(String message, String errorType, Object info, Location location) {
             final LogRecord record = new LogRecord(Level.WARNING, message);
             record.setSourceClassName(StaxDataStore.this.getClass().getCanonicalName());
-            // record.setLoggerName(…) will be invoked by 'listeners' with inferred name.
+            // record.setLoggerName(…) will be invoked by `listeners` with inferred name.
             listeners.warning(record);
         }
 
@@ -340,7 +340,7 @@ public abstract class StaxDataStore extends URIDataStore {
          */
         @Override
         public boolean isLoggable(final LogRecord warning) {
-            warning.setLoggerName(null);        // For allowing 'listeners' to select a logger name.
+            warning.setLoggerName(null);        // For allowing `listeners` to select a logger name.
             listeners.warning(warning);
             return false;
         }
@@ -439,7 +439,7 @@ public abstract class StaxDataStore extends URIDataStore {
             case FINISHED: {
                 if (reset()) break;       // If we can reuse existing stream, nothing more to do.
                 if (input != null) {
-                    stream = null;        // Cleared first in case of error during 'close()' call.
+                    stream = null;        // Cleared first in case of error during `close()` call.
                     input.close();
                     input = null;
                 }
@@ -449,7 +449,7 @@ public abstract class StaxDataStore extends URIDataStore {
                 /*
                  * If the input stream is in use, or if we finished to use it but were unable to reset its position,
                  * then we need to create a new input stream (except if the input was a DOM in memory, which we can
-                 * share). The 'target' StaxStreamReader will be in charge of closing that stream.
+                 * share). The `target` StaxStreamReader will be in charge of closing that stream.
                  */
                 if (type != InputType.NODE) {
                     final String name = getDisplayName();

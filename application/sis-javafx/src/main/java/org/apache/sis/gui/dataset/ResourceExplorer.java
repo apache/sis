@@ -630,7 +630,7 @@ public class ResourceExplorer extends WindowManager {
      * @param error     the exception to log.
      */
     private static void warning(final String caller, final Resource resource, final Throwable error) {
-        final ObservableList<LogRecord> records = LogHandler.getRecords(resource);
+        final LogHandler.Destination records = LogHandler.getRecords(resource);
         if (records != null) {
             final LogRecord record = new LogRecord(Level.WARNING, error.getLocalizedMessage());
             record.setSourceClassName(ResourceExplorer.class.getName());

@@ -57,7 +57,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.4
  * @module
  */
@@ -135,6 +135,30 @@ public final class CoordinateSystems extends Static {
      */
     public static AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
         return new DirectionAlongMeridian(baseDirection, meridian).getDirection();
+    }
+
+    /**
+     * Returns {@code true} if the given axis direction seems to be a direction along a meridian.
+     *
+     * <table class="sis">
+     *   <caption>Examples</caption>
+     *   <tr><th>Axis name</th>               <th>Return value</th></tr>
+     *   <tr><td>North along 90 deg East</td> <td>{@code true}</td></tr>
+     *   <tr><td>South along 90 deg East</td> <td>{@code true}</td></tr>
+     *   <tr><td>South</td>                   <td>{@code false}</td></tr>
+     *   <tr><td>East</td>                    <td>{@code false}</td></tr>
+     * </table>
+     *
+     * Note that {@code true} is not a guarantee that {@link #parseAxisDirection(String)} will succeed.
+     * But it means that there is reasonable chances of success based on brief inspection of axis name.
+     *
+     * @param  direction  the direction to test. Can be null.
+     * @return if the given direction is non-null and seems to be a direction along a meridian.
+     *
+     * @since 1.2
+     */
+    public static boolean isAlongMeridian(final AxisDirection direction) {
+        return AxisDirections.isUserDefined(direction) && DirectionAlongMeridian.matches(direction.name());
     }
 
     /**

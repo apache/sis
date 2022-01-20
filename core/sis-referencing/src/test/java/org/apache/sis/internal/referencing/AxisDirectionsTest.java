@@ -25,6 +25,7 @@ import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -39,14 +40,12 @@ import static org.apache.sis.internal.referencing.AxisDirections.COUNTER_CLOCKWI
 /**
  * Tests the {@link AxisDirections} class.
  *
- * <p>The {@code AxisDirections} class is defined in the {@code sis-metadata} module, but tested in the
- * {@code sis-referencing} module because those tests use {@link HardCodedAxes} constants.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.4
  * @module
  */
+@DependsOn(AxesMapperTest.class)
 public final strictfp class AxisDirectionsTest extends TestCase {
     /**
      * Tests {@link AxisDirections#absolute(AxisDirection)}.
@@ -421,37 +420,37 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link AxisDirections#indicesOfColinear(CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link AxisDirections#indicesOfLenientMapping(CoordinateSystem, CoordinateSystem)}.
      *
-     * @since 1.1
+     * @see AxesMapperTest
      */
     @Test
-    public void testIndicesOfColinear() {
-        assertArrayEquals(new int[] {0, 1}, AxisDirections.indicesOfColinear(
+    public void testIndicesOfLenientMapping() {
+        assertArrayEquals(new int[] {0, 1}, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.GEODETIC_2D));
 
-        assertArrayEquals(new int[] {1, 0}, AxisDirections.indicesOfColinear(
+        assertArrayEquals(new int[] {1, 0}, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_φλ,
                 HardCodedCS.GEODETIC_2D));
 
-        assertArrayEquals(new int[] {1, 0}, AxisDirections.indicesOfColinear(
+        assertArrayEquals(new int[] {1, 0}, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.GEODETIC_φλ));
 
-        assertArrayEquals(new int[] {2}, AxisDirections.indicesOfColinear(
+        assertArrayEquals(new int[] {2}, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.ELLIPSOIDAL_HEIGHT));
 
-        assertArrayEquals(new int[] {2}, AxisDirections.indicesOfColinear(
+        assertArrayEquals(new int[] {2}, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.DEPTH));
 
-        assertArrayEquals(null, AxisDirections.indicesOfColinear(
+        assertArrayEquals(null, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.DAYS));
 
-        assertArrayEquals(null, AxisDirections.indicesOfColinear(
+        assertArrayEquals(null, AxisDirections.indicesOfLenientMapping(
                 HardCodedCS.GEODETIC_2D,
                 HardCodedCS.GEODETIC_3D));
     }

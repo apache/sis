@@ -16,11 +16,14 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.opengis.test.ToleranceModifier;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;
@@ -34,7 +37,8 @@ import static java.lang.StrictMath.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
+ * @author  Emmanuel Giasson (Thales)
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -93,6 +97,32 @@ public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInverse(toRadians(15), toRadians(25));
+    }
+
+    /**
+     * Tests with a latitude close to 90°.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while converting a point.
+     *
+     * <a href="https://issues.apache.org/jira/browse/SIS-532">SIS-532</a>
+     */
+    @Test
+    public void testPole() throws TransformException, FactoryException {
+        tolerance = 0.01;
+        transform = create(179.8, 89.8, -174).createMapProjection(DefaultFactories.forBuildin(MathTransformFactory.class));
+        transform = transform.inverse();
+        validate();
+        /*
+         * The projection of (180, 90) with SIS 1.1 is (+0.004715980030596256, 22338.795490272343).
+         * Empirical cordinates shifted by 0.01 meter: (-0.005463426921067797, 22338.792057282844).
+         * With those shifted coordinated, Apache SIS 1.1 was used to compute φ = NaN because the
+         * U′ value in `ObliqueMercator.inverseTransform(…)` was slightly greater than 1.
+         */
+        isInverseTransformSupported = false;
+        toleranceModifier = ToleranceModifier.GEOGRAPHIC;
+        verifyTransform(new double[] {-0.005464, 22338.792057},
+                        new double[] {300, 90});
     }
 
     /**

@@ -92,13 +92,13 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <release>11</release>     <!-- Minimal version required by JavaFX. -->
+          <release>16</release>     <!-- Minimal version required by JavaFX. -->
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <release>11</release>
+          <release>16</release>
         </configuration>
       </plugin>
 

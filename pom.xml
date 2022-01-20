@@ -498,7 +498,7 @@
       <dependency>
         <groupId>com.h2database</groupId>
         <artifactId>h2</artifactId>
-        <version>2.0.204</version>
+        <version>2.0.206</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -668,7 +668,7 @@
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.9.0</version>
         <configuration>
           <release>${maven.compiler.target}</release>
           <encoding>${project.build.sourceEncoding}</encoding>
@@ -706,7 +706,7 @@
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.2</version>
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
@@ -969,7 +969,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.0.0-M1</version>
+          <version>3.0.0-M2</version>
         </plugin>
       </plugins>
     </pluginManagement>

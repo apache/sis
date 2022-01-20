@@ -39,6 +39,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.referencing.operation.builder.LocalizationGridException;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -864,6 +865,21 @@ public final class Axis extends NamedElement {
                 tr = new GridCacheValue(linearizers, grid, factory);
                 tr = keyLocal.cache(decoder, tr);
             }
+        } catch (LocalizationGridException ex) {
+            /*
+             * Complete the exception with a possible failure cause before to propagate the exception.
+             * Example: "The grid spans more than 180° of longitude", which may cause transform errors.
+             * The possible causes are known only by the linearizer, which is why we could not set it
+             * at `LocalizationGridException` construction time.
+             */
+            for (final Linearizer linearizer : linearizers) {
+                final CharSequence reason = linearizer.getPotentialCause(coordinates);
+                if (reason != null) {
+                    ex.setPotentialCause(reason);
+                    break;          // Take the cause of the linearizer that had the highest priority.
+                }
+            }
+            throw ex;
         } finally {
             handler.putAndUnlock(tr);
         }
