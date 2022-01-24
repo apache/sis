@@ -815,7 +815,7 @@ next:   while (--numPts >= 0) {
          */
         @Override
         protected ContextualParameters getContextualParameters() {
-            return forward.context.inverse(GeocentricToGeographic.PARAMETERS);
+            return forward.context.inverse(GeocentricToGeographic.PARAMETERS, null);
         }
 
         /**
@@ -842,8 +842,8 @@ next:   while (--numPts >= 0) {
         @Debug
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
-            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY,
-                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)")),
+            ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)");
+            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name),
                     forward.getParameterDescriptors());
         }
 
