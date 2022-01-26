@@ -44,8 +44,8 @@ public final strictfp class XMLMetadataTest extends TestCase {
             "<GDALMetadata>\n" +
             "  <Item name=\"TITLE\">My image</Item>\n" +
             "  <Item name=\"SCALE\" sample=\"-3\">0.015</Item>" +
-            "  <Item name=\"acquisitionStartDate\">2018-02-28T04:48:00</Item>\n" +
-            "  <Item name=\"acquisitionEndDate\">2018-02-28T03:04:00</Item>\n" +
+            "  <Item name=\"acquisitionStartDate\">2018-02-28T03:48:00Z</Item>\n" +
+            "  <Item name=\"acquisitionEndDate\">2018-02-28T04:04:00Z</Item>\n" +
             "  <Foo>bar</Foo>\n" +
             "</GDALMetadata>\n";
 
@@ -65,8 +65,8 @@ public final strictfp class XMLMetadataTest extends TestCase {
             "              <gmd:extent>\n" +
             "                <gml:TimePeriod>\n" +
             "                  <gml:description>Acquisition period</gml:description>\n" +
-            "                  <gml:beginPosition>2018-02-28T03:04:00</gml:beginPosition>\n" +
-            "                  <gml:endPosition>2018-02-28T04:48:00</gml:endPosition>\n" +
+            "                  <gml:beginPosition>2018-02-28T03:04:00Z</gml:beginPosition>\n" +
+            "                  <gml:endPosition>2018-02-28T04:48:00Z</gml:endPosition>\n" +
             "                </gml:TimePeriod>\n" +
             "              </gmd:extent>\n" +
             "            </gmd:EX_TemporalExtent>\n" +
@@ -110,8 +110,8 @@ public final strictfp class XMLMetadataTest extends TestCase {
                 "          ├─TITLE…………………………………………… My image\n" +
                 "          ├─SCALE…………………………………………… 0.015\n" +
                 "          │   └─sample……………………………… -3\n" +
-                "          ├─acquisitionStartDate…… 2018-02-28T04:48:00\n" +
-                "          ├─acquisitionEndDate………… 2018-02-28T03:04:00\n" +
+                "          ├─acquisitionStartDate…… 2018-02-28T03:48:00Z\n" +
+                "          ├─acquisitionEndDate………… 2018-02-28T04:04:00Z\n" +
                 "          └─Foo………………………………………………… bar\n",
                 table.toString());
     }
@@ -133,7 +133,7 @@ public final strictfp class XMLMetadataTest extends TestCase {
                 "      ├─Citation……………………………… My image\n" +
                 "      └─Extent\n" +
                 "          └─Temporal element\n" +
-                "              └─Extent……………… [2018-02-28T04:48:00Z … 2018-02-28T03:04:00Z]\n",
+                "              └─Extent……………… [2018-02-28T03:48:00Z … 2018-02-28T04:04:00Z]\n",
                 metadata.toString());
     }
 
@@ -153,7 +153,7 @@ public final strictfp class XMLMetadataTest extends TestCase {
                 "  └─Identification info\n" +
                 "      └─Extent\n" +
                 "          └─Temporal element\n" +
-                "              └─Extent……………… [2018-02-28T02:04:00Z … 2018-02-28T03:48:00Z]\n",
+                "              └─Extent……………… [2018-02-28T03:04:00Z … 2018-02-28T04:48:00Z]\n",
                 metadata.toString());
     }
 }
