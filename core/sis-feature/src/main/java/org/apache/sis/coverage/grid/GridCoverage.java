@@ -154,8 +154,11 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Override
     public Optional<Envelope> getEnvelope() {
-        if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) return Optional.of(gridGeometry.getEnvelope());
-        else return Optional.empty();
+        if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
+            return Optional.of(gridGeometry.getEnvelope());
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
