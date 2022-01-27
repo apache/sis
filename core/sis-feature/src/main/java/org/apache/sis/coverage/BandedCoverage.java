@@ -17,6 +17,7 @@
 package org.apache.sis.coverage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -73,11 +74,30 @@ public abstract class BandedCoverage {
      * The envelope encompasses all cell surfaces, from the left border of leftmost cell
      * to the right border of the rightmost cell and similarly along other axes.
      *
-     * @return the bounding box for the coverage domain in CRS coordinates.
+     * <p>For most common cases, the envelope should be present.
+     * However, the return value may be empty in cases like:</p>
+     * <ul>
+     *   <li>
+     *     Functional dataset: in case of a computed resource, the coverage could be potentially valid
+     *     in an infinite extent (repeating pattern, random numbers for tests, etc.).
+     *   </li>
+     *   <li>
+     *     Computational cost: if obtaining the overall envelope is too costly,
+     *     an implementation might decide to leave the result empty instead of returning a too approximate envelope.
+     *     For example, if a coverage aggregates a lot of data (by dynamically choosing data in a catalog upon evaluation),
+     *     it might rather not compute envelope union for the entire catalog.
+     *   </li>
+     *   <li>
+     *       hen the function does not have a clear boundary for its domain of validity,
+     *       for example because the sample values accuracy decreases progressively with distance.
+     *   </li>
+     * </ul>
+     *
+     * @return the bounding box for the coverage domain in CRS coordinates if available.
      *
      * @since 1.2
      */
-    public abstract Envelope getEnvelope();
+    public abstract Optional<Envelope> getEnvelope();
 
     /**
      * Returns information about the <cite>range</cite> of this coverage.
