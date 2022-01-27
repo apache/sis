@@ -31,7 +31,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * are the value returned by the {@code getFoo()} method using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.2
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
@@ -115,6 +115,24 @@ final class ValueMap extends PropertyMap<Object> {
     public Object put(final String key, final Object value) {
         final Object old = accessor.set(accessor.indexOf(key, true), metadata, value, RETURN_PREVIOUS);
         return valuePolicy.isSkipped(old) ? null : old;
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map if no value is currently associated.
+     *
+     * @throws IllegalArgumentException if the given key is not the name of a property in the metadata.
+     * @throws ClassCastException if the given value is not of the expected type.
+     * @throws UnmodifiableMetadataException if the property for the given key is read-only.
+     */
+    @Override
+    public Object putIfAbsent(final String key, final Object value) {
+        final int index = accessor.indexOf(key, true);
+        final Object old = accessor.get(index, metadata);
+        if (old == null || valuePolicy.isSkipped(old)) {
+            return accessor.set(index, metadata, value, RETURN_NULL);
+        } else {
+            return old;
+        }
     }
 
     /**
