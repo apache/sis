@@ -143,8 +143,8 @@ public final class RotatedNorthPole extends AbstractProvider {
     {
         final Parameters p = Parameters.castOrWrap(parameters);
         return RotatedPole.rotateNorthPole(factory,
-                p.getValue(GRID_POLE_LONGITUDE),
                 p.getValue(GRID_POLE_LATITUDE),
+                p.getValue(GRID_POLE_LONGITUDE),
                 p.getValue(GRID_POLE_ANGLE));
     }
 }

@@ -147,8 +147,8 @@ public final class RotatedSouthPole extends AbstractProvider {
     {
         final Parameters p = Parameters.castOrWrap(parameters);
         return RotatedPole.rotateSouthPole(factory,
-                p.getValue(GRID_POLE_LONGITUDE),
                 p.getValue(GRID_POLE_LATITUDE),
+                p.getValue(GRID_POLE_LONGITUDE),
                 p.getValue(GRID_POLE_ANGLE));
     }
 }

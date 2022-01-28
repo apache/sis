@@ -53,10 +53,9 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     private void inverseSouthPoleTransform() throws FactoryException, TransformException {
         final ParameterValueGroup pg = ((Parameterized) transform.inverse()).getParameterValues();
         transform = RotatedPole.rotateSouthPole(factory(),
-                pg.parameter("grid_south_pole_longitude").doubleValue(),
                 pg.parameter("grid_south_pole_latitude") .doubleValue(),
+                pg.parameter("grid_south_pole_longitude").doubleValue(),
                 pg.parameter("grid_south_pole_angle")    .doubleValue());
-
     }
 
     /**
@@ -69,7 +68,7 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
      */
     @Test
     public void testRotateSouthPoleOnGreenwich() throws FactoryException, TransformException {
-        transform = RotatedPole.rotateSouthPole(factory(), 0, -60, 0);
+        transform = RotatedPole.rotateSouthPole(factory(), -60, 0, 0);
         tolerance = Formulas.ANGULAR_TOLERANCE;
         isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -98,7 +97,7 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @Test
     @DependsOnMethod("testRotateSouthPoleOnGreenwich")
     public void testRotateSouthPoleWithAngle() throws FactoryException, TransformException {
-        transform = RotatedPole.rotateSouthPole(factory(), 20, -50, 10);
+        transform = RotatedPole.rotateSouthPole(factory(), -50, 20, 10);
         tolerance = Formulas.ANGULAR_TOLERANCE;
         isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.

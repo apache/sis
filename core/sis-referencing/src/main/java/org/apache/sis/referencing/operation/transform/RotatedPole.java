@@ -51,20 +51,22 @@ import static java.lang.Math.*;
  * <a href="https://www.wmo.int/">World Meteorological Organization</a> (WMO):
  *
  * <ol>
+ *   <li><b>φ<sub>p</sub>:</b> geographic  latitude in degrees of the southern pole of the coordinate system.</li>
  *   <li><b>λ<sub>p</sub>:</b> geographic longitude in degrees of the southern pole of the coordinate system.</li>
- *   <li><b>θ<sub>p</sub>:</b> geographic  latitude in degrees of the southern pole of the coordinate system.</li>
  *   <li>Angle of rotation in degrees about the new polar axis measured clockwise when looking from the southern
  *       to the northern pole.</li>
  * </ol>
  *
  * The rotations are applied by first rotating the sphere through λ<sub>p</sub> about the geographic polar axis,
- * and then rotating through (θ<sub>p</sub> − (−90°)) degrees so that the southern pole moved along the
+ * and then rotating through (φ<sub>p</sub> − (−90°)) degrees so that the southern pole moved along the
  * (previously rotated) Greenwich meridian.
  *
- * <p>Source and target axis order is (<var>longitude</var>, <var>latitude</var>).
- * This is the usual axis order used by Apache SIS for <em>internal</em> calculations.
+ * <h2>Coordinate order</h2>
+ * Source and target axis order in {@code transform(…)} methods is (<var>longitude</var>, <var>latitude</var>).
+ * This is the usual axis order used by Apache SIS for <em>internal</em> calculations
+ * (but not the <em>parameter</em> order in factory methods).
  * If a different axis order is desired (for example for showing coordinates to the user),
- * an affine transform can be concatenated to this transform.</p>
+ * an affine transform can be concatenated to this transform.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -87,25 +89,25 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
 
     /**
      * Sine and cosine of the geographic latitude of the southern pole of the coordinate system.
-     * The rotation angle to apply is (θ<sub>p</sub> − (−90°)) degrees for the south pole (−90°),
+     * The rotation angle to apply is (φ<sub>p</sub> − (−90°)) degrees for the south pole (−90°),
      * but we use the following trigonometric identities:
      *
      * <p>For the south pole:</p>
      * <ul>
-     *   <li>sin(θ + 90°) =  cos(θ)</li>
-     *   <li>cos(θ + 90°) = −sin(θ)</li>
+     *   <li>sin(φ + 90°) =  cos(φ)</li>
+     *   <li>cos(φ + 90°) = −sin(φ)</li>
      * </ul>
      *
      * <p>For the north pole:</p>
      * <ul>
-     *   <li>sin(θ − 90°) = −cos(θ)</li>
-     *   <li>cos(θ − 90°) =  sin(θ)</li>
+     *   <li>sin(φ − 90°) = −cos(φ)</li>
+     *   <li>cos(φ − 90°) =  sin(φ)</li>
      * </ul>
      *
      * By convention those fields contain the sine and cosine for the south pole case,
      * and values with opposite sign for the north pole case.
      */
-    private final double sinθp, cosθp;
+    private final double sinφp, cosφp;
 
     /**
      * The inverse of this operation, computed when first needed.
@@ -121,8 +123,8 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      */
     private RotatedPole(final RotatedPole forward) {
         context =  forward.context.inverse(forward.context.getDescriptor(), RotatedPole::inverseParameter);
-        sinθp   =  forward.sinθp;
-        cosθp   = -forward.cosθp;
+        sinφp   =  forward.sinφp;
+        cosφp   = -forward.cosφp;
         inverse =  forward;
     }
 
@@ -162,22 +164,22 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      * For a complete transform, use one of the static factory methods.
      *
      * @param  south  {@code true} for a south pole rotation, or {@code false} for a north pole rotation.
+     * @param  φp     geographic  latitude in degrees of the southern pole of the coordinate system.
      * @param  λp     geographic longitude in degrees of the southern pole of the coordinate system.
-     * @param  θp     geographic latitude in degrees of the southern pole of the coordinate system.
      * @param  pa     angle of rotation in degrees about the new polar axis measured clockwise when
      *                looking from the southern to the northern pole.
      */
-    protected RotatedPole(final boolean south, double λp, double θp, double pa) {
+    protected RotatedPole(final boolean south, double φp, double λp, double pa) {
         context = new ContextualParameters(
                 south ? RotatedSouthPole.PARAMETERS
                       : RotatedNorthPole.PARAMETERS, 2, 2);
-        setValue(0, θp);        // grid_south_pole_latitude   or  grid_north_pole_latitude
+        setValue(0, φp);        // grid_south_pole_latitude   or  grid_north_pole_latitude
         setValue(1, λp);        // grid_south_pole_longitude  or  grid_north_pole_longitude
         setValue(2, pa);        // grid_south_pole_angle      or  north_pole_grid_longitude
-        final double θ = toRadians(θp);
+        final double φ = toRadians(φp);
         final double sign = south ? 1 : -1;
-        sinθp = sin(θ) * sign;
-        cosθp = cos(θ) * sign;
+        sinφp = sin(φ) * sign;
+        cosφp = cos(φ) * sign;
         context.normalizeGeographicInputs(λp);
         context.denormalizeGeographicOutputs(-pa);
     }
@@ -198,17 +200,17 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      * Creates a new rotated south pole operation.
      *
      * @param  factory  the factory to use for creating the transform.
+     * @param  φp       geographic  latitude in degrees of the southern pole of the coordinate system.
      * @param  λp       geographic longitude in degrees of the southern pole of the coordinate system.
-     * @param  θp       geographic latitude in degrees of the southern pole of the coordinate system.
      * @param  pa       angle of rotation in degrees about the new polar axis measured clockwise when
      *                  looking from the southern to the northern pole.
      * @return the conversion doing a south pole rotation.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform rotateSouthPole(final MathTransformFactory factory,
-            final double λp, final double θp, final double pa) throws FactoryException
+            final double φp, final double λp, final double pa) throws FactoryException
     {
-        final RotatedPole kernel = new RotatedPole(true, λp, θp, pa);
+        final RotatedPole kernel = new RotatedPole(true, φp, λp, pa);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -216,17 +218,17 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      * Creates a new rotated north pole operation.
      *
      * @param  factory  the factory to use for creating the transform.
+     * @param  φp       geographic  latitude in degrees of the northern pole of the coordinate system.
      * @param  λp       geographic longitude in degrees of the northern pole of the coordinate system.
-     * @param  θp       geographic latitude in degrees of the northern pole of the coordinate system.
      * @param  pa       angle of rotation in degrees about the new polar axis measured clockwise when
      *                  looking from the northern to the southern pole.
      * @return the conversion doing a north pole rotation.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform rotateNorthPole(final MathTransformFactory factory,
-            final double λp, final double θp, final double pa) throws FactoryException
+            final double φp, final double λp, final double pa) throws FactoryException
     {
-        final RotatedPole kernel = new RotatedPole(false, λp, θp, pa);
+        final RotatedPole kernel = new RotatedPole(false, φp, λp, pa);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -279,6 +281,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     /**
      * Transforms a single coordinate point in an array,
      * and optionally computes the transform derivative at that location.
+     * Source and target axis order is (<var>longitude</var>, <var>latitude</var>).
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -301,8 +304,8 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
          * Apply the rotation around Y axis (so the y value stay unchanged)
          * and convert back to spherical coordinates.
          */
-        double xr =  cosθp * z - sinθp * x;
-        double zr = -cosθp * x - sinθp * z;
+        double xr =  cosφp * z - sinφp * x;
+        double zr = -cosφp * x - sinφp * z;
         double R  = sqrt(xr*xr + y*y);          // The slower hypot(…) is not needed because values are close to 1.
         dstPts[dstOff]   = atan2(y, xr);
         dstPts[dstOff+1] = atan2(zr, R);
@@ -337,11 +340,11 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
         if (super.equals(object, mode)) {
             final RotatedPole other = (RotatedPole) object;
             if (mode.isApproximate()) {
-                return Numerics.epsilonEqual(sinθp, other.sinθp, Formulas.ANGULAR_TOLERANCE * (PI/180)) &&
-                       Numerics.epsilonEqual(cosθp, other.cosθp, Formulas.ANGULAR_TOLERANCE * (PI/180));
+                return Numerics.epsilonEqual(sinφp, other.sinφp, Formulas.ANGULAR_TOLERANCE * (PI/180)) &&
+                       Numerics.epsilonEqual(cosφp, other.cosφp, Formulas.ANGULAR_TOLERANCE * (PI/180));
             } else {
-                return Numerics.equals(sinθp, other.sinθp) &&
-                       Numerics.equals(cosθp, other.cosθp);
+                return Numerics.equals(sinφp, other.sinφp) &&
+                       Numerics.equals(cosφp, other.cosφp);
             }
         }
         return false;
@@ -352,6 +355,6 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Double.hashCode(cosθp) + Double.hashCode(sinθp);
+        return super.computeHashCode() + Double.hashCode(cosφp) + Double.hashCode(sinφp);
     }
 }
