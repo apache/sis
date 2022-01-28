@@ -16,8 +16,14 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
+import java.util.Locale;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicExtent;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
@@ -34,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see org.apache.sis.internal.metadata.MergerTest
  *
@@ -98,5 +104,24 @@ public final strictfp class MetadataCopierTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("DefaultCitation"));
         }
+    }
+
+    /**
+     * Tests with a metadata containing a {@link DefaultMetadata#getLocalesAndCharsets()} property.
+     * This property is defined by a {@link Map}.
+     */
+    @Test
+    public void testLocaleAndCharsets() {
+        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final DefaultMetadata original = new DefaultMetadata();
+        original.getLocalesAndCharsets().put(Locale.FRENCH,   StandardCharsets.UTF_8);
+        original.getLocalesAndCharsets().put(Locale.JAPANESE, StandardCharsets.UTF_16);
+        final DefaultMetadata copy = (DefaultMetadata) copier.copy(Metadata.class, original);
+        final Map<Locale,Charset> lc = copy.getLocalesAndCharsets();
+        assertEquals(StandardCharsets.UTF_8,  lc.get(Locale.FRENCH));
+        assertEquals(StandardCharsets.UTF_16, lc.get(Locale.JAPANESE));
+        assertEquals (original, copy);
+        assertNotSame(original, copy);
+        assertNotSame(original.getLocalesAndCharsets(), lc);
     }
 }

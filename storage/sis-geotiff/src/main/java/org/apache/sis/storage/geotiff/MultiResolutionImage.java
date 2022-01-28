@@ -164,8 +164,15 @@ final class MultiResolutionImage extends GridResourceWrapper {
      */
     @Override
     public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
-        final double[] request = domain.getResolution(true);
-        int level = resolutions.length;
+        final double[] request;
+        int level;
+        if (domain != null && domain.isDefined(GridGeometry.RESOLUTION)) {
+            request = domain.getResolution(true);
+            level   = resolutions.length;
+        } else {
+            request = null;
+            level   = 1;
+        }
         synchronized (getSynchronizationLock()) {
 finer:      while (--level > 0) {
                 final double[] resolution = resolution(level);

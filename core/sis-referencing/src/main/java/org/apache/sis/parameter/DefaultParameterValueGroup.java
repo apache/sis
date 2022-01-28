@@ -360,13 +360,14 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
 
     /**
      * Returns all subgroups with the specified name.
+     * Groups are listed in the order they were added by calls to {@link #addGroup(String)}.
      *
-     * <p>This method do not create new groups: if the requested group is optional (i.e.
+     * <p>This method does not create new groups: if the requested group is optional (i.e.
      * <code>{@linkplain DefaultParameterDescriptor#getMinimumOccurs() minimumOccurs} == 0</code>)
      * and no value were defined previously, then this method returns an empty set.</p>
      *
      * @param  name  the name of the parameter to search for.
-     * @return the set of all parameter group for the given name.
+     * @return the list of all parameter group for the given name, in insertion order.
      * @throws ParameterNotFoundException if no descriptor was found for the given name.
      */
     @Override
@@ -404,9 +405,9 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * which is a child of this group.
      *
      * <div class="note"><b>API note:</b>
-     * There is no {@code removeGroup(String)} method. To remove a group, users shall inspect the
-     * {@link #values()} list, decide which occurrences to remove if there is many of them for the
-     * same name, and whether to iterate recursively into sub-groups or not.</div>
+     * There is no {@code removeGroup(String)} method. To remove a group, users can inspect the
+     * {@link #groups(String)} or {@link #values()} list, decide which occurrences to remove if
+     * there is many of them for the same name, and whether to iterate recursively into sub-groups or not.</div>
      *
      * @param  name  the name of the parameter group to create.
      * @return a newly created parameter group for the given name.
