@@ -118,6 +118,9 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
 
     /**
      * Creates the inverse of the given forward operation.
+     * The new pole latitude is φ<sub>p</sub> = (180° − φ<sub>forward</sub>).
+     * We get this effect be inverting the sign of {@link #cosφp} while keeping {@link #sinφp} unchanged.
+     * Note that this is compatible with {@link #isIdentity()} implementation.
      *
      * @see #inverse()
      */
@@ -150,7 +153,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
                     i = 3 - i;
                 }
                 double value = -((Number) ((ParameterValue<?>) values.get(i)).getValue()).doubleValue();
-                if (i == 0) value = Math.IEEEremainder(value + 180, 360);
+                if (i == 0) value = IEEEremainder(value + 180, 360);
                 target.setValue(value);
                 return true;
             }
@@ -169,7 +172,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      * @param  pa     angle of rotation in degrees about the new polar axis measured clockwise when
      *                looking from the southern to the northern pole.
      */
-    protected RotatedPole(final boolean south, double φp, double λp, double pa) {
+    protected RotatedPole(final boolean south, final double φp, final double λp, final double pa) {
         context = new ContextualParameters(
                 south ? RotatedSouthPole.PARAMETERS
                       : RotatedNorthPole.PARAMETERS, 2, 2);
@@ -326,6 +329,21 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
             inverse = new RotatedPole(this);
         }
         return inverse;
+    }
+
+    /**
+     * Tests whether this transform does not move any points.
+     *
+     * @return {@code true} if this transform is (at least approximately) the identity transform.
+     */
+    @Override
+    public boolean isIdentity() {
+        return sinφp == -1;
+        /*
+         * We do not test `cosφp` because that value may be small but non-zero, especially since there is no exact
+         * representation of `cos(π/2)`. Testing `sinφp == -1` is a way to allow for a small tolerance around π/2.
+         * This policy is also needed for consistency with `RotatedPole(RotatedPole)` implementation.
+         */
     }
 
     /**
