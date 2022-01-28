@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,7 +59,7 @@ import org.apache.sis.internal.metadata.Resources;
  * In multi-threads environment, each thread should use its own {@code MetadataCopier} instance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
 */
@@ -240,7 +239,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
                 if (c instanceof EnumSet<?> || c instanceof CodeListSet<?>) {
                     /*
                      * Enum and CodeList elements can not be cloned. Do not clone their collection neither;
-                     * we presume that the setter method will do that itself.
+                     * we presume that the setter method (to be invoked by reflection) will do that itself.
                      */
                 } else {
                     final Object[] array = c.toArray();
@@ -254,12 +253,16 @@ public class MetadataCopier extends MetadataVisitor<Object> {
                 }
                 return c;
             }
+            /*
+             * Maps are rare in GeoAPI interfaces derived from ISO 19115. The main one
+             * is `Map<Locale,Charset>` returned by `Metadata.getLocalesAndCharsets()`.
+             * We can not copy those entries because the `type` argument is `Map.Entry`,
+             * which is not enough information. Recursive copy should not be necessary
+             * anyway because we do not use `Map` for storing other metadata objects.
+             * We do not clone the map because it should be done by the setter method.
+             */
             if (metadata instanceof Map<?,?>) {
-                final Map<Object,Object> copy = new LinkedHashMap<>((Map<?,?>) metadata);
-                for (final Map.Entry<Object,Object> entry : copy.entrySet()) {
-                    entry.setValue(copyRecursively(type, entry.getValue()));
-                }
-                return copy;
+                return metadata;
             }
         }
         return copyRecursively(type, metadata);

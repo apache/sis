@@ -149,13 +149,16 @@ public abstract class GridCoverage extends BandedCoverage {
      * <p>The default implementation delegates to {@link GridGeometry#getEnvelope()}.</p>
      *
      * @return the bounding box for the coverage domain in CRS coordinates.
-     * @throws IncompleteGridGeometryException if the grid geometry has no envelope.
      *
      * @since 1.2
      */
     @Override
-    public Envelope getEnvelope() {
-        return gridGeometry.getEnvelope();
+    public Optional<Envelope> getEnvelope() {
+        if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
+            return Optional.of(gridGeometry.getEnvelope());
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**

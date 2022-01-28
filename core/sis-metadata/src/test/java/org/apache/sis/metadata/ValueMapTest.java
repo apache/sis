@@ -46,7 +46,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see MetadataStandardTest#testValueMap()
  *
@@ -302,5 +302,18 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<>("presentationForms",       singleton(DOCUMENT_HARDCOPY)),
             new SimpleEntry<>("ISBN",                    "9782505004509")
         }, map.entrySet().toArray());
+    }
+
+    /**
+     * Tests {@link ValueMap#putIfAbsent(String, Object)}.
+     */
+    @Test
+    public void testPutIfAbsent() {
+        final Map<String, Object> citation = createCitation();
+        assertEquals("Undercurrent", String.valueOf(citation.putIfAbsent("title", "A new title")));
+        assertEquals("Undercurrent", String.valueOf(citation.get("title")));
+        assertEquals("Undercurrent", String.valueOf(citation.remove("title")));
+        assertNull(citation.putIfAbsent("title", "A new title"));
+        assertEquals("A new title",  String.valueOf(citation.get("title")));
     }
 }
