@@ -1197,7 +1197,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 String name = getAsString(GeoKeys.PCSCitation);
                 if (name == null) {
                     name = getAsString(GeoKeys.Citation);
-                    // Note that Citation has been removed from the map, so it will not be used by 'complete(MetadataBuilder).
+                    // Note that Citation has been removed from the map, so it will not be used by `complete(MetadataBuilder)`.
                 }
                 final Unit<Length>  linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
                 final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);

@@ -3207,6 +3207,10 @@ parse:      for (int i = 0; i < length;) {
      * The given source should be an instance of {@link Metadata},
      * but some types of metadata components are accepted as well.
      *
+     * <p>This method should be invoked last, just before the call to {@link #build(boolean)}.
+     * Any identification information, responsible party, extent, coverage description, <i>etc.</i>
+     * added after this method call will be stored in new metadata object (not merged).</p>
+     *
      * @param  source  the source metadata to merge. Will never be modified.
      * @param  locale  the locale to use for error message in exceptions, or {@code null} for the default locale.
      * @return {@code true} if the given source has been merged,
@@ -3217,6 +3221,7 @@ parse:      for (int i = 0; i < length;) {
      * @see Merger
      */
     public boolean mergeMetadata(final Object source, final Locale locale) {
+        flush();
         final ModifiableMetadata target;
              if (source instanceof Metadata)                    target = metadata();
         else if (source instanceof DataIdentification)          target = identification();
@@ -3246,14 +3251,11 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Returns the metadata (optionally as an unmodifiable object), or {@code null} if none.
-     * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
-     *
-     * @param  freeze  {@code true} if this method should set the returned metadata to
-     *                 {@link DefaultMetadata.State#FINAL}, or {@code false} for leaving the metadata editable.
-     * @return the metadata, or {@code null} if none.
+     * Writes all pending metadata objects into the {@link DefaultMetadata} root class.
+     * Then all {@link #identification}, {@link #gridRepresentation}, <i>etc.</i> fields
+     * except {@link #metadata} are set to {@code null}.
      */
-    public final DefaultMetadata build(final boolean freeze) {
+    private void flush() {
         newIdentification();
         newGridRepresentation(GridType.UNSPECIFIED);
         newFeatureTypes();
@@ -3261,19 +3263,28 @@ parse:      for (int i = 0; i < length;) {
         newAcquisition();
         newDistribution();
         newLineage();
-        final DefaultMetadata md = metadata;
-        metadata = null;
-        if (md != null) {
-            if (standardISO != 0) {
-                List<Citation> c = Citations.ISO_19115;
-                if (standardISO == 1) {
-                    c = Collections.singletonList(c.get(0));
-                }
-                md.setMetadataStandards(c);
+    }
+
+    /**
+     * Returns the metadata, optionally as an unmodifiable object.
+     * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
+     *
+     * @param  freeze  {@code true} if this method should set the returned metadata to
+     *                 {@link DefaultMetadata.State#FINAL}, or {@code false} for leaving the metadata editable.
+     * @return the metadata, never {@code null}.
+     */
+    public final DefaultMetadata build(final boolean freeze) {
+        flush();
+        final DefaultMetadata md = metadata();
+        if (standardISO != 0) {
+            List<Citation> c = Citations.ISO_19115;
+            if (standardISO == 1) {
+                c = Collections.singletonList(c.get(0));
             }
-            if (freeze) {
-                md.transitionTo(DefaultMetadata.State.FINAL);
-            }
+            md.setMetadataStandards(c);
+        }
+        if (freeze) {
+            md.transitionTo(DefaultMetadata.State.FINAL);
         }
         return md;
     }

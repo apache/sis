@@ -29,8 +29,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
@@ -54,11 +52,9 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.Vector;
-import org.apache.sis.measure.Units;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 
@@ -119,7 +115,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Builder for the metadata. This field is reset to {@code null} when not needed anymore.
      */
-    private MetadataBuilder metadata;
+    private ImageMetadataBuilder metadata;
 
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
@@ -336,19 +332,6 @@ final class ImageFileDirectory extends DataCube {
     private Vector colorMap;
 
     /**
-     * The size of the dithering or halftoning matrix used to create a dithered or halftoned bilevel file.
-     * This field should be present only if {@code Threshholding} tag is 2 (an ordered dither or halftone
-     * technique has been applied to the image data). Special values:
-     *
-     * <ul>
-     *   <li>-1 means that {@code Threshholding} is 1 or unspecified.</li>
-     *   <li>-2 means that {@code Threshholding} is 2 but the matrix size has not yet been specified.</li>
-     *   <li>-3 means that {@code Threshholding} is 3 (randomized process such as error diffusion).</li>
-     * </ul>
-     */
-    private short cellWidth = -1, cellHeight = -1;
-
-    /**
      * The minimum or maximum sample value found in the image, with one value per band.
      * May be a vector of length 1 if the same single value applies to all bands.
      */
@@ -359,20 +342,6 @@ final class ImageFileDirectory extends DataCube {
      * in the TIFF file, or {@code false} if they have been inferred from {@link #bitsPerSample}.
      */
     private boolean isMinSpecified, isMaxSpecified;
-
-    /**
-     * The number of pixels per {@link #resolutionUnit} in the {@link #imageWidth} and the {@link #imageHeight}
-     * directions, or {@link Double#NaN} is unspecified. Since ISO 19115 does not have separated resolution fields
-     * for image width and height, Apache SIS stores only the maximal value.
-     */
-    private double resolution = Double.NaN;
-
-    /**
-     * The unit of measurement for the {@linkplain #resolution} value, or {@code null} if none.
-     * A null value is used for images that may have a non-square aspect ratio, but no meaningful
-     * absolute dimensions. Default value for TIFF files is inch.
-     */
-    private Unit<Length> resolutionUnit = Units.INCH;
 
     /**
      * The "no data" or background pixel value, or NaN if undefined.
@@ -468,7 +437,7 @@ final class ImageFileDirectory extends DataCube {
     ImageFileDirectory(final Reader reader, final int index) {
         super(reader);
         this.index = index;
-        metadata = new MetadataBuilder();
+        metadata = new ImageMetadataBuilder();
     }
 
     /**
@@ -511,8 +480,8 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Adds the value read from the current position in the given stream for the entry identified
      * by the given GeoTIFF tag. This method may store the value either in a field of this class,
-     * or directly in the {@link MetadataBuilder}. However in the later case, this method should
-     * not write anything under the {@code "metadata/contentInfo"} node.
+     * or directly in the {@link ImageMetadataBuilder}. However in the later case, this method
+     * should not write anything under the {@code "metadata/contentInfo"} node.
      *
      * @param  tag    the GeoTIFF tag to decode.
      * @param  type   the GeoTIFF type of the value to read.
@@ -1035,10 +1004,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case Tags.XResolution:
             case Tags.YResolution: {
-                final double r = type.readDouble(input(), count);
-                if (Double.isNaN(resolution) || r > resolution) {
-                    resolution = r;
-                }
+                metadata.setResolution(type.readDouble(input(), count));
                 break;
             }
             /*
@@ -1049,14 +1015,8 @@ final class ImageFileDirectory extends DataCube {
              *   3 = Centimeter.
              */
             case Tags.ResolutionUnit: {
-                final int unit = type.readInt(input(), count);
-                switch (unit) {
-                    case 1:  resolutionUnit = null;             break;
-                    case 2:  resolutionUnit = Units.INCH;       break;
-                    case 3:  resolutionUnit = Units.CENTIMETRE; break;
-                    default: return unit;                   // Cause a warning to be reported by the caller.
-                }
-                break;
+                return metadata.setResolutionUnit(type.readInt(input(), count));
+                // Non-null return value cause a warning to be reported by the caller.
             }
             /*
              * For black and white TIFF files that represent shades of gray, the technique used to convert
@@ -1067,26 +1027,16 @@ final class ImageFileDirectory extends DataCube {
              *   3 = A randomized process such as error diffusion has been applied to the image data.
              */
             case Tags.Threshholding: {
-                final short value = type.readShort(input(), count);
-                switch (value) {
-                    case 1:  break;
-                    case 2:  if (cellWidth >= 0 || cellHeight >= 0) return null; else break;
-                    case 3:  break;
-                    default: return value;                  // Cause a warning to be reported by the caller.
-                }
-                cellWidth = cellHeight = (short) -value;
-                break;
+                return metadata.setThreshholding(type.readShort(input(), count));
+                // Non-null return value cause a warning to be reported by the caller.
             }
             /*
              * The width and height of the dithering or halftoning matrix used to create
              * a dithered or halftoned bilevel file. Meaningful only if Threshholding = 2.
              */
-            case Tags.CellWidth: {
-                cellWidth = type.readShort(input(), count);
-                break;
-            }
+            case Tags.CellWidth:
             case Tags.CellLength: {
-                cellHeight = type.readShort(input(), count);
+                metadata.setCellSize(type.readShort(input(), count), tag == Tags.CellWidth);
                 break;
             }
 
@@ -1120,8 +1070,7 @@ final class ImageFileDirectory extends DataCube {
 
             case Tags.GEO_METADATA:
             case Tags.GDAL_METADATA: {
-                final XMLMetadata parser = new XMLMetadata(reader, type, count, tag == Tags.GDAL_METADATA);
-                parser.appendTo(metadata);
+                metadata.addXML(new XMLMetadata(reader, type, count, tag));
                 break;
             }
             case Tags.GDAL_NODATA: {
@@ -1356,7 +1305,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder metadata = this.metadata;
+        final ImageMetadataBuilder metadata = this.metadata;
         if (metadata == null) {
             /*
              * We enter in this block only if an exception occurred during the first attempt to build metadata.
@@ -1365,18 +1314,6 @@ final class ImageFileDirectory extends DataCube {
             return super.createMetadata();
         }
         this.metadata = null;     // Clear now in case an exception happens.
-        getIdentifier().ifPresent((id) -> metadata.addTitle(id.toString()));
-        /*
-         * Add information about the file format.
-         *
-         * Destination: metadata/identificationInfo/resourceFormat
-         */
-        if (reader.store.hidden) {
-            reader.store.setFormatInfo(metadata);       // Should be before `addCompression(…)`.
-        }
-        if (compression != null) {
-            metadata.addCompression(CharSequences.upperCaseToSentence(compression.name()));
-        }
         /*
          * Add information about sample dimensions.
          *
@@ -1391,42 +1328,6 @@ final class ImageFileDirectory extends DataCube {
             if (!metadata.hasSampleValueRange()) {
                 if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
                 if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
-            }
-        }
-        /*
-         * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
-         * the resolution unit to metres, but it may be relaxed in a future SIS version.
-         *
-         * Destination: metadata/identificationInfo/spatialResolution/distance
-         */
-        if (!Double.isNaN(resolution) && resolutionUnit != null) {
-            metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(resolution));
-        }
-        /*
-         * Cell size is relevant only if the Threshholding TIFF tag value is 2. By convention in
-         * this implementation class, other Threshholding values are stored as negative cell sizes:
-         *
-         *   -1 means that Threshholding is 1 or unspecified.
-         *   -2 means that Threshholding is 2 but the matrix size has not yet been specified.
-         *   -3 means that Threshholding is 3 (randomized process such as error diffusion).
-         *
-         * Destination: metadata/resourceLineage/processStep/description
-         */
-        switch (Math.min(cellWidth, cellHeight)) {
-            case -1: {
-                // Nothing to report.
-                break;
-            }
-            case -3: {
-                metadata.addProcessDescription(Resources.formatInternational(Resources.Keys.RandomizedProcessApplied));
-                break;
-            }
-            default: {
-                metadata.addProcessDescription(Resources.formatInternational(
-                            Resources.Keys.DitheringOrHalftoningApplied_2,
-                            (cellWidth  >= 0) ? cellWidth  : '?',
-                            (cellHeight >= 0) ? cellHeight : '?'));
-                break;
             }
         }
         /*
@@ -1447,6 +1348,7 @@ final class ImageFileDirectory extends DataCube {
         /*
          * End of metadata construction from TIFF tags.
          */
+        metadata.finish(this);
         final DefaultMetadata md = metadata.build(false);
         if (isIndexValid) {
             final Metadata c = reader.store.customizer.customize(index, md);

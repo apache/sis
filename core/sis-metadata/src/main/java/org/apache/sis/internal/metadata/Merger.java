@@ -126,9 +126,8 @@ public class Merger {
      * Implementation of {@link #copy(Object, ModifiableMetadata)} method,
      * to be invoked recursively for all child properties to merge.
      *
-     * @param  dryRun  {@code true} for executing the merge operation in "dry run" mode instead of performing the
-     *                 actual merge. This mode is used for verifying if there is a merge conflict before to perform
-     *                 the actual operation.
+     * @param  dryRun  {@code true} for simulating the merge operation instead of performing the actual merge.
+     *                 Used for verifying if there is a merge conflict before to perform the actual operation.
      * @return {@code true} if the merge operation is valid, or {@code false} if the given arguments are valid
      *         metadata but the merge operation can nevertheless not be executed because it could cause data lost.
      */
