@@ -153,7 +153,9 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
                     i = 3 - i;
                 }
                 double value = -((Number) ((ParameterValue<?>) values.get(i)).getValue()).doubleValue();
-                if (i == 0) value = IEEEremainder(value + 180, 360);
+                if (i == 0 && RotatedSouthPole.PARAMETERS.equals(forward.getDescriptor())) {
+                    value = IEEEremainder(value + 180, 360);
+                }
                 target.setValue(value);
                 return true;
             }
@@ -340,8 +342,9 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     public boolean isIdentity() {
         return sinφp == -1;
         /*
-         * We do not test `cosφp` because that value may be small but non-zero, especially since there is no exact
-         * representation of `cos(π/2)`. Testing `sinφp == -1` is a way to allow for a small tolerance around π/2.
+         * We do not test `cosφp` because that value can be small but not zero, because
+         * there is no way to compute exactly `cos(π/2)` with `Math.PI` approximation.
+         * Testing `sinφp == -1` is a way to allow for a small tolerance around π/2.
          * This policy is also needed for consistency with `RotatedPole(RotatedPole)` implementation.
          */
     }

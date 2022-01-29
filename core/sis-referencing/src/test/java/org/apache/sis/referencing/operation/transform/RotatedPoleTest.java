@@ -59,9 +59,22 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     }
 
     /**
+     * Creates a new transform which should be the inverse of current transform according
+     * the parameters declared in {@link RotatedPole#context}. This is the same work than
+     * {@link #inverseSouthPoleTransform()} but for the other transform.
+     */
+    private void inverseNorthPoleTransform() throws FactoryException, TransformException {
+        final ParameterValueGroup pg = ((Parameterized) transform.inverse()).getParameterValues();
+        transform = RotatedPole.rotateSouthPole(factory(),
+                pg.parameter("grid_north_pole_latitude") .doubleValue(),
+                pg.parameter("grid_north_pole_longitude").doubleValue(),
+                pg.parameter("north_pole_grid_longitude").doubleValue());
+    }
+
+    /**
      * Tests a rotation of south pole with the new pole on Greenwich.
-     * The {@link ucar.unidata.geoloc.LatLonPoint} class has been used
-     * as a reference implementation for computing the expected values.
+     * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class
+     * has been used as a reference implementation for expected values.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
@@ -88,8 +101,8 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
 
     /**
      * Tests a rotation of south pole with the pole on arbitrary meridian.
-     * The {@link ucar.unidata.geoloc.LatLonPoint} class has been used as
-     * a reference implementation for computing the expected values.
+     * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
+     * been used as a reference implementation for expected values.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
@@ -112,6 +125,100 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
         };
         verifyTransform(coordinates, expected);
         inverseSouthPoleTransform();
+        verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tries rotating a pole to opposite hemisphere.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while transforming a point.
+     */
+    @Test
+    public void testRotateToOppositeHemisphere() throws FactoryException, TransformException {
+        transform = RotatedPole.rotateSouthPole(factory(), 50, 20, 10);
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        isDerivativeSupported = false;
+        final double[] coordinates = {      // (λ,φ) coordinates to convert.
+             20, 51,
+             80, 44,
+            -30, 89
+        };
+        final double[] expected = {         // (λ,φ) coordinates after conversion.
+             -10.000000000, -89.000000000,
+              64.651211252, -49.758697265,
+             -11.207848626, -50.636582758
+        };
+        verifyTransform(coordinates, expected);
+        inverseSouthPoleTransform();
+        verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tests a rotation of north pole with the new pole on Greenwich.
+     *
+     * <h4>Comparison with UCAR library</h4>
+     * {@link ucar.unidata.geoloc.projection.RotatedPole} in UCAR netCDF library version 5.5.2
+     * gives results with an offset of 180° in longitude values compared to our implementation.
+     * But geometrical reasoning suggests that our implementation is correct: if we rotate the
+     * pole to 60°N, then latitude of 54°N on Greenwich meridian become only 6° below new pole,
+     * i.e. 84°N but still on the same meridian (Greenwich) because we did not cross the pole.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while transforming a point.
+     */
+    @Test
+    public void testRotateNorthPoleOnGreenwich() throws FactoryException, TransformException {
+        transform = RotatedPole.rotateNorthPole(factory(), 60, 0, 0);
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        isDerivativeSupported = false;
+        final double[] coordinates = {      // (λ,φ) coordinates to convert.
+             0, 54,
+            20, 62,
+           -30, 89
+        };
+        final double[] expected = {         // (λ,φ) coordinates after conversion.
+               0.000000000, 84.000000000,
+             110.307140436, 80.141810970,
+            -178.973119126, 60.862133738
+        };
+        verifyTransform(coordinates, expected);
+        inverseNorthPoleTransform();
+        verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tests a rotation of north pole with the pole on arbitrary meridian.
+     * Result can be compared with PROJ using the following command, where
+     * {@code coords.txt} is a file containing input coordinates in (λ,φ)
+     * order and the output is in (φ,λ) order.
+     *
+     * {@preformat shell
+     *   cs2cs -I -E -f %g "EPSG:4326" +to +type=crs +proj=ob_tran +o_proj=longlat +datum=WGS84 +no_defs \
+     *         +o_lat_p=70 +o_lon_p=40 +lon_0=0 coords.txt
+     * }
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while transforming a point.
+     */
+    @Test
+    @DependsOnMethod("testRotateNorthPoleOnGreenwich")
+    public void testRotateNorthPole() throws FactoryException, TransformException {
+        transform = RotatedPole.rotateNorthPole(factory(), 70, 40, 0);
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        isDerivativeSupported = false;
+        final double[] coordinates = {      // (λ,φ) coordinates to convert.
+             0, 54,
+            20, 62,
+           -30, 89
+        };
+        final double[] expected = {         // (λ,φ) coordinates after conversion.
+             -68.817428350, 66.096411904,
+             -54.967324181, 78.691210976,
+            -177.208632734, 70.320491507
+        };
+        verifyTransform(coordinates, expected);
+        inverseNorthPoleTransform();
         verifyTransform(expected, coordinates);
     }
 }
