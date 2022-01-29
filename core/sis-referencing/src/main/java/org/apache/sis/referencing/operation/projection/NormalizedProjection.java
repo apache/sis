@@ -127,7 +127,7 @@ import static java.lang.Math.*;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see ContextualParameters
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
@@ -685,50 +685,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             θ -= 2*θ_bound;
         }
         return θ;
-    }
-
-    /**
-     * Returns {@code sqrt(x² + y²)} for coordinate values on an ellipsoid of semi-major axis length of 1.
-     * This method does not provides the accuracy guarantees offered by {@link Math#hypot(double, double)}.
-     * However for values close to 1, this approximation seems to stay within 1 ULP of {@code Math.hypot(…)}.
-     * We tested with random values in ranges up to [-6 … +6].
-     *
-     * <p>We define this method because {@link Math#hypot(double, double)} has been measured with JMH as 6 times
-     * slower than {@link Math#sqrt(double)} on Java 14.  According posts on internet, the same performance cost
-     * is observed in C/C++ too. Despite its cost, {@code hypot(…)} is generally recommended because computing a
-     * hypotenuse from large magnitudes has accuracy problems. But in the context of {@code NormalizedProjection}
-     * where semi-axis lengths are close to 1, input values should be (x,y) coordinates in the [−1 … +1] range.
-     * The actual range may be greater (e.g. [−5 … +5]), but it still far from ranges requiring protection against
-     * overflow.</p>
-     *
-     * <h4>Caution</h4>
-     * We may not need the full {@code Math.hypot(x,y)} accuracy in the context of map projections on ellipsoids.
-     * However some projection formulas require that {@code fastHypot(x,y) ≥ max(|x|,|y|)}, otherwise normalizations
-     * such as {@code x/hypot(x,y)} could result in values larger than 1, which in turn result in {@link Double#NaN}
-     * when given to {@link Math#asin(double)}. The assumption on x, y and {@code sqrt(x²+y²)} relative magnitude is
-     * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method does not a check for such cases;
-     * it is caller responsibility to add this check is necessary, for example as below:
-     *
-     * {@preformat java
-     *     double D = max(fastHypot(x, y), max(abs(x), abs(y)));
-     * }
-     *
-     * According JMH, above check is 1.65 time slower than {@code fastHypot} without checks.
-     * We define this {@code fastHypot(…)} method for tracing where {@code sqrt(x² + y²)} is used,
-     * so we can verify if it is used in context where the inaccuracy is acceptable.
-     *
-     * <h4>When to use</h4>
-     * We reserve this method to ellipsoidal formulas where approximations are used anyway. Implementations using
-     * exact formulas, such as spherical formulas, should use {@link Math#hypot(double, double)} for its accuracy.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/NUMBERS-143">Investigate Math.hypot for computing the absolute of a complex number</a>
-     * @see <a href="https://scicomp.stackexchange.com/questions/27758/is-there-any-point-to-using-hypot-for-sqrt1c2-0-le-c-le-1-for-real/27766">Is
-     *      there any point to using <code>hypot(1, c)</code> for <code>sqrt(1 + c²)</code>, 0 ≤ c ≤ 1</a>
-     */
-    static double fastHypot(final double x, final double y) {
-        return sqrt(x*x + y*y);
-        // TODO: consider using Math.fma on JDK9.
-        // Check also if we should do the same with plain x*x + y*y in subclasses.
     }
 
     /*

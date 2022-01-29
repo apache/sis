@@ -43,6 +43,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
+import static org.apache.sis.internal.referencing.Formulas.fastHypot;
 
 
 /**
@@ -311,7 +312,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
          */
         double xr =  cosφp * z - sinφp * x;
         double zr = -cosφp * x - sinφp * z;
-        double R  = sqrt(xr*xr + y*y);          // The slower hypot(…) is not needed because values are close to 1.
+        double R  = fastHypot(xr, y);           // The slower hypot(…) is not needed because values are close to 1.
         dstPts[dstOff]   = atan2(y, xr);
         dstPts[dstOff+1] = atan2(zr, R);
         if (!derivate) {

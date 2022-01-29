@@ -38,6 +38,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
+import static org.apache.sis.internal.referencing.Formulas.fastHypot;
 
 
 /**
