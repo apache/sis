@@ -154,7 +154,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
                     i = 3 - i;
                 }
                 double value = -((Number) ((ParameterValue<?>) values.get(i)).getValue()).doubleValue();
-                if (i == 0 && RotatedSouthPole.PARAMETERS.equals(forward.getDescriptor())) {
+                if (i == 0) {
                     value = IEEEremainder(value + 180, 360);
                 }
                 target.setValue(value);

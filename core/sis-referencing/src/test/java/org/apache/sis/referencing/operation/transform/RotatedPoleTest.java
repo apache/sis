@@ -65,7 +65,7 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
      */
     private void inverseNorthPoleTransform() throws FactoryException, TransformException {
         final ParameterValueGroup pg = ((Parameterized) transform.inverse()).getParameterValues();
-        transform = RotatedPole.rotateSouthPole(factory(),
+        transform = RotatedPole.rotateNorthPole(factory(),
                 pg.parameter("grid_north_pole_latitude") .doubleValue(),
                 pg.parameter("grid_north_pole_longitude").doubleValue(),
                 pg.parameter("north_pole_grid_longitude").doubleValue());
@@ -135,7 +135,7 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    public void testRotateToOppositeHemisphere() throws FactoryException, TransformException {
+    public void testRotateSouthToOppositeHemisphere() throws FactoryException, TransformException {
         transform = RotatedPole.rotateSouthPole(factory(), 50, 20, 10);
         tolerance = Formulas.ANGULAR_TOLERANCE;
         isDerivativeSupported = false;
@@ -216,6 +216,32 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
              -68.817428350, 66.096411904,
              -54.967324181, 78.691210976,
             -177.208632734, 70.320491507
+        };
+        verifyTransform(coordinates, expected);
+        inverseNorthPoleTransform();
+        verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tries rotating a pole to opposite hemisphere.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while transforming a point.
+     */
+    @Test
+    public void testRotateNorthToOppositeHemisphere() throws FactoryException, TransformException {
+        transform = RotatedPole.rotateNorthPole(factory(), -50, 20, 10);
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        isDerivativeSupported = false;
+        final double[] coordinates = {      // (λ,φ) coordinates to convert.
+             20, -51,
+             80, -44,
+            -30, -89
+        };
+        final double[] expected = {         // (λ,φ) coordinates after conversion.
+             -10.000000000, 89.000000000,
+              64.651211252, 49.758697265,
+             -11.207848626, 50.636582758
         };
         verifyTransform(coordinates, expected);
         inverseNorthPoleTransform();
