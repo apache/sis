@@ -44,6 +44,13 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public RotatedPoleTest() {
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+    }
+
+    /**
      * Creates a new transform which should be the inverse of current transform according the
      * parameters declared in {@link RotatedPole#context}. Those parameters may be wrong even
      * if the coordinates transformed by {@code transform.inverse()} are corrects because the
@@ -82,8 +89,6 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @Test
     public void testRotateSouthPoleOnGreenwich() throws FactoryException, TransformException {
         transform = RotatedPole.rotateSouthPole(factory(), -60, 0, 0);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-        isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
               0, -51,
              20, -51,
@@ -111,8 +116,6 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @DependsOnMethod("testRotateSouthPoleOnGreenwich")
     public void testRotateSouthPoleWithAngle() throws FactoryException, TransformException {
         transform = RotatedPole.rotateSouthPole(factory(), -50, 20, 10);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-        isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              20, -51,
              80, -44,
@@ -137,8 +140,6 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @Test
     public void testRotateSouthToOppositeHemisphere() throws FactoryException, TransformException {
         transform = RotatedPole.rotateSouthPole(factory(), 50, 20, 10);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-        isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              20, 51,
              80, 44,
@@ -170,8 +171,6 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @Test
     public void testRotateNorthPoleOnGreenwich() throws FactoryException, TransformException {
         transform = RotatedPole.rotateNorthPole(factory(), 60, 0, 0);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-        isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              0, 54,
             20, 62,
@@ -205,8 +204,6 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @DependsOnMethod("testRotateNorthPoleOnGreenwich")
     public void testRotateNorthPole() throws FactoryException, TransformException {
         transform = RotatedPole.rotateNorthPole(factory(), 70, 40, 0);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-        isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              0, 54,
             20, 62,
@@ -231,8 +228,6 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
     @Test
     public void testRotateNorthToOppositeHemisphere() throws FactoryException, TransformException {
         transform = RotatedPole.rotateNorthPole(factory(), -50, 20, 10);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-        isDerivativeSupported = false;
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              20, -51,
              80, -44,
@@ -246,5 +241,20 @@ public final strictfp class RotatedPoleTest extends MathTransformTestCase {
         verifyTransform(coordinates, expected);
         inverseNorthPoleTransform();
         verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tests derivative.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while computing a derivative.
+     */
+    @Test
+    public void testDerivative() throws FactoryException, TransformException {
+        transform = RotatedPole.rotateSouthPole(factory(), -50, 0, 0);
+        derivativeDeltas = new double[] {1E-6, 1E-6};
+        verifyDerivative(  0, -51);
+        verifyDerivative( 20, -58);
+        verifyDerivative(-30, -40);
     }
 }

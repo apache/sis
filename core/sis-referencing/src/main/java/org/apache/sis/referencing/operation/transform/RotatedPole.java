@@ -39,6 +39,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
@@ -300,25 +301,50 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
          * transform pre-concatenated to this transform, simply by subtracting λp from the longitude value.
          * This is simpler than performing the rotation in Cartesian coordinates.
          */
-        double λ    = srcPts[srcOff];
-        double φ    = srcPts[srcOff+1];
-        double z    = sin(φ);
-        double cosφ = cos(φ);
-        double y    = sin(λ) * cosφ;
-        double x    = cos(λ) * cosφ;
+        final double λ    = srcPts[srcOff];
+        final double φ    = srcPts[srcOff+1];
+        final double z    = sin(φ);
+        final double cosφ = cos(φ);
+        final double sinλ = sin(λ);
+        final double cosλ = cos(λ);
+        final double x    = cosφ * cosλ;
+        final double y    = cosφ * sinλ;
+        final double y2   = y * y;
         /*
          * Apply the rotation around Y axis (so the y value stay unchanged)
          * and convert back to spherical coordinates.
          */
-        double xr =  cosφp * z - sinφp * x;
-        double zr = -cosφp * x - sinφp * z;
-        double R  = fastHypot(xr, y);           // The slower hypot(…) is not needed because values are close to 1.
-        dstPts[dstOff]   = atan2(y, xr);
-        dstPts[dstOff+1] = atan2(zr, R);
+        final double xsinφp = x * sinφp;
+        final double xcosφp = x * cosφp;
+        final double zsinφp = z * sinφp;
+        final double zcosφp = z * cosφp;
+        final double xt  =  zcosφp - xsinφp;
+        final double zt  = -xcosφp - zsinφp;
+        final double r2  = xt*xt + y2;          // yt = y in ihis algorithm.
+        final double r   = sqrt(r2);            // The slower hypot(…) is not needed because values are close to 1.
+        if (dstPts != null) {
+            dstPts[dstOff]   = atan2(y, xt);
+            dstPts[dstOff+1] = atan2(zt, r);
+        }
         if (!derivate) {
             return null;
         }
-        throw new TransformException();         // TODO
+        /*
+         * We used WxMaxima for a first derivation of formulas below,
+         * then simplified the formulas by hand.
+         *
+         * https://svn.apache.org/repos/asf/sis/analysis/Rotated%20pole.wxmx
+         */
+        final double dxφ = cosλ * zsinφp  +  cosφ * cosφp;
+        final double dyφ = cosλ * zcosφp  -  cosφ * sinφp;
+        final double zλ  = z * sinλ;
+        final double zr  = zt / r;
+        final double rc  = r2 + zt*zt;
+        return new Matrix2(
+                (xt*x  - y2*sinφp)               / r2,      // ∂x/∂λ
+               -(xt*zλ + y*dxφ)                  / r2,      // ∂x/∂φ
+                (r*cosφp - zr*(x  + sinφp*xt))*y / rc,      // ∂y/∂λ
+                (r*dyφ   + zr*(y*zλ - dxφ*xt))   / rc);     // ∂y/∂φ
     }
 
     /**
