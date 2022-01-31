@@ -73,7 +73,8 @@ final strictfp class NoOp extends ConformalProjection {
     private NoOp(final Parameters parameters) {
         super(new Initializer(new DefaultOperationMethod(
                 Collections.singletonMap(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
-                2, 2, parameters.getDescriptor()), parameters, Collections.emptyMap(), STANDARD_VARIANT));
+                DIMENSION, DIMENSION,
+                parameters.getDescriptor()), parameters, Collections.emptyMap(), STANDARD_VARIANT));
     }
 
     /**

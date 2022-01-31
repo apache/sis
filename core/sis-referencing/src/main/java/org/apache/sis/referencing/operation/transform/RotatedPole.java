@@ -179,7 +179,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     protected RotatedPole(final boolean south, final double φp, final double λp, final double pa) {
         context = new ContextualParameters(
                 south ? RotatedSouthPole.PARAMETERS
-                      : RotatedNorthPole.PARAMETERS, 2, 2);
+                      : RotatedNorthPole.PARAMETERS, DIMENSION, DIMENSION);
         setValue(0, φp);        // grid_south_pole_latitude   or  grid_north_pole_latitude
         setValue(1, λp);        // grid_south_pole_longitude  or  grid_north_pole_longitude
         setValue(2, pa);        // grid_south_pole_angle      or  north_pole_grid_longitude

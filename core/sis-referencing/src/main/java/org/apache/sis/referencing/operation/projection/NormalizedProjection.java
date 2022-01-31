@@ -142,15 +142,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     private static final long serialVersionUID = -4010883312927645853L;
 
     /**
-     * Number of input and output dimensions of all {@code NormalizedProjection}.
-     * We define this constant for clarity only; its value shall not be modified.
-     *
-     * @see #getSourceDimensions()
-     * @see #getTargetDimensions()
-     */
-    static final int DIMENSION = 2;
-
-    /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
      * The current value takes the system-wide angular tolerance value (equivalent to
      * about 1 cm on Earth) converted to radians.
