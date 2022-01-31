@@ -322,6 +322,36 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     }
 
     /**
+     * Converts a list of coordinate points. This method performs the same calculation than above
+     * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
+     *
+     * @throws TransformException if a point can not be converted.
+     */
+    @Override
+    public void transform(final double[] srcPts, int srcOff,
+                          final double[] dstPts, int dstOff, int numPts)
+            throws TransformException
+    {
+        if ((srcPts == dstPts && srcOff < dstOff) || getClass() != RotatedPole.class) {
+            super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
+            return;
+        }
+        while (--numPts >= 0) {
+            double λ    = srcPts[srcOff++];
+            double φ    = srcPts[srcOff++];
+            double z    = sin(φ);
+            double cosφ = cos(φ);
+            double y    = sin(λ) * cosφ;
+            double x    = cos(λ) * cosφ;
+            double xt   =  cosφp * z - sinφp * x;
+            double zt   = -cosφp * x - sinφp * z;
+            double r    = fastHypot(xt, y);
+            dstPts[dstOff++] = atan2(y, xt);
+            dstPts[dstOff++] = atan2(zt, r);
+        }
+    }
+
+    /**
      * Returns the inverse transform of this object.
      *
      * @return the inverse of this transform.
