@@ -55,8 +55,8 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * <ol>
  *   <li><b>φ<sub>p</sub>:</b> geographic  latitude in degrees of the southern pole of the coordinate system.</li>
  *   <li><b>λ<sub>p</sub>:</b> geographic longitude in degrees of the southern pole of the coordinate system.</li>
- *   <li>Angle of rotation in degrees about the new polar axis measured clockwise when looking from the southern
- *       to the northern pole.</li>
+ *   <li>Angle of rotation in degrees about the new polar axis measured clockwise when looking from the rotated
+ *       pole to the Earth center.</li>
  * </ol>
  *
  * The rotations are applied by first rotating the sphere through λ<sub>p</sub> about the geographic polar axis,
@@ -154,9 +154,11 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
                      */
                     i = 3 - i;
                 }
-                double value = -((Number) ((ParameterValue<?>) values.get(i)).getValue()).doubleValue();
+                double value = ((Number) ((ParameterValue<?>) values.get(i)).getValue()).doubleValue();
                 if (i == 0) {
-                    value = IEEEremainder(value + 180, 360);
+                    value = IEEEremainder(180 - value, 360);
+                } else if (SouthPoleRotation.PARAMETERS.equals(forward.getDescriptor())) {
+                    value = -value;
                 }
                 target.setValue(value);
                 return true;
@@ -174,7 +176,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * @param  φp     geographic  latitude in degrees of the southern pole of the coordinate system.
      * @param  λp     geographic longitude in degrees of the southern pole of the coordinate system.
      * @param  pa     angle of rotation in degrees about the new polar axis measured clockwise when
-     *                looking from the southern to the northern pole.
+     *                looking from the rotated pole to the Earth center.
      */
     protected PoleRotation(final boolean south, final double φp, final double λp, final double pa) {
         context = new ContextualParameters(
@@ -188,7 +190,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
         sinφp = sin(φ) * sign;
         cosφp = cos(φ) * sign;
         context.normalizeGeographicInputs(λp);
-        context.denormalizeGeographicOutputs(-pa);
+        context.denormalizeGeographicOutputs(south ? -pa : pa);
     }
 
     /**

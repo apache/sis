@@ -194,7 +194,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      *
      * {@preformat shell
      *   cs2cs -I -E -f %g "EPSG:4326" +to +type=crs +proj=ob_tran +o_proj=longlat +datum=WGS84 +no_defs \
-     *         +o_lat_p=70 +o_lon_p=40 +lon_0=0 coords.txt
+     *         +o_lat_p=70 +o_lon_p=40 +lon_0=10 coords.txt
      * }
      *
      * @throws FactoryException if the transform can not be created.
@@ -203,16 +203,16 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     @Test
     @DependsOnMethod("testRotateNorthPoleOnGreenwich")
     public void testRotateNorthPole() throws FactoryException, TransformException {
-        transform = PoleRotation.rotateNorthPole(factory(), 70, 40, 0);
+        transform = PoleRotation.rotateNorthPole(factory(), 70, 40, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              0, 54,
             20, 62,
            -30, 89
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-             -68.817428350, 66.096411904,
-             -54.967324181, 78.691210976,
-            -177.208632734, 70.320491507
+             -58.817428350, 66.096411904,
+             -44.967324181, 78.691210976,
+            -167.208632734, 70.320491507
         };
         verifyTransform(coordinates, expected);
         inverseNorthPoleTransform();
@@ -227,7 +227,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      */
     @Test
     public void testRotateNorthToOppositeHemisphere() throws FactoryException, TransformException {
-        transform = PoleRotation.rotateNorthPole(factory(), -50, 20, 10);
+        transform = PoleRotation.rotateNorthPole(factory(), -50, 20, -10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              20, -51,
              80, -44,
