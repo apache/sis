@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.operation.transform.RotatedPole;
+import org.apache.sis.referencing.operation.transform.PoleRotation;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -51,7 +51,7 @@ import org.apache.sis.measure.Units;
  * @module
  */
 @XmlTransient
-public final class RotatedNorthPole extends AbstractProvider {
+public final class NorthPoleRotation extends AbstractProvider {
     /**
      * For cross-version compatibility.
      */
@@ -122,7 +122,7 @@ public final class RotatedNorthPole extends AbstractProvider {
 
         PARAMETERS = builder.setRequired(true)
                 .addName("rotated_latitude_longitude")
-                .createGroup(GRID_POLE_LATITUDE,    // Note: `RotatedPole` implementation depends on this parameter order.
+                .createGroup(GRID_POLE_LATITUDE,    // Note: `PoleRotation` implementation depends on this parameter order.
                              GRID_POLE_LONGITUDE,
                              GRID_POLE_ANGLE);
     }
@@ -130,7 +130,7 @@ public final class RotatedNorthPole extends AbstractProvider {
     /**
      * Constructs a new provider.
      */
-    public RotatedNorthPole() {
+    public NorthPoleRotation() {
         super(2, 2, PARAMETERS);
     }
 
@@ -147,7 +147,7 @@ public final class RotatedNorthPole extends AbstractProvider {
             throws FactoryException
     {
         final Parameters p = Parameters.castOrWrap(parameters);
-        return RotatedPole.rotateNorthPole(factory,
+        return PoleRotation.rotateNorthPole(factory,
                 p.getValue(GRID_POLE_LATITUDE),
                 p.getValue(GRID_POLE_LONGITUDE),
                 p.getValue(GRID_POLE_ANGLE));

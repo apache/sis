@@ -142,7 +142,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class,
     org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.transform.AbridgedMolodenskyTransformTest.class,
-    org.apache.sis.referencing.operation.transform.RotatedPoleTest.class,
+    org.apache.sis.referencing.operation.transform.PoleRotationTest.class,
     org.apache.sis.referencing.operation.transform.SphericalToCartesianTest.class,
     org.apache.sis.referencing.operation.transform.CartesianToSphericalTest.class,
     org.apache.sis.referencing.operation.transform.PolarToCartesianTest.class,

@@ -32,8 +32,8 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.internal.referencing.provider.RotatedNorthPole;
-import org.apache.sis.internal.referencing.provider.RotatedSouthPole;
+import org.apache.sis.internal.referencing.provider.NorthPoleRotation;
+import org.apache.sis.internal.referencing.provider.SouthPoleRotation;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
@@ -75,7 +75,7 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @since   1.2
  * @module
  */
-public class RotatedPole extends AbstractMathTransform2D implements Serializable {
+public class PoleRotation extends AbstractMathTransform2D implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -126,8 +126,8 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      *
      * @see #inverse()
      */
-    private RotatedPole(final RotatedPole forward) {
-        context =  forward.context.inverse(forward.context.getDescriptor(), RotatedPole::inverseParameter);
+    private PoleRotation(final PoleRotation forward) {
+        context =  forward.context.inverse(forward.context.getDescriptor(), PoleRotation::inverseParameter);
         sinφp   =  forward.sinφp;
         cosφp   = -forward.cosφp;
         inverse =  forward;
@@ -176,10 +176,10 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
      * @param  pa     angle of rotation in degrees about the new polar axis measured clockwise when
      *                looking from the southern to the northern pole.
      */
-    protected RotatedPole(final boolean south, final double φp, final double λp, final double pa) {
+    protected PoleRotation(final boolean south, final double φp, final double λp, final double pa) {
         context = new ContextualParameters(
-                south ? RotatedSouthPole.PARAMETERS
-                      : RotatedNorthPole.PARAMETERS, DIMENSION, DIMENSION);
+                south ? SouthPoleRotation.PARAMETERS
+                      : NorthPoleRotation.PARAMETERS, DIMENSION, DIMENSION);
         setValue(0, φp);        // grid_south_pole_latitude   or  grid_north_pole_latitude
         setValue(1, λp);        // grid_south_pole_longitude  or  grid_north_pole_longitude
         setValue(2, pa);        // grid_south_pole_angle      or  north_pole_grid_longitude
@@ -217,7 +217,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     public static MathTransform rotateSouthPole(final MathTransformFactory factory,
             final double φp, final double λp, final double pa) throws FactoryException
     {
-        final RotatedPole kernel = new RotatedPole(true, φp, λp, pa);
+        final PoleRotation kernel = new PoleRotation(true, φp, λp, pa);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -235,7 +235,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     public static MathTransform rotateNorthPole(final MathTransformFactory factory,
             final double φp, final double λp, final double pa) throws FactoryException
     {
-        final RotatedPole kernel = new RotatedPole(false, φp, λp, pa);
+        final PoleRotation kernel = new PoleRotation(false, φp, λp, pa);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -358,7 +358,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
                           final double[] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        if ((srcPts == dstPts && srcOff < dstOff) || getClass() != RotatedPole.class) {
+        if ((srcPts == dstPts && srcOff < dstOff) || getClass() != PoleRotation.class) {
             super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
             return;
         }
@@ -385,7 +385,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     @Override
     public synchronized MathTransform2D inverse() {
         if (inverse == null) {
-            inverse = new RotatedPole(this);
+            inverse = new PoleRotation(this);
         }
         return inverse;
     }
@@ -402,7 +402,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
          * We do not test `cosφp` because that value can be small but not zero, because
          * there is no way to compute exactly `cos(π/2)` with `Math.PI` approximation.
          * Testing `sinφp == -1` is a way to allow for a small tolerance around π/2.
-         * This policy is also needed for consistency with `RotatedPole(RotatedPole)` implementation.
+         * This policy is also needed for consistency with `PoleRotation(PoleRotation)` implementation.
          */
     }
 
@@ -416,7 +416,7 @@ public class RotatedPole extends AbstractMathTransform2D implements Serializable
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
-            final RotatedPole other = (RotatedPole) object;
+            final PoleRotation other = (PoleRotation) object;
             if (mode.isApproximate()) {
                 return Numerics.epsilonEqual(sinφp, other.sinφp, Formulas.ANGULAR_TOLERANCE * (PI/180)) &&
                        Numerics.epsilonEqual(cosφp, other.cosφp, Formulas.ANGULAR_TOLERANCE * (PI/180));

@@ -63,8 +63,8 @@ org.apache.sis.internal.referencing.provider.ZonedTransverseMercator
 org.apache.sis.internal.referencing.provider.Sinusoidal
 org.apache.sis.internal.referencing.provider.Polyconic
 org.apache.sis.internal.referencing.provider.Mollweide
-org.apache.sis.internal.referencing.provider.RotatedSouthPole
-org.apache.sis.internal.referencing.provider.RotatedNorthPole
+org.apache.sis.internal.referencing.provider.SouthPoleRotation
+org.apache.sis.internal.referencing.provider.NorthPoleRotation
 org.apache.sis.internal.referencing.provider.NTv2
 org.apache.sis.internal.referencing.provider.NTv1
 org.apache.sis.internal.referencing.provider.NADCON
