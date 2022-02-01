@@ -26,7 +26,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 
 /**
  * Inflater for values encoded with the LZW compression.
- * This compression is described in section 13 of TIFF 6 specification. "LZW Compression".
+ * This compression is described in section 13 of TIFF 6 specification, "LZW Compression".
  * Each code is written using at least 9 bits and at most 12 bits.
  *
  * <h2>Legal note</h2>
@@ -41,7 +41,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 final class LZW extends CompressionChannel {
     /**
      * A 12 bits code meaning that we have exhausted the 4093 available codes
-     * and most reset the table to the initial set of 9 bits code.
+     * and must reset the table to the initial set of 9 bits code.
      */
     private static final int CLEAR_CODE = 256;
 
@@ -51,7 +51,7 @@ final class LZW extends CompressionChannel {
     private static final int EOI_CODE = 257;
 
     /**
-     * First code which is not one of the predefined nodes.
+     * First code which is not one of the predefined codes.
      */
     private static final int FIRST_ADAPTATIVE_CODE = 258;
 
@@ -91,7 +91,7 @@ final class LZW extends CompressionChannel {
 
     /**
      * Number of bits to read for the next code. This number starts at 9 and increases until {@value #MAX_CODE_SIZE}.
-     * After {@value #MAX_CODE_SIZE} bits, a {@link #CLEAR_CODE} should occurs in the stream of LZW data.
+     * After {@value #MAX_CODE_SIZE} bits, a {@link #CLEAR_CODE} should occur in the stream of LZW data.
      */
     private int codeSize;
 
@@ -122,7 +122,7 @@ final class LZW extends CompressionChannel {
      * Prepares this inflater for reading a new tile or a new band of a tile.
      *
      * @param  start      stream position where to start reading.
-     * @param  byteCount  number of byte to read from the input.
+     * @param  byteCount  number of bytes to read from the input.
      * @throws IOException if the stream can not be seek to the given start position.
      */
     @Override
@@ -136,7 +136,7 @@ final class LZW extends CompressionChannel {
     }
 
     /**
-     * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
+     * Decompresses some bytes from the {@linkplain #input input} into the given destination buffer.
      *
      * @param  target  the buffer into which bytes are to be transferred.
      * @return the number of bytes read, or -1 if end-of-stream.
