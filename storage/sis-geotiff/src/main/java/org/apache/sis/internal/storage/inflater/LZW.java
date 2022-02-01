@@ -115,7 +115,7 @@ final class LZW extends CompressionChannel {
      */
     public LZW(final ChannelDataInput input) {
         super(input);
-        sequencesForCodes = new byte[(1 << MAX_CODE_SIZE) - FIRST_ADAPTATIVE_CODE][];
+        sequencesForCodes = new byte[(1 << MAX_CODE_SIZE) - OFFSET_TO_MAXIMUM][];
     }
 
     /**
@@ -151,19 +151,17 @@ final class LZW extends CompressionChannel {
          */
         if (pending != null) {
             final int r = target.remaining();
-            if (pending.length <= r) {
+            final int n = pending.length;
+            if (n <= r) {
                 target.put(pending);
                 pending = null;
-                if (done) return r;
+                if (done) return n;
             } else {
                 target.put(pending, 0, r);
-                pending = Arrays.copyOfRange(pending, r, pending.length);
+                pending = Arrays.copyOfRange(pending, r, n);
                 return r;   // Can not write more than what we just wrote.
             }
-        } else {
-            done |= finished();
-        }
-        if (done) {
+        } else if (done |= finished()) {
             return -1;
         }
         /*
@@ -228,11 +226,21 @@ final class LZW extends CompressionChannel {
                         throw unexpectedData();
                     }
                 }
-                sequencesForCodes[nextAvailableEntry] = addToTable;
+                try {
+                    sequencesForCodes[nextAvailableEntry] = addToTable;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    throw (IOException) unexpectedData().initCause(e);
+                }
                 if (++nextAvailableEntry == maximumIndex) {
-                    maximumIndex = (1 << ++codeSize) - OFFSET_TO_MAXIMUM;
-                    if (codeSize > MAX_CODE_SIZE) {
-                        throw new IOException();
+                    if (codeSize < MAX_CODE_SIZE) {
+                        maximumIndex = (1 << ++codeSize) - OFFSET_TO_MAXIMUM;
+                    } else {
+                        /*
+                         * Incrementing the size to 13 bits is an error because the TIFF specification
+                         * limits the size to 12 bits, but some files encode an EOI_CODE or CLEAR_CODE
+                         * immediately after this code. If this is not the case, we will have an index
+                         * out of bounds exception in the next iteration, which is caught above.
+                         */
                     }
                 }
                 /*
@@ -248,7 +256,7 @@ final class LZW extends CompressionChannel {
             }
         }
         previousSequence = write;
-        done = (code == EOI_CODE && pending != null);
+        done = (code == EOI_CODE);
         return target.position() - start;
     }
 
