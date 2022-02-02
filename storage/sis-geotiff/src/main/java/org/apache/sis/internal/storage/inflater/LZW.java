@@ -241,6 +241,7 @@ final class LZW extends CompressionChannel {
                          * immediately after this code. If this is not the case, we will have an index
                          * out of bounds exception in the next iteration, which is caught above.
                          */
+                        assert nextAvailableEntry == sequencesForCodes.length : nextAvailableEntry;
                     }
                 }
                 /*

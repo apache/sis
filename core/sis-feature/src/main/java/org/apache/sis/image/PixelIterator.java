@@ -38,6 +38,7 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -727,7 +728,7 @@ public class PixelIterator {
                 if (currentLowerY > py || py >= currentUpperY ||
                     currentLowerX > px || px >= currentUpperX)
                 {
-                    throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+                    throw incompatibleTile();
                 }
             }
         }
@@ -799,7 +800,7 @@ public class PixelIterator {
                  * new row (in which case we need to move to the leftmost tile).
                  */
                 if (fetchTile() > y) {
-                    throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+                    throw incompatibleTile();
                 }
             }
             changedRowOrTile();
@@ -827,6 +828,21 @@ public class PixelIterator {
     }
 
     /**
+     * Returns the exception to throw when the tile at index ({@link #tileX}, {@link #tileY})
+     * uses an incompatible sample model.
+     */
+    private RasterFormatException incompatibleTile() {
+        String message = Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY);
+        if (image instanceof PlanarImage) {
+            final String inconsistency = ((PlanarImage) image).verify();
+            if (inconsistency != null) {
+                message = message + ' ' + Messages.format(Messages.Keys.PossibleInconsistency_1, inconsistency);
+            }
+        }
+        return new RasterFormatException(message);
+    }
+
+    /**
      * Fetches from the image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
      * All fields prefixed by {@code current} are updated by this method. The caller is responsible
      * for updating the {@link #x} and {@link #y} fields.
@@ -845,7 +861,7 @@ public class PixelIterator {
             tile = image.getTile(tileX, tileY);
         }
         if (tile.getNumBands() != numBands || tile.getWidth() != tileWidth || tile.getHeight() != tileHeight) {
-            throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+            throw incompatibleTile();
         }
         final int minX = tile.getMinX();
         final int minY = tile.getMinY();
