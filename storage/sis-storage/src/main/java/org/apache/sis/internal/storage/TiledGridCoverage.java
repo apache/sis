@@ -620,6 +620,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
                      * a view created by `SampleModel.createSubsetSampleModel(int[] bands)`.
                      * Bands can also be in a different order and still share the same buffer.
                      */
+                    if (org.apache.sis.internal.coverage.j2d.TilePlaceholder.PENDING_JDK_FIX) {
+                        return Raster.createWritableRaster(model, tile.getDataBuffer(), new Point(x, y));
+                    }
                     return Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
                 }
             }

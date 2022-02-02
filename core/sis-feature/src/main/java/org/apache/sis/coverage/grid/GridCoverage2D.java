@@ -632,11 +632,12 @@ public class GridCoverage2D extends GridCoverage {
                      * Workaround for https://bugs.openjdk.java.net/browse/JDK-8166038
                      * If BufferedImage can not be used, fallback on ReshapedImage
                      * at the cost of returning an image larger than necessary.
-                     *
-                     * See also GridCoverage2DTest.PENDING_JDK_FIX
+                     * This workaround can be removed on JDK17.
                      */
-                    if (result.getTileGridXOffset() == ix && result.getTileGridYOffset() == iy) {
-                        return result;
+                    if (org.apache.sis.internal.coverage.j2d.TilePlaceholder.PENDING_JDK_FIX) {
+                        if (result.getTileGridXOffset() == ix && result.getTileGridYOffset() == iy) {
+                            return result;
+                        }
                     }
                 }
             }
