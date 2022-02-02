@@ -17,7 +17,9 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
@@ -152,6 +154,13 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private final Map<Short,Object> geoKeys;
 
     /**
+     * Missing GeoKeys, used for avoiding to report the same warning twice.
+     *
+     * @see #missingValue(short)
+     */
+    private final Set<String> missingGeoKeys;
+
+    /**
      * Name of the last object created. This is used by {@link #properties(Object)} for reusing existing instance
      * if possible. This is useful in GeoTIFF files since the same name is used for different geodetic components,
      * for example the datum and the ellipsoid.
@@ -186,6 +195,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     CRSBuilder(final Reader reader) {
         this.reader = reader;
         geoKeys = new HashMap<>(32);
+        missingGeoKeys = new HashSet<>();
     }
 
     /**
@@ -360,7 +370,9 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      */
     final String missingValue(final short key) {
         final String name = GeoKeys.name(key);
-        warning(Resources.Keys.MissingGeoValue_1, name);
+        if (missingGeoKeys.add(name)) {
+            warning(Resources.Keys.MissingGeoValue_1, name);
+        }
         return name;
     }
 

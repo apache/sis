@@ -127,8 +127,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ListTooShort_3 = 10;
 
         /**
-         * TIFF tags “{0}” and “{1}” have values of different lengths. Found “{2}” and “{3}” elements
-         * respectively.
+         * TIFF tag “{0}” has a list of {2} elements, but {3} elements were expected according tag
+         * “{1}”.
          */
         public static final short MismatchedLength_4 = 11;
 

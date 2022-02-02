@@ -1277,7 +1277,7 @@ final class ImageFileDirectory extends DataCube {
          * Report an error if the tile offset and tile byte count vectors do not have the same length.
          * Then ensure that the number of tiles is equal to the expected number.
          */
-        ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
+        ensureSameLength(byteCountsTag, offsetsTag, tileByteCounts.size(), tileOffsets.size());
         long expectedCount = getNumTiles();
         if (isPlanar) {
             expectedCount = Math.multiplyExact(expectedCount, samplesPerPixel);
@@ -1710,10 +1710,15 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Verifies that the given tags have the same length and reports a warning if they do not.
+     *
+     * @param  tag1      the TIFF tag with inconsistent length.
+     * @param  tag2      the TIFF tag used as a reference.
+     * @param  actual    length of list associated to {@code tag1}.
+     * @param  expected  length of list associated to {@code tag2}.
      */
-    private void ensureSameLength(final short tag1, final short tag2, final int length1, final int length2) {
-        if (length1 != length2) {
-            warning(Level.WARNING, Resources.Keys.MismatchedLength_4, Tags.name(tag1), Tags.name(tag2), length1, length2);
+    private void ensureSameLength(final short tag1, final short tag2, final int actual, final int expected) {
+        if (actual != expected) {
+            warning(Level.WARNING, Resources.Keys.MismatchedLength_4, Tags.name(tag1), Tags.name(tag2), actual, expected);
         }
     }
 
