@@ -2279,7 +2279,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
 
     /**
      * Returns the insets of this component.
-     * If different insets are desired, override {@link #getInsets(Insets)} instead than this method.
+     * If different insets are desired, override {@link #getInsets(Insets)} instead of this method.
      */
     @Override
     public final Insets getInsets() {

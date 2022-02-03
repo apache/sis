@@ -168,7 +168,7 @@ final class SwingUtilities extends Static {
                     owner,                         // Parent component
                     dialog,                        // Message
                     title,                         // Title of dialog box
-                    JOptionPane.OK_CANCEL_OPTION,  // Button to shown
+                    JOptionPane.OK_CANCEL_OPTION,  // Button to show
                     JOptionPane.PLAIN_MESSAGE,     // Message type
                     null,                          // Icon
                     options,                       // Button list
@@ -178,7 +178,7 @@ final class SwingUtilities extends Static {
                     owner,                         // Parent component
                     dialog,                        // Message
                     title,                         // Title of dialog box
-                    JOptionPane.OK_CANCEL_OPTION,  // Button to shown
+                    JOptionPane.OK_CANCEL_OPTION,  // Button to show
                     JOptionPane.PLAIN_MESSAGE,     // Message type
                     null,                          // Icon
                     options,                       // Button list
@@ -248,14 +248,14 @@ final class SwingUtilities extends Static {
                     owner,                           // Parent component
                     message,                         // Message
                     title,                           // Title of dialog box
-                    JOptionPane.YES_NO_OPTION,       // Button to shown
+                    JOptionPane.YES_NO_OPTION,       // Button to show
                     type);                           // Message type
         } else {
             choice = JOptionPane.showConfirmDialog(
                     owner,                           // Parent component
                     message,                         // Message
                     title,                           // Title of dialog box
-                    JOptionPane.YES_NO_OPTION,       // Button to shown
+                    JOptionPane.YES_NO_OPTION,       // Button to show
                     type);                           // Message type
         }
         return choice == JOptionPane.YES_OPTION;
@@ -267,7 +267,7 @@ final class SwingUtilities extends Static {
      *
      * <div class="note"><b>Note:</b> in a previous version, we were assigning to the row headers
      * the same cell renderer than the one created by <cite>Swing</cite> for the column headers.
-     * But it produced strange effects when the L&amp;F uses a vertical gradient instead than a uniform color.</div>
+     * But it produced strange effects when the L&amp;F uses a vertical gradient instead of a uniform color.</div>
      *
      * @param  table  the table to setup as row headers.
      * @return the renderer which has been assigned to the table.

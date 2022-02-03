@@ -285,7 +285,7 @@ final class ExceptionMonitor extends JOptionPane implements ActionListener {
     }
 
     /**
-     * Returns the exception trace as a string. This method get the stack trace using the
+     * Returns the exception trace as a string. This method gets the stack trace using the
      * {@link Throwable#printStackTrace(PrintWriter)} method, then replaces the tabulation
      * characters by 4 white spaces.
      *
