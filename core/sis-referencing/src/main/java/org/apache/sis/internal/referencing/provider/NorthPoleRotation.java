@@ -34,13 +34,8 @@ import org.apache.sis.measure.Units;
 
 /**
  * The provider for the NetCDF <cite>Rotated Latitude/Longitude</cite> coordinate operation.
- * This is similar to the WMO Rotated Latitude/Longitude but rotating north pole instead of
- * south pole.
- *
- * <h2>Comparison with UCAR library</h2>
- * {@link ucar.unidata.geoloc.projection.RotatedPole} in UCAR netCDF library version 5.5.2
- * gives results with an offset of 180° in longitude values compared to our implementation.
- * See {@code RotatedPoleTest.testRotateNorthPoleOnGreenwich()} for more details.
+ * This is similar to the WMO Rotated Latitude/Longitude but rotating north pole instead of south pole.
+ * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the rotated North pole.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

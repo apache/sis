@@ -80,8 +80,8 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
 
     /**
      * Tests a rotation of south pole with the new pole on Greenwich.
-     * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class
-     * has been used as a reference implementation for expected values.
+     * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
+     * been used as a reference implementation for computing expected values.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
@@ -95,9 +95,36 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
             100, -61
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-              0.000000000, -81.000000000,
-             60.140453893, -75.629715301,
-            136.900518716, -45.671868261
+              0,               -81,
+             60.1404538930820, -75.6297153018960,
+            136.9005187159727, -45.6718682605614
+        };
+        verifyTransform(coordinates, expected);
+        inverseSouthPoleTransform();
+        verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tests a rotation of south pole with the new pole on a non-zero longitude.
+     * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has been
+     * used as a reference implementation for computing expected values.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while transforming a point.
+     */
+    @Test
+    @DependsOnMethod("testRotateSouthPoleOnGreenwich")
+    public void testRotateSouthPoleOnOtherLongitude() throws FactoryException, TransformException {
+        transform = PoleRotation.rotateSouthPole(factory(), -70, 25, 0);
+        final double[] coordinates = {      // (λ,φ) coordinates to convert.
+             25, -69,
+             20, -51,
+            100, -71
+        };
+        final double[] expected = {         // (λ,φ) coordinates after conversion.
+              0,               -89,
+             -9.6282124673448, -70.8563796930179,
+            127.8310735055447, -66.5368804564497
         };
         verifyTransform(coordinates, expected);
         inverseSouthPoleTransform();
@@ -107,13 +134,13 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     /**
      * Tests a rotation of south pole with the pole on arbitrary meridian.
      * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
-     * been used as a reference implementation for expected values.
+     * been used as a reference implementation for computing expected values.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    @DependsOnMethod("testRotateSouthPoleOnGreenwich")
+    @DependsOnMethod("testRotateSouthPoleOnOtherLongitude")
     public void testRotateSouthPoleWithAngle() throws FactoryException, TransformException {
         transform = PoleRotation.rotateSouthPole(factory(), -50, 20, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -122,9 +149,9 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
             -30, -89
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-             170.000000000, -89.000000000,
-              95.348788748, -49.758697265,
-            -188.792151374, -50.636582758
+             170,               -89,
+              95.3487887483185, -49.7586972646198,
+            -188.7921513735695, -50.6365827575445
         };
         verifyTransform(coordinates, expected);
         inverseSouthPoleTransform();
@@ -133,11 +160,14 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
 
     /**
      * Tries rotating a pole to opposite hemisphere.
+     * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
+     * been used as a reference implementation for computing expected values.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
+    @DependsOnMethod("testRotateSouthPoleWithAngle")
     public void testRotateSouthToOppositeHemisphere() throws FactoryException, TransformException {
         transform = PoleRotation.rotateSouthPole(factory(), 50, 20, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -146,9 +176,9 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
             -30, 89
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-             -10.000000000, -89.000000000,
-              64.651211252, -49.758697265,
-             -11.207848626, -50.636582758
+             -10,               -89,
+              64.6512112516815, -49.7586972646198,
+             -11.2078486264305, -50.6365827575445
         };
         verifyTransform(coordinates, expected);
         inverseSouthPoleTransform();
@@ -157,13 +187,8 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
 
     /**
      * Tests a rotation of north pole with the new pole on Greenwich.
-     *
-     * <h4>Comparison with UCAR library</h4>
-     * {@link ucar.unidata.geoloc.projection.RotatedPole} in UCAR netCDF library version 5.5.2
-     * gives results with an offset of 180° in longitude values compared to our implementation.
-     * But geometrical reasoning suggests that our implementation is correct: if we rotate the
-     * pole to 60°N, then latitude of 54°N on Greenwich meridian become only 6° below new pole,
-     * i.e. 84°N but still on the same meridian (Greenwich) because we did not cross the pole.
+     * The {@link ucar.unidata.geoloc.projection.RotatedPole} class
+     * has been used as a reference implementation for expected values.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
@@ -177,9 +202,36 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
            -30, 89
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-               0.000000000, 84.000000000,
-             110.307140436, 80.141810970,
-            -178.973119126, 60.862133738
+            180, 84,
+            -69.6928595614074,  80.1418109704940,
+              1.0268808754468,  60.8621337379806
+        };
+        verifyTransform(coordinates, expected);
+        inverseNorthPoleTransform();
+        verifyTransform(expected, coordinates);
+    }
+
+    /**
+     * Tests a rotation of north pole with the new pole on a non-zero longitude.
+     * The {@link ucar.unidata.geoloc.projection.RotatedPole} class has been used
+     * as a reference implementation for computing expected values.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while transforming a point.
+     */
+    @Test
+    @DependsOnMethod("testRotateNorthPoleOnGreenwich")
+    public void testRotateNorthPoleOnOtherLongitude() throws FactoryException, TransformException {
+        transform = PoleRotation.rotateNorthPole(factory(), 70, 25, 0);
+        final double[] coordinates = {      // (λ,φ) coordinates to convert.
+             25, 72,
+             20, 51,
+            100, 71
+        };
+        final double[] expected = {         // (λ,φ) coordinates after conversion.
+              0,                88,
+            170.3717875326552,  70.8563796930179,
+            -52.1689264944553,  66.5368804564497
         };
         verifyTransform(coordinates, expected);
         inverseNorthPoleTransform();
@@ -219,9 +271,9 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
            -30, 89
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-             -58.817428350, 66.096411904,
-             -44.967324181, 78.691210976,
-            -167.208632734, 70.320491507
+             121.1825716500646,  66.0964119035041,
+             135.0326758188633,  78.6912109761956,
+              12.7913672657394,  70.3204915065785
         };
         verifyTransform(coordinates, expected);
         inverseNorthPoleTransform();
@@ -243,9 +295,9 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
             -30, -89
         };
         final double[] expected = {         // (λ,φ) coordinates after conversion.
-             -10.000000000, 89.000000000,
-              64.651211252, 49.758697265,
-             -11.207848626, 50.636582758
+             170,                89,
+            -115.3487887483185,  49.7586972646198,
+             168.7921513735695,  50.6365827575445
         };
         verifyTransform(coordinates, expected);
         inverseNorthPoleTransform();
@@ -253,17 +305,32 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests derivative.
+     * Tests derivative for a south pole rotation.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while computing a derivative.
      */
     @Test
-    public void testDerivative() throws FactoryException, TransformException {
+    public void testDerivativeSouth() throws FactoryException, TransformException {
         transform = PoleRotation.rotateSouthPole(factory(), -50, 0, 0);
         derivativeDeltas = new double[] {1E-6, 1E-6};
         verifyDerivative(  0, -51);
         verifyDerivative( 20, -58);
         verifyDerivative(-30, -40);
+    }
+
+    /**
+     * Tests derivative for a north pole rotation.
+     *
+     * @throws FactoryException if the transform can not be created.
+     * @throws TransformException if an error occurred while computing a derivative.
+     */
+    @Test
+    public void testDerivativeNorth() throws FactoryException, TransformException {
+        transform = PoleRotation.rotateNorthPole(factory(), 50, 0, 0);
+        derivativeDeltas = new double[] {1E-5, 1E-5};
+        verifyDerivative(  0, 51);
+        verifyDerivative( 20, 58);
+        verifyDerivative(-30, 40);
     }
 }

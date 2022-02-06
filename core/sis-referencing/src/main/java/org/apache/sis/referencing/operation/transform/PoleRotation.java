@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.List;
 import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
@@ -25,7 +24,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -82,6 +80,20 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     private static final long serialVersionUID = -8355693495724373931L;
 
     /**
+     * Index of parameter declared in {@link SouthPoleRotation} and {@link NorthPoleRotation}.
+     *
+     * @see #setValue(int, double)
+     */
+    private static final int POLE_LATITUDE = 0, POLE_LONGITUDE = 1, AXIS_ANGLE = 2;
+
+    /**
+     * The maximal value of axis rotation before switching to a different algorithm which will
+     * reduce that rotation. The intent it to have axis rotation (applied on longitude values)
+     * small enough for increasing the chances that output longitudes are in [-180 … 180]° range.
+     */
+    private static final double MAX_AXIS_ROTATION = 90;
+
+    /**
      * The parameters used for creating this transform.
      * They are used for formatting <cite>Well Known Text</cite> (WKT).
      *
@@ -119,8 +131,14 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     private MathTransform2D inverse;
 
     /**
-     * Creates the inverse of the given forward operation.
-     * The new pole latitude is φ<sub>p</sub> = (180° − φ<sub>forward</sub>).
+     * Creates the inverse of the given forward operation. In principle, the latitude φ<sub>p</sub>
+     * should be unchanged and the longitude λ<sub>p</sub> should be 180° (ignoring the axis angle)
+     * in order to go back in the direction of geographical South pole. The longitudes computed by
+     * this approach have an offset of 180°, which can be compensated with the axis angle (see the
+     * {@link #inverseParameter(Parameters, ParameterValue)} method for more details).
+     *
+     * However we can get a mathematically equivalent effect without the 180° longitude offset by
+     * setting the new pole latitude to unrealistic φ<sub>p</sub> = (180° − φ<sub>forward</sub>) value.
      * We get this effect be inverting the sign of {@link #cosφp} while keeping {@link #sinφp} unchanged.
      * Note that this is compatible with {@link #isIdentity()} implementation.
      *
@@ -134,63 +152,59 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     }
 
     /**
-     * Computes the value of the given parameter for the inverse operation.
-     * This method is invoked for each parameter.
+     * Computes the value of the given parameter for the inverse of "South pole rotation".
+     * This method is invoked for each parameter of the inverse transform to initialize.
+     * The parameters of the inverse transform is defined as below:
+     *
+     * <ul>
+     *   <li><b>Latitude</b> is unchanged. For example if the rotated pole was located at 60° of latitude
+     *       relative to the geographic pole, then conversely the geographic pole is still located at 60°
+     *       of latitude relative to the rotated pole.</li>
+     *   <li><b>Longitude</b> is 180° (ignoring axis rotation) in the South pole case because by definition
+     *       the 180° rotated meridian runs through both the geographical and the rotated South pole.</li>
+     *   <li><b>Axis rotation</b> is 180° (ignoring λ<sub>p</sub> in forward transform) in the South pole
+     *       case for compensating the 180° offset of λ<sub>p</sub> in the inverse transform.</li>
+     *   <li>If a non-zero λ<sub>p</sub> was specified in the forward transform,
+     *       then an axis rotation in opposite direction must be added to the inverse transform.
+     *       Conversely if an axis rotation was defined in the forward transform,
+     *       then a λ<sub>p</sub> rotation in opposite direction must be added to the inverse transform.</li>
+     * </ul>
      *
      * @param  forward  the forward operation.
      * @param  target   parameter to initialize.
      * @return whether to accept the parameter (always {@code true}).
+     *
+     * @see #inverse()
      */
     private static boolean inverseParameter(final Parameters forward, final ParameterValue<?> target) {
-        final ParameterDescriptor<?> descriptor = target.getDescriptor();
-        final List<GeneralParameterValue> values = forward.values();
-        for (int i = values.size(); --i >= 0;) {
-            if (descriptor.equals(values.get(i).getDescriptor())) {
-                if (i != 0) {
-                    /*
-                     * For assigning a value to the "grid_south_pole_longitude" parameter at index 1,
-                     * we derive the value from the "grid_south_pole_angle" parameter at index 2.
-                     * And conversely.
-                     */
-                    i = 3 - i;
-                }
-                double value = ((Number) ((ParameterValue<?>) values.get(i)).getValue()).doubleValue();
-                if (i == 0) {
-                    value = IEEEremainder(180 - value, 360);
-                } else if (SouthPoleRotation.PARAMETERS.equals(forward.getDescriptor())) {
-                    value = -value;
-                }
-                target.setValue(value);
-                return true;
-            }
+        final ParameterDescriptorGroup descriptor = forward.getDescriptor();
+        int i = descriptor.descriptors().indexOf(target.getDescriptor());
+        if (i < 0) {
+            return false;                               // Should never happen.
         }
-        return false;       // Should never happen.
+        if (i != POLE_LATITUDE) {
+            /*
+             * For assigning a value to the "grid_south_pole_longitude" parameter at index 1,
+             * we derive the value from the "grid_south_pole_angle" parameter at index 2.
+             * And conversely.
+             */
+            i = (AXIS_ANGLE + POLE_LONGITUDE) - i;      // AXIS_ANGLE - (i - POLE_LONGITUDE)
+        }
+        Number value = getValue(forward, i);
+        if (i != POLE_LATITUDE && SouthPoleRotation.PARAMETERS.equals(descriptor)) {
+            double λp = value.doubleValue();
+            value = copySign(180, λp) - λp;             // Negative of antipodal longitude.
+        }
+        target.setValue(value);
+        return true;
     }
 
     /**
-     * Creates the non-linear part of a rotated pole operation.
-     * This transform does not include the conversion between degrees and radians and the longitude rotations.
-     * For a complete transform, use one of the static factory methods.
-     *
-     * @param  south  {@code true} for a south pole rotation, or {@code false} for a north pole rotation.
-     * @param  φp     geographic  latitude in degrees of the southern pole of the coordinate system.
-     * @param  λp     geographic longitude in degrees of the southern pole of the coordinate system.
-     * @param  pa     angle of rotation in degrees about the new polar axis measured clockwise when
-     *                looking from the rotated pole to the Earth center.
+     * Returns the value for the parameter at the given index.
+     * This is the converse of {@link #setValue(int, double)}.
      */
-    protected PoleRotation(final boolean south, final double φp, final double λp, final double pa) {
-        context = new ContextualParameters(
-                south ? SouthPoleRotation.PARAMETERS
-                      : NorthPoleRotation.PARAMETERS, DIMENSION, DIMENSION);
-        setValue(0, φp);        // grid_south_pole_latitude   or  grid_north_pole_latitude
-        setValue(1, λp);        // grid_south_pole_longitude  or  grid_north_pole_longitude
-        setValue(2, pa);        // grid_south_pole_angle      or  north_pole_grid_longitude
-        final double φ = toRadians(φp);
-        final double sign = south ? 1 : -1;
-        sinφp = sin(φ) * sign;
-        cosφp = cos(φ) * sign;
-        context.normalizeGeographicInputs(λp);
-        context.denormalizeGeographicOutputs(south ? -pa : pa);
+    private static Number getValue(final Parameters context, final int index) {
+        return ((Number) ((ParameterValue<?>) context.values().get(index)).getValue());
     }
 
     /**
@@ -206,46 +220,97 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     }
 
     /**
-     * Creates a new rotated south pole operation.
+     * Creates the non-linear part of a rotated pole operation.
+     * This transform does not include the conversion between degrees and radians and the longitude rotations.
+     * For a complete transform, use one of the static factory methods.
+     *
+     * @param  south  {@code true} for a south pole rotation, or {@code false} for a north pole rotation.
+     * @param  φp     geographic  latitude in degrees of the southern pole of the coordinate system.
+     * @param  λp     geographic longitude in degrees of the southern pole of the coordinate system.
+     * @param  θp     angle of rotation in degrees about the new polar axis measured clockwise when
+     *                looking from the rotated pole to the Earth center.
+     */
+    protected PoleRotation(final boolean south, double φp, double λp, double θp) {
+        context = new ContextualParameters(
+                south ? SouthPoleRotation.PARAMETERS
+                      : NorthPoleRotation.PARAMETERS, DIMENSION, DIMENSION);
+        setValue(POLE_LATITUDE,  φp);       // grid_south_pole_latitude   or  grid_north_pole_latitude
+        setValue(POLE_LONGITUDE, λp);       // grid_south_pole_longitude  or  grid_north_pole_longitude
+        setValue(AXIS_ANGLE,     θp);       // grid_south_pole_angle      or  north_pole_grid_longitude
+        if (south) {
+            θp  = -θp;
+        } else {
+            φp  = -φp;
+            λp -= copySign(180, λp);        // Antipodal point.
+        }
+        double sign = 1;
+        if (abs(θp) > MAX_AXIS_ROTATION) {
+            /*
+             * Inverting the sign of sin(φp), cos(φp) and λ (in normalization matrix) will cause the formula to
+             * compute the antipodal point, which allows us to remove 180° from `θp` and make it closer to zero.
+             * Transform will produce final longitude results that are closer to the [-180 … +180]° range.
+             */
+            sign = -1;
+            θp -= copySign(180, θp);
+            context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION)  .convertAfter (0, -1, null);  // Invert λ sign.
+            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertBefore(1, -1, null);  // Invert φ sign.
+        }
+        final double φ = toRadians(φp);
+        sinφp = sin(φ) * sign;
+        cosφp = cos(φ) * sign;
+        context.normalizeGeographicInputs(λp);
+        context.denormalizeGeographicOutputs(θp);
+    }
+
+    /**
+     * Creates a new rotated south pole operation. The rotations are applied by first rotating the sphere
+     * through λ<sub>p</sub> about the geographic polar axis, then rotating through (φ<sub>p</sub> − (−90°))
+     * degrees so that the southern pole moved along the (previously rotated) Greenwich meridian,
+     * and finally by rotating clockwise when looking from the southern to the northern rotated pole.
+     * The 180° rotated meridian runs through both the geographical and the rotated South pole.
      *
      * @param  factory  the factory to use for creating the transform.
      * @param  φp       geographic  latitude in degrees of the southern pole of the coordinate system.
      * @param  λp       geographic longitude in degrees of the southern pole of the coordinate system.
-     * @param  pa       angle of rotation in degrees about the new polar axis measured clockwise when
+     * @param  θp       angle of rotation in degrees about the new polar axis measured clockwise when
      *                  looking from the southern to the northern pole.
      * @return the conversion doing a south pole rotation.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform rotateSouthPole(final MathTransformFactory factory,
-            final double φp, final double λp, final double pa) throws FactoryException
+            final double φp, final double λp, final double θp) throws FactoryException
     {
-        final PoleRotation kernel = new PoleRotation(true, φp, λp, pa);
+        final PoleRotation kernel = new PoleRotation(true, φp, λp, θp);
         return kernel.context.completeTransform(factory, kernel);
     }
 
     /**
-     * Creates a new rotated north pole operation.
+     * Creates a new rotated north pole operation. The rotations are applied by first rotating the sphere
+     * through λ<sub>p</sub> about the geographic polar axis, then rotating through (φ<sub>p</sub> − 90°)
+     * degrees so that the northern pole moved along the (previously rotated) Greenwich meridian.
+     * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the
+     * rotated North pole.
      *
      * @param  factory  the factory to use for creating the transform.
      * @param  φp       geographic  latitude in degrees of the northern pole of the coordinate system.
      * @param  λp       geographic longitude in degrees of the northern pole of the coordinate system.
-     * @param  pa       angle of rotation in degrees about the new polar axis measured clockwise when
+     * @param  θp       angle of rotation in degrees about the new polar axis measured clockwise when
      *                  looking from the northern to the southern pole.
      * @return the conversion doing a north pole rotation.
      * @throws FactoryException if an error occurred while creating a transform.
      *
-     * @todo Current implementation does not accept non-zero {@code pa} argument value,
+     * @todo Current implementation does not accept non-zero {@code θp} argument value,
      *       because we have not yet resolved an ambiguity about the sign of this parameter.
      *       Should it be a rotation clockwise or anti-clockwise? Looking from northern to
      *       southern pole or the opposite direction?
      */
     public static MathTransform rotateNorthPole(final MathTransformFactory factory,
-            final double φp, final double λp, final double pa) throws FactoryException
+            final double φp, final double λp, final double θp) throws FactoryException
     {
-        if (pa != 0) {
+        if (θp != 0) {
             throw new IllegalArgumentException("Non-zero axis rotation not yet accepted.");
         }
-        final PoleRotation kernel = new PoleRotation(false, φp, λp, pa);
+        final PoleRotation kernel = new PoleRotation(false, φp, λp, θp);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -395,9 +460,49 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     @Override
     public synchronized MathTransform2D inverse() {
         if (inverse == null) {
-            inverse = new PoleRotation(this);
+            final PoleRotation simple = new PoleRotation(this);
+            final ContextualParameters inverseParameters = simple.context;
+            final double θp = inverseParameters.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).getElement(0, 2);
+            if (abs(θp) > MAX_AXIS_ROTATION) {
+                /*
+                 * If the θp value added to output longitude values is greater than 90°,
+                 * create an alternative operation which will keep that value below 90°.
+                 * The intent is to keep output λ closer to the [-180 … +180]° range.
+                 */
+                final PoleRotation alternative = new PoleRotation(
+                        SouthPoleRotation.PARAMETERS.equals(inverseParameters.getDescriptor()),
+                        getValue(inverseParameters, POLE_LATITUDE).doubleValue(),
+                        getValue(inverseParameters, POLE_LONGITUDE).doubleValue(),
+                        getValue(inverseParameters, AXIS_ANGLE).doubleValue());     // Not necessarily equals to θp.
+                /*
+                 * The caller of this method expects a chain of operations where a normalization is applied before
+                 * the pole rotation, and a denormalization is applied after. Those expected (de)normalization are
+                 * specified by `inverse.context`. But the actual normalization and denormalization needed by the
+                 * alternative pole rotation are a little bit different. So we need to cancel the old normalization
+                 * before to apply the new one, and to cancel the old denormalization after we applied to new one.
+                 */
+                final ContextualParameters actualParameters = alternative.context;
+                inverse = MathTransforms.concatenate(
+                        concatenate(inverseParameters, ContextualParameters.MatrixRole.INVERSE_NORMALIZATION,
+                                    actualParameters,  ContextualParameters.MatrixRole.NORMALIZATION),
+                        alternative,
+                        concatenate(actualParameters,  ContextualParameters.MatrixRole.DENORMALIZATION,
+                                    inverseParameters, ContextualParameters.MatrixRole.INVERSE_DENORMALIZATION));
+            } else {
+                inverse = simple;
+            }
         }
         return inverse;
+    }
+
+    /**
+     * Returns the concatenation of transform {@code p1.r1} followed by {@code p2.r2}.
+     */
+    private static MathTransform2D concatenate(
+            final ContextualParameters p1, final ContextualParameters.MatrixRole r1,
+            final ContextualParameters p2, final ContextualParameters.MatrixRole r2)
+    {
+        return (MathTransform2D) MathTransforms.linear(p2.getMatrix(r2).multiply(p1.getMatrix(r1)));
     }
 
     /**

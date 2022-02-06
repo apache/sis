@@ -35,6 +35,7 @@ import org.apache.sis.measure.Units;
 /**
  * The provider for the WMO <cite>Rotated Latitude/Longitude</cite> coordinate operation.
  * This is defined by the World Meteorological Organization (WMO) in GRIB2 template 3.1.
+ * The 180° rotated meridian runs through both the geographical and the rotated South pole.
  *
  * <h2>Comparison with UCAR library</h2>
  * This is consistent with {@link ucar.unidata.geoloc.projection.RotatedLatLon}
