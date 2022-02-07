@@ -72,7 +72,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      */
     private void inverseNorthPoleTransform() throws FactoryException, TransformException {
         final ParameterValueGroup pg = ((Parameterized) transform.inverse()).getParameterValues();
-        rotateNorthPole(
+        transform = PoleRotation.rotateNorthPole(factory(),
                 pg.parameter("grid_north_pole_latitude") .doubleValue(),
                 pg.parameter("grid_north_pole_longitude").doubleValue(),
                 pg.parameter("north_pole_grid_longitude").doubleValue());
@@ -239,15 +239,6 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     }
 
     /**
-     * Temporary workaround for {@code PoleRotation.rotateNorthPole(…)} which does not accept
-     * non-zero {@code pa} argument. To be deleted after we resolved the sign ambiguity.
-     */
-    private void rotateNorthPole(final double φp, final double λp, final double pa) throws FactoryException {
-        final PoleRotation kernel = new PoleRotation(false, φp, λp, pa);
-        transform = kernel.getContextualParameters().completeTransform(factory(), kernel);
-    }
-
-    /**
      * Tests a rotation of north pole with the pole on arbitrary meridian.
      * Result can be compared with PROJ using the following command, where
      * {@code coords.txt} is a file containing input coordinates in (λ,φ)
@@ -266,7 +257,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     @Test
     @DependsOnMethod("testRotateNorthPoleOnGreenwich")
     public void testRotateNorthPole() throws FactoryException, TransformException {
-        rotateNorthPole(70, 40, 10);
+        transform = PoleRotation.rotateNorthPole(factory(), 70, 40, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              0, 54,
             20, 62,
@@ -290,7 +281,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      */
     @Test
     public void testRotateNorthToOppositeHemisphere() throws FactoryException, TransformException {
-        rotateNorthPole(-50, 20, -10);
+        transform = PoleRotation.rotateNorthPole(factory(), -50, 20, -10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
              20, -51,
              80, -44,

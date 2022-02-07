@@ -290,6 +290,14 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the
      * rotated North pole.
      *
+     * <div class="warning">
+     * The sign of the {@code θp} argument is not yet well determined.
+     * Should it be a rotation clockwise or anti-clockwise?
+     * Looking from northern to southern pole or the opposite direction?
+     * The sign may change in the future if we find an authoritative definition.
+     * In the meantime, it is safer to keep the {@code θp} value equal to zero.
+     * </div>
+     *
      * @param  factory  the factory to use for creating the transform.
      * @param  φp       geographic  latitude in degrees of the northern pole of the coordinate system.
      * @param  λp       geographic longitude in degrees of the northern pole of the coordinate system.
@@ -297,18 +305,10 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      *                  looking from the northern to the southern pole.
      * @return the conversion doing a north pole rotation.
      * @throws FactoryException if an error occurred while creating a transform.
-     *
-     * @todo Current implementation does not accept non-zero {@code θp} argument value,
-     *       because we have not yet resolved an ambiguity about the sign of this parameter.
-     *       Should it be a rotation clockwise or anti-clockwise? Looking from northern to
-     *       southern pole or the opposite direction?
      */
     public static MathTransform rotateNorthPole(final MathTransformFactory factory,
             final double φp, final double λp, final double θp) throws FactoryException
     {
-        if (θp != 0) {
-            throw new IllegalArgumentException("Non-zero axis rotation not yet accepted.");
-        }
         final PoleRotation kernel = new PoleRotation(false, φp, λp, θp);
         return kernel.context.completeTransform(factory, kernel);
     }
