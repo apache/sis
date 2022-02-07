@@ -42,7 +42,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.Formulas.fastHypot;
 
 
 /**
@@ -395,11 +394,9 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
         final double zcosφp = z * cosφp;
         final double xt  =  zcosφp - xsinφp;
         final double zt  = -xcosφp - zsinφp;
-        final double r2  = xt*xt + y2;          // yt = y in ihis algorithm.
-        final double r   = sqrt(r2);            // The slower hypot(…) is not needed because values are close to 1.
         if (dstPts != null) {
             dstPts[dstOff]   = atan2(y, xt);
-            dstPts[dstOff+1] = atan2(zt, r);
+            dstPts[dstOff+1] = asin(zt);
         }
         if (!derivate) {
             return null;
@@ -410,16 +407,15 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
          *
          * https://svn.apache.org/repos/asf/sis/analysis/Rotated%20pole.wxmx
          */
+        final double r2  = xt*xt + y2;          // yt = y in ihis algorithm.
+        final double zr  = sqrt(1 - zt*zt);
         final double dxφ = cosλ * zsinφp  +  cosφ * cosφp;
         final double dyφ = cosλ * zcosφp  -  cosφ * sinφp;
-        final double zλ  = z * sinλ;
-        final double zr  = zt / r;
-        final double rc  = r2 + zt*zt;
         return new Matrix2(
-                (xt*x  - y2*sinφp)               / r2,      // ∂x/∂λ
-               -(xt*zλ + y*dxφ)                  / r2,      // ∂x/∂φ
-                (r*cosφp - zr*(x  + sinφp*xt))*y / rc,      // ∂y/∂λ
-                (r*dyφ   + zr*(y*zλ - dxφ*xt))   / rc);     // ∂y/∂φ
+                (xt*x - y2*sinφp) / r2,     // ∂x/∂λ
+               -(xt*z*sinλ + y*dxφ) / r2,   // ∂x/∂φ
+                y*cosφp / zr,               // ∂y/∂λ
+                dyφ / zr);                  // ∂y/∂φ
     }
 
     /**
@@ -446,9 +442,8 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
             double x    = cos(λ) * cosφ;
             double xt   =  cosφp * z - sinφp * x;
             double zt   = -cosφp * x - sinφp * z;
-            double r    = fastHypot(xt, y);
             dstPts[dstOff++] = atan2(y, xt);
-            dstPts[dstOff++] = atan2(zt, r);
+            dstPts[dstOff++] = asin(zt);
         }
     }
 

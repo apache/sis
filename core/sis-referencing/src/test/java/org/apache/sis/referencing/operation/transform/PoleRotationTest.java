@@ -255,8 +255,10 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      *
      * {@preformat shell
      *   cs2cs -I -E -f %g "EPSG:4326" +to +type=crs +proj=ob_tran +o_proj=longlat +datum=WGS84 +no_defs \
-     *         +o_lat_p=70 +o_lon_p=40 +lon_0=10 coords.txt
+     *         +o_lat_p=70 +o_lon_p=40 +lon_0=190 coords.txt
      * }
+     *
+     * Note that a 180° offset must be added to the {@code +lon_0} parameter.
      *
      * @throws FactoryException if the transform can not be created.
      * @throws TransformException if an error occurred while transforming a point.
