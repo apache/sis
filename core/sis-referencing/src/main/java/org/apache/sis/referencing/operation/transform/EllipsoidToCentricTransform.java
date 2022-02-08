@@ -399,7 +399,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
      * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
      *
-     * @return the parameters values for the sequence of
+     * @return the parameter values for the sequence of
      *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
      */
     @Override

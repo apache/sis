@@ -181,7 +181,7 @@ walk:   for (final T search : path) {
      * Copies all elements from the given source list to the specified target list,
      * but with the application of insertion and removal operations only.
      * This method is useful when the two lists should be similar.
-     * The intend is to causes as few change events as possible.
+     * The intent is to causes as few change events as possible.
      *
      * @param  <E>     type of elements to copy.
      * @param  source  the list of elements to copy in the target.

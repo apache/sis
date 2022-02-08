@@ -132,7 +132,7 @@ public abstract class Inflater implements Closeable {
                 if (i < 0) i = ~i;      // No need for array bound check.
                 /*
                  * Following loop iterates exactly once unless `pixelsPerElement` > 1.
-                 * The intend is to ensure that `samplesPerChunk` is also a divisor of `pixelsPerElement`.
+                 * The intent is to ensure that `samplesPerChunk` is also a divisor of `pixelsPerElement`.
                  * If we can not find such value, current implementation will fail at `ensureDivisor` call.
                  *
                  * TODO: to avoid this problem, one possible approach could be to force `maxChunkSize` to be

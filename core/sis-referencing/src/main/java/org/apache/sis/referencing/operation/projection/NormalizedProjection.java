@@ -551,7 +551,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Subclasses shall not use the values defined in the returned object for computation purpose,
      * except at construction time.
      *
-     * @return the parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameter values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.
      */
     @Override

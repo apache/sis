@@ -139,7 +139,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * Returns the matrix elements as a group of parameters values. The number of parameters
+     * Returns the matrix elements as a group of parameter values. The number of parameters
      * depends on the matrix size. Only matrix elements different from their default value
      * will be included in this group.
      *

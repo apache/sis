@@ -629,7 +629,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a more compact representation of the given set. This method is similar to
      * {@link #unmodifiableOrCopy(Set)} except that it does not wrap the set in an unmodifiable
-     * view. The intend is to avoid one level of indirection for performance and memory reasons.
+     * view. The intent is to avoid one level of indirection for performance and memory reasons.
      * This is okay only if the set is kept in a private field and never escape outside that class.
      *
      * @param  <E>  the type of elements in the set.
@@ -651,7 +651,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a more compact representation of the given list. This method is similar to
      * {@link #unmodifiableOrCopy(List)} except that it does not wrap the list in an unmodifiable view.
-     * The intend is to avoid one level of indirection for performance and memory reasons.
+     * The intent is to avoid one level of indirection for performance and memory reasons.
      * This is okay only if the list is kept in a private field and never escape outside that class.
      *
      * @param  <E>   the type of elements in the list.

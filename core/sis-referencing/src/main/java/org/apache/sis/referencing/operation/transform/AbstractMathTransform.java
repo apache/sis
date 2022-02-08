@@ -209,7 +209,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
      * needs this method for reconstructing the parameters of the complete transform.
      *
-     * @return the parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameter values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
