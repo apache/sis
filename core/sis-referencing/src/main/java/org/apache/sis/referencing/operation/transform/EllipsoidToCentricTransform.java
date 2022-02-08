@@ -861,7 +861,7 @@ next:   while (--numPts >= 0) {
         }
 
         /**
-         * Inverse transforms a single coordinate in a list of ordinal values,
+         * Inverse transforms a single position in a list of coordinate values,
          * and optionally returns the derivative at that location.
          *
          * <p>This method delegates the derivative computation to the enclosing class, then inverses the result.

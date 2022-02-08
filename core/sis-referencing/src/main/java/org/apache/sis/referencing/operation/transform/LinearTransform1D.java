@@ -252,7 +252,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values. The default implementation
+     * Transforms many positions in a list of coordinate values. The default implementation
      * computes the values from the {@link #scale} and {@link #offset} coefficients.
      */
     @Override
@@ -273,7 +273,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values. The default implementation
+     * Transforms many positions in a list of coordinate values. The default implementation
      * computes the values from the {@link #scale} and {@link #offset} coefficients using
      * the {@code double} precision, then casts the result to the {@code float} type.
      */
@@ -295,7 +295,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values. The default implementation
+     * Transforms many positions in a list of coordinate values. The default implementation
      * computes the values from the {@link #scale} and {@link #offset} coefficients using
      * the {@code double} precision, then casts the result to the {@code float} type.
      */
@@ -309,7 +309,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values. The default implementation
+     * Transforms many positions in a list of coordinate values. The default implementation
      * computes the values from the {@link #scale} and {@link #offset} coefficients.
      */
     @Override
@@ -322,7 +322,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * Transforms many distance vectors in a list of ordinal values.
+     * Transforms many distance vectors in a list of coordinate values.
      * The default implementation computes the values from the {@link #scale} coefficient only.
      *
      * @since 0.7

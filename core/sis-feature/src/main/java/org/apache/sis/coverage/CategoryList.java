@@ -525,10 +525,9 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. This implementation accepts
-     * float or double arrays, since the quasi-totality of the implementation is the same.
-     * Locale variables still of the {@code double} type because this is the type used in
-     * {@link Category} objects.
+     * Transforms a list of coordinate values. This implementation accepts float or double arrays,
+     * since the quasi-totality of the implementation is the same. Locale variables still of the
+     * {@code double} type because this is the type used in {@link Category} objects.
      */
     private void transform(final double[] srcPts, final float[] srcFloat, int srcOff,
                            final double[] dstPts, final float[] dstFloat, int dstOff,
@@ -656,8 +655,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. This method can be invoked only if {@link #categories}
-     * contains at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
+     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
     public final void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
@@ -666,8 +665,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. This method can be invoked only if {@link #categories}
-     * contains at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
+     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
     public final void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {
@@ -676,8 +675,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. This method can be invoked only if {@link #categories}
-     * contains at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
+     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
     public final void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
@@ -686,8 +685,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. This method can be invoked only if {@link #categories}
-     * contains at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
+     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
     public final void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {

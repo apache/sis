@@ -155,8 +155,8 @@ final class CopyTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms a single coordinate in a list of ordinal values, and optionally returns
-     * the derivative at that location.
+     * Transforms a single position in a list of coordinate values,
+     * and optionally returns the derivative at that location.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
