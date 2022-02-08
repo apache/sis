@@ -264,9 +264,10 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     /**
      * Creates a new rotated south pole operation. The rotations are applied by first rotating the sphere
      * through λ<sub>p</sub> about the geographic polar axis, then rotating through (φ<sub>p</sub> − (−90°))
-     * degrees so that the southern pole moved along the (previously rotated) Greenwich meridian,
-     * and finally by rotating clockwise when looking from the southern to the northern rotated pole.
-     * The 180° rotated meridian runs through both the geographical and the rotated South pole.
+     * degrees so that the southern pole moved along the (previously rotated) Greenwich meridian, and finally
+     * by rotating θ<sub>p</sub> degrees clockwise when looking from the southern to the northern rotated pole.
+     * In the case where θ<sub>p</sub>=0, the 180° rotated meridian runs through both the geographical
+     * and the rotated South pole.
      *
      * @param  factory  the factory to use for creating the transform.
      * @param  φp       geographic  latitude in degrees of the southern pole of the coordinate system.
@@ -286,9 +287,10 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     /**
      * Creates a new rotated north pole operation. The rotations are applied by first rotating the sphere
      * through λ<sub>p</sub> about the geographic polar axis, then rotating through (φ<sub>p</sub> − 90°)
-     * degrees so that the northern pole moved along the (previously rotated) Greenwich meridian.
-     * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the
-     * rotated North pole.
+     * degrees so that the northern pole moved along the (previously rotated) Greenwich meridian, and finally
+     * by rotating θ<sub>p</sub> degrees clockwise when looking from the northern to the southern rotated pole.
+     * In the case where θ<sub>p</sub>=0, the 0° rotated meridian is defined as the meridian that runs through
+     * both the geographical and the rotated North pole.
      *
      * <div class="warning">
      * The sign of the {@code θp} argument is not yet well determined.
