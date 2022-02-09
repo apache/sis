@@ -58,7 +58,7 @@ import org.apache.sis.internal.util.Strings;
  * }</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -88,6 +88,20 @@ abstract class AuthorityFactoryProxy<T> {
     @Override
     public String toString() {
         return Strings.bracket(AuthorityFactoryProxy.class, type.getSimpleName());
+    }
+
+    /**
+     * Returns whether the objects created by this proxy may have axes.
+     */
+    final boolean hasAxes() {
+        final Class<? extends IdentifiedObject> base;
+        switch (factoryType) {
+            default: return false;
+            case AuthorityFactoryIdentifier.CRS: return true;
+            case AuthorityFactoryIdentifier.CS:  base = CoordinateSystem.class; break;
+            case AuthorityFactoryIdentifier.ANY: base = IdentifiedObject.class; break;
+        }
+        return base.isAssignableFrom(type);
     }
 
     /**

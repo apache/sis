@@ -218,9 +218,9 @@ public class CoordinateOperationContext implements Serializable {
     /**
      * Returns a filter that can be used for applying additional restrictions on the coordinate operation.
      *
-     * @todo Not yet implemented.
+     * @todo Not yet implemented. This is currently only a hook for a possible future feature.
      */
-    Predicate<CoordinateOperation> getOperationFilter() {
+    final Predicate<CoordinateOperation> getOperationFilter() {
         return null;
     }
 

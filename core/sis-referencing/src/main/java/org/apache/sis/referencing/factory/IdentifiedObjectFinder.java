@@ -259,18 +259,18 @@ public class IdentifiedObjectFinder {
 
     /**
      * Returns the cached value for the given object, or {@code null} if none.
+     * The returned set (if non-null) should be unmodifiable.
      */
     Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
         return (wrapper != null) ? wrapper.getFromCache(object) : null;
     }
 
     /**
-     * Stores the given result in the cache, if any.
-     * This method will be invoked by {@link #find(IdentifiedObject)}
-     * only if {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
+     * Stores the given result in the cache, if any. If this method chooses to cache the given set,
+     * then it shall wrap or copy the given set in an unmodifiable set and returns the result.
      *
-     * @return the given {@code result}, or another set equal to the result if it has been computed
-     *         concurrently in another thread.
+     * @param  result  the search result as a modifiable set.
+     * @return a set with the same content than {@code result}.
      */
     Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
         if (wrapper != null) {
@@ -314,42 +314,45 @@ public class IdentifiedObjectFinder {
                  * If user wants to ignore axes, we need to return all matches. We can not use the identifier
                  * because it would reduce the set to a single element. Having all elements is necessary when
                  * `CoordinateOperationRegistry` searches for a coordinate operation between a pair of CRS.
-                 * The only exception to this rule is when this method is invoked from `findSingleton(…)`.
+                 * The only exceptions to this rule are when this method is invoked from `findSingleton(…)`,
+                 * or when axes are irrelevant to the object to search.
                  */
-                if (!ignoreIdentifiers && (!previousIgnoreAxes || wantSingleton)) {
+                if (!ignoreIdentifiers && (!previousIgnoreAxes || wantSingleton || !proxy.hasAxes())) {
                     /*
                      * First check if one of the identifiers can be used to find directly an identified object.
                      * Verify that the object that we found is actually equal to given one; we do not blindly
                      * trust the identifiers in the user object.
                      */
-                    ignoreAxes = false;
+                    ignoreAxes = false;             // It makes a difference only if `wantSingleton = true`.
                     IdentifiedObject candidate = createFromIdentifiers(object);
-                    if (candidate != null) {
-                        return Collections.singleton(candidate);    // Not worth to cache.
+                    if (candidate == null) {
+                        /*
+                         * We are unable to find the object from its identifiers. Try a quick name lookup.
+                         * Some implementations like the one backed by the EPSG database are capable to find
+                         * an object from its name.
+                         */
+                        candidate = createFromNames(object);
                     }
-                    /*
-                     * We are unable to find the object from its identifiers. Try a quick name lookup.
-                     * Some implementations like the one backed by the EPSG database are capable to find
-                     * an object from its name.
-                     */
-                    candidate = createFromNames(object);
                     if (candidate != null) {
-                        return Collections.singleton(candidate);    // Not worth to cache.
+                        result = Collections.singleton(candidate);
                     }
                 }
                 /*
                  * Here we exhausted the quick paths.
                  * Perform a full scan (costly) if we are allowed to, otherwise abandon.
                  */
-                if (domain == Domain.DECLARATION) {
-                    return Collections.emptySet();              // Do NOT cache.
+                if (result == null) {
+                    if (domain == Domain.DECLARATION) {
+                        result = Collections.emptySet();
+                    } else {
+                        result = createFromCodes(object);
+                    }
                 }
-                result = createFromCodes(object);
             } finally {
                 proxy      = previousProxy;
                 ignoreAxes = previousIgnoreAxes;
             }
-            result = cache(object, result);     // Costly operation (even if the result is empty) worth to cache.
+            result = cache(object, result);     // Costly operations (even if the result is empty) are worth to cache.
         }
         return result;
     }
@@ -382,15 +385,15 @@ public class IdentifiedObjectFinder {
         wantSingleton = true;
         try {
             for (final IdentifiedObject candidate : find(object)) {
-                final boolean so = !ignoreAxes || Utilities.deepEquals(candidate, object, COMPARISON_MODE);
+                final boolean equalsIncludingAxes = !ignoreAxes || Utilities.deepEquals(candidate, object, COMPARISON_MODE);
                 if (result != null) {
                     ambiguous = true;
-                    if (sameAxisOrder && so) {
+                    if (sameAxisOrder & equalsIncludingAxes) {
                         return null;            // Found two matches even when taking in account axis order.
                     }
                 }
                 result = candidate;
-                sameAxisOrder = so;
+                sameAxisOrder = equalsIncludingAxes;
             }
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(FactoryException.class);

@@ -1789,8 +1789,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         /**
          * Delegates to every factories registered in the enclosing {@link MultiAuthoritiesFactory},
          * in iteration order. This method is invoked only if the parent class failed to find the
-         * object by its identifiers and by its name. At this point, as a last resource, we will
-         * scan over the objects in the database.
+         * object by its identifiers and by its name. At this point, as a last resort, we will scan
+         * over the objects in the database.
          *
          * <p>This method shall <strong>not</strong> delegate the job to the parent class, as the default
          * implementation in the parent class is very inefficient. We need to delegate to the finders of

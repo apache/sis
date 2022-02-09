@@ -62,6 +62,7 @@ import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -1886,6 +1887,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
         /**
          * Returns the cached value for the given object, or {@code null} if none.
+         * The returned set (if non-null) is unmodifiable.
          */
         @Override
         final Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
@@ -1894,15 +1896,15 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 final FindEntry entry = findPool.get(object);
                 if (entry != null) {
                     // `finder` may be null if this method is invoked directly by this Finder.
-                    return entry.get((finder != null ? finder : this).isIgnoringAxes());
+                    return entry.get(finder != null ? finder : this);
                 }
             }
             return null;
         }
 
         /**
-         * Stores the given result in the cache.
-         * This method shall be invoked only when {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
+         * Stores the given result in the cache. This method wraps or copies the given set
+         * in an unmodifiable set and returns the result.
          */
         @Override
         final Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
@@ -1915,7 +1917,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     entry = c;          // May happen if the same set has been computed in another thread.
                 }
                 // `finder` should never be null since this method is not invoked directly by this Finder.
-                result = entry.set(finder.isIgnoringAxes(), result, object == searching);
+                result = entry.set(finder, result, object != searching);
             }
             return result;
         }
@@ -1957,46 +1959,57 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Cache for the result of {@link IdentifiedObjectFinder#find(IdentifiedObject)} operations.
-     * All access to this object must be done in a block synchronized on {@link #findPool}.
+     * All accesses to this object must be done in a block synchronized on {@link #findPool}.
      */
     private static final class FindEntry {
+        /**
+         * Number of values in the {@link IdentifiedObjectFinder.Domain} enumeration.
+         * Hard-coded for efficiency. Value is verified using reflection by the test
+         * {@code ConcurrentAuthorityFactoryTest.verifyDomainCount()}.
+         */
+        private static final int DOMAIN_COUNT = 3;
+
         /** Result of the search with or without ignoring axes. */
-        private Set<IdentifiedObject> strict, lenient;
+        private final Set<IdentifiedObject>[] caches;
 
-        /** Whether the cache is the result of an explicit request instead of a dependency search. */
-        private boolean explicitStrict, explicitLenient;
+        /** Whether the cache is the result of a dependency search instead of an explicit request. */
+        private int dependencyFlags;
 
-        /** Returns the cached instance. */
-        Set<IdentifiedObject> get(final boolean ignoreAxes) {
-            return ignoreAxes ? lenient : strict;
+        /** Creates an initially empty entry. */
+        @SuppressWarnings({"unchecked", "rawtypes"})        // Generic array creation.
+        FindEntry() {
+            caches = new Set[DOMAIN_COUNT * 2];
         }
 
-        /** Cache an instance, or return previous instance if computed concurrently. */
-        @SuppressWarnings({"AssignmentToCollectionOrArrayFieldFromParameter", "ReturnOfCollectionOrArrayField"})
-        Set<IdentifiedObject> set(final boolean ignoreAxes, Set<IdentifiedObject> result, final boolean explicit) {
-            if (ignoreAxes) {
-                if (lenient != null) {
-                    result = lenient;
-                } else {
-                    lenient = result;
-                }
-                explicitLenient |= explicit;
-            } else {
-                if (strict != null) {
-                    result = strict;
-                } else {
-                    strict = result;
-                }
-                explicitStrict |= explicit;
-            }
-            return result;
+        /** Returns the index in the cache for a result using the given finder. */
+        private static int index(final IdentifiedObjectFinder finder) {
+            int i = finder.getSearchDomain().ordinal();
+            if (finder.isIgnoringAxes()) i += DOMAIN_COUNT;
+            return i;
         }
 
-        /** Forgets the set that were not explicitly requested. */
+        /** Returns the cached instance, or {@code null} if none. */
+        Set<IdentifiedObject> get(final IdentifiedObjectFinder finder) {
+            return caches[index(finder)];
+        }
+
+        /** Caches an instance, or return previous instance if computed concurrently. */
+        Set<IdentifiedObject> set(final IdentifiedObjectFinder finder, final Set<IdentifiedObject> result, final boolean dependency) {
+            final int i = index(finder);
+            if (dependency) dependencyFlags |= (1 << i);
+            Set<IdentifiedObject> existing = caches[i];
+            if (existing != null) return existing;
+            else return caches[i] = result;
+        }
+
+        /** Forgets the sets that were not explicitly requested. */
         boolean cleanup() {
-            if (!explicitStrict)  strict  = null;
-            if (!explicitLenient) lenient = null;
-            return (strict == null) && (lenient == null);
+            while (dependencyFlags != 0) {
+                int i = Integer.numberOfTrailingZeros(dependencyFlags);
+                dependencyFlags &= ~(1 << i);
+                caches[i] = null;
+            }
+            return ArraysExt.allEquals(caches, null);
         }
     }
 
@@ -2189,7 +2202,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 return s;
             }
         }
-        return s + System.lineSeparator() + usage;
+        return s + System.lineSeparator() + "└─" + usage;
     }
 
     /**
