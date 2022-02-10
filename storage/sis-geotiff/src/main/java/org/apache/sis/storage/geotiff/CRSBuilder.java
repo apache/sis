@@ -833,7 +833,11 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * CommonCRS. We use the CRS name given in the GeoTIFF file for that purpose, exploiting the
                  * fact that it is often a name that can be mapped to a CommonCRS name like "WGS84".
                  */
-                String              name      = getOrDefault(names, DATUM);
+                String name = getOrDefault(names, DATUM);
+                if (name == null) {
+                    // TODO: see https://issues.apache.org/jira/browse/SIS-536
+                    throw new NoSuchElementException(missingValue(GeoKeys.GeogCitation));
+                }
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
                 final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
