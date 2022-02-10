@@ -320,13 +320,15 @@ class CoordinateOperationRegistry {
             codeFinder.setSearchDomain(isEasySearch(crs)
                     ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
                     : IdentifiedObjectFinder.Domain.VALID_DATASET);
+            int matchCount = 0;
             final Citation authority = registry.getAuthority();
             for (final IdentifiedObject candidate : codeFinder.find(crs)) {
                 final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
                 if (identifier != null) {
                     final String code = identifier.getCode();
                     if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
-                        codes.add(0, code);     // If axis order matches, give precedence to that CRS.
+                        // If axis order matches, give precedence to that CRS.
+                        codes.add(matchCount++, code);
                     } else {
                         codes.add(code);
                     }
