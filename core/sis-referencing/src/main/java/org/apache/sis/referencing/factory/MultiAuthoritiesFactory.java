@@ -146,7 +146,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
@@ -1807,7 +1807,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     if (candidate instanceof GeodeticAuthorityFactory && unique.put(candidate, Boolean.TRUE) == null) {
                         IdentifiedObjectFinder finder = ((GeodeticAuthorityFactory) candidate).newIdentifiedObjectFinder();
                         if (finder != null) {   // Should never be null according method contract, but we are paranoiac.
-                            finder.ignoreIdentifiers = true;
+                            finder.setSearchDomain(Domain.EXHAUSTIVE_VALID_DATASET);
                             finder.setWrapper(this);
                             list.add(finder);
                         }

@@ -44,6 +44,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.*;
 
@@ -170,7 +171,7 @@ class CoordinateOperationRegistry {
      * operation, even if an equivalent definition was provided by another authority.</div>
      *
      * @see #authorityCodes
-     * @see #findCode(CoordinateReferenceSystem, boolean)
+     * @see #findCode(CoordinateReferenceSystem)
      */
     private final IdentifiedObjectFinder codeFinder;
 
@@ -214,7 +215,7 @@ class CoordinateOperationRegistry {
      * This field is set to {@code true} when the caller is interested only in the "best" operation
      * instead of all of possibilities.
      *
-     * @see #search(CoordinateReferenceSystem, boolean, CoordinateReferenceSystem, boolean)
+     * @see #search(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     boolean stopAtFirst;
 
@@ -227,7 +228,7 @@ class CoordinateOperationRegistry {
     private Predicate<CoordinateOperation> filter;
 
     /**
-     * Authority codes found for CRS. This is a cache for {@link #findCode(CoordinateReferenceSystem, boolean)}.
+     * Authority codes found for CRS. This is a cache for {@link #findCode(CoordinateReferenceSystem)}.
      * This map may be non-empty only if {@link #codeFinder} is non-null.
      *
      * <div class="note"><b>Design note:</b>
@@ -237,18 +238,9 @@ class CoordinateOperationRegistry {
      * provide such cache, and the values cached here are the result of a little bit more work.</div>
      *
      * @see #codeFinder
-     * @see #findCode(CoordinateReferenceSystem, boolean)
+     * @see #findCode(CoordinateReferenceSystem)
      */
     private final Map<CoordinateReferenceSystem, List<String>> authorityCodes;
-
-    /**
-     * The authority codes of source and target CRSs examined during the last call to {@code search(…)}.
-     * This is used for determining if a new call will make any difference compared to previous call.
-     * This is usually a reference to a value in the {@link #authorityCodes} map.
-     *
-     * @see #search(CoordinateReferenceSystem, boolean, CoordinateReferenceSystem, boolean)
-     */
-    private List<String> lastSourceCodes, lastTargetCodes;
 
     /**
      * Creates a new instance for the given factory and context.
@@ -313,41 +305,34 @@ class CoordinateOperationRegistry {
      * This method may return codes even if the axis order does not match;
      * it will be caller's responsibility to make necessary adjustments.
      *
-     * @param  crs   the CRS for which to search authority codes.
-     * @param  full  whether to perform the most expensive search.
+     * @param  crs  the CRS for which to search authority codes.
      * @return authority codes for the given CRS, or an empty list if none.
      *         <b>Do not modify</b> since this list may be cached.
      */
-    private List<String> findCode(final CoordinateReferenceSystem crs, final boolean full) throws FactoryException {
+    private List<String> findCode(final CoordinateReferenceSystem crs) throws FactoryException {
         List<String> codes = authorityCodes.get(crs);
         if (codes == null) {
             if (codeFinder == null) {
                 return Collections.emptyList();
             }
             codes = new ArrayList<>();
-            codeFinder.setIgnoringAxes(full);
-            codeFinder.setSearchDomain(full ? IdentifiedObjectFinder.Domain.VALID_DATASET
-                                            : IdentifiedObjectFinder.Domain.DECLARATION);
+            codeFinder.setIgnoringAxes(true);
+            codeFinder.setSearchDomain(isEasySearch(crs)
+                    ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
+                    : IdentifiedObjectFinder.Domain.VALID_DATASET);
             final Citation authority = registry.getAuthority();
             for (final IdentifiedObject candidate : codeFinder.find(crs)) {
                 final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
                 if (identifier != null) {
                     final String code = identifier.getCode();
-                    if (full && Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
+                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
                         codes.add(0, code);     // If axis order matches, give precedence to that CRS.
                     } else {
                         codes.add(code);
                     }
                 }
             }
-            /*
-             * Cache only the result of full search. The result of non-full search is fast enough that it
-             * does not need to be cached. Note that it may cause the next call to `findCode(crs, false)`
-             * to return the full search even if `full` argument was false; this is okay.
-             */
-            if (full) {
-                authorityCodes.put(crs, codes);
-            }
+            authorityCodes.put(crs, codes);
         }
         return codes;
     }
@@ -429,7 +414,17 @@ class CoordinateOperationRegistry {
      * because they may be the only ones available.</p>
      */
     private static boolean isEasySearch(final CoordinateReferenceSystem crs) {
-        return (crs instanceof SingleCRS) && !(crs instanceof GeneralDerivedCRS);
+        if (crs instanceof GeneralDerivedCRS) {
+            return false;
+        }
+        if (crs instanceof CompoundCRS) {
+            for (CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
+                if (!isEasySearch(c)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -483,45 +478,37 @@ class CoordinateOperationRegistry {
                 target = target2D;
             }
             /*
-             * The search for coordinate operations can be costly if we consider the full set of CRS
-             * candidates that `IdentifiedObjectFinder` can find. In an attempt to reduce the cost,
-             * we will initially allow full search only for geographic CRS or other CRS that are easy
-             * to find (using their properties, not using their authority code) in the EPSG database.
-             * Only if we can not find easily the CRS, we will allow extensive search for all CRSs.
+             * Search for coordinate operations between the pair of CRS components that we just found.
+             * We may need to force a search of all CRS variants (equivalent CRS except for axis order)
+             * for resolving the case where the geodetic database contains such pairs of equivalent CRS
+             * (e.g. EPSG::4171 versus EPSG::7084). For reducing the cost, we will force full scan only
+             * for CRS for which `isEasySearch(…)` returns `true`.
              */
             if (source != null && target != null) try {
-                boolean allSources = isEasySearch(source);
-                boolean allTargets = isEasySearch(target);
-                boolean done;
-                do {
-                    final List<CoordinateOperation> operations = search(source, allSources, target, allTargets);
-                    if (operations != null) {
-                        /*
-                         * Found at least one operation. If we had to extract the horizontal part of some 3D CRS, then
-                         * we need to modify the coordinate operation in order to match the new number of dimensions.
-                         * Some operations may be lost if we do not know how to propagate the vertical CRS.
-                         * If at least one operation remains, we are done.
-                         */
-                        if (decompose.source | decompose.target) {
-                            for (int i=operations.size(); --i >= 0;) {
-                                CoordinateOperation operation = operations.get(i);
-                                operation = propagateVertical(sourceCRS, targetCRS, operation, decompose);
-                                if (operation != null) {
-                                    operation = complete(operation, sourceCRS, targetCRS);
-                                    operations.set(i, operation);
-                                } else {
-                                    operations.remove(i);
-                                }
+                final List<CoordinateOperation> operations = search(source, target);
+                if (operations != null) {
+                    /*
+                     * Found at least one operation. If we had to extract the horizontal part of some 3D CRS, then
+                     * we need to modify the coordinate operation in order to match the new number of dimensions.
+                     * Some operations may be lost if we do not know how to propagate the vertical CRS.
+                     * If at least one operation remains, we are done.
+                     */
+                    if (decompose.source | decompose.target) {
+                        for (int i=operations.size(); --i >= 0;) {
+                            CoordinateOperation operation = operations.get(i);
+                            operation = propagateVertical(sourceCRS, targetCRS, operation, decompose);
+                            if (operation != null) {
+                                operation = complete(operation, sourceCRS, targetCRS);
+                                operations.set(i, operation);
+                            } else {
+                                operations.remove(i);
                             }
                         }
-                        if (!operations.isEmpty()) {
-                            return operations;
-                        }
                     }
-                    done = (allSources & allTargets);
-                    allSources = true;
-                    allTargets = true;
-                } while (!done);
+                    if (!operations.isEmpty()) {
+                        return operations;
+                    }
+                }
             } catch (IllegalArgumentException | IncommensurableException e) {
                 String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS));
                 String details = e.getLocalizedMessage();
@@ -537,30 +524,23 @@ class CoordinateOperationRegistry {
     /**
      * Returns operations for conversions or transformations between two coordinate reference systems.
      * This method extracts the authority code from the supplied {@code sourceCRS} and {@code targetCRS},
-     * and submit them to the {@link #registry}. If no operation is found for those codes, then this method
+     * and submits them to the {@link #registry}. If no operation is found for those codes, then this method
      * returns {@code null}.
      *
-     * @param  sourceCRS   source coordinate reference system.
-     * @param  targetCRS   target coordinate reference system.
-     * @param  allSources  whether to perform an extensive search for source CRS candidates.
-     * @param  allTargets  whether to perform an extensive search for target CRS candidates.
+     * @param  sourceCRS  source coordinate reference system.
+     * @param  targetCRS  target coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS},
      *         or {@code null} if no such operation is explicitly defined in the underlying database.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if an error occurred while creating the operation.
      */
-    private List<CoordinateOperation> search(final CoordinateReferenceSystem sourceCRS, final boolean allSources,
-                                             final CoordinateReferenceSystem targetCRS, final boolean allTargets)
+    private List<CoordinateOperation> search(final CoordinateReferenceSystem sourceCRS,
+                                             final CoordinateReferenceSystem targetCRS)
             throws IllegalArgumentException, IncommensurableException, FactoryException
     {
-        final List<String> sources = findCode(sourceCRS, allSources); if (sources.isEmpty()) return null;
-        final List<String> targets = findCode(targetCRS, allTargets); if (targets.isEmpty()) return null;
-        if (sources.equals(lastSourceCodes) && targets.equals(lastTargetCodes)) {
-            return null;
-        }
-        lastSourceCodes = sources;
-        lastTargetCodes = targets;
+        final List<String> sources = findCode(sourceCRS); if (sources.isEmpty()) return null;
+        final List<String> targets = findCode(targetCRS); if (targets.isEmpty()) return null;
         final List<CoordinateOperation> operations = new ArrayList<>();
         boolean foundDirectOperations = false;
         boolean useDeprecatedOperations = false;

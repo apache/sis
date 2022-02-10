@@ -1896,7 +1896,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 final FindEntry entry = findPool.get(object);
                 if (entry != null) {
                     // `finder` may be null if this method is invoked directly by this Finder.
-                    return entry.get(finder != null ? finder : this);
+                    return entry.get(finder != null ? finder : this, object == searching);
                 }
             }
             return null;
@@ -1917,7 +1917,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     entry = c;          // May happen if the same set has been computed in another thread.
                 }
                 // `finder` should never be null since this method is not invoked directly by this Finder.
-                result = entry.set(finder, result, object != searching);
+                result = entry.set(finder, result, object == searching);
             }
             return result;
         }
@@ -1967,7 +1967,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * Hard-coded for efficiency. Value is verified using reflection by the test
          * {@code ConcurrentAuthorityFactoryTest.verifyDomainCount()}.
          */
-        private static final int DOMAIN_COUNT = 3;
+        private static final int DOMAIN_COUNT = 4;
 
         /** Result of the search with or without ignoring axes. */
         private final Set<IdentifiedObject>[] caches;
@@ -1989,17 +1989,30 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /** Returns the cached instance, or {@code null} if none. */
-        Set<IdentifiedObject> get(final IdentifiedObjectFinder finder) {
-            return caches[index(finder)];
+        Set<IdentifiedObject> get(final IdentifiedObjectFinder finder, final boolean explicit) {
+            final int i = index(finder);
+            if (explicit) {
+                dependencyFlags &= ~(1 << i);     // Clear the bit telling that this cache was only for a dependency.
+            }
+            return caches[i];
         }
 
         /** Caches an instance, or return previous instance if computed concurrently. */
-        Set<IdentifiedObject> set(final IdentifiedObjectFinder finder, final Set<IdentifiedObject> result, final boolean dependency) {
+        Set<IdentifiedObject> set(final IdentifiedObjectFinder finder, Set<IdentifiedObject> result, final boolean explicit) {
             final int i = index(finder);
-            if (dependency) dependencyFlags |= (1 << i);
-            Set<IdentifiedObject> existing = caches[i];
-            if (existing != null) return existing;
-            else return caches[i] = result;
+            final Set<IdentifiedObject> existing = caches[i];
+            if (existing != null) {
+                if (explicit) dependencyFlags &= ~(1 << i);
+                return existing;
+            }
+            if (!explicit) dependencyFlags |= (1 << i);
+            for (Set<IdentifiedObject> other : caches) {
+                if (result.equals(other)) {
+                    result = other;             // Share existing instance.
+                    break;
+                }
+            }
+            return caches[i] = result;
         }
 
         /** Forgets the sets that were not explicitly requested. */
