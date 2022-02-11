@@ -39,7 +39,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * Used when connection to the spatial metadata can not be established.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -148,6 +148,13 @@ final class MetadataFallback extends MetadataSource {
                 title                 = "OGC Naming Authority";
                 code                  = Constants.OGC;
                 citedResponsibleParty = "Open Geospatial Consortium";
+                presentationForm      = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case "WMO": {
+                title                 = "WMO Information System (WIS)";
+                code                  = key;
+                citedResponsibleParty = "World Meteorological Organization";
                 presentationForm      = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }

@@ -68,6 +68,7 @@ import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
 import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.gui.BackgroundThreads;
@@ -873,10 +874,10 @@ public class CoverageCanvas extends MapCanvasAWT {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             if (prefetchedImage instanceof TileErrorHandler.Executor) {
                 ((TileErrorHandler.Executor) prefetchedImage).execute(
-                        () -> gr.drawRenderedImage(prefetchedImage, resampledToDisplay),
+                        () -> gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay),
                         new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
             } else {
-                gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
+                gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay);
             }
             if (isolines != null) {
                 final AffineTransform at = gr.getTransform();

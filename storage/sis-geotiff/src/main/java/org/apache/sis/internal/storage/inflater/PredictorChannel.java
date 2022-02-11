@@ -64,7 +64,7 @@ abstract class PredictorChannel extends PixelChannel {
      * Prepares this predictor for reading a new tile or a new band of a tile.
      *
      * @param  start      stream position where to start reading.
-     * @param  byteCount  number of byte to read from the input.
+     * @param  byteCount  number of bytes to read from the input.
      * @throws IOException if the stream can not be seek to the given start position.
      */
     @Override
@@ -85,7 +85,7 @@ abstract class PredictorChannel extends PixelChannel {
     protected abstract int uncompress(ByteBuffer buffer, int start);
 
     /**
-     * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
+     * Decompresses some bytes from the {@linkplain #input input} into the given destination buffer.
      *
      * @param  target  the buffer into which bytes are to be transferred.
      * @return the number of bytes read, or -1 if end-of-stream.

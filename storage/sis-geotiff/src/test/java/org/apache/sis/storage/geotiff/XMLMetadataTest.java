@@ -125,7 +125,7 @@ public final strictfp class XMLMetadataTest extends TestCase {
     public void testMetadataGDAL() throws Exception {
         XMLMetadata xml = new XMLMetadata(GDAL_METADATA, true);
         MetadataBuilder builder = new MetadataBuilder();
-        xml.appendTo(builder);
+        assertNull(xml.appendTo(builder));
         DefaultMetadata metadata = builder.build(false);
         assertMultilinesEquals(
                 "Metadata\n" +
@@ -146,7 +146,7 @@ public final strictfp class XMLMetadataTest extends TestCase {
     public void testGeoMetadata() throws Exception {
         XMLMetadata xml = new XMLMetadata(GEO_METADATA, false);
         MetadataBuilder builder = new MetadataBuilder();
-        xml.appendTo(builder);
+        assertNull(xml.appendTo(builder));
         DefaultMetadata metadata = builder.build(false);
         assertMultilinesEquals(
                 "Metadata\n" +

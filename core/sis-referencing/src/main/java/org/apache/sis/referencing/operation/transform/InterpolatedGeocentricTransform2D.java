@@ -49,7 +49,7 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
     }
 
     /**
-     * Computes the derivative at the given position point.
+     * Computes the derivative at the given position.
      */
     @Override
     public Matrix derivative(Point2D point) throws TransformException {
@@ -106,7 +106,7 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
         }
 
         /**
-         * Computes the derivative at the given position point.
+         * Computes the derivative at the given position.
          */
         @Override
         public Matrix derivative(Point2D point) throws TransformException {

@@ -50,6 +50,7 @@ INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('PostGIS', 'https://postgis.net/'),
   ('Proj4',   'https://proj4.org/'),
   ('SIS',     'https://sis.apache.org/'),
+  ('WMO',     'https://www.wmo.int/'),
   ('WMS',     'https://www.ogc.org/standards/wms');
 
 UPDATE metadata."OnlineResource" SET "function" = 'information';
@@ -105,7 +106,8 @@ INSERT INTO metadata."Organisation" ("ID", "name") VALUES
   ('{org}NATO',   'North Atlantic Treaty Organization'),
   ('{org}OGC',    'Open Geospatial Consortium'),
   ('{org}OSGeo',  'The Open Source Geospatial Foundation'),
-  ('{org}PBI',    'Pitney Bowes Inc.');
+  ('{org}PBI',    'Pitney Bowes Inc.'),
+  ('{org}WMO',    'World Meteorological Organization');
 
 INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
   ('Apache',  '{org}Apache', 'resourceProvider'),
@@ -118,7 +120,8 @@ INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
   ('MapInfo', '{org}PBI',    'principalInvestigator'),
   ('NATO',    '{org}NATO',   'principalInvestigator'),
   ('OGC',     '{org}OGC',    'principalInvestigator'),
-  ('OSGeo',   '{org}OSGeo',  'resourceProvider');
+  ('OSGeo',   '{org}OSGeo',  'resourceProvider'),
+  ('WMO',     '{org}WMO',    'principalInvestigator');
 
 
 
@@ -219,10 +222,12 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedRespon
 --
 INSERT INTO metadata."Identifier" ("ID", "code") VALUES
   ('OGC',  'OGC'),
+  ('WMO',  'WMO'),
   ('IOGP', 'IOGP');
 
 INSERT INTO metadata."Citation" ("ID", "onlineResource", "citedResponsibleParty", "presentationForm", "title") VALUES
   ('OGC',  'OGCNA', 'OGC',  'documentDigital', 'OGC Naming Authority'),
+  ('WMO',  'WMO',   'WMO',  'documentDigital', 'WMO Information System (WIS)'),
   ('IOGP', 'IOGP',  'IOGP', 'documentDigital', 'IOGP Surveying and Positioning Guidance Note 7');
 
 UPDATE metadata."Citation" SET "identifier" = "ID" WHERE "ID"<>'ISBN' AND "ID"<>'ISSN' AND "ID"<>'MGRS';

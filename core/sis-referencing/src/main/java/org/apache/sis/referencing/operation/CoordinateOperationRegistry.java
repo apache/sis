@@ -34,14 +34,17 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.*;
 
@@ -101,7 +104,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -160,7 +163,7 @@ class CoordinateOperationRegistry {
      * An instance is fetched at construction time from the {@link #registry} if possible.
      *
      * <div class="note"><b>Design note:</b>
-     * using a provider defined by the {@link #registry} instead of {@code MultiAuthoritiesFactory} may cause
+     * using a finder defined by the {@link #registry} instead of {@code MultiAuthoritiesFactory} may cause
      * the finder to perform extensive searches because it does not recognize the authority code of a given CRS.
      * For example if {@link #registry} is for EPSG and a given CRS is "CRS:84", then {@code codeFinder} would
      * not recognize the given CRS and would search for a match in the EPSG database. This is desired because
@@ -208,21 +211,31 @@ class CoordinateOperationRegistry {
     protected double desiredAccuracy;
 
     /**
-     * {@code true} if {@link #search(CoordinateReferenceSystem, CoordinateReferenceSystem)}
-     * should stop after the first coordinate operation found. This field is set to {@code true}
-     * when the caller is interested only in the "best" operation instead of all of possibilities.
+     * {@code true} if {@code search(…)} should stop after the first coordinate operation found.
+     * This field is set to {@code true} when the caller is interested only in the "best" operation
+     * instead of all of possibilities.
+     *
+     * @see #search(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     boolean stopAtFirst;
 
     /**
      * A filter that can be used for applying additional restrictions on the coordinate operation,
-     * or {@code null} if none.
+     * or {@code null} if none. If non-null, only operations passing this filter will be considered.
+     *
+     * @see CoordinateOperationContext#getOperationFilter()
      */
     private Predicate<CoordinateOperation> filter;
 
     /**
      * Authority codes found for CRS. This is a cache for {@link #findCode(CoordinateReferenceSystem)}.
      * This map may be non-empty only if {@link #codeFinder} is non-null.
+     *
+     * <div class="note"><b>Design note:</b>
+     * a cache is used because codes for the same CRS can be requested many times while iterating over the
+     * strategies enumerated by {@link Decomposition}. This cache partially duplicates the cache provided by
+     * {@link IdentifiedObjectFinder} implementations, but we have no guarantees that those implementations
+     * provide such cache, and the values cached here are the result of a little bit more work.</div>
      *
      * @see #codeFinder
      * @see #findCode(CoordinateReferenceSystem)
@@ -277,6 +290,7 @@ class CoordinateOperationRegistry {
     final <T extends IdentifiedObject> T toAuthorityDefinition(final Class<T> type, final T object) throws FactoryException {
         if (codeFinder != null) {
             codeFinder.setIgnoringAxes(false);
+            codeFinder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
             final IdentifiedObject candidate = codeFinder.findSingleton(object);
             if (Utilities.equalsIgnoreMetadata(object, candidate)) {
                 return type.cast(candidate);
@@ -291,28 +305,36 @@ class CoordinateOperationRegistry {
      * This method may return codes even if the axis order does not match;
      * it will be caller's responsibility to make necessary adjustments.
      *
+     * @param  crs  the CRS for which to search authority codes.
      * @return authority codes for the given CRS, or an empty list if none.
-     *         <b>Do not modify</b> since this list is cached.
+     *         <b>Do not modify</b> since this list may be cached.
      */
     private List<String> findCode(final CoordinateReferenceSystem crs) throws FactoryException {
         List<String> codes = authorityCodes.get(crs);
         if (codes == null) {
+            if (codeFinder == null) {
+                return Collections.emptyList();
+            }
             codes = new ArrayList<>();
-            if (codeFinder != null) {
-                codeFinder.setIgnoringAxes(true);
-                for (final IdentifiedObject candidate : codeFinder.find(crs)) {
-                    final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
-                    if (identifier != null) {
-                        final String code = identifier.getCode();
-                        if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
-                            codes.add(0, code);     // If axis order match, give precedence to that CRS.
-                        } else {
-                            codes.add(code);
-                        }
+            codeFinder.setIgnoringAxes(true);
+            codeFinder.setSearchDomain(isEasySearch(crs)
+                    ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
+                    : IdentifiedObjectFinder.Domain.VALID_DATASET);
+            int matchCount = 0;
+            final Citation authority = registry.getAuthority();
+            for (final IdentifiedObject candidate : codeFinder.find(crs)) {
+                final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
+                if (identifier != null) {
+                    final String code = identifier.getCode();
+                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
+                        // If axis order matches, give precedence to that CRS.
+                        codes.add(matchCount++, code);
+                    } else {
+                        codes.add(code);
                     }
                 }
-                authorityCodes.put(crs, codes);
             }
+            authorityCodes.put(crs, codes);
         }
         return codes;
     }
@@ -383,6 +405,31 @@ class CoordinateOperationRegistry {
     }
 
     /**
+     * Returns whether it is presumed easy for {@link IdentifiedObjectFinder} to perform a full search
+     * (ignoring axis order) for the given CRS. An important criterion is to avoid all CRS containing
+     * a coordinate operation (in particular projected CRS), because they are difficult to search.
+     *
+     * <p>We allow extensive search of geographic CRS because the EPSG database has some geographic CRS
+     * defined with both (longitude, latitude) and (latitude, longitude) axis order. But operations may
+     * be defined for only one axis order. So if the user specified the CRS with (longitude, latitude)
+     * axis order, we want to check also the coordinate operations using (latitude, longitude) axis order
+     * because they may be the only ones available.</p>
+     */
+    private static boolean isEasySearch(final CoordinateReferenceSystem crs) {
+        if (crs instanceof GeneralDerivedCRS) {
+            return false;
+        }
+        if (crs instanceof CompoundCRS) {
+            for (CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
+                if (!isEasySearch(c)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Finds or infers operations for conversions or transformations between two coordinate reference systems.
      * {@code CoordinateOperationRegistry} implements the <cite>late-binding</cite> approach (see definition
      * of terms in class javadoc) by extracting the authority codes from the supplied {@code sourceCRS} and
@@ -432,14 +479,23 @@ class CoordinateOperationRegistry {
                 }
                 target = target2D;
             }
+            /*
+             * Search for coordinate operations between the pair of CRS components that we just found.
+             * We may need to force a search of all CRS variants (equivalent CRS except for axis order)
+             * for resolving the case where the geodetic database contains such pairs of equivalent CRS
+             * (e.g. EPSG::4171 versus EPSG::7084). For reducing the cost, we will force full scan only
+             * for CRS for which `isEasySearch(…)` returns `true`.
+             */
             if (source != null && target != null) try {
                 final List<CoordinateOperation> operations = search(source, target);
                 if (operations != null) {
                     /*
-                     * Found an operation. If we had to extract the horizontal part of some 3D CRS, then we
-                     * need to modify the coordinate operation in order to match the new number of dimensions.
+                     * Found at least one operation. If we had to extract the horizontal part of some 3D CRS, then
+                     * we need to modify the coordinate operation in order to match the new number of dimensions.
+                     * Some operations may be lost if we do not know how to propagate the vertical CRS.
+                     * If at least one operation remains, we are done.
                      */
-                    if (decompose != Decomposition.NONE) {
+                    if (decompose.source | decompose.target) {
                         for (int i=operations.size(); --i >= 0;) {
                             CoordinateOperation operation = operations.get(i);
                             operation = propagateVertical(sourceCRS, targetCRS, operation, decompose);
@@ -470,13 +526,13 @@ class CoordinateOperationRegistry {
     /**
      * Returns operations for conversions or transformations between two coordinate reference systems.
      * This method extracts the authority code from the supplied {@code sourceCRS} and {@code targetCRS},
-     * and submit them to the {@link #registry}. If no operation is found for those codes, then this method
+     * and submits them to the {@link #registry}. If no operation is found for those codes, then this method
      * returns {@code null}.
      *
      * @param  sourceCRS  source coordinate reference system.
      * @param  targetCRS  target coordinate reference system.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
-     *         if no such operation is explicitly defined in the underlying database.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS},
+     *         or {@code null} if no such operation is explicitly defined in the underlying database.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if an error occurred while creating the operation.

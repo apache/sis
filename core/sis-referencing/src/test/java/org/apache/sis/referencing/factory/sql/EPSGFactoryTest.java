@@ -79,7 +79,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -969,9 +969,14 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertNotNull("With full scan allowed, the CRS should be found.", found);
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
         /*
-         * Should find the CRS without the need of a full scan, because of the cache.
+         * Search should behave as specified by `DECLARATION` contract even if the CRS is in the cache.
          */
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
+        assertNull("Should met `DECLARATION` contract.", finder.findSingleton(crs));
+        /*
+         * Should find the CRS without the need of a full scan, because of the cache.
+         */
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
         assertSame("The CRS should still in the cache.", found, finder.findSingleton(crs));
     }
 

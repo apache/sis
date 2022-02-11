@@ -29,8 +29,16 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 /**
  * The provider for <cite>"Modified Azimuthal Equidistant"</cite> projection (EPSG:9832).
  *
+ * <h2>Relationship with "Azimuthal Equidistant"</h2>
+ * The <cite>Modified Azimuthal Equidistant</cite> projection is an approximation of a theoretically
+ * more generic oblique Azimuthal Equidistant projection. But Snyder's <u>Map Projection — a working
+ * manual</u> book actually gives formulas for the same scope than the one given by EPSG, namely for
+ * islands in Micronesia. Consequently we assume that what is commonly presented by other libraries
+ * as a "generic" Azimuthal Equidistant projection is actually the Modified Azimuthal Equidistant
+ * approximation.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/azimuthal_equidistant.html">GeoTIFF parameters for Azimuthal Equidistant</a>
  *
@@ -133,6 +141,9 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
 
         PARAMETERS = builder.addIdentifier("9832")
                 .addName("Modified Azimuthal Equidistant")
+                .addName(Citations.GEOTIFF,  "CT_AzimuthalEquidistant")     // See discussion in class javadoc.
+                .addName(Citations.PROJ4,    "aeqd")
+                .addIdentifier(Citations.GEOTIFF, "12")
                 .createGroupForMapProjection(
                         LATITUDE_OF_ORIGIN,
                         LONGITUDE_OF_ORIGIN,

@@ -68,7 +68,7 @@ final class ConstantTransform1D extends LinearTransform1D {
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -78,7 +78,7 @@ final class ConstantTransform1D extends LinearTransform1D {
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff,
@@ -88,7 +88,7 @@ final class ConstantTransform1D extends LinearTransform1D {
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -98,7 +98,7 @@ final class ConstantTransform1D extends LinearTransform1D {
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final float [] srcPts, int srcOff,

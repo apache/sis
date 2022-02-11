@@ -154,7 +154,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>Every access to this pool must be synchronized on {@code findPool}.</p>
      */
-    private final Map<IdentifiedObject,FindEntry> findPool = new WeakHashMap<>();
+    private final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = new WeakHashMap<>();
 
     /**
      * The most recently used objects stored or accessed in {@link #findPool}, retained by strong references for
@@ -635,29 +635,16 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             unexpectedException("closeExpired", exception);
         }
         /*
-         * If the queue of Data Access Objects (DAO) become empty, this means that this ConcurrentAuthorityFactory
-         * has not created new object for a while (at least the amount of time given by the timeout), ignoring any
-         * request which may be under execution in another thread right now. Reduce the amount of objects retained
-         * in the cache of IdentifiedObjectFinder.find(…) results by removing all results containing more than one
-         * element, except for results of CoordinateReferenceSystem and CoordinateOperation lookups. The reason is
-         * that IdentifiedObjectFinder is almost always used for resolving CoordinateReferenceSystem objects, and
-         * all other kind of elements in the cache were dependencies searched as a side effect of the CRS search.
-         * Since we have the result of the CRS search, we often do not need anymore the result of dependency search.
+         * If the queue of Data Access Objects (DAO) become empty, this means that this `ConcurrentAuthorityFactory`
+         * has not created new objects for a while (at least the amount of time given by the timeout), ignoring any
+         * request which may be under execution in another thread right now. We may use this opportunity for reducing
+         * the amount of objects retained in the `IdentifiedObjectFinder.find(…)` cache (maybe in a future version).
          *
          * Touching `findPool` also has the desired side-effect of letting WeakHashMap expunges stale entries.
          */
         if (isEmpty) {
             synchronized (findPool) {
-                final Iterator<FindEntry> it = findPool.values().iterator();
-                while (it.hasNext()) {
-                    if (it.next().cleanup()) {
-                        it.remove();
-                        /*
-                         * No need to scan `findPoolLatestQueries` for entries to remove because it
-                         * should not contain any entry with `FindEntry.explicit` flags set to `true`.
-                         */
-                    }
-                }
+                findPool.size();        // Cause a call to `expungeStaleEntries()`.
             }
         }
     }
@@ -1794,11 +1781,18 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * go to the {@link #create(AuthorityFactoryProxy, String)} method from a non-overridden public method.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.7
+     * @version 1.2
      * @since   0.7
      * @module
      */
     private static final class Finder extends IdentifiedObjectFinder {
+        /**
+         * Number of values in the {@link IdentifiedObjectFinder.Domain} enumeration.
+         * Hard-coded for efficiency. Value is verified using reflection by the test
+         * {@code ConcurrentAuthorityFactoryTest.verifyDomainCount()}.
+         */
+        private static final int DOMAIN_COUNT = 4;
+
         /**
          * The finder on which to delegate the work. This is acquired by {@link #acquire()}
          * <strong>and must be released</strong> by call to {@link #release()} once finished.
@@ -1810,11 +1804,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * When this count reaches zero, the {@linkplain #finder} is released.
          */
         private transient int acquireCount;
-
-        /**
-         * The object in process of being searched, for information purpose only.
-         */
-        private transient IdentifiedObject searching;
 
         /**
          * Creates a finder for the given type of objects.
@@ -1886,38 +1875,64 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
         /**
          * Returns the cached value for the given object, or {@code null} if none.
+         * The returned set (if non-null) is unmodifiable.
          */
         @Override
         final Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
-            final Map<IdentifiedObject,FindEntry> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+            final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
             synchronized (findPool) {
-                final FindEntry entry = findPool.get(object);
+                final Set<IdentifiedObject>[] entry = findPool.get(object);
                 if (entry != null) {
                     // `finder` may be null if this method is invoked directly by this Finder.
-                    return entry.get((finder != null ? finder : this).isIgnoringAxes());
+                    return entry[index(finder != null ? finder : this)];
                 }
             }
             return null;
         }
 
         /**
-         * Stores the given result in the cache.
-         * This method shall be invoked only when {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
+         * Stores the given result in the cache. This method wraps or copies the given set
+         * in an unmodifiable set and returns the result.
          */
         @Override
         final Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
-            final Map<IdentifiedObject,FindEntry> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+            final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
             result = CollectionsExt.unmodifiableOrCopy(result);
-            FindEntry entry = new FindEntry();
             synchronized (findPool) {
-                final FindEntry c = findPool.putIfAbsent(object, entry);
-                if (c != null) {
-                    entry = c;          // May happen if the same set has been computed in another thread.
-                }
                 // `finder` should never be null since this method is not invoked directly by this Finder.
-                result = entry.set(finder.isIgnoringAxes(), result, object == searching);
+                final int i = index(finder);
+                final Set<IdentifiedObject>[] entry = findPool.computeIfAbsent(object, Finder::createCacheEntry);
+                final Set<IdentifiedObject> existing = entry[i];
+                if (existing != null) {
+                    return existing;
+                }
+                for (Set<IdentifiedObject> other : entry) {
+                    if (result.equals(other)) {
+                        result = other;             // Share existing instance.
+                        break;
+                    }
+                }
+                entry[i] = result;
             }
             return result;
+        }
+
+        /**
+         * Creates an initially empty cache entry for the given object.
+         */
+        @SuppressWarnings({"unchecked", "rawtypes"})            // Generic array creation.
+        private static Set<IdentifiedObject>[] createCacheEntry(IdentifiedObject object) {
+            return new Set[DOMAIN_COUNT * 2];
+        }
+
+        /**
+         * Returns the index in the cached {@code Set<IdentifiedObject>[]} array
+         * for a result using the given finder.
+         */
+        private static int index(final IdentifiedObjectFinder finder) {
+            int i = finder.getSearchDomain().ordinal();
+            if (finder.isIgnoringAxes()) i += DOMAIN_COUNT;
+            return i;
         }
 
         /**
@@ -1936,10 +1951,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 synchronized (this) {
                     try {
                         acquire();
-                        searching = object;
                         candidate = finder.find(object);
                     } finally {
-                        searching = null;
                         release();
                     }
                 }
@@ -1952,51 +1965,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              */
             ((ConcurrentAuthorityFactory<?>) factory).findPoolLatestQueries.markAsUsed(object);
             return candidate;
-        }
-    }
-
-    /**
-     * Cache for the result of {@link IdentifiedObjectFinder#find(IdentifiedObject)} operations.
-     * All access to this object must be done in a block synchronized on {@link #findPool}.
-     */
-    private static final class FindEntry {
-        /** Result of the search with or without ignoring axes. */
-        private Set<IdentifiedObject> strict, lenient;
-
-        /** Whether the cache is the result of an explicit request instead of a dependency search. */
-        private boolean explicitStrict, explicitLenient;
-
-        /** Returns the cached instance. */
-        Set<IdentifiedObject> get(final boolean ignoreAxes) {
-            return ignoreAxes ? lenient : strict;
-        }
-
-        /** Cache an instance, or return previous instance if computed concurrently. */
-        @SuppressWarnings({"AssignmentToCollectionOrArrayFieldFromParameter", "ReturnOfCollectionOrArrayField"})
-        Set<IdentifiedObject> set(final boolean ignoreAxes, Set<IdentifiedObject> result, final boolean explicit) {
-            if (ignoreAxes) {
-                if (lenient != null) {
-                    result = lenient;
-                } else {
-                    lenient = result;
-                }
-                explicitLenient |= explicit;
-            } else {
-                if (strict != null) {
-                    result = strict;
-                } else {
-                    strict = result;
-                }
-                explicitStrict |= explicit;
-            }
-            return result;
-        }
-
-        /** Forgets the set that were not explicitly requested. */
-        boolean cleanup() {
-            if (!explicitStrict)  strict  = null;
-            if (!explicitLenient) lenient = null;
-            return (strict == null) && (lenient == null);
         }
     }
 
@@ -2189,7 +2157,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 return s;
             }
         }
-        return s + System.lineSeparator() + usage;
+        return s + System.lineSeparator() + "└─" + usage;
     }
 
     /**

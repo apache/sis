@@ -274,7 +274,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms a single coordinate in a list of ordinal values, and opportunistically
+     * Transforms a single position in a list of coordinate values, and opportunistically
      * computes the transform derivative if requested.
      *
      * @return {@inheritDoc}
@@ -423,7 +423,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -433,7 +433,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -443,7 +443,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -467,7 +467,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */

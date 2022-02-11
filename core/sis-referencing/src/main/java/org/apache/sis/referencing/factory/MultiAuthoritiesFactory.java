@@ -146,7 +146,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
@@ -1789,8 +1789,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         /**
          * Delegates to every factories registered in the enclosing {@link MultiAuthoritiesFactory},
          * in iteration order. This method is invoked only if the parent class failed to find the
-         * object by its identifiers and by its name. At this point, as a last resource, we will
-         * scan over the objects in the database.
+         * object by its identifiers and by its name. At this point, as a last resort, we will scan
+         * over the objects in the database.
          *
          * <p>This method shall <strong>not</strong> delegate the job to the parent class, as the default
          * implementation in the parent class is very inefficient. We need to delegate to the finders of
@@ -1807,7 +1807,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     if (candidate instanceof GeodeticAuthorityFactory && unique.put(candidate, Boolean.TRUE) == null) {
                         IdentifiedObjectFinder finder = ((GeodeticAuthorityFactory) candidate).newIdentifiedObjectFinder();
                         if (finder != null) {   // Should never be null according method contract, but we are paranoiac.
-                            finder.ignoreIdentifiers = true;
+                            finder.setSearchDomain(Domain.EXHAUSTIVE_VALID_DATASET);
                             finder.setWrapper(this);
                             list.add(finder);
                         }

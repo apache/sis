@@ -774,7 +774,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * to some specific implementation, or to a parameter group using a different but compatible
      * {@linkplain DefaultParameterValueGroup#getDescriptor() descriptor}.</p>
      *
-     * @param  values       the parameters values to copy.
+     * @param  values       the parameter values to copy.
      * @param  destination  where to copy the values.
      * @throws InvalidParameterNameException if a {@code source} parameter name is unknown to the {@code destination}.
      * @throws InvalidParameterValueException if the value of a {@code source} parameter is invalid for the {@code destination}.

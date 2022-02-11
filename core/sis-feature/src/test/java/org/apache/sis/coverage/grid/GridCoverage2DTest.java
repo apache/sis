@@ -36,7 +36,6 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -53,22 +52,11 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
 public strictfp class GridCoverage2DTest extends TestCase {
-    /**
-     * Disables tests that are pending <a href="https://bugs.openjdk.java.net/browse/JDK-8166038">JDK-8166038</a> fix.
-     * If {@link BufferedImage} can not be used, fallback on {@link ReshapedImage} at the cost of an image larger than
-     * necessary. In such case, the tests need to specify the sub-region of pixels to verify.
-     *
-     * <p>If JDK-8166038 is fixed, remove the {@code if (result.getTileGridXOffset() == ix && ...)} test in
-     * {@link GridCoverage2D#render(GridExtent)}.</p>
-     */
-    @Workaround(library="JDK", version="14", fixed="16")
-    private static final boolean PENDING_JDK_FIX = false;
-
     /**
      * Width and height of the grid tested in this class.
      */
@@ -246,13 +234,8 @@ public strictfp class GridCoverage2DTest extends TestCase {
          */
         final GridExtent singleRow = new GridExtent(GRID_SIZE, 1).translate(0, 1);
         result = coverage.render(singleRow);
-        if (PENDING_JDK_FIX) {
             assertInstanceOf("render", BufferedImage.class, result);
             assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
-        } else {
-            assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1),
-                                             result, new Rectangle(0, 0, GRID_SIZE, 1));
-        }
         /*
          * Column extraction:
          *   - Expected size (1,2) is verified by `assertPixelsEqual(…)`.
@@ -262,13 +245,8 @@ public strictfp class GridCoverage2DTest extends TestCase {
          */
         final GridExtent singleCol = new GridExtent(1, GRID_SIZE).translate(1, 0);
         result = coverage.render(singleCol);
-        if (PENDING_JDK_FIX) {
-            assertInstanceOf("render", BufferedImage.class, result);
-            assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE), result, null);
-        } else {
-            assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE),
-                                             result, new Rectangle(0, 0, 1, GRID_SIZE));
-        }
+        assertInstanceOf("render", BufferedImage.class, result);
+        assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE), result, null);
     }
 
     /**

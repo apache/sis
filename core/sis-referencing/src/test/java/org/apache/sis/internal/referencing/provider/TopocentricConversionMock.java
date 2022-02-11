@@ -55,7 +55,7 @@ public final strictfp class TopocentricConversionMock extends ProviderMock {
     }
 
     /**
-     * Creates a new <cite>"Pole rotation"</cite> operation method.
+     * Creates a new <cite>"Geographic/topocentric conversions"</cite> operation method.
      */
     public TopocentricConversionMock() {
         super(3, 3, PARAMETERS);

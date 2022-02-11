@@ -139,7 +139,7 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
     public Matrix transform(final double[] srcPts, final int srcOff,
                             final double[] dstPts, final int dstOff, boolean derivate) throws ProjectionException
     {
-        final double[] point = Arrays.copyOfRange(srcPts, srcOff, srcOff + 2);
+        final double[] point = Arrays.copyOfRange(srcPts, srcOff, srcOff + DIMENSION);
         final Matrix derivative = tested.transform(srcPts, srcOff, dstPts, dstOff, derivate);
         final Matrix expected = reference.transform(point, 0, point, 0, derivate);
         if (dstPts != null) {
@@ -163,7 +163,7 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
     protected void inverseTransform(final double[] srcPts, final int srcOff,
                                     final double[] dstPts, final int dstOff) throws ProjectionException
     {
-        final double[] point = Arrays.copyOfRange(srcPts, srcOff, srcOff + 2);
+        final double[] point = Arrays.copyOfRange(srcPts, srcOff, srcOff + DIMENSION);
         tested.inverseTransform(srcPts, srcOff, dstPts, dstOff);
         reference.inverseTransform(point, 0, point, 0);
         assertEquals("φ", point[0], dstPts[dstOff  ], INVERSE_TOLERANCE);

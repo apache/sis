@@ -236,7 +236,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
     }
 
     /**
-     * Sets parameters values in the given group for parameters other than axis lengths.
+     * Sets parameter values in the given group for parameters other than axis lengths.
      * This method is invoked for both completing contextual parameters ({@code pg == context}) and
      * for completing internal parameters ({@code pg != context}). When this method is invoked, the
      * following parameters are already set:

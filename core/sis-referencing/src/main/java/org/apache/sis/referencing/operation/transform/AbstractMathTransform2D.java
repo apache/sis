@@ -58,11 +58,27 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.5
  * @module
  */
 public abstract class AbstractMathTransform2D extends AbstractMathTransform implements MathTransform2D {
+    /**
+     * Number of input and output dimensions of all {@code AbstractMathTransform2D}, which is {@value}.
+     * We define this constant for clarity only; its value shall not be modified.
+     *
+     * <div class="note"><b>Purpose:</b>
+     * this is used for making clearer in the code when the literal 2 stands for the number of dimensions.
+     * It reduces confusion in contexts where the literal 2 also appear for other meanings than the number
+     * of dimensions.</div>
+     *
+     * @see #getSourceDimensions()
+     * @see #getTargetDimensions()
+     *
+     * @since 1.2
+     */
+    protected static final int DIMENSION = 2;
+
     /**
      * Constructor for subclasses.
      */
@@ -70,19 +86,19 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
     }
 
     /**
-     * Returns the dimension of input points, which is always 2.
+     * Returns the dimension of input points, which is always {@value #DIMENSION}.
      */
     @Override
     public final int getSourceDimensions() {
-        return 2;
+        return DIMENSION;
     }
 
     /**
-     * Returns the dimension of output points, which is always 2.
+     * Returns the dimension of output points, which is always {@value #DIMENSION}.
      */
     @Override
     public final int getTargetDimensions() {
-        return 2;
+        return DIMENSION;
     }
 
     /**
@@ -251,7 +267,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
              * to the general path. Try to add them as a quadratic line, or as a straight line if
              * the computed control point is colinear with the starting and ending points.
              */
-            mt.transform(buffer, 0, buffer, 0, 2);
+            mt.transform(buffer, 0, buffer, 0, DIMENSION);
             final Point2D ctrlPoint = ShapeUtilities.parabolicControlPoint(px, py,
                     buffer[0], buffer[1],
                     buffer[2], buffer[3],

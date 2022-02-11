@@ -61,7 +61,7 @@ class MolodenskyTransform2D extends MolodenskyTransform implements MathTransform
     }
 
     /**
-     * Computes the derivative at the given position point.
+     * Computes the derivative at the given position.
      */
     @Override
     public Matrix derivative(Point2D point) throws TransformException {

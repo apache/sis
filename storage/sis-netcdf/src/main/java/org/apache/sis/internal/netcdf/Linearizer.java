@@ -253,7 +253,7 @@ public final class Linearizer {
                 longitudeSpan = (float) (xmax - xmin);      // For providing a hint in case of failure.
                 /*
                  * If the image is far from equator, replace the middle point by a point close to pole.
-                 * The intend is to avoid using UTM projection for latitudes such as 89°N, because a single
+                 * The intent is to avoid using UTM projection for latitudes such as 89°N, because a single
                  * NaN in transformed coordinates is enough for blocking creation of the localization grid.
                  */
                      if (ymin >= +Type.POLAR_THRESHOLD) y = ymax;

@@ -34,6 +34,7 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.system.Loggers;
@@ -189,9 +190,9 @@ final class ImageConverter extends Task<Statistics[]> {
         final BufferedImage  buffer     = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
         final Graphics2D     graphics   = buffer.createGraphics();
         try {
-            graphics.drawRenderedImage(image, toCanvas);
+            graphics.drawRenderedImage(RenderingWorkaround.wrap(image), toCanvas);
             if (mask != null) {
-                graphics.drawRenderedImage(mask, toCanvas);
+                graphics.drawRenderedImage(RenderingWorkaround.wrap(mask), toCanvas);
             }
         } finally {
             graphics.dispose();
