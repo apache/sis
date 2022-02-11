@@ -41,6 +41,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
+import static org.apache.sis.internal.referencing.Formulas.fastHypot;
 
 
 /**

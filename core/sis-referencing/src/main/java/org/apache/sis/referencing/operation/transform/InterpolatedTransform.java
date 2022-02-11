@@ -501,7 +501,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
 
         /**
-         * Transforms a single coordinate tuple in a list of ordinal values,
+         * Transforms a single position in a list of coordinate values,
          * and optionally returns the derivative at that location.
          *
          * @throws TransformException if there is no convergence.

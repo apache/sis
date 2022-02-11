@@ -113,7 +113,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -131,7 +131,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -149,7 +149,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -159,7 +159,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {

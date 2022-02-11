@@ -75,7 +75,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -294,6 +294,17 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", "ESRI");
 
     /**
+     * The authority for identifiers of objects defined by the
+     * <a href="https://www.wmo.int">World Meteorological Organization</a>.
+     * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "WMO"}.
+     * This citation is used as the authority for some coordinate operations other than EPSG and ESRI ones,
+     * for example "Rotated latitude/longitude".
+     *
+     * @since 1.2
+     */
+    public static final IdentifierSpace<String> WMO = new CitationConstant.Authority<>("WMO");
+
+    /**
      * The authority for identifiers of objects defined by the netCDF specification.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "NetCDF"}.
      * This citation is used as the authority for some map projection method and parameter names
@@ -431,6 +442,7 @@ public final class Citations extends Static {
         (CitationConstant) OGC,
         (CitationConstant) WMS,                 // Must be after OGC because it declares the same namespace.
         (CitationConstant) ESRI,
+        (CitationConstant) WMO,
         (CitationConstant) NETCDF,
         (CitationConstant) GEOTIFF,
         (CitationConstant) PROJ4,

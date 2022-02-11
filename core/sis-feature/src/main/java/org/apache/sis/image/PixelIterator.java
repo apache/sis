@@ -38,6 +38,7 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -155,7 +156,7 @@ public class PixelIterator {
     /**
      * Bounds of the region traversed by the iterator in {@linkplain #currentRaster current raster}.
      * When iteration reaches the upper coordinates, the iterator needs to move to next tile.
-     * This the raster bounds clipped to the area of interest.
+     * This is the raster bounds clipped to the area of interest.
      */
     private int currentLowerX, currentUpperX, currentUpperY;
 
@@ -727,7 +728,7 @@ public class PixelIterator {
                 if (currentLowerY > py || py >= currentUpperY ||
                     currentLowerX > px || px >= currentUpperX)
                 {
-                    throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+                    throw incompatibleTile();
                 }
             }
         }
@@ -799,7 +800,7 @@ public class PixelIterator {
                  * new row (in which case we need to move to the leftmost tile).
                  */
                 if (fetchTile() > y) {
-                    throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+                    throw incompatibleTile();
                 }
             }
             changedRowOrTile();
@@ -827,6 +828,35 @@ public class PixelIterator {
     }
 
     /**
+     * Returns the exception to throw when the tile at index ({@link #tileX}, {@link #tileY})
+     * uses an incompatible sample model.
+     */
+    private RasterFormatException incompatibleTile() {
+        String message = Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY);
+        if (image instanceof PlanarImage) {
+            final String inconsistency = ((PlanarImage) image).verify();
+            if (inconsistency != null) {
+                message = message + ' ' + Messages.format(Messages.Keys.PossibleInconsistency_1, inconsistency);
+            }
+        }
+        return new RasterFormatException(message);
+    }
+
+    /**
+     * Verifies if the width or height of a tile fetched by {@link #fetchTile()} is valid.
+     * The tile size must be strictly equal to the expected size, except if the tile is the
+     * last one in a row or column in which case the tile is allowed to be smaller.
+     *
+     * @param  actual    the width or height of fetched tile.
+     * @param  expected  the expected tile size, either {@link #tileWidth} or {@link #tileHeight}.
+     * @param  isLast    whether the tile is in the last column (if checking width) or last row.
+     * @return whether the tile has a valid width or height.
+     */
+    private static boolean isValidTileSize(final int actual, final int expected, final boolean isLast) {
+        return isLast ? (actual >= 0 && actual <= expected) : actual == expected;
+    }
+
+    /**
      * Fetches from the image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
      * All fields prefixed by {@code current} are updated by this method. The caller is responsible
      * for updating the {@link #x} and {@link #y} fields.
@@ -844,19 +874,21 @@ public class PixelIterator {
         if (tile == null) {
             tile = image.getTile(tileX, tileY);
         }
-        if (tile.getNumBands() != numBands || tile.getWidth() != tileWidth || tile.getHeight() != tileHeight) {
-            throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+        final Rectangle bounds = tile.getBounds();
+        if (!(tile.getNumBands() == numBands
+                && isValidTileSize(bounds.width,  tileWidth,  tileX == tileUpperX - 1)
+                && isValidTileSize(bounds.height, tileHeight, tileY == tileUpperY - 1)))
+        {
+            throw incompatibleTile();
         }
-        final int minX = tile.getMinX();
-        final int minY = tile.getMinY();
-        windowLimitX   = Math.addExact(minX, tileWidth);
-        windowLimitY   = Math.addExact(minY, tileHeight);
+        windowLimitX   = Math.addExact(bounds.x, bounds.width);
+        windowLimitY   = Math.addExact(bounds.y, bounds.height);
         currentUpperX  = Math.min(upperX, windowLimitX);
         currentUpperY  = Math.min(upperY, windowLimitY);
-        currentLowerX  = Math.max(lowerX, minX);
+        currentLowerX  = Math.max(lowerX, bounds.x);
         currentRaster  = tile;
         acquiredTile(tile);
-        return Math.max(lowerY, minY);
+        return Math.max(lowerY, bounds.y);
     }
 
     /**

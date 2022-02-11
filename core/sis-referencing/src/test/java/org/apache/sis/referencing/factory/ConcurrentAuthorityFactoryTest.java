@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
@@ -36,7 +37,7 @@ import static org.junit.Assume.assumeTrue;
  * Tests {@link ConcurrentAuthorityFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -46,6 +47,20 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
      * The timeout used for this test.
      */
     private static final long TIMEOUT = ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION * 4;
+
+    /**
+     * Verifies the value of {@code ConcurrentAuthorityFactory.Finder.DOMAIN_COUNT}.
+     * This method uses reflection because the verified class is private.
+     *
+     * @throws ReflectiveOperationException if the class name or field name are not as expected.
+     */
+    @Test
+    public void verifyDomainCount() throws ReflectiveOperationException {
+        final Class<?> c = Class.forName(ConcurrentAuthorityFactory.class.getName() + "$Finder");
+        final Field f = c.getDeclaredField("DOMAIN_COUNT");
+        f.setAccessible(true);
+        assertEquals(IdentifiedObjectFinder.Domain.values().length, f.getInt(null));
+    }
 
     /**
      * A concurrent factory which creates new instances of {@link AuthorityFactoryMock}.

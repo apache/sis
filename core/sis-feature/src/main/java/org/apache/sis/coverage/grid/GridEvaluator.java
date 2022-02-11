@@ -46,7 +46,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GridCoverage#evaluator()
  *
@@ -181,14 +181,15 @@ public class GridEvaluator implements GridCoverage.Evaluator {
         try {
             final FractionalGridCoordinates gc = toGridPosition(point);
             try {
-                final GridExtent subExtent = gc.toExtent(gridGeometry.extent, size);
-                return evaluate(coverage.render(subExtent), 0, 0);
-            } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
-                if (nullIfOutside) {
-                    return null;
+                final GridExtent subExtent = gc.toExtent(gridGeometry.extent, size, nullIfOutside);
+                if (subExtent != null) {
+                    return evaluate(coverage.render(subExtent), 0, 0);
                 }
-                throw (PointOutsideCoverageException) new PointOutsideCoverageException(
-                        gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
+            } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
+                if (!nullIfOutside) {
+                    throw (PointOutsideCoverageException) new PointOutsideCoverageException(
+                            gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
+                }
             }
         } catch (PointOutsideCoverageException ex) {
             ex.setOffendingLocation(point);
@@ -196,6 +197,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
         } catch (RuntimeException | TransformException ex) {
             throw new CannotEvaluateException(ex.getMessage(), ex);
         }
+        return null;        // May reach this point only if `nullIfOutside` is true.
     }
 
     /**

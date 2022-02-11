@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MemoryGridResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -92,13 +92,9 @@ public final strictfp class MemoryGridResourceTest extends TestCase {
         final GridGeometry request  = createSubGrid();
         final GridCoverage coverage = resource.read(request);
         /*
-         * PENDING_JDK_FIX: remove the following lines after we request JDK16 for building.
+         * Note: following lines work only with JDK 16 or above.
          * https://bugs.openjdk.java.net/browse/JDK-8166038
          */
-        if (resource.getGridGeometry().equals(coverage.getGridGeometry())) {
-            return;
-        }
-        // End of PENDING_JDK_FIX. Following line assumes JDK16.
         assertEqualsIgnoreMetadata(request, coverage.getGridGeometry());
         assertInstanceOf("render(null)", BufferedImage.class, coverage.render(null));
     }

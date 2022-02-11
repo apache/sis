@@ -78,7 +78,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -209,7 +209,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
      * needs this method for reconstructing the parameters of the complete transform.
      *
-     * @return the parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameter values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
@@ -803,6 +803,10 @@ public abstract class AbstractMathTransform extends FormattableObject
         if (tr1.getSourceDimensions() != tr2.getTargetDimensions() ||
             tr1.getTargetDimensions() != tr2.getSourceDimensions())
         {
+            return false;
+        }
+        if ((tr1 instanceof LinearTransform) != (tr2 instanceof LinearTransform)) {
+            // For avoiding creation of inverse transform for a result that should be false.
             return false;
         }
         try {

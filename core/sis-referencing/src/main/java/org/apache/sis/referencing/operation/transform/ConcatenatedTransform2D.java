@@ -55,7 +55,9 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
      */
     @Override
     boolean isValid() {
-        return super.isValid() && (getSourceDimensions() == 2) && (getTargetDimensions() == 2);
+        return super.isValid()
+                && (getSourceDimensions() == AbstractMathTransform2D.DIMENSION)
+                && (getTargetDimensions() == AbstractMathTransform2D.DIMENSION);
     }
 
     /**

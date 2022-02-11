@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * {@link ArithmeticException} is thrown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GridEvaluator#toGridCoordinates(DirectPosition)
  *
@@ -231,6 +231,19 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      * @return a grid extent of the given size (if possible) containing those grid coordinates.
      */
     public GridExtent toExtent(final GridExtent bounds, final long... size) {
+        return toExtent(bounds, size, false);
+    }
+
+    /**
+     * Implementation of {@link #toExtent(GridExtent, long...)} with the option to replace
+     * {@link PointOutsideCoverageException} by null return value.
+     *
+     * @param  bounds         if the coordinates shall be contained inside a grid, that grid extent. Otherwise {@code null}.
+     * @param  size           the desired extent sizes as strictly positive numbers, or 0 for automatic sizes (1 or 2).
+     * @param  nullIfOutside  whether to return {@code null} instead of throwing an exception if given point is outside coverage bounds.
+     * @return a grid extent containing grid coordinates, or {@code null} if outside and {@code nullIfOutside} is {@code true}.
+     */
+    final GridExtent toExtent(final GridExtent bounds, final long[] size, final boolean nullIfOutside) {
         final int dimension = coordinates.length;
         if (bounds != null) {
             final int bd = bounds.getDimension();
@@ -291,6 +304,9 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
                 final long validMin = bounds.getLow(i);
                 final long validMax = bounds.getHigh(i);
                 if (nearest > validMax || nearest < validMin) {
+                    if (nullIfOutside) {
+                        return null;
+                    }
                     final StringBuilder b = new StringBuilder();
                     writeCoordinates(b);
                     throw new PointOutsideCoverageException(

@@ -60,11 +60,6 @@ import static java.lang.Math.abs;
  */
 final class ResamplingGrid extends AbstractMathTransform2D {
     /**
-     * Number of dimensions of the grid, which is {@value}.
-     */
-    private static final int DIMENSION = 2;
-
-    /**
      * The minimal tile width and height in pixels. If a tile width or height is less than this threshold,
      * then this class abandons the attempt to create a {@link ResamplingGrid} instance.
      */

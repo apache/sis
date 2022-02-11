@@ -72,8 +72,11 @@ public class IdentifiedObjectFinder {
      * The domain of the search (for example whether to include deprecated objects in the search).
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
-     * @since   0.7
+     * @version 1.2
+     *
+     * @see #getSearchDomain()
+     *
+     * @since 0.7
      * @module
      */
     public enum Domain {
@@ -106,8 +109,32 @@ public class IdentifiedObjectFinder {
          * {@link #DECLARATION} will give no result. The {@code find(…)} method will then scan the dataset for
          * geographic CRS using equivalent datum and coordinate system. This may be a costly operation.
          * </div>
+         *
+         * This is the default domain of {@link IdentifiedObjectFinder}.
          */
         VALID_DATASET,
+
+        /**
+         * Lookup unconditionally based on all valid (non-deprecated) objects known to the factory.
+         * This is similar to {@link #VALID_DATASET} except that the fast {@link #DECLARATION} lookup is skipped.
+         * Instead, a potentially costly scan of the database is unconditionally performed
+         * (unless the result is already in the cache).
+         *
+         * <p>This domain can be useful when the search {@linkplain #isIgnoringAxes() ignores axis order}.
+         * If axis order is <em>not</em> ignored, then this domain usually has no advantage over {@link #VALID_DATASET}
+         * (unless the geodetic dataset contains duplicated entries) to justify the performance cost.</p>
+         *
+         * <div class="note"><b>Use case:</b>
+         * the EPSG database sometime contains two definitions for almost identical geographic CRS,
+         * one with (<var>latitude</var>, <var>longitude</var>) axis order and one with reverse order
+         * (e.g. EPSG::4171 versus EPSG::7084). It is sometime useful to know all variants of a given CRS.
+         * The {@link #VALID_DATASET} domain may not give a complete set because the "fast lookup by identifier"
+         * optimization may prevent {@link IdentifiedObjectFinder} to scan the rest of the database.
+         * This {@code EXHAUSTIVE_VALID_DATASET} domain forces such scan.</div>
+         *
+         * @since 1.2
+         */
+        EXHAUSTIVE_VALID_DATASET,
 
         /**
          * Lookup based on all objects (both valid and deprecated) known to the factory.
@@ -156,22 +183,9 @@ public class IdentifiedObjectFinder {
     private boolean ignoreAxes;
 
     /**
-     * {@code true} if the search should ignore names, aliases and identifiers. This is set to {@code true}
-     * only when this finder is wrapped by a {@link MultiAuthoritiesFactory} finder, which performs it own
-     * search based on identifiers.
-     */
-    boolean ignoreIdentifiers;
-
-    /**
-     * {@code true} if the result can be restricted to a singleton.
-     * This is set by {@link #findSingleton(IdentifiedObject)} only.
-     */
-    private boolean wantSingleton;
-
-    /**
      * Creates a finder using the specified factory.
      *
-     * <div class="note"><b>Design note:</b>
+     * <div class="note"><b>API note:</b>
      * this constructor is protected because instances of this class should not be created directly.
      * Use {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()} instead.</div>
      *
@@ -259,18 +273,18 @@ public class IdentifiedObjectFinder {
 
     /**
      * Returns the cached value for the given object, or {@code null} if none.
+     * The returned set (if non-null) should be unmodifiable.
      */
     Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
         return (wrapper != null) ? wrapper.getFromCache(object) : null;
     }
 
     /**
-     * Stores the given result in the cache, if any.
-     * This method will be invoked by {@link #find(IdentifiedObject)}
-     * only if {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
+     * Stores the given result in the cache, if any. If this method chooses to cache the given set,
+     * then it shall wrap or copy the given set in an unmodifiable set and returns the result.
      *
-     * @return the given {@code result}, or another set equal to the result if it has been computed
-     *         concurrently in another thread.
+     * @param  result  the search result as a modifiable set.
+     * @return a set with the same content than {@code result}.
      */
     Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
         if (wrapper != null) {
@@ -306,50 +320,43 @@ public class IdentifiedObjectFinder {
         ArgumentChecks.ensureNonNull("object", object);
         Set<IdentifiedObject> result = getFromCache(object);
         if (result == null) {
-            final boolean previousIgnoreAxes = ignoreAxes;
             final AuthorityFactoryProxy<?> previousProxy = proxy;
             proxy = AuthorityFactoryProxy.getInstance(object.getClass());
             try {
-                /*
-                 * If user wants to ignore axes, we need to return all matches. We can not use the identifier
-                 * because it would reduce the set to a single element. Having all elements is necessary when
-                 * `CoordinateOperationRegistry` searches for a coordinate operation between a pair of CRS.
-                 * The only exception to this rule is when this method is invoked from `findSingleton(…)`.
-                 */
-                if (!ignoreIdentifiers && (!previousIgnoreAxes || wantSingleton)) {
+                if (domain != Domain.EXHAUSTIVE_VALID_DATASET) {
                     /*
                      * First check if one of the identifiers can be used to find directly an identified object.
                      * Verify that the object that we found is actually equal to given one; we do not blindly
                      * trust the identifiers in the user object.
                      */
-                    ignoreAxes = false;
                     IdentifiedObject candidate = createFromIdentifiers(object);
-                    if (candidate != null) {
-                        return Collections.singleton(candidate);    // Not worth to cache.
+                    if (candidate == null) {
+                        /*
+                         * We are unable to find the object from its identifiers. Try a quick name lookup.
+                         * Some implementations like the one backed by the EPSG database are capable to find
+                         * an object from its name.
+                         */
+                        candidate = createFromNames(object);
                     }
-                    /*
-                     * We are unable to find the object from its identifiers. Try a quick name lookup.
-                     * Some implementations like the one backed by the EPSG database are capable to find
-                     * an object from its name.
-                     */
-                    candidate = createFromNames(object);
                     if (candidate != null) {
-                        return Collections.singleton(candidate);    // Not worth to cache.
+                        result = Collections.singleton(candidate);
                     }
                 }
                 /*
                  * Here we exhausted the quick paths.
                  * Perform a full scan (costly) if we are allowed to, otherwise abandon.
                  */
-                if (domain == Domain.DECLARATION) {
-                    return Collections.emptySet();              // Do NOT cache.
+                if (result == null) {
+                    if (domain == Domain.DECLARATION) {
+                        result = Collections.emptySet();
+                    } else {
+                        result = createFromCodes(object);
+                    }
                 }
-                result = createFromCodes(object);
             } finally {
-                proxy      = previousProxy;
-                ignoreAxes = previousIgnoreAxes;
+                proxy = previousProxy;
             }
-            result = cache(object, result);     // Costly operation (even if the result is empty) worth to cache.
+            result = cache(object, result);     // Costly operations (even if the result is empty) are worth to cache.
         }
         return result;
     }
@@ -379,23 +386,20 @@ public class IdentifiedObjectFinder {
         IdentifiedObject result = null;
         boolean sameAxisOrder = false;
         boolean ambiguous = false;
-        wantSingleton = true;
         try {
             for (final IdentifiedObject candidate : find(object)) {
-                final boolean so = !ignoreAxes || Utilities.deepEquals(candidate, object, COMPARISON_MODE);
+                final boolean equalsIncludingAxes = !ignoreAxes || Utilities.deepEquals(candidate, object, COMPARISON_MODE);
                 if (result != null) {
                     ambiguous = true;
-                    if (sameAxisOrder && so) {
+                    if (sameAxisOrder & equalsIncludingAxes) {
                         return null;            // Found two matches even when taking in account axis order.
                     }
                 }
                 result = candidate;
-                sameAxisOrder = so;
+                sameAxisOrder = equalsIncludingAxes;
             }
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(FactoryException.class);
-        } finally {
-            wantSingleton = false;
         }
         return (sameAxisOrder || !ambiguous) ? result : null;
     }

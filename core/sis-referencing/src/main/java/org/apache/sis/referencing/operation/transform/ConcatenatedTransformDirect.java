@@ -69,7 +69,7 @@ class ConcatenatedTransformDirect extends ConcatenatedTransform {
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final double[] srcPts, final int srcOff,
@@ -82,7 +82,7 @@ class ConcatenatedTransformDirect extends ConcatenatedTransform {
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public void transform(final float[]  srcPts, final int srcOff,

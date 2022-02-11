@@ -112,12 +112,19 @@ final class XMLMetadata implements Filter {
     private final boolean isGDAL;
 
     /**
+     * The next metadata in a list of linked metadata. Should always be {@code null},
+     * but we nevertheless define this field in case a file defines more than one
+     * {@code GEO_METADATA} or {@code GDAL_METADATA} tags.
+     */
+    private XMLMetadata next;
+
+    /**
      * Creates a new instance with the given XML. Used for testing purposes.
      */
     XMLMetadata(final String xml, final boolean isGDAL) {
         this.isGDAL = isGDAL;
-        string = xml;
-        listeners = null;
+        this.string = xml;
+        listeners   = null;
     }
 
     /**
@@ -126,10 +133,10 @@ final class XMLMetadata implements Filter {
      * @param  reader  the TIFF reader.
      * @param  type    type of the metadata tag to read.
      * @param  count   number of bytes or characters in the value to read.
-     * @param  isGDAL  {@code true} if the XML is GDAL metadata.
+     * @param  tag     the tag where the metadata was stored.
      */
-    XMLMetadata(final Reader reader, final Type type, final long count, final boolean isGDAL) throws IOException {
-        this.isGDAL = isGDAL;
+    XMLMetadata(final Reader reader, final Type type, final long count, final short tag) throws IOException {
+        isGDAL = (tag == Tags.GDAL_METADATA);
         listeners = reader.store.listeners();
         switch (type) {
             case ASCII: {
@@ -151,6 +158,29 @@ final class XMLMetadata implements Filter {
                 break;
             }
         }
+    }
+
+    /**
+     * Appends this metadata at the end of a linked list starting with the given element.
+     * This method is inefficient because it iterates over all elements for reaching the tail,
+     * but it should not be an issue because this method is invoked only in the unlikely case
+     * where a file would define more than one {@code *_METADATA} tag.
+     *
+     * @param  head  first element of the linked list where to append this metadata.
+     */
+    final void appendTo(XMLMetadata head) {
+        while (head.next != null) {
+            head = head.next;
+        }
+        head.next = this;
+    }
+
+    /**
+     * Returns the name of the tag from which the XML has been read.
+     * This is used for error messages.
+     */
+    String tag() {
+        return Tags.name(isGDAL ? Tags.GDAL_METADATA : Tags.GEO_METADATA);
     }
 
     /**
@@ -328,8 +358,9 @@ final class XMLMetadata implements Filter {
      * @param  metadata  the builder where to append the content of this {@code XMLMetadata}.
      * @throws XMLStreamException if an error occurred while parsing the XML.
      * @throws JAXBException if an error occurred while parsing the XML.
+     * @return the next metadata in a linked list of metadata, or {@code null} if none.
      */
-    public void appendTo(final MetadataBuilder metadata) throws XMLStreamException, JAXBException {
+    public XMLMetadata appendTo(final MetadataBuilder metadata) throws XMLStreamException, JAXBException {
         final XMLEventReader reader = toXML();
         if (reader != null) {
             if (isGDAL) {
@@ -361,6 +392,7 @@ final class XMLMetadata implements Filter {
             }
             reader.close();     // No need to close the underlying input stream.
         }
+        return next;
     }
 
     /**

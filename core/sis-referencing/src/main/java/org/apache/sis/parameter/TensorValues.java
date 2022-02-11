@@ -301,7 +301,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     }
 
     /**
-     * Returns the parameters values in this group. The amount of parameters depends on the value of
+     * Returns the parameter values in this group. The amount of parameters depends on the value of
      * {@code "num_row"} and {@code "num_col"} parameters. The parameter array will contain only
      * matrix elements which have been requested at least once by one of {@code parameter(…)} methods.
      * Never requested elements are left to their default value and omitted from the returned array.

@@ -306,6 +306,34 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(Envelope, double...)} using an envelope with less dimensions
+     * than the source grid geometry.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-514">SIS-514</a>
+     */
+    @Test
+    @DependsOnMethod("testSubgridFromEnvelope")
+    public void testSubgridFromEnvelopeWithLessDimensions() {
+        GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        envelope.setRange(0, -70, +80);
+        envelope.setRange(1,   5,  15);
+        envelope.setRange(2,  20,  40);
+        GridExtent extent = new GridExtent(null, null, new long[] {300, 40, 6}, false);
+        GridGeometry grid = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETY);
+        assertExtentEquals(new long[3], new long[] {299, 39, 5}, grid.getExtent());
+        /*
+         * Above grid has a resolution of 0.5° × 0.25° per pixel. Ask for a resolution of 2° × 1° × 3 meters
+         * per pixels. The resolution in meter should be ignored.
+         */
+        envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, -40, +30);
+        envelope.setRange(1,   8,  18);
+        final GridDerivation derivation = grid.derive();
+        grid = derivation.subgrid(envelope, 2, 1, 3).build();
+        assertExtentEquals(new long[] {15, 3, 0}, new long[] {49, 9, 5}, grid.getExtent());
+    }
+
+    /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} on a grid using a polar projection.
      * The test also uses a geographic envelope with more dimensions than the source grid geometry.
      * The difficulty is that axis directions do not match directly: the source grid has directions

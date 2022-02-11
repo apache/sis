@@ -171,7 +171,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     }
 
     /**
-     * Converts a single coordinate point in a list of ordinal values,
+     * Converts a single position in a list of coordinate values,
      * and optionally computes the derivative at that location.
      *
      * @return {@inheritDoc}

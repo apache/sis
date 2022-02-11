@@ -399,7 +399,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
      * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
      *
-     * @return the parameters values for the sequence of
+     * @return the parameter values for the sequence of
      *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
      */
     @Override
@@ -815,7 +815,7 @@ next:   while (--numPts >= 0) {
          */
         @Override
         protected ContextualParameters getContextualParameters() {
-            return forward.context.inverse(GeocentricToGeographic.PARAMETERS);
+            return forward.context.inverse(GeocentricToGeographic.PARAMETERS, null);
         }
 
         /**
@@ -842,8 +842,8 @@ next:   while (--numPts >= 0) {
         @Debug
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
-            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY,
-                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)")),
+            ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)");
+            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name),
                     forward.getParameterDescriptors());
         }
 
@@ -861,7 +861,7 @@ next:   while (--numPts >= 0) {
         }
 
         /**
-         * Inverse transforms a single coordinate in a list of ordinal values,
+         * Inverse transforms a single position in a list of coordinate values,
          * and optionally returns the derivative at that location.
          *
          * <p>This method delegates the derivative computation to the enclosing class, then inverses the result.

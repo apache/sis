@@ -44,7 +44,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 /**
  * Base class of conversions between coordinate systems.
- * Each subclasses should have a singleton instance.
+ * Each subclass should have a singleton instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

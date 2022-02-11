@@ -31,6 +31,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
@@ -575,15 +576,13 @@ public abstract class PlanarImage implements RenderedImage {
             if (sm.getWidth()  < tileWidth)  return "tileWidth";
             if (sm.getHeight() < tileHeight) return "tileHeight";
         }
-        long size = getWidth();
-        long remainder = JDK9.multiplyFull(getNumXTiles(), tileWidth) - size;
+        long remainder = JDK9.multiplyFull(getNumXTiles(), tileWidth) - getWidth();
         if (remainder != 0) {
-            return (remainder >= 0 && remainder < size) ? "width" : "numXTiles";
+            return (remainder >= 0 && remainder < tileWidth) ? "width" : "numXTiles";
         }
-        size = getHeight();
-        remainder = JDK9.multiplyFull(getNumYTiles(), tileHeight) - size;
+        remainder = JDK9.multiplyFull(getNumYTiles(), tileHeight) - getHeight();
         if (remainder != 0) {
-            return (remainder >= 0 && remainder < size) ? "height" : "numYTiles";
+            return (remainder >= 0 && remainder < tileHeight) ? "height" : "numYTiles";
         }
         if (JDK9.multiplyFull(getMinTileX(), tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
         if (JDK9.multiplyFull(getMinTileY(), tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
@@ -639,10 +638,12 @@ colors: if (cm != null) {
         if (tx != 1 || ty != 1) {
             buffer.append("; ").append(tx).append(" × ").append(ty).append(" tiles");
         }
+        buffer.append(']');
         final String error = verify();
         if (error != null) {
-            buffer.append("; ⚠ inconsistency in `").append(error).append("` property");
+            buffer.append(System.lineSeparator()).append("└─")
+                  .append(Messages.format(Messages.Keys.PossibleInconsistency_1, error));
         }
-        return buffer.append(']').toString();
+        return buffer.toString();
     }
 }

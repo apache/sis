@@ -17,7 +17,9 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
@@ -152,6 +154,13 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private final Map<Short,Object> geoKeys;
 
     /**
+     * Missing GeoKeys, used for avoiding to report the same warning twice.
+     *
+     * @see #missingValue(short)
+     */
+    private final Set<String> missingGeoKeys;
+
+    /**
      * Name of the last object created. This is used by {@link #properties(Object)} for reusing existing instance
      * if possible. This is useful in GeoTIFF files since the same name is used for different geodetic components,
      * for example the datum and the ellipsoid.
@@ -186,6 +195,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     CRSBuilder(final Reader reader) {
         this.reader = reader;
         geoKeys = new HashMap<>(32);
+        missingGeoKeys = new HashSet<>();
     }
 
     /**
@@ -360,7 +370,9 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      */
     final String missingValue(final short key) {
         final String name = GeoKeys.name(key);
-        warning(Resources.Keys.MissingGeoValue_1, name);
+        if (missingGeoKeys.add(name)) {
+            warning(Resources.Keys.MissingGeoValue_1, name);
+        }
         return name;
     }
 
@@ -821,7 +833,11 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * CommonCRS. We use the CRS name given in the GeoTIFF file for that purpose, exploiting the
                  * fact that it is often a name that can be mapped to a CommonCRS name like "WGS84".
                  */
-                String              name      = getOrDefault(names, DATUM);
+                String name = getOrDefault(names, DATUM);
+                if (name == null) {
+                    // TODO: see https://issues.apache.org/jira/browse/SIS-536
+                    throw new NoSuchElementException(missingValue(GeoKeys.GeogCitation));
+                }
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
                 final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
@@ -1197,7 +1213,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 String name = getAsString(GeoKeys.PCSCitation);
                 if (name == null) {
                     name = getAsString(GeoKeys.Citation);
-                    // Note that Citation has been removed from the map, so it will not be used by 'complete(MetadataBuilder).
+                    // Note that Citation has been removed from the map, so it will not be used by `complete(MetadataBuilder)`.
                 }
                 final Unit<Length>  linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
                 final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);

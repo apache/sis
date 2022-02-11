@@ -221,13 +221,7 @@ split:  if (path != null) {
          */
         @Override
         public Object apply(final Feature instance) {
-            if (instance != null) try {
-                return instance.getPropertyValue(name);
-            } catch (PropertyNotFoundException e) {
-                warning(e, true);
-                // Null will be returned below.
-            }
-            return null;
+            return (instance != null) ? instance.getValueOrFallback(name, null) : null;
         }
 
         /**
@@ -289,10 +283,7 @@ split:  if (path != null) {
         @Override
         public V apply(final Feature instance) {
             if (instance != null) try {
-                return ObjectConverters.convert(instance.getPropertyValue(name), type);
-            } catch (PropertyNotFoundException e) {
-                warning(e, true);
-                // Null will be returned below.
+                return ObjectConverters.convert(instance.getValueOrFallback(name, null), type);
             } catch (UnconvertibleObjectException e) {
                 warning(e, false);
             }
@@ -436,9 +427,7 @@ split:  if (path != null) {
         @Override
         public V apply(final Feature instance) {
             if (instance != null) try {
-                return converter.apply(source.cast(instance.getPropertyValue(name)));
-            } catch (PropertyNotFoundException e) {
-                warning(e, true);
+                return converter.apply(source.cast(instance.getValueOrFallback(name, null)));
             } catch (ClassCastException | UnconvertibleObjectException e) {
                 warning(e, false);
             }

@@ -177,7 +177,7 @@ final class NativeMetadata extends GeoKeysLoader {
                             }
                             case Tags.GDAL_METADATA:
                             case Tags.GEO_METADATA: {
-                                children = new XMLMetadata(reader, type, count, tag == Tags.GDAL_METADATA);
+                                children = new XMLMetadata(reader, type, count, tag);
                                 if (children.isEmpty()) {
                                     // Fallback on showing array of numerical values.
                                     value = type.readVector(input, count);

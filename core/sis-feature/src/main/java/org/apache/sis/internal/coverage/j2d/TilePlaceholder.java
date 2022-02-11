@@ -46,10 +46,16 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  */
 public class TilePlaceholder {
     /**
-     * Identifies workaround for a JDK bug: call to {@code Graphics2D.drawRenderedImage(…)}
-     * fails if the image contains more than one tile (or a single tile not located at 0,0)
-     * and the tiles are not instances of {@link WritableRaster} (i.e. are instances of the
-     * read-only {@link Raster} parent class). The exception thrown is:
+     * Identifies workaround for two JDK bugs.
+     *
+     * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8166038">JDK-8166038</a>:
+     * If {@link BufferedImage} can not be used, fallback on {@link ReshapedImage} at the cost of an image
+     * larger than necessary. In such case, the tests need to specify the sub-region of pixels to verify.</p>
+     *
+     * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>:
+     * call to {@code Graphics2D.drawRenderedImage(…)} fails if the image contains more than one tile
+     * (or a single tile not located at 0,0) and the tiles are not instances of {@link WritableRaster}
+     * (i.e. are instances of the read-only {@link Raster} parent class). The exception thrown is:
      *
      * {@preformat text
      *   Exception in thread "main" java.awt.image.RasterFormatException: (parentX + width) is outside raster
@@ -57,11 +63,10 @@ public class TilePlaceholder {
      *       at java.desktop/sun.java2d.SunGraphics2D.drawTranslatedRenderedImage(SunGraphics2D.java:2852)
      *       at java.desktop/sun.java2d.SunGraphics2D.drawRenderedImage(SunGraphics2D.java:2711)
      * }
-     *
-     * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>
+     * </p>
      */
     @Workaround(library="JDK", version="17")
-    private static final boolean PENDING_JDK_FIX = false;
+    public static final boolean PENDING_JDK_FIX = true;
 
     /**
      * Cache of empty tiles for different sample models.
@@ -188,7 +193,7 @@ public class TilePlaceholder {
                 // Else prefer read-only tile (created below) if we do not need to draw anything.
             }
         }
-        if (!PENDING_JDK_FIX) {
+        if (PENDING_JDK_FIX) {
             return Raster.createWritableRaster(model, buffer, location);
         }
         // Reuse same `DataBuffer` with only a different location.

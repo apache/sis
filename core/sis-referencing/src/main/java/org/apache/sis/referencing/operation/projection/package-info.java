@@ -159,7 +159,7 @@
  * @author  Rémi Maréchal (Geomatys)
  * @author  Adrian Custer (Geomatys)
  * @author  Matthieu Bastianelli (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *

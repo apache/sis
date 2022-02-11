@@ -1038,7 +1038,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * <ol>
      *   <li>Inferring the {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"},
-     *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameters values
+     *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameter values
      *       from the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoids} associated to
      *       the source or target CRS, if those parameters are not explicitly given and if they are relevant
      *       for the coordinate operation method.</li>

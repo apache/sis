@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
@@ -34,7 +35,7 @@ import org.apache.sis.util.ArgumentChecks;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see java.awt.geom.AffineTransform
  *
@@ -206,7 +207,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     }
 
     /**
-     * Converts a single coordinate point in a list of ordinal values,
+     * Converts a single coordinate point in a list of coordinate values,
      * and optionally computes the derivative at that location.
      *
      * @return {@inheritDoc}
@@ -216,8 +217,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                                   final double[] dstPts, final int dstOff,
                                   final boolean derivate)
     {
+        if (!derivate) {
+            transform(srcPts, srcOff, dstPts, dstOff, 1);
+            return null;
+        }
+        // A non-null position is required in case this transform is non-affine.
+        Matrix derivative = derivative(new DirectPositionView.Double(srcPts, srcOff, getSourceDimensions()));
         transform(srcPts, srcOff, dstPts, dstOff, 1);
-        return derivate ? derivative((DirectPosition) null) : null;
+        return derivative;
     }
 
     /**

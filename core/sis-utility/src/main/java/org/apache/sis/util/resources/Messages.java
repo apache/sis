@@ -197,6 +197,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short OptionalModuleNotFound_1 = 27;
 
         /**
+         * Possible inconsistency in “{0}”.
+         */
+        public static final short PossibleInconsistency_1 = 34;
+
+        /**
          * Property “{0}” is hidden by “{1}”.
          */
         public static final short PropertyHiddenBy_2 = 28;

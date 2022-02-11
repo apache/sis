@@ -98,7 +98,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public final void transform(final double[] srcPts, final int srcOff,
@@ -109,7 +109,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public final void transform(final float[] srcPts, final int srcOff,
@@ -120,7 +120,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public final void transform(final float [] srcPts, final int srcOff,
@@ -131,7 +131,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
+     * Transforms many positions in a list of coordinate values.
      */
     @Override
     public final void transform(final double[] srcPts, final int srcOff,

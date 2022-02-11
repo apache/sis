@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.GeneralParameterValue;
@@ -54,6 +55,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -121,7 +123,7 @@ import org.apache.sis.util.ArgumentChecks;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
@@ -205,12 +207,17 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * <p>This array is modifiable after construction, but is considered unmodifiable after
      * {@link #completeTransform(MathTransformFactory, MathTransform)} has been invoked.</p>
+     *
+     * @see #parameter(String)
+     * @see #freeze()
      */
     private ParameterValue<?>[] values;
 
     /**
      * If the inverse coordinate operation can be described by another {@code ContextualParameters} instance,
      * a reference to that instance. Otherwise {@code null}.
+     *
+     * @see #inverse(ParameterDescriptorGroup, BiPredicate)
      */
     private ContextualParameters inverse;
 
@@ -240,7 +247,10 @@ public class ContextualParameters extends Parameters implements Serializable {
      * See class javadoc for more information.
      *
      * @param  method  the non-linear operation method for which to define the parameter values.
+     *
+     * @deprecated Use the constructor with explicit number of dimensions instead.
      */
+    @Deprecated
     public ContextualParameters(final OperationMethod method) {
         ArgumentChecks.ensureNonNull("method", method);
         descriptor  = method.getParameters();
@@ -270,18 +280,42 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Creates a {@code ContextualParameters} for the inverse operation.
+     * Creates a new and frozen {@code ContextualParameters} for the inverse operation.
+     * An optional {@code mapper} can be specified for setting the parameter values.
+     * If the mapper is-non null, then it will be invoked for each new parameters.
+     * The first argument given to the mapper is the {@code forward} operation,
+     * and the second argument is the parameter to configure.
+     * The return value is whether the parameter should be kept in the new operation.
      *
      * @param  desc     descriptor of the inverse operation.
      * @param  forward  the parameters created for the forward operation.
+     * @param  mapper   the function to invoke for setting parameter values,
+     *                  or {@code null} if the inverse operation uses the same parameter values.
+     *
+     * @see #inverse(ParameterDescriptorGroup, BiPredicate)
      */
-    private ContextualParameters(final ParameterDescriptorGroup desc, final ContextualParameters forward) {
+    private ContextualParameters(final ParameterDescriptorGroup desc, final ContextualParameters forward,
+                                 final BiPredicate<Parameters, ParameterValue<?>> mapper)
+    {
         descriptor  = desc;
+        inverse     = forward;
         normalize   = forward.getMatrix(MatrixRole.INVERSE_DENORMALIZATION);
         denormalize = forward.getMatrix(MatrixRole.INVERSE_NORMALIZATION);
-        values      = forward.values;
-        inverse     = forward;
-        isFrozen    = true;
+        if (mapper == null) {
+            values = forward.values;
+        } else {
+            final List<GeneralParameterDescriptor> descriptors = desc.descriptors();
+            final ParameterValue<?>[] values = new ParameterValue<?>[descriptors.size()];
+            int count = 0;
+            for (int i=0; i < values.length; i++) {
+                final ContextualParameter<?> p = new ContextualParameter<>((ParameterDescriptor<?>) descriptors.get(i));
+                if (mapper.test(forward, p)) {
+                    values[count++] = p;
+                }
+            }
+            this.values = ArraysExt.resize(values, count);
+        }
+        isFrozen = true;
     }
 
     /**
@@ -298,17 +332,29 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Creates a {@code ContextualParameters} for the inverse operation.
+     * Creates a new and frozen {@code ContextualParameters} for the inverse of this operation.
+     * An optional {@code mapper} can be specified for setting the parameter values.
+     * If the mapper is-non null, then it will be invoked for each new parameters.
+     * The first argument given to the mapper will be {@code this} operation,
+     * and the second argument is the parameter to configure.
+     * The return value is whether the parameter should be kept in the new operation.
      *
-     * @param  desc  descriptor of the inverse operation.
+     * <p>This method caches the inverse operation. It is caller responsibility to ensure that all
+     * arguments given to this method are constants for a given {@link MathTransform} instance.</p>
+     *
+     * @param  desc    descriptor of the inverse operation.
+     * @param  mapper  the function to invoke for setting parameter values,
+     *                 or {@code null} if the inverse operation uses the same parameter values.
      * @return parameters for the inverse operation.
      */
-    final synchronized ContextualParameters inverse(final ParameterDescriptorGroup desc) {
+    final synchronized ContextualParameters inverse(final ParameterDescriptorGroup desc,
+            final BiPredicate<Parameters, ParameterValue<?>> mapper)
+    {
         if (inverse == null) {
             if (!isFrozen) {
                 freeze();
             }
-            inverse = new ContextualParameters(desc, this);
+            inverse = new ContextualParameters(desc, this, mapper);
         }
         assert inverse.descriptor == desc;
         return inverse;
@@ -412,7 +458,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         }
         /*
          * Following must be outside the synchronized block in order to avoid potential deadlock while invoking
-         * inverse.getMatrix(role). We do not cache the matrix here, but 'inverse' is likely to have cached it.
+         * inverse.getMatrix(role). We do not cache the matrix here, but `inverse` is likely to have cached it.
          */
         final Matrix m;
         if (inverse != null) {
@@ -527,8 +573,8 @@ public class ContextualParameters extends Parameters implements Serializable {
         }
         /*
          * Following call must be outside the synchronized block for avoiding dead-lock. This is because the
-         * factory typically contains a WeakHashSet, which invoke in turn the 'equals' methods in this class
-         * (indirectly, through 'kernel' comparison). We need to be outside the synchronized block for having
+         * factory typically contains a WeakHashSet, which invoke in turn the `equals` methods in this class
+         * (indirectly, through `kernel` comparison). We need to be outside the synchronized block for having
          * the locks taken in same order (WeakHashSet lock before the ContextualParameters lock).
          */
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
@@ -543,7 +589,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         isFrozen = true;
         /*
          * Sort the parameter values in the same order than the parameter descriptor. This is not essential,
-         * but makes easier to read 'toString()' output by ensuring a consistent order for most projections.
+         * but makes easier to read `toString()` output by ensuring a consistent order for most projections.
          * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
          * order. We proceed by first copying all parameters in a temporary HashMap:
          */
@@ -560,11 +606,11 @@ public class ContextualParameters extends Parameters implements Serializable {
             }
         }
         /*
-         * Then, copy all HashMap values back to the 'values' array in the order they are declared in the
+         * Then, copy all HashMap values back to the `values` array in the order they are declared in the
          * descriptor. Implementation note: the iteration termination condition uses the values array, not
          * the descriptors list, because the former is often shorter than the later. We should never reach
-         * the end of descriptors list before the end of values array because 'descriptors' contains all
-         * 'parameters' keys. This is verified by the 'assert' below.
+         * the end of descriptors list before the end of values array because `descriptors` contains all
+         * `parameters` keys. This is verified by the `assert` below.
          */
         values = new ParameterValue<?>[parameters.size()];
         assert descriptor.descriptors().containsAll(parameters.keySet());
@@ -572,8 +618,8 @@ public class ContextualParameters extends Parameters implements Serializable {
         for (int i=0; i < values.length;) {
             /*
              * No need to check for it.hasNext(), since a NoSuchElementException below would be a bug in
-             * our algorithm (or a concurrent change in the 'descriptor.descriptors()' list, which would
-             * be a contract violation). See above 'assert'.
+             * our algorithm (or a concurrent change in the `descriptor.descriptors()` list, which would
+             * be a contract violation). See above `assert`.
              */
             final ParameterValue<?> p = parameters.get(it.next());
             if (p != null) {
@@ -610,6 +656,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         for (int i=0; i < values.length; i++) {
             ParameterValue<?> p = values[i];
             if (p == null) {
+                // Null values are always last, so it is okay to stop the search here.
                 values[i] = p = new ContextualParameter<>((ParameterDescriptor<?>) desc);
                 return p;
             }
@@ -618,7 +665,7 @@ public class ContextualParameters extends Parameters implements Serializable {
             }
         }
         /*
-         * We may reach this point if map projection construction is completed (i.e. 'completeTransform(…)' has
+         * We may reach this point if map projection construction is completed (i.e. `completeTransform(…)` has
          * been invoked) and the user asks for a parameter which is not one of the parameters that we retained.
          * Returns a parameter initialized to the default value, which is the actual value (otherwise we would
          * have stored that parameter).  Note: we do not bother making the parameter immutable for performance
@@ -868,14 +915,14 @@ public class ContextualParameters extends Parameters implements Serializable {
          * is often for changing axis order. Thanks to double-double arithmetic in SIS matrices,
          * the non-zero values are usually accurate. But the values that should be zero are much
          * harder to get right. Sometime we see small values (around 1E-12) in the last column of
-         * the 'before' matrix below. Since this column contains translation terms, those numbers
+         * the `before` matrix below. Since this column contains translation terms, those numbers
          * are in the unit of measurement of input values of the MathTransform after the matrix.
          *
          *   - For forward map projections, those values are conceptually in decimal degrees
-         *     (in fact the values are converted to radians but not by this 'before' matrix).
+         *     (in fact the values are converted to radians but not by this `before` matrix).
          *
          *   - For inverse map projections, those values are conceptually in metres (in fact
-         *     converted to distances on a unitary ellipsoid but not by this 'before' matrix).
+         *     converted to distances on a unitary ellipsoid but not by this `before` matrix).
          *
          *   - Geographic/Geocentric transformations behave like map projections in regard to units.
          *     Molodensky transformations conceptually use always decimal degrees. There is not much
@@ -883,7 +930,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          *
          * Consequently we set the tolerance threshold to ANGULAR_TOLERANCE. We do not bother (at least
          * for now) to identify the cases where we could use LINEAR_TOLERANCE because just checking the
-         * 'inverse' flag is not sufficient (e.g. the Molodensky case). Since the angular tolerance is
+         * `inverse` flag is not sufficient (e.g. the Molodensky case). Since the angular tolerance is
          * smaller than the linear one, unconditional usage of ANGULAR_TOLERANCE is more conservative.
          */
         before = Matrices.isIdentity(userDefined, Formulas.ANGULAR_TOLERANCE) ? null : userDefined;
@@ -902,20 +949,20 @@ public class ContextualParameters extends Parameters implements Serializable {
             userDefined = Matrices.multiply(after, userDefined);
         }
         /*
-         * Note on rounding error: same discussion than the "note on rounding error" of the 'before' matrix,
+         * Note on rounding error: same discussion than the "note on rounding error" of the `before` matrix,
          * with the following differences:
          *
          *   - For forward map projections, unit of measurements of translation terms are conceptually
-         *     metres (instead of degrees) multiplied by the scale factors in the 'after' matrix.
+         *     metres (instead of degrees) multiplied by the scale factors in the `after` matrix.
          *
          *   - For inverse map projections, unit of measurements of translation terms are conceptually
-         *     degrees (instead of metres) multiplied by the scale factors in the 'after' matrix.
+         *     degrees (instead of metres) multiplied by the scale factors in the `after` matrix.
          *
          *   - And so on for all cases: swap the units of the forward and inverse cases, then multiply
-         *     by the scale factor. Note that the multiplication step does not exist in the 'before' case.
+         *     by the scale factor. Note that the multiplication step does not exist in the `before` case.
          *
          * Since we are seeking for the identity matrix, the scale factor is 1. We do not bother to distinguish
-         * the ANGULAR_TOLERANCE and LINEAR_TOLERANCE cases for the same reasons than for the 'before' matrix.
+         * the ANGULAR_TOLERANCE and LINEAR_TOLERANCE cases for the same reasons than for the `before` matrix.
          */
         after = Matrices.isIdentity(userDefined, Formulas.ANGULAR_TOLERANCE) ? null : userDefined;
         /*
