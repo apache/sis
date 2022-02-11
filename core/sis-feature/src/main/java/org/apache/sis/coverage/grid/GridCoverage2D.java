@@ -279,9 +279,9 @@ public class GridCoverage2D extends GridCoverage {
      */
     private static RenderedImage unwrapIfSameSize(RenderedImage data) {
         if (data instanceof ReshapedImage) {
-            final RenderedImage image = ((ReshapedImage) data).image;
-            if (image.getWidth() == data.getWidth() && image.getHeight() == data.getHeight()) {
-                data = image;
+            final RenderedImage source = ((ReshapedImage) data).source;
+            if (source.getWidth() == data.getWidth() && source.getHeight() == data.getHeight()) {
+                data = source;
             }
         }
         return data;
