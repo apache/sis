@@ -812,18 +812,44 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Stores the given raster in the cache.
+         * Stores the given raster in the cache. If another raster existed previously in the cache,
+         * the old raster will be reused if it has the same size and model, or discarded otherwise.
+         * The later case may happen if {@link AOI#getCachedTile()} determined that a cached raster
+         * exists but can not be reused.
          *
-         * @param  raster  the raster to cache.
+         * @param  tile  the raster to cache.
          * @return the cached raster. Should be the given {@code raster} instance,
          *         but this method check for concurrent caching as a paranoiac check.
          *
          * @see AOI#getCachedTile()
          */
-        public Raster cache(final Raster raster) {
-            final Raster existing = coverage.rasters.putIfAbsent(
-                    coverage.createCacheKey(indexInTileVector), raster);
-            return (existing != null) ? existing : raster;
+        public Raster cache(final Raster tile) {
+            final TiledGridResource.CacheKey key = coverage.createCacheKey(indexInTileVector);
+            Raster existing = coverage.rasters.put(key, tile);
+            if (existing != null) {
+                /*
+                 * If a tile already exists, verify if its layout is compatible with the given tile.
+                 * If yes, we assume that the two tiles have the same content. We do this check as a
+                 * safety but it should not happen if the caller synchronized the tile read actions.
+                 */
+                Raster sentinel = tile;
+                while (existing.getSampleModel().equals(tile.getSampleModel())
+                        && existing.getWidth()  == tile.getWidth()
+                        && existing.getHeight() == tile.getHeight())
+                {
+                    final int x = tile.getMinX();
+                    final int y = tile.getMinY();
+                    if (existing.getMinX() != x || existing.getMinY() != y) {
+                        existing = existing.createTranslatedChild(x, y);
+                    }
+                    final Raster c = coverage.rasters.put(key, existing);
+                    if (c == null || c == sentinel) {
+                        return existing;
+                    }
+                    sentinel = existing = c;                // Cache content changed concurrently.
+                }
+            }
+            return tile;
         }
     }
 
