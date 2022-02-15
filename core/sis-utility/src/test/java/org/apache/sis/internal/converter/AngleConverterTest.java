@@ -28,7 +28,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the various {@link AngleConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -42,7 +42,7 @@ public final strictfp class AngleConverterTest extends TestCase {
         final ObjectConverter<Angle,Double> c1 = AngleConverter.INSTANCE;
         final ObjectConverter<Double,Angle> c2 = AngleConverter.Inverse.INSTANCE;
         final Angle  v1 = new Angle (30.25);
-        final Double v2 = new Double(30.25);
+        final Double v2 = 30.25;
         assertEquals(v2, c1.apply(v1));
         assertEquals(v1, c2.apply(v2));
         assertSame(c2, c1.inverse());

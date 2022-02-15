@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * A standard {@link HashMap} object is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -66,14 +66,14 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      *
      * @param weakMap  the map implementation to test.
      */
-    static void testStrongReferences(final Map<Integer,Integer> weakMap) {
+    static void testStrongReferences(final Map<Integer,IntObject> weakMap) {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
-            final HashMap<Integer,Integer> strongMap = new HashMap<>();
+            final HashMap<Integer,IntObject> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                final Integer key   = random.nextInt(SAMPLE_SIZE);
-                final Integer value = random.nextInt(SAMPLE_SIZE);
+                final Integer   key   = random.nextInt(SAMPLE_SIZE);
+                final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));
                 assertEquals("containsKey:",   strongMap.containsKey(key),     weakMap.containsKey(key));
                 assertEquals("containsValue:", strongMap.containsValue(value), weakMap.containsValue(value));
                 assertSame  ("get:",           strongMap.get(key),             weakMap.get(key));
@@ -109,23 +109,20 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      * @param weakMap  the map implementation to test.
      */
     @SuppressWarnings("UnnecessaryBoxing")
-    static void testWeakReferences(final Map<Integer,Integer> weakMap) throws InterruptedException {
+    static void testWeakReferences(final Map<Integer,IntObject> weakMap) throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
-            final HashMap<Integer,Integer> strongMap = new HashMap<>();
+            final HashMap<Integer,IntObject> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                /*
-                 * We really want new instances here.
-                 */
-                final Integer key   = new Integer(random.nextInt(SAMPLE_SIZE));
-                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE));
+                final Integer   key   = random.nextInt(SAMPLE_SIZE);
+                final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));     // Really need new instances.
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
                      */
-                    final Integer   weakPrevious = weakMap  .put(key, value);
-                    final Integer strongPrevious = strongMap.put(key, value);
+                    final IntObject   weakPrevious = weakMap  .put(key, value);
+                    final IntObject strongPrevious = strongMap.put(key, value);
                     if (weakPrevious == null) {
                         /*
                          * The element was not in the WeakValueHashMap, possibly GC collected it.
@@ -148,8 +145,8 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
                     /*
                      * Tests remove.
                      */
-                    final Integer   weakPrevious = weakMap.get(key);
-                    final Integer strongPrevious = strongMap.remove(key);
+                    final IntObject   weakPrevious = weakMap.get(key);
+                    final IntObject strongPrevious = strongMap.remove(key);
                     if (strongPrevious != null) {
                         assertSame("remove:", strongPrevious, weakPrevious);
                     }
@@ -180,11 +177,11 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWithArrayKeys() {
-        final WeakValueHashMap<int[],Integer> weakMap = new WeakValueHashMap<>(int[].class);
+        final WeakValueHashMap<int[],IntObject> weakMap = new WeakValueHashMap<>(int[].class);
         final int[] k1 = new int[] {2, 5, 3};
         final int[] k2 = new int[] {2, 5, 4};
-        final Integer v1 = 1;
-        final Integer v2 = 2;
+        final IntObject v1 = new IntObject(1);
+        final IntObject v2 = new IntObject(2);
         assertNull (    weakMap.put(k1,         v1));
         assertSame (v1, weakMap.put(k1,         v1));
         assertSame (v1, weakMap.put(k1.clone(), v1));
@@ -204,13 +201,13 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @DependsOnMethod("testStrongReferences")
     @SuppressWarnings("UnnecessaryBoxing")
     public void testIdentityComparisons() {
-        final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class, true);
-        final Integer k1 = 10;
-        final Integer k2 = 20;
-        final Integer k3 = new Integer(10);         // Really want a new instance.
-        final Integer v1 = 1;
-        final Integer v2 = 2;
-        final Integer v3 = 3;
+        final WeakValueHashMap<IntObject,IntObject> weakMap = new WeakValueHashMap<>(IntObject.class, true);
+        final IntObject k1 = new IntObject(10);
+        final IntObject k2 = new IntObject(20);
+        final IntObject k3 = new IntObject(10);         // Really want a new instance.
+        final IntObject v1 = new IntObject(1);
+        final IntObject v2 = new IntObject(2);
+        final IntObject v3 = new IntObject(3);
         assertEquals(k1, k3); // Necessary condition for the test to be valid.
         assertNull(weakMap.put(k1, v1));  assertSame(v1, weakMap.put(k1, v1));
         assertNull(weakMap.put(k2, v2));  assertSame(v2, weakMap.put(k2, v2));

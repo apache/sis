@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Cache} with simple tests and a {@linkplain #stress() stress} test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -187,12 +187,12 @@ public final strictfp class CacheTest extends TestCase {
      * @param  cache  the cache to validate.
      * @return Statistics on the key values of the given map.
      */
-    private static Statistics validateStressEntries(final String name, final Map<Integer,Integer> cache) {
+    private static Statistics validateStressEntries(final String name, final Map<Integer,IntObject> cache) {
         final Statistics statistics = new Statistics(name);
-        for (final Map.Entry<Integer,Integer> entry : cache.entrySet()) {
+        for (final Map.Entry<Integer,IntObject> entry : cache.entrySet()) {
             final int key = entry.getKey();
-            final int value = entry.getValue();
-            assertEquals(key*key, value);
+            final IntObject value = entry.getValue();
+            assertEquals(key*key, value.value);
             statistics.accept(key);
         }
         return statistics;
@@ -209,7 +209,7 @@ public final strictfp class CacheTest extends TestCase {
     @DependsOnMethod("testThreadBlocking")
     public void stress() throws InterruptedException {
         final int count = 5000;
-        final Cache<Integer,Integer> cache = new Cache<>();
+        final Cache<Integer,IntObject> cache = new Cache<>();
         final AtomicReference<Throwable> failures = new AtomicReference<>();
         final class WriterThread extends Thread {
             /**
@@ -232,9 +232,9 @@ public final strictfp class CacheTest extends TestCase {
             @SuppressWarnings({"UnnecessaryBoxing", "CallToThreadYield", "NumberEquality"})
             @Override public void run() {
                 for (int i=0; i<count; i++) {
-                    final Integer key = i;
-                    final Integer expected = new Integer(i * i);        // We really want new instance.
-                    final Integer value;
+                    final Integer   key = i;
+                    final IntObject expected = new IntObject(i * i);        // We really want new instance.
+                    final IntObject value;
                     try {
                         value = cache.getOrCreate(key, () -> expected);
                         assertEquals(expected, value);

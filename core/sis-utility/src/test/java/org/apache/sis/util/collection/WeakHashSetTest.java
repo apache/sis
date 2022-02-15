@@ -33,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * A standard {@link HashSet} object is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -58,10 +58,10 @@ public final strictfp class WeakHashSetTest extends TestCase {
     public void testStrongReferences() {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
-            final HashSet<Integer> strongSet = new HashSet<>();
+            final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
+            final HashSet<IntObject> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                final Integer value = random.nextInt(SAMPLE_SIZE);
+                final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -101,11 +101,11 @@ public final strictfp class WeakHashSetTest extends TestCase {
     public void testWeakReferences() throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
-            final HashSet<Integer> strongSet = new HashSet<>();
+            final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
+            final HashSet<IntObject> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 @SuppressWarnings("UnnecessaryBoxing")
-                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE));         // Really need new instances
+                final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));     // Really need new instances.
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
