@@ -23,6 +23,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestConfiguration;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -215,5 +216,51 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
         assertSame(v1, weakMap.get(k1));
         assertSame(v2, weakMap.get(k2));
         assertSame(v3, weakMap.get(k3));
+    }
+
+    /**
+     * Tests {@code putIfAbsent(…)}, {@code replace(…)} and other optional methods.
+     */
+    @Test
+    public void testOptionalMethods() {
+        final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class);
+        final HashMap<Integer,Integer> reference = new HashMap<>();
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<100; i++) {
+            final Integer key   = random.nextInt(10);
+            final Integer value = random.nextInt(20);
+            switch (random.nextInt(7)) {
+                case 0: {
+                    assertEquals(reference.get(key), weakMap.get(key));
+                    break;
+                }
+                case 1: {
+                    assertEquals(reference.put(key, value), weakMap.put(key, value));
+                    break;
+                }
+                case 2: {
+                    assertEquals(reference.putIfAbsent(key, value), weakMap.putIfAbsent(key, value));
+                    break;
+                }
+                case 3: {
+                    assertEquals(reference.replace(key, value), weakMap.replace(key, value));
+                    break;
+                }
+                case 4: {
+                    final Integer condition = random.nextInt(20);
+                    assertEquals(reference.replace(key, condition, value), weakMap.replace(key, condition, value));
+                    break;
+                }
+                case 5: {
+                    assertEquals(reference.remove(key), weakMap.remove(key));
+                    break;
+                }
+                case 6: {
+                    assertEquals(reference.remove(key, value), weakMap.remove(key, value));
+                    break;
+                }
+            }
+        }
+        assertMapEquals(reference, weakMap);
     }
 }
