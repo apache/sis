@@ -193,9 +193,6 @@ public class TilePlaceholder {
                 // Else prefer read-only tile (created below) if we do not need to draw anything.
             }
         }
-        if (PENDING_JDK_FIX) {
-            return Raster.createWritableRaster(model, buffer, location);
-        }
         // Reuse same `DataBuffer` with only a different location.
         return Raster.createRaster(model, buffer, location);
     }

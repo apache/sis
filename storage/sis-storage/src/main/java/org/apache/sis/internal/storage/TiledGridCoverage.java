@@ -34,6 +34,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.addExact;
@@ -176,7 +177,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @see AOI#getCachedTile()
      * @see #createCacheKey(int)
      */
-    private final Map<TiledGridResource.CacheKey, Raster> rasters;
+    private final WeakValueHashMap<TiledGridResource.CacheKey, Raster> rasters;
 
     /**
      * The sample model for all rasters. The width and height of this sample model are the two first elements
@@ -614,16 +615,25 @@ public abstract class TiledGridCoverage extends GridCoverage {
                     }
                     return tile.createTranslatedChild(x, y);
                 }
-                if (tile.getWidth() == model.getWidth() && tile.getHeight() == model.getHeight()) {
+                /*
+                 * If the sample model is not the same (e.g. different bands), it must at least have the same size.
+                 * Having a sample model of different size would probably be a bug, but we check anyway for safety.
+                 * Note that the tile size is not necessarily equals to the sample model size.
+                 */
+                final SampleModel sm = tile.getSampleModel();
+                if (sm.getWidth() == model.getWidth() && sm.getHeight() == model.getHeight()) {
+                    final int width  = tile.getWidth();     // May be smaller than sample model width.
+                    final int height = tile.getHeight();    // Idem.
                     /*
                      * It is okay to have a different number of bands if the sample model is
                      * a view created by `SampleModel.createSubsetSampleModel(int[] bands)`.
                      * Bands can also be in a different order and still share the same buffer.
                      */
-                    if (org.apache.sis.internal.coverage.j2d.TilePlaceholder.PENDING_JDK_FIX) {
-                        return Raster.createWritableRaster(model, tile.getDataBuffer(), new Point(x, y));
+                    Raster r = Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
+                    if (r.getWidth() != width || r.getHeight() != height) {
+                        r = r.createChild(x, y, width, height, x, y, null);
                     }
-                    return Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
+                    return r;
                 }
             }
             return null;
@@ -826,27 +836,24 @@ public abstract class TiledGridCoverage extends GridCoverage {
         public Raster cache(final Raster tile) {
             final TiledGridResource.CacheKey key = coverage.createCacheKey(indexInTileVector);
             Raster existing = coverage.rasters.put(key, tile);
-            if (existing != null) {
-                /*
-                 * If a tile already exists, verify if its layout is compatible with the given tile.
-                 * If yes, we assume that the two tiles have the same content. We do this check as a
-                 * safety but it should not happen if the caller synchronized the tile read actions.
-                 */
-                Raster sentinel = tile;
-                while (existing.getSampleModel().equals(tile.getSampleModel())
-                        && existing.getWidth()  == tile.getWidth()
-                        && existing.getHeight() == tile.getHeight())
-                {
+            /*
+             * If a tile already exists, verify if its layout is compatible with the given tile.
+             * If yes, we assume that the two tiles have the same content. We do this check as a
+             * safety but it should not happen if the caller synchronized the tile read actions.
+             */
+            if (existing != null
+                    && existing.getSampleModel().equals(tile.getSampleModel())
+                    && existing.getWidth()  == tile.getWidth()
+                    && existing.getHeight() == tile.getHeight())
+            {
+                // Restore the existing tile in the cache, with its original position.
+                if (coverage.rasters.replace(key, tile, existing)) {
                     final int x = tile.getMinX();
                     final int y = tile.getMinY();
                     if (existing.getMinX() != x || existing.getMinY() != y) {
                         existing = existing.createTranslatedChild(x, y);
                     }
-                    final Raster c = coverage.rasters.put(key, existing);
-                    if (c == null || c == sentinel) {
-                        return existing;
-                    }
-                    sentinel = existing = c;                // Cache content changed concurrently.
+                    return existing;
                 }
             }
             return tile;
