@@ -35,8 +35,10 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.math.MathFunctions;
@@ -72,7 +74,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -464,6 +466,32 @@ public abstract class AbstractGridResource extends AbstractResource implements G
                 builder.clear();
             }
             return builder;
+        }
+    }
+
+    /**
+     * Creates an exception for a failure to load data. If the failure may be caused by an envelope
+     * outside the domain of validity, that envelope will be inferred from the {@code request} argument.
+     *
+     * @param  caller    the method invoking this method, for logging purposes only.
+     * @param  filename  name of the file that can not be read.
+     * @param  request   the requested domain, or {@code null} if unspecified.
+     * @param  cause     the cause of the failure, or {@code null} if none.
+     * @return the exception to throw.
+     */
+    protected final DataStoreException canNotRead(final String caller, final String filename,
+                                                  final GridGeometry request, final Exception cause)
+    {
+        Envelope bounds = null;
+        final boolean isDisjoint = (cause instanceof DisjointExtentException);
+        if (isDisjoint && request != null && request.isDefined(GridGeometry.ENVELOPE)) {
+            bounds = request.getEnvelope();
+        }
+        final String message = createDisjointDomainMessage(caller, filename, bounds);
+        if (isDisjoint) {
+            return new NoSuchDataException(message, cause);
+        } else {
+            return new DataStoreException(message, cause);
         }
     }
 

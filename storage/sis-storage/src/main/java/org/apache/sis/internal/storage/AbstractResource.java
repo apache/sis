@@ -25,6 +25,10 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreEvent;
@@ -32,6 +36,8 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.util.AbstractInternationalString;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 
 
@@ -216,6 +222,56 @@ public class AbstractResource extends StoreListeners implements Resource {
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
             super.addListener(eventType, listener);
         }
+    }
+
+    /**
+     * Creates an error message for a request outside the resource domain.
+     * This is used for creating the message of the exception to be thrown.
+     *
+     * @param  caller    the method invoking this method, for logging purposes only.
+     * @param  filename  name of the file that can not be read.
+     * @param  request   the requested domain, or {@code null} if unknown.
+     * @return the message if this method found a dimension that does not intersect, or {@code null}.
+     */
+    final String createDisjointDomainMessage(final String caller, final String filename, Envelope request) {
+        String message = Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, filename);
+        if (request != null) try {
+            Envelope envelope = getEnvelope().orElse(null);
+            if (envelope != null) {
+                final CoordinateReferenceSystem crs = CRS.suggestCommonTarget(null,
+                        envelope.getCoordinateReferenceSystem(),
+                        request.getCoordinateReferenceSystem());
+                request  = Envelopes.transform(request,  crs);
+                envelope = Envelopes.transform(envelope, crs);
+                final int dimension = request.getDimension();
+                StringBuilder buffer = null;
+                for (int i=0; i<dimension; i++) {
+                    final double rmin =  request.getMinimum(i);
+                    final double rmax =  request.getMaximum(i);
+                    final double vmin = envelope.getMinimum(i);
+                    final double vmax = envelope.getMaximum(i);
+                    if (rmax < vmin || rmin > vmax) {
+                        final String axis;
+                        if (crs != null) {
+                            axis = IdentifiedObjects.getDisplayName(crs.getCoordinateSystem().getAxis(i), getLocale());
+                        } else {
+                            axis = "#" + i;
+                        }
+                        if (buffer == null) {
+                            buffer = new StringBuilder(message);
+                        }
+                        buffer.append(System.lineSeparator()).append(" • ").append(Resources.forLocale(getLocale())
+                                .getString(Resources.Keys.RequestOutOfBounds_5, axis, vmin, vmax, rmin, rmax));
+                    }
+                }
+                if (buffer != null) {
+                    message = buffer.toString();
+                }
+            }
+        } catch (DataStoreException | TransformException e) {
+            Logging.ignorableException(getLogger(), getClass(), caller, e);
+        }
+        return message;
     }
 
     /**
