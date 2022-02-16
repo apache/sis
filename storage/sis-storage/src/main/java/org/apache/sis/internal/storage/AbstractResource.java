@@ -225,15 +225,15 @@ public class AbstractResource extends StoreListeners implements Resource {
     }
 
     /**
-     * Creates an error message for a request outside the resource domain.
-     * This is used for creating the message of the exception to be thrown.
+     * Creates an exception message for a resource that can not be read.
+     * If the error is potentially created by a request out of bounds,
+     * this method tries to build a message with the problematic coordinates.
      *
-     * @param  caller    the method invoking this method, for logging purposes only.
-     * @param  filename  name of the file that can not be read.
-     * @param  request   the requested domain, or {@code null} if unknown.
-     * @return the message if this method found a dimension that does not intersect, or {@code null}.
+     * @param  filename  some identification (typically a file name) of the data that can not be read.
+     * @param  request   the requested domain, or {@code null} if the problem is not a request out of bounds.
+     * @return the message to provide in an exception.
      */
-    final String createDisjointDomainMessage(final String caller, final String filename, Envelope request) {
+    final String createExceptionMessage(final String filename, Envelope request) {
         String message = Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, filename);
         if (request != null) try {
             Envelope envelope = getEnvelope().orElse(null);
@@ -254,8 +254,10 @@ public class AbstractResource extends StoreListeners implements Resource {
                         final String axis;
                         if (crs != null) {
                             axis = IdentifiedObjects.getDisplayName(crs.getCoordinateSystem().getAxis(i), getLocale());
+                        } else if (i < 3) {
+                            axis = String.valueOf((char) ('x' + i));
                         } else {
-                            axis = "#" + i;
+                            axis = "#" + (i+1);
                         }
                         if (buffer == null) {
                             buffer = new StringBuilder(message);
@@ -269,7 +271,7 @@ public class AbstractResource extends StoreListeners implements Resource {
                 }
             }
         } catch (DataStoreException | TransformException e) {
-            Logging.ignorableException(getLogger(), getClass(), caller, e);
+            Logging.ignorableException(getLogger(), AbstractResource.class, "createExceptionMessage", e);
         }
         return message;
     }

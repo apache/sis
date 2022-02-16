@@ -18,6 +18,8 @@ package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -115,8 +117,8 @@ final class CoverageSubset extends AbstractGridResource {
         } catch (IllegalArgumentException | IllegalStateException e) {
             final String msg = Resources.forLocale(getLocale())
                     .getString(Resources.Keys.CanNotIntersectDataWithQuery_1, getSourceName());
-            final Exception cause = getReferencingCause(e);
-            if (cause != null) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof FactoryException || cause instanceof TransformException) {
                 throw new DataStoreReferencingException(msg, cause);
             } else if (e instanceof DisjointExtentException) {
                 throw new NoSuchDataException(msg, e);

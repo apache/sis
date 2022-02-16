@@ -41,12 +41,9 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
@@ -622,12 +619,9 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+    public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
         final long startTime = System.nanoTime();
         final RangeArgument rangeIndices = validateRangeArgument(ranges.length, range);
-        if (domain == null) {
-            domain = gridGeometry;
-        }
         final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.getFirstSpecified()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
@@ -647,17 +641,18 @@ public final class RasterResource extends AbstractGridResource implements Resour
          *   • (bandDimension = 0): one variable containing all bands, with bands in the first dimension.
          *   • (bandDimension > 0): one variable containing all bands, with bands in the last dimension.
          */
+        final GridGeometry targetDomain;
         final DataBuffer imageBuffer;
         final SampleDimension[] bands = new SampleDimension[rangeIndices.getNumBands()];
         int[] bandOffsets = null;                                                   // By default, all bands start at index 0.
         try {
             final GridDerivation targetGeometry = gridGeometry.derive()
                     .rounding(GridRoundingMode.ENCLOSING)
-                    .subgrid(domain);
+                    .subgrid((domain != null) ? domain : gridGeometry);
             GridExtent areaOfInterest = targetGeometry.getIntersection();           // Pixel indices of data to read.
             int[]      subsampling    = targetGeometry.getSubsampling();            // Slice to read or subsampling to apply.
             int        numBuffers     = bands.length;                               // By default, one variable per band.
-            domain = targetGeometry.build();                                        // Adjust user-specified domain to data geometry.
+            targetDomain = targetGeometry.build();                                  // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {
                 areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
                 subsampling    = rangeIndices.insertSubsampling  (subsampling,    bandDimension);
@@ -718,17 +713,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
              * Convert NIO Buffer into Java2D DataBuffer. May throw various RuntimeException.
              */
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);
-        } catch (IOException e) {
-            throw new DataStoreException(canNotReadFile(), e);
-        } catch (DisjointExtentException e) {
-            throw new NoSuchDataException(canNotReadFile(), e);
-        } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
-            final Exception cause = getReferencingCause(e);
-            if (cause != null) {
-                throw new DataStoreReferencingException(canNotReadFile(), cause);
-            } else {
-                throw new DataStoreContentException(canNotReadFile(), e);
-            }
+        } catch (IOException | RuntimeException e) {
+            throw canNotRead(getFilename(), domain, e);
         }
         /*
          * At this point the I/O operation is completed and sample values have been stored in a NIO buffer.
@@ -738,20 +724,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         final Variable main = data[visibleBand];
-        final Raster raster = new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
+        final Raster raster = new Raster(targetDomain, UnmodifiableArrayList.wrap(bands), imageBuffer,
                 String.valueOf(identifier), rangeIndices.getPixelStride(), bandOffsets, visibleBand,
                 main.decoder.convention().getColors(main));
-        logReadOperation(location, domain, startTime);
+        logReadOperation(location, targetDomain, startTime);
         return raster;
-    }
-
-    /**
-     * Returns the error message for a file that can not be read.
-     *
-     * @return default error message to use in exceptions.
-     */
-    private String canNotReadFile() {
-        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getFilename());
     }
 
     /**
