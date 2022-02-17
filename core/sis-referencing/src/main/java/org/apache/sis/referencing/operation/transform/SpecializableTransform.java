@@ -42,7 +42,7 @@ import org.apache.sis.util.Utilities;
  * The lower and upper values of given envelopes are inclusive.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see MathTransforms#specialize(MathTransform, Map)
  *
@@ -132,6 +132,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
 
     /**
      * Domains where specialized transforms are valid. This is the root of an R-Tree.
+     * May be {@code null} if there is no R-Tree, in which case {@link #global} should be used instead.
      */
     private final RTreeNode domains;
 
@@ -255,7 +256,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
      */
     private MathTransform forDomain(final DirectPosition pos) {
         final RTreeNode domain = RTreeNode.locate(domains, pos);
-        return (domain != null) ? ((SubArea) domain).transform : global;
+        return (domain instanceof SubArea) ? ((SubArea) domain).transform : global;
     }
 
     /**
@@ -343,7 +344,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
                     if (--numPts <= 0) break;
                     next = SubArea.locate(domain, src);     // Cheaper check compared to the case where domain is null.
                 } while (next == domain);
-                domain = (SubArea) next;
+                domain = (next instanceof SubArea) ? (SubArea) next : null;
             }
             final int num = (src.offset - srcOff) / srcInc;
             int dstLow = dstOff;
@@ -460,7 +461,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
      */
     @Override
     protected final int computeHashCode() {
-        return super.computeHashCode() + 7*global.hashCode() ^ domains.hashCode();
+        return super.computeHashCode() + 7*global.hashCode() ^ Objects.hashCode(domains);
     }
 
     /**
@@ -652,7 +653,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
                     } while (next == domain);                       // Continue until we find a change of specialized transform.
                     num = (dst.offset - dstOff) / dstInc;           // Number of points to transform.
                     transform.apply(domain.inverse, srcOff, dstOff, num);
-                    domain = (SubArea) next;
+                    domain = (next instanceof SubArea) ? (SubArea) next : null;
                     srcOff += srcInc * num;
                     dstOff = dst.offset;
                 } while (domain != null);
