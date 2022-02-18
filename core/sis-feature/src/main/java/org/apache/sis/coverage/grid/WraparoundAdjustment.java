@@ -18,162 +18,323 @@ package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Utilities;
 
 
 /**
- * Adjustments applied on an envelope for handling wraparound axes. The adjustments consist in shifting
- * coordinate values on some axes by an integer amount of periods (typically 360° of longitude) in order
- * to move an envelope or a position inside a given domain of validity.
+ * An envelope or position converter making them more compatible with a given domain of validity.
+ * For each axes having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND},
+ * this class can add or subtract an integer amount of periods (typically 360° of longitude)
+ * in attempt to move positions or envelopes inside a domain of validity specified at construction time.
+ *
+ * <p>{@code WraparoundAdjustment} instances are not thread-safe.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
 final class WraparoundAdjustment {
     /**
      * The region inside which a given Area Of Interest (AOI) or Point Of Interest (POI) should be located.
-     * This envelope may be initially in a projected CRS and converted later to geographic CRS in order to
-     * allow identification of wraparound axes.
+     * This domain is specified at construction time and does not change.
      */
-    private Envelope domainOfValidity;
+    private final ImmutableEnvelope domainOfValidity;
 
     /**
-     * If the AOI or POI does not use the same CRS than {@link #domainOfValidity}, the transformation from
-     * {@code domainOfValidity} to the AOI / POI. Otherwise {@code null}.
+     * The domain of validity transformed to a CRS where wraparound axes exist, or {@code null} if not yet computed.
+     * For example if {@link #domainOfValidity} is expressed in a projected CRS, then this envelope will be the same
+     * domain but converted to the base geographic CRS in order to allow identification of wraparound axes.
+     */
+    private AbstractEnvelope shiftableDomain;
+
+    /**
+     * The geographic bounds of {@link #domainOfValidity}, or {@code null} if not applicable.
      *
-     * <div class="note"><b>Note:</b>
-     * this class does not check by itself if a coordinate operation is needed; it must be supplied. We do that
-     * because {@code WraparoundAdjustment} is currently used in contexts where this transform is known anyway,
-     * so we avoid to compute it twice.</div>
+     * @see CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      */
-    private final MathTransform domainToAOI;
+    private GeographicBoundingBox geographicDomain;
 
     /**
-     * A transform from the {@link #domainOfValidity} CRS to any user space at caller choice.
-     * The object returned by {@code shift} will be transformed by this transform after all computations
+     * Whether {@link #geographicDomain} has been computed (result may be null).
+     */
+    private boolean geographicDomainKnown;
+
+    /**
+     * Coordinate reference system of the last Area Of Interest (AOI) or Point Of Interest (POI).
+     * This is used for detecting when the input CRS changed.
+     */
+    private CoordinateReferenceSystem inputCRS;
+
+    /**
+     * Coordinate reference system of results, or {@code null} if unspecified.
+     */
+    private final CoordinateReferenceSystem resultCRS;
+
+    /**
+     * A transform from the {@link #inputCRS} to any destination user space at caller choice.
+     * Objects returned by {@code shift(…)} methods will be transformed by this transform after all computations
      * have been finished. This is done in order to allow final transforms to be concatenated in a single step.
-     */
-    private final MathTransform domainToAny;
-
-    /**
-     * If {@code areaOfInterest} or {@code pointOfInterest} has been converted to a geographic CRS,
-     * the transformation back to its original CRS. Otherwise {@code null}.
-     */
-    private MathTransform geographicToAOI;
-
-    /**
-     * The coordinate reference system of the Area Of Interest (AOI) or Point of Interest (POI).
-     * May be replaced by a geographic CRS if the AOI or POI originally used a projected CRS.
-     */
-    private CoordinateReferenceSystem crs;
-
-    /**
-     * Whether {@link #domainOfValidity} has been transformed to the geographic CRS that is the source
-     * of {@link #geographicToAOI}. This flag is used for ensuring that {@link #replaceCRS()} performs
-     * the inverse projection only once.
-     */
-    private boolean isDomainTransformed;
-
-    /**
-     * Whether the Area Of Interest (AOI) or Point Of Interest (POI) has been transformed in order
-     * to allow identification of wraparound axes. If {@code true}, then {@link #geographicToAOI}
-     * needs to be applied in order to restore the AOI or POI to its original projected CRS.
-     */
-    private boolean isResultTransformed;
-
-    /**
-     * Creates a new instance for adjusting an Area Of Interest (AOI) or Point Of Interest (POI) to the given
-     * domain of validity. The AOI or POI will be given later, but this method nevertheless requires in advance
-     * the transform from {@code domainOfValidity} to AOI or POI.
      *
-     * @param  domainOfValidity  the region where a given area or point of interest should be located.
-     * @param  domainToAOI       if the AOI or POI are going to use a different CRS than {@code domainOfValidity}, the
-     *                           transform from {@code domainOfValidity} to the AOI or POI CRS. Otherwise {@code null}.
-     * @param  domainToAny       a transform from the {@code domainOfValidity} CRS to any user space at caller choice.
+     * <p>This field should be considered final if {@link #domainToInput} is non-null.</p>
      */
-    public WraparoundAdjustment(final Envelope domainOfValidity, final MathTransform domainToAOI, final MathTransform domainToAny) {
-        this.domainOfValidity = domainOfValidity;
-        this.domainToAOI      = domainToAOI;
-        this.domainToAny      = domainToAny;
+    private MathTransform inputToResult;
+
+    /**
+     * A transform from the {@link #domainOfValidity} CRS to the {@link #inputCRS} if it was explicitly specified,
+     * or {@code null} otherwise. If non-null, all input envelopes or positions will be assumed in the CRS which
+     * is the target of this transform. For performance reason, this assumption will not be verified.
+     */
+    private final MathTransform domainToInput;
+
+    /**
+     * If the input envelopes or positions need to be converted to a (usually) geographic CRS,
+     * the transform to that CRS. Otherwise an identity transform. This is computed when first needed.
+     */
+    private MathTransform inputToShiftable;
+
+    /**
+     * The transform from the intermediate CRS to final objects, computed when first needed.
+     *
+     * @see #toResult(boolean)
+     */
+    private MathTransform shiftableToResult;
+
+    /**
+     * The span (maximum - minimum) of wraparound axes, with 0 value for axes that are not wraparound.
+     * Initially null and computed when first needed. The length of this array may be shorter than the
+     * CRS number of dimensions if all remaining axes are not wraparound axes.
+     */
+    private double[] periods;
+
+    /**
+     * Creates a new instance for adjusting Area Of Interest (AOI) or Point Of Interest (POI) to the given domain.
+     * The results of {@code shift(…)} methods will be transformed (if needed) to the specified CRS.
+     *
+     * @param  domain  the region where a given area or point of interest should be located.
+     * @param  target  the coordinate reference system of objects returned by {@code shift(…)} methods,
+     *                 or {@code null} for the same CRS than the {@code domain} CRS..
+     */
+    public WraparoundAdjustment(final Envelope domain, final CoordinateReferenceSystem target) {
+        ArgumentChecks.ensureNonNull("domain", domain);
+        domainOfValidity = ImmutableEnvelope.castOrCopy(domain);
+        resultCRS        = (target != null) ? target : domainOfValidity.getCoordinateReferenceSystem();
+        domainToInput    = null;
     }
 
     /**
-     * Sets {@link #crs} to the given value if it is non-null, or to the {@link #domainOfValidity} CRS otherwise.
-     * If no non-null CRS is available, returns {@code false} for instructing caller to terminate immediately.
+     * Creates a new instance with specified transforms from domain to the CRS of inputs, then to the CRS of outputs.
+     * This constructor can be used when those transforms are known in advance; it avoids the cost of inferring them.
+     * With this constructor, {@code WraparoundAdjustment} does <strong>not</strong> verify if a coordinate operation
+     * is needed for a pair of CRS; it is caller's responsibility to ensure that input objects use the expected CRS.
      *
-     * @return whether a non-null CRS has been set.
+     * <div class="note"><b>Example:</b>
+     * in the context of {@link org.apache.sis.coverage.grid.GridGeometry}, the {@code domain} argument may be the
+     * geospatial envelope of the grid and the {@code inputToResult} argument may be the "CRS to grid" transform.
+     * This configuration allows to compute grid coordinates having more chances to be inside the grid.</div>
+     *
+     * @param  domain          the region where a given area (AOI) or point of interest (POI) should be located.
+     * @param  domainToInput   if the AOI or POI will use a different CRS than {@code domain}, the transform from
+     *                         {@code domain} to the input CRS. Otherwise {@code null} for same CRS as the domain.
+     * @param  inputToResult   a transform from the {@code domain} CRS to any user space at caller choice.
+     *                         If {@code null}, the results will be expressed in same CRS than the inputs.
      */
-    private boolean setIfNonNull(CoordinateReferenceSystem crs) {
+    public WraparoundAdjustment(final Envelope domain, MathTransform domainToInput, MathTransform inputToResult) {
+        ArgumentChecks.ensureNonNull("domain", domain);
+        domainOfValidity = ImmutableEnvelope.castOrCopy(domain);
+        if (domainToInput == null) {
+            domainToInput = MathTransforms.identity(domainOfValidity.getDimension());
+        }
+        if (inputToResult == null) {
+            inputToResult = MathTransforms.identity(domainToInput.getTargetDimensions());
+        }
+        this.domainToInput = domainToInput;
+        this.inputToResult = inputToResult;
+        this.resultCRS     = null;            // Not used by this instance.
+    }
+
+    /**
+     * Finds a coordinate operation from the given source CRS to target CRS.
+     * This method is invoked by all codes that need to find a coordinate operation.
+     *
+     * @param  source  the source CRS of the desired coordinate operation.
+     * @param  target  the target CRS of the desired coordinate operation.
+     * @return operation from {@code source} to {@code target}.
+     * @throws TransformException if the operation can not be computed.
+     */
+    private CoordinateOperation findOperation(final CoordinateReferenceSystem source,
+                                              final CoordinateReferenceSystem target)
+            throws TransformException
+    {
+        /*
+         * The (source ≉ target) condition is a quick check for avoiding
+         * unnecessary calculation of `geographicDomain` in common cases.
+         */
+        if (!geographicDomainKnown && !Utilities.equalsIgnoreMetadata(source, target)) try {
+            geographicDomainKnown = true;                       // Shall be set even in case of failure.
+            geographicDomain = ReferencingServices.getInstance().setBounds(domainOfValidity, null, null);
+        } catch (TransformException e) {
+            Logging.ignorableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), WraparoundAdjustment.class, "<init>", e);
+            // No more attempt will be done.
+        }
+        try {
+            return CRS.findOperation(source, target, geographicDomain);
+        } catch (FactoryException e) {
+            throw new TransformException(e);
+        }
+    }
+
+    /**
+     * Initializes this {@code WraparoundAdjustment} for an AOI or POI having the given coordinate reference system.
+     * If the given CRS is the same than the CRS given in last call to this method, then this method does nothing as
+     * this {@code WraparoundAdjustment} is assumed already initialized. Otherwise this method performs those steps:
+     *
+     * <ul>
+     *   <li>If the given coordinate reference system is a projected CRS,
+     *       replaces it by another CRS where wraparound axes can be identified.</li>
+     *   <li>Set {@link #shiftableDomain} to an envelope in above CRS.</li>
+     *   <li>Set {@link #periods} to an array with the periods of wraparound axes.</li>
+     *   <li>Set {@link #inputToResult} to the final transform to apply in {@code shift(…)} methods.</li>
+     * </ul>
+     *
+     * @return whether there is at least one wraparound axis.
+     */
+    private boolean initialize(CoordinateReferenceSystem crs) throws TransformException {
         if (crs == null) {
-            assert domainToAOI == null || domainToAOI.isIdentity();
-            crs = domainOfValidity.getCoordinateReferenceSystem();          // Assumed to apply to AOI or POI too.
-            if (crs == null) {
-                return false;
+            crs = domainOfValidity.getCoordinateReferenceSystem();
+            if (crs == null && domainToInput == null) {
+                /*
+                 * If `inputCRS` is also null, `inputToResult` will not be initialized by next block.
+                 * Initialize here with the assumption that following CRS as same as domain CRS:
+                 *
+                 *   - Input CRS, as specified in `shift(…)` method contract.
+                 *   - Result CRS, as specified in constructor contract.
+                 *
+                 * Note that this field is considered modifiable only if `domainToInput` is null (see its javadoc).
+                 */
+                inputToResult = MathTransforms.identity(domainOfValidity.getDimension());
             }
         }
-        this.crs = crs;
-        return true;
+        if (crs != inputCRS) {
+            inputCRS          = crs;
+            periods           = null;
+            inputToShiftable  = null;       // Will not be used if `crs` is null.
+            shiftableToResult = null;
+            shiftableDomain   = domainOfValidity;
+            /*
+             * Get the transform from input CRS (before replacement by "shiftable" CRS)
+             * to the CRS of all results. It will be needed by all `shift(…)` methods.
+             * Note that by convention, `inputToResult` is considered modifiable only
+             * if `domainToInput` is null (see its javadoc).
+             */
+            if (domainToInput == null) {
+                if (crs != null && resultCRS != null) {
+                    inputToResult = findOperation(crs, resultCRS).getMathTransform();
+                } else {
+                    inputToResult = MathTransforms.identity(
+                            (crs != null) ? ReferencingUtilities.getDimension(crs)
+                                          : domainOfValidity.getDimension());
+                }
+            }
+            /*
+             * At this point we got a CRS which may have wraparound axes. Search for those axes.
+             * The `periods` array will become non-null only if we find at least one such axis.
+             */
+            if (crs != null) {
+                /*
+                 * Replace the input CRS by an intermediate CRS where wraparound axes can be found.
+                 * We try to select a CRS as close as possible (simplest transform) to the input.
+                 */
+                if (crs instanceof ProjectedCRS) {
+                    final ProjectedCRS p = (ProjectedCRS) crs;
+                    crs = p.getBaseCRS();       // Geographic, so a wraparound axis certainly exists.
+                    inputToShiftable = p.getConversionFromBase().getMathTransform().inverse();
+                } else {
+                    // TODO: we should handle the case of CompoundCRS before to fallback on identity.
+                    inputToShiftable = MathTransforms.identity(ReferencingUtilities.getDimension(crs));
+                }
+                final CoordinateSystem cs = crs.getCoordinateSystem();
+                for (int i = cs.getDimension(); --i >= 0;) {
+                    final double period = WraparoundApplicator.range(cs, i);
+                    if (period > 0) {
+                        if (periods == null) {
+                            transformDomain(crs);
+                            periods = new double[i + 1];
+                        }
+                        periods[i] = period;
+                    }
+                }
+            }
+        }
+        return (periods != null);
     }
 
     /**
-     * If the coordinate reference system is a projected CRS, replaces it by another CRS where wraparound axes can
-     * be identified. The wraparound axes are identifiable in base geographic CRS. If such replacement is applied,
-     * remember that we may need to transform the result later.
+     * Transforms {@link #domainOfValidity} to a CRS where wraparound axes can be identified.
+     * This method should be invoked only when the caller detected at least one wraparound axis.
      *
-     * @return whether the replacement has been done. If {@code true}, then {@link #geographicToAOI} is non-null.
+     * <p>If a {@link #domainToInput} has been explicitly specified to the constructor,
+     * that transform is unconditionally used and the {@code crs} argument is ignored.</p>
+     *
+     * <h4>Preconditions</h4>
+     * <ul>
+     *   <li>The {@link #inputToShiftable} transform must be initialized.</li>
+     *   <li>The {@link #shiftableDomain} field is assumed initialized to {@link #domainOfValidity}.</li>
+     * </ul>
      */
-    private boolean replaceCRS() {
-        if (crs instanceof ProjectedCRS) {
-            final ProjectedCRS p = (ProjectedCRS) crs;
-            crs = p.getBaseCRS();                                          // Geographic, so a wraparound axis certainly exists.
-            geographicToAOI = p.getConversionFromBase().getMathTransform();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Transforms {@link #domainOfValidity} to the same CRS than the Area Of Interest (AOI) or Point Of Interest (POI).
-     * This method should be invoked only when the caller detected a wraparound axis. This method transforms the domain
-     * the first time it is invoked, and does nothing on all subsequent calls.
-     */
-    private void transformDomainToAOI() throws TransformException {
-        if (!isDomainTransformed) {
-            isDomainTransformed = true;
-            MathTransform domainToGeographic = domainToAOI;
-            if (domainToGeographic == null) {
-                domainToGeographic = geographicToAOI;
-            } else if (geographicToAOI != null) {
-                domainToGeographic = MathTransforms.concatenate(domainToGeographic, geographicToAOI.inverse());
+    private void transformDomain(final CoordinateReferenceSystem target) throws TransformException {
+        final MathTransform domainToShiftable;
+        if (domainToInput != null) {
+            // Case of the constructor with `MathTransform` arguments.
+            domainToShiftable = MathTransforms.concatenate(domainToInput, inputToShiftable);
+            if (!domainToShiftable.isIdentity()) {
+                shiftableDomain = Envelopes.transform(domainToShiftable, domainOfValidity);
             }
-            if (domainToGeographic != null && !domainToGeographic.isIdentity()) {
-                domainOfValidity = Envelopes.transform(domainToGeographic, domainOfValidity);
+        } else {
+            // Case of the constructor with `CoordinateReferenceSystem` argument.
+            CoordinateOperation op = findOperation(domainOfValidity.getCoordinateReferenceSystem(), target);
+            domainToShiftable = op.getMathTransform();
+            if (!domainToShiftable.isIdentity()) {
+                shiftableDomain = Envelopes.transform(op, domainOfValidity);
             }
         }
     }
 
     /**
      * Returns the final transform to apply on the AOI or POI before to return it to the user.
+     * If {@link #inputCRS} is null, returns {@code null} for meaning "unknown transform".
      */
-    private MathTransform toFinal() throws TransformException {
-        MathTransform mt = domainToAny;
-        if (isResultTransformed && geographicToAOI != null) {
-            mt = MathTransforms.concatenate(geographicToAOI, mt);
+    private MathTransform toResult(final boolean isResultShifted) throws TransformException {
+        if (isResultShifted) {
+            if (shiftableToResult == null) {
+                shiftableToResult = MathTransforms.concatenate(inputToShiftable.inverse(), inputToResult);
+            }
+            return shiftableToResult;
+        } else {
+            return inputToResult;
         }
-        return mt;
     }
 
     /**
@@ -183,8 +344,8 @@ final class WraparoundAdjustment {
      * In order to perform this operation, the envelope may be temporarily converted to a geographic CRS
      * and converted back to its original CRS.
      *
-     * <p>The coordinate reference system should be specified in the {@code areaOfInterest},
-     * or (as a fallback) in the {@code domainOfValidity} specified at construction time.</p>
+     * <p>The coordinate reference system should be specified in the {@code areaOfInterest}.
+     * If not, then the CRS is assumed same as the CRS of the domain specified at construction time.</p>
      *
      * <p>This method does not intersect the area of interest with the domain of validity.
      * It is up to the caller to compute that intersection after this method call, if desired.</p>
@@ -198,7 +359,8 @@ final class WraparoundAdjustment {
      * @see GeneralEnvelope#simplify()
      */
     public GeneralEnvelope shift(Envelope areaOfInterest) throws TransformException {
-        if (setIfNonNull(areaOfInterest.getCoordinateReferenceSystem())) {
+        boolean isResultShifted = false;
+        if (initialize(areaOfInterest.getCoordinateReferenceSystem())) {
             /*
              * If the coordinate reference system is a projected CRS, it will not have any wraparound axis.
              * We need to perform the verification in its base geographic CRS instead, and remember that we
@@ -207,30 +369,24 @@ final class WraparoundAdjustment {
             final DirectPosition lowerCorner;
             final DirectPosition upperCorner;
             GeneralEnvelope shifted;            // To be initialized to a copy of `areaOfInterest` when first needed.
-            if (replaceCRS()) {
-                shifted     = Envelopes.transform(geographicToAOI.inverse(), areaOfInterest);
-                lowerCorner = shifted.getLowerCorner();
-                upperCorner = shifted.getUpperCorner();
-            } else {
+            if (inputToShiftable.isIdentity()) {
                 shifted     = null;
                 lowerCorner = areaOfInterest.getLowerCorner();
                 upperCorner = areaOfInterest.getUpperCorner();
+            } else {
+                shifted     = Envelopes.transform(inputToShiftable, areaOfInterest);
+                lowerCorner = shifted.getLowerCorner();
+                upperCorner = shifted.getUpperCorner();
             }
             /*
              * We will not read `areaOfInterest` anymore after we got its two corner points (except for creating
              * a copy if `shifted` is still null). The following loop searches for "wraparound" axes.
              */
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            for (int i=cs.getDimension(); --i >= 0;) {
-                final double period = WraparoundApplicator.range(cs, i);
+            for (int i=0; i<periods.length; i++) {
+                final double period = periods[i];
                 if (period > 0) {
                     /*
                      * Found an axis (typically the longitude axis) with wraparound range meaning.
-                     * We are going to need the domain of validity in the same CRS than the AOI.
-                     * Transform that envelope when first needed.
-                     */
-                    transformDomainToAOI();
-                    /*
                      * "Unroll" the range. For example if we have [+160 … -170]° of longitude, we can replace by [160 … 190]°.
                      * We do not change the `lower` or `upper` value now in order to avoid rounding error. Instead we compute
                      * how many periods we need to add to those values. We adjust the side which results in the value closest
@@ -268,8 +424,8 @@ final class WraparoundAdjustment {
                      * order to support images that cover more than one period, for example images over 720° of longitude.
                      * It may happen for example if an image shows data under the trajectory of a satellite.
                      */
-                    final double  validStart        = domainOfValidity.getMinimum(i);
-                    final double  validEnd          = domainOfValidity.getMaximum(i);
+                    final double  validStart        = shiftableDomain.getMinimum(i);
+                    final double  validEnd          = shiftableDomain.getMaximum(i);
                     final double  lowerToValidStart = ((validStart - lower) / period) - lowerCycles;    // In number of periods.
                     final double  upperToValidEnd   = ((validEnd   - upper) / period) - upperCycles;
                     final boolean lowerIsBefore     = (lowerToValidStart > 0);
@@ -346,18 +502,28 @@ final class WraparoundAdjustment {
                      * at construction time.
                      */
                     if (lowerCycles != 0 || upperCycles != 0) {
-                        isResultTransformed = true;
+                        isResultShifted = true;
                         if (shifted == null) {
                             shifted = new GeneralEnvelope(areaOfInterest);
                         }
-                        areaOfInterest = shifted;                           // `shifted` may have been set before the loop.
+                        areaOfInterest = shifted;           // `shifted` may have been set before the loop.
                         shifted.setRange(i, lower + lowerCycles * period,   // TODO: use Math.fma in JDK9.
                                             upper + upperCycles * period);
                     }
                 }
             }
         }
-        return Envelopes.transform(toFinal(), areaOfInterest);
+        /*
+         * Unconditionally apply the final transform (even if identity), unless
+         * `inputCRS` is null in which case the transform to apply is unknown.
+         */
+        final MathTransform toResult = toResult(isResultShifted);
+        if (toResult != null) {
+            final GeneralEnvelope result = Envelopes.transform(toResult, areaOfInterest);
+            result.setCoordinateReferenceSystem(resultCRS);
+            return result;
+        }
+        return GeneralEnvelope.castOrCopy(areaOfInterest);
     }
 
     /**
@@ -367,8 +533,8 @@ final class WraparoundAdjustment {
      * In order to perform this operation, the position may be temporarily converted to a geographic CRS
      * and converted back to its original CRS.
      *
-     * <p>The coordinate reference system should be specified in the {@code pointOfInterest},
-     * or (as a fallback) in the {@code domainOfValidity} specified at construction time.</p>
+     * <p>The coordinate reference system should be specified in the {@code pointOfInterest}.
+     * If not, then the CRS is assumed same as the CRS of the domain specified at construction time.</p>
      *
      * @param  pointOfInterest  the position to potentially shift to domain of validity interior.
      *         If a shift is needed, then the given position will be replaced by a new position;
@@ -377,24 +543,23 @@ final class WraparoundAdjustment {
      * @throws TransformException if a coordinate conversion failed.
      */
     public DirectPosition shift(DirectPosition pointOfInterest) throws TransformException {
-        if (setIfNonNull(pointOfInterest.getCoordinateReferenceSystem())) {
+        boolean isResultShifted = false;
+        if (initialize(pointOfInterest.getCoordinateReferenceSystem())) {
             DirectPosition shifted;
-            if (replaceCRS()) {
-                shifted = geographicToAOI.inverse().transform(pointOfInterest, null);
+            if (inputToShiftable.isIdentity()) {
+                shifted = pointOfInterest;          // To be replaced by a copy of `pointOfInterest` when first needed.
             } else {
-                shifted = pointOfInterest;              // To be replaced by a copy of `pointOfInterest` when first needed.
+                shifted = inputToShiftable.transform(pointOfInterest, null);
             }
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            for (int i=cs.getDimension(); --i >= 0;) {
-                final double period = WraparoundApplicator.range(cs, i);
+            for (int i=0; i<periods.length; i++) {
+                final double period = periods[i];
                 if (period > 0) {
-                    transformDomainToAOI();
                     final double x = shifted.getOrdinate(i);
-                    double delta = domainOfValidity.getMinimum(i) - x;
+                    double delta = shiftableDomain.getMinimum(i) - x;
                     if (delta > 0) {                                        // Test for point before domain of validity.
                         delta = Math.ceil(delta / period);
                     } else {
-                        delta = domainOfValidity.getMaximum(i) - x;
+                        delta = shiftableDomain.getMaximum(i) - x;
                         if (delta < 0) {                                    // Test for point after domain of validity.
                             delta = Math.floor(delta / period);
                         } else {
@@ -402,7 +567,7 @@ final class WraparoundAdjustment {
                         }
                     }
                     if (delta != 0) {
-                        isResultTransformed = true;
+                        isResultShifted = true;
                         if (shifted == pointOfInterest) {
                             shifted = new GeneralDirectPosition(pointOfInterest);
                         }
@@ -412,6 +577,15 @@ final class WraparoundAdjustment {
                 }
             }
         }
-        return toFinal().transform(pointOfInterest, null);
+        /*
+         * Unconditionally apply the final transform (even if identity), unless
+         * `inputCRS` is null in which case the transform to apply is unknown.
+         */
+        final MathTransform toResult = toResult(isResultShifted);
+        if (toResult != null) {
+            pointOfInterest = toResult.transform(pointOfInterest,
+                    (resultCRS != null) ? new GeneralDirectPosition(resultCRS) : null);
+        }
+        return pointOfInterest;
     }
 }

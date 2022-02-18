@@ -22,7 +22,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.TestCase;
@@ -35,7 +34,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests {@link WraparoundAdjustment}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -46,7 +45,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     private static Envelope adjustWraparoundAxes(Envelope areaOfInterest, Envelope domainOfValidity, MathTransform validToAOI)
             throws TransformException
     {
-        WraparoundAdjustment adj = new WraparoundAdjustment(domainOfValidity, validToAOI, MathTransforms.identity(2));
+        WraparoundAdjustment adj = new WraparoundAdjustment(domainOfValidity, validToAOI, null);
         return adj.shift(areaOfInterest);
     }
 
