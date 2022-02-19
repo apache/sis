@@ -17,11 +17,13 @@
 package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.TestCase;
@@ -39,16 +41,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @module
  */
 public final strictfp class WraparoundAdjustmentTest extends TestCase {
-    /**
-     * Convenience method for the tests.
-     */
-    private static Envelope adjustWraparoundAxes(Envelope areaOfInterest, Envelope domainOfValidity, MathTransform validToAOI)
-            throws TransformException
-    {
-        WraparoundAdjustment adj = new WraparoundAdjustment(domainOfValidity, validToAOI, null);
-        return adj.shift(areaOfInterest);
-    }
-
     /**
      * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope crossing the anti-meridian.
@@ -69,7 +61,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
         expected.setRange(0, 140, 181);
         expected.setRange(1, -90, +90);
 
-        final Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        final Envelope actual = new WraparoundAdjustment(domainOfValidity, null, null).shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual);
     }
 
@@ -89,7 +81,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
         areaOfInterest.setRange(0,  50, 70);
         areaOfInterest.setRange(1, -80, 60);
 
-        Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        Envelope actual = new WraparoundAdjustment(domainOfValidity, null, null).shift(areaOfInterest);
         assertEnvelopeEquals(areaOfInterest, actual);              // Expect no change.
     }
 
@@ -112,19 +104,20 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
          * AOI intersects the domain of validity: expected result is identical to given AOI.
          */
         final GeneralEnvelope expected = new GeneralEnvelope(areaOfInterest);
-        Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        final WraparoundAdjustment wa = new WraparoundAdjustment(domainOfValidity, null, null);
+        Envelope actual = wa.shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual);
         /*
          * AOI is on the left side of domain of validity. Expect a 360° shift to the right.
          */
         areaOfInterest.setRange(0, -290, -270);                    // [70 … 90] - 360
-        actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        actual = wa.shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual);
         /*
          * AOI is on the right side of domain of validity. Expect a 360° shift to the left.
          */
         areaOfInterest.setRange(0, 430, 450);                      // [70 … 90] + 360
-        actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        actual = wa.shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual);
     }
 
@@ -158,7 +151,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
         expected.setRange(0, -30, 400);
         expected.setRange(1, -60,  60);
 
-        final Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        final Envelope actual = new WraparoundAdjustment(domainOfValidity, null, null).shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual);
     }
 
@@ -182,14 +175,60 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
          */
         final GeneralEnvelope expected = new GeneralEnvelope(areaOfInterest);
         final MathTransform validToAOI = mercator.getConversionFromBase().getMathTransform();
-        Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, validToAOI);
+        final WraparoundAdjustment wa = new WraparoundAdjustment(domainOfValidity, validToAOI, null);
+        Envelope actual = wa.shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual);
         /*
          * AOI is on the right side of domain of validity. Expect a 360° shift to the left.
          * We add 40000 km to AOI, which is approximately the Earth circumference.
          */
         areaOfInterest.setRange(0, 45000000, 47000000);
-        actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, validToAOI);
+        actual = wa.shift(areaOfInterest);
         assertEnvelopeEquals(expected, actual, 1E+5, Formulas.LINEAR_TOLERANCE);
+    }
+
+    /**
+     * Tests {@link WraparoundAdjustment#shift(Envelope)} with a specified result CRS.
+     *
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testSpecifiedResultCRS() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
+        domainOfValidity.setRange(0, -60, 10);      // Longitudes.
+        domainOfValidity.setRange(1,  20, 60);      // Latitudes.
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        areaOfInterest.setRange(0,   2,   8);       // Latitudes.
+        areaOfInterest.setRange(1, 300, 350);       // As a result of wraparound, should become negative.
+
+        final GeneralEnvelope expected = new GeneralEnvelope(areaOfInterest);
+        expected.setRange(0, -6679169, -1113195);
+        expected.setRange(1,   221194,   887521);
+
+        final WraparoundAdjustment wa = new WraparoundAdjustment(domainOfValidity, HardCodedConversions.mercator());
+        Envelope actual = wa.shift(areaOfInterest);
+        assertEnvelopeEquals(expected, actual, 1);
+    }
+
+    /**
+     * Tests shifting a single point.
+     *
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testShiftPosition() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        domainOfValidity.setRange(0,  20, 60);      // Latitudes.
+        domainOfValidity.setRange(1, -60, 10);      // Longitudes.
+
+        final DirectPosition2D pointOfInterest = new DirectPosition2D(HardCodedCRS.WGS84);
+        pointOfInterest.x = 300;            // As a result of wraparound, should become negative.
+        pointOfInterest.y = 2;              // Latitude.
+
+        final WraparoundAdjustment wa = new WraparoundAdjustment(domainOfValidity, HardCodedConversions.mercator());
+        DirectPosition actual = wa.shift(pointOfInterest);
+        assertEquals(-6679169, actual.getOrdinate(0), 1);
+        assertEquals(  221194, actual.getOrdinate(1), 1);
     }
 }
