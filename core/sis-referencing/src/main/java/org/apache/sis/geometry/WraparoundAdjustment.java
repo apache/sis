@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.grid;
+package org.apache.sis.geometry;
 
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -29,11 +29,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
@@ -53,10 +48,10 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.0
+ * @since   1.2
  * @module
  */
-final class WraparoundAdjustment {
+public class WraparoundAdjustment {
     /**
      * The region inside which a given Area Of Interest (AOI) or Point Of Interest (POI) should be located.
      * This domain is specified at construction time and does not change.

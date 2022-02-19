@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.grid;
+package org.apache.sis.geometry;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -23,8 +23,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
