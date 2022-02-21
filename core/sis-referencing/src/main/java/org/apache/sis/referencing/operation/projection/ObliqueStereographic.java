@@ -62,7 +62,8 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @author  Emmanuel Giasson (Thales)
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -355,8 +356,8 @@ public class ObliqueStereographic extends NormalizedProjection {
     {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
-        final double i = atan(x / (h + y));
-        final double j = atan(x / (g - y)) - i;
+        final double i = atan2(x, h + y);
+        final double j = atan2(x, g - y) - i;
         /*
          * The conformal longitude is  Λ = j + 2i + Λ₀.  In the particular case of stereographic projection,
          * the geodetic longitude λ is equals to Λ. Furthermore in Apache SIS implementation, Λ₀ is added by
@@ -377,7 +378,7 @@ public class ObliqueStereographic extends NormalizedProjection {
             final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), he));
             final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / ome;
             φ += Δφ;
-            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
+            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use `!` for accepting NaN.
                 dstPts[dstOff  ] = λ;
                 dstPts[dstOff+1] = φ;
                 return;
