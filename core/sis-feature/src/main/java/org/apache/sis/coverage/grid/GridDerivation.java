@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -39,6 +38,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.WraparoundAdjustment;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -602,17 +602,8 @@ public class GridDerivation {
                 final CoordinateReferenceSystem crs = areaOfInterest.getCoordinateReferenceSystem();
                 if (crs != null) {
                     areaOfInterest = new DimensionReducer(base, crs).apply(areaOfInterest);
-                    CoordinateOperation op = Envelopes.findOperation(base.envelope, areaOfInterest);
-                    if (op == null) {
-                        /*
-                         * If above call to `Envelopes.findOperation(…)` failed, then `base.envelope` CRS is probably null.
-                         * Try with a call to `getCoordinateReferenceSystem()` for throwing IncompleteGridGeometryException,
-                         * unless the user overrode that method in which case we will use its value.
-                         */
-                        op = CRS.findOperation(base.getCoordinateReferenceSystem(), crs, null);
-                    }
-                    baseToAOI = op.getMathTransform();
-                    cornerToCRS = MathTransforms.concatenate(cornerToCRS, baseToAOI);
+                    baseToAOI      = findBaseToAOI(areaOfInterest.getCoordinateReferenceSystem());
+                    cornerToCRS    = MathTransforms.concatenate(cornerToCRS, baseToAOI);
                 }
             }
             /*
@@ -644,7 +635,7 @@ public class GridDerivation {
             dimension = baseExtent.getDimension();      // Non-null since `base.requireGridToCRS()` succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
-                indices = new WraparoundAdjustment(base.envelope, baseToAOI, cornerToCRS.inverse()).shift(areaOfInterest);
+                indices = wraparound(baseToAOI, cornerToCRS).shift(areaOfInterest);
                 setBaseExtentClipped(indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
@@ -732,25 +723,48 @@ public class GridDerivation {
     }
 
     /**
+     * Returns the transform from the CRS of the {@linkplain #base} grid to the CRS of user-supplied argument.
+     *
+     * @param  target  the CRS of the user-supplied argument (envelope ou position).
+     * @return transform from {@linkplain #base} grid to user argument.
+     */
+    private MathTransform findBaseToAOI(final CoordinateReferenceSystem target) throws FactoryException {
+        final CoordinateReferenceSystem gridCRS = base.getCoordinateReferenceSystem();      // May throw exception.
+        return CRS.findOperation(gridCRS, target, base.getGeographicExtent().orElse(null)).getMathTransform();
+    }
+
+    /**
+     * Creates an instance of the helper class for shifting positions and envelopes inside the grid.
+     *
+     * @param  baseToAOI  the transform computed by {@link #findBaseToAOI(CoordinateReferenceSystem)},
+     *                    or {@code null} if same as the CRS of the {@linkplain #base} grid geometry.
+     * @param  gridToCRS  the transform computed by {@link #dropUnusedDimensions(MathTransform, int)}
+     *                    (the transform from grid coordinates to the CRS of user-supplied AOI/POI).
+     */
+    private WraparoundAdjustment wraparound(MathTransform baseToAOI, MathTransform gridToCRS) throws TransformException {
+        return new WraparoundAdjustment(base.envelope, baseToAOI, gridToCRS.inverse());
+    }
+
+    /**
      * Drops the source dimensions that are not needed for producing the target dimensions.
      * The retained source dimensions are stored in {@link #modifiedDimensions}.
      * This method is invoked in an effort to make the transform invertible.
      *
-     * @param  cornerToCRS  transform from grid coordinates to AOI coordinates.
-     * @param  dimension    value of {@code cornerToCRS.getTargetDimensions()}.
+     * @param  gridToCRS  transform from grid coordinates to AOI coordinates.
+     * @param  dimension  value of {@code cornerToCRS.getTargetDimensions()}.
      */
-    private MathTransform dropUnusedDimensions(MathTransform cornerToCRS, final int dimension)
+    private MathTransform dropUnusedDimensions(MathTransform gridToCRS, final int dimension)
             throws FactoryException, TransformException
     {
-        if (dimension < cornerToCRS.getSourceDimensions()) {
-            final TransformSeparator sep = new TransformSeparator(cornerToCRS);
-            cornerToCRS = sep.separate();
+        if (dimension < gridToCRS.getSourceDimensions()) {
+            final TransformSeparator sep = new TransformSeparator(gridToCRS);
+            gridToCRS = sep.separate();
             modifiedDimensions = sep.getSourceDimensions();
             if (modifiedDimensions.length != dimension) {
                 throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions));
             }
         }
-        return cornerToCRS;
+        return gridToCRS;
     }
 
     /**
@@ -946,8 +960,8 @@ public class GridDerivation {
      *       by avoiding the check for coordinate transformation.</li>
      * </ul>
      *
-     * @param  slicePoint   the coordinates where to get a slice. If no coordinate reference system is attached to it,
-     *                      we consider it's the same as base grid geometry.
+     * @param  slicePoint   the coordinates where to get a slice. If no coordinate reference system is associated,
+     *                      this method assumes that the slice point CRS is the CRS of the base grid geometry.
      * @return {@code this} for method call chaining.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform,
      *         or no CRS (unless {@code slicePoint} has no CRS neither, in which case the CRS are assumed the same).
@@ -974,9 +988,8 @@ public class GridDerivation {
                 baseToPOI = null;
             } else {
                 slicePoint = new DimensionReducer(base, sliceCRS).apply(slicePoint);
-                final CoordinateReferenceSystem gridCRS = base.getCoordinateReferenceSystem();      // May throw exception.
-                baseToPOI = CRS.findOperation(gridCRS, sliceCRS, null).getMathTransform();
-                gridToCRS = MathTransforms.concatenate(gridToCRS, baseToPOI);
+                baseToPOI  = findBaseToAOI(sliceCRS);
+                gridToCRS  = MathTransforms.concatenate(gridToCRS, baseToPOI);
             }
             /*
              * If the point dimensions do not encompass all grid dimensions, the transform is probably non-invertible.
@@ -990,7 +1003,7 @@ public class GridDerivation {
              * This is the same adjustment than for `subgrid(Envelope)`, but applied on a DirectPosition. Calculation
              * is done in units of cells of the GridGeometry to be created by GridDerivation.
              */
-            DirectPosition gridPoint = new WraparoundAdjustment(base.envelope, baseToPOI, gridToCRS.inverse()).shift(slicePoint);
+            DirectPosition gridPoint = wraparound(baseToPOI, gridToCRS).shift(slicePoint);
             if (scaledExtent != null) {
                 scaledExtent = scaledExtent.slice(gridPoint, modifiedDimensions);
             }

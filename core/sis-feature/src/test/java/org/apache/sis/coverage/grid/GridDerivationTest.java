@@ -60,7 +60,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  * @since   1.0
  * @module
  */
-@DependsOn({GridGeometryTest.class, WraparoundAdjustmentTest.class})
+@DependsOn(GridGeometryTest.class)
 public final strictfp class GridDerivationTest extends TestCase {
     /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} using only the

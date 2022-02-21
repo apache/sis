@@ -30,7 +30,7 @@ import static org.apache.sis.util.Numbers.*;
  * Tests the {@link Numbers} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -214,8 +214,7 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testCast() {
-        @SuppressWarnings({"deprecation", "UnnecessaryBoxing"})
-        final Integer value = new Integer(10); // Intentionally a new instance.
+        final Integer value = 10;
         assertEquals(Byte   .valueOf((byte)   10), cast(value, Byte   .class));
         assertEquals(Short  .valueOf((short)  10), cast(value, Short  .class));
         assertSame  (value,                        cast(value, Integer.class));

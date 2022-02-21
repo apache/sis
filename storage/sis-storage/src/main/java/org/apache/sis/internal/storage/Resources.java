@@ -297,6 +297,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ProcessingExecutedOn_1 = 12;
 
         /**
+         * The request [{3} … {4}] is outside the [{1} … {2}] domain for “{0}” axis.
+         */
+        public static final short RequestOutOfBounds_5 = 64;
+
+        /**
          * A resource already exists at “{0}”.
          */
         public static final short ResourceAlreadyExists_1 = 48;

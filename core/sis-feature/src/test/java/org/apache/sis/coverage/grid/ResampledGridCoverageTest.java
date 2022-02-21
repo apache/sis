@@ -321,7 +321,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     private static RenderedImage unwrap(final RenderedImage image) {
         assertEquals("GridCoverage.render(null) should have their origin at (0,0).", 0, image.getMinX());
         assertEquals("GridCoverage.render(null) should have their origin at (0,0).", 0, image.getMinY());
-        return (image instanceof ReshapedImage) ? ((ReshapedImage) image).image : image;
+        return (image instanceof ReshapedImage) ? ((ReshapedImage) image).source : image;
     }
 
     /**

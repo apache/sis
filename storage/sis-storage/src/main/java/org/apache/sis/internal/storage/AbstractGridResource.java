@@ -33,12 +33,15 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -72,7 +75,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -468,19 +471,52 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     }
 
     /**
-     * If the given exception is caused by a {@link FactoryException} or {@link TransformException},
-     * returns that cause. Otherwise returns {@code null}. This is a convenience method for deciding
-     * if an exception should be rethrown as an {@link DataStoreReferencingException}.
+     * Creates an exception for a failure to load data. If the failure may be caused by an envelope
+     * outside the resource domain, that envelope will be inferred from the {@code request} argument.
      *
-     * @param  e  the exception for which to inspect the cause.
-     * @return the cause if it is a referencing problem, or {@code null} otherwise.
+     * @param  filename  some identification (typically a file name) of the data that can not be read.
+     * @param  request   the requested domain, or {@code null} if unspecified.
+     * @param  cause     the cause of the failure, or {@code null} if none.
+     * @return the exception to throw.
      */
-    protected static Exception getReferencingCause(final RuntimeException e) {
-        final Throwable cause = e.getCause();
-        if (cause instanceof FactoryException || cause instanceof TransformException) {
-            return (Exception) cause;
+    protected final DataStoreException canNotRead(final String filename, final GridGeometry request, Throwable cause) {
+        final int DOMAIN = 1, REFERENCING = 2, CONTENT = 3;
+        int type = 0;               // One of above constants, with 0 for "none of above".
+        Envelope bounds = null;
+        if (cause instanceof DisjointExtentException) {
+            type = DOMAIN;
+            if (request != null && request.isDefined(GridGeometry.ENVELOPE)) {
+                bounds = request.getEnvelope();
+            }
+        } else if (cause instanceof RuntimeException) {
+            Throwable c = cause.getCause();
+            if (isReferencing(c)) {
+                type = REFERENCING;
+                cause = c;
+            } else if (cause instanceof ArithmeticException || cause instanceof RasterFormatException) {
+                type = CONTENT;
+            }
+        } else if (isReferencing(cause)) {
+            type = REFERENCING;
         }
-        return null;
+        final String message = createExceptionMessage(filename, bounds);
+        switch (type) {
+            case DOMAIN:      return new NoSuchDataException(message, cause);
+            case REFERENCING: return new DataStoreReferencingException(message, cause);
+            case CONTENT:     return new DataStoreContentException(message, cause);
+            default:          return new DataStoreException(message, cause);
+        }
+    }
+
+    /**
+     * Returns {@code true} if the given exception is {@link FactoryException} or {@link TransformException}.
+     * This is for deciding if an exception should be rethrown as an {@link DataStoreReferencingException}.
+     *
+     * @param  cause  the exception to verify.
+     * @return whether the given exception is {@link FactoryException} or {@link TransformException}.
+     */
+    private static boolean isReferencing(final Throwable cause) {
+        return (cause instanceof FactoryException || cause instanceof TransformException);
     }
 
     /**

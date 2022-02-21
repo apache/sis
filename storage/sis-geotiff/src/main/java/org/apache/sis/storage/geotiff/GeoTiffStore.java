@@ -363,10 +363,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the exception to throw when an I/O or other kind of error occurred.
+     * Returns the exception to throw when an I/O error occurred.
      * This method wraps the exception with a {@literal "Can not read <filename>"} message.
      */
-    final DataStoreException errorIO(final Exception e) {
+    final DataStoreException errorIO(final IOException e) {
         return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
     }
 

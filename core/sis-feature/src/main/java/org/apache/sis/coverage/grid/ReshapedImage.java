@@ -42,7 +42,7 @@ import static java.lang.Math.toIntExact;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -50,7 +50,7 @@ final class ReshapedImage extends PlanarImage {
     /**
      * The image to translate.
      */
-    final RenderedImage image;
+    final RenderedImage source;
 
     /**
      * Value to add for converting a column index from the coordinate system of the wrapped image
@@ -67,7 +67,7 @@ final class ReshapedImage extends PlanarImage {
     private final int offsetY;
 
     /**
-     * The image size in pixels. May be smaller than {@link #image} size by an integer amount of tiles.
+     * The image size in pixels. May be smaller than {@link #source} size by an integer amount of tiles.
      */
     private final int width, height;
 
@@ -87,29 +87,29 @@ final class ReshapedImage extends PlanarImage {
      * Creates a new image with the same data than the given image but located at different coordinates.
      * In addition, this constructor can reduce the number of tiles.
      *
-     * @param  image  the image to move.
-     * @param  xmin   minimal <var>x</var> coordinate of the requested region, inclusive.
-     * @param  ymin   minimal <var>y</var> coordinate of the requested region, inclusive.
-     * @param  xmax   maximal <var>x</var> coordinate of the requested region, inclusive.
-     * @param  ymax   maximal <var>y</var> coordinate of the requested region, inclusive.
+     * @param  source  the image to move.
+     * @param  xmin    minimal <var>x</var> coordinate of the requested region, inclusive.
+     * @param  ymin    minimal <var>y</var> coordinate of the requested region, inclusive.
+     * @param  xmax    maximal <var>x</var> coordinate of the requested region, inclusive.
+     * @param  ymax    maximal <var>y</var> coordinate of the requested region, inclusive.
      * @throws ArithmeticException if image indices would overflow 32 bits integer capacity.
      */
-    ReshapedImage(final RenderedImage image, final long xmin, final long ymin, final long xmax, final long ymax) {
-        this.image = image;
+    ReshapedImage(final RenderedImage source, final long xmin, final long ymin, final long xmax, final long ymax) {
+        this.source = source;
         /*
          * Compute indices of all tiles to retain in this image. All local fields are `long` in order to force
          * 64-bits integer arithmetic, because may have temporary 32-bits integer overflow during intermediate
          * calculation but still have a final result representable as an `int`. The use of `min` and `max` are
          * paranoiac safety against long integer overflow; real clamping will be done later.
          */
-        final long lowerX = image.getMinX();                        // Lower source index (inclusive)
-        final long lowerY = image.getMinY();
-        final long upperX = image.getWidth()  + lowerX;             // Upper image index (exclusive).
-        final long upperY = image.getHeight() + lowerY;
-        final long tw     = image.getTileWidth();
-        final long th     = image.getTileHeight();
-        final long xo     = image.getTileGridXOffset();
-        final long yo     = image.getTileGridYOffset();
+        final long lowerX = source.getMinX();                       // Lower source index (inclusive)
+        final long lowerY = source.getMinY();
+        final long upperX = source.getWidth()  + lowerX;            // Upper image index (exclusive).
+        final long upperY = source.getHeight() + lowerY;
+        final long tw     = source.getTileWidth();
+        final long th     = source.getTileHeight();
+        final long xo     = source.getTileGridXOffset();
+        final long yo     = source.getTileGridYOffset();
         final long minTX  = floorDiv(max(lowerX, xmin) - xo, tw);   // Indices of the first tile to retain.
         final long minTY  = floorDiv(max(lowerY, ymin) - yo, th);
         final long maxTX  = floorDiv(min(upperX, xmax) - xo, tw);   // Indices of the last tile to retain (inclusive).
@@ -143,7 +143,7 @@ final class ReshapedImage extends PlanarImage {
      */
     final boolean isIdentity() {
         // The use of >= is a paranoiac check, but the > case should never happen actually.
-        return offsetX == 0 && offsetY == 0 && width >= image.getWidth() && height >= image.getHeight();
+        return offsetX == 0 && offsetY == 0 && width >= source.getWidth() && height >= source.getHeight();
     }
 
     /**
@@ -153,19 +153,19 @@ final class ReshapedImage extends PlanarImage {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public Vector<RenderedImage> getSources() {
         final Vector<RenderedImage> sources = new Vector<>(1);
-        sources.add(image);
+        sources.add(source);
         return sources;
     }
 
     /**
      * Delegates to the wrapped image with no change.
      */
-    @Override public Object      getProperty(String name) {return image.getProperty(name);}
-    @Override public String[]    getPropertyNames()       {return image.getPropertyNames();}
-    @Override public ColorModel  getColorModel()          {return image.getColorModel();}
-    @Override public SampleModel getSampleModel()         {return image.getSampleModel();}
-    @Override public int         getTileWidth()           {return image.getTileWidth();}
-    @Override public int         getTileHeight()          {return image.getTileHeight();}
+    @Override public Object      getProperty(String name) {return source.getProperty(name);}
+    @Override public String[]    getPropertyNames()       {return source.getPropertyNames();}
+    @Override public ColorModel  getColorModel()          {return source.getColorModel();}
+    @Override public SampleModel getSampleModel()         {return source.getSampleModel();}
+    @Override public int         getTileWidth()           {return source.getTileWidth();}
+    @Override public int         getTileHeight()          {return source.getTileHeight();}
 
     /**
      * Returns properties determined at construction time.
@@ -183,7 +183,7 @@ final class ReshapedImage extends PlanarImage {
      */
     @Override
     public int getTileGridXOffset() {
-        return addExact(image.getTileGridXOffset(), offsetX);
+        return addExact(source.getTileGridXOffset(), offsetX);
     }
 
     /**
@@ -192,7 +192,7 @@ final class ReshapedImage extends PlanarImage {
      */
     @Override
     public int getTileGridYOffset() {
-        return addExact(image.getTileGridYOffset(), offsetY);
+        return addExact(source.getTileGridYOffset(), offsetY);
     }
 
     /**
@@ -214,7 +214,7 @@ final class ReshapedImage extends PlanarImage {
      */
     @Override
     public Raster getTile(final int tileX, final int tileY) {
-        return offset(image.getTile(tileX, tileY));
+        return offset(source.getTile(tileX, tileY));
     }
 
     /**
@@ -230,8 +230,8 @@ final class ReshapedImage extends PlanarImage {
          * in case some implementations provide an optimized method. Otherwise
          * ask only the sub-region covered by this image.
          */
-        if (width >= image.getWidth() && height >= image.getHeight()) {
-            return offset(image.getData());
+        if (width >= source.getWidth() && height >= source.getHeight()) {
+            return offset(source.getData());
         }
         return copyData(new Rectangle(minX, minY, width, height));
     }
@@ -256,7 +256,7 @@ final class ReshapedImage extends PlanarImage {
     private Raster copyData(final Rectangle aoi) {
         aoi.x = subtractExact(aoi.x, offsetX);      // Convert coordinate from this image to wrapped image.
         aoi.y = subtractExact(aoi.y, offsetY);
-        final Raster data = image.getData(aoi);
+        final Raster data = source.getData(aoi);
         return data.createTranslatedChild(addExact(data.getMinX(), offsetX),
                                           addExact(data.getMinY(), offsetY));
     }
@@ -278,7 +278,7 @@ final class ReshapedImage extends PlanarImage {
         } else {
             data = null;
         }
-        data = image.copyData(data);
+        data = source.copyData(data);
         if (data.getWritableParent() == raster) {
             return raster;
         }
@@ -290,12 +290,17 @@ final class ReshapedImage extends PlanarImage {
      * Verifies whether image layout information are consistent.
      * This method first checks the properties modified by this class.
      * If okay, then this method completes the check with all verifications
-     * {@linkplain ComputedImage#verify() documented in parent class}
+     * {@linkplain ComputedImage#verify() documented in parent class}.
      */
     @Override
     public String verify() {
-        if (getMinX() != image.getMinX() + (minTileX - image.getMinTileX()) * getTileWidth()  + offsetX) return "minX";
-        if (getMinY() != image.getMinY() + (minTileY - image.getMinTileY()) * getTileHeight() + offsetY) return "minY";
+        if (source instanceof PlanarImage) {
+            // If the source has inconsistency, the reshaped image will have problem as well.
+            final String inconsistency = ((PlanarImage) source).verify();
+            if (inconsistency != null) return "source." + inconsistency;
+        }
+        if (getMinX() != source.getMinX() + (minTileX - source.getMinTileX()) * getTileWidth()  + offsetX) return "minX";
+        if (getMinY() != source.getMinY() + (minTileY - source.getMinTileY()) * getTileHeight() + offsetY) return "minY";
         if (getTileGridXOffset() != super.getTileGridXOffset()) return "tileGridXOffset";
         if (getTileGridYOffset() != super.getTileGridYOffset()) return "tileGridYOffset";
         return super.verify();      // "width" and "height" properties should be checked last.

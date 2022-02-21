@@ -137,12 +137,15 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         @Override
         public PropertyTypeBuilder expectedType(FeatureType ignored, final FeatureTypeBuilder addTo) {
             final Class<?> valueType = getValueClass();
-            AttributeType<?> propertyType = TYPES.get(valueType);
-            if (propertyType == null) {
-                final Class<?> standardType = Classes.getStandardType(valueType);
-                propertyType = TYPES.computeIfAbsent(standardType, Literal::newType);
-                if (valueType != standardType) {
-                    TYPES.put(valueType, propertyType);
+            AttributeType<?> propertyType;
+            synchronized (TYPES) {
+                propertyType = TYPES.get(valueType);
+                if (propertyType == null) {
+                    final Class<?> standardType = Classes.getStandardType(valueType);
+                    propertyType = TYPES.computeIfAbsent(standardType, Literal::newType);
+                    if (valueType != standardType) {
+                        TYPES.put(valueType, propertyType);
+                    }
                 }
             }
             return addTo.addProperty(propertyType);

@@ -29,6 +29,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -36,7 +37,9 @@ import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -71,8 +74,16 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * }
      */
     private GridCoverage createTestCoverage() {
+        return createTestCoverage(MathTransforms.identity(2));
+    }
+
+    /**
+     * Sames as {@link #createTestCoverage()} except that the "grid to CRS" transform can be specified.
+     * The domain of source grid indices is the [0 … 1] range in all dimensions.
+     */
+    private GridCoverage createTestCoverage(final MathTransform gridToCRS) {
         final GridGeometry grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
-                PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
+                PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84);
 
         final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
         final SampleDimension sd = new SampleDimension.Builder().setName("Some kind of height")
@@ -213,6 +224,30 @@ public strictfp class GridCoverage2DTest extends TestCase {
         } catch (PointOutsideCoverageException ex) {
             assertNotNull(ex.getMessage());
         }
+    }
+
+    /**
+     * Tests {@link GridEvaluator#apply(DirectPosition)} with a wraparound on the longitude axis.
+     * This method tests a coordinate that would be outside the grid if wraparound was not applied.
+     *
+     * @todo Not yet implemented. One potential place where to implement this functionality could be
+     *       {@link GridEvaluator#toGridPosition(DirectPosition)}.
+     */
+    @Test
+    @DependsOnMethod("testEvaluator")
+    public void testEvaluatorWithWraparound() {
+        final Matrix3 gridToCRS = new Matrix3();
+        gridToCRS.m00 = 100;        // Scale
+        gridToCRS.m02 = 100;        // Offset
+        final GridEvaluator evaluator = createTestCoverage(MathTransforms.linear(gridToCRS)).evaluator();
+        evaluator.setWraparoundEnabled(true);
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100, 0)), STRICT);
+        assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200, 0)), STRICT);
+        /*
+         * Following tests fail if wraparound is not applied by `GridEvaluator`.
+         */
+        assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200 - 360, 0)), STRICT);
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100 - 360, 0)), STRICT);
     }
 
     /**
