@@ -16,10 +16,12 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Arrays;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -28,9 +30,13 @@ import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.WraparoundAxesFinder;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -70,10 +76,10 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * This is cached for avoiding the costly process of fetching a coordinate operation
      * in the common case where the coordinate reference systems did not changed.
      */
-    private MathTransform crsToGrid;
+    private MathTransform sourceToGrid;
 
     /**
-     * Grid coordinates after {@link #crsToGrid} conversion.
+     * Grid coordinates after {@link #sourceToGrid} conversion.
      *
      * @see #toGridPosition(DirectPosition)
      */
@@ -92,6 +98,35 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * @see #isNullIfOutside()
      */
     private boolean nullIfOutside;
+
+
+    // ―――――――― Following fields are for the handling of wraparound axes. ―――――――――――――――――――――
+
+    /**
+     * A bitmask of grid dimensions that need to be verified for wraparound axes.
+     */
+    private long wraparoundAxes;
+
+    /**
+     * Coverage extent converted to floating point numbers, only for the grid dimensions having
+     * a bit set to 1 in {@link #wraparoundAxes} bitmask. The length of this array is the number
+     * of bits set in {@link #wraparoundAxes} multiplied by 2. Elements are (lower, upper) tuples.
+     */
+    private double[] wraparoundExtent;
+
+    /**
+     * Transform from grid coordinates to the CRS where wraparound axes may exist.
+     * It is sometime the same transform than {@code gridToCRS} but not always.
+     * It may differ for example if a projected CRS has been replaced by a geographic CRS.
+     */
+    private MathTransform gridToWraparound;
+
+    /**
+     * The span (maximum - minimum) of wraparound axes, with 0 value for axes that are not wraparound.
+     * The length of this array may be shorter than the CRS number of dimensions if all remaining axes
+     * are not wraparound axes.
+     */
+    private double[] periods;
 
     /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
@@ -115,6 +150,80 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     @Override
     public GridCoverage getCoverage() {
         return coverage;
+    }
+
+    /**
+     * Returns {@code true} if this evaluator is allowed to wraparound coordinates that are outside the grid.
+     * The initial value is {@code false}. This method may continue to return {@code false} even after a call
+     * to {@code setWraparoundEnabled(true)} if no wraparound axis has been found in the coverage CRS.
+     *
+     * @return {@code true} if this evaluator may wraparound coordinates that are outside the grid.
+     *
+     * @since 1.2
+     */
+    public boolean isWraparoundEnabled() {
+        return (wraparoundAxes != 0);
+    }
+
+    /**
+     * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the grid.
+     * If {@code true} and if a given coordinate is outside the grid, then this evaluator may translate
+     * the point along a wraparound axis in an attempt to get the point inside the grid. For example if
+     * the coverage CRS has a longitude axis, then the evaluator may translate the longitude value by a
+     * multiple of 360°.
+     *
+     * @param  allow  whether to allow wraparound of coordinates that are outside the grid.
+     *
+     * @since 1.2
+     */
+    public void setWraparoundEnabled(final boolean allow) {
+        wraparoundAxes = 0;
+        if (allow) try {
+            final WraparoundAxesFinder f = new WraparoundAxesFinder(coverage.getCoordinateReferenceSystem());
+            if ((periods = f.periods()) != null) {
+                final GridGeometry gridGeometry = coverage.getGridGeometry();
+                final GridExtent extent = gridGeometry.getExtent();
+                MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
+                gridToWraparound = MathTransforms.concatenate(gridToCRS, f.preferredToSpecified.inverse());
+                final Matrix m = gridToWraparound.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+                /*
+                 * `gridToWraparound` is the transform from grid coordinates to a CRS where wraparound axes exist.
+                 * It may be the coverage CRS or its base CRS. The wraparound axes are identified by `periods`.
+                 * The Jacobian matrix tells us which grid axes are dependencies of the wraparound axes.
+                 *
+                 * Note: the use of this matrix is not fully reliable with non-linear `gridToCRS` transforms
+                 * because it is theoretically possible that a coefficient is zero at the point of interest
+                 * by pure coincidence but would be non-zero at another location,
+                 * But we think that it would require a transform with unlikely properties
+                 * (e.g. transforming parallels to vertical straight lines at some places).
+                 */
+                for (int j = periods.length; --j >= 0;) {
+                    if (periods[j] > 0) {                       // Find target dimensions (CRS) having wraparound axis.
+                        for (int i = Math.min(m.getNumCol(), Long.SIZE); --i >= 0;) {
+                            if (m.getElement(j, i) != 0) {
+                                wraparoundAxes |= (1L << i);    // Mark sources (grid dimensions) dependent of target (CRS dimensions).
+                            }
+                        }
+                    }
+                }
+                /*
+                 * Get the grid extent only for the grid axes that are connected to wraparound CRS axes.
+                 * There is at least one such axis, otherwise `periods` would have been null.
+                 */
+                wraparoundExtent = new double[Long.bitCount(wraparoundAxes) << 1];
+                long axes = wraparoundAxes;
+                int j = 0;
+                do {
+                    final int i = Long.numberOfTrailingZeros(axes);
+                    wraparoundExtent[j++] = extent.getLow(i);
+                    wraparoundExtent[j++] = extent.getHigh(i);
+                    axes &= ~(1L << i);
+                } while (axes != 0);
+                assert wraparoundExtent.length == j : j;
+            }
+        } catch (TransformException e) {
+            recoverableException("setWraparoundEnabled", e);
+        }
     }
 
     /**
@@ -172,7 +281,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     public double[] apply(final DirectPosition point) throws CannotEvaluateException {
         /*
          * TODO: instead of restricting to a single point, keep the automatic size (1 or 2),
-         * invoke render for each plan, then interpolate. We would keep a value of 1 in the
+         * invoke render for each slice, then interpolate. We would keep a value of 1 in the
          * size array if we want to disable interpolation in some particular axis (e.g. time).
          */
         final GridGeometry gridGeometry = coverage.gridGeometry;
@@ -253,7 +362,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      */
     final FractionalGridCoordinates.Position toGridPosition(final DirectPosition point) throws TransformException {
         final CoordinateReferenceSystem crs = point.getCoordinateReferenceSystem();
-        if (crs != sourceCRS || crsToGrid == null) {
+        if (crs != sourceCRS || sourceToGrid == null) {
             final GridGeometry gridGeometry = coverage.getGridGeometry();
             MathTransform tr = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER).inverse();
             if (crs != null) try {
@@ -264,15 +373,99 @@ public class GridEvaluator implements GridCoverage.Evaluator {
             } catch (FactoryException e) {
                 throw new TransformException(e.getMessage(), e);
             }
-            position  = new FractionalGridCoordinates.Position(tr.getTargetDimensions());
-            crsToGrid = tr;
-            sourceCRS = crs;
+            position     = new FractionalGridCoordinates.Position(tr.getTargetDimensions());
+            sourceCRS    = crs;
+            sourceToGrid = tr;
         }
-        final DirectPosition result = crsToGrid.transform(point, position);
+        /*
+         * Transform geospatial coordinates to grid coordinates. Result is unconditionally stored
+         * in the `position` object, which will be copied by the caller if needed for public API.
+         */
+        final DirectPosition result = sourceToGrid.transform(point, position);
         if (result != position) {
-            final double[] coordinates = result.getCoordinate();
-            System.arraycopy(coordinates, 0, position.coordinates, 0, position.coordinates.length);
+            // Should not happen, but be paranoiac.
+            final double[] coordinates = position.coordinates;
+            System.arraycopy(result.getCoordinate(), 0, coordinates, 0, coordinates.length);
+        }
+        /*
+         * If most cases, the work of this method ends here. The remaining code in this method
+         * is for handling wraparound axes. If a coordinate is outside the coverage extent,
+         * check if a wraparound on some axes would bring the coordinates inside the extent.
+         * The first step is to get the point closest to the extent.
+         */
+        long axes = wraparoundAxes;
+        if (axes != 0) {
+            double[] coordinates = position.coordinates;
+            long outsideAxes = 0;
+            int j = 0;
+            do {
+                final int i = Long.numberOfTrailingZeros(axes);
+                final double c = coordinates[i];
+                double border;
+                if (c < (border = wraparoundExtent[j++]) || c > (border = wraparoundExtent[j])) {
+                    if (outsideAxes == 0) {
+                        final int n = coordinates.length;
+                        coordinates = Arrays.copyOf(coordinates, 2*Math.max(n, gridToWraparound.getTargetDimensions()));
+                        System.arraycopy(coordinates, 0, coordinates, n, n);
+                    }
+                    coordinates[i] = border;
+                    outsideAxes |= (1L << i);
+                }
+                j++;    // Outside above `if (…)` statement because increment needs to be unconditional.
+                axes &= ~(1L << i);
+            } while (axes != 0);
+            assert wraparoundExtent.length == j : j;
+            /*
+             * If a coordinate was found outside the grid, transform to a CRS where we can apply shift.
+             * It may be the same CRS than the coverage CRS or the source CRS, but not necessarily.
+             * Current version does not try to optimize by checking if `point` argument can be reused.
+             */
+            if (outsideAxes != 0) {
+                gridToWraparound.transform(coordinates, 0, coordinates, 0, 2);
+                final int s = gridToWraparound.getTargetDimensions();
+                for (int i = periods.length; --i >= 0;) {
+                    final double period = periods[i];
+                    if (period > 0) {
+                        /*
+                         * Compute the shift that was necessary for moving the point inside the grid,
+                         * then round that shift to an integer amount of periods. Modify the original
+                         * coordinate by applying that modified translation.
+                         */
+                        final int oi = i + s;
+                        double shift = coordinates[i] - coordinates[oi];
+                        shift = Math.copySign(Math.ceil(Math.abs(shift) / period), shift) * period;
+                        coordinates[oi] += shift;
+                    }
+                }
+                /*
+                 * Convert back the shifted point to grid coordinates, then check again if the new point
+                 * is inside the grid extent. If this is not the case, we will return the old position
+                 * on the assumption that it will be less confusing to the user.
+                 */
+                gridToWraparound.inverse().transform(coordinates, s, coordinates, 0, 1);
+                j = 0;
+                do {
+                    final int i = Long.numberOfTrailingZeros(outsideAxes);
+                    final double c = coordinates[i];
+                    if (c < wraparoundExtent[j++] || c > wraparoundExtent[j++]) {
+                        return position;
+                    }
+                    outsideAxes &= ~(1L << i);
+                } while (outsideAxes != 0);
+                System.arraycopy(coordinates, 0, position.coordinates, 0, position.coordinates.length);
+            }
         }
         return position;
+    }
+
+    /**
+     * Invoked when a recoverable exception occurred.
+     * Those exceptions must be minor enough that they can be silently ignored in most cases.
+     *
+     * @param  caller     the method where exception occurred.
+     * @param  exception  the exception that occurred.
+     */
+    private static void recoverableException(final String caller, final TransformException exception) {
+        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
     }
 }

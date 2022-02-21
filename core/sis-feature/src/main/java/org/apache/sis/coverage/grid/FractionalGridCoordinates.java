@@ -448,7 +448,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
         long   validMin = 0;
         long   validMax = 0;
         double distance = 0;
-        for (int i=bounds.getDimension(); --i >= 0;) {
+        for (int i = bounds.getDimension(); --i >= 0;) {
             final long low  = bounds.getLow(i);
             final long high = bounds.getHigh(i);
             final double c  = coordinates[i];

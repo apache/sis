@@ -19,9 +19,7 @@ package org.apache.sis.geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -31,7 +29,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.WraparoundApplicator;
+import org.apache.sis.internal.referencing.WraparoundAxesFinder;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
@@ -262,24 +260,10 @@ public class WraparoundAdjustment {
                  * Replace the input CRS by an intermediate CRS where wraparound axes can be found.
                  * We try to select a CRS as close as possible (simplest transform) to the input.
                  */
-                if (crs instanceof ProjectedCRS) {
-                    final ProjectedCRS p = (ProjectedCRS) crs;
-                    crs = p.getBaseCRS();       // Geographic, so a wraparound axis certainly exists.
-                    inputToShiftable = p.getConversionFromBase().getMathTransform().inverse();
-                } else {
-                    // TODO: we should handle the case of CompoundCRS before to fallback on identity.
-                    inputToShiftable = MathTransforms.identity(ReferencingUtilities.getDimension(crs));
-                }
-                final CoordinateSystem cs = crs.getCoordinateSystem();
-                for (int i = cs.getDimension(); --i >= 0;) {
-                    final double period = WraparoundApplicator.range(cs, i);
-                    if (period > 0) {
-                        if (periods == null) {
-                            transformDomain(crs);
-                            periods = new double[i + 1];
-                        }
-                        periods[i] = period;
-                    }
+                final WraparoundAxesFinder f = new WraparoundAxesFinder(crs);
+                inputToShiftable = f.preferredToSpecified.inverse();
+                if ((periods = f.periods()) != null) {
+                    transformDomain(f.preferredCRS);
                 }
             }
         }
