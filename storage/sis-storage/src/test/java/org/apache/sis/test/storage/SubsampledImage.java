@@ -26,6 +26,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.internal.util.Strings;
 
 import static java.lang.StrictMath.floorDiv;
 import static org.junit.Assert.*;
@@ -43,7 +44,7 @@ import static org.junit.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -196,7 +197,9 @@ final class SubsampledImage extends PlanarImage {
             }
             final String warning = image.verify();
             if (warning != null && (source instanceof PlanarImage)) {
-                assertEquals(((PlanarImage) source).verify(), warning);
+                // Source warning may be "source.height", which we replace by "height".
+                final String s = Strings.orEmpty(((PlanarImage) source).verify());
+                assertEquals(s, s.substring(s.lastIndexOf('.') + 1), warning);
             }
             return image;
         }
