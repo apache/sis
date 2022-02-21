@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -114,14 +114,27 @@ public class TiledImage extends PlanarImage {
         final int numXTiles  = getNumXTiles();
         final int tileWidth  = getTileWidth();
         final int tileHeight = getTileHeight();
+        final SampleModel sm = getSampleModel();
         for (int i=0; i < tiles.length; i++) {
             final Raster tile = tiles[i];
             final int tx = i % numXTiles;
             final int ty = i / numXTiles;
-            if (tile.getWidth()  != tileWidth)              return property(tx, ty, "width");
-            if (tile.getHeight() != tileHeight)             return property(tx, ty, "height");
-            if (tile.getMinX()   != tileWidth  * tx + minX) return property(tx, ty, "x");
-            if (tile.getMinY()   != tileHeight * ty + minY) return property(tx, ty, "y");
+            final int ox = minX + tx * tileWidth;
+            final int oy = minY + ty * tileHeight;
+            if (tile.getMinX() != ox) return property(tx, ty, "x");
+            if (tile.getMinY() != oy) return property(tx, ty, "y");
+            /*
+             * We accept two conventions for the raster size: either it is exactly equal to the tile size
+             * (possibly extending belong the image size), or either it is exactly equal to the tile size
+             * clipped to image size.
+             */
+            final int tw = tile.getWidth();
+            final int th = tile.getHeight();
+            if (tw != tileWidth || th != tileHeight) {
+                if (tw != Math.min(tileWidth,  width  - ox)) return property(tx, ty, "width");
+                if (th != Math.min(tileHeight, height - oy)) return property(tx, ty, "height");
+            }
+            if (!sm.equals(tile.getSampleModel())) return property(tx, ty, "sampleModel");
         }
         return super.verify();      // "width" and "height" properties should be checked last.
     }

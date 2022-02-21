@@ -194,14 +194,17 @@ detach: for (RTreeNode next; node != null; node = next) {
     }
 
     /**
-     * Finishes the construction of the tree. This methods sets the CRS of all nodes to a common value.
-     * An exception is thrown if incompatible CRS are found. This method does not verify the number of
-     * dimensions; this check should have been done by the caller.
+     * Finishes the construction of the tree. This method should be invoked only on the instance
+     * on which {@link #addNode(RTreeNode)} has been invoked. It performs the following tasks:
      *
-     * <p>This method should be invoked only on the instance on which {@link #addNode(RTreeNode)} has been
-     * invoked.</p>
+     * <ol>
+     *   <li>Verify that all nodes have the same CRS or null CRS. An exception is thrown if incompatible CRS are found.
+     *       This method does not verify the number of dimensions; this check should have been done by the caller.</li>
+     *   <li>Set the CRS of all nodes to the common value found in previous step.</li>
+     *   <li>Ensure that the tree has a single root, by creating a synthetic parent if necessary.</li>
+     * </ol>
      *
-     * @return the root of the tree (may be {@code this}).
+     * @return the root of the tree, which is {@code this} if this node has no sibling.
      */
     public final RTreeNode finish() {
         final Uniformizer action = new Uniformizer();
@@ -214,8 +217,9 @@ detach: for (RTreeNode next; node != null; node = next) {
         }
         /*
          * If there is more than one node, create a synthetic parent containing them all.
-         * We do not need to traverse all node for this task; only the immediate children
-         * of the new parent.
+         * We do not need to traverse all nodes for this task; only the immediate children
+         * of the new parent. The purpose of the synthetic parent is to have a single root
+         * (i.e. no sibling).
          */
         parent = new RTreeNode(this);
         parent.firstChild = this;
@@ -263,12 +267,12 @@ detach: for (RTreeNode next; node != null; node = next) {
      * to give to this method the most recently used node.</p>
      *
      * @param  node  any node in the tree. Should be node most likely to contain the position.
-     * @param  pos   the position of the node to locate.
-     * @return the smallest node containing the given position.
+     * @param  pos   the position of the node to locate, or {@code null} if none.
+     * @return the smallest node containing the given position, or {@code null} if none.
      */
     public static RTreeNode locate(RTreeNode node, final DirectPosition pos) {
         RTreeNode skip = null;      // For avoiding to invoke `contains(pos)` twice on the same mode.
-        do {
+        if (node != null) do {
             if (node.contains(pos)) {
                 /*
                  * Before to return the node we just found, check if a child contains the point.

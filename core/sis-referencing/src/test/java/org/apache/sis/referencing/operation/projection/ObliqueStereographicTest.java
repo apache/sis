@@ -40,7 +40,8 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @author  Emmanuel Giasson (Thales)
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -141,6 +142,16 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
     }
 
     /**
+     * Creates the complete transform from the given parameter values.
+     * Input and output coordinates will be in degrees, contrarily to the transform
+     * created by above {@link #createNormalizedProjection(boolean)} method.
+     */
+    private void createCompleteTransform(final OperationMethod op, final ParameterValueGroup p) throws FactoryException {
+        transform = new ObliqueStereographic(op, (Parameters) p).createMapProjection(
+                DefaultFactories.forBuildin(MathTransformFactory.class));
+    }
+
+    /**
      * The point given in the EPSG guide for testing the map projection.
      * (φ<sub>t</sub>, λ<sub>t</sub>) is the source geographic coordinate in degrees and
      * (x<sub>t</sub>, y<sub>t</sub>) is the target projected coordinate in metres.
@@ -208,6 +219,27 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
 
         assertEquals("Longitude", λt, dstPts[0], Formulas.ANGULAR_TOLERANCE);
         assertEquals("Latitude",  φt, dstPts[1], Formulas.ANGULAR_TOLERANCE);
+    }
+
+    /**
+     * Tests consistency between forward and inverse projection using a point that was known to fail.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-537">SIS-537</a>
+     */
+    @Test
+    public void testObliqueStereographicConsistency() throws FactoryException, TransformException {
+        final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
+        final ParameterValueGroup p = op.getParameters().createValue();
+        p.parameter("semi_major").setValue(WGS84_A);
+        p.parameter("semi_minor").setValue(WGS84_B);
+        p.parameter("Latitude of natural origin") .setValue( 45, Units.DEGREE);
+        p.parameter("Longitude of natural origin").setValue(-70, Units.DEGREE);
+        createCompleteTransform(op, p);
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        verifyInverse(new double[] {30, 45});
     }
 
     /**
@@ -358,9 +390,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         p.parameter("Scale factor at natural origin").setValue(0.994);
         p.parameter("False easting")                 .setValue(2000000);
         p.parameter("False northing")                .setValue(2000000);
-
-        transform = new ObliqueStereographic(op, (Parameters) p).createMapProjection(
-                DefaultFactories.forBuildin(MathTransformFactory.class));
+        createCompleteTransform(op, p);
         tolerance = 0.01;
         verifyTransform(new double[] {44, 73}, new double[] {3320416.75, 632668.43});
     }

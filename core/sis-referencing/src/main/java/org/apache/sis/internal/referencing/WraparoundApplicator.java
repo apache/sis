@@ -178,7 +178,7 @@ public final class WraparoundApplicator {
      * @param  dimension  dimension of the axis to test.
      * @return the wraparound range, or {@link Double#NaN} if none.
      */
-    public static double range(final CoordinateSystem cs, final int dimension) {
+    static double range(final CoordinateSystem cs, final int dimension) {
         final CoordinateSystemAxis axis = cs.getAxis(dimension);
         if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
             double period = axis.getMaximumValue() - axis.getMinimumValue();
