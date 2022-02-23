@@ -34,6 +34,10 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.internal.style.FeatureTypeStyle;
+import org.apache.sis.internal.style.LineSymbolizer;
+import org.apache.sis.internal.style.Rule;
+import org.apache.sis.internal.style.Style;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
@@ -57,6 +61,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
+import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
@@ -184,10 +189,10 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testSanity() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final Rule rule = new Rule();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -221,10 +226,10 @@ public class SEPortrayerTest extends TestCase {
         env.setRange(0, 9, 11);
         env.setRange(1, 19, 21);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final Rule rule = new Rule();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -250,10 +255,10 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testUserQuery() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final Rule rule = new Rule();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -288,11 +293,11 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleTypeNames() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         fts.featureTypeNames().add(Names.createLocalName(null, null, "boat"));
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Rule rule = new Rule();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -319,11 +324,11 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleSemanticType() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         fts.semanticTypeIdentifiers().add(SemanticType.POINT);
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Rule rule = new Rule();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -353,11 +358,11 @@ public class SEPortrayerTest extends TestCase {
     public void testRuleFilter() {
         final Filter<Feature> filter = filterFactory.resourceId("2");
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final Rule rule = new Rule();
         rule.setFilter(filter);
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -383,26 +388,26 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testRuleScale() {
-        final MockLineSymbolizer symbolizerAbove = new MockLineSymbolizer();
-        final MockLineSymbolizer symbolizerUnder = new MockLineSymbolizer();
-        final MockLineSymbolizer symbolizerMatch = new MockLineSymbolizer();
+        final LineSymbolizer symbolizerAbove = new LineSymbolizer();
+        final LineSymbolizer symbolizerUnder = new LineSymbolizer();
+        final LineSymbolizer symbolizerMatch = new LineSymbolizer();
 
         //Symbology rendering scale here is 3.944391406060875E8
-        final MockRule ruleAbove = new MockRule();
+        final Rule ruleAbove = new Rule();
         ruleAbove.symbolizers().add(symbolizerAbove);
         ruleAbove.setMinScaleDenominator(4e8);
         ruleAbove.setMaxScaleDenominator(Double.MAX_VALUE);
-        final MockRule ruleUnder = new MockRule();
+        final Rule ruleUnder = new Rule();
         ruleUnder.symbolizers().add(symbolizerUnder);
         ruleUnder.setMinScaleDenominator(0.0);
         ruleUnder.setMaxScaleDenominator(3e8);
-        final MockRule ruleMatch = new MockRule();
+        final Rule ruleMatch = new Rule();
         ruleMatch.symbolizers().add(symbolizerMatch);
         ruleMatch.setMinScaleDenominator(3e8);
         ruleMatch.setMaxScaleDenominator(4e8);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleAbove);
         fts.rules().add(ruleUnder);
@@ -439,11 +444,11 @@ public class SEPortrayerTest extends TestCase {
                 filterFactory.literal("White Shark"),
                 true, MatchAction.ANY);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final Rule rule = new Rule();
         rule.setFilter(filter);
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -473,18 +478,18 @@ public class SEPortrayerTest extends TestCase {
     public void testRuleElseCondition() {
         final Filter<Feature> filter = filterFactory.resourceId("10");
 
-        final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
-        final MockLineSymbolizer symbolizerElse = new MockLineSymbolizer();
+        final LineSymbolizer symbolizerBase = new LineSymbolizer();
+        final LineSymbolizer symbolizerElse = new LineSymbolizer();
 
-        final MockRule ruleBase = new MockRule();
+        final Rule ruleBase = new Rule();
         ruleBase.symbolizers().add(symbolizerBase);
         ruleBase.setFilter(filter);
-        final MockRule ruleOther = new MockRule();
-        ruleOther.setIsElseFilter(true);
+        final Rule ruleOther = new Rule();
+        ruleOther.setElseFilter(true);
         ruleOther.symbolizers().add(symbolizerElse);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
         fts.rules().add(ruleOther);
@@ -514,13 +519,13 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testAggregateResource() {
-        final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
+        final LineSymbolizer symbolizerBase = new LineSymbolizer();
 
-        final MockRule ruleBase = new MockRule();
+        final Rule ruleBase = new Rule();
         ruleBase.symbolizers().add(symbolizerBase);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
 
@@ -569,14 +574,14 @@ public class SEPortrayerTest extends TestCase {
     @Test
     public void testPreserveProperties() {
         final Filter<Feature> filter = filterFactory.resourceId("2");
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final LineSymbolizer symbolizer = new LineSymbolizer();
 
-        final MockRule rule = new MockRule();
+        final Rule rule = new Rule();
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
 
@@ -634,15 +639,15 @@ public class SEPortrayerTest extends TestCase {
                 filterFactory.literal("2"),
                 true, MatchAction.ANY);
 
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
-        symbolizer.perpendicularOffset = filterFactory.property("description", String.class);
+        final LineSymbolizer symbolizer = new LineSymbolizer();
+        symbolizer.setPerpendicularOffset((Expression)filterFactory.property("description", String.class));
 
-        final MockRule rule = new MockRule();
+        final Rule rule = new Rule();
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
 
@@ -676,14 +681,14 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testGeometryExpression() {
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
-        symbolizer.geometry = filterFactory.function("ST_Centroid", filterFactory.property("geom"));
+        final LineSymbolizer symbolizer = new LineSymbolizer();
+        symbolizer.setGeometry(filterFactory.function("ST_Centroid", filterFactory.property("geom")));
 
-        final MockRule rule = new MockRule();
+        final Rule rule = new Rule();
         rule.symbolizers().add(symbolizer);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Style style = new Style();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
 
