@@ -18,13 +18,14 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
  * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -43,6 +44,7 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
         PARAMETERS = builder()
                 .addIdentifier("9606")
                 .addName("Position Vector transformation (geog2D domain)")
+                .addName(Citations.ESRI, "Position_Vector")
                 .createGroup(SRC_SEMI_MAJOR,
                              SRC_SEMI_MINOR,
                              TGT_SEMI_MAJOR,

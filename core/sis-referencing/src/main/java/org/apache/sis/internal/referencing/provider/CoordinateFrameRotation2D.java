@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
@@ -26,7 +27,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -45,6 +46,7 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
         PARAMETERS = builder()
                 .addIdentifier("9607")
                 .addName("Coordinate Frame Rotation (geog2D domain)")
+                .addName(Citations.ESRI, "Coordinate_Frame")
                 .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply

@@ -31,6 +31,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
@@ -56,7 +57,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Tests {@link GeodeticObjectParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -1086,6 +1087,43 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertLongitudeAxisEquals(cs.getAxis(0));
         assertLatitudeAxisEquals (cs.getAxis(1));
         assertUnboundedAxisEquals("Ellipsoidal height", "h", AxisDirection.UP, Units.METRE, cs.getAxis(2));
+    }
+
+    /**
+     * Tests the parsing of a {@code GEOGTRAN} coordinate operation.
+     * This is specific to ESRI.
+     *
+     * @throws ParseException if the parsing failed.
+     *
+     * @since 1.2
+     */
+    @Test
+    @DependsOnMethod("testGeographicWithImplicitAxes")
+    public void testGeogTran() throws ParseException {
+        final CoordinateOperation op = parse(CoordinateOperation.class,
+                "GEOGTRAN[“Palestine_1923_to_WGS_84_1”,\n" +
+                "  GEOGCS[“GCS_Palestine_1923”,\n" +
+                "    DATUM[“D_Palestine_1923”,\n" +
+                "      SPHEROID[“Clarke_1880_Benoit”, 6378300.789, 293.46631553898]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0], UNIT[“Degree”, 0.0174532925199433]],\n" +
+                "  GEOGCS[“GCS_WGS_1984”,\n" +
+                "    DATUM[“D_WGS_1984”,\n" +
+                "    SPHEROID[“WGS_1984”, 6378137.0, 298.257223563]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0], UNIT[“Degree”, 0.0174532925199433]],\n" +
+                "  METHOD[“Position_Vector”],\n" +
+                "    PARAMETER[“X_Axis_Translation”, -275.7224],\n" +
+                "    PARAMETER[“Y_Axis_Translation”, 94.7824],\n" +
+                "    PARAMETER[“Z_Axis_Translation”, 340.8944],\n" +
+                "    PARAMETER[“X_Axis_Rotation”, -8.001],\n" +
+                "    PARAMETER[“Y_Axis_Rotation”, -4.42],\n" +
+                "    PARAMETER[“Z_Axis_Rotation”,-11.821],\n" +
+                "    PARAMETER[“Scale_Difference”, 1.0],\n" +
+                "  AUTHORITY[“EPSG”, 1074]]");
+
+        final GeographicCRS sourceCRS = (GeographicCRS) op.getSourceCRS();
+        final GeographicCRS targetCRS = (GeographicCRS) op.getTargetCRS();
+        assertNameAndIdentifierEqual("GCS_Palestine_1923", 0, sourceCRS);
+        assertNameAndIdentifierEqual("GCS_WGS_1984",       0, targetCRS);
     }
 
     /**
