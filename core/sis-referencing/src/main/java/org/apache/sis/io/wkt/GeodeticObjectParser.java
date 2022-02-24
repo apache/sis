@@ -100,7 +100,7 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -321,7 +321,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             (object = parseParametricDatum  (FIRST, element       )) == null &&
             (object = parseEngineeringDatum (FIRST, element, false)) == null &&
             (object = parseImageDatum       (FIRST, element       )) == null &&
-            (object = parseOperation        (FIRST, element))        == null)
+            (object = parseOperation        (FIRST, element))        == null &&
+            (object = parseGeogTranslation  (FIRST, element))        == null)
         {
             throw element.missingOrUnknownComponent(WKTKeywords.GeodeticCRS);
         }
@@ -409,6 +410,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  fallback  the fallback to use if {@code name} is empty.
      * @return a properties map with the parent name and the optional authority code.
      * @throws ParseException if an element can not be parsed.
+     *
+     * @see #parseParametersAndClose(Element, String, OperationMethod)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Object> parseMetadataAndClose(final Element parent, final String name,
@@ -2252,6 +2255,32 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
+     * Parses a {@code "GeogTran"} element. This is specific to ESRI.
+     *
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "GeogTran"} element as a {@link CoordinateOperation} object.
+     * @throws ParseException if the {@code "GeogTran"} element can not be parsed.
+     */
+    private CoordinateOperation parseGeogTranslation(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode, WKTKeywords.GeogTran);
+        if (element == null) {
+            return null;
+        }
+        final String name = element.pullString("name");
+        final CoordinateReferenceSystem sourceCRS  = parseGeodeticCRS(MANDATORY, element, 2, null);
+        final CoordinateReferenceSystem targetCRS  = parseGeodeticCRS(MANDATORY, element, 2, null);
+        final OperationMethod           method     = parseMethod(element, WKTKeywords.Method);
+        final Map<String,Object>        properties = parseParametersAndClose(element, name, method);
+        try {
+            final DefaultCoordinateOperationFactory df = getOperationFactory();
+            return df.createSingleOperation(properties, sourceCRS, targetCRS, null, method, null);
+        } catch (FactoryException e) {
+            throw element.parseFailed(e);
+        }
+    }
+
+    /**
      * Parses a {@code "CoordinateOperation"} element. The syntax is given by
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>.
      *
@@ -2271,26 +2300,50 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL,  WKTKeywords.InterpolationCRS);
         final OperationMethod           method           = parseMethod(element, WKTKeywords.Method);
         final Element                   accuracy         = element.pullElement(OPTIONAL, WKTKeywords.OperationAccuracy);
-        final Map<String,Object>        properties       = parseMetadataAndClose(element, name, method);
-        final ParameterValueGroup       parameters       = method.getParameters().createValue();
-        parseParameters(element, parameters, null, null);
-        properties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
+        final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
                     TransformationAccuracy.create(accuracy.pullDouble("accuracy")));
             accuracy.close(ignoredElements);
         }
         try {
-            final DefaultCoordinateOperationFactory df;
-            final CoordinateOperationFactory opFactory = factories.getCoordinateOperationFactory();
-            if (opFactory instanceof DefaultCoordinateOperationFactory) {
-                df = (DefaultCoordinateOperationFactory) opFactory;
-            } else {
-                df = CoordinateOperations.factory();
-            }
+            final DefaultCoordinateOperationFactory df = getOperationFactory();
             return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
         } catch (FactoryException e) {
             throw element.parseFailed(e);
+        }
+    }
+
+    /**
+     * Parses a sequence of {@code "PARAMETER"} elements, then parses optional metadata elements and close.
+     *
+     * @param  parent  the parent element.
+     * @param  name    the name of the parent object being parsed.
+     * @param  method  the operation method, also the fallback to use if {@code name} is empty.
+     * @return a properties map with the parent name, the optional authority code and the parameters.
+     * @throws ParseException if an element can not be parsed.
+     *
+     * @see #parseMetadataAndClose(Element, String, IdentifiedObject)
+     */
+    private Map<String,Object> parseParametersAndClose(final Element parent, final String name,
+            final OperationMethod method) throws ParseException
+    {
+        final ParameterValueGroup parameters = method.getParameters().createValue();
+        parseParameters(parent, parameters, null, null);
+        final Map<String,Object> properties = parseMetadataAndClose(parent, name, method);
+        properties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
+        return properties;
+    }
+
+    /**
+     * Returns the factory to use for creating coordinate operation.
+     */
+    private DefaultCoordinateOperationFactory getOperationFactory() {
+        final CoordinateOperationFactory opFactory = factories.getCoordinateOperationFactory();
+        if (opFactory instanceof DefaultCoordinateOperationFactory) {
+            return (DefaultCoordinateOperationFactory) opFactory;
+        } else {
+            return CoordinateOperations.factory();
         }
     }
 }

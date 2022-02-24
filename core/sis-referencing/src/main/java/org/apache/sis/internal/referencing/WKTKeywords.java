@@ -38,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -190,7 +190,8 @@ public final class WKTKeywords extends Static {
             InterpolationCRS    = "InterpolationCRS",
             Parameter           = "Parameter",
             ParameterFile       = "ParameterFile",
-            ParameterGroup      = "ParameterGroup";
+            ParameterGroup      = "ParameterGroup",
+            GeogTran            = "GeogTran";               // ESRI-specific.
 
     /**
      * Related to {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform}.

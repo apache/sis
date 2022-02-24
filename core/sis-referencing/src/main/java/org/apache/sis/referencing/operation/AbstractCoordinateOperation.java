@@ -34,6 +34,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -71,6 +72,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.io.wkt.Convention;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -103,7 +105,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -934,6 +936,17 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Formats this coordinate operation in Well Known Text (WKT) version 2 format.
      *
+     * <h4>ESRI extension</h4>
+     * Coordinate operations can not be formatted in standard WKT 1 format, but an ESRI variant of WKT 1
+     * allows a subset of coordinate operations with the ESRI-specific {@code GEOGTRAN} keyword.
+     * To enabled this variant, {@link org.apache.sis.io.wkt.WKTFormat} can be configured as below:
+     *
+     * {@preformat java
+     *     format = new WKTFormat(null, null);
+     *     format.setConvention(Convention.WKT1_IGNORE_AXES);
+     *     format.setNameAuthority(Citations.ESRI);
+     * }
+     *
      * @param  formatter  the formatter to use.
      * @return {@code "CoordinateOperation"}.
      *
@@ -943,6 +956,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
+        final CoordinateReferenceSystem sourceCRS = getSourceCRS();
+        final CoordinateReferenceSystem targetCRS = getTargetCRS();
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = (convention.majorVersion() == 1);
         /*
          * If the WKT is a component of a ConcatenatedOperation, do not format the source CRS since it is identical
          * to the target CRS of the previous step, or to the source CRS of the enclosing "ConcatenatedOperation" if
@@ -954,9 +971,18 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         final FormattableObject enclosing = formatter.getEnclosingElement(1);
         final boolean isSubOperation = (enclosing instanceof PassThroughOperation);
         final boolean isComponent    = (enclosing instanceof ConcatenatedOperation);
+        boolean isGeogTran = false;
         if (!isSubOperation && !isComponent) {
-            append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
-            append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
+            isGeogTran = isWKT1 && (sourceCRS instanceof GeographicCRS) && (targetCRS instanceof GeographicCRS);
+            if (isGeogTran) {
+                // ESRI-specific, similar to WKT 1.
+                formatter.append(WKTUtilities.toFormattable(sourceCRS)); formatter.newLine();
+                formatter.append(WKTUtilities.toFormattable(targetCRS)); formatter.newLine();
+            } else {
+                // WKT 2 (ISO 19162).
+                append(formatter, sourceCRS, WKTKeywords.SourceCRS);
+                append(formatter, targetCRS, WKTKeywords.TargetCRS);
+            }
         }
         final OperationMethod method = getMethod();
         if (method != null) {
@@ -983,8 +1009,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                  * to mix EPSG or someone else components with their own. Note also that we don't apply filtering
                  * on MathTransform WKT neither for more reliable debugging.
                  */
-                final boolean filter = WKTUtilities.isEPSG(parameters.getDescriptor(), false) &&   // NOT method.getName()
-                        Constants.EPSG.equalsIgnoreCase(Citations.toCodeSpace(formatter.getNameAuthority()));
+                final boolean filter = isGeogTran ||
+                        (WKTUtilities.isEPSG(parameters.getDescriptor(), false) &&   // NOT method.getName()
+                        Constants.EPSG.equalsIgnoreCase(Citations.toCodeSpace(formatter.getNameAuthority())));
                 formatter.newLine();
                 formatter.indent(+1);
                 for (final GeneralParameterValue param : parameters.values()) {
@@ -995,7 +1022,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 formatter.indent(-1);
             }
         }
-        if (!isSubOperation && !(this instanceof ConcatenatedOperation)) {
+        /*
+         * Add interpolation CRS if we are formatting a top-level WKT 2 single operation.
+         */
+        if (!isSubOperation && !isGeogTran && !(this instanceof ConcatenatedOperation)) {
             append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
             final double accuracy = getLinearAccuracy();
             if (accuracy > 0) {
@@ -1007,7 +1037,16 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 });
             }
         }
-        if (formatter.getConvention().majorVersion() == 1) {
+        /*
+         * Verifies if what we wrote is allowed by the standard.
+         */
+        if (isGeogTran) {
+            if (method == null || convention != Convention.WKT1_IGNORE_AXES) {
+                formatter.setInvalidWKT(this, null);
+            }
+            return WKTKeywords.GeogTran;
+        }
+        if (isWKT1) {
             formatter.setInvalidWKT(this, null);
         }
         if (isComponent) {
