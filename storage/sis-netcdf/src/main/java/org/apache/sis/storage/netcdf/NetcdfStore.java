@@ -18,6 +18,7 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.net.URI;
 import java.util.List;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
@@ -56,7 +58,7 @@ import ucar.nc2.constants.CDM;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see NetcdfStoreProvider
  *
@@ -67,8 +69,11 @@ public class NetcdfStore extends DataStore implements Aggregate {
     /**
      * The object to use for decoding the netCDF file content. There is two different implementations,
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
+     * This is set to {@code null} when the data store is closed.
+     *
+     * @see #decoder()
      */
-    private final Decoder decoder;
+    private Decoder decoder;
 
     /**
      * The {@link NetcdfStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -152,7 +157,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @since 0.8
      */
     public synchronized Version getConventionVersion() throws DataStoreException {
-        for (final CharSequence value : CharSequences.split(decoder.stringValue(CDM.CONVENTIONS), ',')) {
+        for (final CharSequence value : CharSequences.split(decoder().stringValue(CDM.CONVENTIONS), ',')) {
             if (CharSequences.regionMatches(value, 0, "CF-", true)) {
                 return new Version(value.subSequence(3, value.length()).toString());
             }
@@ -170,7 +175,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        final NameSpace namespace = decoder.namespace;
+        final NameSpace namespace = decoder().namespace;
         return (namespace != null) ? Optional.of(namespace.name()) : Optional.empty();
     }
 
@@ -185,7 +190,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
-            final MetadataReader reader = new MetadataReader(decoder);
+            final MetadataReader reader = new MetadataReader(decoder());
             metadata = reader.read();
         } catch (IOException | ArithmeticException e) {
             throw new DataStoreException(e);
@@ -209,7 +214,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
         final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
         final TreeTable.Node root = table.getRoot();
         root.setValue(TableColumn.NAME, NetcdfStoreProvider.NAME);
-        decoder.addAttributesTo(root);
+        decoder().addAttributesTo(root);
         return Optional.of(table);
     }
 
@@ -225,6 +230,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) try {
+            final Decoder decoder = decoder();
             Resource[] resources = decoder.getDiscreteSampling(this);
             final List<Resource> grids = RasterResource.create(decoder, this);
             if (!grids.isEmpty()) {
@@ -258,12 +264,28 @@ public class NetcdfStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized void close() throws DataStoreException {
-        metadata = null;
-        try {
-            decoder.close();
+        final Decoder reader = decoder;
+        decoder    = null;
+        metadata   = null;
+        components = null;
+        if (reader != null) try {
+            reader.close();
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+    }
+
+    /**
+     * Returns the decoder if it has not been closed.
+     *
+     * @see #close()
+     */
+    private Decoder decoder() throws DataStoreClosedException {
+        final Decoder reader = decoder;
+        if (reader == null) {
+            throw new DataStoreClosedException(getLocale(), NetcdfStoreProvider.NAME, StandardOpenOption.READ);
+        }
+        return reader;
     }
 
     /**
