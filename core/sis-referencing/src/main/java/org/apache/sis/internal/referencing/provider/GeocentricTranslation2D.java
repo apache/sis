@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
@@ -26,7 +27,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -45,6 +46,7 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
         PARAMETERS = builder()
                 .addIdentifier("9603")
                 .addName("Geocentric translations (geog2D domain)")
+                .addName(Citations.ESRI, "Geocentric_Translation")
                 .createGroup(SRC_SEMI_MAJOR,
                              SRC_SEMI_MINOR,
                              TGT_SEMI_MAJOR,

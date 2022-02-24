@@ -372,6 +372,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Returns the reader if it is not closed, or thrown an exception otherwise.
+     *
+     * @see #close()
      */
     private Reader reader() throws DataStoreException {
         final Reader r = reader;
@@ -499,6 +501,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     public synchronized void close() throws DataStoreException {
         final Reader r = reader;
         reader = null;
+        components = null;
         if (r != null) try {
             r.close();
         } catch (IOException e) {

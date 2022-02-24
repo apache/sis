@@ -47,7 +47,7 @@ import org.apache.sis.internal.util.Constants;
  * @since 0.8
  * @module
  */
-@StoreMetadata(formatName   = "GeoTIFF",
+@StoreMetadata(formatName   = Constants.GEOTIFF,
                fileSuffixes = {"tiff", "tif"},
                capabilities = Capability.READ)
 public class GeoTiffStoreProvider extends DataStoreProvider {
