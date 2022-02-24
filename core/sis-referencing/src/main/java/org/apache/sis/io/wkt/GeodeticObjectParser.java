@@ -2264,8 +2264,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return null;
         }
         final String name = element.pullString("name");
-        final CoordinateReferenceSystem sourceCRS  = parseCoordinateReferenceSystem(element, true);
-        final CoordinateReferenceSystem targetCRS  = parseCoordinateReferenceSystem(element, true);
+        final CoordinateReferenceSystem sourceCRS  = parseGeodeticCRS(MANDATORY, element, 2, null);
+        final CoordinateReferenceSystem targetCRS  = parseGeodeticCRS(MANDATORY, element, 2, null);
         final OperationMethod           method     = parseMethod(element, WKTKeywords.Method);
         final Map<String,Object>        properties = parseParametersAndClose(element, name, method);
         try {

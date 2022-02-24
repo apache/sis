@@ -1095,6 +1095,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *
      * @throws ParseException if the parsing failed.
      *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-538">SIS-538</a>
      * @since 1.2
      */
     @Test
@@ -1116,7 +1117,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                 "    PARAMETER[“Z_Axis_Translation”, 340.8944],\n" +
                 "    PARAMETER[“X_Axis_Rotation”, -8.001],\n" +
                 "    PARAMETER[“Y_Axis_Rotation”, -4.42],\n" +
-                "    PARAMETER[“Z_Axis_Rotation”,-11.821],\n" +
+                "    PARAMETER[“Z_Axis_Rotation”, -11.821],\n" +
                 "    PARAMETER[“Scale_Difference”, 1.0],\n" +
                 "  AUTHORITY[“EPSG”, 1074]]");
 

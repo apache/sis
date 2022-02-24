@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link WKTFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -143,7 +143,7 @@ public final strictfp class WKTFormatTest extends TestCase {
      * @throws ParseException if a parsing failed.
      */
     private void testConsistency() throws ParseException {
-        testConsistency(
+        testConsistency(false,
                 "GEOGCS[“Tokyo”,"
                 + "DATUM[“Tokyo”,"
                 +   "SPHEROID[“Bessel 1841”, 6377397.155, 299.1528128, AUTHORITY[“EPSG”,“7004”]],"
@@ -154,7 +154,7 @@ public final strictfp class WKTFormatTest extends TestCase {
                 + "AXIS[“Long”,EAST],"
                 + "AUTHORITY[“EPSG”,“4301”]]");
 
-        testConsistency(
+        testConsistency(false,
                 "GEOGCS[“NTF (Paris)”,"
                 + "DATUM[“Nouvelle_Triangulation_Francaise”,"
                 +   "SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.466021293627, AUTHORITY[“EPSG”,“7011”]],"
@@ -165,7 +165,7 @@ public final strictfp class WKTFormatTest extends TestCase {
                 + "AXIS[“Long”,EAST],"
                 + "AUTHORITY[“EPSG”,“4807”]]");
 
-        testConsistency(
+        testConsistency(false,
                 "PROJCS[“NAD27 / Texas South Central”,"
                 + "GEOGCS[“NAD27”,"
                 +   "DATUM[“North American Datum 1927”,"
@@ -184,7 +184,7 @@ public final strictfp class WKTFormatTest extends TestCase {
                 + "AXIS[“Y”,NORTH],"
                 + "AXIS[“X”,EAST]]");
 
-        testConsistency(
+        testConsistency(false,
                 "VERT_CS[“mean sea level depth”,"
                 + "VERT_DATUM[“Mean Sea Level”,2005,AUTHORITY[“EPSG”,“5100”]],"
                 + "UNIT[“kilometre”,1000],AXIS[“Z”,DOWN]]");
@@ -201,7 +201,7 @@ public final strictfp class WKTFormatTest extends TestCase {
      * @throws ParseException if a parsing failed.
      */
     private void testConsistencyWithDenormalizedBaseCRS() throws ParseException {
-        testConsistency(
+        testConsistency(false,
                 "PROJCS[“NTF (Paris) / France I”,"
                 + "GEOGCS[“NTF (Paris)”,"
                 +   "DATUM[“Nouvelle_Triangulation_Francaise”,"
@@ -225,15 +225,56 @@ public final strictfp class WKTFormatTest extends TestCase {
     }
 
     /**
+     * Tests consistency between the parser and the formatter for the ESRI-specific "GeogTran" object.
+     *
+     * @throws ParseException if a parsing failed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-538">SIS-538</a>
+     * @since 1.2
+     */
+    @Test
+    @DependsOnMethod("testConsistencyOfWKT1")
+    public void testConsistencyOfGeogTran() throws ParseException {
+        final Symbols symbols = new Symbols(Symbols.SQUARE_BRACKETS);
+        symbols.setPairedQuotes("“”", "\"\"");
+        format = new WKTFormat(null, null);
+        format.setConvention(Convention.WKT1_IGNORE_AXES);
+        format.setNameAuthority(Citations.ESRI);
+        format.setSymbols(symbols);
+        parser = format;
+        testConsistency(true,
+                "GEOGTRAN[“Abidjan 1987 to WGS 1984_20”,\n" +
+                "  GEOGCS[“Abidjan 1987”,\n" +
+                "    DATUM[“D_Abidjan_1987”,\n" +
+                "      SPHEROID[“Clarke_ 880 RGS”, 6378249.145, 293.465]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295]],\n" +
+                "  GEOGCS[“WGS 1984”,\n" +
+                "    DATUM[“D_WGS_1984”,\n" +
+                "      SPHEROID[“WGS 1984”, 6378137.0, 298.257223563]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295]],\n" +
+                "  METHOD[“Geocentric_Translation”, AUTHORITY[“EPSG”, “9603”]],\n" +
+                "    PARAMETER[“X-axis translation”, -123.1],\n" +
+                "    PARAMETER[“Y-axis translation”, 53.2],\n" +
+                "    PARAMETER[“Z-axis translation”, 465.4]]");
+    }
+
+    /**
      * Implementation of {@link #testConsistency()} for a single WKT.
      *
+     * @param  strict  whether to require strict equality of WKT strings.
+     * @param  wkt     the Well-Known Text to parse and reformat.
      * @throws ParseException if the parsing failed.
      */
-    private void testConsistency(final String wkt) throws ParseException {
+    private void testConsistency(final boolean strict, final String wkt) throws ParseException {
         final Object expected = parser.parseObject(wkt);
         final String reformat = format.format(expected);
         final Object reparsed = format.parseObject(reformat);
         assertEqualsIgnoreMetadata(expected, reparsed);
+        if (strict) {
+            assertMultilinesEquals(wkt, reformat);
+        }
     }
 
     /**
