@@ -249,26 +249,26 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
 
     /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
-     * This method searches for a grid previously computed by {@link DecoderWrapper#getGrids()}, keeping in mind that
-     * the UCAR library sometime builds {@link CoordinateSystem} instances with axes in different order than what we
-     * would expect. This method delegates to the super-class method only if the grid requires a different analysis
-     * than the one performed by UCAR library.
+     * This method searches for a grid previously computed by {@link DecoderWrapper#getGridCandidates()},
+     * keeping in mind that the UCAR library sometime builds {@link CoordinateSystem} instances with axes
+     * in different order than what we would expect. This method delegates to the super-class method only
+     * if the grid requires a different analysis than the one performed by UCAR library.
      *
      * <p>This method should be invoked by {@link #getGridGeometry()} only once.
      * For that reason, it does not need to cache the value.</p>
      *
-     * @see DecoderWrapper#getGrids()
+     * @see DecoderWrapper#getGridCandidates()
      */
     @Override
-    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
+    protected Grid findGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         /*
          * In some netCDF files, more than one grid could be associated to a variable. If the names of the
          * variables to use as coordinate system axes have been specified, use those names for filtering.
          * Otherwise no filtering is applied (which is the common case). If more than one grid fit, take
          * the first grid having the largest number of dimensions.
          *
-         * This block duplicates work done in super.getGrid(…), except that it focuses on the set of coordinate
-         * systems identified by UCAR for this variable while super.getGrid(…) inspects all dimensions found in
+         * This block duplicates work done in super.findGrid(…), except that it focuses on the set of coordinate
+         * systems identified by UCAR for this variable while super.findGrid(…) inspects all dimensions found in
          * the file. Note that those coordinate systems may have been set by the user.
          */
         if (variable instanceof VariableDS) {
@@ -276,7 +276,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
             if (!systems.isEmpty()) {
                 GridWrapper grid = null;
                 final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
-                for (final Grid candidate : decoder.getGrids()) {
+                for (final Grid candidate : decoder.getGridCandidates()) {
                     final GridWrapper ordered = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
                     if (ordered != null && (grid == null || ordered.getSourceDimensions() > grid.getSourceDimensions())) {
                         grid = ordered;
@@ -293,7 +293,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
          * can map to the variable dimension using attribute values. This mechanism is described
          * in Convention.nameOfDimension(…).
          */
-        return (GridWrapper) super.getGrid(adjustment);
+        return (GridWrapper) super.findGrid(adjustment);
     }
 
     /**

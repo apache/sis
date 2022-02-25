@@ -41,6 +41,9 @@ import org.apache.sis.util.ArraysExt;
  * However the UCAR model takes a different point of view where the coordinate system holds some
  * of the grid geometry information.
  *
+ * <p>{@code GridWrapper} instances do not contain data; they are only about the geometry of grids.
+ * Many netCDF variables may be associated to the same {@code GridWrapper} instance.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
@@ -122,7 +125,7 @@ final class GridWrapper extends Grid {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link VariableWrapper#getGrid} when the localization grids created
+     * This method is invoked by {@link VariableWrapper#findGrid} when the localization grids created
      * by {@link DecoderWrapper} are not sufficient and must be tailored for a particular variable.
      * Returns {@code null} if this grid contains a dimension not in the given list.
      */

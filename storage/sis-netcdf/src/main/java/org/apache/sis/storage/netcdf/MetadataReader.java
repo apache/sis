@@ -112,7 +112,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -182,6 +182,11 @@ final class MetadataReader extends MetadataBuilder {
     private VerticalCRS verticalCRS;
 
     /**
+     * Whether at least one grid coverage has been found during iteration over variables.
+     */
+    private boolean hasGridCoverages;
+
+    /**
      * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
      *
      * @param  decoder  the source of netCDF attributes.
@@ -225,7 +230,7 @@ final class MetadataReader extends MetadataBuilder {
         final List<String> items = new ArrayList<>();
         int start = 0;      // Index of the first character of the next item to add in the list.
         int end;            // Index after the last character of the next item to add in the list.
-        int next;           // Index of the next separator (comma) after 'end'.
+        int next;           // Index of the next separator (comma) after `end`.
         final int length = CharSequences.skipTrailingWhitespaces(value, 0, value.length());
 split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, length)) < length) {
             if (value.charAt(start) == QUOTE) {
@@ -461,7 +466,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             role = isPointOfContact ? Role.POINT_OF_CONTACT : keys.DEFAULT_ROLE;
         }
         /*
-         * Verify if we can share the existing 'pointOfContact' instance. This is often the case in practice.
+         * Verify if we can share the existing `pointOfContact` instance. This is often the case in practice.
          * If we can not share the whole existing instance, we usually can share parts of it like the address.
          */
         Responsibility responsibility = pointOfContact;
@@ -639,9 +644,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * Add spatial representation type only if it was not explicitly given in the metadata.
-         * The call to getGrids() may be relatively costly, so we don't want to invoke it without necessity.
+         * The call to getGridCandidates() may be relatively costly, so we don't want to invoke
+         * it without necessity.
          */
-        if (!hasDataType && decoder.getGrids().length != 0) {
+        if (!hasDataType && decoder.getGridCandidates().length != 0) {
             addSpatialRepresentation(SpatialRepresentationType.GRID);
         }
         /*
@@ -673,7 +679,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             setFormat(NetcdfStoreProvider.NAME);
             id = null;
         } catch (MetadataStoreException e) {
-            // Will add 'id' at the end of this method.
+            // Will add `id` at the end of this method.
             warning(e);
         }
         if (format.length >= 2) {
@@ -682,7 +688,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 setFormatEdition(format[2]);
             }
         }
-        addFormatName(id);          // Do nothing is 'id' is null.
+        addFormatName(id);          // Do nothing is `id` is null.
     }
 
     /**
@@ -693,13 +699,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
+        /*
+         * We work on grid axes instead of Coordinate Reference System axes because
+         * `metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize`
+         * seems to imply that.
+         */
         final Axis[] axes = cs.getAxes(decoder);
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*
              * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
-             * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
+             * the `sourceDimensions` and `sourceSizes` arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
              */
             final int d = i;    // Because lambda expressions want final variable.
@@ -885,6 +896,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     names[i] = dimensions.get(i).getName();
                 }
                 CollectionsExt.addToMultiValuesMap(contents, Arrays.asList(names), variable);
+                hasGridCoverages = true;
             }
         }
         final String processingLevel = stringValue(PROCESSING_LEVEL);
@@ -1032,19 +1044,17 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
-        boolean hasGrids = false;
-        for (final Grid cs : decoder.getGrids()) {
+        for (final Grid cs : decoder.getGridCandidates()) {
             if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
                 cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {
                 addSpatialRepresentationInfo(cs);
-                hasGrids = true;
             }
         }
-        setISOStandards(hasGrids);
+        setISOStandards(hasGridCoverages);
         addFileIdentifier();
         /*
-         * Deperture: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
+         * Departure: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
          * However since ISO 19115:2014, Metadata.resourceLineage.statement seems a more appropriate place.
          * See https://issues.apache.org/jira/browse/SIS-361
          */

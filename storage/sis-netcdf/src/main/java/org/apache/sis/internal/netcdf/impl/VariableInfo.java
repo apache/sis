@@ -160,12 +160,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final DataType dataType;
 
     /**
-     * The grid geometry associated to this variable, computed by {@link ChannelDecoder#getGrids()} when first needed.
+     * The grid geometry associated to this variable, computed by {@link ChannelDecoder#getGridCandidates()} when first needed.
      * May stay {@code null} if the variable is not a data cube. We do not need disambiguation between the case where
      * the grid has not yet been computed and the case where the computation has been done with {@code null} result,
-     * because {@link #getGrid(GridAdjustment)} should be invoked only once per variable.
+     * because {@link #findGrid(GridAdjustment)} should be invoked only once per variable.
      *
-     * @see #getGrid(GridAdjustment)
+     * @see #findGrid(GridAdjustment)
      */
     GridInfo grid;
 
@@ -509,17 +509,17 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
      * The grid geometry builders are opportunistically cached in {@code VariableInfo} instances after they have been
-     * computed by {@link ChannelDecoder#getGrids()}. This method delegates to the super-class method only if the grid
-     * requires more analysis than the one performed by {@link ChannelDecoder}.
+     * computed by {@link ChannelDecoder#getGridCandidates()}. This method delegates to the super-class method only
+     * if the grid requires more analysis than the one performed by {@link ChannelDecoder}.
      *
-     * @see ChannelDecoder#getGrids()
+     * @see ChannelDecoder#getGridCandidates()
      */
     @Override
-    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
+    protected Grid findGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         if (grid == null) {
-            decoder.getGrids();                               // Force calculation of grid geometries if not already done.
-            if (grid == null) {                               // May have been computed as a side-effect of decoder.getGrids().
-                grid = (GridInfo) super.getGrid(adjustment);  // Non-null if grid dimensions are different than this variable.
+            decoder.getGridCandidates();                      // Force calculation of grid geometries if not already done.
+            if (grid == null) {                               // May have been computed as a side-effect of getGridCandidates().
+                grid = (GridInfo) super.findGrid(adjustment); // Non-null if grid dimensions are different than this variable.
             }
         }
         return grid;
