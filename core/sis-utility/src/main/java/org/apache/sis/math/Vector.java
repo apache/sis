@@ -248,7 +248,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <ul>
      *   <li>If this vector {@linkplain #isUnsigned() is unsigned}, then the values returned by {@code get(int)}
-     *       may be instances of a type wider than the type used by this vector for storing the values.</li>
+     *       will be instances of a type wider than the type used by this vector for storing the values.</li>
      *   <li>If this vector has been {@linkplain #createForDecimal(float[]) created for decimal numbers},
      *       then the values returned by {@code get(int)} will use double-precision even if this vector
      *       stores the values as single-precision floating point numbers.</li>
@@ -518,8 +518,14 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <div class="note"><b>Example:</b>
      * if {@link #getElementType()} returns {@code Byte.class} but {@link #isUnsigned()} returns {@code true},
-     * then this method may return instances of {@link Short} since that type is the smallest Java primitive
-     * type capable to hold byte values in the [0 … 255] range.</div>
+     * then this method will rather return instances of {@link Short} because that type is the smallest Java
+     * primitive type capable to hold byte values in the [0 … 255] range. But the elements are still stored
+     * internally as {@code byte}, and the vector can not accept values outside the [0 … 255] range even if
+     * they are valid {@link Short} values.</div>
+     *
+     * The class of returned objects should be stable. For example this method should not use different types
+     * for different range of values. This stability is recommended but not guaranteed because {@code Vector}
+     * can also wrap arbitrary {@code Number[]} arrays.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index (may be {@code null}).
