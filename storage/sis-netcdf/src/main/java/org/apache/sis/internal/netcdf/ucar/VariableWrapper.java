@@ -53,6 +53,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.AxisType;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -60,7 +61,7 @@ import ucar.nc2.constants.AxisType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -230,11 +231,14 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
     @Override
     protected boolean isCoordinateSystemAxis() {
         // `isCoordinateVariable()` is not sufficient in the case of "runtime" axis.
-        return variable.isCoordinateVariable() || (variable instanceof CoordinateAxis);
+        return variable.isCoordinateVariable() || (variable instanceof CoordinateAxis)
+                || variable.hasAttribute(_Coordinate.AxisType)
+                || variable.hasAttribute(CF.AXIS);
     }
 
     /**
-     * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     * Returns the value of the {@code "_CoordinateAxisType"} or {@code "axis"} attribute, or {@code null} if none.
+     * Note that a {@code null} value does not mean that this variable is not an axis.
      */
     @Override
     protected String getAxisType() {
@@ -244,7 +248,8 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
                 return type.name();
             }
         }
-        return getAttributeAsString(_Coordinate.AxisType);
+        final String type = getAttributeAsString(_Coordinate.AxisType);
+        return (type != null) ? type : getAttributeAsString(CF.AXIS);
     }
 
     /**

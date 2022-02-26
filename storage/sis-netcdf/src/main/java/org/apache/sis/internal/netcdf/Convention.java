@@ -236,9 +236,7 @@ public class Convention {
         }
         final int n = variable.getNumDimensions();
         if (n == 1) {
-            if (variable.getAxisType() == null && variable.getAttributeValue(CF.AXIS) == null) {
-                return VariableRole.FEATURE;
-            }
+            return VariableRole.FEATURE;
         } else if (n != 0) {
             final DataType dataType = variable.getDataType();
             int numVectors = 0;                 // Number of dimension having more than 1 value.

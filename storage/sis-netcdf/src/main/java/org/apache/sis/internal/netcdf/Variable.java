@@ -501,6 +501,8 @@ public abstract class Variable extends Node {
     /**
      * Returns whether this variable is used as a coordinate system axis.
      * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
+     * It may also be identified by the {@code "axis"} on this variable, or by the {@code "coordinates"} attributes on
+     * other variables.
      *
      * <p>This method has protected access because it should not be invoked directly. Code using variable role should
      * invoke {@link Convention#roleOf(Variable)} instead, for allowing specialization by {@link Convention}.</p>
@@ -512,9 +514,10 @@ public abstract class Variable extends Node {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Returns the value of {@code "_CoordinateAxisType"} attribute.
+     * Returns the value of {@code "_CoordinateAxisType"} or {@code "axis"} attribute, or {@code null} if none.
+     * Note that a {@code null} value does not mean that this variable is not an axis.
      *
-     * @return Value of {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     * @return {@code "_CoordinateAxisType"} or {@code "axis"} attribute value, or {@code null} if none.
      */
     protected abstract String getAxisType();
 

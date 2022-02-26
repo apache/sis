@@ -67,7 +67,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -491,11 +491,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     * Returns the value of the {@code "_CoordinateAxisType"} or {@code "axis"} attribute, or {@code null} if none.
+     * Note that a {@code null} value does not mean that this variable is not an axis.
      */
     @Override
     protected String getAxisType() {
-        final Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
+        Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
+        if (value == null) {
+            value = getAttributeValue(CF.AXIS);
+        }
         return (value != null) ? value.toString() : null;
     }
 
