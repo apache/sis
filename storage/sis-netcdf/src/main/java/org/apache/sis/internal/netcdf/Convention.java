@@ -224,8 +224,8 @@ public class Convention {
      *       to confuse them with images.</li>
      * </ul>
      *
-     * <p>The default implementation returns {@link VariableRole#FEATURE} if the given variable may be values
-     * for one feature property of a feature set. This detection is based on the number of dimensions.</p>
+     * <p>The default implementation returns {@link VariableRole#FEATURE_PROPERTY} if the given variable may be
+     * values for one feature property of a feature set. This detection is based on the number of dimensions.</p>
      *
      * @param  variable  the variable for which to get the role.
      * @return role of the given variable.
@@ -236,7 +236,7 @@ public class Convention {
         }
         final int n = variable.getNumDimensions();
         if (n == 1) {
-            return VariableRole.FEATURE;
+            return VariableRole.FEATURE_PROPERTY;
         } else if (n != 0) {
             final DataType dataType = variable.getDataType();
             int numVectors = 0;                 // Number of dimension having more than 1 value.
@@ -251,7 +251,7 @@ public class Convention {
                 }
             }
             if (n == Variable.STRING_DIMENSION && dataType == DataType.CHAR) {
-                return VariableRole.FEATURE;
+                return VariableRole.FEATURE_PROPERTY;
             }
         }
         return VariableRole.OTHER;

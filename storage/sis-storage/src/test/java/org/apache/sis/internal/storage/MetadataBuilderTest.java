@@ -42,7 +42,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -125,8 +125,8 @@ public final strictfp class MetadataBuilderTest extends TestCase {
      * Tests {@link MetadataBuilder#addFeatureType(FeatureType, long)}.
      */
     @Test
-    public void feature_count_should_be_ignored_when_it_is_zero() {
-        verifyFeatureInstanceCount("Feature count should not be written if it is 0", null, 0);
+    public void feature_should_be_ignored_when_count_is_zero() {
+        verifyFeatureInstanceCount("Feature should not be written if count is 0", null, 0);
     }
 
     /**
@@ -145,9 +145,13 @@ public final strictfp class MetadataBuilderTest extends TestCase {
         assertNotNull(name);
 
         final DefaultMetadata metadata = builder.build(true);
-        final ContentInformation content = getSingleton(metadata.getContentInfo());
-        assertInstanceOf("Metadata.contentInfo", FeatureCatalogueDescription.class, content);
-        final FeatureTypeInfo info = getSingleton(((FeatureCatalogueDescription) content).getFeatureTypeInfo());
-        assertEquals(errorMessage, expected, info.getFeatureInstanceCount());
+        if (valueToInsert == 0) {
+            assertTrue(metadata.getContentInfo().isEmpty());
+        } else {
+            final ContentInformation content = getSingleton(metadata.getContentInfo());
+            assertInstanceOf("Metadata.contentInfo", FeatureCatalogueDescription.class, content);
+            final FeatureTypeInfo info = getSingleton(((FeatureCatalogueDescription) content).getFeatureTypeInfo());
+            assertEquals(errorMessage, expected, info.getFeatureInstanceCount());
+        }
     }
 }

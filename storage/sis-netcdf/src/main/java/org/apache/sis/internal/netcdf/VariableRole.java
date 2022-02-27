@@ -46,7 +46,7 @@ public enum VariableRole {
     /**
      * The variable is a property of a feature.
      */
-    FEATURE,
+    FEATURE_PROPERTY,
 
     /**
      * Values of the variable are bounds of values of another variable.

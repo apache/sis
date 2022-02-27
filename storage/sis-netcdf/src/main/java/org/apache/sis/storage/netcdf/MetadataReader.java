@@ -21,9 +21,9 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +60,7 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -616,10 +617,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  publisher   the publisher names, built by the caller in an opportunist way.
      */
     private void addIdentificationInfo(final Set<InternationalString> publisher) throws IOException, DataStoreException {
-        boolean     hasExtent   = false;
-        Set<String> project     = null;
-        Set<String> standard    = null;
-        boolean     hasDataType = false;
+        boolean     hasExtent = false;
+        Set<String> project   = null;
+        Set<String> standard  = null;
         final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
@@ -630,9 +630,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
             }
             addTopicCategory(forEnumName(TopicCategory.class, stringValue(TOPIC_CATEGORY)));
-            SpatialRepresentationType dt = forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE));
-            addSpatialRepresentation(dt);
-            hasDataType |= (dt != null);
+            addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
             if (!hasExtent) {
                 /*
                  * Takes only ONE extent, because a netCDF file may declare many time the same
@@ -641,14 +639,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                  */
                 hasExtent = addExtent();
             }
-        }
-        /*
-         * Add spatial representation type only if it was not explicitly given in the metadata.
-         * The call to getGridCandidates() may be relatively costly, so we don't want to invoke
-         * it without necessity.
-         */
-        if (!hasDataType && decoder.getGridCandidates().length != 0) {
-            addSpatialRepresentation(SpatialRepresentationType.GRID);
         }
         /*
          * For the following properties, use only the first non-empty attribute value found on the search path.
@@ -887,7 +877,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      */
     @SuppressWarnings("null")
     private void addContentInfo() {
-        final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
+        /*
+         * Prepare a list of features and coverages, but without writing metadata now.
+         * We differ metadata writing for giving us a chance to group related contents.
+         */
+        final Set<Dimension> features = new LinkedHashSet<>();
+        final Map<List<String>, List<Variable>> coverages = new LinkedHashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
             if (VariableRole.isCoverage(variable)) {
                 final List<org.apache.sis.internal.netcdf.Dimension> dimensions = variable.getGridDimensions();
@@ -895,12 +890,31 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 for (int i=0; i<names.length; i++) {
                     names[i] = dimensions.get(i).getName();
                 }
-                CollectionsExt.addToMultiValuesMap(contents, Arrays.asList(names), variable);
+                CollectionsExt.addToMultiValuesMap(coverages, Arrays.asList(names), variable);
                 hasGridCoverages = true;
+            } else if (variable.getRole() == VariableRole.FEATURE_PROPERTY) {
+                /*
+                 * For feature property, we should take only the first dimension.
+                 * If a second dimension exists, it is for character strings.
+                 */
+                features.add(variable.getGridDimensions().get(0));
+            }
+        }
+        /*
+         * Now write the metadata. Note that the spatial repersentation types added below are actually
+         * parts of `DataIdentification` instead of `ContentInformation`, but we add them here because
+         * we have the information here.
+         */
+        if (!features .isEmpty()) addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
+        if (!coverages.isEmpty()) addSpatialRepresentation(SpatialRepresentationType.GRID);
+        for (final Dimension feature : features) {
+            final String name = feature.getName();
+            if (name != null) {
+                addFeatureType(decoder.nameFactory.createLocalName(decoder.namespace, name), feature.length());
             }
         }
         final String processingLevel = stringValue(PROCESSING_LEVEL);
-        for (final List<Variable> group : contents.values()) {
+        for (final List<Variable> group : coverages.values()) {
             /*
              * Instantiate a CoverageDescription for each distinct set of netCDF dimensions
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
