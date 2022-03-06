@@ -57,7 +57,7 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
     @Override public void        clear()    {}
     @Override public boolean     isEmpty()  {return true;}
     @Override public int         size()     {return 0;}
-    @Override public Iterator<E> iterator() {return Collections.<E>emptySet().iterator();}
+    @Override public Iterator<E> iterator() {return Collections.<E>emptyIterator();}
     @Override public boolean     offer(E e) {return false;}
     @Override public E           poll()     {return null;}
     @Override public E           peek()     {return null;}

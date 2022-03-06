@@ -1908,33 +1908,42 @@ parse:      for (int i = 0; i < length;) {
      * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
      *
      * @param  type         the feature type to add, or {@code null} for no-operation.
-     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown. Note that if
-     *                      this value is 0, it will be considered "unknown", because ISO-19115 consider it invalid.
-     *                      However, this is a valid case in practice (it represents an empty dataset at the moment).
-     * @return the name of the added feature, or {@code null} if none.
+     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
+     *         Note that ISO-19115 considers 0 as an invalid value. Consequently if 0, the feature is not added.
+     * @return the name of the added feature (even if not added to the metadata), or {@code null} if none.
      *
      * @see FeatureCatalogBuilder#define(DefaultFeatureType)
      */
     public final GenericName addFeatureType(final DefaultFeatureType type, final long occurrences) {
-        if (type != null) {
-            final GenericName name = type.getName();
-            if (name != null) {
-                final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                /*
-                 * Note: Exclude 0 as valid instance count.
-                 * Reason: ISO-19115 consider 0 (empty dataset) as an invalid count. However, in practice, it can happen
-                 * to open data sources that contain no record. They're still valid datasets, because as long as their
-                 * structure is valid, there's no point in raising an error (at our level, without any other context
-                 * information) here.
-                 */
-                if (occurrences > 0) {
-                    info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
-                }
-                addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
-                return name;
-            }
+        if (type == null) {
+            return null;
         }
-        return null;
+        final GenericName name = type.getName();
+        addFeatureType(name, occurrences);
+        return name;
+    }
+
+    /**
+     * Adds descriptions for a feature of the given name.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/featureTypes/featureTypeName}</li>
+     *   <li>{@code metadata/contentInfo/featureTypes/featureInstanceCount}</li>
+     * </ul>
+     *
+     * @param  name         name of the feature type to add, or {@code null} for no-operation.
+     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
+     *         Note that ISO-19115 considers 0 as an invalid value. Consequently if 0, the feature is not added.
+     */
+    public final void addFeatureType(final GenericName name, final long occurrences) {
+        if (name != null && occurrences != 0) {
+            final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
+            if (occurrences > 0) {
+                info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
+            }
+            addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
+        }
     }
 
     /**

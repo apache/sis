@@ -28,7 +28,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link Vector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -69,26 +69,31 @@ public final strictfp class VectorTest extends TestCase {
      * We use the {@code short} type for this test.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testShortArray() {
         final short[] array = new short[400];
         for (int i=0; i<array.length; i++) {
-            array[i] = (short) ((i + 100) * 10);
+            array[i] = (short) ((i - 20) * 10);
         }
         vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector);
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Short.class, vector.getElementType());
-
-        // Verifies element values.
+        /*
+         * Verify element values. The wrapper class shall be `Short`.
+         */
         for (int i=0; i<array.length; i++) {
-            assertEquals(array[i], vector.shortValue (i));
-            assertEquals(array[i], vector.intValue   (i));
-            assertEquals(array[i], vector.floatValue (i), 0f);
-            assertEquals(array[i], vector.doubleValue(i), STRICT);
+            final short expected = array[i];
+            assertEquals(expected, vector.shortValue (i));
+            assertEquals(expected, vector.intValue   (i));
+            assertEquals(expected, vector.floatValue (i), 0f);
+            assertEquals(expected, vector.doubleValue(i), STRICT);
+            assertEquals(Short.valueOf(expected), vector.get(i));
         }
-
-        // Tests exception.
+        /*
+         * Test exception for invalid index and for invalid narrowing cast.
+         */
         try {
             vector.floatValue(array.length);
             fail("Expected an IndexOutOfBoundsException");
@@ -97,15 +102,15 @@ public final strictfp class VectorTest extends TestCase {
         }
         try {
             vector.byteValue(0);
-            fail("Expected a ArithmeticException");
+            fail("Expected an ArithmeticException");
         } catch (ArithmeticException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message, message.contains("1000"));
             assertTrue(message, message.contains("byte"));
         }
-
-        // Tests subvector in the range [100:2:298].
+        /*
+         * Test subvector in the range [100:2:298].
+         */
         vector = vector.subSampling(100, 2, 100);
         assertEquals(100, vector.size());
         for (int i=0; i<100; i++) {
@@ -117,8 +122,10 @@ public final strictfp class VectorTest extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             // This is the expected exception.
         }
-
-        // Tests subvector at specific indexes.
+        /*
+         * Test subvector at specific indices. The indices of picked values below and indices
+         * in the sub-vector tested above. They may to the original array by `index*2 + 100`.
+         */
         vector = vector.pick(10, 20, 25);
         assertEquals(3, vector.size());
         assertEquals(array[120], vector.shortValue(0));
@@ -130,6 +137,7 @@ public final strictfp class VectorTest extends TestCase {
      * Tests {@link ArrayVector} backed by an array of primitive type handled as unsigned values.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testUnsignedByteArray() {
         final byte[] array = new byte[100];
         for (int i=0; i<array.length; i++) {
@@ -140,27 +148,34 @@ public final strictfp class VectorTest extends TestCase {
         assertSame(vector, Vector.create(vector, true));
         assertEquals(array.length, vector.size());
         assertEquals(Byte.class, vector.getElementType());
-
-        // Verifies element values.
+        /*
+         * Verify element values. Bytes shall be casted to shorts in order to handle unsigned values.
+         * The widening casts should be unconditional, even for positive values that could fit in a byte,
+         * because some codes using `Vector` expect a stable type (for example `NetcdfStore` which copies
+         * vector values into feature properties).
+         */
         for (int i=0; i<array.length; i++) {
             final int expected = Byte.toUnsignedInt(array[i]);
             assertEquals(expected, vector.shortValue (i));
             assertEquals(expected, vector.intValue   (i));
             assertEquals(expected, vector.floatValue (i), 0f);
             assertEquals(expected, vector.doubleValue(i), STRICT);
+            assertEquals(Short.valueOf((short) expected), vector.get(i));       // See above comment.
         }
-
-        // Tests exception.
-        assertEquals(106, vector.byteValue(50));
+        /*
+         * Test exception for invalid narrowing cast.
+         */
+        assertEquals(106, vector.byteValue (50));
         assertEquals(146, vector.shortValue(70));
         try {
             vector.byteValue(70);
-            fail("Expected a ArithmeticException");
+            fail("Expected an ArithmeticException");
         } catch (ArithmeticException e) {
             // This is the expected exception.
         }
-
-        // Test writing.
+        /*
+         * Test writing.
+         */
         vector.set(70, (short) 200);
         assertEquals(200, vector.shortValue(70));
     }
@@ -203,7 +218,7 @@ public final strictfp class VectorTest extends TestCase {
         assertEquals(array.length, vector.size());
         assertEquals(Double.class, vector.getElementType());
         /*
-         * Tests element values.
+         * Test element values.
          */
         for (int i=0; i<array.length; i++) {
             assertEquals(array[i], vector.floatValue (i), 0f);
@@ -251,8 +266,8 @@ public final strictfp class VectorTest extends TestCase {
         assertSame("Should be able to restitute the original vector.", v1, v3.subList( 0, 40));
         assertSame("Should be able to restitute the original vector.", v2, v3.subList(40, 60));
         /*
-         * Tests concatenation of views at fixed indices. Should be
-         * implemented as the concatenation of the indices arrays when possible.
+         * Test concatenation of views at fixed indices.
+         * Should be implemented as the concatenation of the indices arrays when possible.
          */
         final Vector expected = v3.pick(10, 25, 30, 0, 35, 39);
         v2 = v1.pick( 0, 35, 39);

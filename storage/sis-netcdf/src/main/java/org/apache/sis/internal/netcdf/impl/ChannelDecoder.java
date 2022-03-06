@@ -217,7 +217,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * The grid geometries, created when first needed.
      *
-     * @see #getGrids()
+     * @see #getGridCandidates()
      */
     private transient Grid[] gridGeometries;
 
@@ -963,7 +963,7 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Grid[] getGrids() {
+    public Grid[] getGridCandidates() {
         if (gridGeometries == null) {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are

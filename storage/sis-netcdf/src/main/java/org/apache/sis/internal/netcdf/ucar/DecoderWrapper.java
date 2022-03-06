@@ -36,6 +36,7 @@ import ucar.units.UnitException;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
+import ucar.nc2.dt.GridDataset;
 import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
@@ -90,7 +91,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     private transient VariableWrapper[] variables;
 
     /**
-     * The discrete sampling features, or {@code null} if none.
+     * The discrete sampling features or grids found by UCAR library, or {@code null} if none.
      * This reference is kept for making possible to close it in {@link #close()}.
      *
      * @see #getDiscreteSampling(Object)
@@ -100,7 +101,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The grid geometries, computed when first needed.
      *
-     * @see #getGrids()
+     * @see #getGridCandidates()
      */
     private transient Grid[] geometries;
 
@@ -430,6 +431,21 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
+     * Returns the set of features found by UCAR, or {@code null} if none.
+     * May be an instance of {@link FeatureDataset} or {@link GridDataset} among others.
+     *
+     * <p>Note that invoking this method may be costly. It seems that the UCAR library
+     * attemps to read at least the coordinate values of coordinate system axes.</p>
+     */
+    private FeatureDataset getFeatureDataSet() throws IOException {
+        if (features == null && file instanceof NetcdfDataset) {
+            features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
+                    new Formatter(new LogAdapter(listeners), listeners.getLocale()));
+        }
+        return features;
+    }
+
+    /**
      * If this decoder can handle the file content as features, returns handlers for them.
      *
      * @param  lock  the lock to use in {@code synchronized(lock)} statements.
@@ -440,10 +456,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     @SuppressWarnings("null")
     public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
-        if (features == null && file instanceof NetcdfDataset) {
-            features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
-                    new Formatter(new LogAdapter(listeners), listeners.getLocale()));
-        }
+        final FeatureDataset features = getFeatureDataSet();
         if (features instanceof FeatureDatasetPoint) {
             final List<DsgFeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
             if (fc != null && !fc.isEmpty()) {
@@ -468,22 +481,30 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
+     * <p>In the case of those wrappers, this method may return more grid geometries than
+     * what the actual number of rasters (or data cubes) in the file. This is because an
+     * {@linkplain VariableWrapper#findGrid additional filtering is done by the variable}.
+     * Consequently this method is not completely reliable for determining if the file
+     * contains grids.</p>
+     *
      * @return all grid geometries, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      */
     @Override
     @SuppressWarnings({"ReturnOfCollectionOrArrayField"})
-    public Grid[] getGrids() throws IOException {
+    public Grid[] getGridCandidates() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = Collections.emptyList();
             if (file instanceof NetcdfDataset) {
+                /*
+                 * We take all coordinate systems as associated to a grid. As an alternative,
+                 * we tried to invoke `getFeatureDataSet()` and cast to UCAR `GridDataset`,
+                 * but it causes the loading of large data for an end result often the same.
+                 */
                 final NetcdfDataset ds = (NetcdfDataset) file;
                 systems = ds.getCoordinateSystems();
             }
-            geometries = new Grid[systems.size()];
-            for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridWrapper(systems.get(i));
-            }
+            geometries = systems.stream().map(GridWrapper::new).toArray(Grid[]::new);
         }
         return geometries;
     }

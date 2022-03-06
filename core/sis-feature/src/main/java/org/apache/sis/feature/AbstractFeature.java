@@ -499,7 +499,7 @@ public abstract class AbstractFeature implements Serializable {
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
                 }
-                throw new ClassCastException(illegalValueClass(pt, base, element));         // 'element' can not be null here.
+                throw new ClassCastException(illegalValueClass(pt, base, element));         // `element` can not be null here.
             }
         }
         ((AbstractAttribute) attribute).setValue(value);

@@ -42,7 +42,7 @@ import org.apache.sis.measure.NumberRange;
  * so changes in the underlying array is reflected in this vector and vice-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -1039,11 +1039,9 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
         }
 
-        /** Uses a larger type if the value exceed integer capacity. */
+        /** Unconditionally uses a larger type since the value may exceed integer capacity. */
         @Override public Number get(int index) {
-            final int value = super.intValue(index);
-            if (value >= 0) return value;
-            return Integer.toUnsignedLong(value);
+            return longValue(index);
         }
 
         /** Verifies that the given value can be stored as an unsigned integer. */
@@ -1095,11 +1093,9 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Short.SIZE));
         }
 
-        /** Uses a larger type if the value exceed short integer capacity. */
+        /** Unconditionally uses a larger type since the value may exceed short capacity. */
         @Override public Number get(int index) {
-            final short value = super.shortValue(index);
-            if (value >= 0) return value;
-            return Short.toUnsignedInt(value);
+            return intValue(index);
         }
 
         /** Verifies that the given value can be stored as an unsigned integer. */
@@ -1143,8 +1139,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
-        @Override public long     longValue(int index) {return Byte.toUnsignedLong (super.byteValue(index));}
-        @Override public int       intValue(int index) {return Byte.toUnsignedInt  (super.byteValue(index));}
+        @Override public long     longValue(int index) {return Byte.toUnsignedLong(super.byteValue(index));}
+        @Override public int       intValue(int index) {return Byte.toUnsignedInt (super.byteValue(index));}
         @Override public short   shortValue(int index) {return (short) intValue(index);}
         @Override public byte     byteValue(int index) {
             final byte value = super.byteValue(index);
@@ -1152,11 +1148,9 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Byte.SIZE));
         }
 
-        /** Uses a larger type if the value exceed integer capacity. */
+        /** Unconditionally uses a larger type since the value may exceed byte capacity. */
         @Override public Number get(int index) {
-            final byte value = super.byteValue(index);
-            if (value >= 0) return value;
-            return (short) Byte.toUnsignedInt(value);
+            return shortValue(index);
         }
 
         /** Verifies that the given value can be stored as an unsigned integer. */

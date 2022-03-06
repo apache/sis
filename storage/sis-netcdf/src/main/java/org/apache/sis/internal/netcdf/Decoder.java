@@ -113,6 +113,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
      * To make that clearer, we will build datum with names like "Unknown datum presumably based on GRS 1980".
+     * Index in the cache are one of the {@code CACHE_INDEX} constants declared in {@link CRSBuilder}.
      *
      * @see CRSBuilder#build(Decoder, boolean)
      */
@@ -131,9 +132,10 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     final Map<Object,GridMapping> gridMapping;
 
     /**
-     * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes. Localization grids
-     * are expensive to compute and consume a significant amount of memory. The {@link Grid} instances returned by
-     * {@link #getGrids()} share localization grids only between variables using the exact same list of dimensions.
+     * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes.
+     * Localization grids are expensive to compute and consume a significant amount of memory.
+     * The {@link Grid} instances returned by {@link #getGridCandidates()} share localization
+     * grids only between variables using the exact same list of dimensions.
      * This {@code localizationGrids} cache allows to cover other cases.
      *
      * <div class="note"><b>Example:</b>
@@ -410,11 +412,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
+     * <p>The number of grid geometries returned by this method may be greater that the actual number of
+     * grids in the file. A more extensive analysis is done by {@link Variable#findGrid(GridAdjustment)},
+     * which may result in some grid candidates being filtered out.</p>
+     *
      * @return all grid geometries, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid[] getGrids() throws IOException, DataStoreException;
+    public abstract Grid[] getGridCandidates() throws IOException, DataStoreException;
 
     /**
      * Returns for information purpose only the Coordinate Reference Systems present in this file.
@@ -440,7 +446,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
          */
         if (list.isEmpty()) {
             final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
-            for (final Grid grid : getGrids()) {
+            for (final Grid grid : getGridCandidates()) {
                 addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings, null, null));
             }
         }

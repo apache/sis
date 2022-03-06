@@ -501,6 +501,8 @@ public abstract class Variable extends Node {
     /**
      * Returns whether this variable is used as a coordinate system axis.
      * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
+     * It may also be identified by the {@code "axis"} on this variable, or by the {@code "coordinates"} attributes on
+     * other variables.
      *
      * <p>This method has protected access because it should not be invoked directly. Code using variable role should
      * invoke {@link Convention#roleOf(Variable)} instead, for allowing specialization by {@link Convention}.</p>
@@ -512,9 +514,10 @@ public abstract class Variable extends Node {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Returns the value of {@code "_CoordinateAxisType"} attribute.
+     * Returns the value of {@code "_CoordinateAxisType"} or {@code "axis"} attribute, or {@code null} if none.
+     * Note that a {@code null} value does not mean that this variable is not an axis.
      *
-     * @return Value of {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     * @return {@code "_CoordinateAxisType"} or {@code "axis"} attribute value, or {@code null} if none.
      */
     protected abstract String getAxisType();
 
@@ -530,13 +533,13 @@ public abstract class Variable extends Node {
      *
      * <p>The default implementation provided in this {@code Variable} base class could be sufficient, but subclasses
      * are encouraged to override with a more efficient implementation or by exploiting information not available to this
-     * base class (for example UCAR {@link ucar.nc2.dataset.CoordinateSystem} objects) and invoke {@code super.getGrid(…)}
+     * base class (for example UCAR {@link ucar.nc2.dataset.CoordinateSystem} objects) and invoke {@code super.findGrid(…)}
      * as a fallback. The default implementation tries to build a grid in the following ways:</p>
      *
      * <ol class="verbose">
      *   <li><b>Grid of same dimension than this variable:</b>
-     *     iterate over {@linkplain Decoder#getGrids() all localization grids} and search for an element having the
-     *     same dimensions than this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
+     *     iterate over {@link Decoder#getGridCandidates() all localization grids} and search for an element having
+     *     the same dimensions than this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
      *     than {@link #getGridDimensions()} (not necessarily in the same order). The {@link Grid#forDimensions(Dimension[])}
      *     method will be invoked for reordering dimensions in the right order.</li>
      *
@@ -558,12 +561,12 @@ public abstract class Variable extends Node {
      * Typically, subclasses will handle case #1 in above list and this implementation is invoked for case #2.
      * This method should be invoked only once, so subclasses do not need to cache the value.
      *
-     * @param  adjustment  subclasses shall ignore and pass verbatim to {@code super.getGrid(adjustment)}.
+     * @param  adjustment  subclasses shall ignore and pass verbatim to {@code super.findGrid(adjustment)}.
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
+    protected Grid findGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         final Convention convention = decoder.convention();
         /*
          * Collect all axis dimensions, in no particular order. We use this map for determining
@@ -648,7 +651,7 @@ public abstract class Variable extends Node {
         Grid fallback = null;
         boolean fallbackMatches = false;
         final String[] axisNames = convention.namesOfAxisVariables(this);       // Usually null.
-        for (final Grid candidate : decoder.getGrids()) {
+        for (final Grid candidate : decoder.getGridCandidates()) {
             final Grid grid = candidate.forDimensions(dimensions);
             if (grid != null) {
                 final int     gridDimension = grid.getSourceDimensions();
@@ -688,7 +691,7 @@ public abstract class Variable extends Node {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
             final GridMapping gridMapping = GridMapping.forVariable(this);
             final GridAdjustment adjustment = new GridAdjustment();
-            final Grid info = getGrid(adjustment);
+            final Grid info = findGrid(adjustment);
             if (info != null) {
                 /*
                  * This variable may have more dimensions than the grid. We need to reduce the list to the same
@@ -814,10 +817,10 @@ public abstract class Variable extends Node {
      * this information is used for completing ISO 19115 metadata, providing a default implementation of
      * {@link Convention#roleOf(Variable)} method or for building string representation of this variable
      * among others. Those tasks are mostly for information purpose, except if {@code Variable} subclass
-     * failed to create a grid and we must rely on {@link #getGrid(GridAdjustment)} default implementation.
+     * failed to create a grid and we must rely on {@link #findGrid(GridAdjustment)} default implementation.
      * For actual georeferencing, use {@link #getGridGeometry()} instead.</div>
      *
-     * If {@link #getGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
+     * If {@link #findGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
      * contain all dimensions returned by {@link Grid#getDimensions()}. It may contain more dimension however.
      * Those additional dimensions can be considered as bands. Furthermore the dimensions of the {@code Grid}
      * may have a different {@linkplain Dimension#length() length} than the dimensions returned by this method.

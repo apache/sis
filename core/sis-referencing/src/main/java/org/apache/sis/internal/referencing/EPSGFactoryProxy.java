@@ -18,21 +18,10 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Set;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.opengis.referencing.crs.CompoundCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.DerivedCRS;
-import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.ImageCRS;
-import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.TemporalCRS;
-import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.GeodeticException;
 
 
@@ -44,19 +33,14 @@ import org.apache.sis.referencing.GeodeticException;
  * <p>This class will be modified on the JDK9 branch in order to replace the proxy by a static {@code provider()}
  * method. This will allow us to remove all the indirection level currently found in this class.</p>
  */
-public final class EPSGFactoryProxy implements CRSAuthorityFactory {
-    private volatile CRSAuthorityFactory factory;
-
-    private CRSAuthorityFactory factory() throws FactoryException {
-        CRSAuthorityFactory f = factory;
-        if (f == null) {
-            factory = f = CRS.getAuthorityFactory("EPSG");
-        }
-        return f;
+public abstract class EPSGFactoryProxy implements AuthorityFactory {
+    EPSGFactoryProxy() {
     }
 
+    abstract AuthorityFactory factory() throws FactoryException;
+
     @Override
-    public Citation getAuthority() {
+    public final Citation getAuthority() {
         try {
             return factory().getAuthority();
         } catch (FactoryException e) {
@@ -65,7 +49,7 @@ public final class EPSGFactoryProxy implements CRSAuthorityFactory {
     }
 
     @Override
-    public Citation getVendor() {
+    public final Citation getVendor() {
         try {
             return factory().getVendor();
         } catch (FactoryException e) {
@@ -74,67 +58,17 @@ public final class EPSGFactoryProxy implements CRSAuthorityFactory {
     }
 
     @Override
-    public InternationalString getDescriptionText(String code) throws FactoryException {
+    public final InternationalString getDescriptionText(String code) throws FactoryException {
         return factory().getDescriptionText(code);
     }
 
     @Override
-    public IdentifiedObject createObject(String code) throws FactoryException {
+    public final IdentifiedObject createObject(String code) throws FactoryException {
         return factory().createObject(code);
     }
 
     @Override
-    public CoordinateReferenceSystem createCoordinateReferenceSystem(String code) throws FactoryException {
-        return factory().createCoordinateReferenceSystem(code);
-    }
-
-    @Override
-    public CompoundCRS createCompoundCRS(String code) throws FactoryException {
-        return factory().createCompoundCRS(code);
-    }
-
-    @Override
-    public DerivedCRS createDerivedCRS(String code) throws FactoryException {
-        return factory().createDerivedCRS(code);
-    }
-
-    @Override
-    public EngineeringCRS createEngineeringCRS(String code) throws FactoryException {
-        return factory().createEngineeringCRS(code);
-    }
-
-    @Override
-    public GeographicCRS createGeographicCRS(String code) throws FactoryException {
-        return factory().createGeographicCRS(code);
-    }
-
-    @Override
-    public GeocentricCRS createGeocentricCRS(String code) throws FactoryException {
-        return factory().createGeocentricCRS(code);
-    }
-
-    @Override
-    public ImageCRS createImageCRS(String code) throws FactoryException {
-        return factory().createImageCRS(code);
-    }
-
-    @Override
-    public ProjectedCRS createProjectedCRS(String code) throws FactoryException {
-        return factory().createProjectedCRS(code);
-    }
-
-    @Override
-    public TemporalCRS createTemporalCRS(String code) throws FactoryException {
-        return factory().createTemporalCRS(code);
-    }
-
-    @Override
-    public VerticalCRS createVerticalCRS(String code) throws FactoryException {
-        return factory().createVerticalCRS(code);
-    }
-
-    @Override
-    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
+    public final Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
         return factory().getAuthorityCodes(type);
     }
 }

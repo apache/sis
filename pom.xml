@@ -1001,6 +1001,7 @@
        ============================================================== -->
   <modules>
     <module>core</module>
+    <module>cloud</module>
     <module>storage</module>
     <module>application</module>
     <module>profiles</module>

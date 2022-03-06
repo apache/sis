@@ -304,7 +304,7 @@ final class FeatureSet extends DiscreteSampling {
         final List<FeatureSet> features = new ArrayList<>(3);     // Will usually contain at most one element.
         final Map<Dimension,Boolean> done = new HashMap<>();      // Whether a dimension has already been used.
         for (final Variable v : decoder.getVariables()) {
-            if (v.getRole() != VariableRole.FEATURE) {
+            if (v.getRole() != VariableRole.FEATURE_PROPERTY) {
                 continue;
             }
             /*

@@ -1260,7 +1260,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns {@code true} if all the parameters specified by the argument are set.
+     * Returns {@code true} if all the properties specified by the argument are set.
      * If this method returns {@code true}, then invoking the corresponding getter
      * methods will not throw {@link IncompleteGridGeometryException}.
      *

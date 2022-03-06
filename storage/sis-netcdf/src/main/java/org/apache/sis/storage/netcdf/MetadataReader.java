@@ -21,9 +21,9 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +60,7 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -111,7 +112,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -181,6 +182,11 @@ final class MetadataReader extends MetadataBuilder {
     private VerticalCRS verticalCRS;
 
     /**
+     * Whether at least one grid coverage has been found during iteration over variables.
+     */
+    private boolean hasGridCoverages;
+
+    /**
      * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
      *
      * @param  decoder  the source of netCDF attributes.
@@ -224,7 +230,7 @@ final class MetadataReader extends MetadataBuilder {
         final List<String> items = new ArrayList<>();
         int start = 0;      // Index of the first character of the next item to add in the list.
         int end;            // Index after the last character of the next item to add in the list.
-        int next;           // Index of the next separator (comma) after 'end'.
+        int next;           // Index of the next separator (comma) after `end`.
         final int length = CharSequences.skipTrailingWhitespaces(value, 0, value.length());
 split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, length)) < length) {
             if (value.charAt(start) == QUOTE) {
@@ -460,7 +466,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             role = isPointOfContact ? Role.POINT_OF_CONTACT : keys.DEFAULT_ROLE;
         }
         /*
-         * Verify if we can share the existing 'pointOfContact' instance. This is often the case in practice.
+         * Verify if we can share the existing `pointOfContact` instance. This is often the case in practice.
          * If we can not share the whole existing instance, we usually can share parts of it like the address.
          */
         ResponsibleParty responsibility = pointOfContact;
@@ -605,10 +611,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  publisher   the publisher names, built by the caller in an opportunist way.
      */
     private void addIdentificationInfo(final Set<InternationalString> publisher) throws IOException, DataStoreException {
-        boolean     hasExtent   = false;
-        Set<String> project     = null;
-        Set<String> standard    = null;
-        boolean     hasDataType = false;
+        boolean     hasExtent = false;
+        Set<String> project   = null;
+        Set<String> standard  = null;
         final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
@@ -619,9 +624,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
             }
             addTopicCategory(forCodeName(TopicCategory.class, stringValue(TOPIC_CATEGORY)));
-            SpatialRepresentationType dt = forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE));
-            addSpatialRepresentation(dt);
-            hasDataType |= (dt != null);
+            addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
             if (!hasExtent) {
                 /*
                  * Takes only ONE extent, because a netCDF file may declare many time the same
@@ -630,13 +633,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                  */
                 hasExtent = addExtent();
             }
-        }
-        /*
-         * Add spatial representation type only if it was not explicitly given in the metadata.
-         * The call to getGrids() may be relatively costly, so we don't want to invoke it without necessity.
-         */
-        if (!hasDataType && decoder.getGrids().length != 0) {
-            addSpatialRepresentation(SpatialRepresentationType.GRID);
         }
         /*
          * For the following properties, use only the first non-empty attribute value found on the search path.
@@ -667,7 +663,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             setFormat(NetcdfStoreProvider.NAME);
             id = null;
         } catch (MetadataStoreException e) {
-            // Will add 'id' at the end of this method.
+            // Will add `id` at the end of this method.
             warning(e);
         }
         if (format.length >= 2) {
@@ -676,7 +672,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 setFormatEdition(format[2]);
             }
         }
-        addFormatName(id);          // Do nothing is 'id' is null.
+        addFormatName(id);          // Do nothing is `id` is null.
     }
 
     /**
@@ -687,13 +683,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
+        /*
+         * We work on grid axes instead of Coordinate Reference System axes because
+         * `metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize`
+         * seems to imply that.
+         */
         final Axis[] axes = cs.getAxes(decoder);
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*
              * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
-             * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
+             * the `sourceDimensions` and `sourceSizes` arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
              */
             final int d = i;    // Because lambda expressions want final variable.
@@ -870,7 +871,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      */
     @SuppressWarnings("null")
     private void addContentInfo() {
-        final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
+        /*
+         * Prepare a list of features and coverages, but without writing metadata now.
+         * We differ metadata writing for giving us a chance to group related contents.
+         */
+        final Set<Dimension> features = new LinkedHashSet<>();
+        final Map<List<String>, List<Variable>> coverages = new LinkedHashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
             if (VariableRole.isCoverage(variable)) {
                 final List<org.apache.sis.internal.netcdf.Dimension> dimensions = variable.getGridDimensions();
@@ -878,11 +884,31 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 for (int i=0; i<names.length; i++) {
                     names[i] = dimensions.get(i).getName();
                 }
-                CollectionsExt.addToMultiValuesMap(contents, Arrays.asList(names), variable);
+                CollectionsExt.addToMultiValuesMap(coverages, Arrays.asList(names), variable);
+                hasGridCoverages = true;
+            } else if (variable.getRole() == VariableRole.FEATURE_PROPERTY) {
+                /*
+                 * For feature property, we should take only the first dimension.
+                 * If a second dimension exists, it is for character strings.
+                 */
+                features.add(variable.getGridDimensions().get(0));
+            }
+        }
+        /*
+         * Now write the metadata. Note that the spatial repersentation types added below are actually
+         * parts of `DataIdentification` instead of `ContentInformation`, but we add them here because
+         * we have the information here.
+         */
+        if (!features .isEmpty()) addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
+        if (!coverages.isEmpty()) addSpatialRepresentation(SpatialRepresentationType.GRID);
+        for (final Dimension feature : features) {
+            final String name = feature.getName();
+            if (name != null) {
+                addFeatureType(decoder.nameFactory.createLocalName(decoder.namespace, name), feature.length());
             }
         }
         final String processingLevel = stringValue(PROCESSING_LEVEL);
-        for (final List<Variable> group : contents.values()) {
+        for (final List<Variable> group : coverages.values()) {
             /*
              * Instantiate a CoverageDescription for each distinct set of netCDF dimensions
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
@@ -1026,19 +1052,17 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
-        boolean hasGrids = false;
-        for (final Grid cs : decoder.getGrids()) {
+        for (final Grid cs : decoder.getGridCandidates()) {
             if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
                 cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {
                 addSpatialRepresentationInfo(cs);
-                hasGrids = true;
             }
         }
-        setISOStandards(hasGrids);
+        setISOStandards(hasGridCoverages);
         addFileIdentifier();
         /*
-         * Deperture: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
+         * Departure: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
          * However since ISO 19115:2014, Metadata.resourceLineage.statement seems a more appropriate place.
          * See https://issues.apache.org/jira/browse/SIS-361
          */

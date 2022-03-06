@@ -43,6 +43,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -81,6 +82,10 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  *
  * The builder type is inferred from axes. The axes are identified by their abbreviations,
  * which is a {@linkplain Axis#abbreviation controlled vocabulary} for this implementation.
+ *
+ * <h2>Exception handling</h2>
+ * {@link FactoryException} is handled as a warning by {@linkplain the caller Grid#getCoordinateReferenceSystem},
+ * while {@link DataStoreException} is handled as a fatal error. Warnings are stored in {@link #warnings} field.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -365,9 +370,13 @@ previous:   for (int i=components.size(); --i >= 0;) {
     private SingleCRS build(final Decoder decoder, final boolean grid)
             throws FactoryException, DataStoreException, IOException
     {
-        if (dimension < minDim || dimension > maxDim) {
+        if (dimension > maxDim) {
+            /*
+             * Reminder: FactoryException is handled as a warning by the `Grid` caller.
+             * By contrast, `DataStoreContentException` would be treated as a fatal error.
+             */
             final Variable axis = getFirstAxis().coordinates;
-            throw new DataStoreContentException(axis.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
+            throw new FactoryException(axis.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
                     axis.getFilename(), getClass().getSimpleName(), dimension, NamedElement.listNames(axes, dimension, ", ")));
         }
         /*
@@ -388,6 +397,21 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
         decoder.datumCache[datumIndex] = datum;
         /*
+         * We can not go further if the number of dimensions is not valid for the coordinate system to build.
+         * This error may happen for example when the CRS type is geographic, but only the latitude axis has
+         * been declared (without longitude axis). It may happen for example with a (latitude, time) system.
+         * In such case, we can build an engineering CRS has a replacement.
+         */
+        if (dimension < minDim) {
+            final CRSBuilder<EngineeringDatum, ?> eng = new CRSBuilder.Engineering();
+            System.arraycopy(axes, 0, eng.axes, 0, dimension);
+            eng.dimension = dimension;
+            eng.datum = decoder.getDatumFactory().createEngineeringDatum(
+                    IdentifiedObjects.getProperties(datum, Datum.IDENTIFIERS_KEY));
+            eng.createFromDatum(decoder, grid);
+            return eng.referenceSystem;
+        }
+        /*
          * Verify if a pre-defined coordinate system can be used. This is often the case, for example
          * the EPSG::6424 coordinate system can be used for (longitude, latitude) axes in degrees.
          * Using a pre-defined CS allows us to get more complete definitions (minimum and maximum values, etc.).
@@ -407,23 +431,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * but its axes do not match the axes in the netCDF file, then create a new coordinate system here.
          */
         if (referenceSystem == null) {
-            final Map<String,?> properties;
-            if (coordinateSystem == null) {
-                // Fallback if the coordinate system is not predefined.
-                final StringJoiner joiner = new StringJoiner(" ");
-                final CSFactory csFactory = decoder.getCSFactory();
-                final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[dimension];
-                for (int i=0; i<iso.length; i++) {
-                    final Axis axis = axes[i];
-                    joiner.add(axis.getName());
-                    iso[i] = axis.toISO(csFactory, i, grid);
-                }
-                createCS(csFactory, properties(joiner.toString()), iso);
-                properties = properties(coordinateSystem.getName());
-            } else {
-                properties = properties(NamedElement.listNames(axes, dimension, " "));
-            }
-            createCRS(decoder.getCRSFactory(), properties);
+            createFromDatum(decoder, grid);
         }
         /*
          * Creates the coordinate reference system using current value of `datum` and `coordinateSystem` fields.
@@ -451,6 +459,32 @@ previous:   for (int i=components.size(); --i >= 0;) {
             decoder.listeners.warning(Level.FINE, null, warnings);
         }
         return referenceSystem;
+    }
+
+    /**
+     * Unconditionally creates a coordinate reference system, overwriting current {@link #referenceSystem} value.
+     * The {@link #datum} field must be initialized before to invoke this method.
+     */
+    private void createFromDatum(final Decoder decoder, final boolean grid)
+            throws FactoryException, DataStoreException, IOException
+    {
+        final Map<String,?> properties;
+        if (coordinateSystem == null) {
+            // Fallback if the coordinate system is not predefined.
+            final StringJoiner joiner = new StringJoiner(" ");
+            final CSFactory csFactory = decoder.getCSFactory();
+            final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[dimension];
+            for (int i=0; i<iso.length; i++) {
+                final Axis axis = axes[i];
+                joiner.add(axis.getName());
+                iso[i] = axis.toISO(csFactory, i, grid);
+            }
+            createCS(csFactory, properties(joiner.toString()), iso);
+            properties = properties(coordinateSystem.getName());
+        } else {
+            properties = properties(NamedElement.listNames(axes, dimension, " "));
+        }
+        createCRS(decoder.getCRSFactory(), properties);
     }
 
     /**
@@ -550,6 +584,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private abstract static class Geodetic<CS extends CoordinateSystem> extends CRSBuilder<GeodeticDatum, CS> {
         /**
+         * Index for the cache of datum in the {@link Decoder#datumCache} array.
+         */
+        static final int CACHE_INDEX = 0;
+
+        /**
          * The coordinate reference system which is presumed the basis of datum on netCDF files.
          */
         protected CommonCRS defaultCRS;
@@ -566,7 +605,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * @param  minDim  minimum number of dimensions (2 or 3).
          */
         Geodetic(final int minDim) {
-            super(GeodeticDatum.class, "GRS 1980", 0, minDim, 3);
+            super(GeodeticDatum.class, "GRS 1980", CACHE_INDEX, minDim, 3);
         }
 
         /**
@@ -817,10 +856,15 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private static final class Vertical extends CRSBuilder<VerticalDatum, VerticalCS> {
         /**
+         * Index for the cache of datum in the {@link Decoder#datumCache} array.
+         */
+        static final int CACHE_INDEX = Geodetic.CACHE_INDEX + 1;
+
+        /**
          * Creates a new builder (invoked by lambda function).
          */
         public Vertical() {
-            super(VerticalDatum.class, "Mean Sea Level", 1, 1, 1);
+            super(VerticalDatum.class, "Mean Sea Level", CACHE_INDEX, 1, 1);
         }
 
         /**
@@ -877,10 +921,15 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private static final class Temporal extends CRSBuilder<TemporalDatum, TimeCS> {
         /**
+         * Index for the cache of datum in the {@link Decoder#datumCache} array.
+         */
+        static final int CACHE_INDEX = Vertical.CACHE_INDEX + 1;
+
+        /**
          * Creates a new builder (invoked by lambda function).
          */
         public Temporal() {
-            super(TemporalDatum.class, "", 2, 1, 1);
+            super(TemporalDatum.class, "", CACHE_INDEX, 1, 1);
         }
 
         /**
@@ -955,10 +1004,15 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private static final class Engineering extends CRSBuilder<EngineeringDatum, CoordinateSystem> {
         /**
+         * Index for the cache of datum in the {@link Decoder#datumCache} array.
+         */
+        static final int CACHE_INDEX = Temporal.CACHE_INDEX + 1;
+
+        /**
          * Creates a new builder (invoked by lambda function).
          */
         public Engineering() {
-            super(EngineeringDatum.class, "affine coordinate system", 3, 1, 3);
+            super(EngineeringDatum.class, "affine coordinate system", CACHE_INDEX, 1, 3);
         }
 
         /**
@@ -1008,5 +1062,5 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * Maximal {@link #datumIndex} value +1. The maximal value can be seen in the call to {@code super(…)} constructor
      * in the last inner class defined above.
      */
-    static final int DATUM_CACHE_SIZE = 4;
+    static final int DATUM_CACHE_SIZE = Engineering.CACHE_INDEX + 1;
 }

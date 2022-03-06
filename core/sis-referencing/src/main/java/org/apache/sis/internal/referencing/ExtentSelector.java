@@ -468,7 +468,7 @@ public final class ExtentSelector<T> {
                             remainingFieldsToCompute = NONE;
                             final double pd = pseudoDistance(bbox);
                             if (compare(pd, pseudoDistance, +1) >= 0) {
-                                return;
+                                if (comparison != 0 || !alternateOrdering) return;
                             }
                             if (alternateOrdering && compare(td, temporalDistance, +1) >= 0) {
                                 return;
