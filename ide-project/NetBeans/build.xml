@@ -155,6 +155,27 @@
       </fileset>
     </concat>
 
+    <!-- CSAuthorityFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.cs.CSAuthorityFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.cs.CSAuthorityFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- DatumAuthorityFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.datum.DatumAuthorityFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.datum.DatumAuthorityFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- CoordinateOperationAuthorityFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.CoordinateOperationAuthorityFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.CoordinateOperationAuthorityFactory"/>
+      </fileset>
+    </concat>
+
     <!-- CRSFactory implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.crs.CRSFactory" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
