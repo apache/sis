@@ -32,12 +32,12 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
- * Contains information computed together with {@link Variable#getGrid(GridAdjustment)} but which are still specific
+ * Contains information computed together with {@link Variable#findGrid(GridAdjustment)} but which are still specific
  * to the variable. Those information are kept in a class separated from {@link Grid} because the same {@code Grid}
  * instance may apply to many variables while {@code GridAdjustment} may contain amendments that are specific to a
  * particular {@link Variable} instance.
  *
- * <p>Instance is created by {@link Variable#getGridGeometry()} and updated by {@link Variable#getGrid(GridAdjustment)}.
+ * <p>Instance is created by {@link Variable#getGridGeometry()} and updated by {@link Variable#findGrid(GridAdjustment)}.
  * Subclasses of {@link Variable} do not need to know the details of this class; they just need to pass it verbatim
  * to their parent class.</p>
  *
@@ -53,7 +53,7 @@ public final class GridAdjustment {
      * be non-null if the localization grid has shorter dimensions than the dimensions of the variable, as documented
      * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
      *
-     * <p>Created by {@link Variable#getGrid(GridAdjustment)} and is consumed by {@link Variable#getGridGeometry()}.
+     * <p>Created by {@link Variable#findGrid(GridAdjustment)} and is consumed by {@link Variable#getGridGeometry()}.
      * Some values may be {@link Double#NaN} if the {@code "resampling_interval"} attribute was not found.
      * This array may be longer than necessary.</p>
      *
@@ -107,7 +107,7 @@ public final class GridAdjustment {
      * @param  axes              all axes in the netCDF file (not only the variable axes).
      * @param  toGridDimensions  in input, the dimensions to accept. In output, "label → grid dimension" entries.
      * @param  convention        convention for getting dimension labels.
-     * @return {@code true} if the {@code Variable.getGrid(…)} caller should abort.
+     * @return {@code true} if the {@code Variable.findGrid(…)} caller should abort.
      *
      * @see Convention#nameOfDimension(Variable, int)
      */

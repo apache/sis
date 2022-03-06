@@ -50,7 +50,7 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *
- * @see Decoder#getGrids()
+ * @see Decoder#getGridCandidates()
  *
  * @since 0.3
  * @module
@@ -117,7 +117,7 @@ public abstract class Grid extends NamedElement {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link Variable#getGrid} when the localization grids created by
+     * This method is invoked by {@link Variable#findGrid(GridAdjustment)} when the localization grids created by
      * {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
      * Subclasses shall verify that the given {@code dimensions} array met the following conditions:
      *
@@ -164,7 +164,7 @@ public abstract class Grid extends NamedElement {
      * The list length should be equal to {@link #getSourceDimensions()}.
      *
      * <p>This list is usually equal to the {@link Variable#getGridDimensions()} list for all variables
-     * that are {@linkplain Variable#getGrid associated to this grid}. But those lists can also differ
+     * that are {@linkplain Variable#findGrid associated to this grid}. But those lists can also differ
      * in the following aspects:</p>
      *
      * <ul>

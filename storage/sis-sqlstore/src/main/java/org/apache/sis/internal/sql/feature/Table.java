@@ -431,8 +431,8 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Returns the number of rows, or -1 if unknown. Note that some database drivers returns 0,
-     * so it is better to consider 0 as "unknown" too. We do not cache this count because it may
-     * change at any time.
+     * so it is better to consider 0 as "unknown" too (see {@link FeatureIterator#estimatedSize}).
+     * We do not cache this count because it may change at any time.
      *
      * @param  metadata     information about the database.
      * @param  distinct     whether to count distinct values instead of all values.

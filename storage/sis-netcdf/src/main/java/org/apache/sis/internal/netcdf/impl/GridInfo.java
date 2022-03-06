@@ -192,8 +192,8 @@ next:       for (final String name : axisNames) {
             }
         }
         /*
-         * In this method, 'sourceDim' and 'targetDim' are relative to "grid to CRS" conversion.
-         * So 'sourceDim' is the grid (domain) dimension and 'targetDim' is the CRS (range) dimension.
+         * In this method, `sourceDim` and `targetDim` are relative to "grid to CRS" conversion.
+         * So `sourceDim` is the grid (domain) dimension and `targetDim` is the CRS (range) dimension.
          */
         final Axis[] axes = new Axis[range.length];
         for (final SortedMap.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
@@ -225,7 +225,7 @@ next:       for (final String name : axisNames) {
 
     /**
      * Returns a hash code for this grid. A map of {@code GridInfo} is used by
-     * {@link ChannelDecoder#getGrids()} for sharing existing instances.
+     * {@link ChannelDecoder#getGridCandidates()} for sharing existing instances.
      */
     @Override
     public int hashCode() {

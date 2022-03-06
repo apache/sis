@@ -70,12 +70,12 @@ public strictfp class GridTest extends TestCase {
      */
     @Test
     public void testDimensions() throws IOException, DataStoreException {
-        Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGrids()));
+        Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates()));
         assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 2, geometry.getTargetDimensions());
 
         final int n = includeRuntimeDimension ? 5 : 4;
-        geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids()));
+        geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates()));
         assertEquals("getSourceDimensions()", 4, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", n, geometry.getTargetDimensions());
     }
@@ -89,7 +89,7 @@ public strictfp class GridTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes2D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGrids())).getAxes(decoder());
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates())).getAxes(decoder());
         assertEquals(2, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
@@ -113,7 +113,7 @@ public strictfp class GridTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes4D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids())).getAxes(decoder());
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates())).getAxes(decoder());
         assertEquals(includeRuntimeDimension ? 5 : 4, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
