@@ -45,7 +45,7 @@ final class PathIterator implements DirectoryStream<Path>, Iterator<Path> {
     private final KeyPath directory;
 
     /**
-     * The filter to apply, or {@code null} if none.
+     * The filter to apply. Shall never be null.
      */
     private final DirectoryStream.Filter<? super Path> filter;
 
@@ -170,11 +170,29 @@ verify:     do if (directories == null || !nextDirectory()) {
                 }
                 final S3Object object = contents.next();
                 next = new KeyPath(directory, object);
-            } while ((filter == null) || !filter.accept(next));
+            } while (!accept());
         } catch (IOException e) {
             throw new DirectoryIteratorException(e);
         }
         return true;
+    }
+
+    /**
+     * Returns whether the given path can be accepted. We need to exclude empty paths (not supported by our wrappers)
+     * and the path with the same name than {@link #directory} (for avoiding never-empty loop if an S3 object of that
+     * name exists). User-specified filter is tested last.
+     */
+    private boolean accept() throws IOException {
+        final String path = next.key;
+        if (path != null) {
+            int last = path.length();
+            do if (--last < 0) return false;
+            while (path.charAt(last) == KeyPath.SEPARATOR);
+            if (path.regionMatches(0, directory.key, 0, last + 1)) {
+                return false;
+            }
+        }
+        return filter.accept(next);
     }
 
     /**

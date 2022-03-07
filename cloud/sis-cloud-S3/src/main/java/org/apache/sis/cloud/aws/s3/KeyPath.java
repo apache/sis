@@ -142,13 +142,17 @@ final class KeyPath implements Path {
      * Creates an absolute path for an object in the S3 storage.
      * This is used when iterating over the files in a pseudo-directory.
      *
-     * @param parent    a path from which to inherit the file system and the root.
+     * <p>When using this constructor, it may happen that the path ends with the {@value #SEPARATOR} character
+     * if the S3 object really has that name, and still have the {@link #isDirectory} flag set to {@code false}.
+     * We keep it that way because it describes what is really on the S3 file system, even if confusing.</p>
+     *
+     * @param root      a path from which to inherit the file system and the root.
      * @param metadata  metadata about the S3 object.
      *
      * @see PathIterator#next()
      */
-    KeyPath(final KeyPath parent, final S3Object metadata) {
-        this(parent, metadata.key(), false);
+    KeyPath(final KeyPath root, final S3Object metadata) {
+        this(root, metadata.key(), false);
         objectMetadata = metadata;
     }
 
@@ -156,14 +160,14 @@ final class KeyPath implements Path {
      * Creates a new path with the same root than the given path.
      * This is used for deriving root, parent, subpath and resolving path.
      *
-     * @param parent       a path from which to inherit the file system and the root.
+     * @param root         a path from which to inherit the file system and the root.
      * @param key          key for locating the S3 object, or {@code null} if this path is the root.
      * @param isDirectory  whether this path should be flagged as a directory.
      */
-    KeyPath(final KeyPath parent, final String key, final boolean isDirectory) {
-        bucketMetadata   = parent.bucketMetadata;
-        this.bucket      = parent.bucket;
-        this.fs          = parent.fs;
+    KeyPath(final KeyPath root, final String key, final boolean isDirectory) {
+        bucketMetadata   = root.bucketMetadata;
+        this.bucket      = root.bucket;
+        this.fs          = root.fs;
         this.key         = key;
         this.isDirectory = isDirectory;
         assert key == null || !key.isEmpty();
