@@ -46,7 +46,7 @@ import org.apache.sis.internal.util.Strings;
  * It provides our {@linkplain #initialize() starting point} for initiating the system-wide connection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -210,7 +210,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
             case HSQL:  classname = "org.hsqldb.jdbc.JDBCDataSource"; break;
             default:    throw new IllegalArgumentException(dialect.toString());
         }
-        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader loader = DefaultFactories.getContextClassLoader();
         final Class<?> c = Class.forName(classname, true, loader);
         source = (DataSource) c.getConstructor().newInstance();
         final Class<?>[] args = {String.class};
