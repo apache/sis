@@ -32,7 +32,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
  *
@@ -204,7 +204,7 @@ public final class DefaultFactories extends SystemListener {
      *
      * @since 0.8
      */
-    private static ClassLoader getContextClassLoader() throws SecurityException {
+    public static ClassLoader getContextClassLoader() throws SecurityException {
         final Thread thread = Thread.currentThread();
         ClassLoader loader = thread.getContextClassLoader();
         final Set<ClassLoader> parents = new HashSet<>();
@@ -212,7 +212,7 @@ public final class DefaultFactories extends SystemListener {
             parents.add(c);
         }
         boolean warnings = false;
-        for (final StackTraceElement trace : thread.getStackTrace()) {
+        for (final StackTraceElement trace : thread.getStackTrace()) {      // TODO: replace by StackWalker in JDK9.
             final String element = trace.getClassName();
             if (element.startsWith(Modules.CLASSNAME_PREFIX)) try {
                 ClassLoader c = Class.forName(element).getClassLoader();

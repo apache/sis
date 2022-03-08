@@ -43,6 +43,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.cloud.aws.internal.Resources;
@@ -354,6 +355,7 @@ public class FileService extends FileSystemProvider {
             final DirectoryStream.Filter<? super Path> filter) throws IOException
     {
         final KeyPath kp = toAbsolute(directory, false);
+        ArgumentChecks.ensureNonNull("filter", filter);
         if (kp.isDirectory) try {
             return new PathIterator(kp, filter);
         } catch (SdkException e) {
