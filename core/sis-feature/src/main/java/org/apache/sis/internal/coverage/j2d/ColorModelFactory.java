@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.awt.image.SampleModel;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,13 +30,13 @@ import java.awt.image.PackedColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.util.Optional;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.Debug;
-
 
 /**
  * A factory for {@link ColorModel} objects built from a sequence of colors.
@@ -143,7 +144,7 @@ public final class ColorModelFactory {
      * so this is not really a {@code ColorModelFactory} but a kind of "{@code ColorModelKey}" instead.
      * However, since this constructor is private, user does not need to know that.
      *
-     * @see #createColorModel(int, int, int, ColorsForRange[])
+     * @see #createPiecewise(int, int, int, ColorsForRange[])
      */
     private ColorModelFactory(final int dataType, final int numBands, final int visibleBand, final ColorsForRange[] colors) {
         this.dataType    = dataType;
@@ -511,13 +512,33 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Creates a color model with only a subset of the bands of the given color model.
+     * Creates a color model with only a subset of the bands of the given color model. Note that output color model
+     * should be used with a {@link SampleModel#createSubsetSampleModel(int[]) subset sample model} created with bands
+     * given as input.
+     * This method might not produce a result in following cases:
+     * <ul>
+     *     <li>Input color model is null</li>
+     *     <li>Given color model is not assignable from the following types:
+     *          <ul>
+     *              <li>{@link ComponentColorModel}</li>
+     *              <li>{@link MultiBandsIndexColorModel}</li>
+     *              <li>{@link ScaledColorModel}</li>
+     *          </ul>
+     *     </li>
+     *     <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
+     * </ul>
+     *
+     * <em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>: they're not managed for now, because
+     * they're really designed for a "rigid" case where data buffer values are interpreted directly by the color model.
      *
      * @param  cm     the color model, or {@code null}.
-     * @param  bands  the bands to select.
-     * @return the subset color model, or {@code null} if it can not be created.
+     * @param  bands  the bands to select. Must neither be null nor empty.
+     * @return the subset color model, or {@link Optional#empty() empty} if input was null, or a subset cannot be
+     * deduced.
      */
-    public static ColorModel createSubset(final ColorModel cm, final int[] bands) {
+    public static Optional<ColorModel> createSubset(final ColorModel cm, final int[] bands) {
+        if (cm == null) return Optional.empty();
+        assert bands != null && bands.length > 0 : bands;
         final ColorModel subset;
         if (cm instanceof MultiBandsIndexColorModel) {
             subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
@@ -526,15 +547,15 @@ public final class ColorModelFactory {
         } else if (bands.length == 1 && cm instanceof ComponentColorModel) {
             final int dataType = cm.getTransferType();
             if (dataType < DataBuffer.TYPE_BYTE || dataType > DataBuffer.TYPE_USHORT) {
-                return Colorizer.NULL_COLOR_MODEL;
+                return Optional.empty();
             }
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             subset = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
         } else {
             // TODO: handle other color models.
-            return Colorizer.NULL_COLOR_MODEL;
+            return Optional.empty();
         }
-        return unique(subset);
+        return Optional.of(unique(subset));
     }
 
     /**
@@ -564,6 +585,7 @@ public final class ColorModelFactory {
      * @return a unique (shared) instance of the given color model.
      */
     private static <T extends ColorModel> T unique(T cm) {
+        assert cm != null : "Deduplication of color-model instances should be called only on non-null values";
         ColorModelPatch<T> c = new ColorModelPatch<>(cm);
         c = CACHE.unique(c);
         return c.cm;

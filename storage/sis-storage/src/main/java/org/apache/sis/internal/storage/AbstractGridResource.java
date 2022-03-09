@@ -450,7 +450,8 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             if (colors == null || isIdentity()) {
                 return colors;
             }
-            return ColorModelFactory.createSubset(colors, getSelectedBands());
+            return ColorModelFactory.createSubset(colors, getSelectedBands())
+                    .orElse(null);
         }
 
         /**
