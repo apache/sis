@@ -1195,7 +1195,7 @@ public final class Units extends Static {
         CENTIMETRE     = add(m, centi,                                    "cm",    SI,       (short) 1033);
         KILOMETRE      = add(m, kilo,                                     "km",    SI,       (short) 9036);
         NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     OTHER,    (short) 9030);
-        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    IMPERIAL, (short) 9093);
+        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,     1000), "mi",    IMPERIAL, (short) 9093);
         US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ftUS",  OTHER,    (short) 9003);
         CLARKE_FOOT    = add(m, LinearConverter.scale(3047972654d, 1E10), "ftCla", OTHER,    (short) 9005);
         FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    IMPERIAL, (short) 9002);
