@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
-import java.awt.image.SampleModel;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Optional;
 import java.awt.Transparency;
 import java.awt.Color;
 import java.awt.color.ColorSpace;
@@ -29,8 +29,8 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.PackedColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.ComponentColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.DataBuffer;
-import java.util.Optional;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -43,6 +43,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.0
  * @module
@@ -512,20 +513,21 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Creates a color model with only a subset of the bands of the given color model. Note that output color model
-     * should be used with a {@link SampleModel#createSubsetSampleModel(int[]) subset sample model} created with bands
-     * given as input.
+     * Creates a color model with only a subset of the bands of the given color model. The returned color model
+     * is compatible with a {@linkplain SampleModel#createSubsetSampleModel(int[]) subset sample model} created
+     * with the same argument than the {@code bands} argument given to this method.
      * This method might not produce a result in following cases:
+     *
      * <ul>
-     *     <li>Input color model is null</li>
-     *     <li>Given color model is not assignable from the following types:
-     *          <ul>
-     *              <li>{@link ComponentColorModel}</li>
-     *              <li>{@link MultiBandsIndexColorModel}</li>
-     *              <li>{@link ScaledColorModel}</li>
-     *          </ul>
-     *     </li>
-     *     <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
+     *   <li>Input color model is null.</li>
+     *   <li>Given color model is not assignable from the following types:
+     *     <ul>
+     *       <li>{@link ComponentColorModel}</li>
+     *       <li>{@link MultiBandsIndexColorModel}</li>
+     *       <li>{@link ScaledColorModel}</li>
+     *     </ul>
+     *   </li>
+     *   <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
      * </ul>
      *
      * <em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>: they're not managed for now, because
@@ -577,15 +579,16 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns a unique instance of the given color model. This method is automatically invoked by {@code create(…)} methods
-     * in this class. This {@code unique(ColorModel)} method is public for use by color models created by other ways.
+     * Returns a unique instance of the given color model.
+     * This method is automatically invoked by {@code create(…)} methods in this class.
      *
      * @param  <T>  the type of the color model to share.
      * @param  cm   the color model for which to get a unique instance.
      * @return a unique (shared) instance of the given color model.
      */
     private static <T extends ColorModel> T unique(T cm) {
-        assert cm != null : "Deduplication of color-model instances should be called only on non-null values";
+        // `CACHE` is null-safe and it is sometime okay to return a null color model.
+        // ColorModelPatch is not null-safe, but it will be removed in a future version.
         ColorModelPatch<T> c = new ColorModelPatch<>(cm);
         c = CACHE.unique(c);
         return c.cm;
