@@ -145,7 +145,7 @@ public enum GeometryType {
      * Types for geometries having <var>Z</var> and <var>M</var> are replaced by 2D types.
      *
      * @param  type  WKB geometry type.
-     * @return enumeration value for the given type, or {@code null}.
+     * @return enumeration value for the given type, or {@code null} if the given type is not recognized.
      *
      * @see #binaryType()
      */

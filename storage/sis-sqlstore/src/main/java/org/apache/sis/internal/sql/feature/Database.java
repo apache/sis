@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.logging.LogRecord;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -571,9 +572,8 @@ public class Database<G> extends Syntax  {
             case Types.TIME_WITH_TIMEZONE:        return ValueGetter.AsOffsetTime.INSTANCE;
             case Types.TIMESTAMP_WITH_TIMEZONE:   return ValueGetter.AsOffsetDateTime.INSTANCE;
             case Types.BLOB:                      return ValueGetter.AsBytes.INSTANCE;
-            case Types.ARRAY:                     // TODO
             case Types.OTHER:
-            case Types.JAVA_OBJECT:               return ValueGetter.AsObject.INSTANCE;
+            case Types.JAVA_OBJECT:               return getDefaultMapping();
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY: {
@@ -584,8 +584,45 @@ public class Database<G> extends Syntax  {
                     default: throw new AssertionError(encoding);
                 }
             }
+            case Types.ARRAY: {
+                final int componentType = getArrayComponentType(columnDefinition);
+                final ValueGetter<?> component = getMapping(new Column(componentType, columnDefinition.typeName));
+                if (component == ValueGetter.AsObject.INSTANCE) {
+                    return ValueGetter.AsArray.INSTANCE;
+                }
+                return new ValueGetter.AsArray(component);
+            }
             default: return null;
         }
+    }
+
+    /**
+     * Returns the type of components in SQL arrays stored in a column.
+     * This method is invoked when {@link #type} = {@link Types#ARRAY}.
+     * The default implementation returns {@link Types#OTHER} because JDBC
+     * column metadata does not provide information about component types.
+     * Database-specific subclasses should override this method if they can
+     * provide that information from the {@link Column#typeName} value.
+     *
+     * @param  columnDefinition  information about the column to extract array component type.
+     * @return one of {@link Types} constants.
+     *
+     * @see Array#getBaseType()
+     */
+    protected int getArrayComponentType(final Column columnDefinition) {
+        return Types.OTHER;
+    }
+
+    /**
+     * Returns a mapping for {@link Types#JAVA_OBJECT} or unrecognized types. Some JDBC drivers wrap
+     * objects in implementation-specific classes, for example {@link org.postgresql.util.PGobject}.
+     * This method should be overwritten in database-specific subclasses for returning a value getter
+     * capable to unwrap the value.
+     *
+     * @return the default mapping for unknown or unrecognized types.
+     */
+    protected ValueGetter<Object> getDefaultMapping() {
+        return ValueGetter.AsObject.INSTANCE;
     }
 
     /**
@@ -616,16 +653,22 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns a function for getting values from a geometry column.
+     * Returns a function for getting values from a geometry or geography column.
      * This is a helper method for {@link #getMapping(Column)} implementations.
      *
      * @param  columnDefinition  information about the column to extract values from and expose through Java API.
      * @return converter to the corresponding java type, or {@code null} if this class can not find a mapping,
      */
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
-        final GeometryType type = columnDefinition.getGeometryType();
+        /*
+         * The geometry type should not be empty. But it may still happen if the "GEOMETRY_COLUMNS"
+         * table does not contain a line for the specified column. It is a server issue, but seems
+         * to happen sometime.
+         */
+        final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
-        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS(), getBinaryEncoding(columnDefinition));
+        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
+                                    getBinaryEncoding(columnDefinition));
     }
 
     /**

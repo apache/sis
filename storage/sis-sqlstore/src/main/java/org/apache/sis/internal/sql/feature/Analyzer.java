@@ -272,7 +272,7 @@ final class Analyzer {
     final ValueGetter<?> setValueGetter(final Column column) {
         ValueGetter<?> getter = database.getMapping(column);
         if (getter == null) {
-            getter = ValueGetter.AsObject.INSTANCE;
+            getter = database.getDefaultMapping();
             warning(Resources.Keys.UnknownType_1, column.typeName);
         }
         column.valueGetter = getter;

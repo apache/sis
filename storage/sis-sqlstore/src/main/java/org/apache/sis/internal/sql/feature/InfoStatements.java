@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.ParseException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -175,6 +176,18 @@ public class InfoStatements implements Localized, AutoCloseable {
     @Override
     public final Locale getLocale() {
         return database.listeners.getLocale();
+    }
+
+    /**
+     * Returns a function for getting values of components in the given array.
+     * If no match is found, then this method returns {@code null}.
+     *
+     * @param  array  the array from which to get the mapping of component values.
+     * @return converter to the corresponding java type, or {@code null} if this class can not find a mapping.
+     * @throws SQLException if the mapping can not be obtained.
+     */
+    public final ValueGetter<?> getComponentMapping(final Array array) throws SQLException {
+        return database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName()));
     }
 
     /**

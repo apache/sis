@@ -119,9 +119,31 @@ public final class Postgres<G> extends Database<G> {
             return forGeometry(columnDefinition);
         }
         if ("raster".equalsIgnoreCase(columnDefinition.typeName)) {
-            return new RasterGetter(columnDefinition.getDefaultCRS(), getBinaryEncoding(columnDefinition));
+            return new RasterGetter(columnDefinition.getDefaultCRS().orElse(null),
+                                    getBinaryEncoding(columnDefinition));
         }
         return super.getMapping(columnDefinition);
+    }
+
+    /**
+     * Returns the type of components in SQL arrays stored in a column.
+     * This method is invoked when {@link #type} = {@link Types#ARRAY}.
+     */
+    @Override
+    protected int getArrayComponentType(final Column columnDefinition) {
+        switch (columnDefinition.typeName) {
+            // More types to be added later.
+            case "_text": return Types.VARCHAR;
+        }
+        return super.getArrayComponentType(columnDefinition);
+    }
+
+    /**
+     * Returns the mapping for {@link Object} or unrecognized types.
+     */
+    @Override
+    protected ValueGetter<Object> getDefaultMapping() {
+        return ObjectGetter.INSTANCE;
     }
 
     /**

@@ -123,7 +123,7 @@ final class ExtentEstimator {
      */
     private void query(final Statement statement) throws SQLException {
         for (final Column column : columns) {
-            if (column.getGeometryType() != null) {
+            if (column.getGeometryType().isPresent()) {
                 database.appendFunctionCall(builder.append("SELECT "), "ST_EstimatedExtent");
                 builder.append('(');
                 if (table.schema != null) {
@@ -136,7 +136,7 @@ final class ExtentEstimator {
                         final String wkt = result.getString(1);
                         if (wkt != null) {
                             final GeneralEnvelope env = new GeneralEnvelope(wkt);
-                            env.setCoordinateReferenceSystem(column.getDefaultCRS());
+                            column.getDefaultCRS().ifPresent(env::setCoordinateReferenceSystem);
                             if (envelope == null) {
                                 envelope = env;
                             } else try {
