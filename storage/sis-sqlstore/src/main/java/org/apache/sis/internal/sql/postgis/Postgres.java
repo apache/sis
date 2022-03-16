@@ -17,7 +17,9 @@
 package org.apache.sis.internal.sql.postgis;
 
 import java.util.Map;
+import java.util.Locale;
 import java.sql.Types;
+import java.sql.JDBCType;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -53,6 +55,10 @@ import org.apache.sis.util.Version;
 public final class Postgres<G> extends Database<G> {
     /**
      * Version of PostGIS extension, or {@code null} if PostGIS has not been found.
+     * Not to be confused with the version of PostgreSQL server, which is given by
+     * another class provided in the PostgreSQL JDBC driver.
+     *
+     * @see org.postgresql.core.ServerVersion
      */
     private final Version postgisVersion;
 
@@ -131,9 +137,14 @@ public final class Postgres<G> extends Database<G> {
      */
     @Override
     protected int getArrayComponentType(final Column columnDefinition) {
-        switch (columnDefinition.typeName) {
-            // More types to be added later.
-            case "_text": return Types.VARCHAR;
+        String typeName = columnDefinition.typeName;
+        if (typeName.equalsIgnoreCase("_text")) {       // Common case.
+            return Types.VARCHAR;
+        }
+        if (typeName.length() >= 2 && typeName.charAt(0) == '_') try {
+            return JDBCType.valueOf(typeName.substring(1).toUpperCase(Locale.US)).getVendorTypeNumber();
+        } catch (IllegalArgumentException e) {
+            // Unknown type. Ignore and fallback on `Types.OTHER`.
         }
         return super.getArrayComponentType(columnDefinition);
     }
