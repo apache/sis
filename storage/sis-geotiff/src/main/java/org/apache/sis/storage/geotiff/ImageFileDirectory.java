@@ -480,7 +480,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Adds the value read from the current position in the given stream for the entry identified
      * by the given GeoTIFF tag. This method may store the value either in a field of this class,
-     * or directly in the {@link ImageMetadataBuilder}. However in the later case, this method
+     * or directly in the {@link ImageMetadataBuilder}. However in the latter case, this method
      * should not write anything under the {@code "metadata/contentInfo"} node.
      *
      * @param  tag    the GeoTIFF tag to decode.

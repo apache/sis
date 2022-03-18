@@ -143,7 +143,7 @@ final class StringJoinOperation extends AbstractOperation {
      *
      * <p>Note: we store converters from string to value instead of the converse because
      * the inverse conversion is often a simple call to {@link Object#toString()}, so there
-     * is a risk that some of the later converters do not bother to remember their inverse.</p>
+     * is a risk that some of the latter converters do not bother to remember their inverse.</p>
      */
     private final ObjectConverter<? super String, ?>[] converters;
 

@@ -155,7 +155,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     static final double ANGULAR_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180);
     // Note: an alternative way to compute this value could be Formulas.LINEAR_TOLERANCE / AUTHALIC_RADIUS.
-    // But the later is only 0.07% lower than the current value.
+    // But the latter is only 0.07% lower than the current value.
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
@@ -630,7 +630,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * Returns the names of any additional internal parameters (other than {@link #eccentricity})
      * that this projection has. The length of this array must be the same than the length of the
-     * {@link #getInternalParameterValues()} array, if the later is non-null.
+     * {@link #getInternalParameterValues()} array, if the latter is non-null.
      */
     String[] getInternalParameterNames() {
         return CharSequences.EMPTY_ARRAY;
@@ -1012,7 +1012,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             case IGNORE_METADATA: {
                 /*
                  * There is no need to compare both 'eccentricity' and 'eccentricitySquared' since the former
-                 * is computed from the later. We are better to compare 'eccentricitySquared' since it is the
+                 * is computed from the latter. We are better to compare 'eccentricitySquared' since it is the
                  * original value from which the other value is derived.
                  */
                 if (!Numerics.equals(eccentricitySquared, that.eccentricitySquared)) {

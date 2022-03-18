@@ -78,7 +78,7 @@ public final class CoordinateOperations extends SystemListener {
      * is used by {@code DefaultCoordinateOperationFactory.createSingleOperation(…)}. Apache SIS tries
      * to infer this value automatically, but this entry may help SIS to perform a better choice in
      * some cases. For example an "Affine" operation can be both a conversion or a transformation
-     * (the later is used in datum shift in geocentric coordinates).
+     * (the latter is used in datum shift in geocentric coordinates).
      */
     public static final String OPERATION_TYPE_KEY = "operationType";
 

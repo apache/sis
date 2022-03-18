@@ -143,7 +143,7 @@ public final class WKTKeywords extends Static {
     /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultImageCRS}
      * and {@link org.apache.sis.referencing.crs.DefaultEngineeringCRS}.
-     * Former can be seen as a special case of the later.
+     * Former can be seen as a special case of the latter.
      */
     public static final String
             ImageDatum       = "ImageDatum",

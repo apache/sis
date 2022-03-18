@@ -405,7 +405,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 }
             }
             /*
-             * Use Double.toString(…) instead of NumberFormat because the later does not show
+             * Use Double.toString(…) instead of NumberFormat because the latter does not show
              * enough significant digits for parameters like inverse flattening.
              */
             warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(epsg),

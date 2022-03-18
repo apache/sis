@@ -214,7 +214,7 @@ abstract class FeatureAnalyzer {
         updateCaseHeuristic(column.label);
         /*
          * Add the column as an attribute. Foreign keys are excluded (they will be replaced by associations),
-         * except if the column is also a primary key. In the later case we need to keep that column because
+         * except if the column is also a primary key. In the latter case we need to keep that column because
          * it is needed for building the feature identifier.
          */
         AttributeTypeBuilder<?> attribute = null;

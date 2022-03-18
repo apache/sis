@@ -429,7 +429,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 /*
                  * Add the 'provided' values before 'complete' for two reasons:
                  *   1) Use the same insertion order than the declaration order in the GML file.
-                 *   2) Replace 'provided' instances by 'complete' instances, since the later
+                 *   2) Replace 'provided' instances by 'complete' instances, since the latter
                  *      are sometime pre-defined instances defined as static final constants.
                  */
                 final Map<NamedIdentifier,T> c = new LinkedHashMap<>();

@@ -363,7 +363,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                 }
                 /*
                  * Parse the WKT unconditionally, even if we already got the CRS from authority code.
-                 * It the later case, the CRS from WKT will be used only for a consistency check and
+                 * It the latter case, the CRS from WKT will be used only for a consistency check and
                  * the main CRS will be the one from authority.
                  */
                 CoordinateReferenceSystem fromWKT = null;

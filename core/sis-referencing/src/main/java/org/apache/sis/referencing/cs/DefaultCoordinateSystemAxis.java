@@ -817,7 +817,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         /**
          * Creates a new {@code ORDER[…]} element for the given axis in the given coordinate system.
          * If this method does not found exactly one instance of the given axis in the given coordinate system,
-         * then returns {@code null}. In the later case, it is caller's responsibility to declare the WKT as invalid.
+         * then returns {@code null}. In the latter case, it is caller's responsibility to declare the WKT as invalid.
          *
          * <p>This method is a little bit inefficient since the enclosing {@link AbstractCS#formatTo(Formatter)}
          * method already know this axis index. But there is currently no API in {@link Formatter} for carrying

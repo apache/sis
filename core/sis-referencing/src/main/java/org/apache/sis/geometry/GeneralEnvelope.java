@@ -589,9 +589,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                 if (value > max) coordinates[iUpper] = value;
             } else {
                 /*
-                 * Crossing the anti-meridian. The [max…min] range (not that min/max are
-                 * interchanged) is actually an exclusion area. Changes only the closest
-                 * side.
+                 * Crossing the anti-meridian. The [max…min] range (note that min/max are interchanged)
+                 * is actually an exclusion area. Changes only the closest side.
                  */
                 addToClosest(iLower, value, max, min);
             }

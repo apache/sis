@@ -1242,7 +1242,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         @Override public void dispose() {
             map.remove(key, this);
             /*
-             * There is nothing to remove from the cost map, since the later
+             * There is nothing to remove from the cost map, since the latter
              * contains only the keys of objects hold by strong reference.
              */
         }
@@ -1267,7 +1267,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         @Override public void dispose() {
             map.remove(key, this);
             /*
-             * There is nothing to remove from the cost map, since the later
+             * There is nothing to remove from the cost map, since the latter
              * contains only the keys of objects hold by strong reference.
              */
         }

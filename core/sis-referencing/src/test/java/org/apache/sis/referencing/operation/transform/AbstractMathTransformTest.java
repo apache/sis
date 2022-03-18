@@ -44,7 +44,7 @@ public final strictfp class AbstractMathTransformTest extends TestCase {
     /**
      * Tests the transform methods expecting at least one argument of type {@code float[]}.
      * We will use the {@link AbstractMathTransform#transform(double[], int, double[], int, int)}
-     * method as the reference implementation, assuming that the later has been correctly tested
+     * method as the reference implementation, assuming that the latter has been correctly tested
      * by {@link IterationStrategyTest}.
      *
      * @throws TransformException should never occur.

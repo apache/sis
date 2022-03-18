@@ -364,7 +364,7 @@ public final class ExtentSelector<T> {
      * Implementation delegates to {@link #evaluate(GeographicBoundingBox, Instant, Instant, Object)}.
      *
      * @param  domain  the extent to evaluate, or {@code null} if none.
-     * @param  object  an user object associated to the given extent.
+     * @param  object  a user object associated to the given extent.
      */
     public void evaluate(final Extent domain, final T object) {
         Date t;
@@ -382,7 +382,7 @@ public final class ExtentSelector<T> {
      * @param  bbox       the geographic extent of {@code object}, or {@code null} if none.
      * @param  startTime  start time of {@code object}, or {@code null} if none (unbounded).
      * @param  endTime    end time of {@code object}, or {@code null} if none (unbounded).
-     * @param  object     an user object associated to the given extent.
+     * @param  object     a user object associated to the given extent.
      */
     @SuppressWarnings("fallthrough")
     public void evaluate(final GeographicBoundingBox bbox, final Instant startTime, final Instant endTime, final T object) {

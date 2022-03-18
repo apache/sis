@@ -743,7 +743,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
          *
          * NOTE: we test (-180°, centerY), (180°, centerY), (centerX, -90°) and (centerX, 90°)
          * at step #1 before to test (-180°, -90°), (180°, -90°), (-180°, 90°) and (180°, 90°)
-         * at step #3 because the later may not be supported by every projections. For example
+         * at step #3 because the latter may not be supported by every projections. For example
          * if the target envelope is located between 20°N and 40°N, then a Mercator projection
          * may fail to transform the (-180°, 90°) coordinate while the (-180°, 30°) coordinate
          * is a valid point.

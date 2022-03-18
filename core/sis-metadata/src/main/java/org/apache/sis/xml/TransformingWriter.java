@@ -136,7 +136,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                     new QName(      Namespaces.MRI, "otherLocale",             "mri")));
         /*
          * The `extent` element is right after `topicCategory` in ISO 19115-3:2016, but there was an
-         * `environmentDescription` between them in legacy ISO 19139:2007. So we add the later in the
+         * `environmentDescription` between them in legacy ISO 19139:2007. So we add the latter in the
          * list of elements to skip for `extent`.
          */
         m.put(new QName(Namespaces.MRI, "topicCategory", "mri"), CollectionsExt.clone(toSkip));

@@ -84,7 +84,7 @@ import org.apache.sis.util.Debug;
 
 /**
  * A canvas for {@link RenderedImage} provided by a {@link GridCoverage} or a {@link GridCoverageResource}.
- * In the later case where the source of data is specified by {@link #resourceProperty}, the grid coverage
+ * In the latter case where the source of data is specified by {@link #resourceProperty}, the grid coverage
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)

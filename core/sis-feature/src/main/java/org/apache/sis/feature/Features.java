@@ -82,7 +82,7 @@ public final class Features extends Static {
             final Class<?> actual = type.getValueClass();
             /*
              * We require a strict equality - not type.isAssignableFrom(actual) - because in
-             * the later case we could have (to be strict) to return a <? extends V> type.
+             * the latter case we could have (to be strict) to return a <? extends V> type.
              */
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
@@ -113,7 +113,7 @@ public final class Features extends Static {
             final Class<?> actual = attribute.getType().getValueClass();
             /*
              * We require a strict equality - not type.isAssignableFrom(actual) - because in
-             * the later case we could have (to be strict) to return a <? extends V> type.
+             * the latter case we could have (to be strict) to return a <? extends V> type.
              */
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,

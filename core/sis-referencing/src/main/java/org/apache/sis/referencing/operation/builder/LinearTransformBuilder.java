@@ -960,7 +960,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * <div class="note"><b>Performance note:</b>
      * current implementation is efficient for builders {@linkplain #LinearTransformBuilder(int...) created for a grid}
      * but inefficient for builders {@linkplain #LinearTransformBuilder() created for randomly distributed points}.
-     * In the later case, the {@link #setControlPoints(Map)} method is a more efficient alternative.</div>
+     * In the latter case, the {@link #setControlPoints(Map)} method is a more efficient alternative.</div>
      *
      * @param  source  the source coordinates. If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
      *                 then for every index <var>i</var> the {@code source[i]} value shall be in the [0 … {@code gridSize[i]}-1] range inclusive.
@@ -1068,7 +1068,7 @@ search:         for (int j=domain(); --j >= 0;) {
         }
         /*
          * A coordinate with NaN value means that the point has not been set.
-         * Not that the coordinate may have only one NaN value, not necessarily
+         * Note that the coordinate may have only one NaN value, not necessarily
          * all of them, if the point has been deleted after insertion attempt.
          */
         final double[] target = new double[targets.length];

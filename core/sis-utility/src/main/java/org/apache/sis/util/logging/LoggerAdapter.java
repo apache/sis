@@ -73,7 +73,7 @@ import org.apache.sis.util.Debug;
  * <h2>Localization</h2>
  * This logger is always created without resource bundles. Localizations shall be done through
  * explicit calls to {@code logrb} or {@link #log(LogRecord)} methods. This is sufficient for
- * SIS needs, which performs all localizations through the later. Note that those methods
+ * SIS needs, which performs all localizations through the latter. Note that those methods
  * will be slower in this {@code LoggerAdapter} than the default {@link Logger} because this
  * adapter localizes and formats records immediately instead of letting the {@linkplain Handler}
  * performs this work only if needed.

@@ -258,7 +258,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Returns the object reference, or {@code null} if none and the {@code create} argument is {@code false}.
      * If the {@code create} argument is {@code true}, then this method will create the object reference when
-     * first needed. In the later case, any previous {@code gco:nilReason} will be overwritten since
+     * first needed. In the latter case, any previous {@code gco:nilReason} will be overwritten since
      * the object is not nil.
      */
     private ObjectReference reference(final boolean create) {
@@ -277,7 +277,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Returns the {@code xlink}, or {@code null} if none and {@code create} is {@code false}.
      * If the {@code create} argument is {@code true}, then this method will create the XLink
-     * when first needed. In the later case, any previous {@code gco:nilReason} will be
+     * when first needed. In the latter case, any previous {@code gco:nilReason} will be
      * overwritten since the object is not nil.
      */
     private XLink xlink(final boolean create) {

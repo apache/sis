@@ -190,7 +190,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             final Class<?> actual = descriptor.getValueClass();
             /*
              * We require a strict equality - not type.isAssignableFrom(actual) - because in
-             * the later case we could have (to be strict) to return a <? extends T> type.
+             * the latter case we could have (to be strict) to return a <? extends T> type.
              */
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Resources.format(Resources.Keys.IllegalParameterType_2,
@@ -793,7 +793,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             final int occurrence = occurrences.getOrDefault(name, ZERO);
             if (value instanceof ParameterValueGroup) {
                 /*
-                 * Contains sub-group - invokes 'copy' recursively.
+                 * Contains sub-group - invokes `copy` recursively.
                  * The target group may exist, but not necessarily.
                  */
                 final List<ParameterValueGroup> groups = destination.groups(name);
@@ -802,7 +802,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             } else {
                 /*
                  * Single parameter - copy the value, with special care for value with units
-                 * and for multi-occurrences. Not that the later is not allowed by ISO 19111
+                 * and for multi-occurrences. Note that the latter is not allowed by ISO 19111
                  * but supported by SIS implementation.
                  */
                 final ParameterValue<?> source = (ParameterValue<?>) value;

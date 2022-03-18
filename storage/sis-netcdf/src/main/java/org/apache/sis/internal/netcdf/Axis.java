@@ -890,7 +890,7 @@ public final class Axis extends NamedElement {
     /**
      * Reports a non-fatal error that occurred while constructing the grid geometry. This method is invoked
      * by methods that are themselves invoked (indirectly) by {@link Grid#getGridGeometry(Decoder)}, which
-     * is invoked by {@link Variable#getGridGeometry()}. We pretend that the warning come from the later
+     * is invoked by {@link Variable#getGridGeometry()}. We pretend that the warning come from the latter
      * since it is a bit closer to a public API.
      *
      * @param  exception  the exception that occurred, or {@code null} if none.

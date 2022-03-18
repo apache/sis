@@ -39,7 +39,7 @@ import java.io.Writer;
  *
  * The intent is to avoid large amount of white spaces in Javadoc when a line content long code.
  *
- * <p>Current version does not try to extends the standard doclet because the later is under revision in JDK 9.
+ * <p>Current version does not try to extends the standard doclet because the latter is under revision in JDK 9.
  * We may revisit when JDK 9 become available, if their new standard doclet API is public.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

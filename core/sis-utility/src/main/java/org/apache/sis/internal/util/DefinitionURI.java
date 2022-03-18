@@ -555,7 +555,7 @@ public final class DefinitionURI {
         /*
          * Get the part before the first ':' character. If none, assume that the given URI is already the code.
          * Otherwise the part may be either "http" or "urn" protocol, or the given authority (typically "EPSG").
-         * In the later case, we return immediately the code after the authority part.
+         * In the latter case, we return immediately the code after the authority part.
          */
         int upper = uri.indexOf(SEPARATOR);
         if (upper < 0) {

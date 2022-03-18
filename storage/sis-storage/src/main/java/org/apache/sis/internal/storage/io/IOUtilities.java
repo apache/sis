@@ -455,7 +455,7 @@ public final class IOUtilities extends Static {
         }
         /*
          * Leave the URL in its original encoding on the assumption that this is the encoding expected by
-         * the server. This is different than the policy for URI, because the later are always in UTF-8.
+         * the server. This is different than the policy for URI, because the latter are always in UTF-8.
          * If a URI is needed, callers should use toURI(url, encoding).
          */
         return url;

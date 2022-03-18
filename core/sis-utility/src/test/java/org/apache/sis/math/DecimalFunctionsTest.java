@@ -53,7 +53,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     /**
      * Tests the {@link MathFunctions#pow10(double)} method.
      * This will indirectly test {@link MathFunctions#pow10(int)}
-     * since the former will delegate to the later in this test.
+     * since the former will delegate to the latter in this test.
      */
     @Test
     @DependsOnMethod("testConstants")

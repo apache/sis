@@ -176,7 +176,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
      * DAOs should be disposed. However if they are not, then we will wait a little bit more.
      *
      * <p>The workers should be disposed right after the sleep time. However the workers disposal is performed
-     * by a shared (SIS-library wide) daemon thread. Because the later is invoked in a background thread,
+     * by a shared (SIS-library wide) daemon thread. Because the latter is invoked in a background thread,
      * it is subject to the hazard of thread scheduling.</p>
      */
     private static void sleepUntilAfterTimeout(final long waitTime, final ConcurrentAuthorityFactory<?> factory)

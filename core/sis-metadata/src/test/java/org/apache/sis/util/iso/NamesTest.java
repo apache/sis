@@ -118,7 +118,7 @@ public final strictfp class NamesTest extends TestCase {
 
     /**
      * Invokes {@link Names#toClass(TypeName)}, but catch {@link UnknownNameException}.
-     * If the later exception is caught, then this method returns {@code UnknownNameException.class}.
+     * If the latter exception is caught, then this method returns {@code UnknownNameException.class}.
      */
     private static Class<?> toClass(final TypeName type) {
         try {

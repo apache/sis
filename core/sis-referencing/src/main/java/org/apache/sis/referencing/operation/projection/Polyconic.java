@@ -152,7 +152,7 @@ public class Polyconic extends MeridianArcBased {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.

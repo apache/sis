@@ -1243,7 +1243,7 @@ public class StorageConnector implements Serializable {
     /**
      * Adds the given view in the cache together with information about its dependency.
      * For example {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
-     * from the later may change position of the former, and closing the later also close the former.
+     * from the latter may change position of the former, and closing the latter also close the former.
      *
      * @param  <S>      the compile-time type of the {@code type} argument.
      * @param  type     the view type.
@@ -1293,7 +1293,7 @@ public class StorageConnector implements Serializable {
     /**
      * Returns the storage as a view of the given type and closes all other views.
      * Invoking this method is equivalent to invoking {@link #getStorageAs(Class)}
-     * followed by {@link #closeAllExcept(Object)} except that the later method is
+     * followed by {@link #closeAllExcept(Object)} except that the latter method is
      * always invoked (in a way similar to "try with resource") and that this method
      * never returns {@code null}.
      *

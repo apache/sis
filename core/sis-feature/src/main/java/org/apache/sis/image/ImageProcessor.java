@@ -712,7 +712,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p>The minimum and maximum value can be either specified explicitly,
      * or determined from {@link #valueOfStatistics statistics} on the image.
-     * In the later case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
+     * In the latter case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
      * and {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
      * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.</p>
      *

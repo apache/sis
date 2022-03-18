@@ -124,7 +124,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * if there is zeros of opposite sign.
      *
      * <p>The inconsistency is in the use of {@link Double#doubleToLongBits(double)} for hash code and
-     * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the later is not.</p>
+     * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the latter is not.</p>
      */
     @Workaround(library="JDK", version="8")                         // Last verified in 1.8.0_05.
     private static double pz(final double value) {
@@ -402,7 +402,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     /**
      * Returns a new affine transform which is a modifiable copy of this transform. This implementation always
      * returns an instance of {@link AffineTransform}, <strong>not</strong> {@code AffineTransform2D}, because
-     * the later is unmodifiable and cloning it make little sense.
+     * the latter is unmodifiable and cloning it make little sense.
      *
      * @return a modifiable copy of this affine transform.
      */

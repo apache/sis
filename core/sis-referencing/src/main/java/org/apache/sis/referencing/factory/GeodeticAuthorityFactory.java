@@ -174,7 +174,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * In default {@code GeodeticAuthorityFactory} implementation, all {@code createFoo(String)} methods ultimately
      * delegate to this {@code createObject(String)} method and verify if the created object is of the desired type.
      * Overriding this method is sufficient for supporting the more specific {@code createFoo(String)} methods,
-     * but subclasses are encouraged to override the later for efficiency.
+     * but subclasses are encouraged to override the latter for efficiency.
      *
      * @param  code  value allocated by authority.
      * @return the object for the given code.

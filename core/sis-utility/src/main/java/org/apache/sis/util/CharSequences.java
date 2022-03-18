@@ -948,7 +948,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Returns a string with leading and trailing whitespace characters omitted.
-     * This method is similar in purpose to {@link String#trim()}, except that the later considers
+     * This method is similar in purpose to {@link String#trim()}, except that the latter considers
      * every {@linkplain Character#isISOControl(int) ISO control codes} below 32 to be a whitespace.
      * That {@code String.trim()} behavior has the side effect of removing the heading of ANSI escape
      * sequences (a.k.a. X3.64), and to ignore Unicode spaces. This {@code trimWhitespaces(…)} method

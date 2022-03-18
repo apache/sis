@@ -367,7 +367,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
          * At this point we know that the given units is not a system unit. Ask the conversion
          * FROM the given units (before to inverse it) instead of TO the given units because
          * in Apache SIS implementation, the former returns directly ConventionalUnit.toTarget
-         * while the later implies a recursive call to this method.
+         * while the latter implies a recursive call to this method.
          */
         return unit.getConverterTo(step).inverse();
     }

@@ -275,7 +275,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Returns the enumeration constant for the given name, or {@code null} if the given name is not recognized.
-     * In the later case, this method emits a warning.
+     * In the latter case, this method emits a warning.
      */
     private <T extends Enum<T>> T forEnumName(final Class<T> enumType, final String name) {
         final T code = Types.forEnumName(enumType, name);
@@ -287,7 +287,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Returns the code value for the given name, or {@code null} if the given name is not recognized.
-     * In the later case, this method emits a warning.
+     * In the latter case, this method emits a warning.
      */
     private <T extends CodeList<T>> T forCodeName(final Class<T> codeType, final String name) {
         final T code = Types.forCodeName(codeType, name, false);
@@ -361,7 +361,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Creates a URI form the given path, or returns {@code null} if the given URL is null or can not be parsed.
-     * In the later case, a warning will be emitted.
+     * In the latter case, a warning will be emitted.
      */
     private URI createURI(final String url) {
         if (url != null) try {
@@ -772,7 +772,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * Get the start and end times as Date objects if available, or as numeric values otherwise.
-         * In the later case, the unit symbol tells how to convert to Date objects.
+         * In the latter case, the unit symbol tells how to convert to Date objects.
          */
         Date startTime = decoder.dateValue(TIME.MINIMUM);
         Date endTime   = decoder.dateValue(TIME.MAXIMUM);

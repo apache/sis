@@ -389,7 +389,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
 
     /**
      * Creates an initially empty factory. The authority can specified explicitly or inferred from the WKTs.
-     * In the later case (when the given authority is {@code null}), an authority will be inferred from all
+     * In the latter case (when the given authority is {@code null}), an authority will be inferred from all
      * {@code ID[…]} or {@code AUTHORITY[…]} elements found in WKT strings as below, in preference order:
      *
      * <ol>

@@ -50,7 +50,7 @@ import java.util.EnumSet;
  *       and potentially more elements (the <cite>codomain</cite>). For example the set of output
  *       values of the {@link Integer#toString()} function is included in a larger set, which is
  *       the set of all possible {@link String} values. In this Javadoc, <var>T</var> stands for
- *       the later set.</li>
+ *       the latter set.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

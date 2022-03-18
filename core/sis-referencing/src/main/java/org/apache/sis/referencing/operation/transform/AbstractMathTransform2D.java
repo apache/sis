@@ -308,7 +308,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      *   <li>Copy the coordinate in a temporary array and pass that array to the
      *       {@link #transform(double[], int, double[], int, boolean)} method,
      *       with the {@code derivate} boolean argument set to {@code true}.</li>
-     *   <li>If the later method returned a non-null matrix, returns that matrix.
+     *   <li>If the latter method returned a non-null matrix, returns that matrix.
      *       Otherwise throws {@link TransformException}.</li>
      * </ul>
      *
@@ -414,7 +414,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          *   <li>Copy the coordinate in a temporary array and pass that array to the
          *       {@link #transform(double[], int, double[], int, boolean)} method,
          *       with the {@code derivate} boolean argument set to {@code true}.</li>
-         *   <li>If the later method returned a non-null matrix, returns that matrix.
+         *   <li>If the latter method returned a non-null matrix, returns that matrix.
          *       Otherwise throws {@link TransformException}.</li>
          * </ul>
          *

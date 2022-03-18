@@ -91,7 +91,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Each entry has a null value until the corresponding object is created.
      *
      * <p><b>Note:</b> using {@code ConcurrentHahMap} would be more efficient.
-     * But the later does not support null values and does not preserve insertion order.</p>
+     * But the latter does not support null values and does not preserve insertion order.</p>
      */
     final Map<String,T> objects = new LinkedHashMap<>();
 

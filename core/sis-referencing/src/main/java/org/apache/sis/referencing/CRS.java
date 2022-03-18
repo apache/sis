@@ -841,7 +841,7 @@ public final class CRS extends Static {
         /*
          * If no envelope was found, uses the geographic bounding box as a fallback. We will
          * need to transform it from WGS84 to the supplied CRS. This step was not required in
-         * the previous block because the later selected only envelopes in the right CRS.
+         * the previous block because the latter selected only envelopes in the right CRS.
          */
         if (envelope == null) {
             final GeographicBoundingBox bounds = getGeographicBoundingBox(crs);

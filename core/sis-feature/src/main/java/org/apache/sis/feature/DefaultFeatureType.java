@@ -82,7 +82,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * <div class="note"><b>Analogy:</b> compared to the Java language, the above rule is similar to overriding a method
  * with a more specific return type (a.k.a. <cite>covariant return type</cite>). This is also similar to Java arrays,
  * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
- * is safe for read operations but not for write operations — the later may throw {@link ArrayStoreException}).</div>
+ * is safe for read operations but not for write operations — the latter may throw {@link ArrayStoreException}).</div>
  *
  * <h2>Instantiation</h2>
  * {@code DefaultFeatureType} can be instantiated directly by a call to its {@linkplain #DefaultFeatureType constructor}.
@@ -689,7 +689,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         }
         /*
          * Ensures that all properties defined in this feature type is also defined
-         * in the given property, and that the former is assignable from the later.
+         * in the given property, and that the former is assignable from the latter.
          */
         for (final Map.Entry<String, PropertyType> entry : byName.entrySet()) {
             final PropertyType other;

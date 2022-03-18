@@ -62,7 +62,7 @@ import static java.lang.Double.doubleToRawLongBits;
  *
  * The transfer function allows some extrapolations if a sample values to convert falls in a gap between two categories.
  * The category immediately below will be used (i.e. its domain is expanded up to the next category), except if one category
- * is qualitative while the next category is quantitative. In the later case, the quantitative category has precedence.
+ * is qualitative while the next category is quantitative. In the latter case, the quantitative category has precedence.
  * The reason for allowing some extrapolations is because the range of values given to {@link Category} are often only
  * estimations, and we don't want the transfer function to fail because a value is slightly outside the estimated domain.
  *

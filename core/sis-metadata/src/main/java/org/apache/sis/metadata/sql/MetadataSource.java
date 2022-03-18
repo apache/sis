@@ -808,7 +808,7 @@ public class MetadataSource implements AutoCloseable {
             columns = new HashSet<>();
             /*
              * Note: a null schema in the DatabaseMetadata.getColumns(…) call means "do not take schema in account";
-             * it does not mean "no schema" (the later is specified by an empty string). This match better what we
+             * it does not mean "no schema" (the latter is specified by an empty string). This match better what we
              * want because if we do not specify a schema in a SELECT statement, then the actual schema used depends
              * on the search path specified in the database environment variables.
              */

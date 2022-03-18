@@ -348,7 +348,7 @@ public class TileOrganizer {
      * {@linkplain AffineTransform#getScaleX scale X} and {@linkplain AffineTransform#getScaleY scale Y}
      * coefficients in absolute value. That transform is given a "resolution" of (1,1) and stored in an
      * {@link IdentityHashMap}. Other transforms are stored in the same map with their resolution relative
-     * to the first one, or discarded if the relative resolution is not an integer. In the later case, the
+     * to the first one, or discarded if the relative resolution is not an integer. In the latter case, the
      * transforms that were discarded from the first pass will be put in a new map to be added as the second
      * element in the returned list. A new pass is run, discarded transforms from the second pass are put in
      * the third element of the list, <i>etc</i>.
