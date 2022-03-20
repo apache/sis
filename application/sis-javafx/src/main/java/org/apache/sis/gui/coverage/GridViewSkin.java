@@ -23,6 +23,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.Cursor;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.control.skin.VirtualContainerBase;
@@ -32,8 +33,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Font;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
+import org.apache.sis.internal.gui.MouseDrags;
 import org.apache.sis.internal.gui.Styles;
 
 
@@ -51,7 +56,7 @@ import org.apache.sis.internal.gui.Styles;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -128,9 +133,24 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     private boolean hasErrors;
 
     /**
-     * A rectangle around selected cells in the content area or in the row/column header.
+     * A rectangle around selected the cell in the content area or in the row/column header.
      */
     private final Rectangle selection, selectedRow, selectedColumn;
+
+    /**
+     * {@code true} if a drag event is in progress.
+     *
+     * @see #onDrag(MouseEvent)
+     */
+    private boolean isDragging;
+
+    /**
+     * Cursor position at the time of previous pan event.
+     * This is used for computing the translation to apply during drag events.
+     *
+     * @see #onDrag(MouseEvent)
+     */
+    private double xPanPrevious, yPanPrevious;
 
     /**
      * Creates a new skin for the specified view.
@@ -174,11 +194,6 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selection     .setManaged(false);
         selectedRow   .setManaged(false);
         selectedColumn.setManaged(false);
-        /*
-         * The status bar where to show coordinates of selected cell.
-         * Mouse exit event is handled by `hideSelection(…)`.
-         */
-        flow.setOnMouseEntered(view.statusBar);
         flow.setOnMouseExited((e) -> hideSelection());
         /*
          * The list of children is initially empty. We need to add the virtual flow
@@ -191,6 +206,11 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         bar.setManaged(false);
         getChildren().addAll(topBackground, leftBackground, selectedColumn,
                              selectedRow, headerRow, selection, bar, flow);
+        /*
+         * Keyboard and drag events for moving the viewed bounds.
+         */
+        view.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyTyped);
+        MouseDrags.setHandlers(view, this::onDrag);
     }
 
     /**
@@ -199,26 +219,28 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
      *
      * <p>This listener is registered for each {@link GridRow} instances.
      * It is not designed for other kinds of event source.</p>
+     *
+     * @see #onDrag(MouseEvent)
      */
     @Override
     public final void handle(final MouseEvent event) {
         double x = event.getX() - (leftPosition + headerWidth);
         boolean visible = (x >= 0);
         if (visible) {
-            final double visibleColumn = Math.floor(x / cellWidth);
-            visible = (visibleColumn >= 0);
+            final double column = Math.floor(x / cellWidth);
+            visible = (column >= 0);
             if (visible) {
                 final GridRow row = (GridRow) event.getSource();
                 double y = row.getLayoutY();
-                visible = y < getVirtualFlow().getHeight();
+                visible = y < ((Flow) getVirtualFlow()).getVisibleHeight();
                 if (visible) {
-                    x  = visibleColumn * cellWidth + leftBackground.getWidth() + row.getLayoutX();
+                    x  = column * cellWidth + leftBackground.getWidth() + row.getLayoutX();
                     y += topBackground.getHeight();
                     selection.setX(x);                  // NOT equivalent to `relocate(x,y)`.
                     selection.setY(y);
                     selectedRow.setY(y);
                     selectedColumn.setX(x);
-                    getSkinnable().formatCoordinates(firstVisibleColumn + (int) visibleColumn, row.getIndex());
+                    getSkinnable().formatCoordinates(firstVisibleColumn + (int) column, row.getIndex());
                 }
             }
         }
@@ -231,7 +253,69 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     }
 
     /**
-     * Hides the selection when the mouse moved outside the grid view area.
+     * Invoked when the user presses the button, drags the grid and releases the button.
+     * The position of the selection rectangles become invalid has a result of the drag.
+     * Instead of bothering to adjust it, we hide it. It may also be less confusing for
+     * the user, because it shows that we are not exploring values of different cells.
+     *
+     * @see #handle(MouseEvent)
+     */
+    private void onDrag(final MouseEvent event) {
+        if (event.getButton() == MouseButton.PRIMARY) {
+            final double x = event.getX() - leftBackground.getWidth();
+            final double y = event.getY() - topBackground.getHeight();
+            final Flow flow = (Flow) getVirtualFlow();
+            if (x >= 0 && y >= 0 && y < flow.getVisibleHeight()) {
+                final GridView view = getSkinnable();
+                final EventType<? extends MouseEvent> type = event.getEventType();
+                if (type == MouseEvent.MOUSE_PRESSED) {
+                    view.setCursor(Cursor.CLOSED_HAND);
+                    view.requestFocus();
+                    xPanPrevious = x;
+                    yPanPrevious = y;
+                    isDragging = true;
+                    hideSelection();
+                } else if (isDragging) {
+                    if (type == MouseEvent.MOUSE_RELEASED) {
+                        view.setCursor(Cursor.DEFAULT);
+                        isDragging = false;
+                    }
+                    xPanPrevious -= flow.scrollHorizontal(xPanPrevious - x);
+                    yPanPrevious -= flow.scrollPixels(yPanPrevious - y);
+                }
+                event.consume();
+            }
+        }
+    }
+
+    /**
+     * Invoked when the user presses a key. This handler provides navigation in the direction of arrow keys.
+     * The selection rectangles are hidden because otherwise the user may be surprised to see the whole grid
+     * scrolling instead of the selection rectangle moving.
+     */
+    private void onKeyTyped(final KeyEvent event) {
+        double tx=0, ty=0;
+        switch (event.getCode()) {
+            case RIGHT: case KP_RIGHT: tx =  1; break;
+            case LEFT:  case KP_LEFT:  tx = -1; break;
+            case DOWN:  case KP_DOWN:  ty = +1; break;
+            case UP:    case KP_UP:    ty = -1; break;
+            default: return;
+        }
+        if (event.isShiftDown()) {
+            tx *= 10;
+            ty *= 10;
+        }
+        final Flow flow = (Flow) getVirtualFlow();
+        flow.scrollPixels(flow.getFixedCellSize() * ty);
+        flow.scrollHorizontal(cellWidth * tx);
+        hideSelection();
+        event.consume();
+    }
+
+    /**
+     * Hides the selection when the mouse moved outside the grid view area,
+     * or when a drag or scrolling action is performed.
      */
     private void hideSelection() {
         selection     .setVisible(false);
@@ -346,13 +430,14 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
      * Those two properties are used for creating the minimal amount
      * of {@link GridCell}s needed for rendering the {@link GridRow}.
      */
-    static final class Flow extends VirtualFlow<GridRow> implements ChangeListener<Number> {
+    private static final class Flow extends VirtualFlow<GridRow> implements ChangeListener<Number> {
         /**
          * Creates a new flow for the given view. This method registers listeners
          * on the properties that may require a redrawn of the full view port.
          */
         @SuppressWarnings("ThisEscapedInObjectConstruction")
         Flow(final GridView view) {
+            setPannable(false);         // We will use our own pan listeners.
             getHbar().valueProperty().addListener(this);
             view.bandProperty.addListener(this);
             view.cellSpacing .addListener(this);
@@ -365,6 +450,20 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          */
         final double getHorizontalPosition() {
             return getHbar().getValue();
+        }
+
+        /**
+         * Attempts to scroll horizontally the view by the given amount of pixels.
+         *
+         * @param  delta  the amount of pixels to scroll.
+         * @return the number of pixels actually moved.
+         */
+        final double scrollHorizontal(final double delta) {
+            final ScrollBar bar = getHbar();
+            final double previous = bar.getValue();
+            final double value = Math.max(bar.getMin(), Math.min(bar.getMax(), previous + delta));
+            bar.setValue(value);
+            return value - previous;
         }
 
         /**

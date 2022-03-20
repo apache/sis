@@ -1171,6 +1171,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * Do not use `position.setVisible(false)` because
          * we want the Tooltip to continue to be available.
          */
+        lastX = lastY = Double.NaN;
         position.setText(outsideText);
         if (isSampleValuesVisible) {
             sampleValues.setText(sampleValuesProvider.get().evaluate(null));
