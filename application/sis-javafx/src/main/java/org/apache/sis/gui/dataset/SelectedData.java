@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.util.EventObject;
 import javafx.scene.layout.Region;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.internal.gui.Resources;
@@ -65,6 +64,12 @@ final class SelectedData {
 
     /**
      * Creates a snapshot of selected data.
+     * Only one of {@code features} and {@code coverage} shall be non-null.
+     *
+     * @param  title      a title to use for windows and menu items.
+     * @param  features   control that contains the currently selected data if those data are features.
+     * @param  coverage   the request for coverage data.
+     * @param  localized  localized resources, for convenience only.
      */
     SelectedData(final String title, final FeatureTable features, final CoverageExplorer coverage, final Resources localized) {
         this.title     = title;
@@ -75,10 +80,8 @@ final class SelectedData {
 
     /**
      * Creates the view for selected data.
-     *
-     * @param  event  the event (e.g. mouse action) requesting a new window, or {@code null} if unknown.
      */
-    final Region createView(final EventObject event) {
+    final Region createView() {
         if (features != null) {
             return new FeatureTable(features);
         } else {
