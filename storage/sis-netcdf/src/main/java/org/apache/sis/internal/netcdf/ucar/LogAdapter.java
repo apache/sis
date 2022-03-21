@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.util.logging.Level;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.storage.event.StoreListeners;
 
@@ -27,7 +28,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * that a complete line has been received.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -71,10 +72,10 @@ final class LogAdapter implements Appendable {
             for (int i=0; i<count; i++) {
                 final CharSequence line = sp[i];
                 if (buffer.length() != 0) {
-                    warning(buffer.append(line));
+                    log(buffer.append(line));
                     buffer.setLength(0);
                 } else {
-                    warning(line);
+                    log(line);
                 }
             }
             /*
@@ -105,7 +106,7 @@ final class LogAdapter implements Appendable {
         if (c != '\r' && c != '\n') {
             buffer.append(c);
         } else if (buffer.length() != 0) {
-            warning(buffer);
+            log(buffer);
             buffer.setLength(0);
         }
         return this;
@@ -114,10 +115,10 @@ final class LogAdapter implements Appendable {
     /**
      * Sends the given message to the listeners if the message is non-white.
      */
-    private void warning(CharSequence message) {
+    private void log(CharSequence message) {
         message = CharSequences.trimWhitespaces(message);
         if (message.length() != 0) {
-            listeners.warning(message.toString());
+            listeners.warning(Level.FINE, message.toString(), null);
         }
     }
 }
