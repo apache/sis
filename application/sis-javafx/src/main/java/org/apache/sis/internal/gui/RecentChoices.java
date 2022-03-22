@@ -19,6 +19,7 @@ package org.apache.sis.internal.gui;
 import java.io.File;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.prefs.Preferences;
 import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
@@ -30,7 +31,7 @@ import org.apache.sis.util.collection.FrequencySortedSet;
  * Stores recent user choices, for example the last directory opened.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -59,6 +60,11 @@ public final class RecentChoices {
      * The node where to store recently opened files.
      */
     private static final String FILES = "RecentFiles";
+
+    /**
+     * The node where to store recently opened URLs.
+     */
+    private static final String URLS = "RecentURLs";
 
     /**
      * The node where to store authority (usually EPSG) codes of most recently used coordinate reference systems.
@@ -108,7 +114,7 @@ public final class RecentChoices {
     /**
      * Returns recently opened files.
      *
-     * @return recently opened files.
+     * @return recently opened files, or an empty array if none.
      */
     public static CharSequence[] getFiles() {
         return CharSequences.splitOnEOL(NODE.get(FILES, null));
@@ -122,6 +128,26 @@ public final class RecentChoices {
      */
     public static void setFiles(final String files) {
         NODE.put(FILES, files);
+    }
+
+    /**
+     * Returns recently opened URLs.
+     *
+     * @param  addTo  the list where to add recent URLs.
+     */
+    public static void getURLs(final Collection<String> addTo) {
+        for (CharSequence url : CharSequences.splitOnEOL(NODE.get(URLS, null))) {
+            addTo.add(url.toString());
+        }
+    }
+
+    /**
+     * Sets the list of recently opened URLs.
+     *
+     * @param files recently opened URLs.
+     */
+    public static void setURLs(final Collection<String> files) {
+        NODE.put(URLS, String.join(System.lineSeparator(), files));
     }
 
     /**

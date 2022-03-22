@@ -187,6 +187,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DownloadDetails_3 = 59;
 
         /**
+         * Enter the URL of the file to open.
+         */
+        public static final short EnterURL = 71;
+
+        /**
          * An error occurred at the following location:
          */
         public static final short ErrorAt = 53;
@@ -316,6 +321,11 @@ public final class Resources extends IndexedResourceBundle {
          * Open recent file
          */
         public static final short OpenRecentFile = 54;
+
+        /**
+         * Open URL…
+         */
+        public static final short OpenURL = 70;
 
         /**
          * Orthographic
