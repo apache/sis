@@ -50,6 +50,11 @@ public interface TileMatrix {
      */
     GenericName getIdentifier();
 
+    /*
+     * There is no `getTileSize()` method because tiles are not necessarily for grid coverages.
+     * Tile size do not apply to vector tiles, quantized mesh or 3D tiles.
+     */
+
     /**
      * Returns a description about how space is partitioned into individual tiled units.
      * The description contains the extent of valid tile indices, the spatial reference system,

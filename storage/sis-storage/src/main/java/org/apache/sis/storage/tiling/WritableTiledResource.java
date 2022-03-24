@@ -72,5 +72,5 @@ public interface WritableTiledResource extends TiledResource {
      * @throws ReadOnlyStorageException if this resource is not writable. It may be caused by insufficient credentials.
      * @throws DataStoreException if deleting the tile matrix set failed for another reason.
      */
-    void removeTileMatrixSet(String identifier) throws DataStoreException;
+    void deleteTileMatrixSet(String identifier) throws DataStoreException;
 }
