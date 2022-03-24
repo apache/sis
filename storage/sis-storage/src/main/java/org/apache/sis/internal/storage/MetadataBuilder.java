@@ -73,12 +73,15 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.metadata.Merger;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
@@ -808,6 +811,85 @@ public class MetadataBuilder {
         if (lineage != null) {
             addIfNotPresent(metadata().getResourceLineages(), lineage);
             lineage = null;
+        }
+    }
+
+    /**
+     * Adds default metadata for the specified resource.
+     * This is used for default implementation of {@link AbstractResource#createMetadata()}.
+     *
+     * @param  resource   the resource for which to add metadata.
+     * @param  listeners  the listeners to notify in case of warning.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
+        // Note: title is mandatory in ISO metadata, contrarily to the identifier.
+        resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
+        resource.getEnvelope().ifPresent((envelope) -> {
+            try {
+                addExtent(envelope);
+            } catch (TransformException | UnsupportedOperationException e) {
+                listeners.warning(e);
+            }
+        });
+    }
+
+    /**
+     * Adds default metadata for the specified resource.
+     * This is used for default implementation of {@link AbstractGridResource#createMetadata()}.
+     *
+     * @param  resource   the resource for which to add metadata.
+     * @param  listeners  the listeners to notify in case of warning.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    public final void addDefaultMetadata(final AbstractFeatureSet resource, final StoreListeners listeners) throws DataStoreException {
+        addDefaultMetadata((AbstractResource) resource, listeners);
+        addFeatureType(resource.getType(), resource.getFeatureCount().orElse(-1));
+    }
+
+    /**
+     * Adds default metadata for the specified resource.
+     * This is used for default implementation of {@link AbstractGridResource#createMetadata()}.
+     *
+     * @param  resource   the resource for which to add metadata.
+     * @param  listeners  the listeners to notify in case of warning.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    public final void addDefaultMetadata(final AbstractGridResource resource, final StoreListeners listeners) throws DataStoreException {
+        addDefaultMetadata((AbstractResource) resource, listeners);
+        addSpatialRepresentation(null, resource.getGridGeometry(), false);
+        for (final SampleDimension band : resource.getSampleDimensions()) {
+            addNewBand(band);
+        }
+    }
+
+    /**
+     * An international string where localized identifiers are formatted more like an English sentence.
+     * This is used for wrapping {@link GenericName#toInternationalString()} representation for use as
+     * a citation title.
+     */
+    private static final class Sentence extends AbstractInternationalString {
+        /** The generic name localized representation. */
+        private final InternationalString name;
+
+        /** Returns a new wrapper for the given generic name. */
+        Sentence(final GenericName name) {
+            this.name = name.toInternationalString();
+        }
+
+        /** Returns the generic name as an English-like sentence. */
+        @Override public String toString(final Locale locale) {
+            return CharSequences.camelCaseToSentence(name.toString(locale)).toString();
+        }
+
+        /** Returns a hash code value for this sentence. */
+        @Override public int hashCode() {
+            return ~name.hashCode();
+        }
+
+        /** Compares the given object with this sentence for equality. */
+        @Override public boolean equals(final Object other) {
+            return (other instanceof Sentence) && name.equals(((Sentence) other).name);
         }
     }
 

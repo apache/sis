@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
@@ -41,7 +42,7 @@ import org.apache.sis.util.ArraysExt;
  *       a sample dimension.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -110,9 +111,11 @@ final class BandGroup extends AbstractResource implements Aggregate {
      * Invoked in a synchronized block the first time that {@link #getMetadata()} is invoked.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        metadata.addTitle(group.title);     // Must be before `super.createMetadata(…)`.
-        super.createMetadata(metadata);
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder metadata = new MetadataBuilder();
+        metadata.addTitle(group.title);             // Must be before `addDefaultMetadata(…)`.
+        metadata.addDefaultMetadata(this, this);
+        return metadata.build(true);
     }
 
     /**

@@ -16,10 +16,8 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Locale;
 import java.util.Optional;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
@@ -33,20 +31,20 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.CharSequences;
+import org.apache.sis.xml.NilReason;
 
 
 /**
  * Base implementation of resources contained in data stores. This class provides a {@link #getMetadata()}
- * which extracts information from other methods. Subclasses shall or should override the following methods:
+ * method which extracts information from other methods. Subclasses should override the following methods:
  *
  * <ul>
- *   <li>{@link #getIdentifier()} (mandatory)</li>
+ *   <li>{@link #getIdentifier()} (strongly recommended)</li>
  *   <li>{@link #getEnvelope()} (recommended)</li>
- *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
+ *   <li>{@link #createMetadata()} (optional)</li>
+ *   <li>{@link #getSynchronizationLock()} (optional)</li>
  * </ul>
  *
  * This class extends {@link StoreListeners} for convenience reasons.
@@ -64,10 +62,10 @@ import org.apache.sis.util.CharSequences;
 public class AbstractResource extends StoreListeners implements Resource {
     /**
      * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
-     * If non-null, this metadata shall contain at least the resource {@linkplain #getIdentifier() identifier}.
+     * If non-null, this metadata should contain at least the resource {@linkplain #getIdentifier() identifier}.
      * Those metadata are created by {@link #getMetadata()} when first needed.
      */
-    private Metadata metadata;
+    private volatile Metadata metadata;
 
     /**
      * Creates a new resource. This resource will have its own set of listeners,
@@ -86,11 +84,10 @@ public class AbstractResource extends StoreListeners implements Resource {
      * The default implementation returns an empty value.
      * Subclasses are strongly encouraged to override if they can provide a value.
      *
-     * <p>Note that the default implementation of {@link #createMetadata(MetadataBuilder)} uses this identifier
-     * for initializing the {@code metadata/identificationInfo/citation/title} property. So it is generally not
-     * useful to fallback on metadata if the identifier is empty.</p>
-     *
-     * @see org.apache.sis.internal.storage.StoreUtilities#getLabel(Resource)
+     * <div class="note"><b>Implementation note:</b>
+     * the default implementation of {@link #createMetadata()} uses this identifier for initializing
+     * the {@code metadata/identificationInfo/citation/title} property. So it is generally not useful
+     * to fallback on metadata if the identifier is empty.</div>
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -100,7 +97,7 @@ public class AbstractResource extends StoreListeners implements Resource {
     /**
      * Returns the spatiotemporal envelope of this resource. This information is part of API only in some kinds of resource
      * like {@link org.apache.sis.storage.FeatureSet}. But the method is provided in this base class for convenience and for
-     * allowing {@link #getMetadata()} to use this information if available. The default implementation gives an empty value.
+     * allowing {@link #createMetadata()} to use this information if available. The default implementation gives an empty value.
      *
      * @return the spatiotemporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
@@ -110,95 +107,52 @@ public class AbstractResource extends StoreListeners implements Resource {
     }
 
     /**
-     * Returns a description of this resource. This method invokes {@link #createMetadata(MetadataBuilder)}
-     * the first time it is invoked, then caches the result.
+     * Returns a description of this resource. This method invokes {@link #createMetadata()}
+     * in a synchronized block when first needed, then caches the result.
      *
      * @return information about this resource (never {@code null} in this implementation).
-     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     * @throws DataStoreException if an error occurred while reading or computing the metadata.
      */
     @Override
     public final Metadata getMetadata() throws DataStoreException {
-        synchronized (getSynchronizationLock()) {
-            if (metadata == null) {
-                metadata = createMetadata();
+        Metadata md = metadata;
+        if (md == null) {
+            synchronized (getSynchronizationLock()) {
+                md = metadata;
+                if (md == null) {
+                    md = createMetadata();
+                    if (md == null) {
+                        md = NilReason.UNKNOWN.createNilObject(Metadata.class);
+                    }
+                    metadata = md;
+                }
             }
-            return metadata;
         }
+        return md;
     }
 
     /**
      * Invoked in a synchronized block the first time that {@link #getMetadata()} is invoked.
-     * The default implementation delegates to {@link #createMetadata(MetadataBuilder)}.
-     * Subclasses can override if they want to use a different kind of builder.
-     *
-     * @return the newly created metadata.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
-     */
-    protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder builder = new MetadataBuilder();
-        createMetadata(builder);
-        return builder.build(true);
-    }
-
-    /**
-     * Invoked by the default implementation of {@link #createMetadata()}.
      * The default implementation populates metadata based on information
      * provided by {@link #getIdentifier()} and {@link #getEnvelope()}.
      * Subclasses should override if they can provide more information.
      *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     * @return the newly created metadata, or {@code null} if unknown.
+     * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        // Note: title is mandatory in ISO metadata, contrarily to the identifier.
-        getIdentifier().ifPresent((name) -> metadata.addTitle(new Sentence(name)));
-        getEnvelope().ifPresent((envelope) -> {
-            try {
-                metadata.addExtent(envelope);
-            } catch (TransformException | UnsupportedOperationException e) {
-                warning(e);
-            }
-        });
-    }
-
-    /**
-     * An international string where localized identifiers are formatted more like an English sentence.
-     * This is used for wrapping {@link GenericName#toInternationalString()} representation for use as
-     * a citation title.
-     */
-    private static final class Sentence extends AbstractInternationalString {
-        /** The generic name localized representation. */
-        private final InternationalString name;
-
-        /** Returns a new wrapper for the given generic name. */
-        Sentence(final GenericName name) {
-            this.name = name.toInternationalString();
-        }
-
-        /** Returns the generic name as an English-like sentence. */
-        @Override public String toString(final Locale locale) {
-            return CharSequences.camelCaseToSentence(name.toString(locale)).toString();
-        }
-
-        /** Returns a hash code value for this sentence. */
-        @Override public int hashCode() {
-            return ~name.hashCode();
-        }
-
-        /** Compares the given object with this sentence for equality. */
-        @Override public boolean equals(final Object other) {
-            return (other instanceof Sentence) && name.equals(((Sentence) other).name);
-        }
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, this);
+        return builder.build(true);
     }
 
     /**
      * Clears any cache in this resource, forcing the data to be recomputed when needed again.
-     * This method should be invoked if the data in underlying data store changed.
+     * The default implementation clears the cached metadata object, which will cause
+     * {@link #createMetadata()} to be invoked again when first needed.
      */
     protected void clearCache() {
-        synchronized (getSynchronizationLock()) {
-            metadata = null;
-        }
+        metadata = null;
     }
 
     /**

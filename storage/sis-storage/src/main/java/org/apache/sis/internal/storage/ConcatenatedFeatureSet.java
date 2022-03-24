@@ -51,7 +51,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -175,7 +175,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * @return estimation of the number of features.
      */
     @Override
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         long sum = 0;
         for (final FeatureSet fs : sources) {
             if (fs instanceof AbstractFeatureSet) {

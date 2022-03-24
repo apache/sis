@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.Optional;
 import java.util.OptionalLong;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -46,7 +47,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -83,21 +84,26 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      *
      * @return estimation of the number of features.
      */
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         return OptionalLong.empty();
     }
 
     /**
-     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates metadata
-     * based on information provided by {@link #getType()}, {@link #getIdentifier()} and {@link #getEnvelope()}.
+     * Invoked in a synchronized block the first time that {@code getMetadata()} is invoked.
+     * The default implementation populates metadata based on information provided by
+     * {@link #getIdentifier()   getIdentifier()},
+     * {@link #getEnvelope()     getEnvelope()},
+     * {@link #getType()         getType()} and
+     * {@link #getFeatureCount() getFeatureCount()}.
      * Subclasses should override if they can provide more information.
      *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     * @return the newly created metadata, or {@code null} if unknown.
+     * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
-        metadata.addFeatureType(getType(), getFeatureCount().orElse(-1));
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, this);
+        return builder.build(true);
     }
 }

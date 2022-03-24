@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -141,13 +142,15 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * @throws DataStoreException if an error occurred while reading metadata from the data stores.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder metadata = new MetadataBuilder();
+        metadata.addDefaultMetadata(this, this);
         for (final FeatureSet fs : dependencies()) {
             final FeatureType type = fs.getType();
             metadata.addSource(fs.getMetadata(), ScopeCode.FEATURE_TYPE,
                     (type == null) ? null : new CharSequence[] {type.getName().toInternationalString()});
         }
+        return metadata.build(true);
     }
 
     /**

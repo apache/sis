@@ -28,6 +28,7 @@ import java.nio.Buffer;
 import java.awt.image.DataBuffer;
 
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.storage.AbstractGridResource;
@@ -387,11 +388,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * provided by {@link #getIdentifier()}, {@link #getGridGeometry()}, {@link #getSampleDimensions()} and
      * variable names.
      *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder metadata = new MetadataBuilder();
         String title = null;
         for (final Variable v : data) {
             title = (String) CharSequences.commonWords(title, v.getDescription());
@@ -400,7 +401,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (title != null && !title.isEmpty()) {
             metadata.addTitle(CharSequences.camelCaseToSentence(title).toString());
         }
-        super.createMetadata(metadata);
+        metadata.addDefaultMetadata(this, this);
+        return metadata.build(true);
     }
 
     /**

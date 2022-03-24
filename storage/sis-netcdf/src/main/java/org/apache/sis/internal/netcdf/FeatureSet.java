@@ -588,7 +588,7 @@ skip:           for (final Variable v : properties) {
      * @return the number of features.
      */
     @Override
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         if (counts != null) {
             return OptionalLong.of(counts.size());
         }

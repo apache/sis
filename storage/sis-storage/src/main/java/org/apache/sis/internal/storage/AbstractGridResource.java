@@ -29,6 +29,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RasterFormatException;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
@@ -109,20 +110,21 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     }
 
     /**
-     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates
-     * metadata based on information provided by {@link #getIdentifier()}, {@link #getGridGeometry()} and
-     * {@link #getSampleDimensions()}. Subclasses should override if they can provide more information.
+     * Invoked in a synchronized block the first time that {@code getMetadata()} is invoked.
+     * The default implementation populates metadata based on information provided by
+     * {@link #getIdentifier()       getIdentifier()},
+     * {@link #getGridGeometry()     getGridGeometry()} and
+     * {@link #getSampleDimensions() getSampleDimensions()}.
+     * Subclasses should override if they can provide more information.
      *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     * @return the newly created metadata, or {@code null} if unknown.
+     * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
-        metadata.addSpatialRepresentation(null, getGridGeometry(), false);
-        for (final SampleDimension band : getSampleDimensions()) {
-            metadata.addNewBand(band);
-        }
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, this);
+        return builder.build(true);
     }
 
     /**
