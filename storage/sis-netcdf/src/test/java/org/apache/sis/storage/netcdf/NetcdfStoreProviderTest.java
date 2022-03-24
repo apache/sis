@@ -23,7 +23,6 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
-import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -92,7 +91,7 @@ public final strictfp class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testDecoderFromStream() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
-        try (Decoder decoder = NetcdfStoreProvider.decoder(new AbstractResource(null), c)) {
+        try (Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c)) {
             assertInstanceOf("decoder", ChannelDecoder.class, decoder);
         }
     }
@@ -107,7 +106,7 @@ public final strictfp class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
-        try (Decoder decoder = NetcdfStoreProvider.decoder(new AbstractResource(null), c)) {
+        try (Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c)) {
             assertInstanceOf("decoder", DecoderWrapper.class, decoder);
         }
     }

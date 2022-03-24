@@ -1341,14 +1341,14 @@ final class ImageFileDirectory extends DataCube {
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) try {
                 metadata.addExtent(gridGeometry.getEnvelope());
             } catch (TransformException e) {
-                warning(e);
+                listeners.warning(e);
             }
             referencing.completeMetadata(gridGeometry, metadata);
         }
         /*
          * End of metadata construction from TIFF tags.
          */
-        metadata.finish(this);
+        metadata.finish(this, listeners);
         final DefaultMetadata md = metadata.build(false);
         if (isIndexValid) {
             final Metadata c = reader.store.customizer.customize(index, md);
@@ -1698,14 +1698,24 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Reports a warning with a message created from the given resource keys and parameters.
+     * Note that the log record will not necessarily be sent to the logging framework;
+     * if the user has registered at least one listener, then the record will be sent to the listeners instead.
+     *
+     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
+     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
+     * Those values assume that the warnings occurred indirectly from a call to {@link GeoTiffStore#components()}.
+     * We do not report private classes or methods as the source of warnings.</p>
      *
      * @param  level       the logging level for the message to log.
      * @param  key         the {@code Resources} key of the message to format.
      * @param  parameters  the parameters to put in the message.
      */
     private void warning(final Level level, final short key, final Object... parameters) {
-        final LogRecord r = reader.resources().getLogRecord(level, key, parameters);
-        reader.store.warning(r);
+        final LogRecord record = reader.resources().getLogRecord(level, key, parameters);
+        record.setSourceClassName(GeoTiffStore.class.getName());
+        record.setSourceMethodName("components()");
+        // Logger name will be set by listeners.warning(record).
+        listeners.warning(record);
     }
 
     /**

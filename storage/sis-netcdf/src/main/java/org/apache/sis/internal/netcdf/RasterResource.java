@@ -401,7 +401,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (title != null && !title.isEmpty()) {
             metadata.addTitle(CharSequences.camelCaseToSentence(title).toString());
         }
-        metadata.addDefaultMetadata(this, this);
+        metadata.addDefaultMetadata(this, listeners);
         return metadata.build(true);
     }
 
@@ -525,7 +525,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
              * If we failed to do that, we will not add quantitative category. But we still can add
              * qualitative categories for "no data" sample values in the rest of this method.
              */
-            warning(e);
+            listeners.warning(e);
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -584,7 +584,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
              */
             builder.categories().clear();
             sd = builder.build();
-            warning(e);
+            listeners.warning(e);
         }
         return sd;
     }
@@ -630,7 +630,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             for (int i=0; i<rangeIndices.getNumBands(); i++) {
                 final Variable variable = data[rangeIndices.getSourceIndex(i)];
                 if (!dataType.equals(variable.getDataType())) {
-                    throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
+                    throw new DataStoreContentException(Resources.forLocale(listeners.getLocale()).getString(
                             Resources.Keys.MismatchedVariableType_3, getFilename(), first.getName(), variable.getName()));
                 }
             }
@@ -723,7 +723,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * Provide to `Raster` all information needed for building a `RenderedImage` when requested.
          */
         if (imageBuffer == null) {
-            throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
+            throw new DataStoreContentException(Errors.getResources(listeners.getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         final Variable main = data[visibleBand];
         final Raster raster = new Raster(targetDomain, UnmodifiableArrayList.wrap(bands), imageBuffer,
@@ -737,7 +737,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * Returns the name of the netCDF file. This is used for error messages.
      */
     private String getFilename() {
-        return (location != null) ? location.getFileName().toString() : getSourceName();
+        return (location != null) ? location.getFileName().toString() : listeners.getSourceName();
     }
 
     /**

@@ -79,6 +79,6 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
      * @return default error message to use in exceptions.
      */
     protected final String canNotReadFile() {
-        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getSourceName());
+        return Errors.getResources(listeners.getLocale()).getString(Errors.Keys.CanNotRead_1, listeners.getSourceName());
     }
 }

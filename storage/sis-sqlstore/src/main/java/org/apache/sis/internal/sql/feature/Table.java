@@ -194,7 +194,7 @@ final class Table extends AbstractFeatureSet {
      *       A starting point is {@link org.apache.sis.storage.FeatureQuery#expectedType(FeatureType)}.
      */
     Table(final Table parent) {
-        super(parent);
+        super(parent.listeners);
         database = parent.database;
         query    = parent.query;
         name     = parent.name;

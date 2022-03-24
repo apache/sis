@@ -35,6 +35,7 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.dataset.ContentVerifier;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -79,7 +80,7 @@ public class MetadataReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final MetadataReader reader = new MetadataReader(null, "LandsatTest.txt", new AbstractResource(null));
+            final MetadataReader reader = new MetadataReader(null, "LandsatTest.txt", createListeners());
             reader.read(in);
             actual = reader.getMetadata();
         }
@@ -253,5 +254,26 @@ public class MetadataReaderTest extends TestCase {
             "resourceLineage[0].source[0].description", "Pseudo GLS");
 
         verifier.assertMetadataEquals();
+    }
+
+    /**
+     * Creates a dummy set of store listeners.
+     * Used only for constructors that require a non-null {@link StoreListeners} instance.
+     *
+     * @return a dummy set of listeners.
+     */
+    private static StoreListeners createListeners() {
+        final class DummyResource extends AbstractResource {
+            /** Creates a dummy resource without parent. */
+            DummyResource() {
+                super(null);
+            }
+
+            /** Makes listeners accessible to this package. */
+            StoreListeners listeners() {
+                return listeners;
+            }
+        }
+        return new DummyResource().listeners();
     }
 }

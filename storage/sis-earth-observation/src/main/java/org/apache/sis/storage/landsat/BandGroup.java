@@ -114,7 +114,7 @@ final class BandGroup extends AbstractResource implements Aggregate {
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder metadata = new MetadataBuilder();
         metadata.addTitle(group.title);             // Must be before `addDefaultMetadata(…)`.
-        metadata.addDefaultMetadata(this, this);
+        metadata.addDefaultMetadata(this, listeners);
         return metadata.build(true);
     }
 

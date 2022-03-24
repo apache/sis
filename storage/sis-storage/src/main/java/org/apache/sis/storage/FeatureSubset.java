@@ -80,7 +80,7 @@ final class FeatureSubset extends AbstractFeatureSet {
             try {
                 resultType = query.expectedType(type);
             } catch (IllegalArgumentException e) {
-                throw new DataStoreContentException(Resources.forLocale(getLocale())
+                throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
                         .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);
             }
         }

@@ -115,8 +115,8 @@ final class CoverageSubset extends AbstractGridResource {
             }
             return derivation.subgrid(areaOfInterest).build();
         } catch (IllegalArgumentException | IllegalStateException e) {
-            final String msg = Resources.forLocale(getLocale())
-                    .getString(Resources.Keys.CanNotIntersectDataWithQuery_1, getSourceName());
+            final String msg = Resources.forLocale(listeners.getLocale())
+                    .getString(Resources.Keys.CanNotIntersectDataWithQuery_1, listeners.getSourceName());
             final Throwable cause = e.getCause();
             if (cause instanceof FactoryException || cause instanceof TransformException) {
                 throw new DataStoreReferencingException(msg, cause);
@@ -222,7 +222,7 @@ final class CoverageSubset extends AbstractGridResource {
      * @param index  the index which is out of bounds.
      */
     private String invalidRange(final int size, final int index) {
-        return Resources.forLocale(getLocale()).getString(
+        return Resources.forLocale(listeners.getLocale()).getString(
                 Resources.Keys.InvalidSampleDimensionIndex_2, size - 1, index);
     }
 }

@@ -449,7 +449,7 @@ final class Reader extends GeoTIFF {
             exception = null;
         }
         args[0] = Tags.name(tag);
-        store.warning(errors().getString(key, args), exception);
+        store.listeners().warning(errors().getString(key, args), exception);
     }
 
     /**

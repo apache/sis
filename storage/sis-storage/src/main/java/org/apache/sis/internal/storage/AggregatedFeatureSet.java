@@ -125,7 +125,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
                 if (getEnvelopes(envelopes)) try {
                     envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
                 } catch (TransformException e) {
-                    warning(e);
+                    listeners.warning(e);
                 }
                 isEnvelopeComputed = true;
             }
@@ -144,7 +144,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     @Override
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder metadata = new MetadataBuilder();
-        metadata.addDefaultMetadata(this, this);
+        metadata.addDefaultMetadata(this, listeners);
         for (final FeatureSet fs : dependencies()) {
             final FeatureType type = fs.getType();
             metadata.addSource(fs.getMetadata(), ScopeCode.FEATURE_TYPE,

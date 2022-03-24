@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Locale;
 import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
@@ -26,11 +27,11 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.NilReason;
@@ -45,10 +46,8 @@ import org.apache.sis.xml.NilReason;
  *   <li>{@link #getEnvelope()} (recommended)</li>
  *   <li>{@link #createMetadata()} (optional)</li>
  *   <li>{@link #getSynchronizationLock()} (optional)</li>
+ *   <li>{@link #addListener(Class, StoreListener)} (if this resource is writable)</li>
  * </ul>
- *
- * This class extends {@link StoreListeners} for convenience reasons.
- * This implementation details may change in any future SIS version.
  *
  * <h2>Thread safety</h2>
  * Default methods of this abstract class are thread-safe.
@@ -59,7 +58,18 @@ import org.apache.sis.xml.NilReason;
  * @since   0.8
  * @module
  */
-public class AbstractResource extends StoreListeners implements Resource {
+public abstract class AbstractResource implements Resource {
+    /*
+     * Warning: do not implement `org.apache.sis.util.Localized` as it
+     * may cause an infinite loop in calls to `listeners.getLocale()`.
+     */
+
+    /**
+     * The set of registered {@link StoreListener}s for this resources.
+     * This {@code StoreListeners} while typically have {@link DataStore#listeners} has a parent.
+     */
+    protected final StoreListeners listeners;
+
     /**
      * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
      * If non-null, this metadata should contain at least the resource {@linkplain #getIdentifier() identifier}.
@@ -72,11 +82,10 @@ public class AbstractResource extends StoreListeners implements Resource {
      * but the listeners of the data store that created this resource will be notified as well.
      *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
-     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
-     *         that created this resource.
+     *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
-    public AbstractResource(final StoreListeners parent) {
-        super(parent, null);
+    protected AbstractResource(final StoreListeners parent) {
+        listeners = new StoreListeners(parent, this);
     }
 
     /**
@@ -142,7 +151,7 @@ public class AbstractResource extends StoreListeners implements Resource {
      */
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
-        builder.addDefaultMetadata(this, this);
+        builder.addDefaultMetadata(this, listeners);
         return builder.build(true);
     }
 
@@ -157,6 +166,7 @@ public class AbstractResource extends StoreListeners implements Resource {
 
     /**
      * Returns the object on which to perform synchronizations for thread-safety.
+     * The default implementation returns {@code this}.
      *
      * @return the synchronization lock.
      */
@@ -165,15 +175,29 @@ public class AbstractResource extends StoreListeners implements Resource {
     }
 
     /**
-     * Registers only listeners for {@link WarningEvent}s on the assumption that most resources
-     * (at least the read-only ones) produce no change events.
+     * Registers a listener to notify when the specified kind of event occurs in this resource or in children.
+     * The default implementation forwards to <code>{@linkplain #listeners}.addListener(eventType, listener)</code>.
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to notify about events.
+     * @param  eventType  type of {@link StoreEvent}s to listen (can not be {@code null}).
      */
     @Override
     public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
-        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
-        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(eventType, listener);
-        }
+        listeners.addListener(eventType, listener);
+    }
+
+    /**
+     * Unregisters a listener previously added to this resource for the given type of events.
+     * The default implementation forwards to <code>{@linkplain #listeners}.removeListener(eventType, listener)</code>
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to stop notifying about events.
+     * @param  eventType  type of {@link StoreEvent}s which were listened (can not be {@code null}).
+     */
+    @Override
+    public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
+        listeners.removeListener(eventType, listener);
     }
 
     /**
@@ -186,7 +210,8 @@ public class AbstractResource extends StoreListeners implements Resource {
      * @return the message to provide in an exception.
      */
     final String createExceptionMessage(final String filename, Envelope request) {
-        String message = Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, filename);
+        final Locale locale = listeners.getLocale();
+        String message = Errors.getResources(locale).getString(Errors.Keys.CanNotRead_1, filename);
         if (request != null) try {
             Envelope envelope = getEnvelope().orElse(null);
             if (envelope != null) {
@@ -205,7 +230,7 @@ public class AbstractResource extends StoreListeners implements Resource {
                     if (rmax < vmin || rmin > vmax) {
                         final String axis;
                         if (crs != null) {
-                            axis = IdentifiedObjects.getDisplayName(crs.getCoordinateSystem().getAxis(i), getLocale());
+                            axis = IdentifiedObjects.getDisplayName(crs.getCoordinateSystem().getAxis(i), locale);
                         } else if (i < 3) {
                             axis = String.valueOf((char) ('x' + i));
                         } else {
@@ -214,7 +239,7 @@ public class AbstractResource extends StoreListeners implements Resource {
                         if (buffer == null) {
                             buffer = new StringBuilder(message);
                         }
-                        buffer.append(System.lineSeparator()).append(" • ").append(Resources.forLocale(getLocale())
+                        buffer.append(System.lineSeparator()).append(" • ").append(Resources.forLocale(locale)
                                 .getString(Resources.Keys.RequestOutOfBounds_5, axis, vmin, vmax, rmin, rmax));
                     }
                 }
@@ -223,7 +248,7 @@ public class AbstractResource extends StoreListeners implements Resource {
                 }
             }
         } catch (DataStoreException | TransformException e) {
-            Logging.ignorableException(getLogger(), AbstractResource.class, "createExceptionMessage", e);
+            Logging.ignorableException(listeners.getLogger(), AbstractResource.class, "createExceptionMessage", e);
         }
         return message;
     }

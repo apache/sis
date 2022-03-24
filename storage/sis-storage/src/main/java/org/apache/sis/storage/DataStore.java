@@ -238,7 +238,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     // See class javadoc for a note on synchronization.
 
     /**
-     * The locale to use for formatting warnings and other messages. This locale if for user interfaces
+     * The locale to use for formatting warnings and other messages. This locale is for user interfaces
      * only – it has no effect on the data to be read or written from/to the data store.
      *
      * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>

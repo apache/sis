@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Locale;
 import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -76,6 +77,16 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     @Override
     protected final Object getSynchronizationLock() {
         return reader.store;
+    }
+
+    /**
+     * Returns the locale for warnings and error messages.
+     *
+     * <p><b>Warning:</b> do not implement {@link org.apache.sis.util.Localized},
+     * as it may cause an infinite loop in {@code listeners.getLocale()} call.</p>
+     */
+    final Locale getLocale() {
+        return listeners.getLocale();
     }
 
     /**

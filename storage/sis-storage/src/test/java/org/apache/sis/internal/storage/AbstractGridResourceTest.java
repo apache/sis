@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * Tests {@link AbstractGridResource} and {@link AbstractGridResource.RangeArgument}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -39,7 +39,7 @@ public final strictfp class AbstractGridResourceTest  extends TestCase {
     /**
      * A resource performing no operation.
      */
-    private final AbstractGridResource resource = new AbstractGridResource((AbstractGridResource) null) {
+    private final AbstractGridResource resource = new AbstractGridResource(null) {
         @Override public GridGeometry          getGridGeometry()     {throw new UnsupportedOperationException();}
         @Override public List<SampleDimension> getSampleDimensions() {throw new UnsupportedOperationException();}
         @Override public GridCoverage read(GridGeometry d, int... r) {throw new UnsupportedOperationException();}

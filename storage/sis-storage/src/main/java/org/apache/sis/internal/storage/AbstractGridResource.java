@@ -85,8 +85,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * Creates a new resource.
      *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
-     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
-     *         that created this resource.
+     *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
     protected AbstractGridResource(final StoreListeners parent) {
         super(parent);
@@ -123,7 +122,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     @Override
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
-        builder.addDefaultMetadata(this, this);
+        builder.addDefaultMetadata(this, listeners);
         return builder.build(true);
     }
 
@@ -154,7 +153,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             for (int i=0; i<range.length; i++) {
                 final int r = range[i];
                 if (r < 0 || r >= numSampleDimensions) {
-                    throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
+                    throw new IllegalArgumentException(Resources.forLocale(listeners.getLocale()).getString(
                             Resources.Keys.InvalidSampleDimensionIndex_2, numSampleDimensions - 1, r));
                 }
                 packed[i] = (((long) r) << Integer.SIZE) | i;
@@ -169,7 +168,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
                 // Never negative because of check in previous loop.
                 final int r = (int) (packed[i] >>> Integer.SIZE);
                 if (r == previous) {
-                    throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
+                    throw new IllegalArgumentException(Resources.forLocale(listeners.getLocale()).getString(
                             Resources.Keys.DuplicatedSampleDimensionIndex_1, r));
                 }
                 previous = r;
@@ -532,13 +531,13 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * @param  startTime   value of {@link System#nanoTime()} when the loading process started.
      */
     protected final void logReadOperation(final Object file, final GridGeometry domain, final long startTime) {
-        final Logger logger = getLogger();
+        final Logger logger = listeners.getLogger();
         final long   nanos  = System.nanoTime() - startTime;
         final Level  level  = PerformanceLevel.forDuration(nanos, TimeUnit.NANOSECONDS);
         if (logger.isLoggable(level)) {
-            final Locale locale = getLocale();
+            final Locale locale = listeners.getLocale();
             final Object[] parameters = new Object[6];
-            parameters[0] = IOUtilities.filename(file != null ? file : getSourceName());
+            parameters[0] = IOUtilities.filename(file != null ? file : listeners.getSourceName());
             parameters[5] = nanos / (double) StandardDateFormat.NANOS_PER_SECOND;
             JDK9.ifPresentOrElse(domain.getGeographicExtent(), (box) -> {
                 final AngleFormat f = new AngleFormat(locale);
