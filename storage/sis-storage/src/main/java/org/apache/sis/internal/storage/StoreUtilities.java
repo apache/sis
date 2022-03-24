@@ -20,7 +20,9 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.logging.Filter;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
@@ -41,6 +43,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.metadata.Identifiers;
@@ -60,7 +63,7 @@ import org.opengis.feature.Feature;
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -373,5 +376,22 @@ public final class StoreUtilities extends Static {
      */
     public static String resourceNotFound(final DataStore store, final String identifier) {
         return Resources.forLocale(store.getLocale()).getString(Resources.Keys.ResourceNotFound_2, store.getDisplayName(), identifier);
+    }
+
+    /**
+     * Returns a log filter that removes the stack trace of filtered given log.
+     * It can be used as argument in a call to {@link StoreListeners#warning(LogRecord, Filter)}
+     * if the caller wants to trim the stack trace in log files or console outputs.
+     *
+     * <p>This filter should be used only for filtering {@link LogRecord} created by the caller, because
+     * it modifies the record. Users would not expect this side effect on records created by them.</p>
+     *
+     * @return a filter for trimming stack trace.
+     */
+    public static Filter removeStackTraceInLogs() {
+        return (record) -> {
+            record.setThrown(null);
+            return true;
+        };
     }
 }

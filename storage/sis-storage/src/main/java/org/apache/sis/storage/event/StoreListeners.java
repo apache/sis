@@ -434,7 +434,7 @@ public class StoreListeners implements Localized {
         } catch (ClassNotFoundException | SecurityException e) {
             Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
         }
-        warning(record, AbstractResource.removeStackTraceInLogs());
+        warning(record, StoreUtilities.removeStackTraceInLogs());
     }
 
     /**
