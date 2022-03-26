@@ -28,6 +28,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -43,7 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.1
  * @module
  */
-public class MemoryGridResource extends AbstractGridResource {
+public class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * The grid coverage specified at construction time.
      */

@@ -22,6 +22,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Localized;
 import org.junit.Test;
@@ -41,7 +42,7 @@ public final strictfp class RangeArgumentTest extends TestCase implements Locali
     /**
      * A resource performing no operation.
      */
-    private final AbstractGridResource resource = new AbstractGridResource(null) {
+    private final AbstractGridCoverageResource resource = new AbstractGridCoverageResource(null) {
         @Override public GridGeometry          getGridGeometry()     {throw new UnsupportedOperationException();}
         @Override public List<SampleDimension> getSampleDimensions() {throw new UnsupportedOperationException();}
         @Override public GridCoverage read(GridGeometry d, int... r) {throw new UnsupportedOperationException();}
@@ -58,7 +59,7 @@ public final strictfp class RangeArgumentTest extends TestCase implements Locali
     }
 
     /**
-     * Tests {@link AbstractGridResource.RangeArgument} for data organized in a banded sample model.
+     * Tests {@link RangeArgument} for data organized in a banded sample model.
      * This is the state when no {@code insert} method is invoked.
      */
     @Test
@@ -79,7 +80,7 @@ public final strictfp class RangeArgumentTest extends TestCase implements Locali
     }
 
     /**
-     * Tests {@link AbstractGridResource.RangeArgument} for data organized in an interleaved sample model.
+     * Tests {@link RangeArgument} for data organized in an interleaved sample model.
      * This is the state when the {@code insert} methods are invoked.
      */
     @Test

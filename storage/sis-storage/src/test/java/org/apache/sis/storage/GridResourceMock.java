@@ -24,7 +24,6 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.storage.AbstractGridResource;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +40,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-final strictfp class GridResourceMock extends AbstractGridResource {
+final strictfp class GridResourceMock extends AbstractGridCoverageResource {
     /**
      * Grid geometry of this resource, specified at construction time.
      */

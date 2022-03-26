@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.Collection;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
+import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
 

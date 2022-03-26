@@ -29,7 +29,6 @@ import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -43,7 +42,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @since   1.1
  * @module
  */
-final class CoverageSubset extends AbstractGridResource {
+final class CoverageSubset extends AbstractGridCoverageResource {
     /**
      * The coverage resource instance which provides the data.
      */

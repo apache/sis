@@ -18,7 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.storage.AbstractFeatureSet;
+import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
 

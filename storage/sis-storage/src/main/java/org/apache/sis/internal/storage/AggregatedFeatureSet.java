@@ -29,6 +29,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.AbstractFeatureSet;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;

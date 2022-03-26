@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.storage;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -27,13 +27,11 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.NilReason;
@@ -57,7 +55,7 @@ import org.apache.sis.xml.NilReason;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   0.8
+ * @since   1.2
  * @module
  */
 public abstract class AbstractResource implements Resource {

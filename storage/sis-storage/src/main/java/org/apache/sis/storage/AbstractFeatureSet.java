@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.storage;
 
 import java.util.Optional;
 import java.util.OptionalLong;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.internal.storage.MetadataBuilder;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -48,12 +46,13 @@ import org.opengis.feature.FeatureType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   0.8
+ * @since   1.2
  * @module
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
-     * Creates a new resource.
+     * Creates a new resource. This resource will have its own set of listeners,
+     * but the listeners of the data store that created this resource will be notified as well.
      *
      * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.

@@ -73,6 +73,9 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.storage.AbstractResource;
+import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -836,7 +839,7 @@ public class MetadataBuilder {
 
     /**
      * Adds default metadata for the specified resource.
-     * This is used for default implementation of {@link AbstractGridResource#createMetadata()}.
+     * This is used for default implementation of {@link AbstractFeatureSet#createMetadata()}.
      *
      * @param  resource   the resource for which to add metadata.
      * @param  listeners  the listeners to notify in case of warning.
@@ -849,13 +852,13 @@ public class MetadataBuilder {
 
     /**
      * Adds default metadata for the specified resource.
-     * This is used for default implementation of {@link AbstractGridResource#createMetadata()}.
+     * This is used for default implementation of {@link AbstractGridCoverageResource#createMetadata()}.
      *
      * @param  resource   the resource for which to add metadata.
      * @param  listeners  the listeners to notify in case of warning.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
-    public final void addDefaultMetadata(final AbstractGridResource resource, final StoreListeners listeners) throws DataStoreException {
+    public final void addDefaultMetadata(final AbstractGridCoverageResource resource, final StoreListeners listeners) throws DataStoreException {
         addDefaultMetadata((AbstractResource) resource, listeners);
         addSpatialRepresentation(null, resource.getGridGeometry(), false);
         for (final SampleDimension band : resource.getSampleDimensions()) {
@@ -2056,7 +2059,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * This method does not add the envelope provided by {@link GridGeometry#getEnvelope()}.
      * That envelope appears in a separated node, which can be added by {@link #addExtent(Envelope)}.
-     * This separation is required by {@link AbstractGridResource} for instance.
+     * This separation is required by {@link AbstractGridCoverageResource} for instance.
      *
      * @param  description    a general description of the "grid to CRS" transformation, or {@code null} if none.
      *                        Can also be specified later by a call to {@link #setGridToCRS(CharSequence)}.

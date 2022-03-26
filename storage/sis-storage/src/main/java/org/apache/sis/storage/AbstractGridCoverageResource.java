@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.storage;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -28,11 +28,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.NoSuchDataException;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -44,6 +39,8 @@ import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**
@@ -65,17 +62,18 @@ import org.apache.sis.internal.jdk9.JDK9;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   0.8
+ * @since   1.2
  * @module
  */
-public abstract class AbstractGridResource extends AbstractResource implements GridCoverageResource {
+public abstract class AbstractGridCoverageResource extends AbstractResource implements GridCoverageResource {
     /**
-     * Creates a new resource.
+     * Creates a new resource. This resource will have its own set of listeners,
+     * but the listeners of the data store that created this resource will be notified as well.
      *
      * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
-    protected AbstractGridResource(final StoreListeners parent) {
+    protected AbstractGridCoverageResource(final StoreListeners parent) {
         super(parent);
     }
 

@@ -27,10 +27,10 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
-import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.image.PixelIterator;
@@ -255,9 +255,9 @@ public strictfp class CoverageReadConsistency extends TestCase {
      * Applies a random configuration on the resource.
      */
     private void randomConfigureResource() throws DataStoreException {
-        if (resource instanceof AbstractGridResource) {
+        if (resource instanceof AbstractGridCoverageResource) {
             final RasterLoadingStrategy[] choices = RasterLoadingStrategy.values();
-            ((AbstractGridResource) resource).setLoadingStrategy(choices[random.nextInt(choices.length)]);
+            ((AbstractGridCoverageResource) resource).setLoadingStrategy(choices[random.nextInt(choices.length)]);
         }
     }
 
