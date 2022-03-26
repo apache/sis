@@ -30,15 +30,15 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * Base implementation of feature sets contained in data stores. This class provides a {@link #getMetadata()}
- * which extracts information from other methods. Subclasses shall or should override the following methods:
+ * Default implementations of several methods for classes that want to implement the {@link FeatureSet} interface.
+ * Subclasses should override the following methods:
  *
  * <ul>
  *   <li>{@link #getType()} (mandatory)</li>
+ *   <li>{@link #features(boolean parallel)} (mandatory)</li>
  *   <li>{@link #getFeatureCount()} (recommended)</li>
  *   <li>{@link #getEnvelope()} (recommended)</li>
- *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
- *   <li>{@link #features(boolean parallel)} (mandatory)</li>
+ *   <li>{@link #createMetadata()} (optional)</li>
  * </ul>
  *
  * <h2>Thread safety</h2>
@@ -55,7 +55,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     /**
      * Creates a new resource.
      *
-     * @param  parent  listeners of the parent resource, or {@code null} if none.
+     * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
     protected AbstractFeatureSet(final StoreListeners parent) {

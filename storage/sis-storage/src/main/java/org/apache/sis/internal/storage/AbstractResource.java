@@ -30,6 +30,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
@@ -39,8 +40,9 @@ import org.apache.sis.xml.NilReason;
 
 
 /**
- * Base implementation of resources contained in data stores. This class provides a {@link #getMetadata()}
- * method which extracts information from other methods. Subclasses should override the following methods:
+ * Default implementations of several methods for classes that want to implement the {@link Resource} interface.
+ * This class provides a {@link #getMetadata()} method which extracts information from other methods.
+ * Subclasses should override the following methods:
  *
  * <ul>
  *   <li>{@link #getIdentifier()} (strongly recommended)</li>
@@ -61,14 +63,16 @@ import org.apache.sis.xml.NilReason;
 public abstract class AbstractResource implements Resource {
     /**
      * The set of registered {@link StoreListener}s for this resources.
-     * This {@code StoreListeners} while typically have {@link DataStore#listeners} has a parent.
+     * This {@code StoreListeners} has {@link DataStore#listeners} has a parent.
      */
     protected final StoreListeners listeners;
 
     /**
      * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
      * If non-null, this metadata should contain at least the resource {@linkplain #getIdentifier() identifier}.
-     * Those metadata are created by {@link #getMetadata()} when first needed.
+     * Those metadata are created by {@link #createMetadata()} when first needed.
+     *
+     * @see #getMetadata()
      */
     private volatile Metadata metadata;
 
@@ -76,7 +80,7 @@ public abstract class AbstractResource implements Resource {
      * Creates a new resource. This resource will have its own set of listeners,
      * but the listeners of the data store that created this resource will be notified as well.
      *
-     * @param  parent  listeners of the parent resource, or {@code null} if none.
+     * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
     protected AbstractResource(final StoreListeners parent) {
@@ -90,8 +94,7 @@ public abstract class AbstractResource implements Resource {
      *
      * <div class="note"><b>Implementation note:</b>
      * the default implementation of {@link #createMetadata()} uses this identifier for initializing
-     * the {@code metadata/identificationInfo/citation/title} property. So it is generally not useful
-     * to fallback on metadata if the identifier is empty.</div>
+     * the {@code metadata/identificationInfo/citation/title} property.</div>
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -99,9 +102,13 @@ public abstract class AbstractResource implements Resource {
     }
 
     /**
-     * Returns the spatiotemporal envelope of this resource. This information is part of API only in some kinds of resource
-     * like {@link org.apache.sis.storage.FeatureSet}. But the method is provided in this base class for convenience and for
-     * allowing {@link #createMetadata()} to use this information if available. The default implementation gives an empty value.
+     * Returns the spatiotemporal envelope of this resource. This information is part of API only in some kinds
+     * of resource such as {@link FeatureSet}. But the method is provided in this base class for convenience.
+     * The default implementation gives an empty value.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * the default implementation of {@link #createMetadata()} uses this identifier for initializing
+     * the {@code metadata/identificationInfo/extent/geographicElement} property.</div>
      *
      * @return the spatiotemporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
@@ -114,7 +121,7 @@ public abstract class AbstractResource implements Resource {
      * Returns a description of this resource. This method invokes {@link #createMetadata()}
      * in a synchronized block when first needed, then caches the result.
      *
-     * @return information about this resource (never {@code null} in this implementation).
+     * @return information about this resource (never {@code null}).
      * @throws DataStoreException if an error occurred while reading or computing the metadata.
      */
     @Override
@@ -159,12 +166,14 @@ public abstract class AbstractResource implements Resource {
      * {@link #createMetadata()} to be invoked again when first needed.
      */
     protected void clearCache() {
+        // No need for synchronization because `metadata` is volatile.
         metadata = null;
     }
 
     /**
      * Returns the object on which to perform synchronizations for thread-safety.
      * The default implementation returns {@code this}.
+     * Subclasses can override for example for synchronizing everything on an enclosing {@link DataStore}.
      *
      * @return the synchronization lock.
      */

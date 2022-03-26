@@ -47,13 +47,12 @@ import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
- * Base class for implementations of {@link GridCoverageResource}.
- * This class provides default implementations of {@code Resource} methods.
- * Those default implementations get data from the following abstract methods:
+ * Default implementations of several methods for classes that want to implement the {@link GridCoverageResource} interface.
+ * Subclasses should override the following methods:
  *
  * <ul>
- *   <li>{@link #getGridGeometry()}</li>
- *   <li>{@link #getSampleDimensions()}</li>
+ *   <li>{@link #getGridGeometry()} (mandatory)</li>
+ *   <li>{@link #getSampleDimensions()} (mandatory)</li>
  * </ul>
  *
  * This class also provides the following helper methods for implementation
@@ -73,7 +72,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     /**
      * Creates a new resource.
      *
-     * @param  parent  listeners of the parent resource, or {@code null} if none.
+     * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
     protected AbstractGridResource(final StoreListeners parent) {
@@ -81,12 +80,13 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     }
 
     /**
-     * Returns the grid geometry envelope if known.
-     * This implementation fetches the envelope from the grid geometry.
+     * Returns the envelope of the grid geometry if known.
      * The envelope is absent if the grid geometry does not provide this information.
      *
      * @return the grid geometry envelope.
      * @throws DataStoreException if an error occurred while computing the grid geometry.
+     *
+     * @see GridGeometry#getEnvelope()
      */
     @Override
     public Optional<Envelope> getEnvelope() throws DataStoreException {
@@ -118,15 +118,21 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     }
 
     /**
-     * Creates an exception for a failure to load data. If the failure may be caused by an envelope
-     * outside the resource domain, that envelope will be inferred from the {@code request} argument.
+     * Creates an exception for a failure to load data.
+     * The exception sub-type is inferred from the arguments.
+     * If the failure is caused by an envelope outside the resource domain,
+     * then that envelope will be inferred from the {@code request} argument.
      *
      * @param  filename  some identification (typically a file name) of the data that can not be read.
      * @param  request   the requested domain, or {@code null} if unspecified.
      * @param  cause     the cause of the failure, or {@code null} if none.
      * @return the exception to throw.
+     *
+     * @see NoSuchDataException
+     * @see DataStoreReferencingException
+     * @see DataStoreContentException
      */
-    protected final DataStoreException canNotRead(final String filename, final GridGeometry request, Throwable cause) {
+    protected DataStoreException canNotRead(final String filename, final GridGeometry request, Throwable cause) {
         final int DOMAIN = 1, REFERENCING = 2, CONTENT = 3;
         int type = 0;               // One of above constants, with 0 for "none of above".
         Envelope bounds = null;
@@ -175,7 +181,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * @param  domain     domain of the created grid coverage.
      * @param  startTime  value of {@link System#nanoTime()} when the loading process started.
      */
-    protected final void logReadOperation(final Object file, final GridGeometry domain, final long startTime) {
+    protected void logReadOperation(final Object file, final GridGeometry domain, final long startTime) {
         final Logger logger = listeners.getLogger();
         final long   nanos  = System.nanoTime() - startTime;
         final Level  level  = PerformanceLevel.forDuration(nanos, TimeUnit.NANOSECONDS);
