@@ -86,6 +86,7 @@ final class Store extends URIDataStore {
         objects = new ArrayList<>();
         source  = connector.commit(Reader.class, StoreProvider.NAME);
         library = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        listeners.useWarningEventsOnly();
     }
 
     /**

@@ -305,6 +305,7 @@ final class Store extends URIDataStore implements FeatureSet {
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
+        listeners.useWarningEventsOnly();
     }
 
     /**

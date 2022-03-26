@@ -102,6 +102,7 @@ final class Store extends URIDataStore implements Filter {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        listeners.useWarningEventsOnly();
     }
 
     /**

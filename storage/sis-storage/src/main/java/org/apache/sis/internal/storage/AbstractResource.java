@@ -46,7 +46,6 @@ import org.apache.sis.xml.NilReason;
  *   <li>{@link #getEnvelope()} (recommended)</li>
  *   <li>{@link #createMetadata()} (optional)</li>
  *   <li>{@link #getSynchronizationLock()} (optional)</li>
- *   <li>{@link #addListener(Class, StoreListener)} (if this resource is writable)</li>
  * </ul>
  *
  * <h2>Thread safety</h2>
@@ -59,11 +58,6 @@ import org.apache.sis.xml.NilReason;
  * @module
  */
 public abstract class AbstractResource implements Resource {
-    /*
-     * Warning: do not implement `org.apache.sis.util.Localized` as it
-     * may cause an infinite loop in calls to `listeners.getLocale()`.
-     */
-
     /**
      * The set of registered {@link StoreListener}s for this resources.
      * This {@code StoreListeners} while typically have {@link DataStore#listeners} has a parent.

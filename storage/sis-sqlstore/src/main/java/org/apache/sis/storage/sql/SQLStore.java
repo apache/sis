@@ -162,6 +162,9 @@ public class SQLStore extends DataStore implements Aggregate {
         }
         this.tableNames = ArraysExt.resize(tableNames, tableCount);
         this.queries    = ArraysExt.resize(queries,    queryCount);
+        if (getClass() == SQLStore.class) {
+            listeners.useWarningEventsOnly();
+        }
     }
 
     /**

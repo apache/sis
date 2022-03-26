@@ -128,6 +128,9 @@ public class NetcdfStore extends DataStore implements Aggregate {
             final NameFactory f = decoder.nameFactory;
             decoder.namespace = f.createNameSpace(f.createLocalName(null, id), null);
         }
+        if (getClass() == NetcdfStore.class) {
+            listeners.useWarningEventsOnly();
+        }
     }
 
     /**

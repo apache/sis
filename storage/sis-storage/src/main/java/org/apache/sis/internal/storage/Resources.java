@@ -226,6 +226,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FoliationRepresentation = 38;
 
         /**
+         * This resource should not fire events of type “{0}”.
+         */
+        public static final short IllegalEventType_1 = 65;
+
+        /**
          * The {0} data store does not accept features of type “{1}”.
          */
         public static final short IllegalFeatureType_2 = 7;

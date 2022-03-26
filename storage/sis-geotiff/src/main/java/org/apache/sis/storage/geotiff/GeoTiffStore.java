@@ -208,6 +208,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+        if (getClass() == GeoTiffStore.class) {
+            listeners.useWarningEventsOnly();
+        }
     }
 
     /**

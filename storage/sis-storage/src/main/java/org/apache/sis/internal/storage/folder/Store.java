@@ -178,6 +178,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         children   = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
+        listeners.useWarningEventsOnly();
     }
 
     /**
