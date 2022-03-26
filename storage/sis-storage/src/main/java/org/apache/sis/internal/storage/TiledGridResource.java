@@ -328,7 +328,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          */
         public Subset(GridGeometry domain, final int[] range) throws DataStoreException {
             List<SampleDimension> bands        = getSampleDimensions();
-            final RangeArgument   rangeIndices = validateRangeArgument(bands.size(), range);
+            final RangeArgument   rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
             final GridGeometry    gridGeometry = getGridGeometry();
             sourceExtent = gridGeometry.getExtent();
             tileSize = getTileSize();

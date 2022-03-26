@@ -94,7 +94,7 @@ public class MemoryGridResource extends AbstractGridResource {
     @Override
     public GridCoverage read(GridGeometry domain, final int... range) {
         List<SampleDimension> bands = coverage.getSampleDimensions();
-        final RangeArgument rangeIndices = validateRangeArgument(bands.size(), range);
+        final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
         /*
          * The given `domain` may use arbitrary `gridToCRS` and `CRS` properties.
          * For this simple implementation we need the same `gridToCRS` and `CRS`

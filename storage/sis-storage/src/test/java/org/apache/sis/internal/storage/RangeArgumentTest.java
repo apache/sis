@@ -17,25 +17,27 @@
 package org.apache.sis.internal.storage;
 
 import java.util.List;
+import java.util.Locale;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.Localized;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link AbstractGridResource} and {@link AbstractGridResource.RangeArgument}.
+ * Tests {@link RangeArgument}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
  * @module
  */
-public final strictfp class AbstractGridResourceTest  extends TestCase {
+public final strictfp class RangeArgumentTest extends TestCase implements Localized {
     /**
      * A resource performing no operation.
      */
@@ -46,12 +48,22 @@ public final strictfp class AbstractGridResourceTest  extends TestCase {
     };
 
     /**
+     * Returns a fixed locale for testing purpose.
+     *
+     * @return a fixed locale.
+     */
+    @Override
+    public Locale getLocale() {
+        return Locale.US;
+    }
+
+    /**
      * Tests {@link AbstractGridResource.RangeArgument} for data organized in a banded sample model.
      * This is the state when no {@code insert} method is invoked.
      */
     @Test
     public void testRangeArgumentForBandedModel() {
-        final AbstractGridResource.RangeArgument r = resource.validateRangeArgument(7, new int[] {4, 6, 2});
+        final RangeArgument r = RangeArgument.validate(7, new int[] {4, 6, 2}, this);
         assertEquals("numBands",    3, r.getNumBands());
         assertEquals("first",       4, r.getFirstSpecified());
         assertEquals("source",      2, r.getSourceIndex(0));           // Expect sorted source indices: {2, 4, 6}.
@@ -72,7 +84,7 @@ public final strictfp class AbstractGridResourceTest  extends TestCase {
      */
     @Test
     public void testRangeArgumentForInterleavedModel() {
-        final AbstractGridResource.RangeArgument r = resource.validateRangeArgument(7, new int[] {4, 6, 2});
+        final RangeArgument r = RangeArgument.validate(7, new int[] {4, 6, 2}, this);
         assertEquals(3, r.insertBandDimension(new GridExtent(360, 180), 2).getDimension());
         assertArrayEquals(new int[] {3, 1, 2}, r.insertSubsampling(new int[] {3, 1}, 2));
         assertEquals("numBands",    3, r.getNumBands());

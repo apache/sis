@@ -55,6 +55,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.RangeArgument;
 
 
 /**
@@ -623,7 +624,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
     @Override
     public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
         final long startTime = System.nanoTime();
-        final RangeArgument rangeIndices = validateRangeArgument(ranges.length, range);
+        final RangeArgument rangeIndices = RangeArgument.validate(ranges.length, range, listeners);
         final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.getFirstSpecified()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
