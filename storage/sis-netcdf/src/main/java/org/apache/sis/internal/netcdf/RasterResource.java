@@ -403,7 +403,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             metadata.addTitle(CharSequences.camelCaseToSentence(title).toString());
         }
         metadata.addDefaultMetadata(this, listeners);
-        return metadata.build(true);
+        return metadata.build();
     }
 
     /**

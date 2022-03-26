@@ -279,7 +279,7 @@ public class SQLStore extends DataStore implements Aggregate {
                     throw new DataStoreException(Exceptions.unwrap(e));
                 }
             }
-            metadata = builder.build(true);
+            metadata = builder.buildAndFreeze();
         }
         return metadata;
     }

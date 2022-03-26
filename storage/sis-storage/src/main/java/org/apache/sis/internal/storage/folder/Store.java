@@ -279,7 +279,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
                 name = super.getDisplayName();              // User-specified folder (root of this resource).
             }
             mb.addTitleOrIdentifier(name, MetadataBuilder.Scope.RESOURCE);
-            metadata = mb.build(true);
+            metadata = mb.buildAndFreeze();
         }
         return metadata;
     }

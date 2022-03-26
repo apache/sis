@@ -1078,7 +1078,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addSource(stringValue(SOURCE), null, null);
         }
         decoder.setSearchPath(searchPath);
-        final DefaultMetadata metadata = build(false);
+        final DefaultMetadata metadata = build();
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
         metadata.transitionTo(DefaultMetadata.State.FINAL);
         return metadata;

@@ -1349,10 +1349,9 @@ final class ImageFileDirectory extends DataCube {
          * End of metadata construction from TIFF tags.
          */
         metadata.finish(this, listeners);
-        final DefaultMetadata md = metadata.build(false);
+        final DefaultMetadata md = metadata.build();
         if (isIndexValid) {
             final Metadata c = reader.store.customizer.customize(index, md);
-            md.transitionTo(DefaultMetadata.State.FINAL);
             if (c != null) return c;
         }
         return md;

@@ -180,7 +180,7 @@ public class MetadataBuilder {
      * Creates the metadata object if it does not already exists, then returns it.
      *
      * @return the metadata (never {@code null}).
-     * @see #build(boolean)
+     * @see #build()
      */
     private DefaultMetadata metadata() {
         if (metadata == null) {
@@ -3298,7 +3298,7 @@ parse:      for (int i = 0; i < length;) {
      * The given source should be an instance of {@link Metadata},
      * but some types of metadata components are accepted as well.
      *
-     * <p>This method should be invoked last, just before the call to {@link #build(boolean)}.
+     * <p>This method should be invoked last, just before the call to {@link #build()}.
      * Any identification information, responsible party, extent, coverage description, <i>etc.</i>
      * added after this method call will be stored in new metadata object (not merged).</p>
      *
@@ -3357,14 +3357,11 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Returns the metadata, optionally as an unmodifiable object.
-     * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
+     * Returns the metadata as a modifiable object.
      *
-     * @param  freeze  {@code true} if this method should set the returned metadata to
-     *                 {@link DefaultMetadata.State#FINAL}, or {@code false} for leaving the metadata editable.
-     * @return the metadata, never {@code null}.
+     * @return the metadata (never {@code null}).
      */
-    public final DefaultMetadata build(final boolean freeze) {
+    public final DefaultMetadata build() {
         flush();
         final DefaultMetadata md = metadata();
         if (standardISO != 0) {
@@ -3374,9 +3371,17 @@ parse:      for (int i = 0; i < length;) {
             }
             md.setMetadataStandards(c);
         }
-        if (freeze) {
-            md.transitionTo(DefaultMetadata.State.FINAL);
-        }
+        return md;
+    }
+
+    /**
+     * Returns the metadata as an unmodifiable object.
+     *
+     * @return the metadata (never {@code null}).
+     */
+    public final DefaultMetadata buildAndFreeze() {
+        final DefaultMetadata md = build();
+        md.transitionTo(DefaultMetadata.State.FINAL);
         return md;
     }
 
@@ -3395,7 +3400,7 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
-     * metadata values on the instance returned by {@link #build(boolean)}.
+     * metadata values on the instance returned by {@link #build()}.
      *
      * @param   value  a double value.
      * @return  the given value, but as an existing instance if possible.
@@ -3409,7 +3414,7 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
-     * metadata values on the instance returned by {@link #build(boolean)}.
+     * metadata values on the instance returned by {@link #build()}.
      *
      * @param   value  an integer value.
      * @return  the same value, but as an existing instance if possible.

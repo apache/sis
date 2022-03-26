@@ -150,7 +150,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
             metadata.addSource(fs.getMetadata(), ScopeCode.FEATURE_TYPE,
                     (type == null) ? null : new CharSequence[] {type.getName().toInternationalString()});
         }
-        return metadata.build(true);
+        return metadata.build();
     }
 
     /**

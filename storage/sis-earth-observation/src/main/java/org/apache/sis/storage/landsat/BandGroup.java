@@ -115,7 +115,7 @@ final class BandGroup extends AbstractResource implements Aggregate {
         final MetadataBuilder metadata = new MetadataBuilder();
         metadata.addTitle(group.title);             // Must be before `addDefaultMetadata(…)`.
         metadata.addDefaultMetadata(this, listeners);
-        return metadata.build(true);
+        return metadata.build();
     }
 
     /**

@@ -23,6 +23,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
@@ -126,6 +127,8 @@ public abstract class AbstractResource implements Resource {
                     md = createMetadata();
                     if (md == null) {
                         md = NilReason.UNKNOWN.createNilObject(Metadata.class);
+                    } else if (md instanceof DefaultMetadata) {
+                        ((DefaultMetadata) md).transitionTo(DefaultMetadata.State.FINAL);
                     }
                     metadata = md;
                 }
@@ -139,6 +142,7 @@ public abstract class AbstractResource implements Resource {
      * The default implementation populates metadata based on information
      * provided by {@link #getIdentifier()} and {@link #getEnvelope()}.
      * Subclasses should override if they can provide more information.
+     * The default value can be completed by casting to {@link DefaultMetadata}.
      *
      * @return the newly created metadata, or {@code null} if unknown.
      * @throws DataStoreException if an error occurred while reading metadata from this resource.
@@ -146,7 +150,7 @@ public abstract class AbstractResource implements Resource {
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
-        return builder.build(true);
+        return builder.build();
     }
 
     /**

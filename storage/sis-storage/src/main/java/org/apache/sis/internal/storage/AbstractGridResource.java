@@ -105,6 +105,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * {@link #getGridGeometry()     getGridGeometry()} and
      * {@link #getSampleDimensions() getSampleDimensions()}.
      * Subclasses should override if they can provide more information.
+     * The default value can be completed by casting to {@link org.apache.sis.metadata.iso.DefaultMetadata}.
      *
      * @return the newly created metadata, or {@code null} if unknown.
      * @throws DataStoreException if an error occurred while reading metadata from this resource.
@@ -113,7 +114,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
-        return builder.build(true);
+        return builder.build();
     }
 
     /**

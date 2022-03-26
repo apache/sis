@@ -327,7 +327,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
              */
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
             builder.setISOStandards(true);
-            final DefaultMetadata md = builder.build(false);
+            final DefaultMetadata md = builder.build();
             metadata = customizer.customize(-1, md);
             if (metadata == null) metadata = md;
             md.transitionTo(DefaultMetadata.State.FINAL);

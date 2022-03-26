@@ -913,7 +913,7 @@ final class MetadataReader extends MetadataBuilder {
          * bands are splitted in 3 different AttributeGroups based on their grid size.
          */
         setISOStandards(true);
-        final DefaultMetadata result = build(false);
+        final DefaultMetadata result = build();
         /*
          * Set information about all non-null bands. The bands are categorized in three groups:
          * PANCHROMATIC, REFLECTIVE and THERMAL.

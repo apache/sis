@@ -84,7 +84,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.parseLegalNotice(notice);
         final LegalConstraints constraints = (LegalConstraints) getSingleton(getSingleton(
-                builder.build(false).getIdentificationInfo()).getResourceConstraints());
+                builder.build().getIdentificationInfo()).getResourceConstraints());
 
         assertEquals("useConstraints", Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
         final Citation ref = getSingleton(constraints.getReferences());
@@ -144,7 +144,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
         final GenericName name = builder.addFeatureType(dataType, valueToInsert);
         assertNotNull(name);
 
-        final DefaultMetadata metadata = builder.build(true);
+        final DefaultMetadata metadata = builder.build();
         if (valueToInsert == 0) {
             assertTrue(metadata.getContentInfo().isEmpty());
         } else {

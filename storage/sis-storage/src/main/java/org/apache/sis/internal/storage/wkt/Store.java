@@ -167,7 +167,7 @@ final class Store extends URIDataStore {
             } else {
                 addTitleOrIdentifier(builder);
             }
-            metadata = builder.build(true);
+            metadata = builder.buildAndFreeze();
         }
         return metadata;
     }
