@@ -56,24 +56,16 @@ public interface TileMatrix {
      */
 
     /**
-     * Returns approximate resolutions (in units of CRS axes) of tiles in this tile matrix.
-     * The array length shall be the number of CRS dimensions, and value at index <var>i</var>
-     * is the resolution along CRS dimension <var>i</var> in units of the CRS axis <var>i</var>.
-     *
-     * <h4>Grid coverage resolution</h4>
+     * Returns the resolution (in units of CRS axes) at which tiles in this matrix should be used.
      * If the tiled data is a {@link org.apache.sis.coverage.grid.GridCoverage},
-     * then the resolution is the size of pixels (or cells in the multi-dimensional case).
-     * If the coverage {@linkplain GridGeometry#getGridToCRS grid to CRS} transform is affine,
-     * then that pixel size is constant everywhere.
-     * Otherwise (non-affine transform) the pixel size varies depending on the location
-     * and the returned value is the pixel size at some representative point,
-     * typically the coverage center.
+     * then the resolution is typically the size of pixels in units of CRS axes.
+     * That resolution may be evaluated at some representative point such as coverage center
+     * if the pixel size is not constant everywhere.
      *
-     * <h4>Vector data resolution</h4>
-     * If the tiled data is a set of features, then the resolution is a "typical" distance
-     * (for example the average distance) between points in geometries.
+     * <p>The array length shall be the number of CRS dimensions, and value at index <var>i</var>
+     * is the resolution along CRS dimension <var>i</var> in units of the CRS axis <var>i</var>.</p>
      *
-     * @return approximate resolutions of tiles.
+     * @return resolution (in units of CRS axes) at which tiles in this matrix should be used.
      *
      * @see GridGeometry#getResolution(boolean)
      */
