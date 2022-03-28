@@ -31,8 +31,9 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameSpace;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.geotiff.Resources;
@@ -457,15 +458,20 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Returns the identifier in the namespace of the {@link GeoTiffStore}.
      * The first image has the sequence number "1", optionally customized.
-     * Reduced-resolution (overviews) images have no identifier.
+     * If this image is an overview, then its namespace should be the name of the base image
+     * and the tip should be "overview-level" where "level" is a number starting at 1.
+     *
+     * <p>The returned value should never be empty. An empty value would be a
+     * failure to {@linkplain #setOverviewIdentifier initialize overviews}.</p>
      *
      * @see #getMetadata()
      */
     @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
+    public Optional<GenericName> getIdentifier() {
         synchronized (getSynchronizationLock()) {
             if (identifier == null) {
                 if (isReducedResolution()) {
+                    // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
                     return Optional.empty();
                 }
                 final String id = String.valueOf(index + 1);
@@ -475,6 +481,17 @@ final class ImageFileDirectory extends DataCube {
             }
             return Optional.of(identifier);
         }
+    }
+
+    /**
+     * Sets the identifier for an overview level. This is used only for a pyramid.
+     * The image with finest resolution is used as the namespace for all overviews.
+     *
+     * @param  base      name of the image with finest resolution.
+     * @param  overview  1 for the first overview, 2 for the next one, etc.
+     */
+    final void setOverviewIdentifier(final NameSpace base, final int overview) {
+        identifier = reader.nameFactory.createLocalName(base, "overview-" + overview);
     }
 
     /**
@@ -1169,10 +1186,11 @@ final class ImageFileDirectory extends DataCube {
      * This method opportunistically computes default value of optional fields
      * when those values can be computed from other (usually mandatory) fields.
      *
+     * @return {@code true} if the method has been invoked for the first time.
      * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
      */
-    final void validateMandatoryTags() throws DataStoreContentException {
-        if (isValidated) return;
+    final boolean validateMandatoryTags() throws DataStoreContentException {
+        if (isValidated) return false;
         if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
         if (imageHeight < 0) throw missingTag(Tags.ImageLength);
         final short offsetsTag, byteCountsTag;
@@ -1295,6 +1313,7 @@ final class ImageFileDirectory extends DataCube {
             throw missingTag(Tags.ModelTiePoints);
         }
         isValidated = true;
+        return true;
     }
 
     /**

@@ -217,7 +217,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Returns the namespace to use in identifier of components, or {@code null} if none.
      * This method must be invoked inside a block synchronized on {@code this}.
      */
-    final NameSpace namespace() throws DataStoreException {
+    final NameSpace namespace() {
         if (!isNamespaceSet && reader != null) {
             final NameFactory f = reader.nameFactory;
             GenericName name = null;

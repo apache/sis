@@ -26,6 +26,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
+import org.opengis.util.GenericName;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -34,6 +35,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 
@@ -249,12 +251,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns a name that identifies this coverage. It may be the filename.
-     * This is used for error messages.
+     * Returns a unique name that identifies this coverage.
+     * The name shall be unique in the {@link TileMatrixSet}.
      *
      * @return an human-readable identification of this coverage.
      */
-    protected abstract String getDisplayName();
+    protected abstract GenericName getIdentifier();
 
     /**
      * Returns the locale for error messages, or {@code null} for the default.
@@ -446,7 +448,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
         } catch (Exception e) {     // Too many exception types for listing them all.
             throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
-                    Resources.Keys.CanNotRenderImage_1, getDisplayName()), e);
+                    Resources.Keys.CanNotRenderImage_1, getIdentifier().toFullyQualifiedName()), e);
         }
         return image;
     }

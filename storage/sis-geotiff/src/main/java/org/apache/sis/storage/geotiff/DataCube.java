@@ -17,10 +17,12 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -95,6 +97,17 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     final String filename() {
         return reader.input.filename;
     }
+
+    /**
+     * Returns an human-readable identification of this coverage.
+     * The namespace should be the {@linkplain #filename() filename}
+     * and the tip can be an image index, citation, or overview level.
+     *
+     * <p>The returned value should never be empty. An empty value would be a failure
+     * to {@linkplain ImageFileDirectory#setOverviewIdentifier initialize overviews}.</p>
+     */
+    @Override
+    public abstract Optional<GenericName> getIdentifier();
 
     /**
      * Gets the paths to files used by this resource, or an empty array if unknown.

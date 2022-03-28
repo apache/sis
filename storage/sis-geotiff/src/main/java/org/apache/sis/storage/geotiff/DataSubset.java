@@ -25,6 +25,7 @@ import java.awt.Point;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
+import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -184,11 +185,14 @@ class DataSubset extends TiledGridCoverage implements Localized {
     }
 
     /**
-     * Returns an human-readable identification of this coverage for error messages.
+     * Returns an human-readable identification of this coverage.
+     * The namespace should be the {@linkplain #filename() filename}
+     * and the tip can be an image index, citation, or overview level.
      */
     @Override
-    protected final String getDisplayName() {
-        return source.filename();
+    protected final GenericName getIdentifier() {
+        // Should never be empty (see `DataCube.getIdentifier()` contract).
+        return source.getIdentifier().get();
     }
 
     /**
