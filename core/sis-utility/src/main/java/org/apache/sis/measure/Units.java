@@ -1112,6 +1112,16 @@ public final class Units extends Static {
     public static final Unit<Dimensionless> PIXEL;
 
     /**
+     * SI base accelaration unit.
+     */
+    public static final Unit<Acceleration> METRES_PER_SECOND_SQUARED;
+
+    /**
+     * CGS unit for acceleration. This is <em>not</em> an SI unit.
+     */
+    public static final Unit<Acceleration> GAL;
+
+    /**
      * Sets to {@code true} by the static initializer after the initialization has been completed.
      * This is a safety against unexpected changes in the {@link UnitRegistry#HARD_CODED} map.
      *
@@ -1149,19 +1159,22 @@ public final class Units extends Static {
         final UnitDimension magneticFlux  = potential.multiply(time);
         final UnitDimension pressure      = force.divide(area);
         final UnitDimension dimensionless = UnitDimension.NONE;
+        final UnitDimension acceleration  = length.divide(time.pow(2));
+
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,         length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
-        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,           area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Volume>        m3  = add(Volume.class,        Scalar.Volume::new,         length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,           time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature.FACTORY, temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,          speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,       pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,          dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new,  dimensionless, "",            SI,               (short) 9201);
-        final SystemUnit<Mass>          kg  = add(Mass.class,          Scalar.Mass::new,           mass,          "kg",          SI,               (short) 0);
+        final SystemUnit<Length>        m    = add(Length.class,        Scalar.Length::new,         length,        "m",    (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2   = add(Area.class,          Scalar.Area::new,           area,          "m²",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Volume>        m3   = add(Volume.class,        Scalar.Volume::new,         length.pow(3), "m³",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Time>          s    = add(Time.class,          Scalar.Time::new,           time,          "s",    (byte) (SI | PREFIXABLE), (short) 1040);
+        final SystemUnit<Temperature>   K    = add(Temperature.class,   Scalar.Temperature.FACTORY, temperature,   "K",    (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Speed>         mps  = add(Speed.class,         Scalar.Speed::new,          speed,         "m∕s",  (byte) (SI | PREFIXABLE), (short) 1026);
+        final SystemUnit<Pressure>      Pa   = add(Pressure.class,      Scalar.Pressure::new,       pressure,      "Pa",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Angle>         rad  = add(Angle.class,         Scalar.Angle::new,          dimensionless, "rad",  (byte) (SI | PREFIXABLE), (short) 9101);
+        final SystemUnit<Dimensionless> one  = add(Dimensionless.class, Scalar.Dimensionless::new,  dimensionless, "",             SI,               (short) 9201);
+        final SystemUnit<Mass>          kg   = add(Mass.class,          Scalar.Mass::new,           mass,          "kg",           SI,               (short) 0);
+        final SystemUnit<Acceleration>  mps2 = add(Acceleration.class,  Scalar.Acceleration::new,   acceleration,  "m∕s²", (byte) (SI | PREFIXABLE), (short) 0);
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */
@@ -1290,6 +1303,13 @@ public final class Units extends Static {
         DECIBEL = add(bel, Prefixes.converter('d'), "dB", ACCEPTED, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
+        /*
+         * Acceleration units
+         */
+        METRES_PER_SECOND_SQUARED = mps2;
+        mps2.related(1);
+        GAL = add(mps2, centi, "gal", (byte) (OTHER | PREFIXABLE | ACCEPTED), (short) 0);
+
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
         UnitRegistry.alias(DEGREE,      Short.valueOf(Constants.EPSG_AXIS_DEGREES));
         UnitRegistry.alias(ARC_MINUTE,  "'");
@@ -1304,6 +1324,7 @@ public final class Units extends Static {
         UnitRegistry.alias(LITRE,       "ℓ");
         UnitRegistry.alias(PSU,       "PSU");
         UnitRegistry.alias(UNITY, SystemUnit.ONE);
+        UnitRegistry.alias(GAL, "cm∕s²");
 
         initialized = true;
     }

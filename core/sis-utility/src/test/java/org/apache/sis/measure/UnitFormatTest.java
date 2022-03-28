@@ -127,6 +127,8 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "PSU",                 "",             "psu",   "practical salinity unit", Units.PSU);
         verify(declared, "PIXEL",               "",             "px",    "pixel",                   Units.PIXEL);
         verify(declared, "DECIBEL",             "",             "dB",    "decibel",                 Units.DECIBEL);
+        verify(declared, "GAL",                 "L∕T²",         "gal",    "gal",                    Units.GAL);
+        verify(declared, "METRES_PER_SECOND_SQUARED","L∕T²",    "m∕s²",   "metres per second squared", Units.METRES_PER_SECOND_SQUARED);
         assertTrue("Missing units in test:" + declared, declared.isEmpty());
     }
 

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -537,6 +538,19 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
         @Override
         Quantity<javax.measure.quantity.Temperature> create(double value, Unit<javax.measure.quantity.Temperature> unit) {
             return new Temperature(value, unit);
+        }
+    }
+
+    static final class Acceleration extends Scalar<javax.measure.quantity.Acceleration>
+                                    implements     javax.measure.quantity.Acceleration
+    {
+        private static final long serialVersionUID = 8041442665100572880L;
+
+        Acceleration(double value, Unit<javax.measure.quantity.Acceleration> unit) {super(value, unit);}
+
+        @Override
+        Quantity<javax.measure.quantity.Acceleration> create(double value, Unit<javax.measure.quantity.Acceleration> unit) {
+            return new Acceleration(value, unit);
         }
     }
 }
