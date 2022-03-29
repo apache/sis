@@ -1482,6 +1482,34 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns {@code true} if this extent contains the given cell indices.
+     * An index is considered inside the grid extent if its value is between
+     * {@link #getLow(int) low} and {@link #getHigh(int) high} bounds, inclusive.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code indices} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing index values are considered inside the extent.
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  indices  indices of the grid cell to check.
+     * @return whether the given indices are inside this extent.
+     *
+     * @since 1.2
+     */
+    public boolean contains(final long... indices) {
+        ArgumentChecks.ensureNonNull("indices", indices);
+        final int m = getDimension();
+        final int length = Math.min(m, indices.length);
+        for (int i=0; i<length; i++) {
+            final long c = indices[i];
+            if (c < coordinates[i] || c > coordinates[i + m]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the intersection of this grid extent with to the given grid extent.
      * The given extent shall have the same number of dimensions.
      *
