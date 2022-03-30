@@ -65,6 +65,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
             new UnitRegistry("SI",            UnitRegistry.SI),
             new UnitRegistry("SI + accepted", UnitRegistry.SI | UnitRegistry.ACCEPTED),
             new UnitRegistry("Imperial",      UnitRegistry.IMPERIAL),
+            new UnitRegistry("CGS",           UnitRegistry.CGS),
             new UnitRegistry("SI + other",    -1)                       // Must be last.
         };
     }

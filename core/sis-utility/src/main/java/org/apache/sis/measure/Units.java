@@ -32,6 +32,7 @@ import org.apache.sis.internal.util.Constants;
 
 import static org.apache.sis.measure.UnitRegistry.SI;
 import static org.apache.sis.measure.UnitRegistry.ACCEPTED;
+import static org.apache.sis.measure.UnitRegistry.CGS;
 import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
 import static org.apache.sis.measure.UnitRegistry.OTHER;
 import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
@@ -74,7 +75,8 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -653,6 +655,40 @@ public final class Units extends Static {
     public static final Unit<Speed> KILOMETRES_PER_HOUR;
 
     /**
+     * The SI derived unit for acceleration (m/s²).
+     * The unlocalized name is “metres per second squared”.
+     *
+     * <div class="note">
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI acceleration units:</td> <td style="word-spacing:1em"><u><b>{@code METRES_PER_SECOND_SQUARED}</b></u>.</td></tr>
+     *   <tr><td>In other systems:</td>      <td style="word-spacing:1em">{@link #GAL}.</td></tr>
+     *   <tr><td>Components:</td>            <td style="word-spacing:0.5em">{@link #METRES_PER_SECOND} ∕ {@link #SECOND}</td></tr>
+     * </table></div>
+     *
+     * @since 1.2
+     */
+    public static final Unit<Acceleration> METRES_PER_SECOND_SQUARED;
+
+    /**
+     * Unit of measurement defined as 1/100 metres per second squared (1 cm/s²).
+     * This is a CGS unit (not a SI unit) used in geodesy and geophysics to express acceleration due to gravity.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRES_PER_SECOND_SQUARED},
+     * the symbol is "Gal" (upper-case first letter) and the unlocalized name is “gal” (lower-case letter).
+     *
+     * <div class="note">
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI acceleration units:</td> <td style="word-spacing:1em"><u><b>{@link #METRES_PER_SECOND_SQUARED}</b></u>.</td></tr>
+     *   <tr><td>In other systems:</td>      <td style="word-spacing:1em">{@code GAL}.</td></tr>
+     *   <tr><td>Components:</td>            <td style="word-spacing:0.5em">{@link #CENTIMETRE} ∕ {@link #SECOND}²</td></tr>
+     * </table></div>
+     *
+     * @since 1.2
+     */
+    public static final Unit<Acceleration> GAL;
+
+    /**
      * The SI derived unit for pressure (Pa).
      * One pascal is equal to 1 N/m².
      * Pressures are often used in {@linkplain org.apache.sis.referencing.crs.DefaultParametricCRS parametric CRS}
@@ -1141,6 +1177,7 @@ public final class Units extends Static {
         final UnitDimension frequency     = time.pow(-1);
         final UnitDimension area          = length.pow(2);
         final UnitDimension speed         = length.divide(time);
+        final UnitDimension acceleration  = speed.divide(time);
         final UnitDimension force         = mass.multiply(speed).divide(time);
         final UnitDimension energy        = force.multiply(length);
         final UnitDimension power         = energy.divide(time);
@@ -1152,16 +1189,17 @@ public final class Units extends Static {
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,         length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
-        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,           area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Volume>        m3  = add(Volume.class,        Scalar.Volume::new,         length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,           time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature.FACTORY, temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,          speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,       pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,          dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new,  dimensionless, "",            SI,               (short) 9201);
-        final SystemUnit<Mass>          kg  = add(Mass.class,          Scalar.Mass::new,           mass,          "kg",          SI,               (short) 0);
+        final SystemUnit<Length>        m    = add(Length.class,        Scalar.Length::new,         length,        "m",    (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2   = add(Area.class,          Scalar.Area::new,           area,          "m²",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Volume>        m3   = add(Volume.class,        Scalar.Volume::new,         length.pow(3), "m³",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Time>          s    = add(Time.class,          Scalar.Time::new,           time,          "s",    (byte) (SI | PREFIXABLE), (short) 1040);
+        final SystemUnit<Temperature>   K    = add(Temperature.class,   Scalar.Temperature.FACTORY, temperature,   "K",    (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Speed>         mps  = add(Speed.class,         Scalar.Speed::new,          speed,         "m∕s",  (byte) (SI | PREFIXABLE), (short) 1026);
+        final SystemUnit<Acceleration>  mps2 = add(Acceleration.class,  Scalar.Acceleration::new,   acceleration,  "m∕s²", (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Pressure>      Pa   = add(Pressure.class,      Scalar.Pressure::new,       pressure,      "Pa",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Angle>         rad  = add(Angle.class,         Scalar.Angle::new,          dimensionless, "rad",  (byte) (SI | PREFIXABLE), (short) 9101);
+        final SystemUnit<Dimensionless> one  = add(Dimensionless.class, Scalar.Dimensionless::new,  dimensionless, "",             SI,               (short) 9201);
+        final SystemUnit<Mass>          kg   = add(Mass.class,          Scalar.Mass::new,           mass,          "kg",           SI,               (short) 0);
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */
@@ -1213,19 +1251,22 @@ public final class Units extends Static {
         WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  OTHER,    (short) 0);
         TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   OTHER,    (short) 1029);
         /*
-         * All Unit<Speed>, Unit<AngularVelocity> and Unit<ScaleRateOfChange>.
-         * The 'unityPerSecond' unit is not added to the registry because it is specific to the EPSG database,
+         * All Unit<Speed>, Unit<Acceleration>, Unit<AngularVelocity> and Unit<ScaleRateOfChange>.
+         * The `unityPerSecond` unit is not added to the registry because it is specific to the EPSG database,
          * has no clear symbol and is easy to confuse with Hertz. We create that unit only for allowing us to
          * create the "ppm/a" units.
          */
         final SystemUnit<ScaleRateOfChange> unityPerSecond;
         unityPerSecond = new SystemUnit<>(ScaleRateOfChange.class, frequency, null, OTHER, (short) 1036, null);
         unityPerSecond.related(1);
-        mps.related(1);
-        METRES_PER_SECOND   = mps;
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36),     "km∕h",  ACCEPTED, (short) 0);
-        RADIANS_PER_SECOND  = add(AngularVelocity.class, null, frequency, "rad∕s", SI,       (short) 1035);
-        add(unityPerSecond, LinearConverter.scale(1, 31556925445E6),      "ppm∕a", OTHER,    (short) 1030);
+        mps .related(1);
+        mps2.related(1);
+        METRES_PER_SECOND         = mps;
+        METRES_PER_SECOND_SQUARED = mps2;
+        KILOMETRES_PER_HOUR       = add(mps, LinearConverter.scale(10, 36),     "km∕h",  ACCEPTED, (short) 0);
+        RADIANS_PER_SECOND        = add(AngularVelocity.class, null, frequency, "rad∕s", SI,       (short) 1035);
+        GAL                       = add(mps2, centi, "Gal", (byte) (CGS | PREFIXABLE | ACCEPTED),  (short) 0);
+        add(unityPerSecond, LinearConverter.scale(1, 31556925445E6), "ppm∕a", OTHER, (short) 1030);
         /*
          * All Unit<Pressure>.
          */
@@ -1299,6 +1340,7 @@ public final class Units extends Static {
         UnitRegistry.alias(CELSIUS,   "Cel");
         UnitRegistry.alias(FAHRENHEIT,  "℉");
         UnitRegistry.alias(GRAD,      "gon");
+        UnitRegistry.alias(GAL,     "cm∕s²");
         UnitRegistry.alias(HECTARE,   "hm²");
         UnitRegistry.alias(LITRE,       "l");
         UnitRegistry.alias(LITRE,       "ℓ");

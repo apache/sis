@@ -32,7 +32,8 @@ import org.apache.sis.internal.util.Numerics;
  * Instances of this class are unmodifiable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.2
  *
  * @param <Q>  the concrete subtype.
  *
@@ -453,6 +454,18 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
         @Override
         Quantity<javax.measure.quantity.Speed> create(double value, Unit<javax.measure.quantity.Speed> unit) {
             return new Speed(value, unit);
+        }
+    }
+
+    static final class Acceleration extends Scalar<javax.measure.quantity.Acceleration>
+                                    implements     javax.measure.quantity.Acceleration
+    {
+        private static final long serialVersionUID = 8041442665100572880L;
+        Acceleration(double value, Unit<javax.measure.quantity.Acceleration> unit) {super(value, unit);}
+
+        @Override
+        Quantity<javax.measure.quantity.Acceleration> create(double value, Unit<javax.measure.quantity.Acceleration> unit) {
+            return new Acceleration(value, unit);
         }
     }
 
