@@ -33,21 +33,18 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
-import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.util.logging.Logging;
 
 
 /**
  * A data store for a storage that may be represented by a {@link URI}.
- * It is still possible to create a data store with an {@link java.nio.channels.ReadableByteChannel},
+ * It is still possible to create a data store with a {@link java.nio.channels.ReadableByteChannel},
  * {@link java.io.InputStream} or {@link java.io.Reader}, in which case the {@linkplain #location} will be null.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -55,7 +52,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * The {@link DataStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
-    private final URI location;
+    protected final URI location;
 
     /**
      * Creates a new data store.
@@ -195,11 +192,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         }
 
         /**
-         * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs
-         * to be created.  When invoked, the parameter group name is set to a name derived from the
-         * {@link #getShortName()} value. The default implementation creates a group containing only
-         * {@link #LOCATION_PARAM}. Subclasses can override if they need to create a group with more
-         * parameters.
+         * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
+         * When invoked, the parameter group name is set to a name derived from the {@link #getShortName()} value.
+         * The default implementation creates a group containing only {@link #LOCATION_PARAM}.
+         * Subclasses can override if they need to create a group with more parameters.
          *
          * @param  builder  the builder to use for creating parameter descriptor. The group name is already set.
          * @return the parameters descriptor created from the given builder.
@@ -305,18 +301,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
              * all those types are convertibles to URI, we can use (location != null) as a criterion.
              */
             builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(super.getDisplayName()), MetadataBuilder.Scope.ALL);
-        }
-    }
-
-    /**
-     * Registers only listeners for {@link WarningEvent}s on the assumption that most data stores
-     * (at least the read-only ones) produce no change events.
-     */
-    @Override
-    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
-        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
-        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(eventType, listener);
         }
     }
 }

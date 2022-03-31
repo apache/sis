@@ -85,6 +85,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotIntersectDataWithQuery_1 = 57;
 
         /**
+         * Can not read “{0}” auxiliary file.
+         */
+        public static final short CanNotReadAuxiliaryFile_1 = 66;
+
+        /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
          */
         public static final short CanNotReadCRS_WKT_1 = 37;

@@ -202,6 +202,42 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Converts the given {@link URI} to a {@link URL} with the same path except for the file extension,
+     * which is replaced by the given extension. This method is used for opening auxiliary files such as
+     * {@code "*.prj"} and {@code "*.tfw"} files that come with e.g. TIFF files.
+     *
+     * @param  location   the URI to convert to a URL with a different extension, or {@code null}.
+     * @param  extension  the file extension (without {@code '.'}) of the auxiliary file.
+     * @return URL for the auxiliary file with the given extension, or {@code null} if none.
+     * @throws MalformedURLException if the URI uses an unknown protocol or a negative port number other than -1.
+     *
+     * @since 1.2
+     */
+    public static URL toAuxiliaryURL(final URI location, final String extension) throws MalformedURLException {
+        if (location == null || !location.isAbsolute() || location.isOpaque()) {
+            return null;
+        }
+        String path = location.getRawPath();    // Raw because URL constructor needs encoded strings.
+        int s = path.indexOf('?');              // Shall be before '#' in a valid URL.
+        if (s < 0) {
+            s = path.indexOf('#');              // A '?' after '#' would be part of the anchor.
+            if (s < 0) {
+                s = path.length();
+            }
+        }
+        s = path.lastIndexOf('.', s);
+        if (s >= 0) {
+            path = path.substring(0, s+1) + extension;
+        } else {
+            path = path + '.' + extension;
+        }
+        return new URL(location.getScheme(),            // http, https, file or jar.
+                       location.getRawAuthority(),      // Host name or literal IP address.
+                       location.getPort(),              // -1 if undefined.
+                       path);
+    }
+
+    /**
      * Returns the given path without the directories and without the extension.
      * For example if the given path is {@code "/Users/name/Map.png"}, then this
      * method returns {@code "Map"}.

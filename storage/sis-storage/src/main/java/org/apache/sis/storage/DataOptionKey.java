@@ -22,9 +22,8 @@ import org.apache.sis.feature.FoliationRepresentation;
 
 /**
  * Keys in a map of options for configuring the way data are read or written to a storage.
- * {@code DataOptionKey} extends {@link OptionKey} with options about features, coverages or other kinds of structure
- * in data files. Contrarily to {@code OptionKey}, the options defined in this {@code DataOptionKey} class are usually
- * not applicable to other kinds of file (e.g. configuration or program files).
+ * {@code DataOptionKey} extends {@link OptionKey} with options about features, coverages
+ * or other kinds of structure that are specific to some data formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

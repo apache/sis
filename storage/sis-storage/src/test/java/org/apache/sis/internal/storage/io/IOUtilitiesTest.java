@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -109,6 +109,18 @@ public final strictfp class IOUtilitiesTest extends TestCase {
         assertEquals("file:/Users/name/Map.png", IOUtilities.toString(new URL ("file:/Users/name/Map.png")));
         assertNull(IOUtilities.toString(Boolean.FALSE));
         assertNull(IOUtilities.toString(null));
+    }
+
+    /**
+     * Tests {@link IOUtilities#toAuxiliaryURL(URI, int)}.
+     *
+     * @throws URISyntaxException if a URI can not be parsed.
+     * @throws MalformedURLException if a URL can not be parsed.
+     */
+    @Test
+    public void testAuxiliaryURL() throws URISyntaxException, MalformedURLException {
+        assertEquals(new URL("http://localhost/directory/image.tfw"),
+                IOUtilities.toAuxiliaryURL(new URI("http://localhost/directory/image.tiff"), "tfw"));
     }
 
     /**

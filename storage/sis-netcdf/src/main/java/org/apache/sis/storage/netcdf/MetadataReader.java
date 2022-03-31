@@ -660,7 +660,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          */
         final String wkt = stringValue(GEOSPATIAL_BOUNDS);
         if (wkt != null) {
-            addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
+            addBoundingPolygon(new StoreFormat(null, null, decoder.geomlib, decoder.listeners).parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
         final String[] format = decoder.getFormatDescription();

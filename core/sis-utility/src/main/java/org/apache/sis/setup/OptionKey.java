@@ -29,14 +29,15 @@ import java.util.TimeZone;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
  * Keys in a map of options for configuring various services
  * ({@link org.apache.sis.storage.DataStore}, <i>etc</i>).
  * {@code OptionKey}s are used for aspects that usually do not need to be configured, except in a few specialized cases.
- * For example most data file formats read by SIS do not require the user to specify the character encoding, since the
- * encoding it is often given in the file header or in the format specification. However if SIS needs to read plain
+ * For example most data file formats read by SIS do not require the user to specify the character encoding, because
+ * the encoding is often given in the file header or in the format specification. However if SIS needs to read plain
  * text files <em>and</em> the default platform encoding is not suitable, then the user can specify the desired encoding
  * explicitly using the {@link #ENCODING} option.
  *
@@ -61,7 +62,7 @@ import org.apache.sis.internal.system.Modules;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @param <T>  the type of option values.
  *
@@ -190,6 +191,17 @@ public class OptionKey<T> implements Serializable {
      * @since 0.8
      */
     public static final OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
+
+    /**
+     * The coordinate reference system (CRS) of data.
+     * This option can be used when the file to read does not describe itself the data CRS.
+     * For example this option can be used when reading ASCII Grid without CRS information,
+     * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
+     *
+     * @since 1.2
+     */
+    public static final OptionKey<CoordinateReferenceSystem> COORDINATE_REFERENCE_SYSTEM =
+            new OptionKey<>("COORDINATE_REFERENCE_SYSTEM", CoordinateReferenceSystem.class);
 
     /**
      * The number of spaces to use for indentation when formatting text files in WKT or XML formats.
