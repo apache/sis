@@ -51,7 +51,7 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * A data store for a file or URI accompanied by an auxiliary file of the same name with {@code .prj} extension.
- * If the auxiliary file is absent, {@link OptionKey#COORDINATE_REFERENCE_SYSTEM} is used as a fallback.
+ * If the auxiliary file is absent, {@link OptionKey#DEFAULT_CRS} is used as a fallback.
  * The WKT 1 variant used for parsing the {@code "*.prj"} file is the variant used by "World Files" and GDAL;
  * this is not the standard specified by OGC 01-009 (they differ in there interpretation of units of measurement).
  *
@@ -92,9 +92,8 @@ public abstract class PRJDataStore extends URIDataStore {
     private final TimeZone timezone;
 
     /**
-     * The coordinate reference system. This is initialized on the value provided
-     * by {@link OptionKey#COORDINATE_REFERENCE_SYSTEM} at construction time, and
-     * is modified later if a {@code "*.prj"} file is found.
+     * The coordinate reference system. This is initialized on the value provided by {@link OptionKey#DEFAULT_CRS}
+     * at construction time, and is modified later if a {@code "*.prj"} file is found.
      */
     protected CoordinateReferenceSystem crs;
 
@@ -102,7 +101,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * Creates a new data store. The following options are recognized:
      *
      * <ul>
-     *   <li>{@link OptionKey#COORDINATE_REFERENCE_SYSTEM}: default CRS if no auxiliary {@code "*.prj"} file is found.</li>
+     *   <li>{@link OptionKey#DEFAULT_CRS}: default CRS if no auxiliary {@code "*.prj"} file is found.</li>
      *   <li>{@link OptionKey#ENCODING}: encoding of the {@code "*.prj"} file. Default is the JVM default.</li>
      *   <li>{@link OptionKey#TIMEZONE}: timezone of dates in the {@code "*.prj"} file. Default is UTC.</li>
      *   <li>{@link OptionKey#LOCALE}: locale for texts in the {@code "*.prj"} file. Default is English.</li>
@@ -114,7 +113,7 @@ public abstract class PRJDataStore extends URIDataStore {
      */
     protected PRJDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        crs      = connector.getOption(OptionKey.COORDINATE_REFERENCE_SYSTEM);
+        crs      = connector.getOption(OptionKey.DEFAULT_CRS);
         encoding = connector.getOption(OptionKey.ENCODING);
         locale   = connector.getOption(OptionKey.LOCALE);       // For `InternationalString`, not for numbers.
         timezone = connector.getOption(OptionKey.TIMEZONE);
@@ -253,17 +252,17 @@ public abstract class PRJDataStore extends URIDataStore {
      */
     public abstract static class Provider extends URIDataStore.Provider {
         /**
-         * Name of the {@link #COORDINATE_REFERENCE_SYSTEM} parameter.
+         * Name of the {@link #DEFAULT_CRS} parameter.
          */
-        static final String CRS_NAME = "crs";
+        static final String CRS_NAME = "defaultCRS";
 
         /**
          * Description of the optional parameter for the default coordinate reference system.
          */
-        public static final ParameterDescriptor<CoordinateReferenceSystem> COORDINATE_REFERENCE_SYSTEM;
+        public static final ParameterDescriptor<CoordinateReferenceSystem> DEFAULT_CRS;
         static {
             final ParameterBuilder builder = new ParameterBuilder();
-            COORDINATE_REFERENCE_SYSTEM = builder.addName(CRS_NAME).setDescription(
+            DEFAULT_CRS = builder.addName(CRS_NAME).setDescription(
                     Vocabulary.formatInternational(Vocabulary.Keys.CoordinateRefSys))
                     .create(CoordinateReferenceSystem.class, null);
         }
@@ -277,7 +276,7 @@ public abstract class PRJDataStore extends URIDataStore {
         /**
          * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
          * When invoked, the parameter group name is set to a name derived from the {@link #getShortName()} value.
-         * The default implementation creates a group containing {@link #LOCATION_PARAM} and {@link #COORDINATE_REFERENCE_SYSTEM}.
+         * The default implementation creates a group containing {@link #LOCATION_PARAM} and {@link #DEFAULT_CRS}.
          * Subclasses can override if they need to create a group with more parameters.
          *
          * @param  builder  the builder to use for creating parameter descriptor. The group name is already set.
@@ -285,7 +284,7 @@ public abstract class PRJDataStore extends URIDataStore {
          */
         @Override
         protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
-            return builder.createGroup(LOCATION_PARAM, COORDINATE_REFERENCE_SYSTEM);
+            return builder.createGroup(LOCATION_PARAM, DEFAULT_CRS);
         }
 
         /**
@@ -299,7 +298,7 @@ public abstract class PRJDataStore extends URIDataStore {
             ArgumentChecks.ensureNonNull("parameter", parameters);
             final StorageConnector connector = connector(this, parameters);
             final Parameters pg = Parameters.castOrWrap(parameters);
-            connector.setOption(OptionKey.COORDINATE_REFERENCE_SYSTEM, pg.getValue(COORDINATE_REFERENCE_SYSTEM));
+            connector.setOption(OptionKey.DEFAULT_CRS, pg.getValue(DEFAULT_CRS));
             return open(connector);
         }
     }

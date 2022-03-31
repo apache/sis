@@ -193,15 +193,15 @@ public class OptionKey<T> implements Serializable {
     public static final OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
 
     /**
-     * The coordinate reference system (CRS) of data.
+     * The coordinate reference system (CRS) of data to use if not explicitly defined.
      * This option can be used when the file to read does not describe itself the data CRS.
      * For example this option can be used when reading ASCII Grid without CRS information,
      * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
      *
      * @since 1.2
      */
-    public static final OptionKey<CoordinateReferenceSystem> COORDINATE_REFERENCE_SYSTEM =
-            new OptionKey<>("COORDINATE_REFERENCE_SYSTEM", CoordinateReferenceSystem.class);
+    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
+            new OptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
 
     /**
      * The number of spaces to use for indentation when formatting text files in WKT or XML formats.
