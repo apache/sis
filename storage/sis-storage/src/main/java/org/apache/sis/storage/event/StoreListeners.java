@@ -394,7 +394,7 @@ public class StoreListeners implements Localized {
      * Reports a warning described by the given message.
      *
      * <p>This method is a shortcut for <code>{@linkplain #warning(Level, String, Exception)
-     * warning}({@linkplain Level#WARNING}, null, exception)</code>.</p>
+     * warning}({@linkplain Level#WARNING}, message, null)</code>.</p>
      *
      * @param  message  the warning message to report.
      */

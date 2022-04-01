@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
+import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
@@ -102,6 +103,8 @@ public class MetadataReaderTest extends TestCase {
             "identificationInfo[0].credit[0]",                                                       "Derived from U.S. Geological Survey data",
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title",             "GeoTIFF Coverage Encoding Profile",
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "GeoTIFF",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR,
             "identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",                   true,
             "identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude",               108.34,
             "identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",               110.44,

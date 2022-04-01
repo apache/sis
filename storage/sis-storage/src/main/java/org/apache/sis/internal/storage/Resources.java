@@ -200,6 +200,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DuplicatedSampleDimensionIndex_1 = 53;
 
         /**
+         * Header in the “{0}” file is too large.
+         */
+        public static final short ExcessiveHeaderSize_1 = 67;
+
+        /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */

@@ -111,6 +111,8 @@ public final strictfp class MetadataReaderTest extends TestCase {
             // Hard-coded
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "NetCDF",
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title", "NetCDF Classic and 64-bit Offset Format",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR,
 
             // Read from the file
             "dateInfo[0].date",                                                        date("2018-05-15 13:01:00"),

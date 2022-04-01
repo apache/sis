@@ -436,6 +436,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalUnicodeCodePoint_2 = 61;
 
         /**
+         * Illegal value for property “{1}” in “{0}”.
+         */
+        public static final short IllegalValueForProperty_2 = 196;
+
+        /**
          * Can not use the {1} format with “{0}”.
          */
         public static final short IncompatibleFormat_2 = 62;
@@ -597,6 +602,11 @@ public final class Errors extends IndexedResourceBundle {
          * Missing value for “{0}” property.
          */
         public static final short MissingValueForProperty_1 = 89;
+
+        /**
+         * Missing value for “{1}” property in “{0}”.
+         */
+        public static final short MissingValueForProperty_2 = 197;
 
         /**
          * Missing value in the “{0}” column.
