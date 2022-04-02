@@ -86,7 +86,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see GridCoverage2D
  * @see SampleDimension.Builder
@@ -410,12 +410,13 @@ public class GridCoverageBuilder {
      *
      * @param  key    key of the property to set.
      * @param  value  value to associate to the given key.
+     * @return {@code this} for method invocation chaining.
      * @throws IllegalArgumentException if a value is already associated to the given key.
      *
      * @since 1.1
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
-    public void addImageProperty(final String key, final Object value) {
+    public GridCoverageBuilder addImageProperty(final String key, final Object value) {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);
         if (properties == null) {
@@ -424,6 +425,7 @@ public class GridCoverageBuilder {
         if (properties.putIfAbsent(key, value) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
+        return this;
     }
 
     /**

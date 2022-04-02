@@ -1014,7 +1014,8 @@ public class SampleDimension implements Serializable {
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
-         * @param  name        the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name        the category name as a {@link String} or {@link InternationalString} object,
+         *                     or {@code null} for a default "data" name.
          * @param  samples     the minimum and maximum sample values in the category. Element class is usually
          *                     {@link Integer}, but {@link Float} and {@link Double} values are accepted as well.
          * @param  converted   the range of real values for this category, as an instance of {@link MeasurementRange}
@@ -1052,7 +1053,8 @@ public class SampleDimension implements Serializable {
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
-         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "data" name.
          * @param  minimum  the minimum value (inclusive) in the given units.
          * @param  maximum  the maximum value (inclusive) in the given units.
          * @param  units    the units of measurement, or {@code null} if unknown or not applicable.
@@ -1070,7 +1072,8 @@ public class SampleDimension implements Serializable {
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
-         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "data" name.
          * @param  minimum  the minimum value (inclusive) in the given units.
          * @param  maximum  the maximum value (inclusive) in the given units.
          * @param  units    the units of measurement, or {@code null} if unknown or not applicable.
@@ -1093,6 +1096,7 @@ public class SampleDimension implements Serializable {
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object.
+         *                 or {@code null} for a default "data" name.
          * @param  lower   the lower sample value, inclusive.
          * @param  upper   the upper sample value, exclusive.
          * @param  scale   the scale value which is multiplied to sample values for the category. Must be different than zero.
@@ -1119,7 +1123,8 @@ public class SampleDimension implements Serializable {
          * <p>This is the most generic method for adding a quantitative category.
          * All other {@code addQuantitative(name, …)} methods are convenience methods delegating their work to this method.</p>
          *
-         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "data" name.
          * @param  samples  the minimum and maximum sample values in the category. Element class is usually
          *                  {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
          * @param  toUnits  the transfer function from sample values to real values in the specified units.
@@ -1133,6 +1138,9 @@ public class SampleDimension implements Serializable {
          */
         public Builder addQuantitative(CharSequence name, NumberRange<?> samples, MathTransform1D toUnits, Unit<?> units) {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
+            if (name == null) {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Data);
+            }
             add(new Category(name, samples, toUnits, units, toNaN));
             return this;
         }

@@ -285,8 +285,7 @@ public final class Colorizer {
         defaultRange = NumberRange.create(minimum, true, maximum, true);
         target = new SampleDimension.Builder()
                 .setBackground(null, 0)
-                .addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Data),
-                        NumberRange.create(1, true, MAX_VALUE, true), defaultRange).build();
+                .addQuantitative(null, NumberRange.create(1, true, MAX_VALUE, true), defaultRange).build();
 
         source = target.forConvertedValues(true);
         final List<Category> categories = source.getCategories();
