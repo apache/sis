@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.storage.ascii;
 
+import java.util.Map;
+import java.nio.ByteBuffer;
+import java.io.EOFException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
@@ -40,7 +43,7 @@ import org.apache.sis.internal.storage.PRJDataStore;
  * @module
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
-               fileSuffixes  = {"asc", "grd", "agr"},
+               fileSuffixes  = {"asc", "grd", "agr", "aig"},
                capabilities  = Capability.READ,
                resourceTypes = GridCoverageResource.class)
 public final class StoreProvider extends PRJDataStore.Provider {
@@ -75,7 +78,45 @@ public final class StoreProvider extends PRJDataStore.Provider {
      */
     @Override
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return probeContent(connector, ByteBuffer.class, (buffer) -> {
+            /*
+             * Quick check if all characters are US-ASCII.
+             */
+            buffer.mark();
+            while (buffer.hasRemaining()) {
+                if (buffer.get() < 0) {
+                    return ProbeResult.UNSUPPORTED_STORAGE;
+                }
+            }
+            buffer.reset();
+            /*
+             * Try to parse the header and check if we can find the expected keywords.
+             */
+            final CharactersView view = new CharactersView(null, buffer);
+            try {
+                final Map<String, String> header = view.readHeader();
+                if (header.containsKey(Store.NROWS)     && header.containsKey(Store.NCOLS) &&
+                   (header.containsKey(Store.XLLCORNER) || header.containsKey(Store.XLLCENTER)) &&
+                   (header.containsKey(Store.YLLCORNER) || header.containsKey(Store.YLLCENTER)))
+                {
+cellsize:           if (!header.containsKey(Store.CELLSIZE)) {
+                        int def = 0;
+                        for (int i=0; i < Store.CELLSIZES.length;) {
+                            if (header.containsKey(Store.CELLSIZES[i++])) def |= 1;
+                            if (header.containsKey(Store.CELLSIZES[i++])) def |= 2;
+                            if (def == 3) break cellsize;
+                        }
+                        return ProbeResult.UNSUPPORTED_STORAGE;
+                    }
+                    return new ProbeResult(true, "text/plain", null);
+                }
+            } catch (EOFException e) {
+                return ProbeResult.INSUFFICIENT_BYTES;
+            } catch (DataStoreException e) {
+                // Ignore and return `UNSUPPORTED_STORAGE`.
+            }
+            return ProbeResult.UNSUPPORTED_STORAGE;
+        });
     }
 
     /**

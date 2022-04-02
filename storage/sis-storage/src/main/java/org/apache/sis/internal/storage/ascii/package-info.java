@@ -39,37 +39,47 @@
  *   </tr>
  *   <tr>
  *     <td>{@code NCOLS}</td>
- *     <td>Integer</td>
+ *     <td>{@link java.lang.Integer}</td>
  *     <td>Mandatory</td>
  *   </tr>
  *   <tr>
  *     <td>{@code NROWS}</td>
- *     <td>Integer</td>
+ *     <td>{@link java.lang.Integer}</td>
  *     <td>Mandatory</td>
  *   </tr>
  *   <tr>
  *     <td>{@code XLLCORNER} or {@code XLLCENTER}</td>
- *     <td>Floating point</td>
+ *     <td>{@link java.lang.Double}</td>
  *     <td>Mandatory</td>
  *   </tr>
  *   <tr>
  *     <td>{@code YLLCORNER} or {@code YLLCENTER}</td>
- *     <td>Floating point</td>
+ *     <td>{@link java.lang.Double}</td>
  *     <td>Mandatory</td>
  *   </tr>
  *   <tr>
  *     <td>{@code CELLSIZE}</td>
- *     <td>Floating point</td>
- *     <td>Mandatory, unless {@code DX} and {@code DY} are present</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Mandatory, unless an alternative below is present</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code XCELLSIZE} and {@code YCELLSIZE}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Non-standard alternative to {@code CELLSIZE}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code XDIM} and {@code YDIM}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Non-standard alternative to {@code CELLSIZE}</td>
  *   </tr>
  *   <tr>
  *     <td>{@code DX} and {@code DY}</td>
- *     <td>Floating point</td>
- *     <td>Accepted but non-standard</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Non-standard alternative to {@code CELLSIZE}</td>
  *   </tr>
  *   <tr>
  *     <td>{@code NODATA_VALUE}</td>
- *     <td>Floating point</td>
+ *     <td>{@link java.lang.Double}</td>
  *     <td>Optional</td>
  *   </tr>
  * </table>
@@ -86,6 +96,14 @@
  *       if the pixels are non-square.</li>
  *   <li>Lines in the header starting with {@code '#'} are ignored as comment lines.</li>
  * </ul>
+ *
+ * <h2>Limitations</h2>
+ * Current implementation loads and caches the full image no matter the subregion or subsampling
+ * specified to the {@code read(…)} method. The image is loaded by {@code getSampleDimensions()}
+ * call too, because there is no other way to build a reliable sample dimension.
+ * Even the data type can not be determined for sure without loading the full image.
+ * Loading the full image is reasonable if ASCII Grid files contain only small images,
+ * which is usually the case given how inefficient this format is.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

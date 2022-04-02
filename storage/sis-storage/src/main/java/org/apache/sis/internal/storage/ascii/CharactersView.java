@@ -47,7 +47,9 @@ final class CharactersView implements CharSequence {
     private static final char SPACE = ' ';
 
     /**
-     * The object to use for reading data, or {@code null} if this store has been closed.
+     * The object to use for reading data, or {@code null} if unavailable.
+     * This is null during {@linkplain StoreProvider#probeContent probe} operation.
+     * Shall never be null when this instance is the {@link Store#input} instance.
      */
     final ChannelDataInput input;
 
@@ -72,11 +74,15 @@ final class CharactersView implements CharSequence {
     /**
      * Creates a new sequence of characters.
      *
-     * @param  input  the source of bytes.
+     * @param  input   the source of bytes, or {@code null} if unavailable.
+     * @oaram  buffer  the buffer, or {@code null} for {@code input.buffer}.
      */
-    CharactersView(final ChannelDataInput input) {
+    CharactersView(final ChannelDataInput input, ByteBuffer buffer) {
+        if (buffer == null) {
+            buffer = input.buffer;
+        }
         this.input  = input;
-        this.buffer = input.buffer;
+        this.buffer = buffer;
         this.direct = buffer.hasArray();
         this.array  = direct ? buffer.array() : new byte[80];
     }
@@ -134,6 +140,19 @@ final class CharactersView implements CharSequence {
     }
 
     /**
+     * Reads the next byte as an unsigned value.
+     */
+    private int readByte() throws IOException {
+        if (!buffer.hasRemaining()) {
+            if (input == null) {
+                throw new EOFException();
+            }
+            input.ensureBufferContains(Byte.BYTES);
+        }
+        return Byte.toUnsignedInt(buffer.get());
+    }
+
+    /**
      * Skips all character until the end of line.
      * This is used for skipping a comment line in the header.
      * This method can be invoked after {@link #readToken()}.
@@ -146,26 +165,13 @@ final class CharactersView implements CharSequence {
     private boolean skipLine(final boolean stopAtToken) throws IOException {
         buffer.position(buffer.position() - 1);     // For checking if the space that we skipped was CR/LF.
         boolean eol = false;
-        byte c;
+        int c;
         do {
-            c = input.readByte();
+            c = readByte();
             eol = (c == '\r' || c == '\n');
         }
         while (!(eol || (stopAtToken && c > SPACE)));
         return eol;
-    }
-
-    /**
-     * Skips leading white spaces, carriage returns or control characters, then skips the non-white characters.
-     * This method is used for skipping a sample value without parsing the number when a subsampling is applied.
-     *
-     * @throws EOFException if the channel has reached the end of stream.
-     * @throws IOException if an other kind of error occurred while reading.
-     */
-    @SuppressWarnings("empty-statement")
-    final void skipToken() throws IOException {
-        while (input.readByte() <= SPACE);
-        while (input.readByte() >  SPACE);
     }
 
     /**
@@ -180,11 +186,14 @@ final class CharactersView implements CharSequence {
      */
     @SuppressWarnings("empty-statement")
     final String readToken() throws IOException, DataStoreContentException {
-        while (input.readByte() <= SPACE);
+        while (readByte() <= SPACE);
         int start = buffer.position() - 1;
         int c;
         do {
             if (!buffer.hasRemaining()) {
+                if (input == null) {
+                    throw new EOFException();
+                }
                 buffer.position(start);
                 final int current = buffer.limit() - start;
                 if (current >= buffer.capacity()) {

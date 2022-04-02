@@ -115,6 +115,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_4 = 3;
 
         /**
+         * Can not read pixel at ({0}, {1}) indices in the “{2}” file.
+         */
+        public static final short CanNotReadPixel_3 = 68;
+
+        /**
          * Can not remove resource “{1}” from aggregate “{0}”.
          */
         public static final short CanNotRemoveResource_2 = 49;
