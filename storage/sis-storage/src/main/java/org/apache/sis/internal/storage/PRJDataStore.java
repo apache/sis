@@ -34,6 +34,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
@@ -43,7 +44,6 @@ import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -51,13 +51,13 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * A data store for a file or URI accompanied by an auxiliary file of the same name with {@code .prj} extension.
- * If the auxiliary file is absent, {@link OptionKey#DEFAULT_CRS} is used as a fallback.
+ * If the auxiliary file is absent, {@link DataOptionKey#DEFAULT_CRS} is used as a fallback.
  * The WKT 1 variant used for parsing the {@code "*.prj"} file is the variant used by "World Files" and GDAL;
  * this is not the standard specified by OGC 01-009 (they differ in there interpretation of units of measurement).
  *
  * <p>It is still possible to create a data store with a {@link java.nio.channels.ReadableByteChannel},
  * {@link java.io.InputStream} or {@link java.io.Reader}, in which case the {@linkplain #location} will
- * be null and the CRS defined by the {@code OptionKey} will be used.</p>
+ * be null and the CRS defined by the {@code DataOptionKey} will be used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -92,7 +92,7 @@ public abstract class PRJDataStore extends URIDataStore {
     private final TimeZone timezone;
 
     /**
-     * The coordinate reference system. This is initialized on the value provided by {@link OptionKey#DEFAULT_CRS}
+     * The coordinate reference system. This is initialized on the value provided by {@link DataOptionKey#DEFAULT_CRS}
      * at construction time, and is modified later if a {@code "*.prj"} file is found.
      */
     protected CoordinateReferenceSystem crs;
@@ -101,10 +101,10 @@ public abstract class PRJDataStore extends URIDataStore {
      * Creates a new data store. The following options are recognized:
      *
      * <ul>
-     *   <li>{@link OptionKey#DEFAULT_CRS}: default CRS if no auxiliary {@code "*.prj"} file is found.</li>
-     *   <li>{@link OptionKey#ENCODING}: encoding of the {@code "*.prj"} file. Default is the JVM default.</li>
-     *   <li>{@link OptionKey#TIMEZONE}: timezone of dates in the {@code "*.prj"} file. Default is UTC.</li>
-     *   <li>{@link OptionKey#LOCALE}: locale for texts in the {@code "*.prj"} file. Default is English.</li>
+     *   <li>{@link DataOptionKey#DEFAULT_CRS}: default CRS if no auxiliary {@code "*.prj"} file is found.</li>
+     *   <li>{@link DataOptionKey#ENCODING}: encoding of the {@code "*.prj"} file. Default is the JVM default.</li>
+     *   <li>{@link DataOptionKey#TIMEZONE}: timezone of dates in the {@code "*.prj"} file. Default is UTC.</li>
+     *   <li>{@link DataOptionKey#LOCALE}: locale for texts in the {@code "*.prj"} file. Default is English.</li>
      * </ul>
      *
      * @param  provider   the factory that created this {@code PRJDataStore} instance, or {@code null} if unspecified.
@@ -113,10 +113,10 @@ public abstract class PRJDataStore extends URIDataStore {
      */
     protected PRJDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        crs      = connector.getOption(OptionKey.DEFAULT_CRS);
-        encoding = connector.getOption(OptionKey.ENCODING);
-        locale   = connector.getOption(OptionKey.LOCALE);       // For `InternationalString`, not for numbers.
-        timezone = connector.getOption(OptionKey.TIMEZONE);
+        crs      = connector.getOption(DataOptionKey.DEFAULT_CRS);
+        encoding = connector.getOption(DataOptionKey.ENCODING);
+        locale   = connector.getOption(DataOptionKey.LOCALE);       // For `InternationalString`, not for numbers.
+        timezone = connector.getOption(DataOptionKey.TIMEZONE);
     }
 
     /**
@@ -298,7 +298,7 @@ public abstract class PRJDataStore extends URIDataStore {
             ArgumentChecks.ensureNonNull("parameter", parameters);
             final StorageConnector connector = connector(this, parameters);
             final Parameters pg = Parameters.castOrWrap(parameters);
-            connector.setOption(OptionKey.DEFAULT_CRS, pg.getValue(DEFAULT_CRS));
+            connector.setOption(DataOptionKey.DEFAULT_CRS, pg.getValue(DEFAULT_CRS));
             return open(connector);
         }
     }

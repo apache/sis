@@ -29,7 +29,6 @@ import java.util.TimeZone;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -62,7 +61,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 0.8
  *
  * @param <T>  the type of option values.
  *
@@ -191,17 +190,6 @@ public class OptionKey<T> implements Serializable {
      * @since 0.8
      */
     public static final OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
-
-    /**
-     * The coordinate reference system (CRS) of data to use if not explicitly defined.
-     * This option can be used when the file to read does not describe itself the data CRS.
-     * For example this option can be used when reading ASCII Grid without CRS information,
-     * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
-     *
-     * @since 1.2
-     */
-    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
-            new OptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
 
     /**
      * The number of spaces to use for indentation when formatting text files in WKT or XML formats.
