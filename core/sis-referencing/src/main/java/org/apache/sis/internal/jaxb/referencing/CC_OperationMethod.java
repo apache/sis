@@ -32,6 +32,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.parameter.DefaultParameterValue;
@@ -39,7 +40,6 @@ import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -48,7 +48,7 @@ import org.apache.sis.util.ArraysExt;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -113,7 +113,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
              * Parameters are mandatory and SIS classes need them. Provide an error message
              * here instead of waiting for a NullPointerException in some arbitrary place.
              */
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "parameters"));
+            throw new IllegalArgumentException(Identifiers.missingValueForProperty(method.getName(), "parameters"));
         }
         metadata = method;
     }
@@ -191,7 +191,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
         if (method != null) {
             /*
              * Verify that the pre-defined operation method contains at least all the parameters specified by
-             * the 'descriptors' array. If this is the case, then the pre-defined parameters will be used in
+             * the `descriptors` array. If this is the case, then the pre-defined parameters will be used in
              * replacement of the given ones.
              */
             final ParameterDescriptorGroup parameters = method.getParameters();

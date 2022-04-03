@@ -38,6 +38,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.resources.Errors;
@@ -53,7 +54,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
@@ -223,7 +224,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         if (super.equals(object, mode)) {
             final boolean strict = (mode == ComparisonMode.STRICT);
             /*
-             * Avoid never-ending recursivity: Conversion has a 'targetCRS' field (inherited from
+             * Avoid never-ending recursivity: Conversion has a `targetCRS` field (inherited from
              * the AbstractCoordinateOperation super-class) that is set to this AbstractDerivedCRS.
              *
              * Do NOT compare the baseCRS explicitly. This is done implicitely in the comparison of the Conversion
@@ -254,8 +255,8 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     @Override
     protected long computeHashCode() {
         /*
-         * Do not invoke 'conversionFromBase.hashCode()' in order to avoid a never-ending loop.
-         * This is because Conversion inherits a 'sourceCRS' field from the CoordinateOperation
+         * Do not invoke `conversionFromBase.hashCode()` in order to avoid a never-ending loop.
+         * This is because Conversion inherits a `sourceCRS` field from the CoordinateOperation
          * parent type, which is set to this DerivedCRS. Checking the OperationMethod does not
          * work neither for the reason documented inside the AbstractSingleOperation.equals(…)
          * method body. The MathTransform is our best discriminant.
@@ -345,10 +346,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             }
         }
         /*
-         * If we reach this point, we failed to update the conversion. The 'baseCRS' information will be lost
-         * and call to 'getConversionFromBase()' will throw a ClassCastException if this instance is actually
+         * If we reach this point, we failed to update the conversion. The `baseCRS` information will be lost
+         * and call to `getConversionFromBase()` will throw a ClassCastException if this instance is actually
          * a ProjectedCRS (because of the method overriding with return type covariance).
          */
-        throw new ValidationException(Errors.format(Errors.Keys.MissingValueForProperty_1, property));
+        throw new ValidationException(Identifiers.missingValueForProperty(getName(), property));
     }
 }

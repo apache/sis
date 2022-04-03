@@ -186,7 +186,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         if (min instanceof Number) {
             final Comparable<?> max = descriptor.getMaximumValue();
             if (max instanceof Number) {
-                // Compare as 'double' because we want (-0 == +0) to be true.
+                // Compare as `double` because we want (-0 == +0) to be true.
                 return ((Number) min).doubleValue() == ((Number) max).doubleValue();
             }
         }
@@ -247,7 +247,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
              * assuming that the additional properties are acceptable.
              *
              * We make an exception to the above rule if the existing instance put a possibly too strong
-             * restriction on the parameter values. See 'isRestricted(…)' for more information.
+             * restriction on the parameter values. See `isRestricted(…)` for more information.
              */
             if (!isRestricted((ParameterDescriptor<?>) complete)) {
                 return complete;
@@ -255,7 +255,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         }
         /*
          * Collect the properties specified in the GML document and complete with the properties provided
-         * by the 'complete' descriptor. If the descriptor is a group, then this 'replacement' method will
+         * by the `complete` descriptor. If the descriptor is a group, then this `replacement` method will
          * be invoked recursively for each parameter in the group.
          */
         final Map<String,Object> merged = new HashMap<>(expected);
@@ -303,11 +303,11 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
             final GeneralParameterDescriptor p = provided[i];
             try {
                 /*
-                 * Replace the descriptors provided in the GML document by descriptors from the 'complete' instance,
+                 * Replace the descriptors provided in the GML document by descriptors from the `complete` instance,
                  * if possible. Keep trace of the complete descriptors that we found in this process.
                  */
                 GeneralParameterDescriptor predefined = complete.descriptor(p.getName().getCode());
-                if (predefined != null) {   // Safety in case 'complete' is a user's implementation.
+                if (predefined != null) {   // Safety in case `complete` is a user's implementation.
                     canSubstitute &= (provided[i] = merge(p, predefined)) == predefined;
                     if (!included.add(predefined)) {
                         throw new CorruptedObjectException(predefined);  // Broken hashCode/equals, or object mutated.
@@ -325,7 +325,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                         (caller == DefaultParameterValueGroup.class) ? "setValues" : "setDescriptors", e, canSubstitute);
             }
             /*
-             * If a parameter was not found in the 'complete' descriptor, we will not be able to use that descriptor.
+             * If a parameter was not found in the `complete` descriptor, we will not be able to use that descriptor.
              * But we may still be able to use its properties (name, alias, identifier) provided that the parameter
              * not found was optional.
              */
@@ -334,7 +334,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         }
         if (isCompatible) {
             /*
-             * At this point, we determined that all mandatory parameters in the GML document exist in the 'complete'
+             * At this point, we determined that all mandatory parameters in the GML document exist in the `complete`
              * descriptor. However the converse is not necessarily true. Verify that all parameters missing in the GML
              * document were optional.
              */
@@ -427,9 +427,9 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
             T[] complete = (T[]) merged.get(key);
             if (complete != null) {
                 /*
-                 * Add the 'provided' values before 'complete' for two reasons:
+                 * Add the `provided` values before `complete` for two reasons:
                  *   1) Use the same insertion order than the declaration order in the GML file.
-                 *   2) Replace 'provided' instances by 'complete' instances, since the latter
+                 *   2) Replace `provided` instances by `complete` instances, since the latter
                  *      are sometime pre-defined instances defined as static final constants.
                  */
                 final Map<NamedIdentifier,T> c = new LinkedHashMap<>();

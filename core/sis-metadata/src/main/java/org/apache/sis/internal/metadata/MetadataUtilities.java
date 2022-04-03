@@ -100,7 +100,7 @@ public final class MetadataUtilities extends Static {
     {
         if (newValue != null) {
             final double value = newValue.doubleValue();
-            if (!(strict ? value > 0 : value >= 0)) {                               // Use '!' for catching NaN.
+            if (!(strict ? value > 0 : value >= 0)) {                               // Use `!` for catching NaN.
                 if (NilReason.forObject(newValue) == null) {
                     final String msg = logOrFormat(classe, property, strict
                             ? Errors.Keys.ValueNotGreaterThanZero_2
@@ -134,7 +134,7 @@ public final class MetadataUtilities extends Static {
     {
         if (newValue != null) {
             final double value = newValue.doubleValue();
-            if (!(value >= minimum.doubleValue() && value <= maximum.doubleValue())) {      // Use '!' for catching NaN.
+            if (!(value >= minimum.doubleValue() && value <= maximum.doubleValue())) {      // Use `!` for catching NaN.
                 if (NilReason.forObject(newValue) == null) {
                     final String msg = logOrFormat(classe, property,
                             Errors.Keys.ValueOutOfRange_4, property, minimum, maximum, newValue);

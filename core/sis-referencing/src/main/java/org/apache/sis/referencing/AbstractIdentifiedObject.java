@@ -1084,7 +1084,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             } else {
                 /*
                  * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
-                 * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+                 * so the `instanceof` check should not be necessary. But we do a paranoiac check anyway.
                  */
                 final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
                 if (alias == null) {
