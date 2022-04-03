@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
-import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -378,7 +378,7 @@ cellsize:       if (value != null) {
             final CharactersView view = input();
             final String filename = view.input.filename;
             final Statistics stats = new Statistics(filename);
-            final double[] data = new double[width * height];
+            final float[] data = new float[width * height];
             for (int i=0; i < data.length; i++) {
                 final String token = view.readToken();
                 double value;
@@ -395,7 +395,7 @@ cellsize:       if (value != null) {
                                 Resources.Keys.CanNotReadPixel_3, i % width, i / width, filename), e);
                     }
                 }
-                data[i] = value;
+                data[i] = (float) value;
                 stats.accept(value);        // Need to invoke even for NaN values (because we count them).
             }
             /*
@@ -422,7 +422,7 @@ cellsize:       if (value != null) {
             coverage = new GridCoverageBuilder()
                     .addRange(band)
                     .setDomain(gridGeometry)
-                    .setValues(new DataBufferDouble(data, data.length), null)
+                    .setValues(new DataBufferFloat(data, data.length), null)
                     .addImageProperty(PlanarImage.STATISTICS_KEY, new Statistics[] {stats})
                     .build();
         } catch (DataStoreException e) {
