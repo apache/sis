@@ -18,13 +18,13 @@ package org.apache.sis.internal.storage;
 
 import java.net.URL;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -137,7 +137,7 @@ public abstract class PRJDataStore extends URIDataStore {
                 crs = (CoordinateReferenceSystem) format.parseObject(wkt);
                 format.validate(crs);
             }
-        } catch (FileNotFoundException e) {
+        } catch (NoSuchFileException | FileNotFoundException e) {
             listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ), e);
         } catch (IOException | ParseException | ClassCastException e) {
             throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ), e);
@@ -153,18 +153,37 @@ public abstract class PRJDataStore extends URIDataStore {
      * @param  extension  the filename extension of the auxiliary file to open.
      * @param  encoding   the encoding to use for reading the file content, or {@code null} for default.
      * @return a stream opened on the specified file, or {@code null} if the file is not found.
-     * @throws FileNotFoundException if the auxiliary file has not been found.
+     * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
+     * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
      */
     protected final String readAuxiliaryFile(final String extension, Charset encoding) throws IOException {
-        final URL url = IOUtilities.toAuxiliaryURL(location, extension);
-        if (url == null) {
-            return null;
-        }
         if (encoding == null) {
             encoding = Charset.defaultCharset();
         }
-        try (InputStreamReader reader = new InputStreamReader(url.openStream(), encoding)) {
+        /*
+         * Try to open the stream using the storage type (Path or URL) closest to the type
+         * given at construction time. We do that because those two types can not open the
+         * same streams. For example Path does not open HTTP or FTP connections by default,
+         * and URL does not open S3 files in current implementation.
+         */
+        final InputStream stream;
+        Path path = getSpecifiedPath();
+        if (path != null) {
+            final String base = getBaseFilename(path);
+            path = path.resolveSibling(base.concat(PRJ));
+            stream = Files.newInputStream(path);
+        } else {
+            final URL url = IOUtilities.toAuxiliaryURL(location, extension);
+            if (url == null) {
+                return null;
+            }
+            stream = url.openStream();
+        }
+        /*
+         * Reads the auxiliary file fully.
+         */
+        try (InputStreamReader reader = new InputStreamReader(stream, encoding)) {
             char[] buffer = new char[1024];
             int offset = 0, count;
             while ((count = reader.read(buffer, offset, buffer.length - offset)) >= 0) {
@@ -202,29 +221,29 @@ public abstract class PRJDataStore extends URIDataStore {
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
     protected final Path[] listComponentFiles(final String... auxiliaries) throws DataStoreException {
-        final Path path;
-        if (location == null) {
-            return new Path[0];
-        } else try {
-            path = Paths.get(location);
-        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-            throw new DataStoreException(e);
-        }
-        String base = path.getFileName().toString();
-        final int s = base.lastIndexOf('.');
-        if (s >= 0) {
-            base = base.substring(0, s+1);
-        }
-        final Path[] paths = new Path[auxiliaries.length + 1];
-        paths[0] = path;
-        int count = 1;
-        for (final String extension : auxiliaries) {
-            final Path p = path.resolveSibling(base.concat(extension));
-            if (Files.isRegularFile(p)) {
-                paths[count++] = p;
+        Path[] paths = super.getComponentFiles();
+        int count = paths.length;
+        if (count != 0) {
+            final Path path = paths[0];
+            final String base = getBaseFilename(path);
+            for (final String extension : auxiliaries) {
+                final Path p = path.resolveSibling(base.concat(extension));
+                if (Files.isRegularFile(p)) {
+                    if (count >= paths.length) {
+                        paths = Arrays.copyOf(paths, count + auxiliaries.length);
+                    }
+                    paths[count++] = p;
+                }
             }
+            paths = ArraysExt.resize(paths, count);
         }
-        return ArraysExt.resize(paths, count);
+        return paths;
+    }
+
+    private static String getBaseFilename(final Path path) {
+        final String base = path.getFileName().toString();
+        final int s = base.lastIndexOf('.');
+        return (s >= 0) ? base.substring(0, s+1) : base + '.';
     }
 
     /**

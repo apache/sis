@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.io.File;
 import java.net.URI;
 import java.util.Optional;
 import java.nio.file.Path;
@@ -55,6 +56,25 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     protected final URI location;
 
     /**
+     * The {@link #location} as a path, computed when first needed.
+     * If the storage given at construction time was a {@link Path} or a {@link File} instance,
+     * then this field is initialized in the constructor in order to avoid a "path → URI → path" roundtrip
+     * (such roundtrip transforms relative paths into {@linkplain Path#toAbsolutePath() absolute paths}).
+     *
+     * @see #getSpecifiedPath()
+     * @see #getComponentFiles()
+     */
+    private volatile Path locationAsPath;
+
+    /**
+     * Whether {@link #locationAsPath} was initialized at construction time ({@code true})
+     * of inferred from the {@link #location} URI at a later time ({@code false}).
+     *
+     * @see #getSpecifiedPath()
+     */
+    private final boolean locationIsPath;
+
+    /**
      * Creates a new data store.
      *
      * @param  provider   the factory that created this {@code URIDataStore} instance, or {@code null} if unspecified.
@@ -64,6 +84,22 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     protected URIDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         location = connector.getStorageAs(URI.class);
+        final Object storage = connector.getStorage();
+        if (storage instanceof Path) {
+            locationAsPath = (Path) storage;
+        } else if (storage instanceof File) {
+            locationAsPath = ((File) storage).toPath();
+        }
+        locationIsPath = (locationAsPath != null);
+    }
+
+    /**
+     * If the location was specified as a {@link Path} or {@link File} instance, returns that path.
+     * Otherwise returns {@code null}. This method does not try to convert URI to {@link Path}
+     * because this conversion may fail for HTTP and FTP connections.
+     */
+    final Path getSpecifiedPath() {
+        return locationIsPath ? locationAsPath : null;
     }
 
     /**
@@ -78,23 +114,24 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
 
     /**
      * Returns the {@linkplain #location} as a {@code Path} component or an empty array if none.
-     * The default implementation converts the URI to a {@link Path}. Note that if the original
-     * {@link StorageConnector} argument given by user at construction time already contained a
-     * {@link Path}, then the {@code Path} → {@code URI} → {@code Path} roundtrip is equivalent
-     * to returning the {@link Path#toAbsolutePath()} value of user argument.
+     * The default implementation returns the storage specified at construction time if it was
+     * a {@link Path} or {@link File}, or converts the URI to a {@link Path} otherwise.
      *
      * @return the URI as a path, or an empty array if the URI is null.
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
-        final Path path;
-        if (location == null) {
-            return new Path[0];
-        } else try {
-            path = Paths.get(location);
-        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-            throw new DataStoreException(e);
+        Path path = locationAsPath;
+        if (path == null) {
+            if (location == null) {
+                return new Path[0];
+            } else try {
+                path = Paths.get(location);
+            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+                throw new DataStoreException(e);
+            }
+            locationAsPath = path;
         }
         return new Path[] {path};
     }
