@@ -234,8 +234,16 @@ final class Visualization extends ResampledImage {
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.
                      */
-                    initialized = colorizer.initialize(source.getColorModel()) ||
-                                  colorizer.initialize(source.getSampleModel(), visibleBand);
+                    initialized = colorizer.initialize(source.getColorModel());
+                    if (!initialized) {
+                        if (source instanceof RecoloredImage) {
+                            final RecoloredImage colored = (RecoloredImage) source;
+                            colorizer.initialize(colored.minimum, colored.maximum);
+                            initialized = true;
+                        } else {
+                            initialized = colorizer.initialize(source.getSampleModel(), visibleBand);
+                        }
+                    }
                 }
             }
             source = BandSelectImage.create(source, new int[] {visibleBand});               // Make single-banded.

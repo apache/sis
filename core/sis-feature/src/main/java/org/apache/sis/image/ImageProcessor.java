@@ -941,7 +941,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
         ensureNonEmpty(bounds);
-        final ColorModel  cm = source.getColorModel();
+        final RenderedImage colored = source;
         final SampleModel sm = source.getSampleModel();
         boolean isIdentity = toSource.isIdentity();
         RenderedImage resampled = null;
@@ -986,7 +986,12 @@ public class ImageProcessor implements Cloneable {
                     bounds, toSource, interpolation, fillValues, positionalAccuracyHints));
             break;
         }
-        return RecoloredImage.create(resampled, cm);
+        /*
+         * Preserve the color model of the original image, including information about how it
+         * has been constructed. If the source image was not an instance of `RecoloredImage`,
+         * then above call should return `resampled` unchanged.
+         */
+        return RecoloredImage.applySameColors(resampled, colored);
     }
 
     /**
