@@ -731,7 +731,8 @@ public class ImageRenderer {
         final Raster raster = createRaster();
         final Colorizer colorizer = new Colorizer(colors);
         final ColorModel colors;
-        if (colorizer.initialize(bands[visibleBand]) || colorizer.initialize(raster.getSampleModel(), visibleBand)) {
+        final SampleModel sm = raster.getSampleModel();
+        if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
             colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;

@@ -219,10 +219,10 @@ final class Visualization extends ResampledImage {
                  * in various ways: sample dimensions, scaled color model, statistics in last resort.
                  */
                 colorizer = new Colorizer(categoryColors);
-                initialized = (sourceBands != null) && colorizer.initialize(sourceBands.get(visibleBand));
+                initialized = (sourceBands != null) && colorizer.initialize(source.getSampleModel(), sourceBands.get(visibleBand));
                 if (initialized) {
                     /*
-                     * If we have been able to configure Colorizer using the SampleModel, apply an adjustment based
+                     * If we have been able to configure Colorizer using SampleDimension, apply an adjustment based
                      * on the ScaledColorModel if it exists.  Use case: an image is created with an IndexColorModel
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`
                      * above. We want to preserve that contrast enhancement.

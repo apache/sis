@@ -18,6 +18,7 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Collection;
+import java.util.function.Function;
 import java.awt.Color;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.coverage.Category;
@@ -31,7 +32,7 @@ import org.apache.sis.util.ArraysExt;
  * the time needed for {@link ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])
  *
@@ -40,10 +41,10 @@ import org.apache.sis.util.ArraysExt;
  */
 final class ColorsForRange implements Comparable<ColorsForRange> {
     /**
-     * If this {@code ColorsForRange} has been created for a category, that category.
-     * Otherwise {@code null}.
+     * A name identifying the range of values. the category name is used if available,
+     * otherwise this is a string representation of the range.
      */
-    private final Category category;
+    final CharSequence name;
 
     /**
      * The range of sample values on which the colors will be applied. Shall never be null.
@@ -59,17 +60,39 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     private final Color[] colors;
 
     /**
+     * {@code true} if this entry should be taken as data, or {@code false} if it should be ignored.
+     * Entry to ignore are entries associated to NaN values.
+     */
+    final boolean isData;
+
+    /**
+     * Creates a new instance for the given category.
+     *
+     * @param  category  the category for which this {@code ColorsForRange} is created, or {@code null}.
+     * @param  colors    colors to apply on the category.
+     */
+    ColorsForRange(final Category category, final Function<Category,Color[]> colors) {
+        final CharSequence name = category.getName();
+        this.name        = (name != null) ? name : sampleRange.toString();
+        this.sampleRange = category.getSampleRange();
+        this.colors      = colors.apply(category);
+        this.isData      = category.isQuantitative();
+    }
+
+    /**
      * Creates a new instance for the given range of values.
      *
-     * @param  category     the category for which this {@code ColorsForRange} is created, or {@code null}.
+     * @param  name         a name identifying the range of values, or {@code null} for automatic.
      * @param  sampleRange  range of sample values on which the colors will be applied.
      * @param  colors       colors to apply on the range of sample values, or {@code null} for transparent.
+     * @param  isData       whether this entry should be taken as main data (not fill values).
      */
-    ColorsForRange(final Category category, final NumberRange<?> sampleRange, final Color[] colors) {
+    ColorsForRange(final CharSequence name, final NumberRange<?> sampleRange, final Color[] colors, final boolean isData) {
         ArgumentChecks.ensureNonNull("sampleRange", sampleRange);
-        this.category    = category;
+        this.name        = (name != null) ? name : sampleRange.toString();
         this.sampleRange = sampleRange;
         this.colors      = colors;
+        this.isData      = isData;
     }
 
     /**
@@ -85,29 +108,9 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
         final ColorsForRange[] entries = new ColorsForRange[colors.size()];
         int n = 0;
         for (final Map.Entry<NumberRange<?>,Color[]> entry : colors) {
-            entries[n++] = new ColorsForRange(null, entry.getKey(), entry.getValue());
+            entries[n++] = new ColorsForRange(null, entry.getKey(), entry.getValue(), true);
         }
         return ArraysExt.resize(entries, n);            // `resize` should not be needed, but we are paranoiac.
-    }
-
-    /**
-     * Returns {@code true} if this entry should be taken as data, or {@code false} if it should be ignored.
-     * Entry to ignore are entries associated to NaN values.
-     */
-    final boolean isData() {
-        return category == null || category.isQuantitative();
-    }
-
-    /**
-     * Returns a name identifying the range of values. the category name is used if available,
-     * otherwise a string representation of the range is created.
-     */
-    final CharSequence name() {
-        if (category != null) {
-            final CharSequence name = category.getName();
-            if (name != null) return name;
-        }
-        return sampleRange.toString();
     }
 
     /**
@@ -115,7 +118,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      */
     @Override
     public String toString() {
-        return name().toString();
+        return name.toString();
     }
 
     /**

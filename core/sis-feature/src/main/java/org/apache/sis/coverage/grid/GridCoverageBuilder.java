@@ -473,7 +473,7 @@ public class GridCoverageBuilder {
                 final SampleModel sm = raster.getSampleModel();
                 final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
                 final ColorModel colors;
-                if (colorizer.initialize(bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
+                if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
                     colors = colorizer.createColorModel(ImageUtilities.getBandType(sm), bands.size(), visibleBand);
                 } else {
                     colors = Colorizer.NULL_COLOR_MODEL;

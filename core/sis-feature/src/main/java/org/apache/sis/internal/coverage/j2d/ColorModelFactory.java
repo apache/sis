@@ -398,7 +398,7 @@ public final class ColorModelFactory {
                                               final double lower, final double upper, final Color... colors)
     {
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
-            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors)
+            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true)
         });
     }
 
