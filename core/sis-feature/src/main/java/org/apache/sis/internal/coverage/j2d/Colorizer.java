@@ -233,8 +233,8 @@ public final class Colorizer {
                 if (missingNodata && (model == null || !ImageUtilities.isIntegerType(model))) {
                     final int count = entries.length;
                     entries = Arrays.copyOf(entries, count + 1);
-                    entries[count] = new ColorsForRange(Vocabulary.formatInternational(Vocabulary.Keys.Nodata),
-                                                        NumberRange.create(Float.class, Float.NaN), null, false);
+                    entries[count] = new ColorsForRange(TRANSPARENT,
+                            NumberRange.create(Float.class, Float.NaN), null, false);
                 }
                 // Leave `target` to null. It will be computed by `compact()` if needed.
                 this.entries = entries;
@@ -327,7 +327,8 @@ public final class Colorizer {
         final List<Category> categories = target.getCategories();
         final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
-            entries[i] = new ColorsForRange(categories.get(i), GRAYSCALE);
+            final Category category = categories.get(i);
+            entries[i] = new ColorsForRange(category, category.getName() == TRANSPARENT ? GRAYSCALE : colors);
         }
         this.entries = entries;
     }
