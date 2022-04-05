@@ -100,6 +100,11 @@ final class Store extends PRJDataStore implements GridCoverageResource {
     };
 
     /**
+     * The default no-data value. This is part of the ASCII Grid format specification.
+     */
+    private static final double DEFAULT_NODATA = -9999;
+
+    /**
      * The object to use for reading data, or {@code null} if the channel has been closed.
      * Note that a null value does not necessarily means that the store is closed, because
      * it may have finished to read fully the {@linkplain #coverage}.
@@ -116,13 +121,14 @@ final class Store extends PRJDataStore implements GridCoverageResource {
      * The optional {@code NODATA_VALUE} attribute, or {@code NaN} if none.
      * This value is valid only if {@link #gridGeometry} is non-null.
      */
-    private double fillValue;
+    private double nodataValue;
 
     /**
-     * The {@link #fillValue} as a text. This is useful when the fill value
-     * can not be parsed as a {@code double} value, for example {@code "N/A"}.
+     * The {@link #nodataValue} as a text. This is useful when the fill value
+     * can not be parsed as a {@code double} value, for example {@code "NULL"},
+     * {@code "N/A"}, {@code "NA"}, {@code "mv"}, {@code "!"} or {@code "-"}.
      */
-    private String fillText;
+    private String nodataText;
 
     /**
      * The image size together with the "grid to CRS" transform.
@@ -152,7 +158,6 @@ final class Store extends PRJDataStore implements GridCoverageResource {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        fillValue = Double.NaN;
         input = new CharactersView(connector.commit(ChannelDataInput.class, StoreProvider.NAME), null);
         listeners.useWarningEventsOnly();
     }
@@ -219,11 +224,15 @@ cellsize:       if (value != null) {
                  * This reader accepts a value both as text and as a floating point.
                  * The intent is to accept unparsable texts such as "NULL".
                  */
-                fillText = header.remove(key = NODATA_VALUE);
-                if (fillText != null) try {
-                    fillValue = Double.parseDouble(fillText);
+                nodataText = header.remove(key = NODATA_VALUE);
+                if (nodataText != null) try {
+                    nodataValue = Double.parseDouble(nodataText);
                 } catch (NumberFormatException e) {
+                    nodataValue = Double.NaN;
                     listeners.warning(messageForProperty(Errors.Keys.IllegalValueForProperty_2, key), e);
+                } else {
+                    nodataValue = DEFAULT_NODATA;
+                    nodataText  = "null";         // "NaN" is already understood by `parseDouble(String)`.
                 }
             } catch (NumberFormatException e) {
                 throw new DataStoreContentException(messageForProperty(Errors.Keys.IllegalValueForProperty_2, key), e);
@@ -384,11 +393,11 @@ cellsize:       if (value != null) {
                 double value;
                 try {
                     value = Double.parseDouble(token);
-                    if (value == fillValue) {
+                    if (value == nodataValue) {
                         value = Double.NaN;
                     }
                 } catch (NumberFormatException e) {
-                    if (token.equalsIgnoreCase(fillText)) {
+                    if (token.equalsIgnoreCase(nodataText)) {
                         value = Double.NaN;
                     } else {
                         throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
@@ -400,7 +409,8 @@ cellsize:       if (value != null) {
             }
             /*
              * At this point we finished to read the full image. Close the channel now and build the sample dimension.
-             * The sample dimension does not contain NODATA_VALUE because we already converted them to NaN.
+             * We add a category for the NODATA_VALUE even if this value does not appear anymore in the `data` array
+             * (since we replaced it by NaN on-the-fly) because this information is needed by `WritableStore`.
              *
              * TODO: a future version could try to convert the image to integer values.
              * In this case only we may need to declare the NODATA_VALUE.
@@ -413,8 +423,12 @@ cellsize:       if (value != null) {
                 minimum = 0;
                 maximum = 1;
             }
-            final SampleDimension.Builder b = new SampleDimension.Builder().setName(filename);
-            final SampleDimension band = b.addQuantitative(null, minimum, maximum, null).build();
+            final SampleDimension.Builder b = new SampleDimension.Builder();
+            b.setName(filename).addQuantitative(null, minimum, maximum, null);
+            if (nodataValue < minimum || nodataValue > maximum) {
+                b.mapQualitative(null, nodataValue, Float.NaN);
+            }
+            final SampleDimension band = b.build().forConvertedValues(true);
             /*
              * Build the coverage last, because a non-null `coverage` field
              * is used for meaning that everything succeed.

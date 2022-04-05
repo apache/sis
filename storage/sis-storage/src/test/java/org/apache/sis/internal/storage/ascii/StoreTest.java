@@ -16,11 +16,13 @@
  */
 package org.apache.sis.internal.storage.ascii;
 
+import java.util.List;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -48,7 +50,9 @@ public final strictfp class StoreTest extends TestCase {
     }
 
     /**
-     * Tests the metadata of the {@code "grid.asc"} file.
+     * Tests the metadata of the {@code "grid.asc"} file. This test reads only the header.
+     * It should not test sample dimensions or pixel values, because doing so read the full
+     * image and is the purpose of {@link #testRead()}.
      *
      * @throws DataStoreException if an error occurred while reading the file.
      */
@@ -73,6 +77,10 @@ public final strictfp class StoreTest extends TestCase {
                     getSingleton(getSingleton(id.getExtents()).getGeographicElements());
             assertEquals(-84, bbox.getSouthBoundLatitude(), 1);
             assertEquals(+85, bbox.getNorthBoundLatitude(), 1);
+            /*
+             * Verify that the metadata is cached.
+             */
+            assertSame(metadata, store.getMetadata());
         }
     }
 
@@ -84,6 +92,14 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testRead() throws DataStoreException {
         try (Store store = open()) {
+            final List<Category> categories = getSingleton(store.getSampleDimensions()).getCategories();
+            assertEquals(2, categories.size());
+            assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);
+            assertEquals(   30, categories.get(0).getSampleRange().getMaxDouble(), 1);
+            assertEquals(-9999, categories.get(1).forConvertedValues(false).getSampleRange().getMinDouble(), 0);
+            /*
+             * Check sample values.
+             */
             final GridCoverage coverage = store.read(null, null);
             final RenderedImage image = coverage.render(null);
             assertEquals(10, image.getWidth());
@@ -94,6 +110,10 @@ public final strictfp class StoreTest extends TestCase {
             assertEquals(Float.NaN, tile.getSampleFloat(9, 19, 0), 0f);
             assertEquals(  -1.075f, tile.getSampleFloat(0, 19, 0), 0f);
             assertEquals(  27.039f, tile.getSampleFloat(4, 10, 0), 0f);
+            /*
+             * Verify that the coverage is cached.
+             */
+            assertSame(coverage, store.read(null, null));
         }
     }
 }
