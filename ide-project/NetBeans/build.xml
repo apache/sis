@@ -302,6 +302,7 @@
       </fileset>
       <fileset dir="${project.root}/storage/sis-storage/src/test/resources">
         <include name="**/*.txt"/>
+        <include name="**/*.asc"/>
         <include name="**/*.prj"/>
         <include name="**/*.xml"/>
       </fileset>

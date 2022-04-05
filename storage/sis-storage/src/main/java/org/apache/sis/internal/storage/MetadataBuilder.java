@@ -1892,9 +1892,13 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addExtent(final Envelope envelope) throws TransformException {
         if (envelope != null) {
-            addReferenceSystem(envelope.getCoordinateReferenceSystem());
+            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+            addReferenceSystem(crs);
             if (!(envelope instanceof AbstractEnvelope && ((AbstractEnvelope) envelope).isAllNaN())) {
-                extent().addElements(envelope);
+                if (crs != null) {
+                    extent().addElements(envelope);
+                }
+                // Future version could add as a geometry in unspecified CRS.
             }
         }
     }
