@@ -283,7 +283,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     }
 
     /**
-     * Returns an identifier for the root resource of this data store, or {@code null} if none.
+     * Returns an identifier for the root resource of this data store, or an empty value if none.
      * If this data store contains many resources (as in an {@link Aggregate}),
      * the returned identifier shall be different than the identifiers of those child resources.
      * In other words, the following equality shall hold without ambiguity:
@@ -400,9 +400,9 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * representation of the return value of {@link Resource#getIdentifier()} on the desired resource.
      * Implementation may also accept aliases for convenience. For example if the full name of a resource
      * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
-     * provided that it does not introduce ambiguity.
+     * provided that it is unambiguous.
      *
-     * <p>The default implementation verifies if above criterion matches to this {@code DataStore}
+     * <p>The default implementation verifies if above criterion apply to this {@code DataStore}
      * (which is itself a resource), then iterates recursively over {@link Aggregate} components
      * if this data store is an aggregate.
      * If a match is found without ambiguity, the associated resource is returned. Otherwise an exception is thrown.

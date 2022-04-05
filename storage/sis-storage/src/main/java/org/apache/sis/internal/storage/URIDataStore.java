@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
+import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -35,6 +36,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -94,15 +96,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * If the location was specified as a {@link Path} or {@link File} instance, returns that path.
-     * Otherwise returns {@code null}. This method does not try to convert URI to {@link Path}
-     * because this conversion may fail for HTTP and FTP connections.
-     */
-    final Path getSpecifiedPath() {
-        return locationIsPath ? locationAsPath : null;
-    }
-
-    /**
      * Returns the originator of this resource, which is this data store itself.
      *
      * @return {@code this}.
@@ -110,6 +103,39 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     @Override
     public final DataStore getOriginator() {
         return this;
+    }
+
+    /**
+     * Returns an identifier for the root resource of this data store, or an empty value if none.
+     * The default implementation returns the filename without path and without file extension.
+     *
+     * @return an identifier for the root resource of this data store.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        final String filename = getFilename();
+        return (filename != null) ? Optional.of(Names.createLocalName(null, null, filename)) : super.getIdentifier();
+    }
+
+    /**
+     * Returns the filename without path and without file extension, or {@code null} if none.
+     */
+    private String getFilename() {
+        if (location == null) {
+            return null;
+        }
+        return IOUtilities.filenameWithoutExtension(location.isOpaque()
+                ? location.getSchemeSpecificPart() : location.getPath());
+    }
+
+    /**
+     * If the location was specified as a {@link Path} or {@link File} instance, returns that path.
+     * Otherwise returns {@code null}. This method does not try to convert URI to {@link Path}
+     * because this conversion may fail for HTTP and FTP connections.
+     */
+    final Path getSpecifiedPath() {
+        return locationIsPath ? locationAsPath : null;
     }
 
     /**
@@ -331,13 +357,9 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @param  builder  where to add the title or identifier.
      */
     protected final void addTitleOrIdentifier(final MetadataBuilder builder) {
-        if (location != null) {
-            /*
-             * The getDisplayName() contract does not allow us to use it as an identifier. However current implementation
-             * in super.getDisplayName() returns the filename provided that the input was a URI, URL, File or Path. Since
-             * all those types are convertibles to URI, we can use (location != null) as a criterion.
-             */
-            builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(super.getDisplayName()), MetadataBuilder.Scope.ALL);
+        final String filename = getFilename();
+        if (filename != null) {
+            builder.addTitleOrIdentifier(filename, MetadataBuilder.Scope.ALL);
         }
     }
 }
