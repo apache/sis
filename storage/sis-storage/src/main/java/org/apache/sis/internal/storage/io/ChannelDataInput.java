@@ -32,7 +32,6 @@ import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
@@ -543,7 +542,6 @@ public class ChannelDataInput extends ChannelData {
         /**
          * Returns a file identifier for error messages or debugging purpose.
          */
-        @Debug
         @Override
         public final String filename() {
             return filename;

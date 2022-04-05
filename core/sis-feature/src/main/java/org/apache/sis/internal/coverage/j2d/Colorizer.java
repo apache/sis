@@ -41,7 +41,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -111,17 +110,6 @@ public final class Colorizer {
      */
     public static final Function<Category,Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
-
-    /**
-     * Blue to red color palette with white in the middle. Useful for data with a clear 0 (white)
-     * in the middle of the range and with minimal value equals to the negative of maximal value
-     * (to appear blue and red respectively).
-     * Used for debugging purposes; production code should use a {@code PaletteFactory} instead.
-     */
-    @Debug
-    public static final Function<Category,Color[]> BELL =
-            (category) -> category.isQuantitative() ? new Color[] {
-                Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED} : null;
 
     /**
      * The colors to use for each category. Never {@code null}.
