@@ -29,7 +29,7 @@ IF "%PATH_TO_FX%"=="" (
 java -splash:"%BASE_DIR%\lib\logo.jpg"^
  --add-modules javafx.graphics,javafx.controls,javafx.web^
  --module-path "%PATH_TO_FX%"^
- --class-path "%BASE_DIR%\lib\sis-javafx-2.0-SNAPSHOT.jar"^
+ --class-path "%BASE_DIR%\lib\sis-javafx-1.2-SNAPSHOT.jar"^
  -Djava.util.logging.config.class=org.apache.sis.internal.setup.LoggingConfiguration^
  -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
  -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
