@@ -77,7 +77,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     private final boolean locationIsPath;
 
     /**
-     * Creates a new data store.
+     * Creates a new data store. This constructor does not open the file,
+     * so subclass constructors can decide whether to open in read-only or read/write mode.
+     * It is caller's responsibility to ensure that the {@link java.nio.file.OpenOption}
+     * are compatible with whether this data store is read-only or read/write.
      *
      * @param  provider   the factory that created this {@code URIDataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).

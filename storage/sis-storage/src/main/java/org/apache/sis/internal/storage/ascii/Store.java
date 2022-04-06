@@ -75,7 +75,7 @@ import org.apache.sis.util.resources.Errors;
  * @since   1.2
  * @module
  */
-final class Store extends PRJDataStore implements GridCoverageResource {
+class Store extends PRJDataStore implements GridCoverageResource {
     /**
      * Keys of elements expected in the header. Must be in upper-case letters.
      */
@@ -151,6 +151,9 @@ final class Store extends PRJDataStore implements GridCoverageResource {
 
     /**
      * Creates a new ASCII Grid store from the given file, URL or stream.
+     * This constructor opens the file, possibly creating it if the {@code connector} contains an
+     * option like {@link java.nio.file.StandardOpenOption#CREATE}, but does not try to read it now.
+     * It is possible to open an empty file and have {@link WritableStore} to write in it later.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
@@ -450,9 +453,19 @@ cellsize:       if (value != null) {
     }
 
     /**
+     * Replaces all data by the given coverage.
+     * This is used for write operations only.
+     */
+    final void setCoverage(final GridCoverage replacement) {
+        gridGeometry = replacement.getGridGeometry();
+        coverage     = replacement;
+        metadata     = null;
+    }
+
+    /**
      * Returns the input if it has not been closed.
      */
-    private CharactersView input() throws DataStoreException {
+    final CharactersView input() throws DataStoreException {
         final CharactersView in = input;
         if (in == null) {
             throw new DataStoreClosedException(getLocale(), StoreProvider.NAME, StandardOpenOption.READ);
@@ -482,7 +495,7 @@ cellsize:       if (value != null) {
      * Closes this data store after an unrecoverable error occurred.
      * The caller is expected to throw the given exception after this method call.
      */
-    private void closeOnError(final Throwable e) {
+    final void closeOnError(final Throwable e) {
         try {
             close();
         } catch (Throwable s) {

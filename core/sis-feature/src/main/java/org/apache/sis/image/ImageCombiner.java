@@ -36,7 +36,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * Combines an arbitrary amount of images into a single one.
- * The combined mages may use different coordinate systems if a resampling operation is specified.
+ * The combined images may use different coordinate systems if a resampling operation is specified.
  * The workflow is as below:
  *
  * <ol>
@@ -70,8 +70,8 @@ public class ImageCombiner implements Consumer<RenderedImage> {
 
     /**
      * Creates an image combiner which will write in the given image. That image is not cleared;
-     * pixels that are not overwritten by another image given to {@code ImageCombiner} methods
-     * will be left unchanged.
+     * pixels that are not overwritten by calls to the {@code accept(…)} or {@code resample(…)}
+     * methods will be left unchanged.
      *
      * @param  destination  the image where to combine images.
      */

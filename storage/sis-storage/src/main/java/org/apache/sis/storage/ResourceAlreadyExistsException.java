@@ -18,31 +18,25 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a {@code DataStore} can not perform a write operation.
- * If a data store does not support any write operation, then it should not implement
- * {@link WritableAggregate} or {@link WritableFeatureSet} interface.
- * But in some situations, a data store may implement a {@code Writable*} interface
- * and nevertheless be unable to perform a write operation, for example because the
- * underlying {@link java.nio.channels.Channel} is read-only or part of the file is
- * locked by another process.
+ * Thrown when a write operation can not be performed because it would cause the replacement of an existing resource.
+ * Replacements can be performed only if an option such as {@link WritableGridCoverageResource.CommonOption#REPLACE}
+ * has been specified.
  *
- * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
+ * @since   1.2
  * @module
- *
- * @see ForwardOnlyStorageException
  */
-public class ReadOnlyStorageException extends DataStoreException {
+public class ResourceAlreadyExistsException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5710116172772560023L;
+    private static final long serialVersionUID = 3854120553618596031L;
 
     /**
      * Creates an exception with no cause and no details message.
      */
-    public ReadOnlyStorageException() {
+    public ResourceAlreadyExistsException() {
     }
 
     /**
@@ -50,17 +44,8 @@ public class ReadOnlyStorageException extends DataStoreException {
      *
      * @param message  the detail message.
      */
-    public ReadOnlyStorageException(final String message) {
+    public ResourceAlreadyExistsException(String message) {
         super(message);
-    }
-
-    /**
-     * Creates an exception with the specified cause and no details message.
-     *
-     * @param cause  the cause for this exception.
-     */
-    public ReadOnlyStorageException(final Throwable cause) {
-        super(cause);
     }
 
     /**
@@ -69,7 +54,7 @@ public class ReadOnlyStorageException extends DataStoreException {
      * @param message  the detail message.
      * @param cause    the cause for this exception.
      */
-    public ReadOnlyStorageException(final String message, final Throwable cause) {
+    public ResourceAlreadyExistsException(String message, Throwable cause) {
         super(message, cause);
     }
 }

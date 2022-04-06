@@ -98,8 +98,10 @@ public abstract class PRJDataStore extends URIDataStore {
     protected CoordinateReferenceSystem crs;
 
     /**
-     * Creates a new data store. The following options are recognized:
+     * Creates a new data store. This constructor does not open the file,
+     * so subclass constructors can decide whether to open in read-only or read/write mode.
      *
+     * <p>The following options are recognized:</p>
      * <ul>
      *   <li>{@link DataOptionKey#DEFAULT_CRS}: default CRS if no auxiliary {@code "*.prj"} file is found.</li>
      *   <li>{@link DataOptionKey#ENCODING}: encoding of the {@code "*.prj"} file. Default is the JVM default.</li>

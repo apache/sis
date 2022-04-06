@@ -35,7 +35,7 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * Configuration of the process of writing a coverage in a data store.
      * By default, the {@linkplain #write write operation} is conservative: no operation is executed
      * if it would result in data lost. {@code Option} allows to modify this behavior for example by
-     * allowing the {@linkplain CommonOption#TRUNCATE replacement} of previous data.
+     * allowing the {@link CommonOption#REPLACE replacement} of previous data.
      * Options can also configure other aspects like compression, version or encryption.
      *
      * <p>Some options may be {@link DataStore}-specific.
@@ -71,21 +71,29 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
          *   <li>If there are no existing coverages in the {@link GridCoverageResource},
          *       then the new coverage will be inserted as if this option was not provided.</li>
          * </ul>
+         *
+         * This option is mutually exclusive with {@link #UPDATE}.
          */
-        TRUNCATE,
+        REPLACE,
 
         /**
          * Updates or appends existing coverage with new data.
-         * If a coverage already exists when the {@linkplain #write write operation} is executed with this option, then:
+         * If this option is specified, then there is a choice:
          *
          * <ul>
-         *   <li>Areas of the provided {@link GridCoverage} that are within the existing {@link GridGeometry}
-         *       will overwrite the existing data.</li>
-         *   <li>Areas outside the existing {@link GridGeometry} will result in expanding the grid geometry
-         *       with the new data.</li>
+         *   <li>If a coverage already exists in the {@link GridCoverageResource}, then:
+         *     <ul>
+         *       <li>Areas of the provided {@link GridCoverage} that are within the existing {@link GridGeometry}
+         *           will overwrite the existing data.</li>
+         *       <li>Areas outside the existing {@link GridGeometry} will result in expanding the grid geometry
+         *           with the new data.</li>
+         *     </ul>
+         *   </li>
+         *   <li>If there are no existing coverages in the {@link GridCoverageResource},
+         *       then the new coverage is inserted as if this option was not provided.</li>
          * </ul>
          *
-         * If there are no previous coverages, then the new coverage is inserted as if this option was not provided.
+         * This option is mutually exclusive with {@link #REPLACE}.
          */
         UPDATE
     }
@@ -94,13 +102,19 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * Writes a new coverage in the data store for this resource. If a coverage already exists for this resource,
      * then the behavior of this method is determined by the given options. If no option is specified, the default
      * behavior is to fail if writing a coverage would cause an existing coverage to be overwritten.
-     * This behavior can be modified by requesting the {@linkplain CommonOption#TRUNCATE replacement}
+     * This behavior can be modified by requesting the {@link CommonOption#REPLACE replacement}
      * or {@linkplain CommonOption#UPDATE update} of existing coverages.
      *
      * @param  coverage  new data to write in the data store for this resource.
      * @param  options   configuration of the write operation. May be {@link DataStore}-specific options
      *                   (e.g. for compression, encryption, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while writing data in the underlying data store.
+     * @throws IllegalArgumentException if mutually exclusive options are specified.
+     * @throws ReadOnlyStorageException if the resource is (possibly temporarily) read-only.
+     * @throws ResourceAlreadyExistsException if a coverage already exists in this resource
+     *         and no {@code REPLACE} or {@code UPDATE} option have been specified.
+     * @throws IncompatibleResourceException if the given resource can not be written,
+     *         for example because its grid geometry is unsupported by this resource.
+     * @throws DataStoreException if another error occurred while writing data in the underlying data store.
      */
     void write(GridCoverage coverage, Option... options) throws DataStoreException;
 }

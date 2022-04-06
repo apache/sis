@@ -107,6 +107,19 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
+     * Returns the length of the stream (in bytes), or -1 if unknown.
+     *
+     * @return the length of the stream (in bytes), or -1 if unknown.
+     * @throws IOException if an error occurred while fetching the stream length.
+     */
+    public final long length() throws IOException {     // Method signature must match ImageInputStream.length().
+        if (channel instanceof SeekableByteChannel) {
+            return ((SeekableByteChannel) channel).size();
+        }
+        return -1;
+    }
+
+    /**
      * Tries to read more bytes from the channel without changing the buffer position.
      * This method returns a negative number if the buffer is already full or if the channel reached the
      * <cite>end of stream</cite>. Otherwise this method reads an arbitrary amount of bytes not greater

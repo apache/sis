@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
@@ -43,7 +42,7 @@ import javax.imageio.stream.ImageInputStream;
  * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  *
  * @see javax.imageio.stream.FileImageInputStream
  * @see javax.imageio.ImageIO#createImageInputStream(Object)
@@ -101,20 +100,6 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     @Override
     public final ByteOrder getByteOrder() {
         return buffer.order();
-    }
-
-    /**
-     * Returns the length of the stream (in bytes), or -1 if unknown.
-     *
-     * @return the length of the stream (in bytes), or -1 if unknown.
-     * @throws IOException if an error occurred while fetching the stream length.
-     */
-    @Override
-    public final long length() throws IOException {
-        if (channel instanceof SeekableByteChannel) {
-            return ((SeekableByteChannel) channel).size();
-        }
-        return -1;
     }
 
     /**
