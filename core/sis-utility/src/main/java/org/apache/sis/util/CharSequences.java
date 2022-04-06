@@ -1979,7 +1979,7 @@ cmp:    while (ia < lga) {
      * are a common suffix of both texts but nevertheless omitted because they cut a word.</div>
      *
      * <p>If one of those texts is {@code null}, then the other text is returned.
-     * If there is no common words, then this method returns an empty string.</p>
+     * If there are no common words, then this method returns an empty string.</p>
      *
      * <h4>Possible future evolution</h4>
      * Current implementation searches only for a common prefix and a common suffix, ignoring any common words
@@ -2123,7 +2123,7 @@ cmp:    while (ia < lga) {
      * @param  text       the text for which to get the token.
      * @param  fromIndex  index of the fist character to consider in the given text.
      * @return a sub-sequence of {@code text} starting at the given offset, or an empty string
-     *         if there is no non-blank character at or after the given offset.
+     *         if there are no non-blank character at or after the given offset.
      * @throws NullPointerException if the {@code text} argument is null.
      */
     public static CharSequence token(final CharSequence text, int fromIndex) {

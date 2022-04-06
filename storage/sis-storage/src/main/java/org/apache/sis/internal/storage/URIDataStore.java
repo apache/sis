@@ -349,7 +349,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Adds the filename (without extension) as the citation title if there is no title, or as the identifier otherwise.
+     * Adds the filename (without extension) as the citation title if there are no titles, or as the identifier otherwise.
      * This method should be invoked last, after {@code DataStore} implementation did its best effort for adding a title.
      * The intent is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata, providing
      * only an identifier without title would be invalid.

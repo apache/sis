@@ -152,7 +152,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
 
     /**
      * If the specified tile is absent or {@link #DIRTY}, sets its status to {@link #COMPUTING} and
-     * returns {@code true}. Otherwise if there is no error, does nothing and returns {@code false}.
+     * returns {@code true}. Otherwise if there are no errors, does nothing and returns {@code false}.
      *
      * @param  key  indices of the tile to compute if dirty.
      * @return whether the specified tile was absent or dirty.

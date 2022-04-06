@@ -401,7 +401,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                     if (warning == null && fromWKT != null) {
                         /*
                          * Following warnings may have occurred during WKT parsing and are considered minor.
-                         * They will be reported only if there is no more important warnings to report.
+                         * They will be reported only if there are no more important warnings to report.
                          */
                         final Warnings w = wktReader.getWarnings();
                         if (w != null) {

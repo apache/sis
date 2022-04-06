@@ -179,7 +179,7 @@ public class SampleDimension implements Serializable {
         this.name       = name;
         this.background = background;
         this.categories = list;
-        if (list.converse.range == null) {                  // Case where there is no quantitative category.
+        if (list.converse.range == null) {                  // Case where there are no quantitative categories.
             transferFunction = null;
             converse = null;
         } else if (list == list.converse) {                 // Case where values are already converted.

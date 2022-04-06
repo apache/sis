@@ -54,7 +54,7 @@ public final strictfp class DataStoreMock extends DataStore {
     }
 
     /**
-     * Returns empty optional since there is no open parameters.
+     * Returns empty optional since there are no open parameters.
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {

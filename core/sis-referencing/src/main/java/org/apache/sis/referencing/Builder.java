@@ -761,9 +761,9 @@ public abstract class Builder<B extends Builder<B>> {
      *       with the same authority and the local part defined by {@code replacements[1]}.</li>
      *   <li><i>etc.</i> until one of the following conditions is met:
      *     <ul>
-     *       <li>There is no more name associated to the given authority in this {@code Builder}, in which case
+     *       <li>There are no more names associated to the given authority in this {@code Builder}, in which case
      *           new names are inserted for all remaining elements in the {@code replacements} array.</li>
-     *       <li>There is no more elements in the {@code replacements} array, in which case all remaining
+     *       <li>There are no more elements in the {@code replacements} array, in which case all remaining
      *           names associated to the given authority in this {@code Builder} are removed.</li>
      *     </ul>
      *   </li>
@@ -860,9 +860,9 @@ public abstract class Builder<B extends Builder<B>> {
      *       new identifier with the same authority and the local part defined by {@code replacements[1]}.</li>
      *   <li><i>etc.</i> until one of the following conditions is met:
      *     <ul>
-     *       <li>There is no more identifier associated to the given authority in this {@code Builder}, in which case
+     *       <li>There are no more identifiers associated to the given authority in this {@code Builder}, in which case
      *           new identifiers are inserted for all remaining elements in the {@code replacements} array.</li>
-     *       <li>There is no more elements in the {@code replacements} array, in which case all remaining
+     *       <li>There are no more elements in the {@code replacements} array, in which case all remaining
      *           identifiers associated to the given authority in this {@code Builder} are removed.</li>
      *     </ul>
      *   </li>

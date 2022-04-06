@@ -1257,7 +1257,7 @@ scan:   for (int n; i < end; i += n) {
                                symbols.subSequence(start, i), Style.CLOSE), symbols, start);
                     }
                     unit = operation.apply(unit, term, pos);
-                    operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbols after parenthesis.
+                    operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbol after parenthesis.
                     start = i + (n = 1);                    // Skip the number of characters in the '(' Unicode code point.
                     continue;
                 }

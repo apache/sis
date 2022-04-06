@@ -219,7 +219,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      *
      * <ul>
      *   <li>0 if neither the source coordinate system or the destination coordinate system is ellipsoidal.
-     *       There is no parameter that need to be completed.</li>
+     *       There are no parameters that need to be completed.</li>
      *   <li>1 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need
      *       to be set to the axis lengths of the source ellipsoid.</li>
      *   <li>2 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need

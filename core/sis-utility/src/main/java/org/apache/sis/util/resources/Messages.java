@@ -232,7 +232,7 @@ public final class Messages extends IndexedResourceBundle {
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     *        there are no resources. The resources may be a file or an entry in a JAR file.
      */
     Messages(final URL resources) {
         super(resources);

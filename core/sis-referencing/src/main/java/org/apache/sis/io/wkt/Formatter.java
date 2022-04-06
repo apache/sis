@@ -1833,7 +1833,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the warnings after the WKT string. If there is no warnings, then this method does nothing.
+     * Appends the warnings after the WKT string. If there are no warnings, then this method does nothing.
      * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
      */
     final void appendWarnings() throws IOException {

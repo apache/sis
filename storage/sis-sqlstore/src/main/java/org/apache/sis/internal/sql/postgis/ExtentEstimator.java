@@ -92,7 +92,7 @@ final class ExtentEstimator {
 
     /**
      * Estimates the extent in the specified columns using PostgreSQL statistics.
-     * If there is no statistics available, then this method executes {@code ANALYZE}
+     * If there are no statistics available, then this method executes {@code ANALYZE}
      * and tries again.
      *
      * @param  statement  statement to use for executing queries. Shall be closed by caller.
@@ -116,7 +116,7 @@ final class ExtentEstimator {
 
     /**
      * Estimates the extent in the specified columns using current statistics.
-     * If there is no statistics available, then this method returns {@code null}.
+     * If there are no statistics available, then this method returns {@code null}.
      *
      * @param  statement  statement to use for executing queries. Shall be closed by caller.
      * @return an estimation of the union of extents in given columns, or {@code null} if unknown.

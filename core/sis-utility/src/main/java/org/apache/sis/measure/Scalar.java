@@ -78,7 +78,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
      *       is only a scale factor.</li>
      * </ul>
      *
-     * {@link DerivedScalar} relies on the fact that there is no other situations where this method
+     * {@link DerivedScalar} relies on the fact that there are no other situations where this method
      * is invoked. If this assumption become not true anymore in a future SIS version, then we need
      * to revisit {@code DerivedScalar}.
      *

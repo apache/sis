@@ -110,13 +110,13 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * The primary keys of other tables that are referenced by this table foreign key columns.
-     * They are 0:1 relations. May be empty if there is no imported keys but never null.
+     * They are 0:1 relations. May be empty if there are no imported keys but never null.
      */
     final Relation[] importedKeys;
 
     /**
      * The foreign keys of other tables that reference this table primary key columns.
-     * They are 0:N relations. May be empty if there is no exported keys but never null.
+     * They are 0:N relations. May be empty if there are no exported keys but never null.
      */
     final Relation[] exportedKeys;
 

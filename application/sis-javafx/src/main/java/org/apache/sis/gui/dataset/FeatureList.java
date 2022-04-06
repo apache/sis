@@ -265,7 +265,7 @@ final class FeatureList extends ObservableListBase<Feature> {
      * this list that the loading process is finished and no more elements will be added.
      *
      * @param  next  the loader for next {@value FeatureLoader#PAGE_SIZE} features,
-     *               or {@code null} if there is no more features to load.
+     *               or {@code null} if there are no more features to load.
      */
     final void setNextPage(final FeatureLoader next) {
         assert Platform.isFxApplicationThread();

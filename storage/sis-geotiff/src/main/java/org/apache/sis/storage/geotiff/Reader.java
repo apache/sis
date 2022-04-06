@@ -242,7 +242,7 @@ final class Reader extends GeoTIFF {
      * followed by a sequence of 12-byte field entries, followed by a pointer to the next IFD (or 0 if none).
      *
      * @param  index  index of the (potentially pyramided) image, not counting reduced-resolution (overview) images.
-     * @return the IFD if we found it, or {@code null} if there is no more IFD.
+     * @return the IFD if we found it, or {@code null} if there are no more IFDs.
      * @throws ArithmeticException if the pointer to a next IFD is too far.
      *
      * @see #getImage(int)

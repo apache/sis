@@ -237,7 +237,7 @@ final class SubsampledImage extends PlanarImage {
      * in principle we should subtract the <var>subsampling offset</var>. However that offset is
      * zero in the context of {@link CoverageReadConsistency} test, because coordinates (0,0) of
      * {@linkplain #source} image is the first pixel in the Area Of Interest specified by user,
-     * so there is no more offset at this stage. Note that we are talking about offset in image
+     * so there are no more offsets at this stage. Note that we are talking about offset in image
      * coordinate system, not to be confused with offset relative to the data bank
      * (given to the {@link SampleModel} at construction time).</div>
      */

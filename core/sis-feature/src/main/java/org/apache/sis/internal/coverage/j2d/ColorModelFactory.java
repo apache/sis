@@ -225,7 +225,7 @@ public final class ColorModelFactory {
             return createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
         }
         /*
-         * If there is no category, constructs a gray scale palette.
+         * If there are no categories, construct a gray scale palette.
          */
         final int categoryCount = pieceStarts.length - 1;
         if (numBands == 1 && categoryCount <= 0) {

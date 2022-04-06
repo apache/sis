@@ -188,7 +188,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * Values can be one of the following 4 types:
      *
      * <ol>
-     *   <li>{@link StoredTree}: this is the initial state when there is no duplicated codes.
+     *   <li>{@link StoredTree}: this is the initial state when there are no duplicated codes.
      *       This is the root of a tree of WKT keywords with their values as children.
      *       A tree can be parsed later as an {@link IdentifiedObject} when first requested.</li>
      *   <li>{@link IdentifiedObject}: the result of parsing the {@link StoredTree}

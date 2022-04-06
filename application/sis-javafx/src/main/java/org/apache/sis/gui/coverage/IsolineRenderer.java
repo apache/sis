@@ -83,7 +83,7 @@ final class IsolineRenderer {
     }
 
     /**
-     * Returns {@code true} if there is no isoline to show.
+     * Returns {@code true} if there are no isolines to show.
      * This method shall be invoked in JavaFX thread.
      */
     private boolean isEmpty() {
@@ -296,7 +296,7 @@ final class IsolineRenderer {
      * @param  data       the source of data. Used only if there is new isolines to compute.
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
      *                    Integer source coordinates are located at pixel centers.
-     * @return result of isolines generation, or {@code null} if there is no isoline to compute.
+     * @return result of isolines generation, or {@code null} if there are no isolines to compute.
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")      // Used only for debugging.

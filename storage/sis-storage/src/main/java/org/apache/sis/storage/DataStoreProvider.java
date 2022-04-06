@@ -636,7 +636,7 @@ public abstract class DataStoreProvider {
      * of the subclass of this {@code DataStoreProvider} instance. Subclasses should override
      * this method if they can provide a more specific logger.</p>
      *
-     * @return the logger to use as a fallback (when there is no listeners) for warning messages.
+     * @return the logger to use as a fallback (when there are no listeners) for warning messages.
      *
      * @see org.apache.sis.storage.event.StoreListeners#getLogger()
      *

@@ -446,7 +446,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 /*
                  * At this point we loaded all authority codes. If there is some remaining codes,
                  * returns them immediately for allowing the user interface to be updated quickly.
-                 * If there is no more codes to return, wait a little bit for giving a chance to
+                 * If there are no more codes to return, wait a little bit for giving a chance to
                  * the `toDescribe` list to be populated with more requests, then process them.
                  */
                 if (codes.isEmpty()) {

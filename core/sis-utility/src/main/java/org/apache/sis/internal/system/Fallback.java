@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /**
  * Controls the preferred service provider when there is more than
  * one implementation of the same Service Provider Interface (SPI).
- * Providers marked with this {@code Fallback} annotation will be used only if there is no other provider.
+ * Providers marked with this {@code Fallback} annotation will be used only if there are no other providers.
  * Service providers without this annotation are returned immediately, without scanning other providers.
  *
  * <p>Providers without this annotation are assumed to have a priority of zero.</p>

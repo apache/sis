@@ -746,7 +746,7 @@ public class PixelIterator {
      * Any invocation of a {@code getSample(int)} method will result in a {@link NoSuchElementException} to be
      * thrown.</p>
      *
-     * @return {@code true} if the current pixel is valid, or {@code false} if there is no more pixels.
+     * @return {@code true} if the current pixel is valid, or {@code false} if there are no more pixels.
      * @throws IllegalStateException if this iterator already reached end of iteration in a previous call
      *         to {@code next()}, and {@link #rewind()} or {@link #moveTo(int,int)} have not been invoked.
      */

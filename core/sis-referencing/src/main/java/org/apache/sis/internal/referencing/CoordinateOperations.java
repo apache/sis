@@ -356,7 +356,7 @@ compare:    for (int i=0; i<dim; i++) {
                                 }
                                 isWrapAroundAxis &= ~mask;      // We are done with this source axis.
                                 if (isWrapAroundAxis == 0) {
-                                    break compare;              // Useless to continue if there is no more source axis.
+                                    break compare;              // Useless to continue if there are no more source axes.
                                 }
                                 continue compare;               // Match next pair of wrap around axes.
                             } catch (IncommensurableException e) {

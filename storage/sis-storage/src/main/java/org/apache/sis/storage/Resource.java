@@ -181,7 +181,7 @@ public interface Resource {
      *
      * <h4>Warning events</h4>
      * If {@code eventType} is <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>
-     * and if, after this method invocation, there is no remaining listener for warning events,
+     * and if, after this method invocation, there are no remaining listeners for warning events,
      * then this {@code Resource} will send future warnings to the loggers.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.

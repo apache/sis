@@ -263,7 +263,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * Such recursive search will be performed by {@link #deepSearch(List, GenericName)} only
      * if we do not find the desired feature in the most direct way.
      *
-     * <p>Current implementation does not check that there is no duplicated names.
+     * <p>Current implementation does not check that there are no duplicated names.
      * See {@link #deepSearch(List, GenericName)} for a rational.</p>
      *
      * @param  feature     the feature in which to search.
@@ -323,7 +323,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * Potentially invoked after {@link #search(FeatureType, Collection, GenericName, List)} for searching
      * in associations of associations.
      *
-     * <p>Current implementation does not check that there is no duplicated names. Even if we did so,
+     * <p>Current implementation does not check that there are no duplicated names. Even if we did so,
      * a graph of feature types may have no duplicated names at this time but some duplicated names
      * later. We rather put a warning in {@link #DefaultAssociationRole(Map, GenericName, int, int)}
      * javadoc.</p>

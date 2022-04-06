@@ -107,7 +107,7 @@ public final class SQLUtilities extends Static {
      *
      * @param  pattern  the pattern to escape, or {@code null} if none.
      * @param  escape   value of {@link DatabaseMetaData#getSearchStringEscape()}.
-     * @return escaped strings, or the same instance than {@code pattern} if there is no character to escape.
+     * @return escaped strings, or the same instance than {@code pattern} if there are no characters to escape.
      */
     public static String escape(final String pattern, final String escape) {
         if (pattern != null) {

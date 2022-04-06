@@ -68,7 +68,7 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
          * <ul>
          *   <li>If a coverage already exists in the {@link GridCoverageResource}, then it will be erased.
          *       The existing data will be replaced by the new coverage.</li>
-         *   <li>If there are no existing coverage in the {@link GridCoverageResource},
+         *   <li>If there are no existing coverages in the {@link GridCoverageResource},
          *       then the new coverage will be inserted as if this option was not provided.</li>
          * </ul>
          */
@@ -85,7 +85,7 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
          *       with the new data.</li>
          * </ul>
          *
-         * If there are no previous coverage, then the new coverage is inserted as if this option was not provided.
+         * If there are no previous coverages, then the new coverage is inserted as if this option was not provided.
          */
         UPDATE
     }

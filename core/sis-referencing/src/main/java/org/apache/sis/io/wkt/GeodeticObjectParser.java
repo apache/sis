@@ -756,9 +756,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         /*
-         * If there is no explicit AXIS[…] elements, or if the user asked to ignore them, then we need to
-         * create default axes. This is possible only if we know the type of the CS to create, and only
-         * for some of those CS types.
+         * If there are no explicit AXIS[…] elements, or if the user asked to ignore them,
+         * then we need to create default axes. This is possible only if we know the type
+         * of the CS to create, and only for some of those CS types.
          */
         final CSFactory csFactory = factories.getCSFactory();
         if (axes == null) {
@@ -1000,7 +1000,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  csType       the coordinate system type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
      * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
      * @return the {@code "AXIS"} element as a {@link CoordinateSystemAxis} object,
-     *         or {@code null} if the axis was not required and there is no axis object.
+     *         or {@code null} if the axis was not required and there are no axis objects.
      * @throws ParseException if the {@code "AXIS"} element can not be parsed.
      */
     private CoordinateSystemAxis parseAxis(final int mode, final Element parent, final String csType,

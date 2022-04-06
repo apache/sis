@@ -887,7 +887,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *   <li>{@code getAxisType(3)} may return {@link DimensionNameType#TIME}.</li>
      * </ul>
      *
-     * Above are only examples; there is no constraint on axis order. In particular grid axes do not need to be in the same
+     * Above are only examples; there are no constraints on axis order. In particular grid axes do not need to be in the same
      * order than the corresponding {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system} axes.
      *
      * @param  index  the dimension for which to obtain the axis type.

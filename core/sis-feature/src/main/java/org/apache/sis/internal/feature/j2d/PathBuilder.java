@@ -219,7 +219,7 @@ public class PathBuilder {
     /**
      * Returns a shape containing all polylines or polygons added to this builder.
      * The {@link #createPolyline(boolean)} method should be invoked before this method
-     * for making sure that there is no pending polyline.
+     * for making sure that there are no pending polylines.
      *
      * @return the polyline, polygon or collector of polylines.
      *         May be {@code null} if no polyline or polygon has been created.

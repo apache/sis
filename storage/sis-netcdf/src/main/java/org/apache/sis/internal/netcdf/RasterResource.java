@@ -258,7 +258,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             } else {
                 /*
                  * At this point we found a variable where all dimensions are in the CRS. This is the usual case;
-                 * there is no band explicitly declared in the netCDF file. However in some cases, we should put
+                 * there are no bands explicitly declared in the netCDF file. However in some cases, we should put
                  * other variables together with the one we just found. Example:
                  *
                  *    1) baroclinic_eastward_sea_water_velocity

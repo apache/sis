@@ -632,7 +632,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.</p>
      *
      * @param  candidates  probable values, or {@code null} or an empty array if unknown. If non-empty, those values will be used
-     *         for narrowing the search, which may improve performances. There is no guarantees that the values returned by this
+     *         for narrowing the search, which may improve performances. There is no guarantee that the values returned by this
      *         method will be among the given candidates.
      * @return the number of times that entities (numbers, or group of numbers) appears consecutively with identical values.
      *         If no such repetition is found, an empty array.

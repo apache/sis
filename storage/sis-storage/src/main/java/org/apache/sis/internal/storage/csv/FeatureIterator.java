@@ -119,7 +119,7 @@ class FeatureIterator implements Spliterator<Feature> {
                         break;
                     }
                     /*
-                     * If there is no time columns, then this column may be the trajectory (note that allowing
+                     * If there are no time columns, then this column may be the trajectory (note that allowing
                      * CSV files without time is obviously a departure from Moving Features specification.
                      * The intent is to have a CSV format applicable to other features than moving ones).
                      * Fall through in order to process trajectory.
@@ -131,7 +131,7 @@ class FeatureIterator implements Spliterator<Feature> {
                         break;
                     }
                     /*
-                     * If there is no trajectory columns, than this column is a custum attribute.
+                     * If there are no trajectory columns, than this column is a custum attribute.
                      * CSV files without trajectories are not compliant with Moving Feature spec.,
                      * but we try to keep this reader a little bit more generic.
                      */
@@ -210,7 +210,7 @@ class FeatureIterator implements Spliterator<Feature> {
      *
      * @param  action  the action to execute.
      * @param  all     {@code true} for executing the given action on all remaining features.
-     * @return {@code false} if there is no remaining feature after this method call.
+     * @return {@code false} if there are no remaining features after this method call.
      * @throws IOException if an I/O error occurred while reading a feature.
      * @throws IllegalArgumentException if parsing of a number failed, or other error.
      * @throws DateTimeException if parsing of a date failed.

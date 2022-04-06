@@ -348,7 +348,7 @@ public class StoreListeners implements Localized {
      *   <li>the {@code LogRecord} does not {@linkplain LogRecord#getLoggerName() specify a logger}.</li>
      * </ul>
      *
-     * @return the logger where to send the warnings when there is no other destination.
+     * @return the logger where to send the warnings when there are no other destinations.
      *
      * @see DataStoreProvider#getLogger()
      *
@@ -443,7 +443,7 @@ public class StoreListeners implements Localized {
      * If both are non-null, then the exception message will be concatenated after the given message.
      *
      * <h4>Stack trace omission</h4>
-     * If there is no registered listener for the {@link WarningEvent} type,
+     * If there are no registered listeners for the {@link WarningEvent} type,
      * then the {@link LogRecord} will be sent to a {@link Logger} but <em>without</em> the stack trace.
      * This is done that way because stack traces consume lot of space in the logging files, while being considered
      * implementation details in the context of {@code StoreListeners} (on the assumption that the logging message
@@ -675,8 +675,8 @@ public class StoreListeners implements Localized {
      *
      * <h4>Warning events</h4>
      * If {@code eventType} is <code>{@linkplain WarningEvent}.class</code> and if, after this method invocation,
-     * there is no remaining listener for warning events, then this {@code StoreListeners} will send future warnings
-     * to the loggers.
+     * there are no remaining listeners for warning events, then this {@code StoreListeners} will send future
+     * warnings to the loggers.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).

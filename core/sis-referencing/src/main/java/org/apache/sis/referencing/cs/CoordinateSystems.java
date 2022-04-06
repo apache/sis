@@ -378,13 +378,13 @@ next:   for (final CoordinateSystem cs : targets) {
             final Unit<?> targetUnit = targetCS.getAxis(j).getUnit();
             for (int i=0; i<sourceDim; i++) {
                 if (matrix.getElement(j,i) == 0) {
-                    // There is no dependency between source[i] and target[j]
+                    // There are no dependencies between source[i] and target[j]
                     // (i.e. axes are orthogonal).
                     continue;
                 }
                 final Unit<?> sourceUnit = sourceCS.getAxis(i).getUnit();
                 if (Objects.equals(sourceUnit, targetUnit)) {
-                    // There is no units conversion to apply
+                    // There are no units conversion to apply
                     // between source[i] and target[j].
                     continue;
                 }

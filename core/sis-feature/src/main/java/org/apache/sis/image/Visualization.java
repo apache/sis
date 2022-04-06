@@ -76,7 +76,7 @@ final class Visualization extends ResampledImage {
      * </ul>
      *
      * The resulting image is suitable for visualization purposes but should not be used for computation purposes.
-     * There is no guarantees about the number of bands in returned image and the formulas used for converting
+     * There is no guarantee about the number of bands in returned image and the formulas used for converting
      * floating point values to integer values.
      *
      * <h2>Resampling</h2>
@@ -181,7 +181,7 @@ final class Visualization extends ResampledImage {
          * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
          *
          * <p>The resulting image is suitable for visualization but should not be used for computational purposes.
-         * There is no guarantees about the number of bands in returned image and the formulas used for converting
+         * There is no guarantee about the number of bands in returned image and the formulas used for converting
          * floating point values to integer values.</p>
          *
          * <h4>Resampling</h4>

@@ -244,7 +244,7 @@ select: if (commonCRS == null) {
                 }
             }
             /*
-             * If there is no restriction on units of measurement, or if no geometry CRS met that restriction,
+             * If there are no restrictions on units of measurement, or if no geometry CRS met that restriction,
              * request a CRS which may be different than the CRS of all geometries. The search takes in account
              * the CRS domains of validity. The CRS found may be derived in order to be made compatible with the
              * desired units of measurement.

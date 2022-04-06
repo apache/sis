@@ -181,7 +181,7 @@ final class IsolineTracer {
 
         /**
          * The polylines in each column which need to be continued on the next row.
-         * This array contains empty instances in columns where there is no polyline to continue on next row.
+         * This array contains empty instances in columns where there are no polylines to continue on next row.
          * For non-empty element at index <var>x</var>, values on the left border are given by pixels at coordinate
          * {@code x} and values on the right border are given by pixels at coordinate {@code x+1}. Example:
          *
@@ -545,7 +545,7 @@ final class IsolineTracer {
                 } else if (fragment.addOrMerge(partialPaths)) {
                     /*
                      * The fragment has been merged with previously existing fragments and became a polygon.
-                     * We can write the polygon immediately. There is no more reference to those coordinates
+                     * We can write the polygon immediately. There are no more references to those coordinates
                      * in the `partialPaths` map.
                      */
                     polylines = fragment.toPolylines();

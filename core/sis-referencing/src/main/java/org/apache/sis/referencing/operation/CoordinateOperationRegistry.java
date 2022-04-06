@@ -601,7 +601,7 @@ class CoordinateOperationRegistry {
                     /*
                      * If we found at least one non-deprecated operation, we will stop the search at
                      * the first deprecated one (assuming that deprecated operations are sorted last).
-                     * Deprecated operations are kept only if there is no non-deprecated operations.
+                     * Deprecated operations are kept only if there are no non-deprecated operations.
                      */
                     try {
                         for (final CoordinateOperation candidate : authoritatives) {

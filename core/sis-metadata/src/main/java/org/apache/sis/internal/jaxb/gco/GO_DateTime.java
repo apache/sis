@@ -67,8 +67,8 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     private XMLGregorianCalendar dateTime;
 
     /**
-     * The date value using the {@code "Date"} name, used when there is no
-     * hour, minutes or seconds to format.
+     * The date value using the {@code "Date"} name,
+     * used when there are no hours, minutes or seconds to format.
      */
     @XmlElement(name = "Date")
     @XmlSchemaType(name = "date")

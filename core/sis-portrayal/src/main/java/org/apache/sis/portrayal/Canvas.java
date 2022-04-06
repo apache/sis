@@ -215,7 +215,7 @@ public class Canvas extends Observable implements Localized {
     /**
      * The {@value} property name. The geographic area is a synthetic property computed
      * from {@value #DISPLAY_BOUNDS_PROPERTY}, {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}
-     * and {@value #OBJECTIVE_CRS_PROPERTY}. There is no event fired for this property.
+     * and {@value #OBJECTIVE_CRS_PROPERTY}. There are no events fired for this property.
      *
      * @see #getGeographicArea()
      */
@@ -224,7 +224,7 @@ public class Canvas extends Observable implements Localized {
     /**
      * The {@value} property name. The resolution is a synthetic property computed from
      * {@value #POINT_OF_INTEREST_PROPERTY}, {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} and
-     * {@value #OBJECTIVE_CRS_PROPERTY}. There is no event fired for this property.
+     * {@value #OBJECTIVE_CRS_PROPERTY}. There are no events fired for this property.
      *
      * @see #getSpatialResolution()
      */
@@ -844,7 +844,7 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Sets the coordinates of the point center of display area when there is no zoom or translations events.
+     * Sets the coordinates of the point center of display area when there are no zoom or translations events.
      * If the given value is different than the previous value, then a change event is sent to all listeners
      * registered for the {@value #POINT_OF_INTEREST_PROPERTY} property.
      *
@@ -1036,7 +1036,7 @@ public class Canvas extends Observable implements Localized {
      * <p>The value given to this method will be returned by {@link #getGridGeometry()} as long as
      * none of above cited properties is changed. If one of those properties changes (for example
      * if the user zooms or pans the map), then a new grid geometry will be computed. There is no
-     * guarantees that the recomputed grid geometry will be similar to the grid geometry specified
+     * guarantee that the recomputed grid geometry will be similar to the grid geometry specified
      * to this method. For example the {@link GridExtent} in supplemental dimensions may be different.</p>
      *
      * @param  newValue  the grid geometry from which to get new canvas properties.

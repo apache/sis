@@ -380,7 +380,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * @param  oldURI      an old URI which has been renamed as {@code newURI}, or {@code null} if none.
      * @param  newURI      the new URI for {@code oldURI}, or {@code null} if {@code newURI} is null.
      * @param  changed     whether to unconditionally pretend that there is a change.
-     * @return the updated namespaces, or {@code null} if there is no changes.
+     * @return the updated namespaces, or {@code null} if there is no change.
      */
     private List<Namespace> importNS(final Iterator<Namespace> namespaces,
             final String oldURI, final String newURI, boolean changed)

@@ -309,7 +309,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      *
      * @param  namespaces  the namespaces to transform.
      * @param  changed     whether to unconditionally pretend that there is a change.
-     * @return the updated namespaces, or {@code null} if there is no changes.
+     * @return the updated namespaces, or {@code null} if there is no change.
      */
     private List<Namespace> export(final Iterator<Namespace> namespaces, boolean changed) {
         if (!namespaces.hasNext()) {

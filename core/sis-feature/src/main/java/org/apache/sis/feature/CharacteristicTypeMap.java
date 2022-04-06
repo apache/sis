@@ -153,7 +153,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
     }
 
     /**
-     * Returns {@code true} if there is no attribute characteristics.
+     * Returns {@code true} if there are no attribute characteristics.
      */
     @Override
     public boolean isEmpty() {
