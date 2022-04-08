@@ -128,6 +128,10 @@ cellsize:           if (!header.containsKey(Store.CELLSIZE)) {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector);
+        if (isWritable(connector)) {
+            return new WritableStore(this, connector);
+        } else {
+            return new Store(this, connector);
+        }
     }
 }

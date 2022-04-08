@@ -43,8 +43,8 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * Other options may be defined by the {@linkplain DataStoreProvider} of specific formats.</p>
      *
      * @author  Johann Sorel (Geomatys)
-     * @version 1.0
-     * @since   1.0
+     * @version 1.2
+     * @since   1.2
      * @module
      */
     interface Option {}
@@ -55,21 +55,23 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * This {@code CommonOption} enumeration provides options that do not depend on the data store.
      *
      * @author  Johann Sorel (Geomatys)
-     * @version 1.0
-     * @since   1.0
+     * @version 1.2
+     * @since   1.2
      * @module
      */
     enum CommonOption implements Option {
         /**
          * Instructs the write operation to replace existing coverage if one exists.
-         * By default the {@linkplain #write write operation} does not overwrite existing data.
+         * By default (when no option is specified) the {@linkplain #write write operation}
+         * will only add new coverages and never modify existing ones.
          * If this option is specified, then there is a choice:
          *
-         * <ul>
-         *   <li>If a coverage already exists in the {@link GridCoverageResource}, then it will be erased.
-         *       The existing data will be replaced by the new coverage.</li>
+         * <ul class="verbose">
+         *   <li>If a coverage already exists in the {@link GridCoverageResource}, then it will be deleted.
+         *       The existing coverage will be replaced by the new coverage.
+         *       The old and new coverages may have different grid geometries.</li>
          *   <li>If there are no existing coverages in the {@link GridCoverageResource},
-         *       then the new coverage will be inserted as if this option was not provided.</li>
+         *       then the new coverage will be added as if this option was not provided.</li>
          * </ul>
          *
          * This option is mutually exclusive with {@link #UPDATE}.
@@ -77,20 +79,20 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
         REPLACE,
 
         /**
-         * Updates or appends existing coverage with new data.
+         * Instructs the write operation to update existing coverage if one exists.
          * If this option is specified, then there is a choice:
          *
-         * <ul>
+         * <ul class="verbose">
          *   <li>If a coverage already exists in the {@link GridCoverageResource}, then:
          *     <ul>
-         *       <li>Areas of the provided {@link GridCoverage} that are within the existing {@link GridGeometry}
-         *           will overwrite the existing data.</li>
-         *       <li>Areas outside the existing {@link GridGeometry} will result in expanding the grid geometry
-         *           with the new data.</li>
+         *       <li>Cells of the provided {@link GridCoverage} that are within the {@link GridGeometry}
+         *           of the existing coverage will overwrite the existing cells. The provided coverage
+         *           may be resampled to the grid geometry of the existing coverage in this process.</li>
+         *       <li>Cells outside the {@link GridGeometry} of the existing coverage are ignored.</li>
          *     </ul>
          *   </li>
          *   <li>If there are no existing coverages in the {@link GridCoverageResource},
-         *       then the new coverage is inserted as if this option was not provided.</li>
+         *       then the new coverage will be added as if this option was not provided.</li>
          * </ul>
          *
          * This option is mutually exclusive with {@link #REPLACE}.

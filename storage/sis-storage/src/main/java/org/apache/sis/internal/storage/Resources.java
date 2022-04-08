@@ -135,6 +135,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotStoreResourceType_2 = 41;
 
         /**
+         * Can not write the “{0}” resource.
+         */
+        public static final short CanNotWriteResource_1 = 69;
+
+        /**
          * This {0} reader is closed.
          */
         public static final short ClosedReader_1 = 4;
@@ -335,6 +340,11 @@ public final class Resources extends IndexedResourceBundle {
          * No resource found for the “{1}” identifier in the “{0}” data store.
          */
         public static final short ResourceNotFound_2 = 24;
+
+        /**
+         * The “{0}” format does not support rotations.
+         */
+        public static final short RotationNotSupported_1 = 70;
 
         /**
          * The “{1}” element must be declared before “{0}”.

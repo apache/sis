@@ -554,6 +554,20 @@ public class PixelIterator {
     }
 
     /**
+     * Returns the type used for storing data in the raster buffer.
+     * The data type identifies the {@link DataBuffer} subclass used for storage.
+     *
+     * @return the type used for storing data in the raster buffer.
+     *
+     * @see SampleModel#getDataType()
+     *
+     * @since 1.2
+     */
+    public DataType getDataType() {
+        return DataType.forDataBufferType(getSampleModel().getDataType());
+    }
+
+    /**
      * Returns the most efficient type ({@code int}, {@code float} or {@code double}) for transferring data between the
      * underlying rasters and this iterator. The transfer type is not necessarily the storage type used by the rasters.
      * For example {@code int} values will be used for transferring data even if the underlying rasters store all sample
@@ -565,6 +579,8 @@ public class PixelIterator {
      * {@link TransferType#DOUBLE}, then {@link #getSampleDouble(int)} will be both more efficient and avoid accuracy lost.</p>
      *
      * @return the most efficient data type for transferring data.
+     *
+     * @see SampleModel#getTransferType()
      */
     public TransferType<?> getTransferType() {
         return TransferType.valueOf(getSampleModel().getTransferType());

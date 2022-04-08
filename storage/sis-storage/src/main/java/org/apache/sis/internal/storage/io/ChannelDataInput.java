@@ -108,13 +108,14 @@ public class ChannelDataInput extends ChannelData {
 
     /**
      * Returns the length of the stream (in bytes), or -1 if unknown.
+     * The length is relative to the channel position at {@linkplain #ChannelDataInput construction time}.
      *
-     * @return the length of the stream (in bytes), or -1 if unknown.
+     * @return the length of the stream (in bytes) relative to {@link #channelOffset}, or -1 if unknown.
      * @throws IOException if an error occurred while fetching the stream length.
      */
     public final long length() throws IOException {     // Method signature must match ImageInputStream.length().
         if (channel instanceof SeekableByteChannel) {
-            return ((SeekableByteChannel) channel).size();
+            return Math.subtractExact(((SeekableByteChannel) channel).size(), channelOffset);
         }
         return -1;
     }
@@ -922,5 +923,23 @@ public class ChannelDataInput extends ChannelData {
             throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
         clearBitOffset();
+    }
+
+    /**
+     * Empties the buffer and reset the channel position at the beginning of the stream.
+     * This method is similar to {@code seek(0)} except that the buffer content is discarded.
+     *
+     * @return {@code true} on success, or {@code false} if it is not possible to reset the position.
+     * @throws IOException if the stream can not be moved to the original position.
+     */
+    public final boolean rewind() throws IOException {
+        if (channel instanceof SeekableByteChannel) {
+            ((SeekableByteChannel) channel).position(channelOffset);
+            buffer.clear().limit(0);
+            bufferOffset = 0;
+            clearBitOffset();
+            return true;
+        }
+        return false;
     }
 }

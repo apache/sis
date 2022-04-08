@@ -84,6 +84,28 @@ public final strictfp class NumericsTest extends TestCase {
     }
 
     /**
+     * Tests {@link Numerics#saturatingAdd(long, int)}.
+     */
+    @Test
+    public void testSaturatingAdd() {
+        assertEquals(1234 + 56, Numerics.saturatingAdd(1234,  56));
+        assertEquals(1234 - 56, Numerics.saturatingAdd(1234, -56));
+        assertEquals(Long.MAX_VALUE, Numerics.saturatingAdd(Long.MAX_VALUE - 10,  56));
+        assertEquals(Long.MIN_VALUE, Numerics.saturatingAdd(Long.MIN_VALUE + 10, -56));
+    }
+
+    /**
+     * Tests {@link Numerics#saturatingSubtract(long, int)}.
+     */
+    @Test
+    public void testSaturatingSubtract() {
+        assertEquals(1234 - 56, Numerics.saturatingSubtract(1234,  56));
+        assertEquals(1234 + 56, Numerics.saturatingSubtract(1234, -56));
+        assertEquals(Long.MAX_VALUE, Numerics.saturatingSubtract(Long.MAX_VALUE - 10, -56));
+        assertEquals(Long.MIN_VALUE, Numerics.saturatingSubtract(Long.MIN_VALUE + 10, +56));
+    }
+
+    /**
      * Tests the {@link Numerics#cached(Object)} method.
      */
     @Test

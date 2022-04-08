@@ -52,8 +52,17 @@ import org.apache.sis.measure.Units;
  * In current implementation, the last pixel values win even if those pixels are transparent
  * (i.e. {@code ImageCombiner} does not yet handle alpha values).
  *
+ * <h2>Limitations</h2>
+ * Current implementation does not try to map source bands to target bands for the same colors.
+ * For example it does not verify if band order needs to be reversed because an image is RGB and
+ * the other image is BVR. It is caller responsibility to ensure that bands are in the same order.
+ *
+ * <p>Current implementation does not expand the destination image for accommodating
+ * any area of a given image that appear outside the destination image bounds.
+ * Only the intersection of both images is used.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -69,6 +78,13 @@ public class ImageCombiner implements Consumer<RenderedImage> {
     private final WritableRenderedImage destination;
 
     /**
+     * The value to use in calls to {@link ImageProcessor#setImageLayout(ImageLayout)}.
+     * We set this property before use of {@link #processor} because the value may change
+     * for each slice processed by {@link org.apache.sis.internal.coverage.CoverageCombiner}.
+     */
+    private final Layout layout;
+
+    /**
      * Creates an image combiner which will write in the given image. That image is not cleared;
      * pixels that are not overwritten by calls to the {@code accept(…)} or {@code resample(…)}
      * methods will be left unchanged.
@@ -76,10 +92,25 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * @param  destination  the image where to combine images.
      */
     public ImageCombiner(final WritableRenderedImage destination) {
+        this(destination,  new ImageProcessor());
+    }
+
+    /**
+     * Creates an image combiner which will use the given processor for resampling operations.
+     * The given destination image is not cleared; pixels that are not overwritten by calls to
+     * the {@code accept(…)} or {@code resample(…)} methods will be left unchanged.
+     *
+     * @param  destination  the image where to combine images.
+     * @param  processor    the processor to use for resampling operations.
+     *
+     * @since 1.2
+     */
+    public ImageCombiner(final WritableRenderedImage destination, final ImageProcessor processor) {
         ArgumentChecks.ensureNonNull("destination", destination);
+        ArgumentChecks.ensureNonNull("processor", processor);
         this.destination = destination;
-        processor = new ImageProcessor();
-        processor.setImageLayout(new Layout(destination.getSampleModel()));
+        this.processor = processor;
+        layout = new Layout(destination.getSampleModel());
     }
 
     /**
@@ -250,9 +281,10 @@ public class ImageCombiner implements Consumer<RenderedImage> {
          */
         final RenderedImage result;
         synchronized (processor) {
-            final Point minTile = ((Layout) processor.getImageLayout()).minTile;
+            final Point minTile = layout.minTile;
             minTile.x = minTileX;
             minTile.y = minTileY;
+            processor.setImageLayout(layout);
             result = processor.resample(source, bounds, toSource);
         }
         if (result instanceof ComputedImage) {
@@ -268,7 +300,10 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * This may be the destination image specified at construction time, but may also be a larger image if the
      * destination has been dynamically expanded for accommodating larger sources.
      *
-     * <p><b>Note:</b> dynamic expansion is not yet implemented in current version.</p>
+     * <p><b>Note:</b> dynamic expansion is not yet implemented in current version.
+     * If a future version implements it, we shall guarantee that the coordinate of each pixel is unchanged
+     * (i.e. the image {@code minX} and {@code minY} may become negative, but the pixel identified by
+     * coordinates (0,0) for instance will stay the same pixel.)</p>
      *
      * @return the combination of destination image with all source images.
      */

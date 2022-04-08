@@ -20,7 +20,9 @@ import java.net.URL;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.net.UnknownServiceException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +49,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -173,7 +176,7 @@ public abstract class PRJDataStore extends URIDataStore {
         Path path = getSpecifiedPath();
         if (path != null) {
             final String base = getBaseFilename(path);
-            path = path.resolveSibling(base.concat(PRJ));
+            path = path.resolveSibling(base.concat(extension));
             stream = Files.newInputStream(path);
         } else {
             final URL url = IOUtilities.toAuxiliaryURL(location, extension);
@@ -195,6 +198,72 @@ public abstract class PRJDataStore extends URIDataStore {
                 }
             }
             return new String(buffer, 0, offset);
+        }
+    }
+
+    /**
+     * Writes the {@code "*.prj"} auxiliary file if {@link #crs} is non-null.
+     * If {@link #crs} is null and the auxiliary file exists, it is deleted.
+     *
+     * @throws DataStoreException if an error occurred while writing the file.
+     */
+    protected final void writePRJ() throws DataStoreException {
+        try {
+            if (crs == null) {
+                deleteAuxiliaryFile(PRJ);
+            } else try (BufferedWriter out = writeAuxiliaryFile(PRJ, encoding)) {
+                final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
+                format.setConvention(Convention.WKT1_COMMON_UNITS);
+                format.format(crs, out);
+            }
+        } catch (IOException e) {
+            Object identifier = getIdentifier().orElse(null);
+            if (identifier == null) identifier = Classes.getShortClassName(this);
+            throw new DataStoreException(Resources.format(Resources.Keys.CanNotWriteResource_1, identifier), e);
+        }
+    }
+
+    /**
+     * Creates a writer for an auxiliary file with the specified extension.
+     * This method uses the same path than {@link #location},
+     * except for the extension which is replaced by the given value.
+     *
+     * @param  extension  the filename extension of the auxiliary file to write.
+     * @param  encoding   the encoding to use for writing the file content, or {@code null} for default.
+     * @return a stream opened on the specified file.
+     * @throws UnknownServiceException if no {@link Path} or {@link java.net.URI} is available.
+     * @throws DataStoreException if the auxiliary file can not be created.
+     * @throws IOException if another error occurred while opening the stream.
+     */
+    protected final BufferedWriter writeAuxiliaryFile(final String extension, Charset encoding)
+            throws IOException, DataStoreException
+    {
+        final Path[] paths = super.getComponentFiles();
+        if (paths.length == 0) {
+            throw new UnknownServiceException();
+        }
+        if (encoding == null) {
+            encoding = Charset.defaultCharset();
+        }
+        Path path = paths[0];
+        final String base = getBaseFilename(path);
+        path = path.resolveSibling(base.concat(extension));
+        return Files.newBufferedWriter(path, encoding);
+    }
+
+    /**
+     * Deletes the auxiliary file with the given extension if it exists.
+     * If the auxiliary file does not exist, then this method does nothing.
+     *
+     * @param  extension  the filename extension of the auxiliary file to delete.
+     * @throws DataStoreException if the auxiliary file is not on a supported file system.
+     * @throws IOException if an error occurred while deleting the file.
+     */
+    protected final void deleteAuxiliaryFile(final String extension) throws DataStoreException, IOException {
+        for (Path path : super.getComponentFiles()) {
+            final String base = getBaseFilename(path);
+            path = path.resolveSibling(base.concat(extension));
+            Files.deleteIfExists(path);
         }
     }
 

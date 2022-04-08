@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
 import org.opengis.util.GenericName;
@@ -36,6 +37,8 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
 
@@ -199,7 +202,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.2
      * @since   0.8
      * @module
      */
@@ -310,6 +313,16 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             }
             throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
                         provider.getShortName(), LOCATION), cause);
+        }
+
+        /**
+         * Returns {@code true} if the open options contains {@link StandardOpenOption#WRITE}.
+         *
+         * @param  connector  the connector to use for opening a file.
+         * @return whether the specified connector should open a writable data store.
+         */
+        public static boolean isWritable(final StorageConnector connector) {
+            return ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.WRITE);
         }
     }
 

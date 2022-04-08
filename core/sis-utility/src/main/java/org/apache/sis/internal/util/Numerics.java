@@ -241,6 +241,42 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns {@code x+y} with saturation if the result overflows long capacity.
+     * This is <cite>saturation arithmetic</cite>.
+     *
+     * @param  x  the value for which to add something.
+     * @param  y  the value to add to {@code x}.
+     * @return {@code x+y} computed with saturation arithmetic.
+     */
+    public static long saturatingAdd(final long x, final int y) {
+        final long result = x + y;
+        if (y >= 0) {
+            if (result < x) return Long.MAX_VALUE;
+        } else {
+            if (result > x) return Long.MIN_VALUE;
+        }
+        return result;
+    }
+
+    /**
+     * Returns {@code x-y} with saturation if the result overflows long capacity.
+     * This is <cite>saturation arithmetic</cite>.
+     *
+     * @param  x  the value for which to add something.
+     * @param  y  the value to subtract from {@code x}.
+     * @return {@code x-y} computed with saturation arithmetic.
+     */
+    public static long saturatingSubtract(final long x, final int y) {
+        final long result = x - y;
+        if (y < 0) {
+            if (result < x) return Long.MAX_VALUE;
+        } else {
+            if (result > x) return Long.MIN_VALUE;
+        }
+        return result;
+    }
+
+    /**
      * Returns the given value clamped to the range on 32 bits integer.
      *
      * @param  value  the value to clamp.

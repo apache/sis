@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
+import java.awt.image.RenderedImage;
 import java.awt.image.DataBufferFloat;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -46,6 +47,7 @@ import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -163,6 +165,14 @@ class Store extends PRJDataStore implements GridCoverageResource {
         super(provider, connector);
         input = new CharactersView(connector.commit(ChannelDataInput.class, StoreProvider.NAME), null);
         listeners.useWarningEventsOnly();
+    }
+
+    /**
+     * Returns whether this store is read-only. If {@code true}, we can close the channel
+     * as soon as the coverage has been fully read. Otherwise we need to keep it open.
+     */
+    boolean isReadOnly() {
+        return true;
     }
 
     /**
@@ -418,8 +428,10 @@ cellsize:       if (value != null) {
              * TODO: a future version could try to convert the image to integer values.
              * In this case only we may need to declare the NODATA_VALUE.
              */
-            input = null;
-            view.input.channel.close();
+            if (isReadOnly()) {
+                input = null;
+                view.input.channel.close();
+            }
             double minimum = stats.minimum();
             double maximum = stats.maximum();
             if (!(minimum <= maximum)) {
@@ -455,11 +467,39 @@ cellsize:       if (value != null) {
     /**
      * Replaces all data by the given coverage.
      * This is used for write operations only.
+     *
+     * @param  replacement  the new coverage.
+     * @param  data         the image wrapped by the given coverage.
+     * @param  band         index of the band to write (usually 0).
+     * @return the "no data" value, or {@link Double#NaN} if none.
      */
-    final void setCoverage(final GridCoverage replacement) {
-        gridGeometry = replacement.getGridGeometry();
+    final Number setCoverage(final GridCoverage replacement, final RenderedImage data, final int band) {
         coverage     = replacement;
+        gridGeometry = replacement.getGridGeometry();
+        crs          = gridGeometry.isDefined(GridGeometry.CRS) ? gridGeometry.getCoordinateReferenceSystem() : null;
+        width        = data.getWidth();
+        height       = data.getHeight();
         metadata     = null;
+        nodataText   = "null";
+        nodataValue  = Double.NaN;
+        final SampleDimension sd = replacement.getSampleDimensions().get(band);
+        final NumberRange<?> range = sd.getSampleRange().orElse(null);
+        if (range != null) {
+            try {
+                for (final Number nodata : sd.forConvertedValues(false).getNoDataValues()) {
+                    if (!range.containsAny(nodata)) {
+                        nodataValue = nodata.doubleValue();
+                        return nodata;
+                    }
+                }
+            } catch (IllegalStateException e) {
+                listeners.warning(e);
+            }
+            if (range.containsAny(DEFAULT_NODATA)) {
+                nodataValue = DEFAULT_NODATA;
+            }
+        }
+        return nodataValue;
     }
 
     /**
