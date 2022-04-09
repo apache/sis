@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage;
 
+import java.util.Arrays;
 import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
@@ -27,20 +28,15 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.ImageCombiner;
+import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-import static java.lang.Math.addExact;
-import static java.lang.Math.subtractExact;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.toIntExact;
 import static java.lang.Math.round;
-import static java.lang.Math.min;
-import static java.lang.Math.max;
 import static org.apache.sis.internal.util.Numerics.saturatingAdd;
 import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
 
@@ -53,8 +49,7 @@ import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
  * <ol>
  *   <li>Creates a {@code CoverageCombiner} with the destination coverage where to write.</li>
  *   <li>Configure with methods such as {@link #setInterpolation setInterpolation(…)}.</li>
- *   <li>Invoke {@link #accept accept(…)} or {@link #resample resample(…)}
- *       methods for each coverage to combine.</li>
+ *   <li>Invoke {@link #apply apply(…)} methods for each list of coverages to combine.</li>
  *   <li>Get the combined coverage with {@link #result()}.</li>
  * </ol>
  *
@@ -95,46 +90,24 @@ public final class CoverageCombiner {
     private final GridCoverage destination;
 
     /**
-     * The image combiners to use for combining two-dimensional slices.
-     * There is one {@link ImageCombiner} instance per slice, created when first needed.
-     */
-    private final ImageCombiner[] sliceCombiners;
-
-    /**
-     * Number of dimensions of the destination grid coverage.
-     */
-    private final int dimension;
-
-    /**
      * The dimension to extract as {@link RenderedImage}s.
      * This is usually 0 for <var>x</var> and 1 for <var>y</var>.
      */
     private final int xdim, ydim;
 
     /**
-     * The offset to subtract to grid index before to compute the index of a slice.
-     */
-    private final long[] sliceIndexOffsets;
-
-    /**
-     * The multiplication factor to apply of grid coordinates (after subtracting the offset)
-     * for computing slice coordinates.
-     */
-    private final int[] sliceIndexSpans;
-
-    /**
      * Creates a coverage combiner which will write in the given coverage.
      * The coverage is not cleared; cells that are not overwritten by calls
      * to the {@code accept(…)} method will be left unchanged.
      *
-     * @param  destination  the coverage where to combine coverages.
+     * @param  destination  the destination coverage where to combine source coverages.
      * @param  xdim         the dimension to extract as {@link RenderedImage} <var>x</var> axis. This is usually 0.
      * @param  ydim         the dimension to extract as {@link RenderedImage} <var>y</var> axis. This is usually 1.
      */
     public CoverageCombiner(final GridCoverage destination, final int xdim, final int ydim) {
+        ArgumentChecks.ensureNonNull("destination", destination);
         this.destination = destination;
-        final GridExtent extent = destination.getGridGeometry().getExtent();
-        dimension = extent.getDimension();
+        final int dimension = destination.getGridGeometry().getDimension();
         ArgumentChecks.ensureBetween("xdim", 0, dimension-1, xdim);
         ArgumentChecks.ensureBetween("ydim", 0, dimension-1, ydim);
         if (xdim == ydim) {
@@ -142,19 +115,33 @@ public final class CoverageCombiner {
         }
         this.xdim = xdim;
         this.ydim = ydim;
-        sliceIndexOffsets = new long[dimension - BIDIMENSIONAL];
-        sliceIndexSpans   = new int [dimension - BIDIMENSIONAL];
-        int sliceCount    = 1;
-        for (int j=0,i=0; i<dimension; i++) {
-            if (i != xdim && i != ydim) {
-                final int span;
-                sliceIndexOffsets[j] = extent.getLow(i);
-                sliceIndexSpans[j++] = span = toIntExact(extent.getSize(i));
-                sliceCount = multiplyExact(sliceCount, span);
-            }
-        }
-        sliceCombiners = new ImageCombiner[sliceCount];
         processor = new ImageProcessor();
+    }
+
+    /**
+     * Returns the interpolation method to use during resample operations.
+     *
+     * <h4>Limitations</h4>
+     * In current version, the interpolation is applied only in the {@code xdim} and {@code ydim} dimensions
+     * specified at construction time. For all other dimensions, nearest neighbor interpolation is applied.
+     *
+     * @return interpolation method to use during resample operations.
+     */
+    public Interpolation getInterpolation() {
+        return processor.getInterpolation();
+    }
+
+    /**
+     * Sets the interpolation method to use during resample operations.
+     *
+     * <h4>Limitations</h4>
+     * In current version, the interpolation is applied only in the {@code xdim} and {@code ydim} dimensions
+     * specified at construction time. For all other dimensions, nearest neighbor interpolation is applied.
+     *
+     * @param  method  interpolation method to use during resample operations.
+     */
+    public void setInterpolation(final Interpolation method) {
+        processor.setInterpolation(method);
     }
 
     /**
@@ -177,127 +164,140 @@ public final class CoverageCombiner {
     }
 
     /**
-     * Writes the given coverage on top of destination coverage.
-     * The given coverage is resampled to the grid geometry of the destination coverage.
+     * Writes the given coverages on top of the destination coverage.
+     * The given coverages are resampled to the grid geometry of the destination coverage.
+     * Coverages that do not intercept with the destination coverage are silently ignored.
      *
-     * @param  source  the coverage to write on top of destination coverage.
+     * @param  sources  the coverages to write on top of destination coverage.
      * @return {@code true} on success, or {@code false} if at least one slice
      *         in the destination coverage is not writable.
-     * @throws TransformException if the coordinates of given coverage can not be transformed
+     * @throws TransformException if the coordinates of a given coverage can not be transformed
      *         to the coordinates of destination coverage.
      */
-    public boolean accept(final GridCoverage source) throws TransformException {
-        final Dimension margin = processor.getInterpolation().getSupportSize();
-        margin.width  = ((margin.width  + 1) >> 1) + 1;
-        margin.height = ((margin.height + 1) >> 1) + 1;
-        final long[] minIndices = new long[dimension];      // Will be expanded by above margin.
-        final long[] maxIndices = new long[dimension];      // Inclusive.
+    public boolean apply(GridCoverage... sources) throws TransformException {
+        ArgumentChecks.ensureNonNull("sources", sources);
+        sources = sources.clone();
+        final GridGeometry    targetGG            = destination.getGridGeometry();
+        final GridExtent      targetEx            = targetGG.getExtent();
+        final int             dimension           = targetEx.getDimension();
+        final long[]          minIndices          = new long[dimension]; Arrays.fill(minIndices, Long.MAX_VALUE);
+        final long[]          maxIndices          = new long[dimension]; Arrays.fill(maxIndices, Long.MIN_VALUE);
+        final MathTransform[] toSourceSliceCorner = new MathTransform[sources.length];
+        final MathTransform[] toSourceSliceCenter = new MathTransform[sources.length];
         /*
-         * Compute the intersection between `source` and `destination`, in units
-         * of destination cell indices. A margin is added for interpolations.
-         * This block also verifies that the intersection exists.
+         * Compute the intersection between `source` and `destination`, in units of destination cell indices.
+         * If a coverage does not intersect the destination, the corresponding element in the `sources` array
+         * will be set to null.
          */
-        final double[] centerIndices;
-        final double[] centerSourceIndices;
-        final MathTransform toSourceSliceCorner;
-        final MathTransform toSourceSliceCenter;
-        {   // For keeping following variables in a local scope.
-            final GridGeometry targetGG = destination.getGridGeometry();
-            final GridGeometry sourceGG = source.getGridGeometry();
-            final GridExtent   sourceEx = sourceGG.getExtent();
-            final GridExtent   targetEx = targetGG.getExtent();
-            centerIndices       = targetEx.getPointOfInterest();
-            centerSourceIndices = new double[sourceEx.getDimension()];
-            toSourceSliceCorner = targetGG.createTransformTo(sourceGG, PixelInCell.CELL_CORNER);
-            toSourceSliceCenter = targetGG.createTransformTo(sourceGG, PixelInCell.CELL_CENTER);
-            final Envelope env  = sourceEx.toEnvelope(toSourceSliceCorner.inverse());
+next:   for (int j=0; j<sources.length; j++) {
+            final GridCoverage source = sources[j];
+            ArgumentChecks.ensureNonNullElement("sources", j, source);
+            final GridGeometry  sourceGG = source.getGridGeometry();
+            final GridExtent    sourceEx = sourceGG.getExtent();
+            final MathTransform toSource = targetGG.createTransformTo(sourceGG, PixelInCell.CELL_CORNER);
+            final Envelope      env      = sourceEx.toEnvelope(toSource.inverse());
+            final long[]        min      = new long[dimension];
+            final long[]        max      = new long[dimension];
             for (int i=0; i<dimension; i++) {
-                minIndices[i] = max(targetEx.getLow (i), round(env.getMinimum(i)));
-                maxIndices[i] = min(targetEx.getHigh(i), round(env.getMaximum(i) - 1));
-                if (minIndices[i] >= maxIndices[i]) {
-                    throw new DisjointExtentException();
+                /*
+                 * The conversion from `double` to `long` may loose precision. The -1 (for making the maximum value
+                 * inclusive) is done on the floating point value instead of the integer value in order to have the
+                 * same rounding when the minimum and maximum values are close to each other.
+                 * The goal is to avoid spurious "disjoint extent" exceptions.
+                 */
+                min[i] = Math.max(targetEx.getLow (i), round(env.getMinimum(i)));
+                max[i] = Math.min(targetEx.getHigh(i), round(env.getMaximum(i) - 1));
+                if (min[i] > max[i]) {
+                    sources[j] = null;
+                    continue next;
                 }
             }
+            /*
+             * Expand the destination extent only if the source intersects it.
+             * It can be done only after we tested all dimensions.
+             */
+            for (int i=0; i<dimension; i++) {
+                minIndices[i] = Math.min(minIndices[i], min[i]);
+                maxIndices[i] = Math.max(maxIndices[i], max[i]);
+            }
+            toSourceSliceCenter[j] = targetGG.createTransformTo(sourceGG, PixelInCell.CELL_CENTER);
+            toSourceSliceCorner[j] = toSource;
+        }
+        if (ArraysExt.allEquals(sources, null)) {
+            return true;                                // No intersection. We "successfully" wrote nothing.
         }
         /*
          * Now apply `ImageCombiner` for each two-dimensional slice. We will iterate on all destination slices
          * in the intersection area, and locate the corresponding source slices (this is a strategy similar to
          * the resampling of pixel values in rasters).
          */
-        final long[] minSliceIndices  = minIndices.clone();
-        final long[] maxSliceIndices  = maxIndices.clone();
-        final long[] minSourceIndices = new long[centerSourceIndices.length];
-        final long[] maxSourceIndices = new long[centerSourceIndices.length];
+        final long[] minSliceIndices = minIndices.clone();
+        final long[] maxSliceIndices = maxIndices.clone();
+        final double[] centerIndices = targetEx.getPointOfInterest();
+        final Dimension margin = processor.getInterpolation().getSupportSize();
+        margin.width  = ((margin.width  + 1) >> 1) + 1;
+        margin.height = ((margin.height + 1) >> 1) + 1;
         boolean success = true;
 next:   for (;;) {
             /*
-             * Compute the index in `sliceCombiners` array for the two-dimensional
-             * slice identified by the current value of the `slice` coordinates.
-             */
-            int sliceIndex = 0;
-            for (int j=0,i=0; i<dimension; i++) {
-                if (i != xdim && i != ydim) {
-                    maxSliceIndices[i] = minSliceIndices[i];
-                    int offset = toIntExact(subtractExact(minSliceIndices[i], sliceIndexOffsets[j]));
-                    offset = multiplyExact(offset, sliceIndexSpans[j++]);
-                    sliceIndex = addExact(sliceIndex, offset);
-                }
-            }
-            /*
-             * Get the image for the current slice. It may be the result of a previous combination.
+             * Get the image for the current slice to write.
              * If the image is not writable, we skip that slice and try the next one.
              * A flag will report to the user that at least one slice was non-writable.
              */
             final GridExtent targetSliceExtent = new GridExtent(null, minSliceIndices, maxSliceIndices, true);
-            final RenderedImage targetSlice;
-            ImageCombiner combiner = sliceCombiners[sliceIndex];
-            if (combiner != null) {
-                targetSlice = combiner.result();
-            } else {
-                targetSlice = destination.render(targetSliceExtent);
-                if (targetSlice instanceof WritableRenderedImage) {
-                    combiner = new ImageCombiner((WritableRenderedImage) targetSlice, processor);
-                    sliceCombiners[sliceIndex] = combiner;
-                } else {
-                    success = false;
-                }
-            }
-            /*
-             * Compute the bounds of the source image to load (with a margin for rounding and interpolations).
-             * For all dimensions other than the slice dimensions, we take the center of the slice to read.
-             */
-            if (combiner != null) {
-                toSourceSliceCenter.transform(centerIndices, 0, centerSourceIndices, 0, 1);
-                final Envelope sourceArea = targetSliceExtent.toEnvelope(toSourceSliceCorner);
-                for (int i=0; i<minSourceIndices.length; i++) {
-                    if (i == xdim || i == ydim) {
-                        final int m = (i == xdim) ? margin.width : margin.height;
-                        minSourceIndices[i] = saturatingSubtract(round(sourceArea.getMinimum(i)), m  );
-                        maxSourceIndices[i] = saturatingAdd     (round(sourceArea.getMaximum(i)), m-1);
-                    } else {
-                        minSourceIndices[i] = round(centerSourceIndices[i]);
-                        maxSourceIndices[i] = minSourceIndices[i];
+            final RenderedImage targetSlice = destination.render(targetSliceExtent);
+            if (targetSlice instanceof WritableRenderedImage) {
+                final ImageCombiner combiner = new ImageCombiner((WritableRenderedImage) targetSlice, processor);
+                for (int j=0; j<sources.length; j++) {
+                    final GridCoverage source = sources[j];
+                    if (source == null) {
+                        continue;
                     }
+                    /*
+                     * Compute the bounds of the source image to load (with a margin for rounding and interpolations).
+                     * For all dimensions other than the slice dimensions, we take the center of the slice to read.
+                     */
+                    final int      srcDim = source.getGridGeometry().getDimension();
+                    final long[]   minSourceIndices    = new long  [srcDim];
+                    final long[]   maxSourceIndices    = new long  [srcDim];
+                    final double[] centerSourceIndices = new double[srcDim];
+                    toSourceSliceCenter[j].transform(centerIndices, 0, centerSourceIndices, 0, 1);
+                    final Envelope env = targetSliceExtent.toEnvelope(toSourceSliceCorner[j]);
+                    for (int i=0; i<srcDim; i++) {
+                        if (i == xdim || i == ydim) {
+                            final int m = (i == xdim) ? margin.width : margin.height;
+                            minSourceIndices[i] = saturatingSubtract(round(env.getMinimum(i)), m  );
+                            maxSourceIndices[i] = saturatingAdd     (round(env.getMaximum(i)), m-1);
+                        } else {
+                            minSourceIndices[i] = round(centerSourceIndices[i]);
+                            maxSourceIndices[i] = minSourceIndices[i];
+                        }
+                    }
+                    /*
+                     * Get the source image and combine with the corresponding slice of destination coverage.
+                     */
+                    GridExtent sourceSliceExtent = new GridExtent(null, minSourceIndices, maxSourceIndices, true);
+                    RenderedImage sourceSlice = source.render(sourceSliceExtent);
+                    MathTransform toSource =
+                            getGridGeometry(targetSlice, destination, targetSliceExtent).createTransformTo(
+                            getGridGeometry(sourceSlice, source,      sourceSliceExtent), PixelInCell.CELL_CENTER);
+                    combiner.resample(sourceSlice, null, toSource);
                 }
-                GridExtent sourceSliceExtent = new GridExtent(null, minSourceIndices, maxSourceIndices, true);
-                /*
-                 * Get the source image and combine with the corresponding slice of destination coverage.
-                 */
-                RenderedImage sourceSlice = source.render(sourceSliceExtent);
-                MathTransform toSource =
-                        getGridGeometry(targetSlice, destination, targetSliceExtent).createTransformTo(
-                        getGridGeometry(sourceSlice, source,      sourceSliceExtent), PixelInCell.CELL_CENTER);
-                combiner.resample(sourceSlice, null, toSource);
+            } else {
+                success = false;
             }
             /*
              * Increment indices to the next slice.
              */
             for (int i=0; i<dimension; i++) {
                 if (i != xdim && i != ydim) {
-                    if (minSliceIndices[i]++ <= maxIndices[i]) {
+                    long index = minSliceIndices[i];
+                    boolean done = index++ <= maxIndices[i];
+                    if (!done)     index    = minIndices[i];
+                    maxSliceIndices[i] = minSliceIndices[i] = index;
+                    if (done) {
                         continue next;
                     }
-                    minSliceIndices[i] = minIndices[i];
                 }
             }
             break;

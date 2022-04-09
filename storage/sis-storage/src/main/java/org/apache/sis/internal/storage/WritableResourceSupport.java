@@ -169,7 +169,7 @@ public final class WritableResourceSupport implements Localized {
         final GridCoverage existing = resource.read(null, null);
         final CoverageCombiner combiner = new CoverageCombiner(existing, 0, 1);
         try {
-            if (!combiner.accept(coverage)) {
+            if (!combiner.apply(coverage)) {
                 throw new ReadOnlyStorageException(canNotWrite());
             }
         } catch (TransformException e) {

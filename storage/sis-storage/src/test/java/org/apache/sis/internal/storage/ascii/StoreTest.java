@@ -26,6 +26,7 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link Store}.
+ * Tests {@link Store} and {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -43,10 +44,23 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final strictfp class StoreTest extends TestCase {
     /**
-     * Opens an ASCII Grid store on the test data.
+     * Returns a storage connector with the URL to the test data.
      */
-    private static Store open() throws DataStoreException {
-        return new Store(null, new StorageConnector(StoreTest.class.getResource("grid.asc")));
+    private static StorageConnector testData() {
+        return new StorageConnector(StoreTest.class.getResource("grid.asc"));
+    }
+
+    /**
+     * Tests {@link StoreProvider#probeContent(StorageConnector)} method.
+     *
+     * @throws DataStoreException if en error occurred while reading the CSV file.
+     */
+    @Test
+    public void testProbeContent() throws DataStoreException {
+        final StoreProvider p = new StoreProvider();
+        final ProbeResult r = p.probeContent(testData());
+        assertTrue(r.isSupported());
+        assertEquals("text/plain", r.getMimeType());
     }
 
     /**
@@ -58,7 +72,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException {
-        try (Store store = open()) {
+        try (Store store = new Store(null, testData())) {
             assertEquals("grid", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             /*
@@ -91,7 +105,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testRead() throws DataStoreException {
-        try (Store store = open()) {
+        try (Store store = new Store(null, testData())) {
             final List<Category> categories = getSingleton(store.getSampleDimensions()).getCategories();
             assertEquals(2, categories.size());
             assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);

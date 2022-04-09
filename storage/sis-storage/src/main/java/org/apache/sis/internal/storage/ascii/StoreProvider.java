@@ -44,7 +44,7 @@ import org.apache.sis.internal.storage.PRJDataStore;
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                fileSuffixes  = {"asc", "grd", "agr", "aig"},
-               capabilities  = Capability.READ,
+               capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = GridCoverageResource.class)
 public final class StoreProvider extends PRJDataStore.Provider {
     /**

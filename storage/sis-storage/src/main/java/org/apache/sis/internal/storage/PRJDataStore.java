@@ -215,6 +215,7 @@ public abstract class PRJDataStore extends URIDataStore {
                 final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
                 format.setConvention(Convention.WKT1_COMMON_UNITS);
                 format.format(crs, out);
+                out.write(System.lineSeparator());
             }
         } catch (IOException e) {
             Object identifier = getIdentifier().orElse(null);

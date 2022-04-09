@@ -58,6 +58,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
     org.apache.sis.internal.storage.ascii.StoreTest.class,
+    org.apache.sis.internal.storage.ascii.WritableStoreTest.class,
     org.apache.sis.internal.storage.folder.StoreTest.class,
     org.apache.sis.internal.storage.JoinFeatureSetTest.class,
     org.apache.sis.internal.storage.ConcatenatedFeatureSetTest.class,
