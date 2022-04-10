@@ -72,7 +72,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException {
-        try (Store store = new Store(null, testData())) {
+        try (Store store = new Store(null, testData(), true)) {
             assertEquals("grid", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             /*
@@ -105,7 +105,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testRead() throws DataStoreException {
-        try (Store store = new Store(null, testData())) {
+        try (Store store = new Store(null, testData(), true)) {
             final List<Category> categories = getSingleton(store.getSampleDimensions()).getCategories();
             assertEquals(2, categories.size());
             assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);

@@ -131,7 +131,7 @@ cellsize:           if (!header.containsKey(Store.CELLSIZE)) {
         if (isWritable(connector)) {
             return new WritableStore(this, connector);
         } else {
-            return new Store(this, connector);
+            return new Store(this, connector, true);
         }
     }
 }

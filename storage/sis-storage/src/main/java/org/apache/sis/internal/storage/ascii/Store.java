@@ -159,20 +159,37 @@ class Store extends PRJDataStore implements GridCoverageResource {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  readOnly   whether to fail if the channel can not be opened at least in read mode.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    Store(final StoreProvider provider, final StorageConnector connector, final boolean readOnly)
+            throws DataStoreException
+    {
         super(provider, connector);
-        input = new CharactersView(connector.commit(ChannelDataInput.class, StoreProvider.NAME), null);
+        final ChannelDataInput channel;
+        if (readOnly) {
+            channel = connector.commit(ChannelDataInput.class, StoreProvider.NAME);
+        } else {
+            channel = connector.getStorageAs(ChannelDataInput.class);
+            if (channel != null) {
+                connector.closeAllExcept(channel);
+            }
+        }
+        if (channel != null) {
+            input = new CharactersView(channel, channel.buffer);
+        }
         listeners.useWarningEventsOnly();
     }
 
     /**
-     * Returns whether this store is read-only. If {@code true}, we can close the channel
-     * as soon as the coverage has been fully read. Otherwise we need to keep it open.
+     * Returns whether this store can read or write. If this store can not write,
+     * then we can close the {@linkplain #input} channel as soon as the coverage
+     * has been fully read. Otherwise we need to keep it open.
+     *
+     * @param  write  {@code false} for testing read capability, or {@code true} for testing write capability.
      */
-    boolean isReadOnly() {
-        return true;
+    boolean canReadOrWrite(final boolean write) {
+        return !write && (input != null);
     }
 
     /**
@@ -428,7 +445,7 @@ cellsize:       if (value != null) {
              * TODO: a future version could try to convert the image to integer values.
              * In this case only we may need to declare the NODATA_VALUE.
              */
-            if (isReadOnly()) {
+            if (!canReadOrWrite(true)) {
                 input = null;
                 view.input.channel.close();
             }

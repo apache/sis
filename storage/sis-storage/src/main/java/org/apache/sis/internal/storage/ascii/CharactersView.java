@@ -75,12 +75,9 @@ final class CharactersView implements CharSequence {
      * Creates a new sequence of characters.
      *
      * @param  input   the source of bytes, or {@code null} if unavailable.
-     * @oaram  buffer  the buffer, or {@code null} for {@code input.buffer}.
+     * @param  buffer  {@code input.buffer} or a standalone buffer if {@code input} is null.
      */
-    CharactersView(final ChannelDataInput input, ByteBuffer buffer) {
-        if (buffer == null) {
-            buffer = input.buffer;
-        }
+    CharactersView(final ChannelDataInput input, final ByteBuffer buffer) {
         this.input  = input;
         this.buffer = buffer;
         this.direct = buffer.hasArray();

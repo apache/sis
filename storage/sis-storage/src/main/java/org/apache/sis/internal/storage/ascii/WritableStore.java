@@ -34,7 +34,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.internal.storage.WritableResourceSupport;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelDataOutput;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -59,6 +58,12 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
     private final String lineSeparator;
 
     /**
+     * The output if this store is write-only, or {@code null} if this store is read/write.
+     * This is set to {@code null} when the store is closed.
+     */
+    private ChannelDataOutput output;
+
+    /**
      * Creates a new ASCII Grid store from the given file, URL or stream.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
@@ -66,16 +71,19 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     public WritableStore(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        super(provider, connector);
+        super(provider, connector, false);
         lineSeparator = System.lineSeparator();
+        if (!super.canReadOrWrite(false)) {
+            output = connector.commit(ChannelDataOutput.class, StoreProvider.NAME);
+        }
     }
 
     /**
-     * Returns whether this store is read-only.
+     * Returns whether this store can read or write.
      */
     @Override
-    boolean isReadOnly() {
-        return false;
+    boolean canReadOrWrite(final boolean write) {
+        return write || super.canReadOrWrite(write);
     }
 
     /**
@@ -185,10 +193,13 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
     @Override
     public synchronized void write(GridCoverage coverage, final Option... options) throws DataStoreException {
         final WritableResourceSupport h = new WritableResourceSupport(this, options);   // Does argument validation.
-        final ChannelDataInput input = input().input;
         final int band = 0;                                 // May become configurable in a future version.
         try {
-            if (!h.replace(input)) {
+            /*
+             * If `output` is null, we are in write-only mode and there is no previously existing image.
+             * Otherwise an image may exist and the behavior will depends on which options were supplied.
+             */
+            if (output == null && !h.replace(input().input)) {
                 coverage = h.update(coverage);
             }
             final RenderedImage data = coverage.render(null);               // Fail if not two-dimensional.
@@ -201,7 +212,7 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
              * After this point we should not have any validation errors. Write the nodata value even if it is
              * "NaN" because the default is -9999, and we need to overwrite that default if it can not be used.
              */
-            final ChannelDataOutput out = h.channel(input);
+            final ChannelDataOutput out = (output != null) ? output : h.channel(input().input);
             final Number nodataValue = setCoverage(coverage, data, band);
             header.put(NODATA_VALUE, nodataValue);
             writeHeader(header, out);
@@ -251,6 +262,14 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
             }
             out.flush();
             writePRJ();
+            /*
+             * If the channel is write-only (e.g. if we are writing in an `OutputStream`),
+             * we will not be able to write a second time.
+             */
+            if (output != null) {
+                output = null;
+                out.channel.close();
+            }
         } catch (IOException e) {
             closeOnError(e);
             throw new DataStoreException(e);
@@ -266,5 +285,26 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
         for (int i=0; i<length; i++) {
             out.buffer.put((byte) text.charAt(i));
         }
+    }
+
+    /**
+     * Closes this data store and releases any underlying resources.
+     *
+     * @throws DataStoreException if an error occurred while closing this data store.
+     */
+    @Override
+    public synchronized void close() throws DataStoreException {
+        final ChannelDataOutput out = output;
+        output = null;
+        if (out != null) try {
+            out.channel.close();
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        /*
+         * No need for try-with-resource because only one
+         * of `input` and `output` should be non-null.
+         */
+        super.close();
     }
 }

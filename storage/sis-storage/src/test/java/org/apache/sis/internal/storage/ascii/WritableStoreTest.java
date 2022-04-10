@@ -18,19 +18,22 @@ package org.apache.sis.internal.storage.ascii;
 
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.nio.file.StandardOpenOption;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.ResourceAlreadyExistsException;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.storage.ResourceAlreadyExistsException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -63,11 +66,10 @@ public final strictfp class WritableStoreTest extends TestCase {
     }
 
     /**
-     * Verifies that the content of the given file is equal to the expected values
-     * for a coverage created by {@link #createTestCoverage(CoordinateReferenceSystem)}.
+     * Returns the expected ASCII Grid lines for the coverage created by {@link #createTestCoverage()}.
      */
-    private static void verifyContent(final Path file) throws IOException {
-        assertArrayEquals(new String[] {
+    private static String[] getExpectedLines() {
+        return new String[] {
             "NCOLS           4",
             "NROWS           3",
             "XLLCORNER    20.0",
@@ -78,7 +80,15 @@ public final strictfp class WritableStoreTest extends TestCase {
             "6 9 12 15",
             "18 21 24 27",
             "30 33 36 39",
-        }, Files.readAllLines(file).toArray());
+        };
+    }
+
+    /**
+     * Verifies that the content of the given file is equal to the expected values
+     * for a coverage created by {@link #createTestCoverage()}.
+     */
+    private static void verifyContent(final Path file) throws IOException {
+        assertArrayEquals(getExpectedLines(), Files.readAllLines(file).toArray());
         assertArrayEquals(new String[] {
             "GEOGCS[\"WGS 84\",",
             "  DATUM[\"World Geodetic System 1984\",",
@@ -103,10 +113,10 @@ public final strictfp class WritableStoreTest extends TestCase {
      * Tests writing an ASCII Grid in a temporary file.
      *
      * @throws IOException if the temporary file can not be created.
-     * @throws DataStoreException if an error occurred while reading the file.
+     * @throws DataStoreException if an error occurred while writing the file.
      */
     @Test
-    public void testWriteFile() throws IOException, DataStoreException {
+    public void testWriteInFile() throws IOException, DataStoreException {
         final GridCoverage coverage = createTestCoverage(HardCodedCRS.WGS84);
         final Path file = Files.createTempFile(null, ".asc");
         try {
@@ -142,5 +152,22 @@ public final strictfp class WritableStoreTest extends TestCase {
         } finally {
             Files.delete(file);
         }
+    }
+
+    /**
+     * Tests writing an ASCII Grid in an in-memory buffer. The PRJ files can not be created in this test,
+     * which force us to use a null CRS for avoiding {@link java.net.UnknownServiceException} to be thrown.
+     *
+     * @throws DataStoreException if an error occurred while writing the file.
+     */
+    @Test
+    public void testWriteInMemory() throws DataStoreException {
+        final GridCoverage coverage = createTestCoverage(null);
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (WritableStore store = new WritableStore(null, new StorageConnector(out))) {
+            store.write(coverage);
+        }
+        final String text = new String(out.toByteArray(), StandardCharsets.US_ASCII).trim();
+        assertArrayEquals(getExpectedLines(), CharSequences.splitOnEOL(text));
     }
 }

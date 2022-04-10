@@ -90,14 +90,30 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
     /**
      * Invoked when a new {@link ReadableByteChannel} or {@link WritableByteChannel} is about to be created.
      * The caller will replace the given factory by the returned factory. It allows us to wrap the channel
-     * in an object will will collect information about blocks read.
+     * in an object which will collect information about blocks read.
      *
      * @param  factory  the factory for creating channels.
      * @return the factory to use instead of the factory given in argument.
      */
     @Override
     public ChannelFactory apply(final ChannelFactory factory) {
-        return new ChannelFactory() {
+        return new ChannelFactory(factory.suggestDirectBuffer) {
+            /**
+             * Returns whether using the streams or channels will affect the original {@code storage} object.
+             */
+            @Override
+            public boolean isCoupled() {
+                return factory.isCoupled();
+            }
+
+            /**
+             * Returns {@code true} if this factory is capable to create another readable byte channel.
+             */
+            @Override
+            public boolean canOpen() {
+                return factory.canOpen();
+            }
+
             /**
              * Creates a readable channel and listens (if possible) read operations.
              * Current implementation listens only to {@link SeekableByteChannel}
