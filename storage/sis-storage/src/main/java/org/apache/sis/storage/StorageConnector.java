@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.io.Reader;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
@@ -35,6 +37,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.NoSuchFileException;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.ImageIO;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -56,6 +59,7 @@ import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelDataOutput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.ChannelImageOutputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
@@ -181,13 +185,15 @@ public class StorageConnector implements Serializable {
      * of those types. This map shall contain every types documented in {@link #getStorageAs(Class)} javadoc.
      * {@code null} values means to use {@link ObjectConverters} for that particular type.
      */
-    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(13);
+    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(16);
     static {
         add(String.class,            StorageConnector::createString);
         add(ByteBuffer.class,        StorageConnector::createByteBuffer);
         add(DataInput.class,         StorageConnector::createDataInput);
+        add(DataOutput.class,        StorageConnector::createDataOutput);
         add(ImageInputStream.class,  StorageConnector::createImageInputStream);
         add(InputStream.class,       StorageConnector::createInputStream);
+        add(OutputStream.class,      StorageConnector::createOutputStream);
         add(Reader.class,            StorageConnector::createReader);
         add(Connection.class,        StorageConnector::createConnection);
         add(ChannelDataInput.class,  (s) -> s.createChannelDataInput(false));   // Undocumented case (SIS internal)
@@ -994,6 +1000,8 @@ public class StorageConnector implements Serializable {
      * {@code StorageConnector} instance.</p>
      *
      * @throws IOException if an error occurred while opening a stream for the input.
+     *
+     * @see #createDataOutput()
      */
     private DataInput createDataInput() throws IOException, DataStoreException {
         /*
@@ -1177,11 +1185,13 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Creates an input stream from {@link ReadableByteChannel} if possible, or from {@link ImageInputStream}
-     * otherwise.
+     * Creates an input stream from {@link ReadableByteChannel} if possible,
+     * or from {@link ImageInputStream} otherwise.
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @see #createOutputStream()
      */
     private InputStream createInputStream() throws IOException, DataStoreException {
         final Class<DataInput> source = DataInput.class;
@@ -1260,6 +1270,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * Creates a view for the storage as a {@link ChannelDataOutput} if possible.
+     * This code is a partial copy of {@link #createDataInput()} adapted for output.
      *
      * @throws IOException if an error occurred while opening a channel for the output.
      *
@@ -1301,6 +1312,59 @@ public class StorageConnector implements Serializable {
             addView(ChannelFactory.class, factory);
         }
         return asDataOutput;
+    }
+
+    /**
+     * Creates a view for the output as a {@link DataOutput} if possible.
+     * This code is a copy of {@link #createDataInput()} adapted for output.
+     *
+     * @throws IOException if an error occurred while opening a stream for the output.
+     *
+     * @see #createDataInput()
+     */
+    private DataOutput createDataOutput() throws IOException, DataStoreException {
+        Coupled c = getView(ChannelDataOutput.class);
+        final ChannelDataOutput out;
+        if (reset(c)) {
+            out = (ChannelDataOutput) c.view;
+        } else {
+            out = createChannelDataOutput();                        // May be null.
+        }
+        final DataOutput asDataOutput;
+        if (out != null) {
+            c = getView(ChannelDataOutput.class);                   // May have been added by createChannelDataOutput(…).
+            if (out instanceof DataOutput) {
+                asDataOutput = (DataOutput) out;
+            } else {
+                asDataOutput = new ChannelImageOutputStream(out);   // Upgrade existing instance.
+                c.view = asDataOutput;
+            }
+            views.put(DataOutput.class, c);                         // Share the same Coupled instance.
+        } else {
+            reset();
+            asDataOutput = ImageIO.createImageOutputStream(storage);
+            addView(DataOutput.class, asDataOutput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
+        }
+        return asDataOutput;
+    }
+
+    /**
+     * Creates an output stream from {@link WritableByteChannel} if possible,
+     * or from {@link ImageOutputStream} otherwise.
+     * This code is a partial copy of {@link #createInputStream()} adapted for output.
+     *
+     * @see #createInputStream()
+     */
+    private OutputStream createOutputStream() throws IOException, DataStoreException {
+        final Class<DataOutput> target = DataOutput.class;
+        final DataOutput output = getStorageAs(target);
+        if (output instanceof OutputStream) {
+            views.put(OutputStream.class, views.get(target));                   // Share the same Coupled instance.
+            return (OutputStream) output;
+        } else {
+            addView(OutputStream.class, null);                                  // Remember that there is no view.
+            return null;
+        }
     }
 
     /**
