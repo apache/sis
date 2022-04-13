@@ -196,9 +196,9 @@ public class StorageConnector implements Serializable {
         add(OutputStream.class,      StorageConnector::createOutputStream);
         add(Reader.class,            StorageConnector::createReader);
         add(Connection.class,        StorageConnector::createConnection);
-        add(ChannelDataInput.class,  (s) -> s.createChannelDataInput(false));   // Undocumented case (SIS internal)
-        add(ChannelDataOutput.class, (s) -> s.createChannelDataOutput());       // Undocumented case (SIS internal)
-        add(ChannelFactory.class,    (s) -> null);                              // Undocumented. Shall not cache.
+        add(ChannelDataInput.class,  (s) -> s.createChannelDataInput(false));     // Undocumented case (SIS internal)
+        add(ChannelDataOutput.class, StorageConnector::createChannelDataOutput);  // Undocumented case (SIS internal)
+        add(ChannelFactory.class,    (s) -> null);                                // Undocumented. Shall not cache.
         /*
          * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
          * Caller should have asked for another type (e.g. InputStream) before to ask for that type.
@@ -1089,8 +1089,8 @@ public class StorageConnector implements Serializable {
             /*
              * If no ChannelDataInput has been created by the above code, get the input as an ImageInputStream and
              * read an arbitrary amount of bytes. Read only a small amount of bytes because, at the contrary of the
-             * buffer created in createChannelDataInput(boolean), the buffer created here is unlikely to be used for
-             * the reading process after the recognition of the file format.
+             * buffer created in `createChannelDataInput(boolean)`, the buffer created here is unlikely to be used
+             * for the reading process after the recognition of the file format.
              */
             final ImageInputStream in = getStorageAs(ImageInputStream.class);
             if (in != null) {
@@ -1179,6 +1179,12 @@ public class StorageConnector implements Serializable {
             views.put(ImageInputStream.class, views.get(source));               // Share the same Coupled instance.
             return (ImageInputStream) input;
         } else {
+            /*
+             * We do not invoke `ImageIO.createImageInputStream(Object)` because we do not know
+             * how the stream will use the `storage` object. It may read in advance some bytes,
+             * which can invalidate the storage for use outside the `ImageInputStream`. Instead
+             * creating image input/output streams is left to caller's responsibility.
+             */
             addView(ImageInputStream.class, null);                              // Remember that there is no view.
             return null;
         }

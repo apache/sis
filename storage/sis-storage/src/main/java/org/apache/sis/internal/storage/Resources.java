@@ -65,6 +65,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
+         * Auxiliary file “{0}” seems too large.
+         */
+        public static final short AuxiliaryFileTooLarge_1 = 71;
+
+        /**
          * Can not create resources based on the content of “{0}” directory.
          */
         public static final short CanNotCreateFolderStore_1 = 43;

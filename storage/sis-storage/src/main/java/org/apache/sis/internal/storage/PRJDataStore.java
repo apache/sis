@@ -38,8 +38,9 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
@@ -69,11 +70,18 @@ import org.apache.sis.util.Classes;
  */
 public abstract class PRJDataStore extends URIDataStore {
     /**
+     * Maximal length (in bytes) of auxiliary files. This is an arbitrary restriction, we could let
+     * the buffer growth indefinitely instead. But a large auxiliary file is probably an error and
+     * we do not want an {@link OutOfMemoryError} because of that.
+     */
+    private static final int MAXIMAL_LENGTH = 64 * 1024;
+
+    /**
      * The filename extension of {@code "*.prj"} files.
      *
      * @see #getComponentFiles()
      */
-    protected static final String PRJ = "prj";
+    private static final String PRJ = "prj";
 
     /**
      * Character encoding in {@code *.prj} or other auxiliary files,
@@ -157,12 +165,15 @@ public abstract class PRJDataStore extends URIDataStore {
      *
      * @param  extension  the filename extension of the auxiliary file to open.
      * @param  encoding   the encoding to use for reading the file content, or {@code null} for default.
-     * @return a stream opened on the specified file, or {@code null} if the file is not found.
+     * @return a stream opened on the specified file.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
+     * @throws DataStoreException if the auxiliary file content seems too large.
      */
-    protected final String readAuxiliaryFile(final String extension, Charset encoding) throws IOException {
+    protected final String readAuxiliaryFile(final String extension, Charset encoding)
+            throws IOException, DataStoreException
+    {
         if (encoding == null) {
             encoding = Charset.defaultCharset();
         }
@@ -174,19 +185,22 @@ public abstract class PRJDataStore extends URIDataStore {
          */
         final InputStream stream;
         Path path = getSpecifiedPath();
+        final Object source;                    // In case an error message is produced.
         if (path != null) {
             final String base = getBaseFilename(path);
-            path = path.resolveSibling(base.concat(extension));
+            path   = path.resolveSibling(base.concat(extension));
             stream = Files.newInputStream(path);
+            source = path;
         } else {
             final URL url = IOUtilities.toAuxiliaryURL(location, extension);
             if (url == null) {
                 return null;
             }
             stream = url.openStream();
+            source = url;
         }
         /*
-         * Reads the auxiliary file fully.
+         * Reads the auxiliary file fully, with an arbitrary size limit.
          */
         try (InputStreamReader reader = new InputStreamReader(stream, encoding)) {
             char[] buffer = new char[1024];
@@ -194,6 +208,10 @@ public abstract class PRJDataStore extends URIDataStore {
             while ((count = reader.read(buffer, offset, buffer.length - offset)) >= 0) {
                 offset += count;
                 if (offset >= buffer.length) {
+                    if (offset >= MAXIMAL_LENGTH) {
+                        throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
+                                .getString(Resources.Keys.AuxiliaryFileTooLarge_1, IOUtilities.filename(source)));
+                    }
                     buffer = Arrays.copyOf(buffer, offset*2);
                 }
             }

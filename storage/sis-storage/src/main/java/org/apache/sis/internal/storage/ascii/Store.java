@@ -48,7 +48,6 @@ import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -142,7 +141,7 @@ class Store extends PRJDataStore implements GridCoverageResource {
     /**
      * The metadata object, or {@code null} if not yet created.
      */
-    private DefaultMetadata metadata;
+    private Metadata metadata;
 
     /**
      * The full coverage, read when first requested then cached.
