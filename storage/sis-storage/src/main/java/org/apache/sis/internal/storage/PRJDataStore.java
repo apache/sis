@@ -143,7 +143,7 @@ public abstract class PRJDataStore extends URIDataStore {
      */
     protected final void readPRJ() throws DataStoreException {
         try {
-            final String wkt = readAuxiliaryFile(PRJ, encoding);
+            final String wkt = readAuxiliaryFile(PRJ, encoding).toString();
             if (wkt != null) {
                 final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
                 format.setConvention(Convention.WKT1_COMMON_UNITS);
@@ -162,16 +162,17 @@ public abstract class PRJDataStore extends URIDataStore {
      * This method uses the same URI than {@link #location},
      * except for the extension which is replaced by the given value.
      * This method is suitable for reasonably small files.
+     * An arbitrary size limit is applied for safety.
      *
-     * @param  extension  the filename extension of the auxiliary file to open.
-     * @param  encoding   the encoding to use for reading the file content, or {@code null} for default.
-     * @return a stream opened on the specified file.
+     * @param  extension    the filename extension of the auxiliary file to open.
+     * @param  encoding     the encoding to use for reading the file content, or {@code null} for default.
+     * @return the file content together with the source. Should be short-lived.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
      * @throws DataStoreException if the auxiliary file content seems too large.
      */
-    protected final String readAuxiliaryFile(final String extension, Charset encoding)
+    protected final AuxiliaryContent readAuxiliaryFile(final String extension, Charset encoding)
             throws IOException, DataStoreException
     {
         if (encoding == null) {
@@ -215,7 +216,81 @@ public abstract class PRJDataStore extends URIDataStore {
                     buffer = Arrays.copyOf(buffer, offset*2);
                 }
             }
-            return new String(buffer, 0, offset);
+            return new AuxiliaryContent(source, buffer, 0, offset);
+        }
+    }
+
+    /**
+     * Content of a file read by {@link #readAuxiliaryFile(String, Charset)}.
+     * This is used as a workaround for not being able to return multiple values from a single method.
+     * Instances of this class should be short lived, because they hold larger arrays than necessary.
+     */
+    protected static final class AuxiliaryContent implements CharSequence {
+        /** {@link Path} or {@link URL} that have been read. */
+        private final Object source;
+
+        /** The textual content of the auxiliary file. */
+        private final char[] buffer;
+
+        /** Index of the first valid character in {@link #buffer}. */
+        private final int offset;
+
+        /** Number of valid characters in {@link #buffer}. */
+        private final int length;
+
+        /** Wraps (without copying) the given array as the content of an auxiliary file. */
+        private AuxiliaryContent(final Object source, final char[] buffer, final int offset, final int length) {
+            this.source = source;
+            this.buffer = buffer;
+            this.offset = offset;
+            this.length = length;
+        }
+
+        /**
+         * Returns the filename (without path) of the auxiliary file.
+         * This information is mainly for producing error messages.
+         *
+         * @return name of the auxiliary file that have been read.
+         */
+        public String getFilename() {
+            return IOUtilities.filename(source);
+        }
+
+        /**
+         * Returns the number of valid characters in this sequence.
+         */
+        @Override
+        public int length() {
+            return length;
+        }
+
+        /**
+         * Returns the character at the given index. For performance reasons this method does not check index bounds.
+         * The behavior of this method is undefined if the given index is not smaller than {@link #length()}.
+         * We skip bounds check because this class should be used for Apache SIS internal purposes only.
+         */
+        @Override
+        public char charAt(final int index) {
+            return buffer[offset + index];
+        }
+
+        /**
+         * Returns a sub-sequence of this auxiliary file content. For performance reasons this method does not
+         * perform bound checks. The behavior of this method is undefined if arguments are out of bounds.
+         * We skip bounds check because this class should be used for Apache SIS internal purposes only.
+         */
+        @Override
+        public CharSequence subSequence(final int start, final int end) {
+            return new AuxiliaryContent(source, buffer, offset + start, end - start);
+        }
+
+        /**
+         * Copies this auxiliary file content in a {@link String}.
+         * This method does not cache the result; caller should invoke at most once.
+         */
+        @Override
+        public String toString() {
+            return new String(buffer, offset, length);
         }
     }
 
@@ -330,6 +405,11 @@ public abstract class PRJDataStore extends URIDataStore {
         return paths;
     }
 
+    /**
+     * Returns the filename of the given path without the file suffix.
+     * The returned string always ends in {@code '.'}, making it ready
+     * for concatenation of a new suffix.
+     */
     private static String getBaseFilename(final Path path) {
         final String base = path.getFileName().toString();
         final int s = base.lastIndexOf('.');

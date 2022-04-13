@@ -1,0 +1,81 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.internal.storage.image;
+
+import java.io.IOException;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.StoreMetadata;
+import org.apache.sis.internal.storage.PRJDataStore;
+import org.apache.sis.storage.ProbeResult;
+
+
+/**
+ * The provider of {@link Store} instances.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
+ * @since   1.2
+ * @module
+ */
+@StoreMetadata(formatName   = StoreProvider.NAME,
+               capabilities = Capability.READ)
+public final class StoreProvider extends PRJDataStore.Provider {
+    /**
+     * The format name.
+     */
+    static final String NAME = "World file";
+
+    /**
+     * Creates a new provider.
+     */
+    public StoreProvider() {
+    }
+
+    /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return NAME;
+    }
+
+    /**
+     * Returns a {@link Store} implementation associated with this provider.
+     *
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @return a data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
+     */
+    @Override
+    public DataStore open(final StorageConnector connector) throws DataStoreException {
+        try {
+            return new Store(this, connector);
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+    }
+
+    @Override
+    public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+}
