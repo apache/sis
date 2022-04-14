@@ -198,7 +198,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
      * that there appears to be a reasonable chance of success based on a brief inspection of the storage header.
      *
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable as a Landsat file.
-     * @throws DataStoreException if an I/O or SQL error occurred.
+     * @throws DataStoreException if an I/O error occurred.
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {

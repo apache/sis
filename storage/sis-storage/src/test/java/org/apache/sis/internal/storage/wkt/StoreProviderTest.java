@@ -83,7 +83,7 @@ public final strictfp class StoreProviderTest extends TestCase {
         c.closeAllExcept(null);
         assertEquals("isSupported", isSupported, r.isSupported());
         if (isSupported) {
-            assertEquals("mimeType", "application/wkt", r.getMimeType());
+            assertNull  ("mimeType", r.getMimeType());
             assertEquals("version", version, r.getVersion().getMajor());
         }
     }

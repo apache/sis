@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.image;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.net.URI;
@@ -120,13 +121,51 @@ enum FormatFilter {
     }
 
     /**
+     * Finds a provider for the given input, or returns {@code null} if none.
+     *
+     * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
+     * @param  connector   provider of the input to be given to the {@code canDecodeInput(…)} method.
+     * @param  done        initially empty set to be populated with providers tested by this method.
+     * @return the provider for the given input, or {@code null} if none was found.
+     * @throws DataStoreException if an error occurred while opening a stream from the storage connector.
+     * @throws IOException if an error occurred while creating the image reader instance.
+     */
+    final ImageReaderSpi findProvider(final String identifier, final StorageConnector connector, final Set<ImageReaderSpi> done)
+            throws IOException, DataStoreException
+    {
+        final Iterator<ImageReaderSpi> it = FormatFilter.SUFFIX.getServiceProviders(ImageReaderSpi.class, identifier);
+        while (it.hasNext()) {
+            final ImageReaderSpi provider = it.next();
+            if (done.add(provider)) {
+                for (final Class<?> type : provider.getInputTypes()) {
+                    if (Classes.isAssignableToAny(type, VALID_INPUTS)) {
+                        final Object input = connector.getStorageAs(type);
+                        if (input != null) {
+                            /*
+                             * We do not try to mark/reset the input because it should be done
+                             * by `canDecodeInput(…)` as per Image I/O contract. Doing our own
+                             * mark/reset may interfere with the `canDecodeInput(…)` marks.
+                             */
+                            if (provider.canDecodeInput(input)) {
+                                return provider;
+                            }
+                            break;          // Skip other input types, try the next provider.
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Creates a new reader for the given input. Caller needs to invoke this method with an initially empty
      * {@code deferred} map, which will be populated by this method. Providers associated to {@code TRUE}
      * should be tested again by the caller with an {@link ImageInputStream} created by the caller.
      * This is intentionally not done automatically by {@link StorageConnector}.
      *
      * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
-     * @param  input       the input to be given to the new reader instance.
+     * @param  connector   provider of the input to be given to the new reader instance.
      * @param  deferred    initially empty map to be populated with providers tested by this method.
      * @return the new image reader instance with its input initialized, or {@code null} if none was found.
      * @throws DataStoreException if an error occurred while opening a stream from the storage connector.
@@ -149,6 +188,7 @@ enum FormatFilter {
                                 reader.setInput(input, false, true);
                                 return reader;
                             }
+                            break;        // Skip other input types, try the next provider.
                         } else if (type == ImageInputStream.class) {
                             deferred.put(provider, Boolean.TRUE);
                         }

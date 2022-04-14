@@ -69,12 +69,14 @@ public final class StoreProvider extends PRJDataStore.Provider {
     }
 
     /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by ASCII Grid {@link Store}.
-     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed, only
-     * that there appears to be a reasonable chance of success based on a brief inspection of the storage header.
+     * Returns the MIME type if the given storage appears to be supported by ASCII Grid {@link Store}.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
+     * or writing will succeed, only that there appears to be a reasonable chance of success
+     * based on a brief inspection of the file header.
      *
-     * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable as an ASCII Grid file.
-     * @throws DataStoreException if an I/O or SQL error occurred.
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
+     *         if the given storage seems to be readable as an ASCII Grid file.
+     * @throws DataStoreException if an I/O error occurred.
      */
     @Override
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {

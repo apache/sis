@@ -342,7 +342,10 @@ loop:   for (int convention=0;; convention++) {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
             final MetadataBuilder builder = new MetadataBuilder();
-            final String format = reader().getFormatName();
+            String format = reader().getFormatName();
+            if (format.equalsIgnoreCase("tif")) {
+                format = "TIFF";
+            }
             try {
                 builder.setPredefinedFormat(format);
             } catch (MetadataStoreException e) {

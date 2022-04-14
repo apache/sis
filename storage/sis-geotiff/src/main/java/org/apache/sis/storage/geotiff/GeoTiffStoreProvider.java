@@ -95,13 +95,14 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link GeoTiffStore}.
-     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
-     * only that there appears to be a reasonable chance of success based on a brief inspection of the
-     * {@linkplain StorageConnector#getStorage() storage object} or contents.
+     * Returns the MIME type if the given storage appears to be supported by {@link GeoTiffStore}.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
+     * or writing will succeed, only that there appears to be a reasonable chance of success
+     * based on a brief inspection of the file header.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @return {@code SUPPORTED} if the given storage seems to be usable by {@code GeoTiffStore} instances.
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
+     *         if the given storage seems to be readable by {@code GeoTiffStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override

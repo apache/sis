@@ -16,13 +16,17 @@
  */
 package org.apache.sis.internal.storage.image;
 
+import java.util.Set;
+import java.util.HashSet;
 import java.io.IOException;
+import javax.imageio.spi.ImageReaderSpi;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.PRJDataStore;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.ProbeResult;
 
 
@@ -74,8 +78,36 @@ public final class StoreProvider extends PRJDataStore.Provider {
         }
     }
 
+    /**
+     * Returns the MIME type if the image file is recognized by an Image I/O reader.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
+     * or writing will succeed, only that there appears to be a reasonable chance of success
+     * based on a brief inspection of the file header.
+     *
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
+     *         if the given storage seems to be readable as an image.
+     * @throws DataStoreException if an I/O error occurred.
+     */
     @Override
-    public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
+        final Set<ImageReaderSpi> deferred = new HashSet<>();
+        final String suffix = IOUtilities.extension(connector.getStorage());
+        ImageReaderSpi provider;
+        try {
+            provider = FormatFilter.SUFFIX.findProvider(suffix, connector, deferred);
+            if (provider == null) {
+                provider = FormatFilter.SUFFIX.findProvider(null, connector, deferred);
+                if (provider == null) {
+                    return ProbeResult.UNSUPPORTED_STORAGE;
+                }
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        final String[] types = provider.getMIMETypes();
+        if (types != null && types.length != 0) {
+            return new ProbeResult(true, types[0], null);
+        }
+        return ProbeResult.SUPPORTED;
     }
 }
