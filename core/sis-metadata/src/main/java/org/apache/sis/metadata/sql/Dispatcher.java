@@ -56,7 +56,7 @@ import org.apache.sis.internal.util.Numerics;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -83,7 +83,7 @@ final class Dispatcher implements InvocationHandler {
      * have different {@code preferredIndex} values even if their {@link CachedStatement#type} value is the same,
      * since their {@link #identifier} values are different.</div>
      */
-    byte preferredIndex;
+    int preferredIndex;
 
     /**
      * The metadata instance where to store the property (column) values, or {@code null} if not yet created.
@@ -266,7 +266,7 @@ final class Dispatcher implements InvocationHandler {
                                     hasValue |= (fetchValue(info, impl.getMethod(dep)) != null);
                                 }
                                 if (hasValue) {
-                                    cache = this.cache;             // Created by recursive 'invoke(…)' call above.
+                                    cache = this.cache;             // Created by recursive `invoke(…)` call above.
                                     if (cache != null) {
                                         synchronized (cache) {
                                             value = method.invoke(cache);             // Attempt a new computation.

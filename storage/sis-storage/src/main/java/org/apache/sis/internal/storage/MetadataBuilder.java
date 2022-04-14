@@ -1008,7 +1008,7 @@ public class MetadataBuilder {
      *
      * {@preformat java
      *     try {
-     *         metadata.setFormat("MyFormat");
+     *         metadata.setPredefinedFormat("MyFormat");
      *     } catch (MetadataStoreException e) {
      *         metadata.addFormatName("MyFormat");
      *         listeners.warning(null, e);
@@ -1023,7 +1023,7 @@ public class MetadataBuilder {
      * @see #addCompression(CharSequence)
      * @see #addFormatName(CharSequence)
      */
-    public final void setFormat(final String abbreviation) throws MetadataStoreException {
+    public final void setPredefinedFormat(final String abbreviation) throws MetadataStoreException {
         if (abbreviation != null && abbreviation.length() != 0) {
             if (format == null) {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
@@ -3089,12 +3089,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setFormat(String)},
-     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
      *
      * @param value  the format name, or {@code null} for no-operation.
      *
-     * @see #setFormat(String)
+     * @see #setPredefinedFormat(String)
      * @see #setFormatEdition(CharSequence)
      * @see #addCompression(CharSequence)
      */
@@ -3119,12 +3119,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/edition}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setFormat(String)},
-     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
      *
      * @param value  the format edition, or {@code null} for no-operation.
      *
-     * @see #setFormat(String)
+     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void setFormatEdition(final CharSequence value) {
@@ -3148,12 +3148,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setFormat(String)},
-     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
      *
      * @param value  the compression name, or {@code null} for no-operation.
      *
-     * @see #setFormat(String)
+     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void addCompression(final CharSequence value) {

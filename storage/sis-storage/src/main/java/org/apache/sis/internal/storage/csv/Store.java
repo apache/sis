@@ -640,7 +640,7 @@ final class Store extends URIDataStore implements FeatureSet {
             final MetadataBuilder builder = new MetadataBuilder();
             final String format = (timeEncoding != null) && hasTrajectories ? StoreProvider.MOVING : StoreProvider.NAME;
             try {
-                builder.setFormat(format);
+                builder.setPredefinedFormat(format);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(format);
                 listeners.warning(e);

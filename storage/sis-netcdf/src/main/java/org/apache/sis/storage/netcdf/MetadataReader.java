@@ -666,7 +666,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String[] format = decoder.getFormatDescription();
         String id = format[0];
         if (NetcdfStoreProvider.NAME.equalsIgnoreCase(id)) try {
-            setFormat(NetcdfStoreProvider.NAME);
+            setPredefinedFormat(NetcdfStoreProvider.NAME);
             id = null;
         } catch (MetadataStoreException e) {
             // Will add `id` at the end of this method.

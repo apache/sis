@@ -332,7 +332,7 @@ cellsize:       if (value != null) {
             readHeader();
             final MetadataBuilder builder = new MetadataBuilder();
             try {
-                builder.setFormat("ASCGRD");
+                builder.setPredefinedFormat("ASCGRD");
             } catch (MetadataStoreException e) {
                 builder.addFormatName(StoreProvider.NAME);
                 listeners.warning(e);

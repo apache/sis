@@ -476,8 +476,8 @@ final class MetadataReader extends MetadataBuilder {
             case "OUTPUT_FORMAT": {
                 String name = value;
                 if (Constants.GEOTIFF.equalsIgnoreCase(name)) try {
-                    name = Constants.GEOTIFF;               // Because 'metadata.setFormat(…)' is case-sensitive.
-                    setFormat(name);
+                    name = Constants.GEOTIFF;       // Because `metadata.setPredefinedFormat(…)` is case-sensitive.
+                    setPredefinedFormat(name);
                     break;
                 } catch (MetadataStoreException e) {
                     warning(key, null, e);

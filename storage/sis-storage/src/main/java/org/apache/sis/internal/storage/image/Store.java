@@ -344,7 +344,7 @@ loop:   for (int convention=0;; convention++) {
             final MetadataBuilder builder = new MetadataBuilder();
             final String format = reader().getFormatName();
             try {
-                builder.setFormat(format);
+                builder.setPredefinedFormat(format);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(format);
                 listeners.warning(Level.FINE, null, e);
