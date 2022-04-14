@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Rectangle;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -1610,8 +1611,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final TableAppender table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
-            CharSequence name;
-            if ((types == null) || (name = Types.getCodeTitle(types[i])) == null) {
+            String name = null;
+            if (types != null) {
+                final InternationalString title = Types.getCodeTitle(types[i]);
+                if (title != null) {
+                    name = title.toString(vocabulary.getLocale());
+                }
+            }
+            if (name == null) {
                 name = vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
             }
             final long lower = coordinates[i];
