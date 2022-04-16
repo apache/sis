@@ -21,10 +21,11 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.util.Strings;
 
@@ -60,6 +61,11 @@ final class SubsampledImage extends PlanarImage {
     private final int subX, subY;
 
     /**
+     * The offset to apply after subsampling.
+     */
+    private final int offX, offY;
+
+    /**
      * The subsampled model.
      */
     private final SampleModel model;
@@ -86,13 +92,15 @@ final class SubsampledImage extends PlanarImage {
         this.source = source;
         this.subX   = subX;
         this.subY   = subY;
+        this.offX   = offX;
+        this.offY   = offY;
         final SampleModel sourceModel = source.getSampleModel();
         if (sourceModel instanceof PixelInterleavedSampleModel) {
             final PixelInterleavedSampleModel sm = (PixelInterleavedSampleModel) sourceModel;
             final int   pixelStride    = sm.getPixelStride();
             final int   scanlineStride = sm.getScanlineStride();
-            final int   offset         = pixelStride*offX + scanlineStride*offY;
-            final int[] offsets        = sm.getBandOffsets();
+            final int   strideOffset   = pixelStride*offX + scanlineStride*offY;
+            final int[] bandOffsets    = sm.getBandOffsets();
             /*
              * Conversion from subsampled coordinate x′ to full resolution x is:
              *
@@ -103,13 +111,13 @@ final class SubsampledImage extends PlanarImage {
              *
              *    y*scanlineStride + x*pixelStride + bandOffsets[b]
              */
-            for (int i=0; i<offsets.length; i++) {
-                offsets[i] += offset;
+            for (int i=0; i<bandOffsets.length; i++) {
+                bandOffsets[i] += strideOffset;
             }
             model = new PixelInterleavedSampleModel(sm.getDataType(),
                     divExclusive(sm.getWidth(),  subX),
                     divExclusive(sm.getHeight(), subY),
-                    pixelStride*subX, scanlineStride*subY, offsets);
+                    pixelStride*subX, scanlineStride*subY, bandOffsets);
         } else if (sourceModel instanceof MultiPixelPackedSampleModel) {
             final MultiPixelPackedSampleModel sm = (MultiPixelPackedSampleModel) sourceModel;
             assertEquals("Subsampling on the X axis is not supported.", 1, subX);
@@ -259,8 +267,89 @@ final class SubsampledImage extends PlanarImage {
     @Override
     public Raster getTile(final int tileX, final int tileY) {
         final Raster tile = source.getTile(tileX, tileY);
-        return Raster.createRaster(model, tile.getDataBuffer(),
-                new Point(divInclusive(tile.getMinX(), subX),
-                          divInclusive(tile.getMinY(), subY)));
+        final int x       = divInclusive(tile.getMinX(),   subX);
+        final int y       = divInclusive(tile.getMinY(),   subY);
+        final int width   = divExclusive(tile.getWidth(),  subX);
+        final int height  = divExclusive(tile.getHeight(), subY);
+        int tx = tile.getMinX() - tile.getSampleModelTranslateX();
+        int ty = tile.getMinY() - tile.getSampleModelTranslateY();
+        if ((tx % subX) != 0 || (ty % subY) != 0) {
+            /*
+             * We can not create a view over the existing raster if `tx` and `ty` are not a divisor
+             * of `subX` and `subY` respectively. In such case, as a workaround we create a copy.
+             * Note that this is rarely needed because `tx` and `ty` are usually zero.
+             */
+            return rewriteTile(tile, tile.createCompatibleWritableRaster(x, y, width, height));
+        }
+        /*
+         * We need to create the raster from scratch in order to specify our custom sample model.
+         * The static `createRaster(SampleModel, DataBuffer, Point)` method makes two assumptions:
+         *
+         *   - Raster size is equal to sample model size.
+         *   - The first pixel is located at the beginning of the data buffer.
+         *     This is implied by `Raster.sampleModelTranslateX|Y` equal to `Raster.minX|Y`.
+         *
+         * Above conditions are usually meet in Apache SIS implementations of `DataStore`.
+         * But they are not meet if the source tile was itself a view over sub-region of another tile
+         * for example as produced by `BufferedImage.getSubimage(…)`, It happens when using Image I/O.
+         * In such cases `tile.sampleModelTranslateX|Y` may have values different than `tile.minX|Y`.
+         *
+         * As of Java 17 there is no factory method for creating a raster having a different size
+         * or different `sampleModelTranslate`, but we can specify those values afterward by call
+         * to `parent.createChild(…)`. The latter method computes translation as below:
+         *
+         *     child.sampleModelTranslateX = parent.sampleModelTranslateX + childMinX - parentX
+         *     (idem for Y)
+         *
+         * Given the following:
+         *
+         *     - parent.sampleModelTranslateX = parent.minX = x     by `Raster.createRaster(…) construction
+         *     - childMinX = x                                      by `this.getTile(…)` method contract
+         *     - parentX   = x + Δx
+         *       Δx        ≈ (tile.minX - tile.sampleModelTranslateX) / subX
+         *
+         * We get:
+         *
+         *     child.sampleModelTranslateX = x + x - parentX   =   x - Δx
+         *         = x - tile.minX/subX + tile.sampleModelTranslateX/subX
+         *         ≈ tile.sampleModelTranslateX / subX
+         *
+         * The last term is the desired value. The "almost equal" is because of quotient rounding
+         * if values in `tile` are not divisible by the subsampling.
+         */
+        Raster subsampled = Raster.createRaster(model, tile.getDataBuffer(), new Point(x, y));
+        if ((tx | ty) != 0 || subsampled.getWidth() != width || subsampled.getHeight() != height) {
+            tx = x + divInclusive(tx, subX);
+            ty = y + divInclusive(ty, subY);
+            subsampled = subsampled.createChild(tx, ty, width, height, x, y, null);
+        }
+        assertEquals(x, subsampled.getMinX());
+        assertEquals(y, subsampled.getMinY());
+        return subsampled;
+    }
+
+    /**
+     * Invoked when we can not create a subsampled tile as a view of the original tile.
+     * This method rewrites fully the tile by copying sample values in a new data buffer.
+     *
+     * @param  tile    the tile to rewrite.
+     * @param  target  an initially empty tile with the expected location and size.
+     * @return the {@code target} tile with rewritten values.
+     */
+    private Raster rewriteTile(final Raster tile, final WritableRaster target) {
+        final int width  = target.getWidth();
+        final int height = target.getHeight();
+        final int xmin   = target.getMinX();
+        final int ymin   = target.getMinY();
+        final int xs     = tile.getMinX() + offX;
+        final int ys     = tile.getMinY() + offY;
+        double[] buffer = null;
+        for (int y=0; y<height; y++) {
+            for (int x=0; x<width; x++) {
+                buffer = tile.getPixel(x*subX + xs, y*subY + ys, buffer);
+                target.setPixel(x + xmin, y + ymin, buffer);
+            }
+        }
+        return target;
     }
 }

@@ -1324,7 +1324,7 @@ public class GridDerivation {
      * Returns the offsets to be subtracted from pixel coordinates before subsampling.
      * In a conversion from <em>derived</em> grid to {@linkplain #base} grid coordinates
      * (the opposite direction of subsampling), the offset is the value to add after
-     * multiplication by the scale factor. It may be negative.
+     * multiplication by the subsampling factor. It may be negative.
      *
      * <p>This method can be invoked after {@link #build()} for getting additional information.</p>
      *
