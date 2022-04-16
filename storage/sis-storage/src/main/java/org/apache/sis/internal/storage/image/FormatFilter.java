@@ -41,7 +41,6 @@ import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Classes;
 
 
 /**
@@ -76,19 +75,21 @@ enum FormatFilter {
     private final Function<ImageReaderWriterSpi, String[]> property;
 
     /**
-     * Valid types of inputs accepted by this class.
+     * Types of image inputs that are accepted by {@link StorageConnector}. An input type is accepted if
+     * it is equal to one of those types. We do not use {@link Class#isAssignableFrom(Class)} because if
+     * an image reader requests a sub-type, we can probably not provide it ourselves.
      */
     private static final Class<?>[] VALID_INPUTS = {
-        // ImageInputStream case included by DataInput.
-        DataInput.class, InputStream.class, File.class, Path.class, URL.class, URI.class
+        ImageInputStream.class, DataInput.class, InputStream.class, File.class, Path.class, URL.class, URI.class
     };
 
     /**
-     * Valid types of outputs accepted by this class.
+     * Types of image outputs that are accepted by {@link StorageConnector}. An output type is accepted
+     * if it is equal to one of those types. We do not use {@link Class#isAssignableFrom(Class)} because
+     * if an image reader requests a sub-type, we can probably not provide it ourselves.
      */
     private static final Class<?>[] VALID_OUTPUTS = {
-        // ImageOutputStream case included by DataOutput.
-        DataOutput.class, OutputStream.class, File.class, Path.class, URL.class, URI.class
+        ImageOutputStream.class, DataOutput.class, OutputStream.class, File.class, Path.class, URL.class, URI.class
     };
 
     /**
@@ -138,7 +139,7 @@ enum FormatFilter {
             final ImageReaderSpi provider = it.next();
             if (done.add(provider)) {
                 for (final Class<?> type : provider.getInputTypes()) {
-                    if (Classes.isAssignableToAny(type, VALID_INPUTS)) {
+                    if (ArraysExt.contains(VALID_INPUTS, type)) {
                         final Object input = connector.getStorageAs(type);
                         if (input != null) {
                             /*
@@ -179,7 +180,7 @@ enum FormatFilter {
             final ImageReaderSpi provider = it.next();
             if (deferred.putIfAbsent(provider, Boolean.FALSE) == null) {
                 for (final Class<?> type : provider.getInputTypes()) {
-                    if (Classes.isAssignableToAny(type, VALID_INPUTS)) {
+                    if (ArraysExt.contains(VALID_INPUTS, type)) {
                         final Object input = connector.getStorageAs(type);
                         if (input != null) {
                             if (provider.canDecodeInput(input)) {
@@ -222,7 +223,7 @@ enum FormatFilter {
             if (deferred.putIfAbsent(provider, Boolean.FALSE) == null) {
                 if (provider.canEncodeImage(image)) {
                     for (final Class<?> type : provider.getOutputTypes()) {
-                        if (Classes.isAssignableToAny(type, VALID_OUTPUTS)) {
+                        if (ArraysExt.contains(VALID_OUTPUTS, type)) {
                             final Object output = connector.getStorageAs(type);
                             if (output != null) {
                                 connector.closeAllExcept(output);

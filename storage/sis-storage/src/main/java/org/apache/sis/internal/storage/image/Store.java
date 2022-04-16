@@ -37,9 +37,9 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -68,6 +68,13 @@ import org.apache.sis.setup.OptionKey;
  * @module
  */
 final class Store extends PRJDataStore implements Aggregate {
+    /**
+     * Image I/O format names (ignoring case) for which we have an entry in the {@code SpatialMetadata} database.
+     */
+    private static final String[] KNOWN_FORMATS = {
+        "PNG"
+    };
+
     /**
      * Index of the main image. This is relevant only with formats capable to store an arbitrary amount of images.
      * Current implementation assumes that the main image is always the first one, but it may become configurable
@@ -343,15 +350,18 @@ loop:   for (int convention=0;; convention++) {
         if (metadata == null) try {
             final MetadataBuilder builder = new MetadataBuilder();
             String format = reader().getFormatName();
-            if (format.equalsIgnoreCase("tif")) {
-                format = "TIFF";
+            for (final String key : KNOWN_FORMATS) {
+                if (key.equalsIgnoreCase(format)) {
+                    try {
+                        builder.setPredefinedFormat(key);
+                        format = null;
+                    } catch (MetadataStoreException e) {
+                        listeners.warning(Level.FINE, null, e);
+                    }
+                    break;
+                }
             }
-            try {
-                builder.setPredefinedFormat(format);
-            } catch (MetadataStoreException e) {
-                builder.addFormatName(format);
-                listeners.warning(Level.FINE, null, e);
-            }
+            builder.addFormatName(format);                          // Does nothing if `format` is null.
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             builder.addSpatialRepresentation(null, getGridGeometry(MAIN_IMAGE), true);
             addTitleOrIdentifier(builder);
@@ -368,7 +378,7 @@ loop:   for (int convention=0;; convention++) {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final synchronized Collection<? extends Resource> components() throws DataStoreException {
+    public final synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
         if (components == null) try {
             components = new Components();
         } catch (IOException e) {
