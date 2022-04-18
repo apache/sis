@@ -16,6 +16,10 @@
  */
 package org.apache.sis.internal.storage.image;
 
+import java.io.IOException;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.identification.Identification;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
@@ -23,6 +27,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -54,5 +59,31 @@ public final strictfp class StoreTest extends TestCase {
         assertEquals("image/png", r.getMimeType());
     }
 
-
+    /**
+     * Tests the metadata of the {@code "gradient.png"} file.
+     *
+     * @throws DataStoreException if an error occurred while reading the file.
+     * @throws IOException if an error occurred while creating the image reader instance.
+     */
+    @Test
+    public void testMetadata() throws DataStoreException, IOException {
+        try (Store store = new Store(null, testData())) {
+            assertEquals("gradient", store.getIdentifier().get().toString());
+            final Metadata metadata = store.getMetadata();
+            final Identification id = getSingleton(metadata.getIdentificationInfo());
+            final String format = getSingleton(id.getResourceFormats()).getFormatSpecificationCitation().getTitle().toString();
+            assertTrue(format, format.contains("PNG"));
+            assertEquals("WGS 84", getSingleton(metadata.getReferenceSystemInfo()).getName().getCode());
+            final GeographicBoundingBox bbox = (GeographicBoundingBox)
+                    getSingleton(getSingleton(id.getExtents()).getGeographicElements());
+            assertEquals( -90, bbox.getSouthBoundLatitude(), STRICT);
+            assertEquals( +90, bbox.getNorthBoundLatitude(), STRICT);
+            assertEquals(-180, bbox.getWestBoundLongitude(), STRICT);
+            assertEquals(+180, bbox.getEastBoundLongitude(), STRICT);
+            /*
+             * Verify that the metadata is cached.
+             */
+            assertSame(metadata, store.getMetadata());
+        }
+    }
 }

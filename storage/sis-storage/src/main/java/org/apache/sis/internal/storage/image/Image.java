@@ -26,6 +26,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -40,7 +41,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 
@@ -150,13 +153,21 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
                 final ImageTypeSpecifier type   = reader.getRawImageType(imageIndex);
                 final SampleDimension[]  bands  = new SampleDimension[type.getNumBands()];
                 final SampleDimension.Builder b = new SampleDimension.Builder();
+                final short[] names = ImageUtilities.bandNames(type.getColorModel(), type.getSampleModel());
                 for (int i=0; i<bands.length; i++) {
                     /*
                      * TODO: we could consider a mechanism similar to org.apache.sis.internal.geotiff.SchemaModifier
                      * if there is a need to customize the sample dimensions. `SchemaModifier` could become a shared
                      * public interface.
                      */
-                    bands[i] = b.setName(i + 1).build();
+                    final InternationalString name;
+                    final short k;
+                    if (i < names.length && (k = names[i]) != 0) {
+                        name = Vocabulary.formatInternational(k);
+                    } else {
+                        name = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i+1);
+                    }
+                    bands[i] = b.setName(name).build();
                     b.clear();
                 }
                 sampleDimensions = UnmodifiableArrayList.wrap(bands);
