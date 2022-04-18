@@ -21,12 +21,15 @@ import java.util.Optional;
 import java.io.IOException;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
+import java.awt.image.BandedSampleModel;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
 import org.opengis.util.GenericName;
+import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -36,11 +39,12 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 
 import static java.lang.Math.toIntExact;
-import org.apache.sis.coverage.grid.GridCoverage2D;
 
 
 /**
@@ -172,7 +176,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public final GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+    public final GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
         synchronized (store) {
             final ImageReader reader = store.reader();
             final ImageReadParam param = reader.getDefaultReadParam();
@@ -183,24 +187,69 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
                 final GridExtent extent = gd.getIntersection();
                 final int[] subsampling = gd.getSubsampling();
                 final int[] offsets     = gd.getSubsamplingOffsets();
-                domain = gd.build();
-                param.setSourceSubsampling(subsampling[X_DIMENSION], subsampling[Y_DIMENSION],
-                                           offsets[X_DIMENSION], offsets[Y_DIMENSION]);
-                param.setSourceRegion(new Rectangle(
+                final int   subX        = subsampling[X_DIMENSION];
+                final int   subY        = subsampling[Y_DIMENSION];
+                final Rectangle region  = new Rectangle(
                         toIntExact(extent.getLow (X_DIMENSION)),
                         toIntExact(extent.getLow (Y_DIMENSION)),
                         toIntExact(extent.getSize(X_DIMENSION)),
-                        toIntExact(extent.getSize(Y_DIMENSION))));
+                        toIntExact(extent.getSize(Y_DIMENSION)));
+                /*
+                 * Ths subsampling offset Δx is defined differently in Image I/O and `GridGeometry`.
+                 * The conversion from coordinate x in subsampled image to xₒ in original image is:
+                 *
+                 *     Image I/O:     xₒ = xᵣ + (x⋅s + Δx′)
+                 *     GridGeometry:  xₒ = (truncate(xᵣ/s) + x)⋅s + Δx
+                 *
+                 * Where xᵣ is the the lower coordinate of `region`, s is the subsampling and
+                 * `truncate(xᵣ/s)` is given by the lower coordinate of subsampled extent.
+                 * Rearranging equations:
+                 *
+                 *     Δx′ = truncate(xᵣ/s)⋅s + Δx - xᵣ
+                 */
+                domain = gd.build();
+                GridExtent subExtent = domain.getExtent();
+                param.setSourceRegion(region);
+                param.setSourceSubsampling(subX, subY,
+                        toIntExact(subExtent.getLow(X_DIMENSION) * subX + offsets[X_DIMENSION] - region.x),
+                        toIntExact(subExtent.getLow(Y_DIMENSION) * subY + offsets[Y_DIMENSION] - region.y));
             }
-            if (range != null) {
-                param.setSourceBands(range);
-            }
-            final List<SampleDimension> sampleDimensions = getSampleDimensions();
-            final RenderedImage image;
+            RenderedImage image;
+            List<SampleDimension> sampleDimensions = getSampleDimensions();
             try {
+                /*
+                 * If a subset of the bands is requested, ideally we should forward this request to the `ImageReader`.
+                 * But experience suggests that not all `ImageReader` implementations support band subsetting well.
+                 * This code applies heuristic rules forwarding the request to the image reader only for what should
+                 * be the easiest cases. More difficult cases will be handled after the reading.
+                 * Those heuristic rules may be changed in any future version.
+                 */
+                if (range != null) {
+                    final ImageTypeSpecifier type = reader.getRawImageType(imageIndex);
+                    final RangeArgument args = RangeArgument.validate(type.getNumBands(), range, listeners);
+                    if (args.isIdentity()) {
+                        range = null;
+                    } else {
+                        sampleDimensions = UnmodifiableArrayList.wrap(args.select(sampleDimensions));
+                        if (args.hasAllBands || type.getSampleModel() instanceof BandedSampleModel) {
+                            range = args.getSelectedBands();
+                            param.setSourceBands(range);
+                            param.setDestinationBands(ArraysExt.range(0, range.length));
+                            range = null;
+                        }
+                    }
+                }
                 image = reader.readAsRenderedImage(imageIndex, param);
             } catch (IOException e) {
                 throw new DataStoreException(e);
+            }
+            /*
+             * If the reader was presumed unable to handle the band subsetting, apply it now.
+             * It waste some memory because unused bands still in memory. But we do that as a
+             * workaround for limitations in some `ImageReader` implementations.
+             */
+            if (range != null) {
+                image = new ImageProcessor().selectBands(image, range);
             }
             return new GridCoverage2D(domain, sampleDimensions, image);
         }
