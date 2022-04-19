@@ -285,7 +285,7 @@ loop:   for (int convention=0;; convention++) {
         final CharSequence[] lines = CharSequences.splitOnEOL(readAuxiliaryFile(wld, encoding));
         int count = 0;
         final int expected = 6;                     // Expected number of elements.
-        final double[] m = new double[expected];
+        final double[] elements = new double[expected];
         for (int i=0; i<expected; i++) {
             final String line = lines[i].toString().trim();
             if (!line.isEmpty() && line.charAt(0) != '#') {
@@ -293,7 +293,7 @@ loop:   for (int convention=0;; convention++) {
                     throw new DataStoreContentException(errors().getString(Errors.Keys.TooManyOccurrences_2, expected, "coefficient"));
                 }
                 try {
-                    m[count++] = Double.parseDouble(line);
+                    elements[count++] = Double.parseDouble(line);
                 } catch (NumberFormatException e) {
                     throw new DataStoreContentException(errors().getString(Errors.Keys.ErrorInFileAtLine_2, content.getFilename(), i), e);
                 }
@@ -302,8 +302,7 @@ loop:   for (int convention=0;; convention++) {
         if (count != expected) {
             throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, content.getFilename()));
         }
-        // TODO: provide a more direct way.
-        return new AffineTransform2D(new java.awt.geom.AffineTransform(m));
+        return new AffineTransform2D(elements);
     }
 
     /**
