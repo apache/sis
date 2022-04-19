@@ -124,7 +124,8 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     }
 
     /**
-     * Returns all matrix elements.
+     * Returns all matrix elements in row-major order.
+     * Note that this is not the same order than {@link AffineTransform} constructor.
      */
     @Override
     public double[] getExtendedElements() {

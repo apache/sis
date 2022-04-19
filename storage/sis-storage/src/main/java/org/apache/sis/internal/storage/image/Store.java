@@ -19,13 +19,14 @@ package org.apache.sis.internal.storage.image;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
@@ -38,6 +39,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.GridCoverageResource;
@@ -45,6 +47,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.PRJDataStore;
@@ -69,7 +72,7 @@ import org.apache.sis.setup.OptionKey;
  * @since   1.2
  * @module
  */
-final class Store extends PRJDataStore implements Aggregate {
+class Store extends PRJDataStore implements Aggregate {
     /**
      * Image I/O format names (ignoring case) for which we have an entry in the {@code SpatialMetadata} database.
      */
@@ -85,7 +88,7 @@ final class Store extends PRJDataStore implements Aggregate {
      * @see #width
      * @see #height
      */
-    private static final int MAIN_IMAGE = 0;
+    static final int MAIN_IMAGE = 0;
 
     /**
      * The default World File suffix when it can not be determined from {@link #location}.
@@ -94,13 +97,30 @@ final class Store extends PRJDataStore implements Aggregate {
     private static final String DEFAULT_SUFFIX = "wld";
 
     /**
+     * The "cell center" versus "cell corner" interpretation of translation coefficients.
+     * The ESRI specification said that the coefficients map to pixel center.
+     */
+    static final PixelInCell CELL_ANCHOR = PixelInCell.CELL_CENTER;
+
+    /**
      * The filename extension (may be an empty string), or {@code null} if unknown.
      * It does not include the leading dot.
      */
-    private final String suffix;
+    final String suffix;
 
     /**
-     * The image reader, set by the constructor and cleared when no longer needed.
+     * The filename extension for the auxiliary "world file".
+     * For the TIFF format, this is typically {@code "tfw"}.
+     * This is computed as a side-effect of {@link #readWorldFile()}.
+     */
+    private String suffixWLD;
+
+    /**
+     * The image reader, set by the constructor and cleared when the store is closed.
+     * May also be null if the store is initially write-only, in which case a reader
+     * may be created the first time than an image is read.
+     *
+     * @see #reader()
      */
     private ImageReader reader;
 
@@ -130,7 +150,7 @@ final class Store extends PRJDataStore implements Aggregate {
      *
      * @see #components()
      */
-    private List<Image> components;
+    private Components components;
 
     /**
      * The metadata object, or {@code null} if not yet created.
@@ -144,21 +164,30 @@ final class Store extends PRJDataStore implements Aggregate {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  readOnly   whether to fail if the channel can not be opened at least in read mode.
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector)
+    Store(final StoreProvider provider, final StorageConnector connector, final boolean readOnly)
             throws DataStoreException, IOException
     {
         super(provider, connector);
-        final Map<ImageReaderSpi,Boolean> deferred = new LinkedHashMap<>();
         final Object storage = connector.getStorage();
         suffix = IOUtilities.extension(storage);
+        if (!(readOnly || fileExists(connector))) {
+            /*
+             * If the store is opened in read-write mode, create the image reader only
+             * if the file exists and is non-empty. Otherwise we let `reader` to null
+             * and the caller will create an image writer instead.
+             */
+            return;
+        }
         /*
          * Search for a reader that claim to be able to read the storage input.
          * First we try readers associated to the file suffix. If no reader is
          * found, we try all other readers.
          */
+        final Map<ImageReaderSpi,Boolean> deferred = new LinkedHashMap<>();
         if (suffix != null) {
             reader = FormatFilter.SUFFIX.createReader(suffix, connector, deferred);
         }
@@ -174,14 +203,20 @@ fallback:   if (reader == null) {
                 for (final Map.Entry<ImageReaderSpi,Boolean> entry : deferred.entrySet()) {
                     if (entry.getValue()) {
                         if (stream == null) {
-                            stream = ImageIO.createImageInputStream(storage);
-                            if (stream == null) break;
+                            if (!readOnly) {
+                                // ImageOutputStream is both read and write.
+                                stream = ImageIO.createImageOutputStream(storage);
+                            }
+                            if (stream == null) {
+                                stream = ImageIO.createImageInputStream(storage);
+                                if (stream == null) break;
+                            }
                         }
                         final ImageReaderSpi p = entry.getKey();
                         if (p.canDecodeInput(stream)) {
                             connector.closeAllExcept(storage);
                             reader = p.createReaderInstance();
-                            reader.setInput(stream, false, true);
+                            reader.setInput(stream);
                             break fallback;
                         }
                     }
@@ -190,15 +225,43 @@ fallback:   if (reader == null) {
                             storage, connector.getOption(OptionKey.OPEN_OPTIONS));
             }
         }
+        configureReader();
         /*
-         * Sets the locale to use for warning messages, if supported. If the reader
-         * does not support the locale, the reader's default locale will be used.
+         * Do not invoke any method that may cause the image reader to start reading the stream,
+         * because the `WritableStore` subclass will want to save the initial stream position.
          */
+    }
+
+    /**
+     * Sets the locale to use for warning messages, if supported. If the reader
+     * does not support the locale, the reader's default locale will be used.
+     */
+    private void configureReader() {
         try {
             reader.setLocale(listeners.getLocale());
         } catch (IllegalArgumentException e) {
             // Ignore
         }
+        reader.addIIOReadWarningListener(new WarningListener(listeners));
+    }
+
+    /**
+     * Returns {@code true} if the image file exists and is non-empty.
+     * This is used for checking if an {@link ImageReader} should be created.
+     * If the file is going to be truncated, then it is considered already empty.
+     *
+     * @param  connector  the connector to use for opening the file.
+     * @return whether the image file exists and is non-empty.
+     */
+    private boolean fileExists(final StorageConnector connector) throws DataStoreException, IOException {
+        if (!ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.TRUNCATE_EXISTING)) {
+            for (Path path : super.getComponentFiles()) {
+                if (Files.isRegularFile(path) && Files.size(path) > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -267,7 +330,7 @@ loop:   for (int convention=0;; convention++) {
             }
         }
         if (warning != null) {
-            listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, preferred), warning);
+            listeners.warning(resources().getString(Resources.Keys.CanNotReadAuxiliaryFile_1, preferred), warning);
         }
         return null;
     }
@@ -281,11 +344,12 @@ loop:   for (int convention=0;; convention++) {
      * @throws DataStoreException if the file content can not be parsed.
      */
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
-        final AuxiliaryContent content = readAuxiliaryFile(wld, encoding);
-        final CharSequence[] lines = CharSequences.splitOnEOL(readAuxiliaryFile(wld, encoding));
-        int count = 0;
-        final int expected = 6;                     // Expected number of elements.
-        final double[] elements = new double[expected];
+        final AuxiliaryContent content  = readAuxiliaryFile(wld, encoding);
+        final String           filename = content.getFilename();
+        final CharSequence[]   lines    = CharSequences.splitOnEOL(readAuxiliaryFile(wld, encoding));
+        final int              expected = 6;        // Expected number of elements.
+        int                    count    = 0;        // Actual number of elements.
+        final double[]         elements = new double[expected];
         for (int i=0; i<expected; i++) {
             final String line = lines[i].toString().trim();
             if (!line.isEmpty() && line.charAt(0) != '#') {
@@ -295,14 +359,27 @@ loop:   for (int convention=0;; convention++) {
                 try {
                     elements[count++] = Double.parseDouble(line);
                 } catch (NumberFormatException e) {
-                    throw new DataStoreContentException(errors().getString(Errors.Keys.ErrorInFileAtLine_2, content.getFilename(), i), e);
+                    throw new DataStoreContentException(errors().getString(Errors.Keys.ErrorInFileAtLine_2, filename, i), e);
                 }
             }
         }
         if (count != expected) {
-            throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, content.getFilename()));
+            throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, filename));
+        }
+        if (filename != null) {
+            final int s = filename.lastIndexOf('.');
+            if (s >= 0) {
+                suffixWLD = filename.substring(s+1);
+            }
         }
         return new AffineTransform2D(elements);
+    }
+
+    /**
+     * Returns the localized resources for producing warnings or error messages.
+     */
+    final Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
     }
 
     /**
@@ -310,6 +387,22 @@ loop:   for (int convention=0;; convention++) {
      */
     private Errors errors() {
         return Errors.getResources(listeners.getLocale());
+    }
+
+    /**
+     * Returns paths to the main file together with auxiliary files.
+     *
+     * @return paths to the main file and auxiliary files, or an empty array if unknown.
+     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     */
+    @Override
+    public final synchronized Path[] getComponentFiles() throws DataStoreException {
+        if (suffixWLD == null) try {
+            getGridGeometry(MAIN_IMAGE);                // Will compute `suffixWLD` as a side effect.
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        return listComponentFiles(suffixWLD, PRJ);      // `suffixWLD` still null if file was not found.
     }
 
     /**
@@ -322,7 +415,7 @@ loop:   for (int convention=0;; convention++) {
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if the {@code *.prj} or {@code *.tfw} auxiliary file content can not be parsed.
      */
-    private GridGeometry getGridGeometry(final int index) throws IOException, DataStoreException {
+    final GridGeometry getGridGeometry(final int index) throws IOException, DataStoreException {
         assert Thread.holdsLock(this);
         final ImageReader reader = reader();
         if (gridGeometry == null) {
@@ -331,23 +424,48 @@ loop:   for (int convention=0;; convention++) {
             height    = reader.getHeight(MAIN_IMAGE);
             gridToCRS = readWorldFile();
             readPRJ();
-            gridGeometry = new GridGeometry(new GridExtent(width, height), PixelInCell.CELL_CENTER, gridToCRS, crs);
+            gridGeometry = new GridGeometry(new GridExtent(width, height), CELL_ANCHOR, gridToCRS, crs);
         }
         if (index != MAIN_IMAGE) {
             final int w = reader.getWidth (index);
             final int h = reader.getHeight(index);
             if (w != width || h != height) {
-                return new GridGeometry(new GridExtent(w, h), PixelInCell.CELL_CENTER, null, null);
+                // Can not use `gridToCRS` and `crs` because they may not apply.
+                return new GridGeometry(new GridExtent(w, h), CELL_ANCHOR, null, null);
             }
         }
         return gridGeometry;
     }
 
     /**
+     * Sets the store-wide grid geometry when a new coverage is written. The {@link WritableStore} implementation
+     * is responsible for making sure that the new grid geometry is compatible with preexisting grid geometry.
+     *
+     * @param  index  index of the image for which to set the grid geometry.
+     * @param  gg     the new grid geometry.
+     * @return suffix of the "world file", or {@code null} if the image can not be written.
+     */
+    String setGridGeometry(final int index, final GridGeometry gg) throws IOException, DataStoreException {
+        if (index != MAIN_IMAGE) {
+            return null;
+        }
+        final GridExtent extent = gg.getExtent();
+        final int w = Math.toIntExact(extent.getSize(Image.X_DIMENSION));
+        final int h = Math.toIntExact(extent.getSize(Image.Y_DIMENSION));
+        final String s = (suffixWLD != null) ? suffixWLD : getWorldFileSuffix();
+        crs = gg.isDefined(GridGeometry.CRS) ? gg.getCoordinateReferenceSystem() : null;
+        gridGeometry = gg;                  // Set only after success of all the above.
+        width        = w;
+        height       = h;
+        suffixWLD    = s;
+        return s;
+    }
+
+    /**
      * Returns information about the data store as a whole.
      */
     @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
+    public final synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
             final MetadataBuilder builder = new MetadataBuilder();
             String format = reader().getFormatName();
@@ -381,14 +499,30 @@ loop:   for (int convention=0;; convention++) {
 
     /**
      * Returns all images in this store. Note that fetching the size of the list is a potentially costly operation.
+     *
+     * @return list of images in this store.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
         if (components == null) try {
-            components = new Components();
+            components = new Components(reader().getNumImages(false));
         } catch (IOException e) {
             throw new DataStoreException(e);
+        }
+        return components;
+    }
+
+    /**
+     * Returns all images in this store, or {@code null} if none and {@code create} is false.
+     *
+     * @param  create     whether to create the component list if it was not already created.
+     * @param  numImages  number of images, or any negative value if unknown.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Components components(final boolean create, final int numImages) {
+        if (components == null && create) {
+            components = new Components(numImages);
         }
         return components;
     }
@@ -397,24 +531,26 @@ loop:   for (int convention=0;; convention++) {
      * A list of images where each {@link Image} instance is initialized when first needed.
      * Fetching the list size may be a costly operation and will be done only if requested.
      */
-    private final class Components extends ListOfUnknownSize<Image> {
+    final class Components extends ListOfUnknownSize<Image> {
         /**
-         * Size of this list, or -1 if unknown.
+         * Size of this list, or any negative value if unknown.
          */
         private int size;
 
         /**
-         * All elements in this list. Some array element may be {@code null} if the image
-         * as never been requested.
+         * All elements in this list. Some array elements may be {@code null} if the image
+         * has never been requested.
          */
         private Image[] images;
 
         /**
          * Creates a new list of images.
+         *
+         * @param  numImages  number of images, or any negative value if unknown.
          */
-        private Components() throws DataStoreException, IOException {
-            size = reader().getNumImages(false);
-            images = new Image[size >= 0 ? size : 1];
+        private Components(final int numImages) {
+            size = numImages;
+            images = new Image[Math.max(numImages, 1)];
         }
 
         /**
@@ -437,7 +573,7 @@ loop:   for (int convention=0;; convention++) {
         }
 
         /**
-         * Returns the number of images if this information is known, or -1 otherwise.
+         * Returns the number of images if this information is known, or any negative value otherwise.
          * This is used by {@link ListOfUnknownSize} for optimizing some operations.
          */
         @Override
@@ -457,12 +593,20 @@ loop:   for (int convention=0;; convention++) {
                 if (size >= 0) {
                     return index >= 0 && index < size;
                 }
-                return get(index) != null;
+                try {
+                    return get(index) != null;
+                } catch (IndexOutOfBoundsException e) {
+                    return false;
+                }
             }
         }
 
         /**
          * Returns the image at the given index. New instances are created when first requested.
+         *
+         * @param  index  index of the image for which to get a resource.
+         * @return resource for the image identified by the given index.
+         * @throws IndexOutOfBoundsException if the image index is out of bounds.
          */
         @Override
         public Image get(final int index) {
@@ -472,7 +616,7 @@ loop:   for (int convention=0;; convention++) {
                     image = images[index];
                 }
                 if (image == null) try {
-                    image = new Image(Store.this, listeners, index, getGridGeometry(index));
+                    image = createImageResource(index);
                     if (index >= images.length) {
                         images = Arrays.copyOf(images, Math.max(images.length * 2, index + 1));
                     }
@@ -485,17 +629,113 @@ loop:   for (int convention=0;; convention++) {
                 return image;
             }
         }
+
+        /**
+         * Invoked <em>after</em> an image has been added to the image file.
+         * This method adds in this list a reference to the newly added file.
+         *
+         * @param  image  the image to add to this list.
+         */
+        final void added(final Image image) {
+            size = image.imageIndex;
+            if (size >= images.length) {
+                images = Arrays.copyOf(images, size * 2);
+            }
+            images[size++] = image;
+        }
+
+        /**
+         * Invoked <em>after</em> an image has been removed from the image file.
+         * This method performs no bounds check (it must be done by the caller).
+         *
+         * @param  index  index of the image that has been removed.
+         */
+        final void removed(int index) {
+            final int last = images.length - 1;
+            System.arraycopy(images, index+1, images, index, last - index);
+            images[last] = null;
+            size--;
+            while (index < last) {
+                final Image image = images[index++];
+                if (image != null) image.imageIndex--;
+            }
+        }
+
+        /**
+         * Removes the element at the specified position in this list.
+         */
+        @Override
+        public Image remove(final int index) {
+            final Image image = get(index);
+            try {
+                Store.this.remove(image);
+            } catch (DataStoreException e) {
+                throw new UnsupportedOperationException(e);
+            }
+            return image;
+        }
+    }
+
+    /**
+     * Invoked by {@link Components} when the caller want to remove a resource.
+     * The actual implementation is provided by {@link WritableStore}.
+     */
+    void remove(final Resource resource) throws DataStoreException {
+        throw new ReadOnlyStorageException();
+    }
+
+    /**
+     * Creates a {@link GridCoverageResource} for the specified image.
+     * This method is invoked by {@link Components} when first needed
+     * and the result is cached by the caller.
+     *
+     * @param  index  index of the image for which to create a resource.
+     * @return resource for the image identified by the given index.
+     * @throws IndexOutOfBoundsException if the image index is out of bounds.
+     */
+    Image createImageResource(final int index) throws DataStoreException, IOException {
+        return new Image(this, listeners, index, getGridGeometry(index));
+    }
+
+    /**
+     * Prepares an image reader compatible with the writer and sets its input.
+     * This method is invoked for switching from write mode to read mode.
+     * Its actual implementation is provided by {@link WritableImage}.
+     *
+     * @param  current  the current image reader, or {@code null} if none.
+     * @return the image reader to use, or {@code null} if none.
+     * @throws IOException if an error occurred while preparing the reader.
+     */
+    ImageReader prepareReader(ImageReader current) throws IOException {
+        return null;
+    }
+
+    /**
+     * Returns the reader without doing any validation. The reader may be {@code null} either
+     * because the store is closed or because the store is initially opened in write-only mode.
+     * The reader may have a {@code null} input.
+     */
+    final ImageReader getCurrentReader() {
+        return reader;
     }
 
     /**
      * Returns the reader if it has not been closed.
+     *
+     * @throws DataStoreClosedException if this data store is closed.
+     * @throws IOException if an error occurred while preparing the reader.
      */
-    final ImageReader reader() throws DataStoreException {
-        final ImageReader in = reader;
-        if (in == null) {
-            throw new DataStoreClosedException(getLocale(), StoreProvider.NAME, StandardOpenOption.READ);
+    final ImageReader reader() throws DataStoreException, IOException {
+        assert Thread.holdsLock(this);
+        ImageReader current = reader;
+        if (current == null || current.getInput() == null) {
+            reader = current = prepareReader(current);
+            if (current == null) {
+                throw new DataStoreClosedException(getLocale(), StoreProvider.NAME, StandardOpenOption.READ);
+            }
+            configureReader();
         }
-        return in;
+        return current;
     }
 
     /**
@@ -505,12 +745,15 @@ loop:   for (int convention=0;; convention++) {
      */
     @Override
     public synchronized void close() throws DataStoreException {
-        final ImageReader r = reader;
-        reader = null;
-        if (r != null) try {
-            final Object input = r.getInput();
-            r.setInput(null);
-            r.dispose();
+        final ImageReader codec = reader;
+        reader       = null;
+        metadata     = null;
+        components   = null;
+        gridGeometry = null;
+        if (codec != null) try {
+            final Object input = codec.getInput();
+            codec.setInput(null);
+            codec.dispose();
             if (input instanceof AutoCloseable) {
                 ((AutoCloseable) input).close();
             }

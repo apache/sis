@@ -27,6 +27,7 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.ProbeResult;
 
 
@@ -38,8 +39,10 @@ import org.apache.sis.storage.ProbeResult;
  * @since   1.2
  * @module
  */
-@StoreMetadata(formatName   = StoreProvider.NAME,
-               capabilities = Capability.READ)
+@StoreMetadata(formatName    = StoreProvider.NAME,
+               fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list.
+               capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
+               resourceTypes = GridCoverageResource.class)
 public final class StoreProvider extends PRJDataStore.Provider {
     /**
      * The format name.
@@ -72,7 +75,11 @@ public final class StoreProvider extends PRJDataStore.Provider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         try {
-            return new Store(this, connector);
+            if (isWritable(connector)) {
+                return new WritableStore(this, connector);
+            } else {
+                return new Store(this, connector, true);
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

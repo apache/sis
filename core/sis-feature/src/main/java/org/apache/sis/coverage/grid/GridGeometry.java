@@ -1266,8 +1266,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  bitmask  any combination of {@link #CRS}, {@link #ENVELOPE}, {@link #EXTENT},
      *         {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
-     * @return {@code true} if all specified attributes are defined (i.e. invoking the
-     *         corresponding method will not thrown an {@link IncompleteGridGeometryException}).
+     * @return {@code true} if all specified properties are defined (i.e. invoking the
+     *         corresponding getter methods will not throw {@link IncompleteGridGeometryException}).
      * @throws IllegalArgumentException if the specified bitmask is not a combination of known masks.
      *
      * @see #getCoordinateReferenceSystem()

@@ -67,7 +67,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException, IOException {
-        try (Store store = new Store(null, testData())) {
+        try (Store store = new Store(null, testData(), true)) {
             assertEquals("gradient", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             final Identification id = getSingleton(metadata.getIdentificationInfo());

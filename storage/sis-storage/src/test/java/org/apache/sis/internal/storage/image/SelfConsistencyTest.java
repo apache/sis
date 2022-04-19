@@ -55,7 +55,7 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
     public static void openFile() throws IOException, DataStoreException {
         final URL url = StoreTest.class.getResource("gradient.png");
         assumeNotNull(url);
-        store = new Store(null, new StorageConnector(url));
+        store = new Store(null, new StorageConnector(url), true);
     }
 
     /**

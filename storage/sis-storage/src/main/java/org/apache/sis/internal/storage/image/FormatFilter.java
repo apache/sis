@@ -89,7 +89,8 @@ enum FormatFilter {
      * if an image reader requests a sub-type, we can probably not provide it ourselves.
      */
     private static final Class<?>[] VALID_OUTPUTS = {
-        ImageOutputStream.class, DataOutput.class, OutputStream.class, File.class, Path.class, URL.class, URI.class
+        // `ImageOutputStream` intentionally excluded because not handled by `StorageConnector`.
+        DataOutput.class, OutputStream.class, File.class, Path.class, URL.class, URI.class
     };
 
     /**
@@ -231,9 +232,10 @@ enum FormatFilter {
                                 final ImageWriter writer = provider.createWriterInstance();
                                 writer.setOutput(output);
                                 return writer;
-                            } else if (type == ImageOutputStream.class) {
-                                deferred.put(provider, Boolean.TRUE);
                             }
+                        }
+                        if (type == ImageOutputStream.class) {
+                            deferred.put(provider, Boolean.TRUE);
                         }
                     }
                 }

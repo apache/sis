@@ -271,6 +271,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalOutputTypeForWriter_2 = 9;
 
         /**
+         * All coverages must have the same grid geometry.
+         */
+        public static final short IncompatibleGridGeometry = 72;
+
+        /**
          * Components of the “{1}” name are inconsistent with those of the name previously binded in
          * “{0}” data store.
          */
@@ -345,6 +350,11 @@ public final class Resources extends IndexedResourceBundle {
          * No resource found for the “{1}” identifier in the “{0}” data store.
          */
         public static final short ResourceNotFound_2 = 24;
+
+        /**
+         * This resource has been removed from its data store.
+         */
+        public static final short ResourceRemoved = 73;
 
         /**
          * The “{0}” format does not support rotations.

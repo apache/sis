@@ -17,7 +17,9 @@
 package org.apache.sis.internal.storage.image;
 
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
 import javax.imageio.event.IIOReadWarningListener;
+import javax.imageio.event.IIOWriteWarningListener;
 import org.apache.sis.storage.event.StoreListeners;
 
 
@@ -30,7 +32,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * @since   1.2
  * @module
  */
-final class WarningListener implements IIOReadWarningListener {
+final class WarningListener implements IIOReadWarningListener, IIOWriteWarningListener {
     /**
      * The set of registered {@link StoreListener}s for the data store.
      */
@@ -50,7 +52,19 @@ final class WarningListener implements IIOReadWarningListener {
      * @param message  the warning.
      */
     @Override
-    public void warningOccurred(final ImageReader reader, final String message) {
+    public void warningOccurred(final ImageReader source, final String message) {
+        listeners.warning(message);
+    }
+
+    /**
+     * Reports a non-fatal error in encoding.
+     *
+     * @param source      the writer calling this method.
+     * @param imageIndex  index of the image being written.
+     * @param message     the warning.
+     */
+    @Override
+    public void warningOccurred(final ImageWriter source, final int imageIndex, final String message) {
         listeners.warning(message);
     }
 }
