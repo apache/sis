@@ -81,7 +81,7 @@ public abstract class PRJDataStore extends URIDataStore {
      *
      * @see #getComponentFiles()
      */
-    private static final String PRJ = "prj";
+    protected static final String PRJ = "prj";
 
     /**
      * Character encoding in {@code *.prj} or other auxiliary files,
@@ -366,7 +366,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * The default implementation does the same computation as the super-class, then adds the sibling
      * file with {@code ".prj"} extension if it exists.
      *
-     * @return the URI as a path, or an empty array if the URI is null.
+     * @return the main file and auxiliary files as paths, or an empty array if unknown.
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
     @Override
@@ -382,6 +382,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * This is a helper method for {@link #getComponentFiles()} implementation.
      *
      * @param  auxiliaries  filename extension (without leading dot) of all auxiliary files.
+     *         Null elements are silently ignored.
      * @return the URI as a path, followed by all auxiliary files that exist.
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
@@ -392,12 +393,14 @@ public abstract class PRJDataStore extends URIDataStore {
             final Path path = paths[0];
             final String base = getBaseFilename(path);
             for (final String extension : auxiliaries) {
-                final Path p = path.resolveSibling(base.concat(extension));
-                if (Files.isRegularFile(p)) {
-                    if (count >= paths.length) {
-                        paths = Arrays.copyOf(paths, count + auxiliaries.length);
+                if (extension != null) {
+                    final Path p = path.resolveSibling(base.concat(extension));
+                    if (Files.isRegularFile(p)) {
+                        if (count >= paths.length) {
+                            paths = Arrays.copyOf(paths, count + auxiliaries.length);
+                        }
+                        paths[count++] = p;
                     }
-                    paths[count++] = p;
                 }
             }
             paths = ArraysExt.resize(paths, count);

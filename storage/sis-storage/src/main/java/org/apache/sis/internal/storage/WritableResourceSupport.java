@@ -133,7 +133,7 @@ public final class WritableResourceSupport implements Localized {
      *       or thrown a {@link ResourceAlreadyExistsException} otherwise.</li>
      * </ul>
      *
-     * @param  input  the channel to test for emptiness.
+     * @param  input  the channel to test for emptiness, or {@code null} if unknown.
      * @return whether the caller should replace ({@code true}) or update ({@code false}) the resource.
      * @throws IOException if an error occurred while checking the channel length.
      * @throws ResourceAlreadyExistsException if the resource exists and the writer
@@ -142,15 +142,26 @@ public final class WritableResourceSupport implements Localized {
      */
     public final boolean replace(final ChannelDataInput input) throws IOException, DataStoreException {
         if (update) {
-            return input.length() == 0;
-        } else if (replace || input.length() == 0) {
+            return isEmpty(input);
+        } else if (replace || isEmpty(input)) {
             return true;
         } else {
             Object identifier = resource.getIdentifier().orElse(null);
-            if (identifier == null) identifier = input.filename;
+            if (identifier == null && input != null) identifier = input.filename;
             throw new ResourceAlreadyExistsException(Resources.forLocale(getLocale())
                     .getString(Resources.Keys.ResourceAlreadyExists_1, identifier));
         }
+    }
+
+    /**
+     * Returns {@code true} if the given channel is empty.
+     * In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @param  input  the channel to test for emptiness, or {@code null} if unknown.
+     * @return {@code true} if the channel is empty, or {@code false} if not or if unknown.
+     */
+    private static boolean isEmpty(final ChannelDataInput input) throws IOException {
+        return (input != null) && input.length() == 0;
     }
 
     /**

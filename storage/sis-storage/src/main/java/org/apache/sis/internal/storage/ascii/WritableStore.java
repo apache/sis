@@ -196,8 +196,8 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
         final int band = 0;                                 // May become configurable in a future version.
         try {
             /*
-             * If `output` is null, we are in write-only mode and there is no previously existing image.
-             * Otherwise an image may exist and the behavior will depends on which options were supplied.
+             * If `output` is non-null, we are in write-only mode and there is no previously existing image.
+             * Otherwise an image may exist and the behavior will depend on which options were supplied.
              */
             if (output == null && !h.replace(input().input)) {
                 coverage = h.update(coverage);

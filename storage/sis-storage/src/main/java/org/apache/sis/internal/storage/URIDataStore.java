@@ -149,7 +149,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * The default implementation returns the storage specified at construction time if it was
      * a {@link Path} or {@link File}, or converts the URI to a {@link Path} otherwise.
      *
-     * @return the URI as a path, or an empty array if the URI is null.
+     * @return the URI as a path, or an empty array if unknown.
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
     @Override

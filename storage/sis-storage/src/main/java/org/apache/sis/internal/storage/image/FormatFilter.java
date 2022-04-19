@@ -123,6 +123,7 @@ enum FormatFilter {
 
     /**
      * Finds a provider for the given input, or returns {@code null} if none.
+     * This is used by {@link StoreProvider#probeContent(StorageConnector)}.
      *
      * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
      * @param  connector   provider of the input to be given to the {@code canDecodeInput(…)} method.
@@ -208,7 +209,7 @@ enum FormatFilter {
      *
      * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
      * @param  output      the output to be given to the new reader instance.
-     * @param  image       the image to write.
+     * @param  image       the image to write, or {@code null} if unknown.
      * @param  deferred    initially empty map to be populated with providers tested by this method.
      * @return the new image writer instance with its output initialized, or {@code null} if none was found.
      * @throws DataStoreException if an error occurred while opening a stream from the storage connector.
@@ -221,7 +222,7 @@ enum FormatFilter {
         while (it.hasNext()) {
             final ImageWriterSpi provider = it.next();
             if (deferred.putIfAbsent(provider, Boolean.FALSE) == null) {
-                if (provider.canEncodeImage(image)) {
+                if (image == null || provider.canEncodeImage(image)) {
                     for (final Class<?> type : provider.getOutputTypes()) {
                         if (ArraysExt.contains(VALID_OUTPUTS, type)) {
                             final Object output = connector.getStorageAs(type);
