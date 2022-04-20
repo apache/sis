@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Optional;
+import java.io.DataOutput;
+import java.io.OutputStream;
 import java.io.File;
 import java.net.URI;
-import java.util.Optional;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -316,12 +318,18 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         }
 
         /**
-         * Returns {@code true} if the open options contains {@link StandardOpenOption#WRITE}.
+         * Returns {@code true} if the open options contains {@link StandardOpenOption#WRITE}
+         * or if the storage type is some kind of output stream.
          *
          * @param  connector  the connector to use for opening a file.
          * @return whether the specified connector should open a writable data store.
+         * @throws DataStoreException if the storage object has already been used and can not be reused.
          */
-        public static boolean isWritable(final StorageConnector connector) {
+        public static boolean isWritable(final StorageConnector connector) throws DataStoreException {
+            final Object storage = connector.getStorage();
+            if (storage instanceof OutputStream || storage instanceof DataOutput) {
+                return true;
+            }
             return ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.WRITE);
         }
     }

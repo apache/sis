@@ -52,7 +52,20 @@ import org.apache.sis.setup.OptionKey;
 
 
 /**
- * A data store with writing capabilities.
+ * A data store which writes grid coverages using Image I/O writers completed by the <cite>World File</cite> convention.
+ * Georeferencing is defined by two auxiliary files described in the {@link Store} parent class.
+ *
+ * <h2>Type of output objects</h2>
+ * The {@link StorageConnector} output should be an instance of the following types:
+ * {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}.
+ * Other types such as {@link ImageOutputStream} are also accepted but in those cases the auxiliary files can not be written.
+ * For any output of unknown type, this data store first checks if an {@link ImageWriter} accepts the output type directly.
+ * If none is found, this data store tries to {@linkplain ImageIO#createImageOutputStream(Object) create an output stream}
+ * from the output object.
+ *
+ * <p>The storage input object may also be an {@link ImageWriter} instance ready for use
+ * (i.e. with its {@linkplain ImageWriter#setOutput(Object) output set} to a non-null value).
+ * In that case, this data store will use the given image writer as-is.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -95,10 +108,16 @@ final class WritableStore extends Store implements WritableAggregate {
             throws DataStoreException, IOException
     {
         super(provider, connector, false);
+        final Object storage = connector.getStorage();
         final ImageReader reader = getCurrentReader();
         final Object inout;
         if (reader != null) {
             inout = reader.getInput();
+            numImages = -1;
+        } else if (storage instanceof ImageWriter) {
+            writer = (ImageWriter) storage;
+            inout  = writer.getOutput();
+            configureWriter();
             numImages = -1;
         } else {
             /*
@@ -115,7 +134,6 @@ final class WritableStore extends Store implements WritableAggregate {
                 writer = FormatFilter.SUFFIX.createWriter(null, connector, null, deferred);
 fallback:       if (writer == null) {
                     ImageOutputStream stream = null;
-                    final Object storage = connector.getStorage();
                     for (final Map.Entry<ImageWriterSpi,Boolean> entry : deferred.entrySet()) {
                         if (entry.getValue()) {
                             if (stream == null) {

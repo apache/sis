@@ -31,6 +31,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import org.opengis.metadata.Metadata;
@@ -64,8 +65,47 @@ import org.apache.sis.setup.OptionKey;
 
 
 /**
- * A data store which creates grid coverages from Image I/O.
- * The store is considered as an aggregate, with one resource per image.
+ * A data store which creates grid coverages from Image I/O readers using <cite>World File</cite> convention.
+ * Georeferencing is defined by two auxiliary files having the same name than the image file but different suffixes:
+ *
+ * <ul class="verbose">
+ *   <li>A text file containing the coefficients of the affine transform mapping pixel coordinates to geodesic coordinates.
+ *     The reader expects one coefficient per line, in the same order than the order expected by the
+ *     {@link java.awt.geom.AffineTransform#AffineTransform(double[]) AffineTransform(double[])} constructor, which is
+ *     <var>scaleX</var>, <var>shearY</var>, <var>shearX</var>, <var>scaleY</var>, <var>translateX</var>, <var>translateY</var>.
+ *     The reader looks for a file having the following suffixes, in preference order:
+ *     <ol>
+ *       <li>The first letter of the image file extension, followed by the last letter of
+ *         the image file extension, followed by {@code 'w'}. Example: {@code "tfw"} for
+ *         {@code "tiff"} images, and {@code "jgw"} for {@code "jpeg"} images.</li>
+ *       <li>The extension of the image file with a {@code 'w'} appended.</li>
+ *       <li>The {@code "wld"} extension.</li>
+ *     </ol>
+ *   </li>
+ *   <li>A text file containing the <cite>Coordinate Reference System</cite> (CRS) definition
+ *     in <cite>Well Known Text</cite> (WKT) syntax.
+ *     The reader looks for a file having the {@code ".prj"} extension.</li>
+ * </ul>
+ *
+ * Every auxiliary text file are expected to be encoded in UTF-8
+ * and every numbers are expected to be formatted in US locale.
+ *
+ * <h2>Type of input objects</h2>
+ * The {@link StorageConnector} input should be an instance of the following types:
+ * {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}.
+ * Other types such as {@link ImageInputStream} are also accepted but in those cases the auxiliary files can not be read.
+ * For any input of unknown type, this data store first checks if an {@link ImageReader} accepts the input type directly.
+ * If none is found, this data store tries to {@linkplain ImageIO#createImageInputStream(Object) create an input stream}
+ * from the input object.
+ *
+ * <p>The storage input object may also be an {@link ImageReader} instance ready for use
+ * (i.e. with its {@linkplain ImageReader#setInput(Object) input set} to a non-null value).
+ * In that case, this data store will use the given image reader as-is.</p>
+ *
+ * <h2>Handling of multi-image files</h2>
+ * Because some image formats can store an arbitrary amount of images,
+ * this data store is considered as an aggregate with one resource per image.
+ * All image should have the same size and all resources will share the same {@link GridGeometry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -173,6 +213,16 @@ class Store extends PRJDataStore implements Aggregate {
     {
         super(provider, connector);
         final Object storage = connector.getStorage();
+        if (storage instanceof ImageReader) {
+            reader = (ImageReader) storage;
+            suffix = IOUtilities.extension(reader.getInput());
+            configureReader();
+            return;
+        }
+        if (storage instanceof ImageWriter) {
+            suffix = IOUtilities.extension(((ImageWriter) storage).getOutput());
+            return;
+        }
         suffix = IOUtilities.extension(storage);
         if (!(readOnly || fileExists(connector))) {
             /*

@@ -18,7 +18,10 @@ package org.apache.sis.internal.storage.image;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.io.DataOutput;
 import java.io.IOException;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageReaderSpi;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -67,6 +70,8 @@ public final class StoreProvider extends PRJDataStore.Provider {
 
     /**
      * Returns a {@link Store} implementation associated with this provider.
+     * The data store will be writable if {@link java.nio.file.StandardOpenOption#WRITE} is provided,
+     * or if the storage is a writable object such as {@link javax.imageio.stream.ImageOutputStream}.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
@@ -74,8 +79,18 @@ public final class StoreProvider extends PRJDataStore.Provider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
+        final Object storage = connector.getStorage();
+        boolean isWritable = (storage instanceof ImageWriter);
+        if (!isWritable) {
+            if (storage instanceof ImageReader) {
+                Object input = ((ImageReader) storage).getInput();
+                isWritable = (input instanceof DataOutput);         // Parent of ImageOutputStream.
+            } else {
+                isWritable = isWritable(connector);
+            }
+        }
         try {
-            if (isWritable(connector)) {
+            if (isWritable) {
                 return new WritableStore(this, connector);
             } else {
                 return new Store(this, connector, true);
