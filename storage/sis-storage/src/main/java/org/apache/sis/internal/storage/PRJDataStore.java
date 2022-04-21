@@ -146,7 +146,7 @@ public abstract class PRJDataStore extends URIDataStore {
             final String wkt = readAuxiliaryFile(PRJ, encoding).toString();
             if (wkt != null) {
                 final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
-                format.setConvention(Convention.WKT1_COMMON_UNITS);
+                format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
                 crs = (CoordinateReferenceSystem) format.parseObject(wkt);
                 format.validate(crs);
             }
@@ -298,6 +298,13 @@ public abstract class PRJDataStore extends URIDataStore {
      * Writes the {@code "*.prj"} auxiliary file if {@link #crs} is non-null.
      * If {@link #crs} is null and the auxiliary file exists, it is deleted.
      *
+     * <h4>WKT version used</h4>
+     * Current version writes the CRS in WKT 2 format. This is not the common practice, which uses WKT 1.
+     * But the WKT 1 variant used by the common practice is not the standard format defined by OGC 01-009.
+     * It is more like  {@link Convention#WKT1_IGNORE_AXES}, which has many ambiguity problems. The WKT 2
+     * format fixes those ambiguities. We hope that major software have updated their referencing engine
+     * and can now parse WKT 2 as well as WKT 1.
+     *
      * @throws DataStoreException if an error occurred while writing the file.
      */
     protected final void writePRJ() throws DataStoreException {
@@ -306,7 +313,7 @@ public abstract class PRJDataStore extends URIDataStore {
                 deleteAuxiliaryFile(PRJ);
             } else try (BufferedWriter out = writeAuxiliaryFile(PRJ, encoding)) {
                 final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
-                format.setConvention(Convention.WKT1_COMMON_UNITS);
+                // Keep the default "WKT 2" format (see method javadoc).
                 format.format(crs, out);
                 out.newLine();
             }

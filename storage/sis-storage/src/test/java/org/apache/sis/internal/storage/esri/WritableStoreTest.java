@@ -90,13 +90,16 @@ public final strictfp class WritableStoreTest extends TestCase {
     private static void verifyContent(final Path file) throws IOException {
         assertArrayEquals(getExpectedLines(), Files.readAllLines(file).toArray());
         assertArrayEquals(new String[] {
-            "GEOGCS[\"WGS 84\",",
+            "GEODCRS[\"WGS 84\",",
             "  DATUM[\"World Geodetic System 1984\",",
-            "    SPHEROID[\"WGS84\", 6378137.0, 298.257223563]],",
-            "    PRIMEM[\"Greenwich\", 0.0],",
-            "  UNIT[\"degree\", 0.017453292519943295],",
-            "  AXIS[\"Longitude\", EAST],",
-            "  AXIS[\"Latitude\", NORTH]]",
+            "    ELLIPSOID[\"WGS84\", 6378137.0, 298.257223563, LENGTHUNIT[\"metre\", 1]]],",
+            "    PRIMEM[\"Greenwich\", 0.0, ANGLEUNIT[\"degree\", 0.017453292519943295]],",
+            "  CS[ellipsoidal, 2],",
+            "    AXIS[\"Longitude (L)\", east, ORDER[1]],",
+            "    AXIS[\"Latitude (B)\", north, ORDER[2]],",
+            "    ANGLEUNIT[\"degree\", 0.017453292519943295],",
+            "  AREA[\"World\"],",
+            "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
         }, Files.readAllLines(toPRJ(file)).toArray());
     }
 
