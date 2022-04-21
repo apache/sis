@@ -19,12 +19,14 @@ package org.apache.sis.internal.storage.image;
 import java.util.List;
 import java.util.Optional;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.awt.image.BandedSampleModel;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
+import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.image.ImageProcessor;
@@ -73,23 +75,27 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
 
     /**
      * Index of the image to read or write in the image file. This is usually 0.
+     * May be decremented when other resources are {@linkplain WritableStore#remove removed}.
+     *
+     * @see #getImageIndex()
      */
-    int imageIndex;
+    private int imageIndex;
 
     /**
      * The identifier as a sequence number in the namespace of the {@link WorldFileStore}.
      * The first image has the sequence number "1". This is computed when first needed.
+     * {@link WritableResource} have no identifier because the numbers may change.
      *
      * @see #getIdentifier()
      */
-    private GenericName identifier;
+    private LocalName identifier;
 
     /**
      * The grid geometry of this resource. The grid extent is the image size.
      *
      * @see #getGridGeometry()
      */
-    private final GridGeometry gridGeometry;
+    private GridGeometry gridGeometry;
 
     /**
      * The ranges of sample values, computed when first needed. Shall be an unmodifiable list.
@@ -97,6 +103,11 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      * @see #getSampleDimensions()
      */
     private List<SampleDimension> sampleDimensions;
+
+    /**
+     * Cached coverage for the full image, or {@code null} if none.
+     */
+    private SoftReference<GridCoverage> fullCoverage;
 
     /**
      * Creates a new resource. This resource will have its own set of listeners,
@@ -133,15 +144,42 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     }
 
     /**
+     * Returns the index of the image to read or write in the image file. This is usually 0.
+     * Note that contrarily to {@link #getIdentifier()}, this index is not guaranteed to be constant.
+     */
+    final int getImageIndex() {
+        return imageIndex;
+    }
+
+    /**
+     * Decrements the image index. This is needed if images before this image have been removed.
+     */
+    final void decrementImageIndex() throws DataStoreException {
+        getIdentifier();    // For identifier creation for keeping it constant.
+        imageIndex--;
+    }
+
+    /**
      * Returns the resource identifier. The name space is the file name and
      * the local part of the name is the image index number, starting at 1.
+     * This identifier should be constant.
      */
     @Override
     public final Optional<GenericName> getIdentifier() throws DataStoreException {
         final WorldFileStore store = store();
         synchronized (store) {
             if (identifier == null) {
-                identifier = Names.createLocalName(store.getDisplayName(), null, String.valueOf(imageIndex + 1));
+                // TODO: get `base` from image metadata if available.
+                final String base = String.valueOf(getImageIndex() + 1);
+                String id = base;
+                int n = 0;
+                while (store.identifiers.putIfAbsent(id, Boolean.TRUE) != null) {
+                    if (--n >= 0) {
+                        throw new ArithmeticException();    // Paranoiac safety for avoiding never-ending loop.
+                    }
+                    id = base + n;
+                }
+                identifier = Names.createLocalName(store.getDisplayName(), null, id);
             }
             return Optional.of(identifier);
         }
@@ -155,7 +193,9 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      */
     @Override
     public final GridGeometry getGridGeometry() throws DataStoreException {
-        return gridGeometry;
+        synchronized (store()) {
+            return gridGeometry;
+        }
     }
 
     /**
@@ -168,7 +208,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
         synchronized (store) {
             if (sampleDimensions == null) try {
                 final ImageReader        reader = store.reader();
-                final ImageTypeSpecifier type   = reader.getRawImageType(imageIndex);
+                final ImageTypeSpecifier type   = reader.getRawImageType(getImageIndex());
                 final SampleDimension[]  bands  = new SampleDimension[type.getNumBands()];
                 final SampleDimension.Builder b = new SampleDimension.Builder();
                 final short[] names = ImageUtilities.bandNames(type.getColorModel(), type.getSampleModel());
@@ -206,11 +246,17 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      */
     @Override
     public final GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        RenderedImage image;
-        List<SampleDimension> bands;
+        final boolean isFullCoverage = (domain == null && range == null);
         final WorldFileStore store = store();
         try {
             synchronized (store) {
+                if (isFullCoverage && fullCoverage != null) {
+                    final GridCoverage coverage = fullCoverage.get();
+                    if (coverage != null) {
+                        return coverage;
+                    }
+                    fullCoverage = null;
+                }
                 final ImageReader reader = store.reader();
                 final ImageReadParam param = reader.getDefaultReadParam();
                 if (domain == null) {
@@ -254,9 +300,9 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                  * be the easiest cases. More difficult cases will be handled after the reading.
                  * Those heuristic rules may be changed in any future version.
                  */
-                bands = getSampleDimensions();
+                List<SampleDimension> bands = getSampleDimensions();
                 if (range != null) {
-                    final ImageTypeSpecifier type = reader.getRawImageType(imageIndex);
+                    final ImageTypeSpecifier type = reader.getRawImageType(getImageIndex());
                     final RangeArgument args = RangeArgument.validate(type.getNumBands(), range, listeners);
                     if (args.isIdentity()) {
                         range = null;
@@ -270,26 +316,48 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                         }
                     }
                 }
-                image = reader.readAsRenderedImage(imageIndex, param);
+                RenderedImage image = reader.readAsRenderedImage(getImageIndex(), param);
+                /*
+                 * If the reader was presumed unable to handle the band subsetting, apply it now.
+                 * It waste some memory because unused bands still in memory. But we do that as a
+                 * workaround for limitations in some `ImageReader` implementations.
+                 */
+                if (range != null) {
+                    image = new ImageProcessor().selectBands(image, range);
+                }
+                final GridCoverage coverage = new GridCoverage2D(domain, bands, image);
+                if (isFullCoverage) {
+                    fullCoverage = new SoftReference<>(coverage);
+                }
+                return coverage;
             }
         } catch (IOException | RuntimeException e) {
             throw canNotRead(store.getDisplayName(), domain, e);
         }
-        /*
-         * If the reader was presumed unable to handle the band subsetting, apply it now.
-         * It waste some memory because unused bands still in memory. But we do that as a
-         * workaround for limitations in some `ImageReader` implementations.
-         */
-        if (range != null) {
-            image = new ImageProcessor().selectBands(image, range);
-        }
-        return new GridCoverage2D(domain, bands, image);
+    }
+
+    /**
+     * Sets the grid coverage to the given value.
+     * This is used during write operations only.
+     */
+    final void setGridCoverage(final GridCoverage coverage) {
+        sampleDimensions = coverage.getSampleDimensions();
+        gridGeometry     = coverage.getGridGeometry();
+        fullCoverage     = new SoftReference<>(coverage);
     }
 
     /**
      * Notifies this resource that it should not be used anymore.
      */
     final void dispose() {
-        store = null;
+        if (identifier != null) {
+            // For information purpose but not really used.
+            store.identifiers.put(identifier.toString(), Boolean.FALSE);
+        }
+        store            = null;
+        identifier       = null;
+        sampleDimensions = null;
+        gridGeometry     = null;
+        fullCoverage     = null;
     }
 }

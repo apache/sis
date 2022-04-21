@@ -23,7 +23,6 @@ import java.io.IOException;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageReaderSpi;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capability;
@@ -78,7 +77,7 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
-    public DataStore open(final StorageConnector connector) throws DataStoreException {
+    public WorldFileStore open(final StorageConnector connector) throws DataStoreException {
         final Object storage = connector.getStorage();
         boolean isWritable = (storage instanceof ImageWriter);
         if (!isWritable) {

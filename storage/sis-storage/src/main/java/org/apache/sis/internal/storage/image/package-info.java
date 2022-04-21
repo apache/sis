@@ -23,6 +23,19 @@
  * completed with an additional source of information for georeferencing the image.
  * A commonly-used convention is the <cite>World File</cite> format.
  *
+ * <h2>Limitations</h2>
+ * The World File reader and writer currently have the following limitations.
+ * Those limitations may be addressed in a future SIS version.
+ *
+ * <ul>
+ *   <li>Image metadata are ignored. Some metadata that a future version could use are:
+ *       title, author, description, creation time, <i>etc.</i></li>
+ *   <li>Deferred reading of tiles (using {@code ImageReader.readTileRaster(…)})
+ *       is not yet implemented.</li>
+ *   <li>Resources have no identifier if the data store is writable,
+ *       because image indices are no longer stable identifiers in such case.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *

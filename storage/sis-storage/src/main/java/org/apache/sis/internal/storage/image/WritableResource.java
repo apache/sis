@@ -60,13 +60,14 @@ final class WritableResource extends WorldFileResource implements WritableGridCo
         final WritableStore store = (WritableStore) store();
         try {
             synchronized (store) {
-                if (imageIndex != WorldFileStore.MAIN_IMAGE || (store.isMultiImages() != 0 && !h.replace(null))) {
+                if (getImageIndex() != WorldFileStore.MAIN_IMAGE || (store.isMultiImages() != 0 && !h.replace(null))) {
                     // TODO: we should use `ImageWriter.replacePixels(…)` methods instead.
                     coverage = h.update(coverage);
                 }
-                final RenderedImage data = coverage.render(null);                   // Fail if not two-dimensional.
-                store.setGridGeometry(imageIndex, coverage.getGridGeometry()); // May use the image reader.
-                final ImageWriter writer = store.writer();                          // Should be after `setGridGeometry(…)`.
+                final RenderedImage data = coverage.render(null);                       // Fail if not two-dimensional.
+                store.setGridGeometry(getImageIndex(), coverage.getGridGeometry());     // May use the image reader.
+                setGridCoverage(coverage);
+                final ImageWriter writer = store.writer();                      // Should be after `setGridGeometry(…)`.
                 writer.write(data);
             }
         } catch (IOException | RuntimeException e) {

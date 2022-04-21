@@ -188,7 +188,6 @@ fallback:       if (writer == null) {
      * @see #setGridGeometry(int, GridGeometry)
      */
     final int isMultiImages() throws IOException, DataStoreException {
-        assert Thread.holdsLock(this);
         if (numImages < 0) {
             // This case happens only when we opened an existing file.
             final Components components = components(true, numImages);
@@ -221,6 +220,7 @@ fallback:       if (writer == null) {
      */
     @Override
     String setGridGeometry(final int index, GridGeometry gg) throws IOException, DataStoreException {
+        assert Thread.holdsLock(this);
         /*
          * Make sure that the grid geometry starts at (0,0).
          * Must be done before to compare with existing grid.
@@ -348,7 +348,7 @@ writeCoeffs:    for (int i=0;; i++) {
         if (resource instanceof WritableResource) {
             final WritableResource image = (WritableResource) resource;
             if (image.store() == this) try {
-                final int imageIndex = image.imageIndex;
+                final int imageIndex = image.getImageIndex();
                 writer().removeImage(imageIndex);
                 final Components components = components(false, numImages);
                 if (components != null) {

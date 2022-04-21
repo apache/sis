@@ -18,8 +18,9 @@ package org.apache.sis.internal.storage.image;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.io.EOFException;
@@ -202,6 +203,16 @@ class WorldFileStore extends PRJDataStore implements Aggregate {
     private Metadata metadata;
 
     /**
+     * Identifiers used by a resource. Identifiers must be unique in the data store,
+     * so after an identifier has been used it can not be reused anymore even if the
+     * resource having that identifier has been removed.
+     * Values associated to identifiers tell whether the resource still exist.
+     *
+     * @see WorldFileResource#getIdentifier()
+     */
+    final Map<String,Boolean> identifiers;
+
+    /**
      * Creates a new store from the given file, URL or stream.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
@@ -214,6 +225,7 @@ class WorldFileStore extends PRJDataStore implements Aggregate {
             throws DataStoreException, IOException
     {
         super(provider, connector);
+        identifiers = new HashMap<>();
         final Object storage = connector.getStorage();
         if (storage instanceof ImageReader) {
             reader = (ImageReader) storage;
@@ -689,7 +701,7 @@ loop:   for (int convention=0;; convention++) {
          * @param  image  the image to add to this list.
          */
         final void added(final WorldFileResource image) {
-            size = image.imageIndex;
+            size = image.getImageIndex();
             if (size >= images.length) {
                 images = Arrays.copyOf(images, size * 2);
             }
@@ -702,14 +714,14 @@ loop:   for (int convention=0;; convention++) {
          *
          * @param  index  index of the image that has been removed.
          */
-        final void removed(int index) {
+        final void removed(int index) throws DataStoreException {
             final int last = images.length - 1;
             System.arraycopy(images, index+1, images, index, last - index);
             images[last] = null;
             size--;
             while (index < last) {
                 final WorldFileResource image = images[index++];
-                if (image != null) image.imageIndex--;
+                if (image != null) image.decrementImageIndex();
             }
         }
 

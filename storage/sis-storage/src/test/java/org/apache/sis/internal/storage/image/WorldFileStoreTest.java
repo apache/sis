@@ -17,12 +17,20 @@
 package org.apache.sis.internal.storage.image;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.DirectoryStream;
+import java.nio.file.StandardOpenOption;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.storage.ResourceAlreadyExistsException;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -53,21 +61,22 @@ public final strictfp class WorldFileStoreTest extends TestCase {
      */
     @Test
     public void testProbeContent() throws DataStoreException {
-        final WorldFileStoreProvider p = new WorldFileStoreProvider();
-        final ProbeResult r = p.probeContent(testData());
-        assertTrue(r.isSupported());
-        assertEquals("image/png", r.getMimeType());
+        final WorldFileStoreProvider provider = new WorldFileStoreProvider();
+        final ProbeResult result = provider.probeContent(testData());
+        assertTrue(result.isSupported());
+        assertEquals("image/png", result.getMimeType());
     }
 
     /**
      * Tests the metadata of the {@code "gradient.png"} file.
      *
-     * @throws DataStoreException if an error occurred while reading the file.
-     * @throws IOException if an error occurred while creating the image reader instance.
+     * @throws DataStoreException if an error occurred during Image I/O or data store operations.
      */
     @Test
-    public void testMetadata() throws DataStoreException, IOException {
-        try (WorldFileStore store = new WorldFileStore(null, testData(), true)) {
+    public void testMetadata() throws DataStoreException {
+        final WorldFileStoreProvider provider = new WorldFileStoreProvider();
+        try (WorldFileStore store = provider.open(testData())) {
+            assertFalse(store instanceof WritableStore);
             assertEquals("gradient", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             final Identification id = getSingleton(metadata.getIdentificationInfo());
@@ -84,6 +93,75 @@ public final strictfp class WorldFileStoreTest extends TestCase {
              * Verify that the metadata is cached.
              */
             assertSame(metadata, store.getMetadata());
+        }
+    }
+
+    /**
+     * Tests reading the coverage and writing it in a new file.
+     *
+     * @throws DataStoreException if an error occurred during Image I/O or data store operations.
+     * @throws IOException if an error occurred when creating, reading or deleting temporary files.
+     */
+    @Test
+    public void testReadWrite() throws DataStoreException, IOException {
+        final Path directory = Files.createTempDirectory("SIS-");
+        try {
+            final WorldFileStoreProvider provider = new WorldFileStoreProvider();
+            try (WorldFileStore source = provider.open(testData())) {
+                assertFalse(source instanceof WritableStore);
+                final GridCoverageResource resource = getSingleton(source.components());
+                assertEquals("identifier", "1", resource.getIdentifier().get().toString());
+                /*
+                 * Above `resource` is the content of "gradient.png" file.
+                 * Write the resource in a new file using a different format.
+                 */
+                final Path targetPath = directory.resolve("copy.jpg");
+                final StorageConnector connector = new StorageConnector(targetPath);
+                connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
+                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE
+                });
+                try (WritableStore target = (WritableStore) provider.open(connector)) {
+                    assertEquals(0, target.isMultiImages());
+                    final WritableResource copy = (WritableResource) target.add(resource);
+                    assertEquals(1, target.isMultiImages());
+                    assertNotSame(resource, copy);
+                    assertEquals (resource.getGridGeometry(),     copy.getGridGeometry());
+                    assertEquals (resource.getSampleDimensions(), copy.getSampleDimensions());
+                    /*
+                     * Verify that attempt to write again without `REPLACE` mode fails.
+                     */
+                    final GridCoverage coverage = resource.read(null, null);
+                    try {
+                        copy.write(coverage);
+                        fail("Should not have replaced existing resource.");
+                    } catch (ResourceAlreadyExistsException e) {
+                        final String message = e.getMessage();
+                        assertTrue(message, message.contains("1"));     // "1" is the image identifier.
+                    }
+                    /*
+                     * Try to write again in `REPLACE` mode.
+                     */
+                    copy.write(coverage, WritableResource.CommonOption.REPLACE);
+                    assertEquals(1, target.isMultiImages());
+                }
+                /*
+                 * Verify that the 3 files have been written. The JGW file content is verified,
+                 * but the PRJ file content is not fully verified because it may vary.
+                 */
+                assertTrue(Files.size(targetPath) > 0);
+                assertTrue(Files.readAllLines(directory.resolve("copy.prj"))
+                                .stream().anyMatch((line) -> line.contains("WGS 84")));
+                assertArrayEquals(new String[] {
+                    "2.8125", "0.0", "0.0", "-2.8125", "-178.59375", "88.59375"
+                }, Files.readAllLines(directory.resolve("copy.jgw")).toArray());
+            }
+        } finally {
+            try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
+                for (Path entry : entries) {
+                    Files.delete(entry);
+                }
+            }
+            Files.delete(directory);
         }
     }
 }
