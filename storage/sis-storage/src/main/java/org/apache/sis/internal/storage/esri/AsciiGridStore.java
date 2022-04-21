@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.ascii;
+package org.apache.sis.internal.storage.esri;
 
 import java.util.Map;
 import java.util.List;
@@ -55,10 +55,85 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A data store which creates grid coverages from an ESRI ASCII grid file.
+ * Data store implementation for ESRI ASCII grid format.
+ * This is a very simple format for reading and writing single-banded raster data.
+ * As the "ASCII" name implies, files are text files in US-ASCII character encoding
+ * no matter what the {@link org.apache.sis.setup.OptionKey#ENCODING} value is,
+ * and numbers are parsed or formatted according the US locale no matter
+ * what the {@link org.apache.sis.setup.OptionKey#LOCALE} value is.
+ *
+ * <p>ASCII grid files contains a header before the actual data.
  * The header contains (<var>key</var> <var>value</var>) pairs,
  * one pair per line and using spaces as separator between keys and values.
- * The package javadoc lists the recognized keywords.
+ * The valid keys are listed in the table below
+ * (note that some of them are extensions to the ESRI ASCII Grid format).</p>
+ *
+ * <table class="sis">
+ *   <caption>Recognized keywords in ASCII Grid header</caption>
+ *   <tr>
+ *     <th>Keyword</th>
+ *     <th>Value type</th>
+ *     <th>Obligation</th>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code NCOLS}</td>
+ *     <td>{@link java.lang.Integer}</td>
+ *     <td>Mandatory</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code NROWS}</td>
+ *     <td>{@link java.lang.Integer}</td>
+ *     <td>Mandatory</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code XLLCORNER} or {@code XLLCENTER}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Mandatory</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code YLLCORNER} or {@code YLLCENTER}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Mandatory</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code CELLSIZE}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Mandatory, unless an alternative below is present</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code XCELLSIZE} and {@code YCELLSIZE}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Non-standard alternative to {@code CELLSIZE}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code XDIM} and {@code YDIM}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Non-standard alternative to {@code CELLSIZE}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code DX} and {@code DY}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Non-standard alternative to {@code CELLSIZE}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code NODATA_VALUE}</td>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>Optional</td>
+ *   </tr>
+ * </table>
+ *
+ * <h2>Extensions</h2>
+ * The implementation in this package adds the following extensions
+ * (some of them are taken from GDAL):
+ *
+ * <ul class="verbose">
+ *   <li>Coordinate reference system specified by auxiliary {@code *.prj} file.
+ *       If the format is WKT 1, the GDAL variant is used (that variant differs from
+ *       the OGC 01-009 standard in their interpretation of units of measurement).</li>
+ *   <li>{@code XCELLSIZE} and {@code YCELLSIZE} parameters in the header are used
+ *       instead of {@code CELLSIZE} if the pixels are non-square.</li>
+ *   <li>Lines in the header starting with {@code '#'} are ignored as comment lines.</li>
+ * </ul>
  *
  * <h2>Possible evolutions</h2>
  * If we allow subclasses in a future version, we could add a {@code processHeader(Map)} method
@@ -70,13 +145,15 @@ import org.apache.sis.util.resources.Errors;
  * specified to the {@code read(…)} method. The image is loaded by {@link #getSampleDimensions()}
  * call too, because there is no other way to build a reliable sample dimension.
  * Even the data type can not be determined for sure without loading the full image.
+ * Loading the full image is reasonable if ASCII Grid files contain only small images,
+ * which is usually the case given how inefficient this format is.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-class Store extends PRJDataStore implements GridCoverageResource {
+class AsciiGridStore extends PRJDataStore implements GridCoverageResource {
     /**
      * Keys of elements expected in the header. Must be in upper-case letters.
      */
@@ -161,13 +238,13 @@ class Store extends PRJDataStore implements GridCoverageResource {
      * @param  readOnly   whether to fail if the channel can not be opened at least in read mode.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    Store(final StoreProvider provider, final StorageConnector connector, final boolean readOnly)
+    AsciiGridStore(final AsciiGridStoreProvider provider, final StorageConnector connector, final boolean readOnly)
             throws DataStoreException
     {
         super(provider, connector);
         final ChannelDataInput channel;
         if (readOnly) {
-            channel = connector.commit(ChannelDataInput.class, StoreProvider.NAME);
+            channel = connector.commit(ChannelDataInput.class, AsciiGridStoreProvider.NAME);
         } else {
             channel = connector.getStorageAs(ChannelDataInput.class);
             if (channel != null) {
@@ -334,7 +411,7 @@ cellsize:       if (value != null) {
             try {
                 builder.setPredefinedFormat("ASCGRD");
             } catch (MetadataStoreException e) {
-                builder.addFormatName(StoreProvider.NAME);
+                builder.addFormatName(AsciiGridStoreProvider.NAME);
                 listeners.warning(e);
             }
             builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
@@ -342,7 +419,7 @@ cellsize:       if (value != null) {
             try {
                 builder.addExtent(gridGeometry.getEnvelope());
             } catch (TransformException e) {
-                throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, getDisplayName(), null).initCause(e);
+                throw new DataStoreReferencingException(getLocale(), AsciiGridStoreProvider.NAME, getDisplayName(), null).initCause(e);
             }
             /*
              * Do not add the sample dimension, because in current version computing the sample dimension
@@ -524,7 +601,7 @@ cellsize:       if (value != null) {
     final CharactersView input() throws DataStoreException {
         final CharactersView in = input;
         if (in == null) {
-            throw new DataStoreClosedException(getLocale(), StoreProvider.NAME, StandardOpenOption.READ);
+            throw new DataStoreClosedException(getLocale(), AsciiGridStoreProvider.NAME, StandardOpenOption.READ);
         }
         return in;
     }

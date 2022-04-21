@@ -36,6 +36,9 @@
  *       because image indices are no longer stable identifiers in such case.</li>
  * </ul>
  *
+ * <p><b>TODO:</b> avoid extending internal classes directly,
+ * then move in a public package with {@code imageio} package name.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *

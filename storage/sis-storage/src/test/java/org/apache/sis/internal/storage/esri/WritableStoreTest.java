@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.ascii;
+package org.apache.sis.internal.storage.esri;
 
 import java.nio.file.Path;
 import java.nio.file.Files;

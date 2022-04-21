@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.ascii;
+package org.apache.sis.internal.storage.esri;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -48,8 +48,8 @@ final class CharactersView implements CharSequence {
 
     /**
      * The object to use for reading data, or {@code null} if unavailable.
-     * This is null during {@linkplain StoreProvider#probeContent probe} operation.
-     * Shall never be null when this instance is the {@link Store#input} instance.
+     * This is null during {@linkplain AsciiGridStoreProvider#probeContent probe} operation.
+     * Shall never be null when this instance is the {@link AsciiGridStore#input} instance.
      */
     final ChannelDataInput input;
 

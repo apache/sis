@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.ascii;
+package org.apache.sis.internal.storage.esri;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -51,7 +51,7 @@ import org.apache.sis.util.StringBuilders;
  * @since   1.2
  * @module
  */
-final class WritableStore extends Store implements WritableGridCoverageResource {
+final class WritableStore extends AsciiGridStore implements WritableGridCoverageResource {
     /**
      * The line separator for writing the ASCII file.
      */
@@ -70,11 +70,11 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public WritableStore(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public WritableStore(final AsciiGridStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector, false);
         lineSeparator = System.lineSeparator();
         if (!super.canReadOrWrite(false)) {
-            output = connector.commit(ChannelDataOutput.class, StoreProvider.NAME);
+            output = connector.commit(ChannelDataOutput.class, AsciiGridStoreProvider.NAME);
         }
     }
 
@@ -132,7 +132,7 @@ final class WritableStore extends Store implements WritableGridCoverageResource 
         }
         final AffineTransform at = h.getAffineTransform2D(gg.getExtent(), gridToCRS);
         if (at.getShearX() != 0 || at.getShearY() != 0) {
-            throw new IncompatibleResourceException(h.rotationNotSupported(StoreProvider.NAME));
+            throw new IncompatibleResourceException(h.rotationNotSupported(AsciiGridStoreProvider.NAME));
         }
         double scaleX =  at.getScaleX();
         double scaleY = -at.getScaleY();

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.ascii;
+package org.apache.sis.internal.storage.esri;
 
 import java.util.List;
 import java.awt.image.Raster;
@@ -35,29 +35,29 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link Store} and {@link StoreProvider}.
+ * Tests {@link AsciiGridStore} and {@link AsciiGridStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-public final strictfp class StoreTest extends TestCase {
+public final strictfp class AsciiGridStoreTest extends TestCase {
     /**
      * Returns a storage connector with the URL to the test data.
      */
     private static StorageConnector testData() {
-        return new StorageConnector(StoreTest.class.getResource("grid.asc"));
+        return new StorageConnector(AsciiGridStoreTest.class.getResource("grid.asc"));
     }
 
     /**
-     * Tests {@link StoreProvider#probeContent(StorageConnector)} method.
+     * Tests {@link AsciiGridStoreProvider#probeContent(StorageConnector)} method.
      *
      * @throws DataStoreException if en error occurred while reading the CSV file.
      */
     @Test
     public void testProbeContent() throws DataStoreException {
-        final StoreProvider p = new StoreProvider();
+        final AsciiGridStoreProvider p = new AsciiGridStoreProvider();
         final ProbeResult r = p.probeContent(testData());
         assertTrue(r.isSupported());
         assertEquals("text/plain", r.getMimeType());
@@ -72,7 +72,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException {
-        try (Store store = new Store(null, testData(), true)) {
+        try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
             assertEquals("grid", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             /*
@@ -105,7 +105,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testRead() throws DataStoreException {
-        try (Store store = new Store(null, testData(), true)) {
+        try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
             final List<Category> categories = getSingleton(store.getSampleDimensions()).getCategories();
             assertEquals(2, categories.size());
             assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);

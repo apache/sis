@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.ascii;
+package org.apache.sis.internal.storage.esri;
 
 import java.util.Map;
 import java.nio.ByteBuffer;
@@ -30,23 +30,23 @@ import org.apache.sis.internal.storage.PRJDataStore;
 
 
 /**
- * The provider of {@link Store} instances.
- * Given a {@link StorageConnector} input, this class tries to instantiate an ESRI ASCII Grid {@code Store}.
+ * The provider of {@link AsciiGridStore} instances.
+ * Given a {@link StorageConnector} input, this class tries to instantiate an ESRI ASCII Grid {@code AsciiGridStore}.
  *
  * <h2>Thread safety</h2>
- * The same {@code StoreProvider} instance can be safely used by many threads without synchronization on
- * the part of the caller. However the {@link Store} instances created by this factory are not thread-safe.
+ * The same {@code AsciiGridStoreProvider} instance can be safely used by many threads without synchronization on
+ * the part of the caller. However the {@link AsciiGridStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-@StoreMetadata(formatName    = StoreProvider.NAME,
+@StoreMetadata(formatName    = AsciiGridStoreProvider.NAME,
                fileSuffixes  = {"asc", "grd", "agr", "aig"},
                capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = GridCoverageResource.class)
-public final class StoreProvider extends PRJDataStore.Provider {
+public final class AsciiGridStoreProvider extends PRJDataStore.Provider {
     /**
      * The format names for ESRI ASCII grid files.
      */
@@ -55,7 +55,7 @@ public final class StoreProvider extends PRJDataStore.Provider {
     /**
      * Creates a new provider.
      */
-    public StoreProvider() {
+    public AsciiGridStoreProvider() {
     }
 
     /**
@@ -69,7 +69,7 @@ public final class StoreProvider extends PRJDataStore.Provider {
     }
 
     /**
-     * Returns the MIME type if the given storage appears to be supported by ASCII Grid {@link Store}.
+     * Returns the MIME type if the given storage appears to be supported by ASCII Grid {@link AsciiGridStore}.
      * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
      * or writing will succeed, only that there appears to be a reasonable chance of success
      * based on a brief inspection of the file header.
@@ -97,15 +97,15 @@ public final class StoreProvider extends PRJDataStore.Provider {
             final CharactersView view = new CharactersView(null, buffer);
             try {
                 final Map<String, String> header = view.readHeader();
-                if (header.containsKey(Store.NROWS)     && header.containsKey(Store.NCOLS) &&
-                   (header.containsKey(Store.XLLCORNER) || header.containsKey(Store.XLLCENTER)) &&
-                   (header.containsKey(Store.YLLCORNER) || header.containsKey(Store.YLLCENTER)))
+                if (header.containsKey(AsciiGridStore.NROWS)     && header.containsKey(AsciiGridStore.NCOLS) &&
+                   (header.containsKey(AsciiGridStore.XLLCORNER) || header.containsKey(AsciiGridStore.XLLCENTER)) &&
+                   (header.containsKey(AsciiGridStore.YLLCORNER) || header.containsKey(AsciiGridStore.YLLCENTER)))
                 {
-cellsize:           if (!header.containsKey(Store.CELLSIZE)) {
+cellsize:           if (!header.containsKey(AsciiGridStore.CELLSIZE)) {
                         int def = 0;
-                        for (int i=0; i < Store.CELLSIZES.length;) {
-                            if (header.containsKey(Store.CELLSIZES[i++])) def |= 1;
-                            if (header.containsKey(Store.CELLSIZES[i++])) def |= 2;
+                        for (int i=0; i < AsciiGridStore.CELLSIZES.length;) {
+                            if (header.containsKey(AsciiGridStore.CELLSIZES[i++])) def |= 1;
+                            if (header.containsKey(AsciiGridStore.CELLSIZES[i++])) def |= 2;
                             if (def == 3) break cellsize;
                         }
                         return ProbeResult.UNSUPPORTED_STORAGE;
@@ -122,7 +122,7 @@ cellsize:           if (!header.containsKey(Store.CELLSIZE)) {
     }
 
     /**
-     * Returns a CSV {@link Store} implementation associated with this provider.
+     * Returns a CSV {@link AsciiGridStore} implementation associated with this provider.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
@@ -133,7 +133,7 @@ cellsize:           if (!header.containsKey(Store.CELLSIZE)) {
         if (isWritable(connector)) {
             return new WritableStore(this, connector);
         } else {
-            return new Store(this, connector, true);
+            return new AsciiGridStore(this, connector, true);
         }
     }
 }
