@@ -42,7 +42,7 @@ import org.apache.sis.storage.ProbeResult;
  * @module
  */
 @StoreMetadata(formatName    = WorldFileStoreProvider.NAME,
-               fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list.
+               fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list, intentionally excluding TIFF.
                capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = GridCoverageResource.class)
 public final class WorldFileStoreProvider extends PRJDataStore.Provider {
