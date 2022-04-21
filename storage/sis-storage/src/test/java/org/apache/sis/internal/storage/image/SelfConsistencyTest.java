@@ -43,7 +43,7 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
     /**
      * The store used for the test, opened only once.
      */
-    private static Store store;
+    private static WorldFileStore store;
 
     /**
      * Opens the test file to be used for all tests.
@@ -53,9 +53,9 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
      */
     @BeforeClass
     public static void openFile() throws IOException, DataStoreException {
-        final URL url = StoreTest.class.getResource("gradient.png");
+        final URL url = WorldFileStoreTest.class.getResource("gradient.png");
         assumeNotNull(url);
-        store = new Store(null, new StorageConnector(url), true);
+        store = new WorldFileStore(null, new StorageConnector(url), true);
     }
 
     /**
@@ -65,7 +65,7 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
      */
     @AfterClass
     public static void closeFile() throws DataStoreException {
-        final Store s = store;
+        final WorldFileStore s = store;
         if (s != null) {
             store = null;       // Clear first in case of failure.
             s.close();

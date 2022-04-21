@@ -53,7 +53,7 @@ import org.apache.sis.setup.OptionKey;
 
 /**
  * A data store which writes grid coverages using Image I/O writers completed by the <cite>World File</cite> convention.
- * Georeferencing is defined by two auxiliary files described in the {@link Store} parent class.
+ * Georeferencing is defined by two auxiliary files described in the {@link WorldFileStore} parent class.
  *
  * <h2>Type of output objects</h2>
  * The {@link StorageConnector} output should be an instance of the following types:
@@ -63,16 +63,18 @@ import org.apache.sis.setup.OptionKey;
  * If none is found, this data store tries to {@linkplain ImageIO#createImageOutputStream(Object) create an output stream}
  * from the output object.
  *
- * <p>The storage input object may also be an {@link ImageWriter} instance ready for use
+ * <p>The storage output object may also be an {@link ImageWriter} instance ready for use
  * (i.e. with its {@linkplain ImageWriter#setOutput(Object) output set} to a non-null value).
- * In that case, this data store will use the given image writer as-is.</p>
+ * In that case, this data store will use the given image writer as-is.
+ * The image writer will be {@linkplain ImageWriter#dispose() disposed}
+ * and its output closed (if {@link AutoCloseable}) when this data store is {@linkplain #close() closed}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-final class WritableStore extends Store implements WritableAggregate {
+final class WritableStore extends WorldFileStore implements WritableAggregate {
     /**
      * Position of the input/output stream beginning. This is usually 0.
      */
@@ -104,7 +106,7 @@ final class WritableStore extends Store implements WritableAggregate {
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    WritableStore(final StoreProvider provider, final StorageConnector connector)
+    WritableStore(final WorldFileStoreProvider provider, final StorageConnector connector)
             throws DataStoreException, IOException
     {
         super(provider, connector, false);
@@ -152,7 +154,7 @@ fallback:       if (writer == null) {
                             break fallback;
                         }
                     }
-                    throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
+                    throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
                                 storage, connector.getOption(OptionKey.OPEN_OPTIONS));
                 }
             }
@@ -289,8 +291,8 @@ writeCoeffs:    for (int i=0;; i++) {
      * @throws IndexOutOfBoundsException if the image index is out of bounds.
      */
     @Override
-    Image createImageResource(final int index) throws DataStoreException, IOException {
-        return new WritableImage(this, listeners, index, getGridGeometry(index));
+    WorldFileResource createImageResource(final int index) throws DataStoreException, IOException {
+        return new WritableResource(this, listeners, index, getGridGeometry(index));
     }
 
     /**
@@ -322,7 +324,7 @@ writeCoeffs:    for (int i=0;; i++) {
             if (domain == null) {
                 domain = coverage.getGridGeometry();        // We are adding the first image.
             }
-            final WritableImage image = new WritableImage(this, listeners, numImages, domain);
+            final WritableResource image = new WritableResource(this, listeners, numImages, domain);
             image.write(coverage);
             components.added(image);        // Must be invoked only after above succeeded.
             numImages++;
@@ -343,8 +345,8 @@ writeCoeffs:    for (int i=0;; i++) {
     @Override
     public synchronized void remove(final Resource resource) throws DataStoreException {
         Exception cause = null;
-        if (resource instanceof WritableImage) {
-            final WritableImage image = (WritableImage) resource;
+        if (resource instanceof WritableResource) {
+            final WritableResource image = (WritableResource) resource;
             if (image.store() == this) try {
                 final int imageIndex = image.imageIndex;
                 writer().removeImage(imageIndex);
@@ -436,7 +438,7 @@ writeCoeffs:    for (int i=0;; i++) {
                 }
             }
         }
-        throw new DataStoreClosedException(getLocale(), StoreProvider.NAME, StandardOpenOption.WRITE);
+        throw new DataStoreClosedException(getLocale(), WorldFileStoreProvider.NAME, StandardOpenOption.WRITE);
     }
 
     /**

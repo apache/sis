@@ -31,29 +31,29 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link Store} and {@link StoreProvider}.
+ * Tests {@link WorldFileStore} and {@link WorldFileStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-public final strictfp class StoreTest extends TestCase {
+public final strictfp class WorldFileStoreTest extends TestCase {
     /**
      * Returns a storage connector with the URL to the test data.
      */
     private static StorageConnector testData() {
-        return new StorageConnector(StoreTest.class.getResource("gradient.png"));
+        return new StorageConnector(WorldFileStoreTest.class.getResource("gradient.png"));
     }
 
     /**
-     * Tests {@link StoreProvider#probeContent(StorageConnector)} method.
+     * Tests {@link WorldFileStoreProvider#probeContent(StorageConnector)} method.
      *
      * @throws DataStoreException if en error occurred while reading the CSV file.
      */
     @Test
     public void testProbeContent() throws DataStoreException {
-        final StoreProvider p = new StoreProvider();
+        final WorldFileStoreProvider p = new WorldFileStoreProvider();
         final ProbeResult r = p.probeContent(testData());
         assertTrue(r.isSupported());
         assertEquals("image/png", r.getMimeType());
@@ -67,7 +67,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException, IOException {
-        try (Store store = new Store(null, testData(), true)) {
+        try (WorldFileStore store = new WorldFileStore(null, testData(), true)) {
             assertEquals("gradient", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             final Identification id = getSingleton(metadata.getIdentificationInfo());

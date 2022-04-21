@@ -100,7 +100,9 @@ import org.apache.sis.setup.OptionKey;
  *
  * <p>The storage input object may also be an {@link ImageReader} instance ready for use
  * (i.e. with its {@linkplain ImageReader#setInput(Object) input set} to a non-null value).
- * In that case, this data store will use the given image reader as-is.</p>
+ * In that case, this data store will use the given image reader as-is.
+ * The image reader will be {@linkplain ImageReader#dispose() disposed}
+ * and its input closed (if {@link AutoCloseable}) when this data store is {@linkplain #close() closed}.</p>
  *
  * <h2>Handling of multi-image files</h2>
  * Because some image formats can store an arbitrary amount of images,
@@ -112,7 +114,7 @@ import org.apache.sis.setup.OptionKey;
  * @since   1.2
  * @module
  */
-class Store extends PRJDataStore implements Aggregate {
+class WorldFileStore extends PRJDataStore implements Aggregate {
     /**
      * Image I/O format names (ignoring case) for which we have an entry in the {@code SpatialMetadata} database.
      */
@@ -208,7 +210,7 @@ class Store extends PRJDataStore implements Aggregate {
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    Store(final StoreProvider provider, final StorageConnector connector, final boolean readOnly)
+    WorldFileStore(final WorldFileStoreProvider provider, final StorageConnector connector, final boolean readOnly)
             throws DataStoreException, IOException
     {
         super(provider, connector);
@@ -271,7 +273,7 @@ fallback:   if (reader == null) {
                         }
                     }
                 }
-                throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
+                throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
                             storage, connector.getOption(OptionKey.OPEN_OPTIONS));
             }
         }
@@ -500,8 +502,8 @@ loop:   for (int convention=0;; convention++) {
             return null;
         }
         final GridExtent extent = gg.getExtent();
-        final int w = Math.toIntExact(extent.getSize(Image.X_DIMENSION));
-        final int h = Math.toIntExact(extent.getSize(Image.Y_DIMENSION));
+        final int w = Math.toIntExact(extent.getSize(WorldFileResource.X_DIMENSION));
+        final int h = Math.toIntExact(extent.getSize(WorldFileResource.Y_DIMENSION));
         final String s = (suffixWLD != null) ? suffixWLD : getWorldFileSuffix();
         crs = gg.isDefined(GridGeometry.CRS) ? gg.getCoordinateReferenceSystem() : null;
         gridGeometry = gg;                  // Set only after success of all the above.
@@ -578,10 +580,10 @@ loop:   for (int convention=0;; convention++) {
     }
 
     /**
-     * A list of images where each {@link Image} instance is initialized when first needed.
+     * A list of images where each {@link WorldFileResource} instance is initialized when first needed.
      * Fetching the list size may be a costly operation and will be done only if requested.
      */
-    final class Components extends ListOfUnknownSize<Image> {
+    final class Components extends ListOfUnknownSize<WorldFileResource> {
         /**
          * Size of this list, or any negative value if unknown.
          */
@@ -591,7 +593,7 @@ loop:   for (int convention=0;; convention++) {
          * All elements in this list. Some array elements may be {@code null} if the image
          * has never been requested.
          */
-        private Image[] images;
+        private WorldFileResource[] images;
 
         /**
          * Creates a new list of images.
@@ -600,7 +602,7 @@ loop:   for (int convention=0;; convention++) {
          */
         private Components(final int numImages) {
             size = numImages;
-            images = new Image[Math.max(numImages, 1)];
+            images = new WorldFileResource[Math.max(numImages, 1)];
         }
 
         /**
@@ -609,7 +611,7 @@ loop:   for (int convention=0;; convention++) {
          */
         @Override
         public int size() {
-            synchronized (Store.this) {
+            synchronized (WorldFileStore.this) {
                 if (size < 0) try {
                     size   = reader().getNumImages(true);
                     images = ArraysExt.resize(images, size);
@@ -628,7 +630,7 @@ loop:   for (int convention=0;; convention++) {
          */
         @Override
         protected int sizeIfKnown() {
-            synchronized (Store.this) {
+            synchronized (WorldFileStore.this) {
                 return size;
             }
         }
@@ -639,7 +641,7 @@ loop:   for (int convention=0;; convention++) {
          */
         @Override
         protected boolean exists(final int index) {
-            synchronized (Store.this) {
+            synchronized (WorldFileStore.this) {
                 if (size >= 0) {
                     return index >= 0 && index < size;
                 }
@@ -659,9 +661,9 @@ loop:   for (int convention=0;; convention++) {
          * @throws IndexOutOfBoundsException if the image index is out of bounds.
          */
         @Override
-        public Image get(final int index) {
-            synchronized (Store.this) {
-                Image image = null;
+        public WorldFileResource get(final int index) {
+            synchronized (WorldFileStore.this) {
+                WorldFileResource image = null;
                 if (index < images.length) {
                     image = images[index];
                 }
@@ -686,7 +688,7 @@ loop:   for (int convention=0;; convention++) {
          *
          * @param  image  the image to add to this list.
          */
-        final void added(final Image image) {
+        final void added(final WorldFileResource image) {
             size = image.imageIndex;
             if (size >= images.length) {
                 images = Arrays.copyOf(images, size * 2);
@@ -706,7 +708,7 @@ loop:   for (int convention=0;; convention++) {
             images[last] = null;
             size--;
             while (index < last) {
-                final Image image = images[index++];
+                final WorldFileResource image = images[index++];
                 if (image != null) image.imageIndex--;
             }
         }
@@ -715,10 +717,10 @@ loop:   for (int convention=0;; convention++) {
          * Removes the element at the specified position in this list.
          */
         @Override
-        public Image remove(final int index) {
-            final Image image = get(index);
+        public WorldFileResource remove(final int index) {
+            final WorldFileResource image = get(index);
             try {
-                Store.this.remove(image);
+                WorldFileStore.this.remove(image);
             } catch (DataStoreException e) {
                 throw new UnsupportedOperationException(e);
             }
@@ -743,14 +745,14 @@ loop:   for (int convention=0;; convention++) {
      * @return resource for the image identified by the given index.
      * @throws IndexOutOfBoundsException if the image index is out of bounds.
      */
-    Image createImageResource(final int index) throws DataStoreException, IOException {
-        return new Image(this, listeners, index, getGridGeometry(index));
+    WorldFileResource createImageResource(final int index) throws DataStoreException, IOException {
+        return new WorldFileResource(this, listeners, index, getGridGeometry(index));
     }
 
     /**
      * Prepares an image reader compatible with the writer and sets its input.
      * This method is invoked for switching from write mode to read mode.
-     * Its actual implementation is provided by {@link WritableImage}.
+     * Its actual implementation is provided by {@link WritableResource}.
      *
      * @param  current  the current image reader, or {@code null} if none.
      * @return the image reader to use, or {@code null} if none.
@@ -781,7 +783,7 @@ loop:   for (int convention=0;; convention++) {
         if (current == null || current.getInput() == null) {
             reader = current = prepareReader(current);
             if (current == null) {
-                throw new DataStoreClosedException(getLocale(), StoreProvider.NAME, StandardOpenOption.READ);
+                throw new DataStoreClosedException(getLocale(), WorldFileStoreProvider.NAME, StandardOpenOption.READ);
             }
             configureReader();
         }

@@ -35,18 +35,18 @@ import org.apache.sis.storage.ProbeResult;
 
 
 /**
- * The provider of {@link Store} instances.
+ * The provider of {@link WorldFileStore} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-@StoreMetadata(formatName    = StoreProvider.NAME,
+@StoreMetadata(formatName    = WorldFileStoreProvider.NAME,
                fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list.
                capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = GridCoverageResource.class)
-public final class StoreProvider extends PRJDataStore.Provider {
+public final class WorldFileStoreProvider extends PRJDataStore.Provider {
     /**
      * The format name.
      */
@@ -55,7 +55,7 @@ public final class StoreProvider extends PRJDataStore.Provider {
     /**
      * Creates a new provider.
      */
-    public StoreProvider() {
+    public WorldFileStoreProvider() {
     }
 
     /**
@@ -69,7 +69,7 @@ public final class StoreProvider extends PRJDataStore.Provider {
     }
 
     /**
-     * Returns a {@link Store} implementation associated with this provider.
+     * Returns a {@link WorldFileStore} implementation associated with this provider.
      * The data store will be writable if {@link java.nio.file.StandardOpenOption#WRITE} is provided,
      * or if the storage is a writable object such as {@link javax.imageio.stream.ImageOutputStream}.
      *
@@ -93,7 +93,7 @@ public final class StoreProvider extends PRJDataStore.Provider {
             if (isWritable) {
                 return new WritableStore(this, connector);
             } else {
-                return new Store(this, connector, true);
+                return new WorldFileStore(this, connector, true);
             }
         } catch (IOException e) {
             throw new DataStoreException(e);

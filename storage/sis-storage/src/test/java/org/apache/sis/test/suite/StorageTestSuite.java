@@ -57,7 +57,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.wkt.StoreTest.class,
     org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
-    org.apache.sis.internal.storage.image.StoreTest.class,
+    org.apache.sis.internal.storage.image.WorldFileStoreTest.class,
     org.apache.sis.internal.storage.image.SelfConsistencyTest.class,
     org.apache.sis.internal.storage.ascii.StoreTest.class,
     org.apache.sis.internal.storage.ascii.WritableStoreTest.class,

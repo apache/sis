@@ -124,7 +124,7 @@ enum FormatFilter {
 
     /**
      * Finds a provider for the given input, or returns {@code null} if none.
-     * This is used by {@link StoreProvider#probeContent(StorageConnector)}.
+     * This is used by {@link WorldFileStoreProvider#probeContent(StorageConnector)}.
      *
      * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
      * @param  connector   provider of the input to be given to the {@code canDecodeInput(…)} method.

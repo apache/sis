@@ -36,12 +36,12 @@ import org.apache.sis.storage.event.StoreListeners;
  * @since   1.2
  * @module
  */
-final class WritableImage extends Image implements WritableGridCoverageResource {
+final class WritableResource extends WorldFileResource implements WritableGridCoverageResource {
     /**
      * Creates a new resource.
      */
-    WritableImage(final WritableStore store, final StoreListeners parent, final int imageIndex,
-                  final GridGeometry gridGeometry) throws DataStoreException
+    WritableResource(final WritableStore store, final StoreListeners parent, final int imageIndex,
+                     final GridGeometry gridGeometry) throws DataStoreException
     {
         super(store, parent, imageIndex, gridGeometry);
     }
@@ -60,7 +60,7 @@ final class WritableImage extends Image implements WritableGridCoverageResource 
         final WritableStore store = (WritableStore) store();
         try {
             synchronized (store) {
-                if (imageIndex != Store.MAIN_IMAGE || (store.isMultiImages() != 0 && !h.replace(null))) {
+                if (imageIndex != WorldFileStore.MAIN_IMAGE || (store.isMultiImages() != 0 && !h.replace(null))) {
                     // TODO: we should use `ImageWriter.replacePixels(…)` methods instead.
                     coverage = h.update(coverage);
                 }

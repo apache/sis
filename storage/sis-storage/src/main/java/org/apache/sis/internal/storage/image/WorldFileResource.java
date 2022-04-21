@@ -52,14 +52,14 @@ import static java.lang.Math.toIntExact;
 
 
 /**
- * A single image in a {@link Store}.
+ * A single image in a {@link WorldFileStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-class Image extends AbstractGridCoverageResource implements StoreResource {
+class WorldFileResource extends AbstractGridCoverageResource implements StoreResource {
     /**
      * The dimensions of <var>x</var> and <var>y</var> axes.
      * Static constants for now, may become configurable fields in the future.
@@ -69,7 +69,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
     /**
      * The parent data store, or {@code null} if this resource is not valid anymore.
      */
-    private volatile Store store;
+    private volatile WorldFileStore store;
 
     /**
      * Index of the image to read or write in the image file. This is usually 0.
@@ -77,7 +77,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
     int imageIndex;
 
     /**
-     * The identifier as a sequence number in the namespace of the {@link Store}.
+     * The identifier as a sequence number in the namespace of the {@link WorldFileStore}.
      * The first image has the sequence number "1". This is computed when first needed.
      *
      * @see #getIdentifier()
@@ -102,7 +102,9 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
      * Creates a new resource. This resource will have its own set of listeners,
      * but the listeners of the data store that created this resource will be notified as well.
      */
-    Image(final Store store, final StoreListeners parent, final int imageIndex, final GridGeometry gridGeometry) {
+    WorldFileResource(final WorldFileStore store, final StoreListeners parent,
+                      final int imageIndex, final GridGeometry gridGeometry)
+    {
         super(parent);
         this.store        = store;
         this.imageIndex   = imageIndex;
@@ -122,8 +124,8 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
      *
      * @throws DataStoreException if this resource is not valid anymore.
      */
-    final Store store() throws DataStoreException {
-        final Store store = this.store;
+    final WorldFileStore store() throws DataStoreException {
+        final WorldFileStore store = this.store;
         if (store != null) {
             return store;
         }
@@ -136,7 +138,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
      */
     @Override
     public final Optional<GenericName> getIdentifier() throws DataStoreException {
-        final Store store = store();
+        final WorldFileStore store = store();
         synchronized (store) {
             if (identifier == null) {
                 identifier = Names.createLocalName(store.getDisplayName(), null, String.valueOf(imageIndex + 1));
@@ -148,7 +150,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
     /**
      * Returns the valid extent of grid coordinates together with the conversion from those grid coordinates
      * to real world coordinates. The CRS and "pixels to CRS" conversion may be unknown if this image is not
-     * the {@linkplain Store#MAIN_IMAGE main image}, or if the {@code *.prj} and/or world auxiliary file has
+     * the {@link WorldFileStore#MAIN_IMAGE main image}, or if the {@code *.prj} and/or world auxiliary file has
      * not been found.
      */
     @Override
@@ -162,7 +164,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final List<SampleDimension> getSampleDimensions() throws DataStoreException {
-        final Store store = store();
+        final WorldFileStore store = store();
         synchronized (store) {
             if (sampleDimensions == null) try {
                 final ImageReader        reader = store.reader();
@@ -206,7 +208,7 @@ class Image extends AbstractGridCoverageResource implements StoreResource {
     public final GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
         RenderedImage image;
         List<SampleDimension> bands;
-        final Store store = store();
+        final WorldFileStore store = store();
         try {
             synchronized (store) {
                 final ImageReader reader = store.reader();
