@@ -18,16 +18,12 @@ package org.apache.sis.internal.storage.esri;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Optional;
 import java.util.StringJoiner;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.awt.image.RenderedImage;
 import java.awt.image.DataBufferFloat;
-import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -40,15 +36,10 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.resources.Errors;
@@ -153,12 +144,11 @@ import org.apache.sis.util.resources.Errors;
  * @since   1.2
  * @module
  */
-class AsciiGridStore extends PRJDataStore implements GridCoverageResource {
+class AsciiGridStore extends RasterStore {
     /**
      * Keys of elements expected in the header. Must be in upper-case letters.
      */
     static final String
-            NCOLS     = "NCOLS",      NROWS        = "NROWS",
             XLLCORNER = "XLLCORNER",  YLLCORNER    = "YLLCORNER",
             XLLCENTER = "XLLCENTER",  YLLCENTER    = "YLLCENTER",
             CELLSIZE  = "CELLSIZE",   NODATA_VALUE = "NODATA_VALUE";
@@ -209,18 +199,6 @@ class AsciiGridStore extends PRJDataStore implements GridCoverageResource {
     private String nodataText;
 
     /**
-     * The image size together with the "grid to CRS" transform.
-     * This is also used as a flag for checking whether the
-     * {@code "*.prj"} file and the header have been read.
-     */
-    private GridGeometry gridGeometry;
-
-    /**
-     * The metadata object, or {@code null} if not yet created.
-     */
-    private Metadata metadata;
-
-    /**
      * The full coverage, read when first requested then cached.
      * We cache the full coverage on the assumption that the
      * ASCII Grid format is not used for very large images.
@@ -254,7 +232,6 @@ class AsciiGridStore extends PRJDataStore implements GridCoverageResource {
         if (channel != null) {
             input = new CharactersView(channel, channel.buffer);
         }
-        listeners.useWarningEventsOnly();
     }
 
     /**
@@ -406,43 +383,9 @@ cellsize:       if (value != null) {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            readHeader();
-            final MetadataBuilder builder = new MetadataBuilder();
-            try {
-                builder.setPredefinedFormat("ASCGRD");
-            } catch (MetadataStoreException e) {
-                builder.addFormatName(AsciiGridStoreProvider.NAME);
-                listeners.warning(e);
-            }
-            builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
-            builder.addResourceScope(ScopeCode.COVERAGE, null);
-            try {
-                builder.addExtent(gridGeometry.getEnvelope());
-            } catch (TransformException e) {
-                throw new DataStoreReferencingException(getLocale(), AsciiGridStoreProvider.NAME, getDisplayName(), null).initCause(e);
-            }
-            /*
-             * Do not add the sample dimension, because in current version computing the sample dimension
-             * requires loading the full image. Even if the `band` field is already computed and could be
-             * used opportunistically, we do not use it in order to keep a deterministic behavior
-             * (we do not want the metadata to vary depending on the order in which methods are invoked).
-             */
-            addTitleOrIdentifier(builder);
-            builder.setISOStandards(false);
-            metadata = builder.buildAndFreeze();
+            createMetadata(AsciiGridStoreProvider.NAME, "ASCGRD");
         }
         return metadata;
-    }
-
-    /**
-     * Returns the spatiotemporal extent of the ASCII grid file.
-     *
-     * @return the spatiotemporal resource extent.
-     * @throws DataStoreException if an error occurred while computing the envelope.
-     */
-    @Override
-    public Optional<Envelope> getEnvelope() throws DataStoreException {
-        return Optional.ofNullable(getGridGeometry().getEnvelope());
     }
 
     /**
@@ -475,13 +418,14 @@ cellsize:       if (value != null) {
     }
 
     /**
-     * Loads the data if not already done and closes the channel. In current implementation the image is always
-     * fully loaded and cached. The given domain is ignored. We do that in order to have determinist and stable
-     * values for the sample range and for the data type. Loading the full image is reasonable if ASCII Grid
+     * Loads the data if not already done and closes the channel if read-only.
+     * In current implementation the image is always fully loaded and cached.
+     * The given domain is ignored. We do that in order to have determinist and stable values
+     * for the sample range and for the data type. Loading the full image is reasonable if ASCII Grid
      * files contain only small images, which is usually the case given how inefficient this format is.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   shall be either 0 or an containing only 0.
+     * @param  range   shall be either 0 or a range containing only 0.
      * @return the grid coverage for the specified domain.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */

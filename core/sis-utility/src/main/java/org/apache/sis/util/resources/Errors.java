@@ -426,6 +426,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalPropertyValueClass_3 = 59;
 
         /**
+         * Property “{0}” can not take the “{1}” value.
+         */
+        public static final short IllegalPropertyValue_2 = 198;
+
+        /**
          * Range [{0} … {1}] is not valid.
          */
         public static final short IllegalRange_2 = 60;

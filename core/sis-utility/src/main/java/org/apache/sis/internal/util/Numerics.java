@@ -225,6 +225,19 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns x/y with the requirement that the division must be integer.
+     *
+     * @param  x  the dividend.
+     * @param  y  the divisor.
+     * @return x/y.
+     * @throws ArithmeticException if y is zero of if the result of x/y is not an integer.
+     */
+    public static int wholeDiv(final int x, final int y) {
+        if ((x % y) != 0) throw new ArithmeticException();
+        return x / y;       // TODO: use Math.divideExact with JDK18.
+    }
+
+    /**
      * Returns {@code value} × {@code multiplier} / {@code divisor} with control against overflow.
      * The result is rounded toward zero.
      *

@@ -226,6 +226,7 @@ class WorldFileStore extends PRJDataStore implements Aggregate {
     {
         super(provider, connector);
         identifiers = new HashMap<>();
+        listeners.useWarningEventsOnly();
         final Object storage = connector.getStorage();
         if (storage instanceof ImageReader) {
             reader = (ImageReader) storage;

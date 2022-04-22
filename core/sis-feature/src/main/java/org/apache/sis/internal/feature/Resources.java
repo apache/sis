@@ -454,6 +454,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unsupported geometry {0}D object.
          */
         public static final short UnsupportedGeometryObject_1 = 76;
+
+        /**
+         * Sample type with a size of {0} bits can not have ‘{1}’ = “{2}” characteristic.
+         */
+        public static final short UnsupportedSampleType_3 = 78;
     }
 
     /**
