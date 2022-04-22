@@ -45,7 +45,7 @@ public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format name.
      */
-    static final String NAME = "WKT";
+    public static final String NAME = "WKT";
 
     /**
      * The object to use for verifying if the first keyword is a WKT one.

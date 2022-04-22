@@ -233,6 +233,18 @@ public class DataViewer extends Application {
         for (DataStoreProvider provider : DataStores.providers()) {
             final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
             if (md != null) {
+                boolean read  = true;
+                boolean write = true;
+                switch (md.formatName()) {
+                    /*
+                     * GPX and XML have the same file suffix. Keep XML are reading time because
+                     * we can auto-detect the format. Keep GPX at writing time because we need
+                     * to be specific about the format to write.
+                     */
+                    case org.apache.sis.internal.storage.wkt.StoreProvider.NAME: continue;
+                    case org.apache.sis.internal.storage.xml.StoreProvider.NAME: write = false; break;
+                    case org.apache.sis.internal.storage.gpx.StoreProvider.NAME: read  = false; break;
+                }
                 String label = null;
                 for (final String suffix : md.fileSuffixes()) {
                     final String fs = "*.".concat(suffix);
@@ -248,11 +260,11 @@ public class DataViewer extends Application {
                      * do both. The "All formats" choice is relevant only for read operations.
                      */
                     final Capability[] capabilities = md.capabilities();
-                    if (ArraysExt.contains(capabilities, Capability.READ)) {
+                    if (read && ArraysExt.contains(capabilities, Capability.READ)) {
                         allSuffixes.addAll(suffixes);
                         open.add(f);
                     }
-                    if (ArraysExt.contains(capabilities, Capability.WRITE)) {
+                    if (write && ArraysExt.contains(capabilities, Capability.WRITE)) {
                         save.add(f);
                     }
                     suffixes.clear();

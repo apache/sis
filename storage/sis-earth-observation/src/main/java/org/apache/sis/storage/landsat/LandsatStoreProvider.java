@@ -45,7 +45,6 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @module
  */
 @StoreMetadata(formatName   = LandsatStoreProvider.NAME,
-               fileSuffixes = "txt",
                capabilities = Capability.READ)
 public class LandsatStoreProvider extends DataStoreProvider {
     /**

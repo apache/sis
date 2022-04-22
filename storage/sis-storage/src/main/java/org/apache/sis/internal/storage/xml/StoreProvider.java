@@ -29,7 +29,7 @@ import org.apache.sis.internal.storage.Capability;
  * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.4
  * @module
  */
@@ -40,7 +40,7 @@ public final class StoreProvider extends AbstractProvider {
     /**
      * The format name.
      */
-    static final String NAME = "XML";
+    public static final String NAME = "XML";
 
     /**
      * Creates a new provider.
