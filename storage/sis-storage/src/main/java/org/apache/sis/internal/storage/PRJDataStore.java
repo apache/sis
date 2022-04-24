@@ -146,21 +146,19 @@ public abstract class PRJDataStore extends URIDataStore {
     protected final void readPRJ() throws DataStoreException {
         Exception cause = null;
         try {
-            final String wkt = readAuxiliaryFile(PRJ, encoding).toString();
-            if (wkt != null) {
-                final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
-                format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
-                final ParsePosition pos = new ParsePosition(0);
-                crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
-                if (crs != null) {
-                    /*
-                     * Some characters may exist after the WKT definition. For example we sometime see the CRS
-                     * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
-                     * Current Apache SIS implementation ignores the characters after WKT.
-                     */
-                    format.validate(crs);
-                    return;
-                }
+            final String wkt = readAuxiliaryFile(PRJ).toString();
+            final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
+            format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
+            final ParsePosition pos = new ParsePosition(0);
+            crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
+            if (crs != null) {
+                /*
+                 * Some characters may exist after the WKT definition. For example we sometime see the CRS
+                 * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
+                 * Current Apache SIS implementation ignores the characters after WKT.
+                 */
+                format.validate(crs);
+                return;
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
             listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ), e);
@@ -179,19 +177,13 @@ public abstract class PRJDataStore extends URIDataStore {
      * An arbitrary size limit is applied for safety.
      *
      * @param  extension    the filename extension of the auxiliary file to open.
-     * @param  encoding     the encoding to use for reading the file content, or {@code null} for default.
      * @return the file content together with the source. Should be short-lived.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
      * @throws DataStoreException if the auxiliary file content seems too large.
      */
-    protected final AuxiliaryContent readAuxiliaryFile(final String extension, Charset encoding)
-            throws IOException, DataStoreException
-    {
-        if (encoding == null) {
-            encoding = Charset.defaultCharset();
-        }
+    protected final AuxiliaryContent readAuxiliaryFile(final String extension) throws IOException, DataStoreException {
         /*
          * Try to open the stream using the storage type (Path or URL) closest to the type
          * given at construction time. We do that because those two types can not open the
@@ -217,7 +209,10 @@ public abstract class PRJDataStore extends URIDataStore {
         /*
          * Reads the auxiliary file fully, with an arbitrary size limit.
          */
-        try (InputStreamReader reader = new InputStreamReader(stream, encoding)) {
+        try (InputStreamReader reader = (encoding != null)
+                ? new InputStreamReader(stream, encoding)
+                : new InputStreamReader(stream))
+        {
             char[] buffer = new char[1024];
             int offset = 0, count;
             while ((count = reader.read(buffer, offset, buffer.length - offset)) >= 0) {
@@ -235,7 +230,7 @@ public abstract class PRJDataStore extends URIDataStore {
     }
 
     /**
-     * Content of a file read by {@link #readAuxiliaryFile(String, Charset)}.
+     * Content of a file read by {@link #readAuxiliaryFile(String)}.
      * This is used as a workaround for not being able to return multiple values from a single method.
      * Instances of this class should be short lived, because they hold larger arrays than necessary.
      */
@@ -325,7 +320,7 @@ public abstract class PRJDataStore extends URIDataStore {
         try {
             if (crs == null) {
                 deleteAuxiliaryFile(PRJ);
-            } else try (BufferedWriter out = writeAuxiliaryFile(PRJ, encoding)) {
+            } else try (BufferedWriter out = writeAuxiliaryFile(PRJ)) {
                 final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
                 // Keep the default "WKT 2" format (see method javadoc).
                 format.format(crs, out);
@@ -344,26 +339,24 @@ public abstract class PRJDataStore extends URIDataStore {
      * except for the extension which is replaced by the given value.
      *
      * @param  extension  the filename extension of the auxiliary file to write.
-     * @param  encoding   the encoding to use for writing the file content, or {@code null} for default.
      * @return a stream opened on the specified file.
      * @throws UnknownServiceException if no {@link Path} or {@link java.net.URI} is available.
      * @throws DataStoreException if the auxiliary file can not be created.
      * @throws IOException if another error occurred while opening the stream.
      */
-    protected final BufferedWriter writeAuxiliaryFile(final String extension, Charset encoding)
+    protected final BufferedWriter writeAuxiliaryFile(final String extension)
             throws IOException, DataStoreException
     {
         final Path[] paths = super.getComponentFiles();
         if (paths.length == 0) {
             throw new UnknownServiceException();
         }
-        if (encoding == null) {
-            encoding = Charset.defaultCharset();
-        }
         Path path = paths[0];
         final String base = getBaseFilename(path);
         path = path.resolveSibling(base.concat(extension));
-        return Files.newBufferedWriter(path, encoding);
+        return (encoding != null)
+                ? Files.newBufferedWriter(path, encoding)
+                : Files.newBufferedWriter(path);
     }
 
     /**

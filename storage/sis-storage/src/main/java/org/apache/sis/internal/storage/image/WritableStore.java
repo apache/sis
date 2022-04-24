@@ -260,7 +260,7 @@ fallback:       if (writer == null) {
         if (suffix != null) {
             if (gridToCRS == null) {
                 deleteAuxiliaryFile(suffix);
-            } else try (BufferedWriter out = writeAuxiliaryFile(suffix, encoding)) {
+            } else try (BufferedWriter out = writeAuxiliaryFile(suffix)) {
 writeCoeffs:    for (int i=0;; i++) {
                     final double c;
                     switch (i) {

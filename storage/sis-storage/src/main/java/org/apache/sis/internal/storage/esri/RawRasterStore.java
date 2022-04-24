@@ -200,6 +200,7 @@ final class RawRasterStore extends RasterStore {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
+            getSampleDimensions();      // Force loading of statistics file if not already done.
             createMetadata(RawRasterStoreProvider.NAME, "RAWGRD");
         }
         return metadata;
@@ -344,7 +345,7 @@ final class RawRasterStore extends RasterStore {
         int     geomask        = 0;   // Mask telling whether ulxmap, ulymap, xdim, ydim were specified (in that order).
         RawRasterLayout layout = RawRasterLayout.BIL;
         ByteOrder byteOrder    = ByteOrder.nativeOrder();
-        final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR, encoding);
+        final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR);
         for (CharSequence line : CharSequences.splitOnEOL(header)) {
             final int length   = line.length();
             final int keyStart = CharSequences.skipLeadingWhitespaces(line, 0, length);

@@ -409,9 +409,9 @@ loop:   for (int convention=0;; convention++) {
      * @throws DataStoreException if the file content can not be parsed.
      */
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
-        final AuxiliaryContent content  = readAuxiliaryFile(wld, encoding);
+        final AuxiliaryContent content  = readAuxiliaryFile(wld);
         final String           filename = content.getFilename();
-        final CharSequence[]   lines    = CharSequences.splitOnEOL(readAuxiliaryFile(wld, encoding));
+        final CharSequence[]   lines    = CharSequences.splitOnEOL(readAuxiliaryFile(wld));
         final int              expected = 6;        // Expected number of elements.
         int                    count    = 0;        // Actual number of elements.
         final double[]         elements = new double[expected];
