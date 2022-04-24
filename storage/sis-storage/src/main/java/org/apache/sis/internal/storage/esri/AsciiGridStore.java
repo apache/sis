@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.awt.image.RenderedImage;
 import java.awt.image.DataBufferFloat;
+import java.awt.image.BandedSampleModel;
+import java.awt.image.WritableRaster;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -163,8 +163,8 @@ class AsciiGridStore extends RasterStore {
      */
     static final String[] CELLSIZES = {
         "XCELLSIZE", "YCELLSIZE",
-        "XDIM",      "YDIM",
-        "DX",        "DY"
+        RawRasterStore.XDIM, RawRasterStore.YDIM,
+        "DX", "DY"
     };
 
     /**
@@ -186,17 +186,17 @@ class AsciiGridStore extends RasterStore {
     private int width, height;
 
     /**
-     * The optional {@code NODATA_VALUE} attribute, or {@code NaN} if none.
-     * This value is valid only if {@link #gridGeometry} is non-null.
-     */
-    private double nodataValue;
-
-    /**
      * The {@link #nodataValue} as a text. This is useful when the fill value
      * can not be parsed as a {@code double} value, for example {@code "NULL"},
      * {@code "N/A"}, {@code "NA"}, {@code "mv"}, {@code "!"} or {@code "-"}.
      */
     private String nodataText;
+
+    /**
+     * The image size together with the "grid to CRS" transform.
+     * This is also used as a flag for checking whether the {@code "*.prj"} file and the header have been read.
+     */
+    private GridGeometry gridGeometry;
 
     /**
      * The full coverage, read when first requested then cached.
@@ -431,7 +431,7 @@ cellsize:       if (value != null) {
      */
     @Override
     public synchronized GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
-        RangeArgument.validate(1, range, listeners);
+        final RangeArgument bands = RangeArgument.validate(1, range, listeners);
         if (coverage == null) try {
             readHeader();
             final CharactersView view = input();
@@ -469,28 +469,15 @@ cellsize:       if (value != null) {
                 input = null;
                 view.input.channel.close();
             }
-            double minimum = stats.minimum();
-            double maximum = stats.maximum();
-            if (!(minimum <= maximum)) {
-                minimum = 0;
-                maximum = 1;
-            }
-            final SampleDimension.Builder b = new SampleDimension.Builder();
-            b.setName(filename).addQuantitative(null, minimum, maximum, null);
-            if (nodataValue < minimum || nodataValue > maximum) {
-                b.mapQualitative(null, nodataValue, Float.NaN);
-            }
-            final SampleDimension band = b.build().forConvertedValues(true);
+            final BandedSampleModel sm = new BandedSampleModel(DataBufferFloat.TYPE_FLOAT, width, height, 1);
+            loadBandDescriptions(filename, sm, stats);
             /*
              * Build the coverage last, because a non-null `coverage` field
              * is used for meaning that everything succeed.
              */
-            coverage = new GridCoverageBuilder()
-                    .addRange(band)
-                    .setDomain(gridGeometry)
-                    .setValues(new DataBufferFloat(data, data.length), null)
-                    .addImageProperty(PlanarImage.STATISTICS_KEY, new Statistics[] {stats})
-                    .build();
+            final DataBufferFloat buffer = new DataBufferFloat(data, data.length);
+            final WritableRaster  raster = WritableRaster.createWritableRaster(sm, buffer, null);
+            coverage = createCoverage(gridGeometry, bands, raster, stats);
         } catch (DataStoreException e) {
             closeOnError(e);
             throw e;
@@ -558,9 +545,10 @@ cellsize:       if (value != null) {
     @Override
     public synchronized void close() throws DataStoreException {
         final CharactersView view = input;
-        input        = null;        // Cleared first in case of failure.
-        gridGeometry = null;
+        input        = null;                // Cleared first in case of failure.
         coverage     = null;
+        gridGeometry = null;
+        super.close();                      // Clear more fields. Never fail.
         if (view != null) try {
             view.input.channel.close();
         } catch (IOException e) {

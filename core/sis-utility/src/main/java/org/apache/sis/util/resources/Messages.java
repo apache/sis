@@ -167,6 +167,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertyAssociatedTo_1 = 21;
 
         /**
+         * Ignored value of property ‘{0}’.
+         */
+        public static final short IgnoredPropertyValue_1 = 35;
+
+        /**
          * Parsing of “{0}” done, but some elements were ignored.
          */
         public static final short IncompleteParsing_1 = 22;

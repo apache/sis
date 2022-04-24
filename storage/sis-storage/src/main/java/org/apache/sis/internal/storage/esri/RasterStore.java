@@ -16,12 +16,23 @@
  */
 package org.apache.sis.internal.storage.esri;
 
+import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.Hashtable;
+import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridCoverage2D;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -29,7 +40,12 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.Statistics;
 
 
 /**
@@ -49,6 +65,12 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
  */
 abstract class RasterStore extends PRJDataStore implements GridCoverageResource {
     /**
+     * Band to make visible if an image contains many bands
+     * but a color map is defined for only one band.
+     */
+    private static final int VISIBLE_BAND = 0;
+
+    /**
      * Keyword for the number of rows in the image.
      */
     static final String NROWS = "NROWS";
@@ -59,11 +81,25 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     static final String NCOLS = "NCOLS";
 
     /**
-     * The image size together with the "grid to CRS" transform.
-     * This is also used as a flag for checking whether the
-     * {@code "*.prj"} file and the header have been read.
+     * The color model, created from the {@code "*.clr"} file content when first needed.
+     * The color model and sample dimensions are created together because they depend on
+     * the same properties.
      */
-    GridGeometry gridGeometry;
+    private ColorModel colorModel;
+
+    /**
+     * The sample dimensions, created from the {@code "*.stx"} file content when first needed.
+     * The sample dimensions and color model are created together because they depend on the same properties.
+     * This list is unmodifiable.
+     *
+     * @see #getSampleDimensions()
+     */
+    private List<SampleDimension> sampleDimensions;
+
+    /**
+     * The value to replace by NaN values, or {@link Double#NaN} if none.
+     */
+    double nodataValue;
 
     /**
      * The metadata object, or {@code null} if not yet created.
@@ -79,7 +115,20 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      */
     RasterStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
+        nodataValue = Double.NaN;
         listeners.useWarningEventsOnly();
+    }
+
+    /**
+     * Returns the spatiotemporal extent of the raster file.
+     *
+     * @return the spatiotemporal resource extent.
+     * @throws DataStoreException if an error occurred while computing the envelope.
+     * @hidden
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return Optional.ofNullable(getGridGeometry().getEnvelope());
     }
 
     /**
@@ -118,14 +167,124 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     }
 
     /**
-     * Returns the spatiotemporal extent of the raster file.
+     * Loads {@code "*.stx"} and {@code "*.clr"} files if present then builds {@link #sampleDimensions} and
+     * {@link #colorModel} from those information. If no color map is found, a grayscale color model is created.
      *
-     * @return the spatiotemporal resource extent.
-     * @throws DataStoreException if an error occurred while computing the envelope.
-     * @hidden
+     * @param  name   name to use for the sample dimension, or {@code null} if untitled.
+     * @param  sm     the sample model to use for creating a default color model if no {@code "*.clr"} file is found.
+     * @param  stats  if the caller collected statistics by itself, those statistics. Otherwise {@code null}.
+     */
+    final void loadBandDescriptions(String name, final SampleModel sm, final Statistics stats) {
+        final SampleDimension[] bands = new SampleDimension[sm.getNumBands()];
+        final int dataType = sm.getDataType();
+        /*
+         * TODO: read color map and statistics.
+         *
+         * Fallback when no statistics auxiliary file was found.
+         * Try to infer the minimum and maximum from data type.
+         */
+        double  minimum = 0;
+        double  maximum = 1;
+        boolean computeForEachBand = false;
+        final boolean isInteger  = ImageUtilities.isIntegerType(dataType);
+        final boolean isUnsigned = isInteger && ImageUtilities.isUnsignedType(sm);
+        if (stats != null && stats.count() != 0) {
+            minimum = stats.minimum();
+            maximum = stats.maximum();
+        } else {
+            computeForEachBand = isInteger;
+        }
+        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        for (int band=0; band < bands.length; band++) {
+            /*
+             * If statistics were not specified and the sample type is integer,
+             * the minimum and maximum values may change for each band because
+             * the sample size (in bits) can vary.
+             */
+            if (computeForEachBand) {
+                minimum = 0;
+                long max = Numerics.bitmask(sm.getSampleSize(band)) - 1;
+                if (!isUnsigned) {
+                    max >>>= 1;
+                    minimum = ~max;         // Tild operator, not minus.
+                }
+                maximum = max;
+            }
+            /*
+             * Create the sample dimension for this band. The same "no data" value is used for all bands.
+             * The sample dimension is considered "converted" on the assumption that caller will replace
+             * all "no data" value by NaN before to return the raster to the user.
+             */
+            if (name != null) {
+                builder.setName(name);
+                name = null;                // Use the name only for the first band.
+            }
+            builder.addQuantitative(null, minimum, maximum, null);
+            if (nodataValue < minimum || nodataValue > maximum) {
+                builder.mapQualitative(null, nodataValue, Float.NaN);
+            }
+            bands[band] = builder.build().forConvertedValues(!isInteger);
+            builder.clear();
+            /*
+             * Create the color model using the statistics of the band that we choose to make visible.
+             */
+            if (band == VISIBLE_BAND) {
+                colorModel = ColorModelFactory.createGrayScale(dataType, sm.getNumBands(), band, minimum, maximum);
+            }
+        }
+        sampleDimensions = UnmodifiableArrayList.wrap(bands);
+    }
+
+    /**
+     * Creates the grid coverage resulting from a {@link #read(GridGeometry, int...)} operation.
+     *
+     * @param  domain  the effective domain after intersection and subsampling.
+     * @param  range   indices of selected bands.
+     * @param  data    the loaded data.
+     * @param  stats   statistics to save as a property, or {@code null} if none.
+     * @return the grid coverage.
+     */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    final GridCoverage2D createCoverage(final GridGeometry domain, final RangeArgument range,
+                                        final WritableRaster data, final Statistics stats)
+    {
+        Hashtable<String,Object> properties = null;
+        if (stats != null) {
+            final Statistics[] as = new Statistics[range.getNumBands()];
+            Arrays.fill(as, stats);
+            properties = new Hashtable<>();
+            properties.put(PlanarImage.STATISTICS_KEY, as);
+        }
+        List<SampleDimension> bands = sampleDimensions;
+        ColorModel cm = colorModel;
+        if (!range.isIdentity()) {
+            bands = Arrays.asList(range.select(sampleDimensions));
+            cm = range.select(colorModel).get();
+        }
+        return new GridCoverage2D(domain, bands, new BufferedImage(cm, data, false, properties));
+    }
+
+    /**
+     * Returns the sample dimensions computed by {@code loadBandDescriptions(…)}.
+     * Shall be overridden by subclasses in a synchronized method. The subclass
+     * must ensure that {@code loadBandDescriptions(…)} has been invoked once.
+     *
+     * @return the sample dimensions, or {@code null} if not yet computed.
      */
     @Override
-    public Optional<Envelope> getEnvelope() throws DataStoreException {
-        return Optional.ofNullable(getGridGeometry().getEnvelope());
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        return sampleDimensions;
+    }
+
+    /**
+     * Closes this data store and releases any underlying resources.
+     * Shall be overridden by subclasses in a synchronized method.
+     *
+     * @throws DataStoreException if an error occurred while closing this data store.
+     */
+    @Override
+    public void close() throws DataStoreException {
+        metadata = null;
     }
 }

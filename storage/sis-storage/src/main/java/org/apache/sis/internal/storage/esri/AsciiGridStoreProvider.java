@@ -31,7 +31,7 @@ import org.apache.sis.internal.storage.PRJDataStore;
 
 /**
  * The provider of {@link AsciiGridStore} instances.
- * Given a {@link StorageConnector} input, this class tries to instantiate an ESRI ASCII Grid {@code AsciiGridStore}.
+ * Given a {@link StorageConnector} input, this class tries to instantiate an {@code AsciiGridStore}.
  *
  * <h2>Thread safety</h2>
  * The same {@code AsciiGridStoreProvider} instance can be safely used by many threads without synchronization on
@@ -69,7 +69,7 @@ public final class AsciiGridStoreProvider extends PRJDataStore.Provider {
     }
 
     /**
-     * Returns the MIME type if the given storage appears to be supported by ASCII Grid {@link AsciiGridStore}.
+     * Returns the MIME type if the given storage appears to be supported by {@link AsciiGridStore}.
      * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
      * or writing will succeed, only that there appears to be a reasonable chance of success
      * based on a brief inspection of the file header.
@@ -122,7 +122,7 @@ cellsize:           if (!header.containsKey(AsciiGridStore.CELLSIZE)) {
     }
 
     /**
-     * Returns a CSV {@link AsciiGridStore} implementation associated with this provider.
+     * Returns an {@link AsciiGridStore} implementation associated with this provider.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
