@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
@@ -41,6 +42,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
@@ -142,19 +144,31 @@ public abstract class PRJDataStore extends URIDataStore {
      * @throws DataStoreException if an error occurred while reading the file.
      */
     protected final void readPRJ() throws DataStoreException {
+        Exception cause = null;
         try {
             final String wkt = readAuxiliaryFile(PRJ, encoding).toString();
             if (wkt != null) {
                 final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
                 format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
-                crs = (CoordinateReferenceSystem) format.parseObject(wkt);
-                format.validate(crs);
+                final ParsePosition pos = new ParsePosition(0);
+                crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
+                if (crs != null) {
+                    /*
+                     * Some characters may exist after the WKT definition. For example we sometime see the CRS
+                     * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
+                     * Current Apache SIS implementation ignores the characters after WKT.
+                     */
+                    format.validate(crs);
+                    return;
+                }
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
             listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ), e);
+            return;
         } catch (IOException | ParseException | ClassCastException e) {
-            throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ), e);
+            cause = e;
         }
+        throw new DataStoreReferencingException(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ), cause);
     }
 
     /**

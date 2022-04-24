@@ -46,7 +46,7 @@ import org.apache.sis.storage.DataStoreContentException;
  * @since   0.7
  * @module
  */
-public final class HyperRectangleReader {
+public class HyperRectangleReader {
     /**
      * The channel from which to read the values, together with a buffer for transferring data.
      */
@@ -61,15 +61,13 @@ public final class HyperRectangleReader {
     private long origin;
 
     /**
-     * Creates a new reader for the given input and source region.
+     * Creates a new reader for the given input.
      *
      * @param  dataType  the type of elements to read, as one of the constants defined in {@link Numbers}.
      * @param  input     the channel from which to read the values, together with a buffer for transferring data.
      * @throws DataStoreContentException if the given {@code dataType} is not one of the supported values.
      */
-    public HyperRectangleReader(final byte dataType, final ChannelDataInput input)
-            throws DataStoreContentException
-    {
+    public HyperRectangleReader(final byte dataType, final ChannelDataInput input) throws DataStoreContentException {
         switch (dataType) {
             case Numbers.BYTE:      reader = input.new BytesReader  (           null); break;
             case Numbers.CHARACTER: reader = input.new CharsReader  ((char[])   null); break;
@@ -108,7 +106,7 @@ public final class HyperRectangleReader {
      *
      * @return the file identifier.
      */
-    public String filename() {
+    public final String filename() {
         return reader.filename();
     }
 
@@ -123,11 +121,11 @@ public final class HyperRectangleReader {
 
     /**
      * Returns the {@code input} position of the first sample (ignoring sub-area and subsampling).
-     * This is initially the {@code origin} argument given to the constructor, copied verbatim.
+     * Default value is 0.
      *
      * @return the {@code input} position of the first sample (ignoring sub-area and subsampling).
      */
-    public long getOrigin() {
+    public final long getOrigin() {
         return origin;
     }
 
@@ -136,7 +134,7 @@ public final class HyperRectangleReader {
      *
      * @param  p  the new {@code input} position of the first sample (ignoring sub-area and subsampling).
      */
-    public void setOrigin(final long p) {
+    public final void setOrigin(final long p) {
         origin = p;
     }
 
@@ -149,14 +147,14 @@ public final class HyperRectangleReader {
      * @throws IOException if an error occurred while transferring data from the channel.
      * @throws ArithmeticException if the region to read is too large or too far from origin.
      */
-    public Object read(final Region region) throws IOException {
+    public final Object read(final Region region) throws IOException {
         return read(region, 0, false);
     }
 
     /**
      * Reads data in the given region as a buffer. This method performs the same work
      * than {@link #read(Region)} except that the array is wrapped in a heap buffer.
-     * The {@code length} parameter is the minimal length of the array to allocate.
+     * The {@code capacity} argument is the minimal length of the array to allocate.
      * The actual length of data read will be the {@linkplain Buffer#limit() limit}
      * of the returned buffer.
      *
@@ -166,7 +164,7 @@ public final class HyperRectangleReader {
      * @throws IOException if an error occurred while transferring data from the channel.
      * @throws ArithmeticException if the region to read is too large or too far from origin.
      */
-    public Buffer readAsBuffer(final Region region, final int capacity) throws IOException {
+    public final Buffer readAsBuffer(final Region region, final int capacity) throws IOException {
         return (Buffer) read(region, capacity, true);
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Optional;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RasterFormatException;
@@ -358,14 +359,13 @@ public final class RangeArgument {
      * Returns a color model for the bands specified by the user.
      *
      * @param  colors  the original color model with all bands. Can be {@code null}.
-     * @return the color model for a subset of bands, or {@code null} if the given color model was null.
+     * @return the color model for a subset of bands, or empty if the given color model was null.
      */
-    public ColorModel select(final ColorModel colors) {
+    public Optional<ColorModel> select(final ColorModel colors) {
         if (colors == null || isIdentity()) {
-            return colors;
+            return Optional.ofNullable(colors);
         }
-        return ColorModelFactory.createSubset(colors, getSelectedBands())
-                .orElse(null);
+        return ColorModelFactory.createSubset(colors, getSelectedBands());
     }
 
     /**

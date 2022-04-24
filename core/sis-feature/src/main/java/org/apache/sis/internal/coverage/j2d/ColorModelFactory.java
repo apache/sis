@@ -38,6 +38,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.Debug;
 
+
 /**
  * A factory for {@link ColorModel} objects built from a sequence of colors.
  *

@@ -247,7 +247,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
                 }
                 if (ignored != null) {
                     /*
-                     * Log a warning for ignored property using a call to 'ignored.toString()' instead of 'ignored'
+                     * Log a warning for ignored property using a call to `ignored.toString()` instead of `ignored`
                      * because we want the property to appear as "TelephoneType[FOO]" instead of "FOO".
                      */
                     Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",

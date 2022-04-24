@@ -141,8 +141,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * If the location was specified as a {@link Path} or {@link File} instance, returns that path.
      * Otherwise returns {@code null}. This method does not try to convert URI to {@link Path}
      * because this conversion may fail for HTTP and FTP connections.
+     *
+     * @return the path specified at construction time, or {@code null} if the storage was not specified as a path.
      */
-    final Path getSpecifiedPath() {
+    protected final Path getSpecifiedPath() {
         return locationIsPath ? locationAsPath : null;
     }
 

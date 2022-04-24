@@ -410,7 +410,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
             this.ranges              = bands;
             this.includedBands       = includedBands;
             this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
-            this.colorsForBandSubset = rangeIndices.select(getColorModel());
+            this.colorsForBandSubset = rangeIndices.select(getColorModel()).orElse(null);
             this.fillValue           = getFillValue();
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.
