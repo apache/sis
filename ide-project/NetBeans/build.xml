@@ -303,6 +303,8 @@
       <fileset dir="${project.root}/storage/sis-storage/src/test/resources">
         <include name="**/*.txt"/>
         <include name="**/*.asc"/>
+        <include name="**/*.hdr"/>
+        <include name="**/*.raw"/>
         <include name="**/*.png"/>
         <include name="**/*.pgw"/>
         <include name="**/*.prj"/>

@@ -43,6 +43,7 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.incrementExact;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.internal.util.Numerics.wholeDiv;
 import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 
 
@@ -62,6 +63,13 @@ final class RawRasterReader extends HyperRectangleReader {
      * For identifying place in the code that are restricted to the two-dimensional case.
      */
     private static final int BIDIMENSIONAL = 2;
+
+    /**
+     * Index of a two-dimensional dimension selected by this reader.
+     * Note that the (<var>x</var>,<var>y</var>) axis order also appears implicitly in some method calls;
+     * modifying the values of those constants is not sufficient if different axis indices were wanted.
+     */
+    private static final int X_DIMENSION = 0, Y_DIMENSION = 1;
 
     /**
      * The full image size together with the "grid to CRS" transform.
@@ -144,12 +152,10 @@ final class RawRasterReader extends HyperRectangleReader {
         }
         fullSize    = new long[] {scanlineStride, height};
         regionLower = new long[BIDIMENSIONAL];
-        regionUpper = new long[BIDIMENSIONAL];
+        regionUpper = fullSize.clone();
         if (domain == null) {
-            domain         = gridGeometry;
-            regionUpper[0] = ceilDiv(multiplyFull(width, pixelStrideNumerator), pixelStrideDivisor);
-            regionUpper[1] = height;
-            subsampling    = new int[] {1, 1};
+            domain = gridGeometry;
+            subsampling = new int[] {1, 1};
         } else {
             /*
              * Take in account the requested domain with the following restrictions:
@@ -158,23 +164,37 @@ final class RawRasterReader extends HyperRectangleReader {
              *     to be aligned on an integer amount of sample values.
              * (2) If there is more than one band and those bands are stored in pixel
              *     interleaved fashion, we can not apply subsampling on the X axis.
+             * (3) If the layout is BIL, we do not support sub-region and subsampling
+             *     on the X axis in current version.
              */
+            int firstModifiableDimension = X_DIMENSION;
             final GridDerivation gd = gridGeometry.derive();
-            if (pixelStrideDivisor > 1) {
-                gd.chunkSize(pixelStrideDivisor / pixelStrideNumerator);        // Restriction #1
+            if (pixelStrideDivisor > 1) {                                       // Restriction #1
+                gd.chunkSize(pixelStrideDivisor / pixelStrideNumerator);
             }
-            if (pixelStrideNumerator != pixelStrideDivisor) {
-                gd.maximumSubsampling(1);                                       // Restriction #2
+            if (pixelStrideNumerator != pixelStrideDivisor) {                   // Restriction #2
+                gd.maximumSubsampling(1);
+            }
+            if (layout.getClass() == ComponentSampleModel.class) {              // Restriction #3
+                firstModifiableDimension = Y_DIMENSION;
+                gd.chunkSize(scanlineStride);
+                gd.maximumSubsampling(1);
             }
             final GridExtent ex = gd.subgrid(domain).getIntersection();
-            for (int i=0; i<BIDIMENSIONAL; i++) {
-                regionLower[i] =               floorDiv(multiplyExact(ex.getLow(i),  pixelStrideNumerator), pixelStrideDivisor);
-                regionUpper[i] = incrementExact(ceilDiv(multiplyExact(ex.getHigh(i), pixelStrideNumerator), pixelStrideDivisor));
+            for (int i=firstModifiableDimension; i<BIDIMENSIONAL; i++) {
+                regionLower[i] = ex.getLow(i);
+                regionUpper[i] = incrementExact(ex.getHigh(i));
+            }
+            if (X_DIMENSION >= firstModifiableDimension) {
+                regionLower[X_DIMENSION] = floorDiv(multiplyExact(regionLower[X_DIMENSION], pixelStrideNumerator), pixelStrideDivisor);
+                regionUpper[X_DIMENSION] =  ceilDiv(multiplyExact(regionUpper[X_DIMENSION], pixelStrideNumerator), pixelStrideDivisor);
             }
             subsampling = gd.getSubsampling();
             domain      = gd.build();
         }
         final Region region = new Region(fullSize, regionLower, regionUpper, subsampling);
+        int   regionWidth   = region.getTargetSize(X_DIMENSION);
+        int   regionHeight  = region.getTargetSize(Y_DIMENSION);
         /*
          * Now perform the actual reading of sample values. In the BSQ (Band sequential) case,
          * bands are read in the order they appear in the file (not necessarily the order requested by the caller).
@@ -214,15 +234,14 @@ final class RawRasterReader extends HyperRectangleReader {
             buffer = new Buffer[] {
                 readAsBuffer(region, 0)
             };
+            regionWidth = wholeDiv(regionWidth, sm.getNumBands());
         }
         /*
          * AT this point the data have been read. Adjust the sample model to the new data size (if different),
          * build the raster then apply band subseting if it was not done at reading time.
          */
-        final int tw = region.getTargetSize(0);
-        final int th = region.getTargetSize(1);
-        if (tw != width || th != height) {
-            sm = sm.createCompatibleSampleModel(tw, th);
+        if (regionWidth != width || regionHeight != height) {
+            sm = sm.createCompatibleSampleModel(regionWidth, regionHeight);
         }
         final DataBuffer data = RasterFactory.wrap(DataType.forDataBufferType(sm.getDataType()), buffer);
         WritableRaster raster = WritableRaster.createWritableRaster(sm, data, null);

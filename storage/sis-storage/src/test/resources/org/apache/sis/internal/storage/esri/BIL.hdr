@@ -1,0 +1,9 @@
+Header file for the `BIL.raw` test raster.
+
+NROWS  9
+NCOLS  9
+NBANDS 3
+LAYOUT BIL      Band Interleaved by Line
+
+Note: ULXMAP, ULYMAP, XDIM and YDIM entries
+are omitted for testing their default value.

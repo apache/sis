@@ -233,7 +233,7 @@ public final class Numerics extends Static {
      * @throws ArithmeticException if y is zero of if the result of x/y is not an integer.
      */
     public static int wholeDiv(final int x, final int y) {
-        if ((x % y) != 0) throw new ArithmeticException();
+        if ((x % y) != 0) throw new ArithmeticException(x + " % " + y + " ≠ 0");
         return x / y;       // TODO: use Math.divideExact with JDK18.
     }
 

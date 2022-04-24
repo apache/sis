@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.image;
+package org.apache.sis.internal.storage.esri;
 
 import java.net.URL;
 import java.io.IOException;
@@ -28,22 +28,18 @@ import static org.junit.Assert.assertNotNull;
 
 
 /**
- * Test consistency of read operations in random domains.
- * Assuming that the code reading the full extent is correct, this class can detect some bugs
- * in the code reading sub-regions or applying sub-sampling. This assumption is reasonable if
- * we consider that the code reading the full extent is usually simpler than the code reading
- * a subset of data.
+ * Test consistency of read operations in random domains of a BIP (Band Interleaved by Pixel) file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-public final strictfp class SelfConsistencyTest extends CoverageReadConsistency {
+public final strictfp class BIPConsistencyTest extends CoverageReadConsistency {
     /**
      * The store used for the test, opened only once.
      */
-    private static WorldFileStore store;
+    private static RawRasterStore store;
 
     /**
      * Opens the test file to be used for all tests.
@@ -53,9 +49,9 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
      */
     @BeforeClass
     public static void openFile() throws IOException, DataStoreException {
-        final URL url = WorldFileStoreTest.class.getResource("gradient.png");
+        final URL url = BIPConsistencyTest.class.getResource("BIP.raw");
         assertNotNull("Test file not found.", url);
-        store = new WorldFileStore(null, new StorageConnector(url), true);
+        store = new RawRasterStore(null, new StorageConnector(url));
     }
 
     /**
@@ -65,7 +61,7 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
      */
     @AfterClass
     public static void closeFile() throws DataStoreException {
-        final WorldFileStore s = store;
+        final RawRasterStore s = store;
         if (s != null) {
             store = null;       // Clear first in case of failure.
             s.close();
@@ -77,7 +73,7 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
      *
      * @throws DataStoreException if an error occurred while fetching the first image.
      */
-    public SelfConsistencyTest() throws DataStoreException {
-        super(store.components().iterator().next());
+    public BIPConsistencyTest() throws DataStoreException {
+        super(store);
     }
 }
