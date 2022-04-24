@@ -45,6 +45,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.Statistics;
 
 
@@ -188,11 +189,12 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         boolean computeForEachBand = false;
         final boolean isInteger  = ImageUtilities.isIntegerType(dataType);
         final boolean isUnsigned = isInteger && ImageUtilities.isUnsignedType(sm);
+        final boolean isRGB      = isInteger && (bands.length == 3 || bands.length == 4);
         if (stats != null && stats.count() != 0) {
             minimum = stats.minimum();
             maximum = stats.maximum();
         } else {
-            computeForEachBand = isInteger;
+            computeForEachBand = isInteger && !isRGB;
         }
         final SampleDimension.Builder builder = new SampleDimension.Builder();
         for (int band=0; band < bands.length; band++) {
@@ -215,25 +217,44 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              * The sample dimension is considered "converted" on the assumption that caller will replace
              * all "no data" value by NaN before to return the raster to the user.
              */
-            if (name != null) {
-                builder.setName(name);
-                name = null;                // Use the name only for the first band.
-            }
-            builder.addQuantitative(null, minimum, maximum, null);
-            if (nodataValue < minimum || nodataValue > maximum) {
-                builder.mapQualitative(null, nodataValue, Float.NaN);
+            if (isRGB) {
+                builder.setName(Vocabulary.formatInternational(RGB_BAND_NAMES[band]));
+            } else {
+                if (name != null) {
+                    builder.setName(name);
+                    name = null;                // Use the name only for the first band.
+                }
+                builder.addQuantitative(null, minimum, maximum, null);
+                if (nodataValue < minimum || nodataValue > maximum) {
+                    builder.mapQualitative(null, nodataValue, Float.NaN);
+                }
             }
             bands[band] = builder.build().forConvertedValues(!isInteger);
             builder.clear();
             /*
-             * Create the color model using the statistics of the band that we choose to make visible.
+             * Create the color model using the statistics of the band that we choose to make visible,
+             * or using a RGB color model if the number of bands and the data type are compatible.
              */
             if (band == VISIBLE_BAND) {
-                colorModel = ColorModelFactory.createGrayScale(dataType, sm.getNumBands(), band, minimum, maximum);
+                if (isRGB) {
+                    colorModel = ColorModelFactory.createRGB(sm);
+                } else {
+                    colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
+                }
             }
         }
         sampleDimensions = UnmodifiableArrayList.wrap(bands);
     }
+
+    /**
+     * Default names of bands when the color model is RGB or RGBA.
+     */
+    private static final short[] RGB_BAND_NAMES = {
+        Vocabulary.Keys.Red,
+        Vocabulary.Keys.Green,
+        Vocabulary.Keys.Blue,
+        Vocabulary.Keys.Transparency
+    };
 
     /**
      * Creates the grid coverage resulting from a {@link #read(GridGeometry, int...)} operation.
@@ -259,7 +280,11 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         ColorModel cm = colorModel;
         if (!range.isIdentity()) {
             bands = Arrays.asList(range.select(sampleDimensions));
-            cm = range.select(colorModel).get();
+            cm = range.select(colorModel).orElse(null);
+            if (cm == null) {
+                final SampleDimension band = bands.get(VISIBLE_BAND);
+                cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
+            }
         }
         return new GridCoverage2D(domain, bands, new BufferedImage(cm, data, false, properties));
     }

@@ -32,6 +32,7 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.DataBuffer;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -482,6 +483,56 @@ public final class ColorModelFactory {
     }
 
     /**
+     * Creates a color model for opaque images storing pixels using the given sample model.
+     * The color model can have an arbitrary number of bands, but in current implementation only one band is used.
+     *
+     * <p><b>Warning:</b> the use of this color model may be very slow and the color stretching may not be a good fit.
+     * This method should be used only when no standard color model can be used. This is a last resort method.</p>
+     *
+     * @param  model        the sample model for which to create a gray scale color model.
+     * @param  visibleBand  the band to use for computing colors.
+     * @param  range        the minimal and maximal sample value expected, or {@code null} if none.
+     * @return the color model for the given range of values.
+     */
+    public static ColorModel createGrayScale(final SampleModel model, final int visibleBand, final NumberRange<?> range) {
+        double minimum, maximum;
+        if (range != null) {
+            minimum = range.getMinDouble();
+            maximum = range.getMaxDouble();
+        } else {
+            minimum = 0;
+            maximum = 1;
+            if (ImageUtilities.isIntegerType(model)) {
+                long max = Numerics.bitmask(model.getSampleSize(visibleBand)) - 1;
+                if (!ImageUtilities.isUnsignedType(model)) {
+                    max >>>= 1;
+                    minimum = ~max;         // Tild operator, not minus.
+                }
+                maximum = max;
+            }
+        }
+        return createGrayScale(model.getDataType(), model.getNumBands(), visibleBand, minimum, maximum);
+    }
+
+    /**
+     * Creates a RGB color model for the given sample model.
+     * The sample model shall use integer type and have 3 or 4 bands.
+     *
+     * @param  model  the sample model for which to create a color model.
+     * @return the color model.
+     */
+    public static ColorModel createRGB(final SampleModel model) {
+        final int numBands = model.getNumBands();
+        assert numBands >= 3 && numBands <= 4 : numBands;
+        assert ImageUtilities.isIntegerType(model) : model;
+        int bitsPerSample = 0;
+        for (int i=0; i<numBands; i++) {
+            bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+        }
+        return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
+    }
+
+    /**
      * Creates a RGB color model. The {@code packed} argument should be
      * {@code true}  for color model used with {@link java.awt.image.SinglePixelPackedSampleModel}, and
      * {@code false} for color model used with {@link java.awt.image.BandedSampleModel}.
@@ -540,8 +591,10 @@ public final class ColorModelFactory {
      * deduced.
      */
     public static Optional<ColorModel> createSubset(final ColorModel cm, final int[] bands) {
-        if (cm == null) return Optional.empty();
-        assert bands != null && bands.length > 0 : bands;
+        assert (bands != null) && bands.length > 0 : bands;
+        if (cm == null) {
+            return Optional.empty();
+        }
         final ColorModel subset;
         if (cm instanceof MultiBandsIndexColorModel) {
             subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
