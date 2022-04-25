@@ -238,7 +238,7 @@ final class RawRasterStore extends RasterStore {
             if (reader == null) {
                 readHeader();
             }
-            loadBandDescriptions(input.filename, reader.layout, null);
+            loadBandDescriptions(input.filename, reader.layout);
             sampleDimensions = super.getSampleDimensions();
         } catch (IOException e) {
             throw new DataStoreException(canNotRead(), e);

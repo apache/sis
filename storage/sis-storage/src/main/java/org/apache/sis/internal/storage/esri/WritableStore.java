@@ -147,7 +147,6 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
              */
             throw new IncompatibleResourceException(h.canNotWrite());
         }
-
         header.put(xll, x);
         header.put(yll, y);
         if (scaleX == scaleY) {

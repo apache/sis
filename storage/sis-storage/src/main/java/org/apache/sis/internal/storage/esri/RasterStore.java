@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
@@ -43,9 +48,11 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.Statistics;
 
 
@@ -80,6 +87,13 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * Keyword for the number of columns in the image.
      */
     static final String NCOLS = "NCOLS";
+
+    /**
+     * The filename extension of {@code "*.stx"} and {@code "*.clr"} files.
+     *
+     * @see #getComponentFiles()
+     */
+    private static final String STX = "stx", CLR = "clr";
 
     /**
      * The color model, created from the {@code "*.clr"} file content when first needed.
@@ -121,6 +135,17 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     }
 
     /**
+     * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
+     *
+     * @return the main file and auxiliary files as paths, or an empty array if unknown.
+     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     */
+    @Override
+    public Path[] getComponentFiles() throws DataStoreException {
+        return listComponentFiles(PRJ, STX, CLR);
+    }
+
+    /**
      * Returns the spatiotemporal extent of the raster file.
      *
      * @return the spatiotemporal resource extent.
@@ -157,14 +182,75 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             throw new DataStoreReferencingException(getLocale(), formatName, getDisplayName(), null).initCause(e);
         }
         /*
-         * Do not add the sample dimensions because in current version computing the sample dimensions without
-         * statistics requires loading the full image. Even if `GridCoverage.getSampleDimensions()` exists and
-         * could be used opportunistically, we do not use it in order to keep a deterministic behavior
+         * Do not invoke `getSampleDimensions()` because computing sample dimensions without statistics
+         * may cause the loading of the full image. Even if `GridCoverage.getSampleDimensions()` exists
+         * and could be used opportunistically, we do not use it in order to keep a deterministic behavior
          * (we do not want the metadata to vary depending on the order in which methods are invoked).
          */
+        if (sampleDimensions != null) {
+            for (final SampleDimension band : sampleDimensions) {
+                builder.addNewBand(band);
+            }
+        }
         addTitleOrIdentifier(builder);
         builder.setISOStandards(false);
         metadata = builder.buildAndFreeze();
+    }
+
+    /**
+     * Reads the {@code "*.stx"} auxiliary file. Syntax is as below, with one line per band.
+     * Value between {…} are optional and can be skipped with a # sign in place of the number.
+     *
+     * <pre>band minimum maximum {mean} {std_deviation} {linear_stretch_min} {linear_stretch_max}</pre>
+     *
+     * The specification said that lines that do not start with a number shall be ignored as comment.
+     *
+     * @todo Stretch values are not yet stored.
+     *
+     * @param  numBands  length of the array to return.
+     * @return statistics for each band. Some elements may be null if not specified in the file.
+     * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
+     * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
+     * @throws IOException if another error occurred while opening the stream.
+     * @throws NumberFormatException if a number can not be parsed.
+     */
+    private Statistics[] readStatistics(final String name, final SampleModel sm, final int numBands)
+            throws DataStoreException, IOException
+    {
+        final Statistics[] stats = new Statistics[numBands];
+        for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(STX))) {
+            final int end   = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
+            final int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
+            if (start < end && Character.isDigit(Character.codePointAt(line, start))) {
+                int column     = 0;
+                int band       = 0;
+                double minimum = Double.NaN;
+                double maximum = Double.NaN;
+                double mean    = Double.NaN;
+                double stdev   = Double.NaN;
+                for (final CharSequence item : CharSequences.split(line.subSequence(start, end), ' ')) {
+                    if (item.length() != 0) {
+                        if (column == 0) {
+                            band = Integer.parseInt(item.toString());
+                        } else if (item.charAt(0) != '#') {
+                            final double value = Double.parseDouble(item.toString());
+                            switch (column) {
+                                case 1: minimum = value; break;
+                                case 2: maximum = value; break;
+                                case 3: mean    = value; break;
+                                case 4: stdev   = value; break;
+                            }
+                        }
+                        column++;
+                    }
+                }
+                if (band >= 1 && band <= stats.length) {
+                    final int count = Math.multiplyExact(sm.getWidth(), sm.getHeight());
+                    stats[band - 1] = new Statistics(name, 0, count, minimum, maximum, mean, stdev, true);
+                }
+            }
+        }
+        return stats;
     }
 
     /**
@@ -173,44 +259,58 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      *
      * @param  name   name to use for the sample dimension, or {@code null} if untitled.
      * @param  sm     the sample model to use for creating a default color model if no {@code "*.clr"} file is found.
-     * @param  stats  if the caller collected statistics by itself, those statistics. Otherwise {@code null}.
+     * @param  stats  if the caller collected statistics by itself, those statistics for each band. Otherwise empty.
+     * @throws DataStoreException if an error occurred while loading an auxiliary file.
      */
-    final void loadBandDescriptions(String name, final SampleModel sm, final Statistics stats) {
+    final void loadBandDescriptions(String name, final SampleModel sm, Statistics... stats) throws DataStoreException {
         final SampleDimension[] bands = new SampleDimension[sm.getNumBands()];
-        final int dataType = sm.getDataType();
         /*
-         * TODO: read color map and statistics.
-         *
-         * Fallback when no statistics auxiliary file was found.
-         * Try to infer the minimum and maximum from data type.
+         * If the "*.stx" file is found, the statistics read from that file will replace the specified one.
+         * Otherwise the `stats` parameter will be left unchanged. We read statistics even if a color map
+         * overwrite them because we need the minimum/maximum values for building the sample dimensions.
          */
-        double  minimum = 0;
-        double  maximum = 1;
-        boolean computeForEachBand = false;
+        try {
+            stats = readStatistics(name, sm, bands.length);
+        } catch (NoSuchFileException | FileNotFoundException e) {
+            listeners.warning(Level.FINE, Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, STX), e);
+        } catch (IOException | NumberFormatException e) {
+            throw new DataStoreReferencingException(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, STX), e);
+        }
+        /*
+         * Build the sample dimensions and the color model.
+         * Some minimum/maximum values will be used as fallback if no statistics were found.
+         */
+        final int     dataType   = sm.getDataType();
         final boolean isInteger  = ImageUtilities.isIntegerType(dataType);
         final boolean isUnsigned = isInteger && ImageUtilities.isUnsignedType(sm);
         final boolean isRGB      = isInteger && (bands.length == 3 || bands.length == 4);
-        if (stats != null && stats.count() != 0) {
-            minimum = stats.minimum();
-            maximum = stats.maximum();
-        } else {
-            computeForEachBand = isInteger && !isRGB;
-        }
         final SampleDimension.Builder builder = new SampleDimension.Builder();
         for (int band=0; band < bands.length; band++) {
+            double minimum = Double.NaN;
+            double maximum = Double.NaN;
+            if (band < stats.length) {
+                final Statistics s = stats[band];
+                if (s != null) {                    // `readStatistics()` may have left some values to null.
+                    minimum = s.minimum();
+                    maximum = s.maximum();
+                }
+            }
             /*
              * If statistics were not specified and the sample type is integer,
              * the minimum and maximum values may change for each band because
              * the sample size (in bits) can vary.
              */
-            if (computeForEachBand) {
+            if (!(minimum <= maximum)) {        // Use `!` for catching NaN.
                 minimum = 0;
-                long max = Numerics.bitmask(sm.getSampleSize(band)) - 1;
-                if (!isUnsigned) {
-                    max >>>= 1;
-                    minimum = ~max;         // Tild operator, not minus.
+                maximum = 1;
+                if (isInteger) {
+                    long max = Numerics.bitmask(sm.getSampleSize(band)) - 1;
+                    if (!isUnsigned) {
+                        max >>>= 1;
+                        minimum = ~max;         // Tild operator, not minus.
+                    }
+                    maximum = max;
                 }
-                maximum = max;
             }
             /*
              * Create the sample dimension for this band. The same "no data" value is used for all bands.
@@ -233,7 +333,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             builder.clear();
             /*
              * Create the color model using the statistics of the band that we choose to make visible,
-             * or using a RGB color model if the number of bands and the data type are compatible.
+             * or using a RGB color model if the number of bands or the data type is compatible.
              */
             if (band == VISIBLE_BAND) {
                 if (isRGB) {
