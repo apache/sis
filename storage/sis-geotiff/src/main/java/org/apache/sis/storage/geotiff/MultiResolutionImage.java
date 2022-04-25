@@ -146,14 +146,19 @@ final class MultiResolutionImage extends GridResourceWrapper {
             final GridGeometry       geometry   = base.getGridGeometry();
             final GridExtent         fullExtent = geometry.getExtent();
             final GridExtent         subExtent  = image.getExtent();
-            final MatrixSIS          gridToCRS  = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER)
-                    .derivative(new DirectPositionView.Double(fullExtent.getPointOfInterest())));
             final double[] scales = new double[fullExtent.getDimension()];
             for (int i=0; i<scales.length; i++) {
                 scales[i] = fullExtent.getSize(i, false) / subExtent.getSize(i, false);
             }
             image.initReducedResolution(base, scales);
-            resolution = gridToCRS.multiply(scales);
+            if (geometry.isDefined(GridGeometry.GRID_TO_CRS)) {
+                final MatrixSIS gridToCRS = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER)
+                                  .derivative(new DirectPositionView.Double(fullExtent.getPointOfInterest())));
+                resolution = gridToCRS.multiply(scales);
+            } else {
+                // Assume an identity transform for the `gridToCRS` of full resolution image.
+                resolution = scales;
+            }
             for (int i=0; i<resolution.length; i++) {
                 resolution[i] = Math.abs(resolution[i]);
             }
