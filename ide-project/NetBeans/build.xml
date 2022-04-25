@@ -304,6 +304,8 @@
         <include name="**/*.txt"/>
         <include name="**/*.asc"/>
         <include name="**/*.hdr"/>
+        <include name="**/*.stx"/>
+        <include name="**/*.clr"/>
         <include name="**/*.raw"/>
         <include name="**/*.png"/>
         <include name="**/*.pgw"/>

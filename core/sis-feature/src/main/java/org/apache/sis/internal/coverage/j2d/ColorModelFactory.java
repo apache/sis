@@ -18,7 +18,6 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 import java.awt.Transparency;
@@ -317,9 +316,9 @@ public final class ColorModelFactory {
      * @see Colorizer
      */
     public static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
-                                             final Collection<Map.Entry<NumberRange<?>,Color[]>> colors)
+                                             final Map<NumberRange<?>, Color[]> colors)
     {
-        return createPiecewise(dataType, numBands, visibleBand, ColorsForRange.list(colors));
+        return createPiecewise(dataType, numBands, visibleBand, ColorsForRange.list(colors.entrySet()));
     }
 
     /**
@@ -386,7 +385,7 @@ public final class ColorModelFactory {
 
     /**
      * Returns a color model interpolated for the given range of values. This is a convenience method for
-     * {@link #createPiecewise(int, int, int, Collection)} when the collection contains only one element.
+     * {@link #createPiecewise(int, int, int, Map)} when the map contains only one element.
      *
      * @param  dataType     the color model type.
      * @param  numBands     the number of bands for the color model (usually 1).

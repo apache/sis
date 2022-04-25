@@ -32,6 +32,19 @@
  *       ({@code XDIM}, {@code YDIM}, color file, statistics file, <i>etc.</i>).</li>
  * </ul>
  *
+ * <h2>Limitations</h2>
+ * Statistics file ({@code *.stx}) contains {@code band}, {@code minimum}, {@code maximum}, {@code mean},
+ * {@code std_deviation}, {@code linear_stretch_min} and {@code linear_stretch_max} values.
+ * But in current Apache SIS implementation, the last two values ({@code linear_stretch_*}) are ignored.
+ *
+ * <p>Color map file ({@code *.clr}) is read only when the raster does not have 3 or 4 bands
+ * (in which case the raster is considered RGB) and when the data type is byte or unsigned short.
+ * In all other cases, notably in the case of floating point values, the color map is ignored.</p>
+ *
+ * <p>Current implementation of ASCII Grid store loads, caches and returns the full image
+ * no matter the subregion or subsampling specified to the {@code read(…)} method.
+ * Sub-setting parameters are ignored.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *

@@ -1,4 +1,6 @@
 Header file for the `BIP.raw` test raster.
+The BIP test also contains a `BIP.stx` file
+for testing the loading of statistics data.
 
 NROWS  9
 NCOLS  9

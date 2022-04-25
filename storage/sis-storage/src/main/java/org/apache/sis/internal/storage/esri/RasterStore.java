@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -53,6 +54,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Statistics;
 
 
@@ -198,6 +200,89 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     }
 
     /**
+     * Reads the {@code "*.clr"} auxiliary file. Syntax is as below, with one line per color:
+     *
+     * <pre>value red green blue</pre>
+     *
+     * The specification said that lines that do not start with a number shall be ignored as comment.
+     * Any characters after the fourth number shall also be ignored and can be used as comment.
+     *
+     * <h4>Limitations</h4>
+     * Current implementation requires the data type to be {@link DataBuffer#TYPE_BYTE} or
+     * {@link DataBuffer#TYPE_SHORT}. A future version could create scaled color model for
+     * floating point values as well.
+     *
+     * @param  mapSize   minimal size of index color model map. The actual size may be larger.
+     * @param  numBands  number of bands in the sample model. Only one of them will be visible.
+     * @return the color model, or {@code null} if the file does not contain enough entries.
+     * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
+     * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
+     * @throws IOException if another error occurred while opening the stream.
+     * @throws NumberFormatException if a number can not be parsed.
+     */
+    private ColorModel readColorMap(final int dataType, final int mapSize, final int numBands)
+            throws DataStoreException, IOException
+    {
+        final int maxSize;
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE:   maxSize = 0xFF;   break;
+            case DataBuffer.TYPE_USHORT: maxSize = 0xFFFF; break;
+            default: return null;                           // Limitation documented in above javadoc.
+        }
+        int count = 0;
+        long[] indexAndColors = ArraysExt.EMPTY_LONG;       // Index in highest 32 bits, ARGB in lowest 32 bits.
+        for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(CLR))) {
+            final int end   = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
+            final int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
+            if (start < end && Character.isDigit(Character.codePointAt(line, start))) {
+                int column = 0;
+                long code = 0;
+                for (final CharSequence item : CharSequences.split(line.subSequence(start, end), ' ')) {
+                    if (item.length() != 0) {
+                        int value = Integer.parseInt(item.toString());
+                        if (column == 0) {
+                            code = ((long) value) << Integer.SIZE;
+                        } else {
+                            value = Math.max(0, Math.min(255, value));
+                            code |= value << ((3 - column) * Byte.SIZE);
+                        }
+                        if (++column >= 4) break;
+                    }
+                }
+                if (count >= indexAndColors.length) {
+                    indexAndColors = Arrays.copyOf(indexAndColors, Math.max(count*2, 64));
+                }
+                indexAndColors[count++] = code | 0xFF000000L;
+            }
+        }
+        if (count <= 1) {
+            return null;
+        }
+        /*
+         * Sort the color entries in increasing index order. Because we put the value in the highest bits,
+         * we can sort the `long` entries directly. If the file contains more entries than what the color
+         * map can contains, the last entries are discarded.
+         */
+        Arrays.sort(indexAndColors, 0, count);
+        int[] ARGB = new int[Math.max(mapSize, Math.toIntExact((indexAndColors[count-1] >>> Integer.SIZE) + 1))];
+        final int[] colors = new int[2];
+        for (int i=1; i<count; i++) {
+            final int lower = (int) (indexAndColors[i-1] >>> Integer.SIZE);
+            final int upper = (int) (indexAndColors[i  ] >>> Integer.SIZE);
+            if (upper >= lower) {
+                colors[0] = (int) indexAndColors[i-1];
+                colors[1] = (int) indexAndColors[i  ];
+                ColorModelFactory.expand(colors, ARGB, lower, upper + 1);
+            }
+            if (upper > maxSize) {
+                ARGB = Arrays.copyOf(ARGB, maxSize + 1);
+                break;
+            }
+        }
+        return ColorModelFactory.createIndexColorModel(numBands, VISIBLE_BAND, ARGB, true, -1);
+    }
+
+    /**
      * Reads the {@code "*.stx"} auxiliary file. Syntax is as below, with one line per band.
      * Value between {…} are optional and can be skipped with a # sign in place of the number.
      *
@@ -207,17 +292,16 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      *
      * @todo Stretch values are not yet stored.
      *
-     * @param  numBands  length of the array to return.
      * @return statistics for each band. Some elements may be null if not specified in the file.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
      * @throws NumberFormatException if a number can not be parsed.
      */
-    private Statistics[] readStatistics(final String name, final SampleModel sm, final int numBands)
+    private Statistics[] readStatistics(final String name, final SampleModel sm)
             throws DataStoreException, IOException
     {
-        final Statistics[] stats = new Statistics[numBands];
+        final Statistics[] stats = new Statistics[sm.getNumBands()];
         for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(STX))) {
             final int end   = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
             final int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
@@ -246,7 +330,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 }
                 if (band >= 1 && band <= stats.length) {
                     final int count = Math.multiplyExact(sm.getWidth(), sm.getHeight());
-                    stats[band - 1] = new Statistics(name, 0, count, minimum, maximum, mean, stdev, true);
+                    stats[band - 1] = new Statistics(name, 0, count, minimum, maximum, mean, stdev, false);
                 }
             }
         }
@@ -270,11 +354,9 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
          * overwrite them because we need the minimum/maximum values for building the sample dimensions.
          */
         try {
-            stats = readStatistics(name, sm, bands.length);
-        } catch (NoSuchFileException | FileNotFoundException e) {
-            listeners.warning(Level.FINE, Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, STX), e);
+            stats = readStatistics(name, sm);
         } catch (IOException | NumberFormatException e) {
-            throw new DataStoreReferencingException(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, STX), e);
+            canNotReadAuxiliaryFile(STX, e);
         }
         /*
          * Build the sample dimensions and the color model.
@@ -334,16 +416,39 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             /*
              * Create the color model using the statistics of the band that we choose to make visible,
              * or using a RGB color model if the number of bands or the data type is compatible.
+             * The color file is optional and will be used if present.
              */
             if (band == VISIBLE_BAND) {
                 if (isRGB) {
                     colorModel = ColorModelFactory.createRGB(sm);
                 } else {
-                    colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
+                    try {
+                        colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
+                    } catch (IOException | NumberFormatException e) {
+                        canNotReadAuxiliaryFile(CLR, e);
+                    }
+                    if (colorModel == null) {
+                        colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
+                    }
                 }
             }
         }
         sampleDimensions = UnmodifiableArrayList.wrap(bands);
+    }
+
+    /**
+     * Sends a warning about a failure to read an optional auxiliary file.
+     * This is used for errors that affect only the rendering, not the georeferencing.
+     *
+     * @param  suffix     suffix of the auxiliary file.
+     * @param  exception  error that occurred while reading the auxiliary file.
+     */
+    private void canNotReadAuxiliaryFile(final String suffix, final Exception exception) {
+        Level level = Level.WARNING;
+        if (exception instanceof NoSuchFileException || exception instanceof FileNotFoundException) {
+            level = Level.FINE;
+        }
+        listeners.warning(level, Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, suffix), exception);
     }
 
     /**
@@ -380,7 +485,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         ColorModel cm = colorModel;
         if (!range.isIdentity()) {
             bands = Arrays.asList(range.select(sampleDimensions));
-            cm = range.select(colorModel).orElse(null);
+            cm = range.select(cm).orElse(null);
             if (cm == null) {
                 final SampleDimension band = bands.get(VISIBLE_BAND);
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
