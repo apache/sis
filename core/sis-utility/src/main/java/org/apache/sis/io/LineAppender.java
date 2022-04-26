@@ -80,7 +80,7 @@ public class LineAppender extends Appender implements Flushable {
 
     /**
      * The length of the current line, in units of <em>code points</em> (not {@code char}).
-     * It may be greater than the length of {@link #buffer} because the later contains only
+     * It may be greater than the length of {@link #buffer} because the latter contains only
      * the last word.
      */
     private int codePointCount;

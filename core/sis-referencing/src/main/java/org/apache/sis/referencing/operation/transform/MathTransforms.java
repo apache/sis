@@ -202,7 +202,7 @@ public final class MathTransforms extends Static {
                     }
                     case 2: {
                         if (matrix instanceof ExtendedPrecisionMatrix) {
-                            return new AffineTransform2D(((ExtendedPrecisionMatrix) matrix).getExtendedElements());
+                            return new AffineTransform2D(((ExtendedPrecisionMatrix) matrix));
                         } else {
                             return new AffineTransform2D(
                                     matrix.getElement(0,0), matrix.getElement(1,0),

@@ -187,6 +187,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DownloadDetails_3 = 59;
 
         /**
+         * Enter the URL of the file to open.
+         */
+        public static final short EnterURL = 71;
+
+        /**
          * An error occurred at the following location:
          */
         public static final short ErrorAt = 53;
@@ -318,6 +323,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short OpenRecentFile = 54;
 
         /**
+         * Open URL…
+         */
+        public static final short OpenURL = 70;
+
+        /**
          * Orthographic
          */
         public static final short Orthographic = 52;
@@ -407,7 +417,7 @@ public final class Resources extends IndexedResourceBundle {
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     *        there are no resources. The resources may be a file or an entry in a JAR file.
      */
     public Resources(final URL resources) {
         super(resources);

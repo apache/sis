@@ -229,7 +229,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      *
      * @param  values  the "no data" values. Null and NaN elements are ignored.
      * @return an operator for filtering the given "no data" values,
-     *         or {@code null} if there is no non-NaN value to filter.
+     *         or {@code null} if there are no non-NaN values to filter.
      */
     static DoubleUnaryOperator filterNodataValues(final Number[] values) {
         final double[] retained = new double[values.length];

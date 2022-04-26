@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * Tests {@link Colorizer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -101,7 +101,7 @@ public final strictfp class ColorizerTest extends TestCase {
                 .setName("Temperature").build();
 
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
-        assertTrue("initialize", colorizer.initialize(sd));
+        assertTrue("initialize", colorizer.initialize(null, sd));
         final IndexColorModel cm = (IndexColorModel) colorizer.compactColorModel(1, 0);     // Must be first.
         /*
          * Test conversion of a few sample values to packed values.

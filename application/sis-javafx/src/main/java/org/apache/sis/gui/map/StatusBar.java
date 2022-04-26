@@ -355,7 +355,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The object providing sample values under cursor position.
-     * The property value may be {@code null} if there is no sample values to format.
+     * The property value may be {@code null} if there are no sample values to format.
      * If non-null, the text provided by this object will appear at the right of the coordinates.
      *
      * <div class="note"><b>API note:</b>
@@ -1171,6 +1171,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * Do not use `position.setVisible(false)` because
          * we want the Tooltip to continue to be available.
          */
+        lastX = lastY = Double.NaN;
         position.setText(outsideText);
         if (isSampleValuesVisible) {
             sampleValues.setText(sampleValuesProvider.get().evaluate(null));

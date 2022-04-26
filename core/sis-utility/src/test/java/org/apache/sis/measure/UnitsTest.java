@@ -17,18 +17,9 @@
 package org.apache.sis.measure;
 
 import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.quantity.*;
 import javax.measure.quantity.Angle;
-import javax.measure.quantity.Area;
-import javax.measure.quantity.Dimensionless;
-import javax.measure.quantity.Length;
-import javax.measure.quantity.LuminousFlux;
-import javax.measure.quantity.LuminousIntensity;
-import javax.measure.quantity.Mass;
-import javax.measure.quantity.SolidAngle;
-import javax.measure.quantity.Speed;
-import javax.measure.quantity.Temperature;
-import javax.measure.quantity.Time;
-import javax.measure.quantity.Volume;
 import javax.measure.IncommensurableException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -43,7 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * Test conversions using the units declared in {@link Units}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -183,8 +175,9 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testToStandardUnit() {
-        assertEquals(1000.0,               toStandardUnit(KILOMETRE),    1E-15);
-        assertEquals(0.017453292519943295, toStandardUnit(DEGREE), 1E-15);
+        assertEquals(1000.0,               toStandardUnit(KILOMETRE), 1E-15);
+        assertEquals(0.017453292519943295, toStandardUnit(DEGREE),    1E-15);
+        assertEquals(0.01,                 toStandardUnit(GAL),       1E-15);
     }
 
     /**
@@ -235,18 +228,19 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testGetForQuantity() {
-        assertSame("Length",            Units.METRE,             Units.get(Length.class));
-        assertSame("Mass",              Units.KILOGRAM,          Units.get(Mass.class));
-        assertSame("Time",              Units.SECOND,            Units.get(Time.class));
-        assertSame("Temperature",       Units.KELVIN,            Units.get(Temperature.class));
-        assertSame("Area",              Units.SQUARE_METRE,      Units.get(Area.class));
-        assertSame("Volume",            Units.CUBIC_METRE,       Units.get(Volume.class));
-        assertSame("Speed",             Units.METRES_PER_SECOND, Units.get(Speed.class));
-        assertSame("LuminousIntensity", Units.CANDELA,           Units.get(LuminousIntensity.class));
-        assertSame("LuminousFlux",      Units.LUMEN,             Units.get(LuminousFlux.class));
-        assertSame("SolidAngle",        Units.STERADIAN,         Units.get(SolidAngle.class));
-        assertSame("Angle",             Units.RADIAN,            Units.get(Angle.class));
-        assertSame("Dimensionless",     Units.UNITY,             Units.get(Dimensionless.class));
+        verifyGetFromQuantity(Length.class,            METRE);
+        verifyGetFromQuantity(Mass.class,              KILOGRAM);
+        verifyGetFromQuantity(Time.class,              SECOND);
+        verifyGetFromQuantity(Temperature.class,       KELVIN);
+        verifyGetFromQuantity(Area.class,              SQUARE_METRE);
+        verifyGetFromQuantity(Volume.class,            CUBIC_METRE);
+        verifyGetFromQuantity(Speed.class,             METRES_PER_SECOND);
+        verifyGetFromQuantity(LuminousIntensity.class, CANDELA);
+        verifyGetFromQuantity(LuminousFlux.class,      LUMEN);
+        verifyGetFromQuantity(SolidAngle.class,        STERADIAN);
+        verifyGetFromQuantity(Angle.class,             RADIAN);
+        verifyGetFromQuantity(Dimensionless.class,     UNITY);
+        verifyGetFromQuantity(Acceleration.class,      METRES_PER_SECOND_SQUARED);
     }
 
     /**
@@ -254,18 +248,33 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testGetForDimension() {
-        assertSame("Length",            Units.METRE,             Units.get(Units.METRE            .getDimension()));
-        assertSame("Mass",              Units.KILOGRAM,          Units.get(Units.KILOGRAM         .getDimension()));
-        assertSame("Time",              Units.SECOND,            Units.get(Units.SECOND           .getDimension()));
-        assertSame("Temperature",       Units.KELVIN,            Units.get(Units.KELVIN           .getDimension()));
-        assertSame("Area",              Units.SQUARE_METRE,      Units.get(Units.SQUARE_METRE     .getDimension()));
-        assertSame("Volume",            Units.CUBIC_METRE,       Units.get(Units.CUBIC_METRE      .getDimension()));
-        assertSame("Speed",             Units.METRES_PER_SECOND, Units.get(Units.METRES_PER_SECOND.getDimension()));
-        assertSame("LuminousIntensity", Units.CANDELA,           Units.get(Units.CANDELA          .getDimension()));
-        assertSame("LuminousFlux",      Units.CANDELA,           Units.get(Units.LUMEN            .getDimension()));    // Because lumen is candela divided by a dimensionless unit.
-        assertSame("SolidAngle",        Units.UNITY,             Units.get(Units.STERADIAN        .getDimension()));
-        assertSame("Angle",             Units.UNITY,             Units.get(Units.RADIAN           .getDimension()));
-        assertSame("Dimensionless",     Units.UNITY,             Units.get(Units.UNITY            .getDimension()));
+        verifyGetFromDimension(Length.class,            METRE,                     METRE);
+        verifyGetFromDimension(Mass.class,              KILOGRAM,                  KILOGRAM);
+        verifyGetFromDimension(Time.class,              SECOND,                    SECOND);
+        verifyGetFromDimension(Temperature.class,       KELVIN,                    KELVIN);
+        verifyGetFromDimension(Area.class,              SQUARE_METRE,              SQUARE_METRE);
+        verifyGetFromDimension(Volume.class,            CUBIC_METRE,               CUBIC_METRE);
+        verifyGetFromDimension(Speed.class,             METRES_PER_SECOND,         METRES_PER_SECOND);
+        verifyGetFromDimension(LuminousIntensity.class, CANDELA,                   CANDELA);
+        verifyGetFromDimension(LuminousFlux.class,      CANDELA,                   LUMEN);      // Because lumen is candela divided by a dimensionless unit.
+        verifyGetFromDimension(SolidAngle.class,        UNITY,                     STERADIAN);
+        verifyGetFromDimension(Angle.class,             UNITY,                     RADIAN);
+        verifyGetFromDimension(Dimensionless.class,     UNITY,                     UNITY);
+        verifyGetFromDimension(Acceleration.class,      METRES_PER_SECOND_SQUARED, METRES_PER_SECOND_SQUARED);
+    }
+
+    /**
+     * For a given {@code test} quantity class, verifies that {@link Units#get(Class)} gives the expected value.
+     */
+    private static <Q extends Quantity<Q>> void verifyGetFromQuantity(final Class<Q> test, final Unit<Q> expected) {
+        assertSame(test.getSimpleName(), expected, Units.get(test));
+    }
+
+    /**
+     * For a given {@code test} dimension, verifies that {@link Units#get(Dimension)} gives the expected value.
+     */
+    private static <Q extends Quantity<Q>> void verifyGetFromDimension(final Class<Q> label, final Unit<?> expected, final Unit<Q> test) {
+        assertSame(label.getSimpleName(), expected, Units.get(test.getDimension()));
     }
 
     /**
@@ -325,6 +334,8 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(CELSIUS,      valueOf("degree_Celcius"));
         assertSame(PASCAL,       valueOf("Pa"));
         assertSame(DECIBEL,      valueOf("dB"));
+        assertSame(GAL,          valueOf("gal"));
+        assertSame(GAL,          valueOf("cm/s²"));
     }
 
     /**

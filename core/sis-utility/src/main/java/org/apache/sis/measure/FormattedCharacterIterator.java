@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.SimpleCharacterIterator;
  * Every {@code getRunStart(…)} and {@code getRunLimit(…)} methods defined in this class check
  * only for attribute existence, ignoring the actual attribute value. This is a departure from
  * the {@link java.text.AttributedCharacterIterator} contract, but should be invisible to the
- * users if there is no juxtaposed fields with the same attribute value (which is usually the
+ * users if there are no juxtaposed fields with the same attribute value (which is usually the
  * case). A violation occurs if different fields are formatted without separator. For example
  * if an angle is formatted as "DDMMSS" without any field separator, then we have 3 juxtaposed
  * integer fields. If those fields have the same value, then the whole "DDMMSS" text should be

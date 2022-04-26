@@ -1,0 +1,7 @@
+Pseudo-statistics about the `BIP.raw` file content.
+Format is (where <…> are mandatory and {…} optional):
+
+  <band> <minimum> <maximum> {mean} {std_deviation} {linear_stretch_min} {linear_stretch_max}
+
+1 2 250 100 10
+Above values are not real statistics.

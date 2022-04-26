@@ -176,13 +176,14 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link NetcdfStore}.
-     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
-     * only that there appears to be a reasonable chance of success based on a brief inspection of the
-     * {@linkplain StorageConnector#getStorage() storage object} or contents.
+     * Returns the MIME type if the given storage appears to be supported by {@link NetcdfStore}.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
+     * or writing will succeed, only that there appears to be a reasonable chance of success
+     * based on a brief inspection of the file header.
      *
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return {@code SUPPORTED} if the given storage seems to be usable by {@code NetcdfStore} instances.
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
+     *         if the given storage seems to be readable by {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override

@@ -31,7 +31,7 @@ import org.apache.sis.internal.storage.Resources;
  * Current implementation does not yet implements the {@code ImageOutputStream} sub-interface, but a future
  * implementation may do so.
  *
- * <p>We do not implement {@link ImageOutputStream} yet because the later inherits all read operations from
+ * <p>We do not implement {@link ImageOutputStream} yet because the latter inherits all read operations from
  * {@code ImageInputStream}, while the {@code org.apache.sis.internal.storage} package keeps the concerns
  * separated. Despite that, the name of this {@code ChannelImageOutputStream} anticipates a future version
  * which would implement the image I/O interface.</p>

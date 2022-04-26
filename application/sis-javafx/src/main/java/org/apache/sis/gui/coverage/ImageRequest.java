@@ -92,7 +92,7 @@ public class ImageRequest {
     /**
      * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.
      * If both arguments are non-null, then {@code data} must be the result of reading the given resource.
-     * In the later case we will not actually read data (because they are already read) and this instance
+     * In the latter case we will not actually read data (because they are already read) and this instance
      * is used only for transferring data e.g. from {@link CoverageExplorer} to {@link CoverageCanvas}.
      *
      * <p>This constructor is not in public API because users should supply only a resource or a coverage,

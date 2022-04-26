@@ -278,7 +278,7 @@ abstract class MetadataVisitor<R> {
      * </ul>
      *
      * @param  type   the type of elements. Note that this is not necessarily the type
-     *                of given {@code value} argument if the later is a collection.
+     *                of given {@code value} argument if the latter is a collection.
      * @param  value  value of the metadata property being visited.
      * @return the new property value to set, or {@link #SKIP_SIBLINGS}.
      * @throws Exception if the visit operation failed.

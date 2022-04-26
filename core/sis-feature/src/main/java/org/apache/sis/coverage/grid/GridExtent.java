@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Rectangle;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -887,7 +888,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *   <li>{@code getAxisType(3)} may return {@link DimensionNameType#TIME}.</li>
      * </ul>
      *
-     * Above are only examples; there is no constraint on axis order. In particular grid axes do not need to be in the same
+     * Above are only examples; there are no constraints on axis order. In particular grid axes do not need to be in the same
      * order than the corresponding {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system} axes.
      *
      * @param  index  the dimension for which to obtain the axis type.
@@ -1482,6 +1483,34 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns {@code true} if this extent contains the given cell indices.
+     * An index is considered inside the grid extent if its value is between
+     * {@link #getLow(int) low} and {@link #getHigh(int) high} bounds, inclusive.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code indices} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing index values are considered inside the extent.
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  indices  indices of the grid cell to check.
+     * @return whether the given indices are inside this extent.
+     *
+     * @since 1.2
+     */
+    public boolean contains(final long... indices) {
+        ArgumentChecks.ensureNonNull("indices", indices);
+        final int m = getDimension();
+        final int length = Math.min(m, indices.length);
+        for (int i=0; i<length; i++) {
+            final long c = indices[i];
+            if (c < coordinates[i] || c > coordinates[i + m]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the intersection of this grid extent with to the given grid extent.
      * The given extent shall have the same number of dimensions.
      *
@@ -1582,8 +1611,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final TableAppender table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
-            CharSequence name;
-            if ((types == null) || (name = Types.getCodeTitle(types[i])) == null) {
+            String name = null;
+            if (types != null) {
+                final InternationalString title = Types.getCodeTitle(types[i]);
+                if (title != null) {
+                    name = title.toString(vocabulary.getLocale());
+                }
+            }
+            if (name == null) {
                 name = vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
             }
             final long lower = coordinates[i];

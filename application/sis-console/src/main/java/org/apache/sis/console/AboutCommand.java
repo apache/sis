@@ -47,7 +47,7 @@ import org.apache.sis.internal.util.X364;
 /**
  * The "about" subcommand.
  * By default this sub-command prints all information except the {@link About#LIBRARIES} section,
- * because the later is considered too verbose. Available options are:
+ * because the latter is considered too verbose. Available options are:
  *
  * <ul>
  *   <li>{@code --brief}:   prints only Apache SIS version number.</li>

@@ -213,7 +213,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
             if (operation instanceof Transformation) {
                 for (final PositionalAccuracy element : accuracies) {
                     /*
-                     * Really need identity comparisons, not Object.equals(Object), because the later
+                     * Really need identity comparisons, not Object.equals(Object), because the latter
                      * does not distinguish between DATUM_SHIFT_APPLIED and INDIRECT_SHIFT_APPLIED.
                      */
                     if (element == DATUM_SHIFT_APPLIED)    return DATUM_SHIFT_ACCURACY;

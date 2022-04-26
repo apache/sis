@@ -687,7 +687,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         /*
          * Stores locale variables for comparison against Karney tables 4, 5 and 6. Values β₁ and β₂ are kept
          * constant during all this method. Value α₁ is a first estimation and will be updated during iteration.
-         * Not that because Karney separate calculation of α₁ and remaining calculation in two separated tables,
+         * Note that because Karney separate calculation of α₁ and remaining calculation in two separated tables,
          * we need to truncate α₁ to the same number of digits than Karney in order to get the same numbers in
          * the rest of this method.
          */

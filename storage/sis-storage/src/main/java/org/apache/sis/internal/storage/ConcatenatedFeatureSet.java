@@ -30,6 +30,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.Query;
 
@@ -51,7 +52,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -71,7 +72,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * but different sources. This is used for creating {@linkplain #subset(Query) subsets}.
      */
     private ConcatenatedFeatureSet(final FeatureSet[] sources, final ConcatenatedFeatureSet original) {
-        super(original);
+        super(original.listeners);
         this.sources = UnmodifiableArrayList.wrap(sources);
         commonType = original.commonType;
     }
@@ -175,7 +176,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * @return estimation of the number of features.
      */
     @Override
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         long sum = 0;
         for (final FeatureSet fs : sources) {
             if (fs instanceof AbstractFeatureSet) {

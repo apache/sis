@@ -804,7 +804,7 @@ convert:            if (componentType != null) {
      * If the user specified a unit of measurement, then the value given to this method has been converted
      * to the unit specified by the {@linkplain #getDescriptor() descriptor}, for easier comparisons against
      * standardized values. This converted value may be different than the value to be stored in this
-     * {@code ParameterValue}, since the later value will be stored in the unit specified by the user.
+     * {@code ParameterValue}, since the latter value will be stored in the unit specified by the user.
      *
      * <h4>Standard validations</h4>
      * The checks for {@linkplain DefaultParameterDescriptor#getValueClass() value class},

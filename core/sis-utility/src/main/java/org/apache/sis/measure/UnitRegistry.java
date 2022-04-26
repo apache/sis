@@ -37,7 +37,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * rather uses the static methods directly since we define all units in terms of SI.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -51,6 +51,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * A bitmask specifying that the unit symbol can be combined with a SI prefix.
      * This is usually combined only with {@link #SI}, not {@link #ACCEPTED} except
      * the litre unit (cL, mL, etc) and bel (for creating the decibel unit).
+     * The gal unit can also be prefixed, but this unit is deprecated by ISO 80000-3:2006.
      */
     static final byte PREFIXABLE = 1;
 
@@ -66,14 +67,21 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     static final byte ACCEPTED = 4;
 
     /**
+     * Identifies units defined by the centimeter–gram–second (CGS) system.
+     *
+     * @since 1.2
+     */
+    static final byte CGS = 8;
+
+    /**
      * Identifies units defined for use in British imperial system.
      */
-    static final byte IMPERIAL = 8;
+    static final byte IMPERIAL = 16;
 
     /**
      * Identifies units defined in another system than the above.
      */
-    static final byte OTHER = 16;
+    static final byte OTHER = 32;
 
     /**
      * All {@link UnitDimension}, {@link SystemUnit} or {@link ConventionalUnit} that are hard-coded in Apache SIS.

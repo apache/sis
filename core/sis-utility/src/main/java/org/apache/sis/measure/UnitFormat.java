@@ -1190,7 +1190,7 @@ scan:   for (int n; i < end; i += n) {
                 /*
                  * For any character that is not an operator or parenthesis, either continue the scanning of
                  * characters or stop it, depending on whether the character is valid for a unit symbol or not.
-                 * In the later case, we consider that we reached the end of a unit symbol.
+                 * In the latter case, we consider that we reached the end of a unit symbol.
                  */
                 default:  {
                     if (AbstractUnit.isSymbolChar(c)) {
@@ -1257,7 +1257,7 @@ scan:   for (int n; i < end; i += n) {
                                symbols.subSequence(start, i), Style.CLOSE), symbols, start);
                     }
                     unit = operation.apply(unit, term, pos);
-                    operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbols after parenthesis.
+                    operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbol after parenthesis.
                     start = i + (n = 1);                    // Skip the number of characters in the '(' Unicode code point.
                     continue;
                 }

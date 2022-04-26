@@ -131,7 +131,7 @@ public class ResourceTree extends TreeView<Resource> {
      * All accesses to this list must be synchronized on {@code pendingItems}.
      *
      * <h4>Design note</h4>
-     * We use a list instead of creating a {@link Task} for each item because the later can create a lot
+     * We use a list instead of creating a {@link Task} for each item because the latter can create a lot
      * of threads, which are likely to be blocked anyway because of {@link DataStore} synchronization.
      * Furthermore those threads of overkill in the common case where labels are very quick to fetch.
      *
@@ -503,7 +503,7 @@ public class ResourceTree extends TreeView<Resource> {
                 /*
                  * If we find no title in the metadata, use the resource identifier.
                  * We search for explicitly declared identifier first before to fallback on
-                 * metadata identifier, because the later is more subject to interpretation.
+                 * metadata identifier, because the latter is more subject to interpretation.
                  */
                 if (!qualified) {
                     name = resource.getIdentifier().orElse(null);

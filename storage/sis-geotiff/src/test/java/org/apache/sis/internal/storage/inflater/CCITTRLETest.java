@@ -427,7 +427,7 @@ public final strictfp class CCITTRLETest extends TestCase {
 
     /**
      * Fills {@link #tree} and {@link #sequenceOfAllWords} with values computed from the given table.
-     * Some assertions are verified in this process, for example that there is no duplicated values.
+     * Some assertions are verified in this process, for example that there are no duplicated values.
      *
      * @param  codes  {@link #WHITE_RUN_LENGTHS} or {@link #BLACK_RUN_LENGTHS}.
      * @param  zero   the word for the run length of 0.

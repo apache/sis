@@ -32,7 +32,7 @@ import org.apache.sis.xml.Namespaces;
 /**
  * An implementation of {@link ReferenceSystem} marshalled as specified in ISO 19115.
  * This is different than the {@code ReferenceSystem} implementation provided in the
- * referencing module, since the later marshals the CRS as specified in GML (close
+ * referencing module, since the latter marshals the CRS as specified in GML (close
  * to ISO 19111 model). This class contains only CRS identification as below:
  *
  * {@preformat text

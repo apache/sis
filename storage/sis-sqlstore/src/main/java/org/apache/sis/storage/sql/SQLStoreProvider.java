@@ -175,7 +175,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      *
      * @param  connector  information about the storage (data source).
      * @return {@code SUPPORTED} if the given storage seems to be usable by {@code SQLStore} instances.
-     * @throws DataStoreException if an I/O error occurred.
+     * @throws DataStoreException if an SQL error occurred.
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {

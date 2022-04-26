@@ -157,7 +157,7 @@ public final class Locales extends Static {
 
     /**
      * Returns the languages known to the JavaVM ({@link #ALL}) or to the Apache SIS library
-     * ({@link #SIS}). In the later case, this method returns only the languages for which
+     * ({@link #SIS}). In the latter case, this method returns only the languages for which
      * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
      * @return the list of supported languages.
@@ -174,7 +174,7 @@ public final class Locales extends Static {
 
     /**
      * Returns the locales known to the JavaVM ({@link #ALL}) or to the Apache SIS library
-     * ({@link #SIS}). In the later case, this method returns only the locales for which
+     * ({@link #SIS}). In the latter case, this method returns only the locales for which
      * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
      * @return the list of supported locales.

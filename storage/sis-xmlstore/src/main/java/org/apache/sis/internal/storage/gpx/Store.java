@@ -102,6 +102,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
         } catch (FactoryException e) {
             throw new DataStoreException(e);
         }
+        listeners.useWarningEventsOnly();
     }
 
     /**

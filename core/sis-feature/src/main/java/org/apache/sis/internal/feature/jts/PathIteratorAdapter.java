@@ -88,8 +88,8 @@ final class PathIteratorAdapter implements PathIterator {
 
     /**
      * Moves to the next sequence of coordinate tuples. The {@link #coordinates} sequence
-     * should be null when this method is invoked. If there is no more sequence, then the
-     * {@link #coordinates} will be left unchanged (i.e. null).
+     * should be null when this method is invoked. If there are no more sequences,
+     * then the {@link #coordinates} will be left unchanged (i.e. null).
      */
     private void nextSequence() {
         while (sequences.hasNext()) {

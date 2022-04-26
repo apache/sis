@@ -20,10 +20,10 @@ import java.util.regex.Matcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.apache.sis.internal.storage.AbstractResource;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
+import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
@@ -34,7 +34,9 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.dataset.ContentVerifier;
+import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -79,7 +81,7 @@ public class MetadataReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final MetadataReader reader = new MetadataReader(null, "LandsatTest.txt", new AbstractResource(null));
+            final MetadataReader reader = new MetadataReader(null, "LandsatTest.txt", createListeners());
             reader.read(in);
             actual = reader.getMetadata();
         }
@@ -101,6 +103,8 @@ public class MetadataReaderTest extends TestCase {
             "identificationInfo[0].credit[0]",                                                       "Derived from U.S. Geological Survey data",
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title",             "GeoTIFF Coverage Encoding Profile",
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "GeoTIFF",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR,
             "identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",                   true,
             "identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude",               108.34,
             "identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",               110.44,
@@ -253,5 +257,26 @@ public class MetadataReaderTest extends TestCase {
             "resourceLineage[0].source[0].description", "Pseudo GLS");
 
         verifier.assertMetadataEquals();
+    }
+
+    /**
+     * Creates a dummy set of store listeners.
+     * Used only for constructors that require a non-null {@link StoreListeners} instance.
+     *
+     * @return a dummy set of listeners.
+     */
+    private static StoreListeners createListeners() {
+        final class DummyResource extends AbstractResource {
+            /** Creates a dummy resource without parent. */
+            DummyResource() {
+                super(null);
+            }
+
+            /** Makes listeners accessible to this package. */
+            StoreListeners listeners() {
+                return listeners;
+            }
+        }
+        return new DummyResource().listeners();
     }
 }

@@ -436,7 +436,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
          * those units are ignored).
          *
          * This is a violation of both OGC 01-009 and ISO 19162 standards, but this is what GDAL does.
-         * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
+         * So we allow this interpretation in `Convention.WKT1_COMMON_UNITS` for compatibility reasons.
          */
         wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
         newParser(Convention.WKT1_IGNORE_AXES);
@@ -695,8 +695,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
 
         validateParisFranceII(parse(ProjectedCRS.class, wkt), 0, true);
         /*
-         * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements.
-         * See the comment in 'testGeographicWithParisMeridian' method for a discussion.
+         * Parse again using `Convention.WKT1_COMMON_UNITS` and ignoring AXIS[…] elements.
+         * See the comment in `testGeographicWithParisMeridian` method for a discussion.
          * The new aspect tested by this method is that the unit should be ignored
          * for the parameters in addition to the prime meridian.
          */
@@ -933,11 +933,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     public void testMathTransform() throws ParseException, NoninvertibleTransformException {
         /*
          * Test "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
-         * The 'south' transform is actually the usual Transverse Mercator projection, despite
+         * The `south` transform is actually the usual Transverse Mercator projection, despite
          * having axis oriented toward South.  Consequently the "False Northing" parameter has
          * the same meaning for those two CRS. Since we assigned the same False Northing value,
          * those two CRS have their "False origin" at the same location. This is why conversion
-         * from 'south' to 'north' introduce no translation, only a reversal of y axis.
+         * from `south` to `north` introduce no translation, only a reversal of y axis.
          */
         ProjectedCRS north = parseTransverseMercator(false, false, 1000);
         assertEquals(AxisDirection.WEST,  north.getCoordinateSystem().getAxis(0).getDirection());

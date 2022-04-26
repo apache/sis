@@ -184,7 +184,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Tries to returns an optimized concatenation, for example by merging two affine transforms
-     * into a single one. If no optimized case has been found, returns {@code null}. In the later
+     * into a single one. If no optimized case has been found, returns {@code null}. In the latter
      * case, the caller will need to create a more heavy {@link ConcatenatedTransform} instance.
      *
      * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
@@ -517,7 +517,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                     } else {
                         /*
                          * Found more than one group of non-linear parameters, or found an object
-                         * that do not declare its parameters.  In the later case, conservatively
+                         * that do not declare its parameters.  In the latter case, conservatively
                          * returns 'null' because we do not know what the real parameters are.
                          */
                         return null;

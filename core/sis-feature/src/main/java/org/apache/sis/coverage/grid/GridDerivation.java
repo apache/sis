@@ -1011,7 +1011,7 @@ public class GridDerivation {
              * Above `scaledExtent` is non-null only if a scale or subsampling has been applied before this `slice`
              * method has been invoked. The `baseExtent` below contains same information, but without subsampling.
              * The subsampling effect is removed by applying the "scaled to base" transform. Accuracy matter less
-             * here than for `scaledExtent` since the extent to be returned to user is the later.
+             * here than for `scaledExtent` since the extent to be returned to user is the latter.
              */
             if (toBase != null) {
                 gridPoint = toBase.transform(gridPoint, gridPoint);
@@ -1093,7 +1093,7 @@ public class GridDerivation {
          *   • x = (h₁ + 1) × c
          *   • x = (h₂ + f) × c⋅s      which implies       h₂ = h₁/s      and       f = 1/s
          *
-         * If we modify the later equation for integer division instead of real numbers, we have:
+         * If we modify the latter equation for integer division instead of real numbers, we have:
          *
          *   • x = (h₂ + f) × c⋅s      where        h₂ = floor(h₁/s)      and       f = ((h₁ mod s) + 1)/s
          *
@@ -1324,7 +1324,7 @@ public class GridDerivation {
      * Returns the offsets to be subtracted from pixel coordinates before subsampling.
      * In a conversion from <em>derived</em> grid to {@linkplain #base} grid coordinates
      * (the opposite direction of subsampling), the offset is the value to add after
-     * multiplication by the scale factor. It may be negative.
+     * multiplication by the subsampling factor. It may be negative.
      *
      * <p>This method can be invoked after {@link #build()} for getting additional information.</p>
      *

@@ -321,7 +321,7 @@ public final class Utilities extends Static {
      *
      * This method should be invoked <strong>only</strong> if the object type is declared
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code String} or
-     * {@code float[]}. In the later cases, use the appropriate {@link Arrays} method instead.
+     * {@code float[]}. In the latter cases, use the appropriate {@link Arrays} method instead.
      *
      * @param  object  the object to compute hash code. May be {@code null}.
      * @return the hash code of the given object.
@@ -356,7 +356,7 @@ public final class Utilities extends Static {
      *
      * This method should be invoked <strong>only</strong> if the object type is declared
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code Number} or
-     * {@code float[]}. In the later cases, use the appropriate {@link Arrays} method instead.
+     * {@code float[]}. In the latter cases, use the appropriate {@link Arrays} method instead.
      *
      * @param  object  the object to format as a string. May be {@code null}.
      * @return a string representation of the given object.

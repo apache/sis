@@ -110,7 +110,7 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -193,7 +193,7 @@ public class MetadataSource implements AutoCloseable {
      *     }
      * }
      *
-     * @see #take(Class, int)
+     * @see #prepareStatement(Class, String, int)
      * @see #recycle(CachedStatement, int)
      */
     private final CachedStatement[] statements;
@@ -332,7 +332,7 @@ public class MetadataSource implements AutoCloseable {
                 }
                 /*
                  * If the error is transient or has a transient cause, we will not save MetadataFallback.INSTANCE
-                 * in the 'instance' field. The intent is to try again next time this method will be invoked, in
+                 * in the `instance` field. The intent is to try again next time this method will be invoked, in
                  * case the transient error has disappeared.
                  */
                 for (Throwable cause = e; cause != null; cause = cause.getCause()) {
@@ -508,13 +508,17 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Returns a statement that can be reused for the given interface, or {@code null} if none.
+     * Returns a statement that can be reused for performing queries on the table for the specified interface.
+     * Callers must invoke this method in a block synchronized on {@code this}.
      *
      * @param  type            the interface for which to reuse a prepared statement.
+     * @param  tableName       value of {@code getTableName(type)}, or {@code null} for computing by this method.
      * @param  preferredIndex  index in the cache array where to search first. This is only a hint for increasing
      *         the chances to find quickly a {@code CachedStatement} instance for the right type and identifier.
      */
-    private CachedStatement take(final Class<?> type, final int preferredIndex) {
+    private CachedStatement prepareStatement(final Class<?> type, String tableName, final int preferredIndex)
+            throws SQLException
+    {
         assert Thread.holdsLock(this);
         if (preferredIndex >= 0 && preferredIndex < statements.length) {
             final CachedStatement statement = statements[preferredIndex];
@@ -530,7 +534,14 @@ public class MetadataSource implements AutoCloseable {
                 return statement;
             }
         }
-        return null;
+        if (tableName == null) {
+            tableName = getTableName(type);
+        }
+        final SQLBuilder helper = helper();
+        final String query = helper.clear().append("SELECT * FROM ")
+                .appendIdentifier(schema, tableName).append(" WHERE ")
+                .appendIdentifier(ID_COLUMN).append("=?").toString();
+        return new CachedStatement(type, connection().prepareStatement(query), logFilter);
     }
 
     /**
@@ -548,7 +559,7 @@ public class MetadataSource implements AutoCloseable {
             while (statements[preferredIndex] != null) {
                 if (++preferredIndex >= statements.length) {
                     /*
-                     * If we reach this point, this means that the 'statements' pool has reached its maximal capacity.
+                     * If we reach this point, this means that the `statements` pool has reached its maximal capacity.
                      * Loop again on all statements in order to find the oldest one. We will close that old statement
                      * and cache the given one instead.
                      */
@@ -808,7 +819,7 @@ public class MetadataSource implements AutoCloseable {
             columns = new HashSet<>();
             /*
              * Note: a null schema in the DatabaseMetadata.getColumns(…) call means "do not take schema in account";
-             * it does not mean "no schema" (the later is specified by an empty string). This match better what we
+             * it does not mean "no schema" (the latter is specified by an empty string). This match better what we
              * want because if we do not specify a schema in a SELECT statement, then the actual schema used depends
              * on the search path specified in the database environment variables.
              */
@@ -837,26 +848,64 @@ public class MetadataSource implements AutoCloseable {
      * @param  identifier  the identifier of the record for the metadata entity to be created.
      *                     This is usually the primary key of the record to search for.
      * @return an implementation of the required interface, or the code list element.
-     * @throws MetadataStoreException if a SQL query failed.
+     * @throws MetadataStoreException if a SQL query failed or if the metadata has not been found.
      */
     public <T> T lookup(final Class<T> type, final String identifier) throws MetadataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        return type.cast(lookup(type, identifier, true));
+    }
+
+    /**
+     * Implementation of public {@link #lookup(Class, String)} method.
+     *
+     * <h4>Deferred database access</h4>
+     * This method may or may not query the database immediately, at implementation choice.
+     * It the database is not queried immediately, invalid identifiers may not be detected
+     * during this method invocation. Instead, an invalid identifier may be detected only
+     * when a getter method is invoked on the returned metadata object. In such case,
+     * an {@link org.apache.sis.util.collection.BackingStoreException} will be thrown
+     * at getter method invocation time.
+     *
+     * @param  type        the interface to implement or the {@link ControlledVocabulary} type.
+     * @param  identifier  the identifier of the record for the metadata entity to be created.
+     * @param  verify      whether to check for record existence.
+     * @return an implementation of the required interface, or the code list element.
+     * @throws MetadataStoreException if a SQL query failed or if the metadata has not been found.
+     */
+    private Object lookup(final Class<?> type, final String identifier, boolean verify) throws MetadataStoreException {
         Object value;
         if (ControlledVocabulary.class.isAssignableFrom(type)) {
             value = getCodeList(type, identifier);
         } else {
             final CacheKey key = new CacheKey(type, identifier);
             /*
-             * IMPLEMENTATION NOTE: be careful to not invoke any method that may synchronize on 'this'
-             * inside the block synchronized on 'pool'.
+             * IMPLEMENTATION NOTE: be careful to not invoke any method that may synchronize on `this`
+             * inside a block synchronized on `pool` (implicit synchronization of `pool` method calls).
              */
-            synchronized (pool) {
-                value = pool.get(key);
-                if (value == null && type.isInterface()) {
-                    value = Proxy.newProxyInstance(classloader,
-                            new Class<?>[] {type, MetadataProxy.class}, new Dispatcher(identifier, this));
-                    pool.put(key, value);
+            value = pool.get(key);
+            if (value == null && type.isInterface()) {
+                final Dispatcher toSearch = new Dispatcher(identifier, this);
+                value = Proxy.newProxyInstance(classloader, new Class<?>[] {type, MetadataProxy.class}, toSearch);
+                if (verify) try {
+                    /*
+                     * If the caller asked to verify whether the record exists, perform a query now.
+                     * We trivially request the identifier, so the `getValue(…)` result should be
+                     * the identifier itself (this is not verified). If the record does not exist,
+                     * a `MetadataStoreException` is thrown by `getValue(…)`.
+                     */
+                    synchronized (this) {
+                        final Class<?> subType = TableHierarchy.subType(type, identifier);
+                        CachedStatement result = prepareStatement(subType, null, toSearch.preferredIndex);
+                        result.getValue(identifier, ID_COLUMN);               // Check record existence.
+                        toSearch.preferredIndex = recycle(result, toSearch.preferredIndex);
+                    }
+                } catch (SQLException e) {
+                    throw new MetadataStoreException(Errors.format(Errors.Keys.DatabaseError_2, type, identifier), e);
+                }
+                final Object replacement = pool.putIfAbsent(key, value);
+                if (replacement != null) {
+                    value = replacement;
                 }
             }
             /*
@@ -908,12 +957,14 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * Invoked by {@link MetadataProxy} for fetching an attribute value from a table.
+     * It the database table does not contains a column for the property, this method returns {@code null}.
+     * A {@code null} value may also mean that the column exists but contains an SQL {@code NULL} value.
      *
      * @param  info      the interface type (together with cached information).
      *                   This is mapped to the table name in the database.
      * @param  method    the method invoked. This is mapped to the column name in the database.
      * @param  toSearch  contains the identifier and preferred index of the record to search.
-     * @return the value of the requested attribute.
+     * @return the value of the requested attribute, or {@code null} if none.
      * @throws SQLException if the SQL query failed.
      * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
      */
@@ -922,7 +973,7 @@ public class MetadataSource implements AutoCloseable {
     {
         /*
          * If the identifier is prefixed with a table name as in "{Organisation}identifier",
-         * the name between bracket is a subtype of the given 'type' argument.
+         * the name between bracket is a subtype of the given `type` argument.
          */
         final Class<?> type           = TableHierarchy.subType(info.getMetadataType(), toSearch.identifier);
         final Class<?> returnType     = method.getReturnType();
@@ -940,17 +991,10 @@ public class MetadataSource implements AutoCloseable {
             } else {
                 /*
                  * Prepares the statement and executes the SQL query in this synchronized block.
-                 * Note that the usage of 'result' must stay inside this synchronized block
+                 * Note that the usage of `result` must stay inside this synchronized block
                  * because we can not assume that JDBC connections are thread-safe.
                  */
-                CachedStatement result = take(type, Byte.toUnsignedInt(toSearch.preferredIndex));
-                if (result == null) {
-                    final SQLBuilder helper = helper();
-                    final String query = helper.clear().append("SELECT * FROM ")
-                            .appendIdentifier(schema, tableName).append(" WHERE ")
-                            .appendIdentifier(ID_COLUMN).append("=?").toString();
-                    result = new CachedStatement(type, connection().prepareStatement(query), logFilter);
-                }
+                CachedStatement result = prepareStatement(type, tableName, toSearch.preferredIndex);
                 value = result.getValue(toSearch.identifier, columnName);
                 isArray = (value instanceof java.sql.Array);
                 if (isArray) {
@@ -958,7 +1002,7 @@ public class MetadataSource implements AutoCloseable {
                     value = array.getArray();
                     array.free();
                 }
-                toSearch.preferredIndex = (byte) recycle(result, Byte.toUnsignedInt(toSearch.preferredIndex));
+                toSearch.preferredIndex = recycle(result, toSearch.preferredIndex);
             }
         }
         /*
@@ -971,7 +1015,7 @@ public class MetadataSource implements AutoCloseable {
                 Object element = Array.get(value, i);
                 if (element != null) {
                     if (isMetadata) {
-                        element = lookup(elementType, element.toString());
+                        element = lookup(elementType, element.toString(), false);
                     } else try {
                         element = info.convert(elementType, element);
                     } catch (UnconvertibleObjectException e) {
@@ -987,13 +1031,13 @@ public class MetadataSource implements AutoCloseable {
             }
         }
         /*
-         * Now converts the value to its final type. To be strict, we should convert null values into empty collections
-         * if the return type is a collection type. But we leave this task to the caller (which is the Dispatcher class)
-         * for making easier to detect when a value is absent, for allowing Dispatcher to manage its cache.
+         * Now convert the value to its final type. To be strict, we should convert null values to empty collections
+         * if the return type is a collection type. But we leave this task to the caller (which is the `Dispatcher`)
+         * for making easier to detect when a value is absent, for allowing `Dispatcher` to manage its cache.
          */
         if (value != null) {
             if (isMetadata) {
-                value = lookup(elementType, value.toString());
+                value = lookup(elementType, value.toString(), false);
             } else try {
                 value = info.convert(elementType, value);
             } catch (UnconvertibleObjectException e) {
@@ -1045,7 +1089,7 @@ public class MetadataSource implements AutoCloseable {
             enumeration = EnumSet.noneOf((Class) elementType);
         } else {
             /*
-             * If 'returnType' is Collection.class, do not copy into a Set since a List
+             * If `returnType` is Collection.class, do not copy into a Set since a List
              * is probably good enough. Copy only if a Set is explicitly requested.
              */
             if (Set.class.isAssignableFrom(returnType)) {
@@ -1185,7 +1229,7 @@ public class MetadataSource implements AutoCloseable {
             isCloseScheduled = true;
         } else {
             // No more prepared statements.
-            final Connection c = this.connection;
+            final Connection c = connection;
             connection = null;
             helper = null;
             closeQuietly(c);

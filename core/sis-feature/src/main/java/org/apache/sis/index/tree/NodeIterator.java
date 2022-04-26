@@ -169,7 +169,7 @@ class NodeIterator<E> implements Spliterator<E>, Cloneable {
         /**
          * Bitmask of quadrants/octants on which to iterate. Quadrants/octants are iterated from rightmost
          * bit to leftmost bit. Bits are cleared when the corresponding quadrant/octant become the current
-         * one. A value of 0 means that there is no more quadrant to iterate for the {@linkplain #node}.
+         * one. A value of 0 means that there are no more quadrants to iterate for the {@linkplain #node}.
          *
          * <p><b>Note:</b> we take "quadrant" name from QuadTree, but this algorithm can actually be used
          * with more dimensions.</p>
@@ -277,7 +277,7 @@ class NodeIterator<E> implements Spliterator<E>, Cloneable {
         /**
          * Changes the state of this {@code Cursor} for getting elements in the specified quadrant/octant.
          * This method is invoked when there is no need to keep current {@code Cursor} information anymore,
-         * because there is no other quadrant/octant than the specified one in which to iterate.
+         * because there are no other quadrants/octants than the specified one in which to iterate.
          *
          * <p>Caller is responsible to update the {@link #node} field after this method call
          * and to invoke {@link #findIntersections(NodeIterator)}.</p>

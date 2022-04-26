@@ -29,8 +29,8 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
@@ -102,7 +102,7 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
      * A dummy resource with arbitrary resolutions for testing purpose.
      * Resolutions are ordered from finest (smallest numbers) to coarsest (largest numbers).
      */
-    private static final class DummyResource extends AbstractGridResource {
+    private static final class DummyResource extends AbstractGridCoverageResource {
         /** Creates a dummy resource. */
         DummyResource() {
             super(null);

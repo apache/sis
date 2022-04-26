@@ -1063,7 +1063,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Relative tolerance values (as opposed to absolute tolerance values) help to workaround the
      * fact that tolerance value are CRS dependent. For example the tolerance value need to be
      * smaller for geographic CRS than for UTM projections, because the former typically has a
-     * [-180…180]° range while the later can have a range of thousands of meters.</div>
+     * [-180…180]° range while the latter can have a range of thousands of meters.</div>
      *
      * <h4>Coordinate Reference System</h4>
      * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() number of dimensions}

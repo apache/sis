@@ -1,0 +1,13 @@
+Header file for the `BSQ.raw` test raster.
+Lines that do not begin with a keyword shall be ignored as comments.
+
+NROWS  9        Text after value shall be ignored as well
+NCOLS  9
+NBANDS 3
+NBITS  8        Default value, omission tested in other tests
+LAYOUT BSQ      Band Sequential
+
+ULXMAP -10      Dummy values
+ULYMAP -15
+XDIM   0.2
+YDIM   0.1

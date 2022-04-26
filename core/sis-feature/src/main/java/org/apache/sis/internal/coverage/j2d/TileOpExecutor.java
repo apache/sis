@@ -554,7 +554,7 @@ public class TileOpExecutor {
     private final class Cursor<RI extends RenderedImage, A> extends AtomicInteger {
         /**
          * The image from which to read tiles or where to write tiles.
-         * In the later case, must be an instance of {@link WritableRenderedImage}.
+         * In the latter case, must be an instance of {@link WritableRenderedImage}.
          */
         final RI image;
 
@@ -644,7 +644,7 @@ public class TileOpExecutor {
          *
          * @param  indices  the worker where to update {@link Worker#tx} and {@link Worker#ty} indices.
          * @return {@code true} if the tile at the updated indices should be processed, or {@code false}
-         *         if there is no more tile to process.
+         *         if there are no more tiles to process.
          */
         final boolean next(final Worker<RI,?,A> indices) {
             final int index = getAndIncrement();

@@ -208,13 +208,16 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+        if (getClass() == GeoTiffStore.class) {
+            listeners.useWarningEventsOnly();
+        }
     }
 
     /**
      * Returns the namespace to use in identifier of components, or {@code null} if none.
      * This method must be invoked inside a block synchronized on {@code this}.
      */
-    final NameSpace namespace() throws DataStoreException {
+    final NameSpace namespace() {
         if (!isNamespaceSet && reader != null) {
             final NameFactory f = reader.nameFactory;
             GenericName name = null;
@@ -237,6 +240,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Opens access to listeners for {@link ImageFileDirectory}.
+     *
+     * @see #warning(LogRecord)
      */
     final StoreListeners listeners() {
         return listeners;
@@ -280,7 +285,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     final void setFormatInfo(final MetadataBuilder builder) {
         try {
-            builder.setFormat(Constants.GEOTIFF);
+            builder.setPredefinedFormat(Constants.GEOTIFF);
         } catch (MetadataStoreException e) {
             builder.addFormatName(Constants.GEOTIFF);
             listeners.warning(e);
@@ -322,7 +327,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
              */
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
             builder.setISOStandards(true);
-            final DefaultMetadata md = builder.build(false);
+            final DefaultMetadata md = builder.build();
             metadata = customizer.customize(-1, md);
             if (metadata == null) metadata = md;
             md.transitionTo(DefaultMetadata.State.FINAL);
@@ -517,20 +522,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Reports a warning represented by the given message and exception.
-     * At least one of {@code message} and {@code exception} shall be non-null.
-     *
-     * @param message    the message to log, or {@code null} if none.
-     * @param exception  the exception to log, or {@code null} if none.
-     */
-    final void warning(final String message, final Exception exception) {
-        listeners.warning(message, exception);
-    }
-
-    /**
      * Reports a warning contained in the given {@link LogRecord}.
      * Note that the given record will not necessarily be sent to the logging framework;
-     * if the user as registered at least one listener, then the record will be sent to the listeners instead.
+     * if the user has registered at least one listener, then the record will be sent to the listeners instead.
      *
      * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
      * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
@@ -538,6 +532,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * in this class. We do not report private classes or methods as the source of warnings.</p>
      *
      * @param  record  the warning to report.
+     *
+     * @see #listeners()
      */
     final void warning(final LogRecord record) {
         // Logger name will be set by listeners.warning(record).

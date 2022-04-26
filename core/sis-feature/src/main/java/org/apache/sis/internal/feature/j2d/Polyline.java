@@ -258,7 +258,7 @@ class Polyline extends FlatShape {
         }
 
         /**
-         * Returns {@code true} if there is no more points to iterate.
+         * Returns {@code true} if there are no more points to iterate.
          */
         @Override
         public boolean isDone() {

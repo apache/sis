@@ -17,7 +17,10 @@
 package org.apache.sis.gui;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +34,9 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
@@ -39,6 +45,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.RecentChoices;
@@ -148,15 +155,17 @@ public class DataViewer extends Application {
         final MenuBar menus = new MenuBar();
         final Menu file = new Menu(vocabulary.getString(Vocabulary.Keys.File));
         {   // For keeping variables locale.
-            final MenuItem open, close;
+            final MenuItem open, oUrl, close;
             final Menu recentFiles = RecentFiles.create(content, localized);
             file.getItems().addAll(
-                    open  = localized.menu(Resources.Keys.Open,  (e) -> showOpenFileDialog()), recentFiles,
-                    close = localized.menu(Resources.Keys.Close, (e) -> closeSelectedFile()),
+                    open  = localized.menu(Resources.Keys.Open,    (e) -> showOpenFileDialog()),
+                    oUrl  = localized.menu(Resources.Keys.OpenURL, (e) -> showOpenURLDialog()), recentFiles,
+                    close = localized.menu(Resources.Keys.Close,   (e) -> closeSelectedFile()),
                     new SeparatorMenuItem(),
                     localized.menu(Resources.Keys.Exit, (e) -> Platform.exit()));
 
             open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
+            oUrl.setAccelerator(KeyCombination.keyCombination("Shortcut+U"));
             close.setDisable(true);
             content.selectedResourceProperty().addListener((e,o,n) -> {
                 close.setDisable(!(n instanceof DataStore));
@@ -224,6 +233,18 @@ public class DataViewer extends Application {
         for (DataStoreProvider provider : DataStores.providers()) {
             final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
             if (md != null) {
+                boolean read  = true;
+                boolean write = true;
+                switch (md.formatName()) {
+                    /*
+                     * GPX and XML have the same file suffix. Keep XML are reading time because
+                     * we can auto-detect the format. Keep GPX at writing time because we need
+                     * to be specific about the format to write.
+                     */
+                    case org.apache.sis.internal.storage.wkt.StoreProvider.NAME: continue;
+                    case org.apache.sis.internal.storage.xml.StoreProvider.NAME: write = false; break;
+                    case org.apache.sis.internal.storage.gpx.StoreProvider.NAME: read  = false; break;
+                }
                 String label = null;
                 for (final String suffix : md.fileSuffixes()) {
                     final String fs = "*.".concat(suffix);
@@ -239,11 +260,11 @@ public class DataViewer extends Application {
                      * do both. The "All formats" choice is relevant only for read operations.
                      */
                     final Capability[] capabilities = md.capabilities();
-                    if (ArraysExt.contains(capabilities, Capability.READ)) {
+                    if (read && ArraysExt.contains(capabilities, Capability.READ)) {
                         allSuffixes.addAll(suffixes);
                         open.add(f);
                     }
-                    if (ArraysExt.contains(capabilities, Capability.WRITE)) {
+                    if (write && ArraysExt.contains(capabilities, Capability.WRITE)) {
                         save.add(f);
                     }
                     suffixes.clear();
@@ -281,6 +302,39 @@ public class DataViewer extends Application {
             lastFilter = chooser.getSelectedExtensionFilter();
             content.loadResources(files);
         }
+    }
+
+    /**
+     * Invoked when the user selects "File" ▶ "Open URL" menu.
+     */
+    private void showOpenURLDialog() {
+        final TextInputDialog  chooser = new TextInputDialog();
+        final ListView<String> recents = new ListView<>();
+        RecentChoices.getURLs(recents.getItems());
+        recents.setPrefWidth (500);
+        recents.setPrefHeight(200);
+        recents.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> chooser.getEditor().setText(n));
+        final DialogPane pane = chooser.getDialogPane();
+        pane.setHeaderText(Resources.format(Resources.Keys.EnterURL));
+        pane.setExpandableContent(recents);
+        pane.setExpanded(true);
+        chooser.setTitle(Resources.format(Resources.Keys.OpenDataFile));
+        chooser.initOwner(window);
+        chooser.showAndWait().ifPresent((choice) -> {
+            try {
+                final URI url = new URI(choice);
+                final Set<String> save = new LinkedHashSet<>(16);
+                save.add(url.toString());
+                for (final String old : recents.getItems()) {
+                    save.add(old);
+                    if (save.size() >= RecentFiles.MAX_COUNT) break;
+                }
+                RecentChoices.setURLs(save);
+                content.loadResources(Collections.singleton(url));
+            } catch (URISyntaxException e) {
+                ExceptionReporter.canNotReadFile(content.getView(), choice, e);
+            }
+        });
     }
 
     /**

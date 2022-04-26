@@ -251,7 +251,7 @@ public class ObliqueMercator extends ConformalProjection {
         /*
          * For variant B only, an additional (uc, vc) translation is applied here.
          * Note that the general form of uc works even in  αc = 90°  special case,
-         * so we could omit the later. But we find a difference varying from zero
+         * so we could omit the latter. But we find a difference varying from zero
          * to 0.2 metres between the two forms; we assume they are rounding errors.
          *
          *      vc = 0

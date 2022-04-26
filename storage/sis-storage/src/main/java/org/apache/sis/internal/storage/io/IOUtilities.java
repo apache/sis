@@ -108,7 +108,7 @@ public final class IOUtilities extends Static {
      * {@link URI} or {@link CharSequence} instance. If no extension is found, returns an empty string.
      * If the given object is of unknown type, return {@code null}.
      *
-     * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
+     * @param  path  the filename extension (may be an empty string), or {@code null} if unknown.
      * @return the extension in the given path, or an empty string if none, or {@code null}
      *         if the given object is null or of unknown type.
      */
@@ -199,6 +199,42 @@ public final class IOUtilities extends Static {
             // Ignore.
         }
         return null;
+    }
+
+    /**
+     * Converts the given {@link URI} to a {@link URL} with the same path except for the file extension,
+     * which is replaced by the given extension. This method is used for opening auxiliary files such as
+     * {@code "*.prj"} and {@code "*.tfw"} files that come with e.g. TIFF files.
+     *
+     * @param  location   the URI to convert to a URL with a different extension, or {@code null}.
+     * @param  extension  the file extension (without {@code '.'}) of the auxiliary file.
+     * @return URL for the auxiliary file with the given extension, or {@code null} if none.
+     * @throws MalformedURLException if the URI uses an unknown protocol or a negative port number other than -1.
+     *
+     * @since 1.2
+     */
+    public static URL toAuxiliaryURL(final URI location, final String extension) throws MalformedURLException {
+        if (location == null || !location.isAbsolute() || location.isOpaque()) {
+            return null;
+        }
+        String path = location.getRawPath();    // Raw because URL constructor needs encoded strings.
+        int s = path.indexOf('?');              // Shall be before '#' in a valid URL.
+        if (s < 0) {
+            s = path.indexOf('#');              // A '?' after '#' would be part of the anchor.
+            if (s < 0) {
+                s = path.length();
+            }
+        }
+        s = path.lastIndexOf('.', s);
+        if (s >= 0) {
+            path = path.substring(0, s+1) + extension;
+        } else {
+            path = path + '.' + extension;
+        }
+        return new URL(location.getScheme(),            // http, https, file or jar.
+                       location.getRawAuthority(),      // Host name or literal IP address.
+                       location.getPort(),              // -1 if undefined.
+                       path);
     }
 
     /**
@@ -455,7 +491,7 @@ public final class IOUtilities extends Static {
         }
         /*
          * Leave the URL in its original encoding on the assumption that this is the encoding expected by
-         * the server. This is different than the policy for URI, because the later are always in UTF-8.
+         * the server. This is different than the policy for URI, because the latter are always in UTF-8.
          * If a URI is needed, callers should use toURI(url, encoding).
          */
         return url;

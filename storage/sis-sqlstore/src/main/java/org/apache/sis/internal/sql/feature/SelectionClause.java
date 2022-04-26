@@ -155,7 +155,7 @@ public final class SelectionClause extends SQLBuilder {
     /**
      * Tries to append a SQL statement for the given filter.
      * This method returns {@code true} on success, or {@code false} if the statement can no be written.
-     * In the later case, the content of this {@code SelectionClause} is unchanged.
+     * In the latter case, the content of this {@code SelectionClause} is unchanged.
      *
      * @param  writer  the visitor to use for converting filters to SQL statements.
      * @param  filter  the filter to try to convert to SQL statements.

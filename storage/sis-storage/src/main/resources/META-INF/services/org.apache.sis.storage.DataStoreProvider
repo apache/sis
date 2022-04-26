@@ -1,4 +1,7 @@
+org.apache.sis.internal.storage.image.WorldFileStoreProvider
+org.apache.sis.internal.storage.esri.AsciiGridStoreProvider
+org.apache.sis.internal.storage.esri.RawRasterStoreProvider
+org.apache.sis.internal.storage.csv.StoreProvider
 org.apache.sis.internal.storage.xml.StoreProvider
 org.apache.sis.internal.storage.wkt.StoreProvider
-org.apache.sis.internal.storage.csv.StoreProvider
 org.apache.sis.internal.storage.folder.StoreProvider

@@ -193,7 +193,7 @@ public enum Convention {
      *       (as declared in the parameter descriptor).</li>
      *   <li>{@code CompoundCRS} elements show nested compound CRS if any (the structure is not flattened).</li>
      *   <li>{@code Id} elements are formatted for child elements in addition to the root one.</li>
-     *   <li>{@code Id} element omits the {@code URI} sub-element if the later is derived by Apache SIS
+     *   <li>{@code Id} element omits the {@code URI} sub-element if the latter is derived by Apache SIS
      *       from the {@code Id} properties.</li>
      *   <li>{@code Remarks} element is formatted for all
      *       {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject identified objects},

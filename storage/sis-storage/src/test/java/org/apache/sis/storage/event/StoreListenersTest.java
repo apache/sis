@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link StoreListeners} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -78,6 +78,28 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
         listeners.removeListener(WarningEvent.class, this);
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
         listeners.removeListener(WarningEvent.class, this);         // Should be no-op.
+    }
+
+    /**
+     * Verifies that {@link StoreListeners#addListener(Class, StoreListener)} ignore the given listener
+     * when the specified type of event is never fired.
+     */
+    @Test
+    public void testListenerFiltering() {
+        final StoreListeners listeners = store.listeners();
+        listeners.addListener(StoreEvent.class, (event) -> {});
+        listeners.addListener(WarningEvent.class, this);
+        assertTrue(listeners.hasListeners(StoreEvent.class));
+        assertTrue(listeners.hasListeners(WarningEvent.class));
+        listeners.setUsableEventTypes(StoreEvent.class, WarningEvent.class);
+        assertTrue(listeners.hasListeners(StoreEvent.class));
+        assertTrue(listeners.hasListeners(WarningEvent.class));
+        listeners.setUsableEventTypes(StoreEvent.class);
+        assertTrue (listeners.hasListeners(StoreEvent.class));
+        assertFalse(listeners.hasListeners(WarningEvent.class));
+        listeners.addListener(WarningEvent.class, this);
+        assertTrue (listeners.hasListeners(StoreEvent.class));
+        assertFalse(listeners.hasListeners(WarningEvent.class));
     }
 
     /**

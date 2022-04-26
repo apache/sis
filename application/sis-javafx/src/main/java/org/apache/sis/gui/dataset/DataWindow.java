@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.util.EventObject;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -39,7 +38,7 @@ import org.apache.sis.internal.gui.ToolbarButton;
  * but may be copied in a separated, usually bigger, windows.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -56,12 +55,11 @@ final class DataWindow extends Stage {
      * Creates a new window for the given data selected in the explorer or determined by the active tab.
      * The new window will be positioned in the screen center but not yet shown.
      *
-     * @param  event  the event (e.g. mouse action) requesting a new window, or {@code null} if unknown.
      * @param  home   the window containing the main explorer, to be the target of "home" button.
      * @param  data   the data selected by user, to show in a new window.
      */
-    DataWindow(final EventObject event, final Stage home, final SelectedData data) {
-        final Region content = data.createView(event);
+    DataWindow(final Stage home, final SelectedData data) {
+        final Region content = data.createView();
         /*
          * Build the tools bar. This bar will be hidden in full screen mode. Note that above
          * method assumes that the "home" button created below is the first one in the toolbar.

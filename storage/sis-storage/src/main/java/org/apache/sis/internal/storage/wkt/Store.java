@@ -19,6 +19,8 @@ package org.apache.sis.internal.storage.wkt;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.io.Reader;
 import java.io.IOException;
 import java.text.ParsePosition;
@@ -40,8 +42,12 @@ import org.apache.sis.util.CharSequences;
 /**
  * A data store which creates data objects from a WKT definition.
  *
+ * <div class="note"><b>Note:</b>
+ * this class differs from {@link org.apache.sis.internal.storage.PRJDataStore} in that
+ * the file containing WKT definition is the main file, not an auxiliary file.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -57,6 +63,18 @@ final class Store extends URIDataStore {
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private Reader source;
+
+    /**
+     * The locale for {@link org.opengis.util.InternationalString} localization
+     * or {@code null} for {@link Locale#ROOT} (usually English).
+     * This locale is <strong>not</strong> used for parsing numbers or dates.
+     */
+    private final Locale locale;
+
+    /**
+     * Timezone for dates, or {@code null} for UTC.
+     */
+    private final TimeZone timezone;
 
     /**
      * The geometry library, or {@code null} for the default.
@@ -83,9 +101,12 @@ final class Store extends URIDataStore {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        objects = new ArrayList<>();
-        source  = connector.commit(Reader.class, StoreProvider.NAME);
-        library = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        objects  = new ArrayList<>();
+        locale   = connector.getOption(OptionKey.LOCALE);       // For `InternationalString`, not for numbers.
+        timezone = connector.getOption(OptionKey.TIMEZONE);
+        library  = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        source   = connector.commit(Reader.class, StoreProvider.NAME);
+        listeners.useWarningEventsOnly();
     }
 
     /**
@@ -122,7 +143,7 @@ final class Store extends URIDataStore {
              * definitions.
              */
             final ParsePosition pos = new ParsePosition(0);
-            final StoreFormat parser = new StoreFormat(library, listeners);
+            final StoreFormat parser = new StoreFormat(locale, timezone, library, listeners);
             do {
                 final Object obj = parser.parse(wkt, pos);
                 objects.add(obj);
@@ -166,7 +187,7 @@ final class Store extends URIDataStore {
             } else {
                 addTitleOrIdentifier(builder);
             }
-            metadata = builder.build(true);
+            metadata = builder.buildAndFreeze();
         }
         return metadata;
     }

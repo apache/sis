@@ -17,6 +17,8 @@
 package org.apache.sis.internal.storage.wkt;
 
 import java.text.ParseException;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.geometry.Geometry;
@@ -41,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
  * For example WKT may also appear in some global attributes of CF-netCDF files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -59,12 +61,18 @@ public final class StoreFormat extends WKTFormat {
 
     /**
      * Creates a new WKT parser and encoder.
+     * The given locale will be used for {@link InternationalString} localization;
+     * this is <strong>not</strong> the locale for number format.
      *
+     * @param  locale     the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone   the timezone, or {@code null} for UTC.
      * @param  library    the geometry library, or {@code null} for the default.
      * @param  listeners  where to send warnings.
      */
-    public StoreFormat(final GeometryLibrary library, final StoreListeners listeners) {
-        super(null, null);
+    public StoreFormat(final Locale locale, final TimeZone timezone,
+                       final GeometryLibrary library, final StoreListeners listeners)
+    {
+        super(locale, timezone);
         this.library   = library;
         this.listeners = listeners;
     }

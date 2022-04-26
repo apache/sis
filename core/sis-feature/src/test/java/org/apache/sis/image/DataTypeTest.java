@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.awt.image.DataBuffer;
+import java.awt.image.RasterFormatException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
  * Verifies {@link DataType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -95,5 +96,27 @@ public final strictfp class DataTypeTest extends TestCase {
         assertEquals(DataType.DOUBLE, DataType.INT   .toFloat());
         assertEquals(DataType.FLOAT,  DataType.FLOAT .toFloat());
         assertEquals(DataType.DOUBLE, DataType.DOUBLE.toFloat());
+    }
+
+    /**
+     * Tests {@link DataType#forNumberOfBits(int, boolean, boolean)}.
+     */
+    @Test
+    public void testForNumberOfBits() {
+        assertEquals(DataType.BYTE,   DataType.forNumberOfBits(1,            false, false));
+        assertEquals(DataType.BYTE,   DataType.forNumberOfBits(Byte.SIZE,    false, false));
+        assertEquals(DataType.USHORT, DataType.forNumberOfBits(Short.SIZE,   false, false));
+        assertEquals(DataType.SHORT,  DataType.forNumberOfBits(Short.SIZE,   false, true));
+        assertEquals(DataType.INT,    DataType.forNumberOfBits(Integer.SIZE, false, true));
+        assertEquals(DataType.FLOAT,  DataType.forNumberOfBits(Float.SIZE,   true,  true));
+        assertEquals(DataType.DOUBLE, DataType.forNumberOfBits(Double.SIZE,  true,  true));
+        try {
+            DataType.forNumberOfBits(Byte.SIZE, false, true);
+            fail("Signed bytes should be invalid.");
+        } catch (RasterFormatException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("signed"));
+            assertTrue(message, message.contains("true"));
+        }
     }
 }

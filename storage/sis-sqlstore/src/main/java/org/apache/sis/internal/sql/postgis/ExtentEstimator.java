@@ -92,7 +92,7 @@ final class ExtentEstimator {
 
     /**
      * Estimates the extent in the specified columns using PostgreSQL statistics.
-     * If there is no statistics available, then this method executes {@code ANALYZE}
+     * If there are no statistics available, then this method executes {@code ANALYZE}
      * and tries again.
      *
      * @param  statement  statement to use for executing queries. Shall be closed by caller.
@@ -116,14 +116,14 @@ final class ExtentEstimator {
 
     /**
      * Estimates the extent in the specified columns using current statistics.
-     * If there is no statistics available, then this method returns {@code null}.
+     * If there are no statistics available, then this method returns {@code null}.
      *
      * @param  statement  statement to use for executing queries. Shall be closed by caller.
      * @return an estimation of the union of extents in given columns, or {@code null} if unknown.
      */
     private void query(final Statement statement) throws SQLException {
         for (final Column column : columns) {
-            if (column.getGeometryType() != null) {
+            if (column.getGeometryType().isPresent()) {
                 database.appendFunctionCall(builder.append("SELECT "), "ST_EstimatedExtent");
                 builder.append('(');
                 if (table.schema != null) {
@@ -136,7 +136,7 @@ final class ExtentEstimator {
                         final String wkt = result.getString(1);
                         if (wkt != null) {
                             final GeneralEnvelope env = new GeneralEnvelope(wkt);
-                            env.setCoordinateReferenceSystem(column.getDefaultCRS());
+                            column.getDefaultCRS().ifPresent(env::setCoordinateReferenceSystem);
                             if (envelope == null) {
                                 envelope = env;
                             } else try {

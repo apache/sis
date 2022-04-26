@@ -252,7 +252,7 @@ public class Orthographic extends NormalizedProjection {
         dstPts[dstOff+1]  = asin(cosc*sinφ0 + y*cosφ0);         // Synder (20-14) where y⋅sin(c)/ρ = y/R with R=1.
         if (eccentricity != 0) {
             /*
-             * In the ellipsoidal case, there is no reverse formulas. Instead we take a first estimation of (λ,φ),
+             * In the ellipsoidal case, there are no reverse formulas. Instead we take a first estimation of (λ,φ),
              * compute the forward projection (E′,N′) for that estimation, compute the errors compared to specified
              * (E,N) values, convert that (ΔE,ΔN) error into a (Δλ,Δφ) error using the inverse of Jacobian matrix,
              * correct (λ,φ) and continue iteratively until the error is small enough. This algorithm described in

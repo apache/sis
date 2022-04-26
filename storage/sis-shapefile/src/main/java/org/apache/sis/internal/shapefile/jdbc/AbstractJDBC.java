@@ -63,7 +63,7 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
     }
 
     /**
-     * Defaults to nothing, since there is no SQL warning.
+     * Defaults to nothing, since there are no SQL warnings.
      */
     public void clearWarnings() {
     }

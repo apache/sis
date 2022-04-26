@@ -43,7 +43,7 @@ final class RecentFiles implements EventHandler<ActionEvent> {
     /**
      * Maximum number of items to show.
      */
-    private static final int MAX_COUNT = 10;
+    static final int MAX_COUNT = 10;
 
     /**
      * Menu items for each recently opened file.

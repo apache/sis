@@ -78,7 +78,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * Directory containing the generated class files.
      *
      * <p><b>Note:</b> at the time of writing, we found no well-established convention for generated resources.
-     * The conventions that we found were rather for generated sources. In the later case, the conventions use
+     * The conventions that we found were rather for generated sources. In the latter case, the conventions use
      * a different directory for each Maven plugin, e.g. <code>"generated-sources/xxx"</code>. But in our case
      * (for resources), such separation seems of limited use since the resources are copied verbatim in the JAR
      * file, so preventing clash in the <code>generated-resources</code> directory would not prevent clash in
@@ -235,7 +235,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     }
 
     /**
-     * Converts the given property files into Java source file, provided that the later exists.
+     * Converts the given property files into Java source file, provided that the latter exists.
      * The given array is overwritten in place.
      *
      * @param  resourcesToProcess  the filtered resource files, as returned by {@link #filterLanguages(File[])}.

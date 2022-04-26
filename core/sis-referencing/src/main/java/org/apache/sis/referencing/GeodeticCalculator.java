@@ -447,7 +447,7 @@ public class GeodeticCalculator {
      * the point specified in the last call to a {@link #setEndPoint(Position) setEndPoint(…)} method,
      * unless the {@linkplain #setStartingAzimuth(double) starting azimuth} and
      * {@linkplain #setGeodesicDistance(double) geodesic distance} have been set more recently.
-     * In the later case, the end point will be computed from the {@linkplain #getStartPoint() start point}
+     * In the latter case, the end point will be computed from the {@linkplain #getStartPoint() start point}
      * and the current azimuth and distance.
      *
      * @return the destination (end point) represented in the CRS specified at construction time.
@@ -514,7 +514,7 @@ public class GeodeticCalculator {
      * Azimuth is relative to geographic North with values increasing clockwise.
      * This method returns the azimuth normalized to [-180 … +180]° range given in last call to
      * {@link #setStartingAzimuth(double)} method, unless the {@link #setEndPoint(Position) setEndPoint(…)}
-     * method has been invoked more recently. In the later case, the azimuth will be computed from the
+     * method has been invoked more recently. In the latter case, the azimuth will be computed from the
      * {@linkplain #getStartPoint() start point} and the current end point.
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
@@ -588,7 +588,7 @@ public class GeodeticCalculator {
     /**
      * Returns or computes the shortest distance from start point to end point. This is sometime called "great circle"
      * or "orthodromic" distance. This method returns the value given in last call to {@link #setGeodesicDistance(double)},
-     * unless the {@link #setEndPoint(Position) setEndPoint(…)} method has been invoked more recently. In the later case,
+     * unless the {@link #setEndPoint(Position) setEndPoint(…)} method has been invoked more recently. In the latter case,
      * the distance will be computed from the {@linkplain #getStartPoint() start point} and current end point.
      *
      * @return the shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.

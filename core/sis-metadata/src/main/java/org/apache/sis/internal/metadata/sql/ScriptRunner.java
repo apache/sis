@@ -233,7 +233,7 @@ public class ScriptRunner implements AutoCloseable {
     /**
      * The regular expression to use for building {@link #statementsToSkip}.
      * At most one of {@code regexOfStmtToSkip} and {@code statementsToSkip} shall be non-null.
-     * Both fields may be null if there is no statement to skip.
+     * Both fields may be null if there are no statements to skip.
      */
     private StringBuilder regexOfStmtToSkip;
 

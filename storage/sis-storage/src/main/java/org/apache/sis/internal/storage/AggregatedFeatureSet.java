@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -28,6 +29,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.AbstractFeatureSet;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -124,7 +126,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
                 if (getEnvelopes(envelopes)) try {
                     envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
                 } catch (TransformException e) {
-                    warning(e);
+                    listeners.warning(e);
                 }
                 isEnvelopeComputed = true;
             }
@@ -141,13 +143,15 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * @throws DataStoreException if an error occurred while reading metadata from the data stores.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder metadata = new MetadataBuilder();
+        metadata.addDefaultMetadata(this, listeners);
         for (final FeatureSet fs : dependencies()) {
             final FeatureType type = fs.getType();
             metadata.addSource(fs.getMetadata(), ScopeCode.FEATURE_TYPE,
                     (type == null) ? null : new CharSequence[] {type.getName().toInternationalString()});
         }
+        return metadata.build();
     }
 
     /**

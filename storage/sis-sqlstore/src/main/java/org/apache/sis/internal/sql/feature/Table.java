@@ -26,11 +26,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
@@ -110,13 +110,13 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * The primary keys of other tables that are referenced by this table foreign key columns.
-     * They are 0:1 relations. May be empty if there is no imported keys but never null.
+     * They are 0:1 relations. May be empty if there are no imported keys but never null.
      */
     final Relation[] importedKeys;
 
     /**
      * The foreign keys of other tables that reference this table primary key columns.
-     * They are 0:N relations. May be empty if there is no exported keys but never null.
+     * They are 0:N relations. May be empty if there are no exported keys but never null.
      */
     final Relation[] exportedKeys;
 
@@ -194,7 +194,7 @@ final class Table extends AbstractFeatureSet {
      *       A starting point is {@link org.apache.sis.storage.FeatureQuery#expectedType(FeatureType)}.
      */
     Table(final Table parent) {
-        super(parent);
+        super(parent.listeners);
         database = parent.database;
         query    = parent.query;
         name     = parent.name;

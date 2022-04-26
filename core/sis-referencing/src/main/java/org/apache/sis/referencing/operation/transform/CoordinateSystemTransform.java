@@ -72,7 +72,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      *
      * This method is used for {@link org.opengis.referencing.operation.CoordinateOperation} WKT formatting.
      * Contrarily to {@link #method}, this {@code method3D} is never used for {@link MathTransform} WKT.
-     * Instead, the later case is represented by a concatenation of {@link #method} with a pass-through.
+     * Instead, the latter case is represented by a concatenation of {@link #method} with a pass-through.
      */
     private final transient OperationMethod method3D;
 

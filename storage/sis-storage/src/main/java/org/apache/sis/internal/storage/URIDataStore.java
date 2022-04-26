@@ -16,12 +16,17 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.net.URI;
 import java.util.Optional;
+import java.io.DataOutput;
+import java.io.OutputStream;
+import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
+import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -33,21 +38,21 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
-import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
 
 
 /**
  * A data store for a storage that may be represented by a {@link URI}.
- * It is still possible to create a data store with an {@link java.nio.channels.ReadableByteChannel},
+ * It is still possible to create a data store with a {@link java.nio.channels.ReadableByteChannel},
  * {@link java.io.InputStream} or {@link java.io.Reader}, in which case the {@linkplain #location} will be null.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -55,10 +60,32 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * The {@link DataStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
-    private final URI location;
+    protected final URI location;
 
     /**
-     * Creates a new data store.
+     * The {@link #location} as a path, computed when first needed.
+     * If the storage given at construction time was a {@link Path} or a {@link File} instance,
+     * then this field is initialized in the constructor in order to avoid a "path → URI → path" roundtrip
+     * (such roundtrip transforms relative paths into {@linkplain Path#toAbsolutePath() absolute paths}).
+     *
+     * @see #getSpecifiedPath()
+     * @see #getComponentFiles()
+     */
+    private volatile Path locationAsPath;
+
+    /**
+     * Whether {@link #locationAsPath} was initialized at construction time ({@code true})
+     * of inferred from the {@link #location} URI at a later time ({@code false}).
+     *
+     * @see #getSpecifiedPath()
+     */
+    private final boolean locationIsPath;
+
+    /**
+     * Creates a new data store. This constructor does not open the file,
+     * so subclass constructors can decide whether to open in read-only or read/write mode.
+     * It is caller's responsibility to ensure that the {@link java.nio.file.OpenOption}
+     * are compatible with whether this data store is read-only or read/write.
      *
      * @param  provider   the factory that created this {@code URIDataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
@@ -67,6 +94,13 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     protected URIDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         location = connector.getStorageAs(URI.class);
+        final Object storage = connector.getStorage();
+        if (storage instanceof Path) {
+            locationAsPath = (Path) storage;
+        } else if (storage instanceof File) {
+            locationAsPath = ((File) storage).toPath();
+        }
+        locationIsPath = (locationAsPath != null);
     }
 
     /**
@@ -80,24 +114,60 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Returns the {@linkplain #location} as a {@code Path} component or an empty array if none.
-     * The default implementation converts the URI to a {@link Path}. Note that if the original
-     * {@link StorageConnector} argument given by user at construction time already contained a
-     * {@link Path}, then the {@code Path} → {@code URI} → {@code Path} roundtrip is equivalent
-     * to returning the {@link Path#toAbsolutePath()} value of user argument.
+     * Returns an identifier for the root resource of this data store, or an empty value if none.
+     * The default implementation returns the filename without path and without file extension.
      *
-     * @return the URI as a path, or an empty array if the URI is null.
+     * @return an identifier for the root resource of this data store.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        final String filename = getFilename();
+        return (filename != null) ? Optional.of(Names.createLocalName(null, null, filename)) : super.getIdentifier();
+    }
+
+    /**
+     * Returns the filename without path and without file extension, or {@code null} if none.
+     */
+    private String getFilename() {
+        if (location == null) {
+            return null;
+        }
+        return IOUtilities.filenameWithoutExtension(location.isOpaque()
+                ? location.getSchemeSpecificPart() : location.getPath());
+    }
+
+    /**
+     * If the location was specified as a {@link Path} or {@link File} instance, returns that path.
+     * Otherwise returns {@code null}. This method does not try to convert URI to {@link Path}
+     * because this conversion may fail for HTTP and FTP connections.
+     *
+     * @return the path specified at construction time, or {@code null} if the storage was not specified as a path.
+     */
+    protected final Path getSpecifiedPath() {
+        return locationIsPath ? locationAsPath : null;
+    }
+
+    /**
+     * Returns the {@linkplain #location} as a {@code Path} component or an empty array if none.
+     * The default implementation returns the storage specified at construction time if it was
+     * a {@link Path} or {@link File}, or converts the URI to a {@link Path} otherwise.
+     *
+     * @return the URI as a path, or an empty array if unknown.
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
-        final Path path;
-        if (location == null) {
-            return new Path[0];
-        } else try {
-            path = Paths.get(location);
-        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-            throw new DataStoreException(e);
+        Path path = locationAsPath;
+        if (path == null) {
+            if (location == null) {
+                return new Path[0];
+            } else try {
+                path = Paths.get(location);
+            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+                throw new DataStoreException(e);
+            }
+            locationAsPath = path;
         }
         return new Path[] {path};
     }
@@ -136,7 +206,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.2
      * @since   0.8
      * @module
      */
@@ -195,11 +265,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         }
 
         /**
-         * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs
-         * to be created.  When invoked, the parameter group name is set to a name derived from the
-         * {@link #getShortName()} value. The default implementation creates a group containing only
-         * {@link #LOCATION_PARAM}. Subclasses can override if they need to create a group with more
-         * parameters.
+         * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
+         * When invoked, the parameter group name is set to a name derived from the {@link #getShortName()} value.
+         * The default implementation creates a group containing only {@link #LOCATION_PARAM}.
+         * Subclasses can override if they need to create a group with more parameters.
          *
          * @param  builder  the builder to use for creating parameter descriptor. The group name is already set.
          * @return the parameters descriptor created from the given builder.
@@ -249,6 +318,22 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
                         provider.getShortName(), LOCATION), cause);
         }
+
+        /**
+         * Returns {@code true} if the open options contains {@link StandardOpenOption#WRITE}
+         * or if the storage type is some kind of output stream.
+         *
+         * @param  connector  the connector to use for opening a file.
+         * @return whether the specified connector should open a writable data store.
+         * @throws DataStoreException if the storage object has already been used and can not be reused.
+         */
+        public static boolean isWritable(final StorageConnector connector) throws DataStoreException {
+            final Object storage = connector.getStorage();
+            if (storage instanceof OutputStream || storage instanceof DataOutput) {
+                return true;
+            }
+            return ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.WRITE);
+        }
     }
 
     /**
@@ -290,7 +375,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Adds the filename (without extension) as the citation title if there is no title, or as the identifier otherwise.
+     * Adds the filename (without extension) as the citation title if there are no titles, or as the identifier otherwise.
      * This method should be invoked last, after {@code DataStore} implementation did its best effort for adding a title.
      * The intent is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata, providing
      * only an identifier without title would be invalid.
@@ -298,25 +383,9 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @param  builder  where to add the title or identifier.
      */
     protected final void addTitleOrIdentifier(final MetadataBuilder builder) {
-        if (location != null) {
-            /*
-             * The getDisplayName() contract does not allow us to use it as an identifier. However current implementation
-             * in super.getDisplayName() returns the filename provided that the input was a URI, URL, File or Path. Since
-             * all those types are convertibles to URI, we can use (location != null) as a criterion.
-             */
-            builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(super.getDisplayName()), MetadataBuilder.Scope.ALL);
-        }
-    }
-
-    /**
-     * Registers only listeners for {@link WarningEvent}s on the assumption that most data stores
-     * (at least the read-only ones) produce no change events.
-     */
-    @Override
-    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
-        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
-        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(eventType, listener);
+        final String filename = getFilename();
+        if (filename != null) {
+            builder.addTitleOrIdentifier(filename, MetadataBuilder.Scope.ALL);
         }
     }
 }

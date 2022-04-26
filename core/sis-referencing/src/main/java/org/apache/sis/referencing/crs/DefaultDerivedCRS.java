@@ -303,10 +303,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                 case WKTKeywords.EngineeringCRS: {
                     /*
                      * This case may happen for baseCRS of kind GeodeticCRS, ProjectedCRS or EngineeringCRS.
-                     * But only the later is associated to EngineeringDatum; the two formers are associated
+                     * But only the latter is associated to EngineeringDatum; the two formers are associated
                      * to GeodeticDatum. Consequently we can implement the EngineeringCRS.getDatum() method
                      * only if the base CRS is itself of kind EngineeringCRS.  Otherwise we will return the
-                     * "type-neutral" DefaultDerivedCRS implementation.   Note that even in the later case,
+                     * "type-neutral" DefaultDerivedCRS implementation.  Note that even in the latter case,
                      * the WKT format will still be able to detect that the WKT keyword is "EngineeringCRS".
                      */
                     if (baseCRS instanceof EngineeringCRS) {
@@ -861,7 +861,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * An derived engineering CRS. ISO 19162 restricts the base CRS to {@code EngineeringCRS}, {@code ProjectedCRS}
-     * or {@code GeodeticCRS}. Note that in the later case, an ambiguity may exist with the
+     * or {@code GeodeticCRS}. Note that in the latter case, an ambiguity may exist with the
      * {@link org.apache.sis.referencing.crs.DefaultDerivedCRS.Geodetic} when deciding which {@code DerivedCRS} to
      * create.
      */

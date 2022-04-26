@@ -369,7 +369,7 @@ public class MetadataStandard implements Serializable {
         }
         /*
          * Found the interface for which to create an accessor. Creates the accessor now, unless an accessor
-         * has been created concurrently in another thread in which case the later will be returned.
+         * has been created concurrently in another thread in which case the latter will be returned.
          */
         return (PropertyAccessor) accessors.compute(key, (k, v) -> {
             if (v instanceof PropertyAccessor) {
@@ -970,7 +970,7 @@ public class MetadataStandard implements Serializable {
      * to this {@code standard.equals(…)} method for children metadata. However the comparison will
      * do <em>implicit</em> recursive calls if the {@code properties.equals(…)} implementations
      * delegate their work to this {@code standard.equals(…)} method, as {@link AbstractMetadata} does.
-     * In the later case, the final result is a deep comparison.
+     * In the latter case, the final result is a deep comparison.
      *
      * @param  metadata1  the first metadata object to compare.
      * @param  metadata2  the second metadata object to compare.

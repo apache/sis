@@ -134,7 +134,7 @@ public final class Context extends MarshalContext {
 
     /**
      * The timezone, or {@code null} if unspecified.
-     * In the later case, an implementation-default (typically UTC) timezone is used.
+     * In the latter case, an implementation-default (typically UTC) timezone is used.
      */
     private final TimeZone timezone;
 
@@ -582,7 +582,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Sends a warning to the warning listener if there is one, or logs the warning otherwise.
-     * In the later case, this method logs to the given logger.
+     * In the latter case, this method logs to the given logger.
      *
      * <p>If the given {@code resources} is {@code null}, then this method will build the log
      * message from the {@code exception}.</p>

@@ -59,7 +59,7 @@ import org.apache.sis.util.Debug;
  */
 final class Relation extends TableReference {
     /**
-     * An empty array used when there is no relations.
+     * An empty array used when there are no relations.
      */
     static final Relation[] EMPTY = new Relation[0];
 

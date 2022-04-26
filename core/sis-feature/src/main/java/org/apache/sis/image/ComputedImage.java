@@ -105,7 +105,7 @@ import org.apache.sis.internal.feature.Resources;
  * between {@link #getTile(int, int) getTile(…)} method and {@link WritableRenderedImage#getWritableTile(int, int)
  * WritableRenderedImage​.getWritableTile}/{@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods.
  * For example if a call to {@code getTile(tileX, tileY)} is followed by a call to {@code getWritableTile(tileX, tileY)}
- * in another thread, there is no guarantees about whether or not the sample values seen in the {@link Raster} would be
+ * in another thread, there is no guarantee about whether or not the sample values seen in the {@link Raster} would be
  * isolated from the write operations done concurrently in the {@link WritableRaster}.
  * A future SIS version may define a policy (possibly based on {@link java.util.concurrent.locks.ReadWriteLock}).</p>
  *
@@ -443,7 +443,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      *
      * <h4>Race conditions with write operations</h4>
      * If this image implements the {@link WritableRenderedImage} interface, then a user may acquire the same
-     * tile for a write operation after this method returned. In such case there is no consistency guarantees
+     * tile for a write operation after this method returned. In such case there is no consistency guarantee
      * on sample values: the tile returned by this method may show data in an unspecified stage during the
      * write operation. A synchronization policy <a href="https://issues.apache.org/jira/browse/SIS-487">may
      * be defined in a future Apache SIS version</a>.

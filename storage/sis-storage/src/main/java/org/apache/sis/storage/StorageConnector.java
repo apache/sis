@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.io.Reader;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
@@ -31,9 +33,11 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.NoSuchFileException;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.ImageIO;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -53,7 +57,9 @@ import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataOutput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.ChannelImageOutputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
@@ -179,17 +185,20 @@ public class StorageConnector implements Serializable {
      * of those types. This map shall contain every types documented in {@link #getStorageAs(Class)} javadoc.
      * {@code null} values means to use {@link ObjectConverters} for that particular type.
      */
-    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(13);
+    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(16);
     static {
-        add(String.class,           StorageConnector::createString);
-        add(ByteBuffer.class,       StorageConnector::createByteBuffer);
-        add(DataInput.class,        StorageConnector::createDataInput);
-        add(ImageInputStream.class, StorageConnector::createImageInputStream);
-        add(InputStream.class,      StorageConnector::createInputStream);
-        add(Reader.class,           StorageConnector::createReader);
-        add(Connection.class,       StorageConnector::createConnection);
-        add(ChannelDataInput.class, (s) -> s.createChannelDataInput(false));    // Undocumented case (SIS internal)
-        add(ChannelFactory.class,   (s) -> null);                               // Undocumented. Shall not cache.
+        add(String.class,            StorageConnector::createString);
+        add(ByteBuffer.class,        StorageConnector::createByteBuffer);
+        add(DataInput.class,         StorageConnector::createDataInput);
+        add(DataOutput.class,        StorageConnector::createDataOutput);
+        add(ImageInputStream.class,  StorageConnector::createImageInputStream);
+        add(InputStream.class,       StorageConnector::createInputStream);
+        add(OutputStream.class,      StorageConnector::createOutputStream);
+        add(Reader.class,            StorageConnector::createReader);
+        add(Connection.class,        StorageConnector::createConnection);
+        add(ChannelDataInput.class,  (s) -> s.createChannelDataInput(false));     // Undocumented case (SIS internal)
+        add(ChannelDataOutput.class, StorageConnector::createChannelDataOutput);  // Undocumented case (SIS internal)
+        add(ChannelFactory.class,    (s) -> null);                                // Undocumented. Shall not cache.
         /*
          * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
          * Caller should have asked for another type (e.g. InputStream) before to ask for that type.
@@ -931,6 +940,8 @@ public class StorageConnector implements Serializable {
      *
      * @param  asImageInputStream  whether the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
      * @throws IOException if an error occurred while opening a channel for the input.
+     *
+     * @see #createChannelDataOutput()
      */
     private ChannelDataInput createChannelDataInput(final boolean asImageInputStream) throws IOException, DataStoreException {
         /*
@@ -943,7 +954,7 @@ public class StorageConnector implements Serializable {
             ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
         }
         /*
-         * Following method call recognizes ReadableByteChannel, InputStream (with special case for FileInputStream),
+         * Following method call recognizes ReadableByteChannel, InputStream (with optimization for FileInputStream),
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          * If the given storage is already a ReadableByteChannel, then the factory will return it as-is.
          */
@@ -961,16 +972,7 @@ public class StorageConnector implements Serializable {
         final String name = getStorageName();
         final ReadableByteChannel channel = factory.readable(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
-        ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
-        if (buffer == null) {
-            /*
-             * If the user did not specified a buffer, creates one now. We use a direct buffer for better
-             * leveraging of `ChannelDataInput`, which tries hard to transfer data in the most direct way
-             * between buffers and arrays. By contrast creating a heap buffer would have implied the use
-             * of a temporary direct buffer cached by the JDK itself (in JDK internal implementation).
-             */
-            buffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
-        }
+        final ByteBuffer buffer = getChannelBuffer(factory);
         final ChannelDataInput asDataInput;
         if (asImageInputStream) {
             asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
@@ -998,6 +1000,8 @@ public class StorageConnector implements Serializable {
      * {@code StorageConnector} instance.</p>
      *
      * @throws IOException if an error occurred while opening a stream for the input.
+     *
+     * @see #createDataOutput()
      */
     private DataInput createDataInput() throws IOException, DataStoreException {
         /*
@@ -1038,6 +1042,28 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns or allocate a buffer for use with the {@link ChannelDataInput} or {@link ChannelDataOutput}.
+     * If the user did not specified a buffer, this method may allocate a direct buffer for better
+     * leveraging of {@link ChannelDataInput}, which tries hard to transfer data in the most direct
+     * way between buffers and arrays. By contrast creating a heap buffer may imply the use of a
+     * temporary direct buffer cached by the JDK itself (in JDK internal implementation).
+     *
+     * @param  factory  the factory which will be used for creating the readable or writable channel.
+     * @return the byte buffer to use with {@link ChannelDataInput} or {@link ChannelDataOutput}.
+     */
+    private ByteBuffer getChannelBuffer(final ChannelFactory factory) {
+        ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);               // User-supplied buffer.
+        if (buffer == null) {
+            if (factory.suggestDirectBuffer) {
+                buffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
+            } else {
+                buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+            }
+        }
+        return buffer;
+    }
+
+    /**
      * Creates a {@link ByteBuffer} from the {@link ChannelDataInput} if possible, or from the
      * {@link ImageInputStream} otherwise. The buffer will be initialized with an arbitrary amount
      * of bytes read from the input. If this amount is not sufficient, it can be increased by a call
@@ -1063,8 +1089,8 @@ public class StorageConnector implements Serializable {
             /*
              * If no ChannelDataInput has been created by the above code, get the input as an ImageInputStream and
              * read an arbitrary amount of bytes. Read only a small amount of bytes because, at the contrary of the
-             * buffer created in createChannelDataInput(boolean), the buffer created here is unlikely to be used for
-             * the reading process after the recognition of the file format.
+             * buffer created in `createChannelDataInput(boolean)`, the buffer created here is unlikely to be used
+             * for the reading process after the recognition of the file format.
              */
             final ImageInputStream in = getStorageAs(ImageInputStream.class);
             if (in != null) {
@@ -1153,17 +1179,25 @@ public class StorageConnector implements Serializable {
             views.put(ImageInputStream.class, views.get(source));               // Share the same Coupled instance.
             return (ImageInputStream) input;
         } else {
+            /*
+             * We do not invoke `ImageIO.createImageInputStream(Object)` because we do not know
+             * how the stream will use the `storage` object. It may read in advance some bytes,
+             * which can invalidate the storage for use outside the `ImageInputStream`. Instead
+             * creating image input/output streams is left to caller's responsibility.
+             */
             addView(ImageInputStream.class, null);                              // Remember that there is no view.
             return null;
         }
     }
 
     /**
-     * Creates an input stream from {@link ReadableByteChannel} if possible, or from {@link ImageInputStream}
-     * otherwise.
+     * Creates an input stream from {@link ReadableByteChannel} if possible,
+     * or from {@link ImageInputStream} otherwise.
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @see #createOutputStream()
      */
     private InputStream createInputStream() throws IOException, DataStoreException {
         final Class<DataInput> source = DataInput.class;
@@ -1241,9 +1275,108 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Creates a view for the storage as a {@link ChannelDataOutput} if possible.
+     * This code is a partial copy of {@link #createDataInput()} adapted for output.
+     *
+     * @throws IOException if an error occurred while opening a channel for the output.
+     *
+     * @see #createChannelDataInput(boolean)
+     */
+    private ChannelDataOutput createChannelDataOutput() throws IOException, DataStoreException {
+        /*
+         * We need to reset because the output that we will build may be derived
+         * from the `ChannelDataInput`, which may have read some bytes.
+         */
+        reset();
+        /*
+         * Following method call recognizes WritableByteChannel, OutputStream (with optimization for FileOutputStream),
+         * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
+         * If the given storage is already a WritableByteChannel, then the factory will return it as-is.
+         */
+        final ChannelFactory factory = ChannelFactory.prepare(storage, true,
+                getOption(OptionKey.URL_ENCODING),
+                getOption(OptionKey.OPEN_OPTIONS),
+                getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER));
+        if (factory == null) {
+            return null;
+        }
+        /*
+         * ChannelDataOutput depends on WritableByteChannel, which itself depends on storage
+         * (potentially an OutputStream). We need to remember this chain in `Coupled` objects.
+         */
+        final String name = getStorageName();
+        final WritableByteChannel channel = factory.writable(name, null);
+        addView(WritableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
+        final ByteBuffer buffer = getChannelBuffer(factory);
+        final ChannelDataOutput asDataOutput = new ChannelDataOutput(name, channel, buffer);
+        addView(ChannelDataOutput.class, asDataOutput, WritableByteChannel.class, CASCADE_ON_RESET);
+        /*
+         * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
+         * to re-open the same channel or output stream another time, typically for re-writing the same data.
+         */
+        if (factory.canOpen()) {
+            addView(ChannelFactory.class, factory);
+        }
+        return asDataOutput;
+    }
+
+    /**
+     * Creates a view for the output as a {@link DataOutput} if possible.
+     * This code is a copy of {@link #createDataInput()} adapted for output.
+     *
+     * @throws IOException if an error occurred while opening a stream for the output.
+     *
+     * @see #createDataInput()
+     */
+    private DataOutput createDataOutput() throws IOException, DataStoreException {
+        Coupled c = getView(ChannelDataOutput.class);
+        final ChannelDataOutput out;
+        if (reset(c)) {
+            out = (ChannelDataOutput) c.view;
+        } else {
+            out = createChannelDataOutput();                        // May be null.
+        }
+        final DataOutput asDataOutput;
+        if (out != null) {
+            c = getView(ChannelDataOutput.class);                   // May have been added by createChannelDataOutput(…).
+            if (out instanceof DataOutput) {
+                asDataOutput = (DataOutput) out;
+            } else {
+                asDataOutput = new ChannelImageOutputStream(out);   // Upgrade existing instance.
+                c.view = asDataOutput;
+            }
+            views.put(DataOutput.class, c);                         // Share the same Coupled instance.
+        } else {
+            reset();
+            asDataOutput = ImageIO.createImageOutputStream(storage);
+            addView(DataOutput.class, asDataOutput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
+        }
+        return asDataOutput;
+    }
+
+    /**
+     * Creates an output stream from {@link WritableByteChannel} if possible,
+     * or from {@link ImageOutputStream} otherwise.
+     * This code is a partial copy of {@link #createInputStream()} adapted for output.
+     *
+     * @see #createInputStream()
+     */
+    private OutputStream createOutputStream() throws IOException, DataStoreException {
+        final Class<DataOutput> target = DataOutput.class;
+        final DataOutput output = getStorageAs(target);
+        if (output instanceof OutputStream) {
+            views.put(OutputStream.class, views.get(target));                   // Share the same Coupled instance.
+            return (OutputStream) output;
+        } else {
+            addView(OutputStream.class, null);                                  // Remember that there is no view.
+            return null;
+        }
+    }
+
+    /**
      * Adds the given view in the cache together with information about its dependency.
      * For example {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
-     * from the later may change position of the former, and closing the later also close the former.
+     * from the latter may change position of the former, and closing the latter also close the former.
      *
      * @param  <S>      the compile-time type of the {@code type} argument.
      * @param  type     the view type.
@@ -1293,7 +1426,7 @@ public class StorageConnector implements Serializable {
     /**
      * Returns the storage as a view of the given type and closes all other views.
      * Invoking this method is equivalent to invoking {@link #getStorageAs(Class)}
-     * followed by {@link #closeAllExcept(Object)} except that the later method is
+     * followed by {@link #closeAllExcept(Object)} except that the latter method is
      * always invoked (in a way similar to "try with resource") and that this method
      * never returns {@code null}.
      *

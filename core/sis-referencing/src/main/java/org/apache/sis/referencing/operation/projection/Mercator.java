@@ -232,7 +232,7 @@ public class Mercator extends ConformalProjection {
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
          * are mutually exclusive. The former is for projections of category "2SP" (namely variant B and C) while
-         * the later is for projections "1SP" (namely variant A and spherical). However we let users specify both
+         * the latter is for projections "1SP" (namely variant A and spherical). However we let users specify both
          * if they really want, since we sometime see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
@@ -313,7 +313,7 @@ public class Mercator extends ConformalProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.

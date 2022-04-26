@@ -77,6 +77,7 @@ import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
+import org.apache.sis.internal.gui.MouseDrags;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.portrayal.PlanarCanvas;
@@ -269,7 +270,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     private double xPanStart, yPanStart;
 
     /**
-     * {@code true} if a drag even is in progress.
+     * {@code true} if a drag event is in progress.
      *
      * @see #onDrag(MouseEvent)
      */
@@ -345,11 +346,9 @@ public abstract class MapCanvas extends PlanarCanvas {
         view.setOnZoom  ((e) -> applyZoomOrRotate(e, e.getZoomFactor(), 0));
         view.setOnRotate((e) -> applyZoomOrRotate(e, 1, e.getAngle()));
         view.setOnScroll(this::onScroll);
-        view.setOnMousePressed(this::onDrag);
-        view.setOnMouseDragged(this::onDrag);
-        view.setOnMouseReleased(this::onDrag);
         view.setFocusTraversable(true);
         view.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyTyped);
+        MouseDrags.setHandlers(view, this::onDrag);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
          * and once with the actual size of the parent window. Actually the `repaint()` method appears to be

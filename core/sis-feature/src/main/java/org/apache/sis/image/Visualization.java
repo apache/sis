@@ -76,7 +76,7 @@ final class Visualization extends ResampledImage {
      * </ul>
      *
      * The resulting image is suitable for visualization purposes but should not be used for computation purposes.
-     * There is no guarantees about the number of bands in returned image and the formulas used for converting
+     * There is no guarantee about the number of bands in returned image and the formulas used for converting
      * floating point values to integer values.
      *
      * <h2>Resampling</h2>
@@ -181,7 +181,7 @@ final class Visualization extends ResampledImage {
          * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
          *
          * <p>The resulting image is suitable for visualization but should not be used for computational purposes.
-         * There is no guarantees about the number of bands in returned image and the formulas used for converting
+         * There is no guarantee about the number of bands in returned image and the formulas used for converting
          * floating point values to integer values.</p>
          *
          * <h4>Resampling</h4>
@@ -219,10 +219,10 @@ final class Visualization extends ResampledImage {
                  * in various ways: sample dimensions, scaled color model, statistics in last resort.
                  */
                 colorizer = new Colorizer(categoryColors);
-                initialized = (sourceBands != null) && colorizer.initialize(sourceBands.get(visibleBand));
+                initialized = (sourceBands != null) && colorizer.initialize(source.getSampleModel(), sourceBands.get(visibleBand));
                 if (initialized) {
                     /*
-                     * If we have been able to configure Colorizer using the SampleModel, apply an adjustment based
+                     * If we have been able to configure Colorizer using SampleDimension, apply an adjustment based
                      * on the ScaledColorModel if it exists.  Use case: an image is created with an IndexColorModel
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`
                      * above. We want to preserve that contrast enhancement.
@@ -234,8 +234,16 @@ final class Visualization extends ResampledImage {
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.
                      */
-                    initialized = colorizer.initialize(source.getColorModel()) ||
-                                  colorizer.initialize(source.getSampleModel(), visibleBand);
+                    initialized = colorizer.initialize(source.getColorModel());
+                    if (!initialized) {
+                        if (source instanceof RecoloredImage) {
+                            final RecoloredImage colored = (RecoloredImage) source;
+                            colorizer.initialize(colored.minimum, colored.maximum);
+                            initialized = true;
+                        } else {
+                            initialized = colorizer.initialize(source.getSampleModel(), visibleBand);
+                        }
+                    }
                 }
             }
             source = BandSelectImage.create(source, new int[] {visibleBand});               // Make single-banded.

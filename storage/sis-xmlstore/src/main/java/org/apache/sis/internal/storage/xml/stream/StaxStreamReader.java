@@ -158,8 +158,8 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     }
 
     /**
-     * Performs the given action on the next feature instance, or returns {@code null} if there is no more
-     * feature to parse.
+     * Performs the given action on the next feature instance, or returns {@code null} if there are no more
+     * features to parse.
      *
      * @param  action  the action to perform on the next feature instances.
      * @return {@code true} if a feature has been found, or {@code false} if we reached the end of XML file.

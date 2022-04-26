@@ -564,7 +564,7 @@ public class CoverageExplorer extends Widget {
      *
      * <p>Note that view data may have been changed either by user changing directly a {@link GridView}
      * or {@link CoverageCanvas} property, or indirectly by user changing {@link #resourceProperty} or
-     * {@link #coverageProperty}. In the later case, the {@code resource} and {@code coverage} arguments
+     * {@link #coverageProperty}. In the latter case, the {@code resource} and {@code coverage} arguments
      * given to this method may be the value that the properties already have.</p>
      *
      * @param  resource  the new source of coverage, or {@code null} if none.

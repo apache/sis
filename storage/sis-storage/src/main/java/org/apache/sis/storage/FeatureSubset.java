@@ -19,7 +19,6 @@ package org.apache.sis.storage;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.internal.feature.FeatureUtilities;
-import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 
@@ -39,7 +38,7 @@ import org.opengis.filter.SortBy;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -80,7 +79,7 @@ final class FeatureSubset extends AbstractFeatureSet {
             try {
                 resultType = query.expectedType(type);
             } catch (IllegalArgumentException e) {
-                throw new DataStoreContentException(Resources.forLocale(getLocale())
+                throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
                         .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);
             }
         }

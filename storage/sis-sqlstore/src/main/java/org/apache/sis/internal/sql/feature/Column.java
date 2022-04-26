@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLDataException;
+import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
@@ -45,7 +47,7 @@ import org.apache.sis.util.Localized;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see ResultSet#getMetaData()
  * @see DatabaseMetaData#getColumns(String, String, String, String)
@@ -81,8 +83,9 @@ public final class Column {
     public final int type;
 
     /**
-     * A name for the value type, free-text from the database engine. For more information about this, please see
+     * A name for the value type, free-text from the database engine. For more information about this, see
      * {@link DatabaseMetaData#getColumns(String, String, String, String)} and {@link Reflection#TYPE_NAME}.
+     * This value shall not be null.
      *
      * @see Reflection#TYPE_NAME
      */
@@ -125,6 +128,21 @@ public final class Column {
      * but may also perform some conversions such as parsing geometry Well-Known Binary (WKB).
      */
     ValueGetter<?> valueGetter;
+
+    /**
+     * Creates a synthetic column (a column not inferred from database analysis)
+     * for describing the type of elements in an array.
+     *
+     * @param  type      SQL type of the column.
+     * @param  typeName  SQL name of the type.
+     */
+    Column(final int type, final String typeName) {
+        this.name = label = propertyName = "element";
+        this.type       = type;
+        this.typeName   = typeName;
+        this.precision  = 0;
+        this.isNullable = false;
+    }
 
     /**
      * Creates a new column from database metadata.
@@ -171,9 +189,16 @@ public final class Column {
      * PostgreSQL JDBC drivers sometime gives the fully qualified type name.
      * For example we sometime get {@code "public"."geometry"} (including the quotes)
      * instead of a plain {@code geometry}. If this is the case, keep only the local part.
+     *
+     * @param  type   value found in the {@value Reflection.TYPE_NAME} column.
+     * @param  quote  value of {@code DatabaseMetaData.getIdentifierQuoteString()}.
+     * @return local part of the type name.
      */
-    private static String localPart(String type, final String quote) {
-        if (type != null && quote != null) {
+    private static String localPart(String type, final String quote) throws SQLDataException {
+        if (type == null) {
+            throw new SQLDataException(Errors.format(Errors.Keys.MissingValueInColumn_1, Reflection.TYPE_NAME));
+        }
+        if (quote != null) {
             int end = type.lastIndexOf(quote);
             if (end >= 0) {
                 int start = type.lastIndexOf(quote, end - 1);
@@ -214,24 +239,24 @@ public final class Column {
 
     /**
      * If this column is a geometry column, returns the type of the geometry objects.
-     * Otherwise returns {@code null} (including the case where this is a raster column).
+     * Otherwise returns empty (including the case where this is a raster column).
      * Note that if this column is a geometry column but the geometry type was not defined,
      * then {@link GeometryType#GEOMETRY} is returned as a fallback.
      *
-     * @return type of geometry objects, or {@code null} if this column is not a geometry column.
+     * @return type of geometry objects, or empty if this column is not a geometry column.
      */
-    public final GeometryType getGeometryType() {
-        return geometryType;
+    public final Optional<GeometryType> getGeometryType() {
+        return Optional.ofNullable(geometryType);
     }
 
     /**
      * If this column is a geometry or raster column, returns the default coordinate reference system.
-     * Otherwise returns {@code null}. The CRS may also be null even for a geometry column if it is unspecified.
+     * Otherwise returns empty. The CRS may also be empty even for a geometry column if it is unspecified.
      *
-     * @return CRS of geometries or rasters in this column, or {@code null} if unknown or not applicable.
+     * @return CRS of geometries or rasters in this column, or empty if unknown or not applicable.
      */
-    public final CoordinateReferenceSystem getDefaultCRS() {
-        return defaultCRS;
+    public final Optional<CoordinateReferenceSystem> getDefaultCRS() {
+        return Optional.ofNullable(defaultCRS);
     }
 
     /**
@@ -242,15 +267,29 @@ public final class Column {
      * @return builder for the added feature attribute.
      */
     final AttributeTypeBuilder<?> createAttribute(final FeatureTypeBuilder feature) {
-        final Class<?> type = valueGetter.valueType;
-        final AttributeTypeBuilder<?> attribute = feature.addAttribute(type).setName(propertyName);
-        if (precision > 0 && CharSequence.class.isAssignableFrom(type)) {
+        Class<?> valueType = valueGetter.valueType;
+        final boolean isArray = (valueGetter instanceof ValueGetter.AsArray);
+        if (isArray) {
+            valueType = ((ValueGetter.AsArray) valueGetter).cmget.valueType;
+        }
+        final AttributeTypeBuilder<?> attribute = feature.addAttribute(valueType).setName(propertyName);
+        if (precision > 0 && precision != Integer.MAX_VALUE && CharSequence.class.isAssignableFrom(valueType)) {
             attribute.setMaximalLength(precision);
         }
-        if (isNullable) {
+        if (isArray) {
+            /*
+             * We have no standard API yet for determining the minimal and maximal array length.
+             * The PostgreSQL driver seems to use the `precision` field, but it may be specific
+             * to that driver and seems to be always `MAX_VALUE` anyway.
+             */
+            attribute.setMinimumOccurs(0);
+            attribute.setMaximumOccurs(Integer.MAX_VALUE);
+        } else if (isNullable) {
             attribute.setMinimumOccurs(0);
         }
-        attribute.setCRS(defaultCRS);
+        if (geometryType != null || defaultCRS != null) {
+            attribute.setCRS(defaultCRS);
+        }
         return attribute;
     }
 

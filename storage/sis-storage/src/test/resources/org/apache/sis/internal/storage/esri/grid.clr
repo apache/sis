@@ -1,0 +1,14 @@
+Color map for `grid.asc` file. This auxiliary file is
+actually is actually for BIP/BIL/BSQ raster formats,
+but Apache SIS applies it to ASCII Grid file as well.
+
+-10   0   0 255   (blue)
+  0   0 255 255   (cyan)
+ 10   0 255   0   (green)
+ 20 255 255   0   (yellow)
+ 30 255 165   0   (orange)
+ 40 160  32 240   (purple)
+
+Note: in current Apache SIS implementation this file is ignored
+because ASCII grid data are floating points and color maps are
+restricted to integer types.

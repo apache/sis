@@ -24,8 +24,8 @@ import org.apache.sis.storage.Resource;
 /**
  * A resource which is loaded from one or many files on an arbitrary file system. This interface
  * allows a resource (typically a {@linkplain org.apache.sis.storage.DataStore data store}) to
- * list the files that it uses. This is for informative purpose only and should not be used for
- * copying or deleting resources.
+ * list the files that it uses. It may be used for copying or deleting resources if the caller
+ * is certain that those files are not in use.
  *
  * <h2>Alternatives</h2>
  * <p>For copying data from one location to another, consider using
@@ -61,6 +61,8 @@ public interface ResourceOnFileSystem extends Resource {
      * </div>
      *
      * This method should return paths to files only. It should not return paths to directories.
+     * The caller should verify that all paths are regular files;
+     * non-existent paths should be omitted.
      *
      * @return files used by this resource. Should never be {@code null}.
      * @throws DataStoreException if an error on the file system prevent the creation of the list.

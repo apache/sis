@@ -152,6 +152,9 @@ public class LandsatStore extends DataStore implements Aggregate {
             throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        if (getClass() == LandsatStore.class) {
+            listeners.useWarningEventsOnly();
+        }
     }
 
     /**

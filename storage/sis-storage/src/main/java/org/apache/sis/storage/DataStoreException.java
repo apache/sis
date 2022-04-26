@@ -33,7 +33,7 @@ import org.apache.sis.util.Workaround;
  * the message in the JVM {@linkplain Locale#getDefault() default locale} while {@link #getLocalizedMessage()}
  * returns the message in the locale specified by the last call to {@link DataStore#setLocale(Locale)}.
  * In a client-server architecture, the former is typically the locale of the system administrator
- * while the later is presumably the locale of the client connected to the server.
+ * while the latter is presumably the locale of the client connected to the server.
  * However this policy is applied on a <em>best-effort</em> basis only.
  *
  * @author  Johann Sorel (Geomatys)
@@ -166,7 +166,7 @@ public class DataStoreException extends Exception implements LocalizedException 
      * while {@code getLocalizedMessage()} returns the message in a locale that depends on the context in which
      * the exception has been thrown.
      *
-     * In a client-server architecture, the former is often the locale on the <em>server</em> side while the later
+     * In a client-server architecture, the former is often the locale on the <em>server</em> side while the latter
      * is the locale on the <em>client</em> side if that information has been provided to the {@link DataStore}.
      *
      * @return the localized message of this exception.

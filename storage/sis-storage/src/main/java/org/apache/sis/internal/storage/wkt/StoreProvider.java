@@ -45,12 +45,7 @@ public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format name.
      */
-    static final String NAME = "WKT";
-
-    /**
-     * The {@value} MIME type.
-     */
-    public static final String MIME_TYPE = "application/wkt";
+    public static final String NAME = "WKT";
 
     /**
      * The object to use for verifying if the first keyword is a WKT one.
@@ -139,7 +134,7 @@ public final class StoreProvider extends URIDataStore.Provider {
                     }
                 }
                 if (keywords.contains(String.valueOf(keyword, 0, length))) {
-                    return new ProbeResult(true, MIME_TYPE, Version.valueOf(version));
+                    return new ProbeResult(true, null, Version.valueOf(version));
                 }
             }
             return ProbeResult.UNSUPPORTED_STORAGE;
@@ -163,13 +158,14 @@ public final class StoreProvider extends URIDataStore.Provider {
     }
 
     /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by WKT {@link Store}.
-     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
-     * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
-     * header.
+     * Returns WKT version if the given storage appears to be supported by WKT {@link Store}.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
+     * or writing will succeed, only that there appears to be a reasonable chance of success
+     * based on a brief inspection of the file header.
      *
-     * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable as a WKT file.
-     * @throws DataStoreException if an I/O or SQL error occurred.
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the WKT version
+     *         if the given storage seems to be readable as a WKT string.
+     * @throws DataStoreException if an I/O error occurred.
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {

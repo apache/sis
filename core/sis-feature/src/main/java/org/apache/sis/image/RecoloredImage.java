@@ -29,6 +29,7 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -56,31 +57,88 @@ final class RecoloredImage extends ImageAdapter {
     private final ColorModel colors;
 
     /**
-     * Creates a new recolored image with the given colors.
+     * The minimum and maximum values used for computing the color model.
+     * This is used for preserving color ramp stretching when a new color ramp is applied.
+     *
+     * <p>Current implementation can only describes a uniform stretching between a minimum and maximum value.
+     * Future version may allow more sophisticated ways to redistribute the colors. The possibilities are
+     * determined by {@link #stretchColorRamp(ImageProcessor, RenderedImage, Map)} implementation.</p>
      */
-    private RecoloredImage(final RenderedImage source, final ColorModel colors) {
+    final double minimum, maximum;
+
+    /**
+     * Creates a new recolored image with the given colors.
+     *
+     * @param  source   the image to wrap.
+     * @param  colors   the new color model.
+     * @param  minimum  the minimal sample value used for computing the color model.
+     * @param  maximum  the maximal sample value used for computing the color model.
+     */
+    private RecoloredImage(final RenderedImage source, final ColorModel colors, final double minimum, final double maximum) {
         super(source);
-        this.colors = colors;
+        this.colors  = colors;
+        this.minimum = minimum;
+        this.maximum = maximum;
     }
 
     /**
-     * Returns a recolored image with the given colors. This method may return
-     * an existing ancestor if one is found with the specified color model.
+     * Returns a recolored image with the same colors than the given image.
+     * This method may return an existing ancestor if one is found with the desired color model.
+     *
+     * @param  source   the image to wrap.
+     * @param  colored  the image from which to preserve the color model.
      */
-    static RenderedImage create(RenderedImage source, final ColorModel colors) {
+    static RenderedImage applySameColors(RenderedImage source, RenderedImage colored) {
+        final ColorModel colors = colored.getColorModel();
         if (colors == null) {
             return source;
         }
+        /*
+         * Find the image which contains the minimum and maximum values that we want to keep.
+         * We can skip `ImageAdapter` because those images may modify properties but not sample values.
+         */
+        RecoloredImage expected = null;
+        while (colored instanceof ImageAdapter) {
+            if (colored instanceof RecoloredImage) {
+                expected = (RecoloredImage) colored;
+                break;
+            }
+            colored = ((ImageAdapter) colored).source;
+        }
+        /*
+         * Verify if the given image, or one of its sources, has the expected color model.
+         * We explore only the sources that are themselves `RecoloredImage` instances,
+         * because other kind of images are result of operations that we want to keep.
+         */
         for (;;) {
             if (colors.equals(source.getColorModel())) {
+                if (expected != null && source instanceof RecoloredImage) {
+                    final RecoloredImage actual = (RecoloredImage) source;
+                    if (!(Numerics.equals(expected.minimum, actual.minimum) &&
+                          Numerics.equals(expected.maximum, actual.maximum)))
+                    {
+                        continue;
+                    }
+                }
                 return source;
-            } else if (source instanceof RecoloredImage) {
+            }
+            if (source instanceof RecoloredImage) {
                 source = ((RecoloredImage) source).source;
             } else {
                 break;
             }
         }
-        return ImageProcessor.unique(new RecoloredImage(source, colors));
+        /*
+         * At this point we found no existing image with the desired color model,
+         * or the minimum/maximum information would be lost. Create a new image.
+         */
+        final RecoloredImage image;
+        if (expected != null) {
+            image = new RecoloredImage(source, colors, expected.minimum, expected.maximum);
+        } else {
+            image = new RecoloredImage(source, colors, Double.NaN, Double.NaN);
+        }
+        return ImageProcessor.unique(image);
     }
 
     /**
@@ -100,7 +158,7 @@ final class RecoloredImage extends ImageAdapter {
      *
      * @see ImageProcessor#stretchColorRamp(RenderedImage, Map)
      */
-    static RenderedImage stretchColorRamp(final ImageProcessor processor, final RenderedImage source,
+    static RenderedImage stretchColorRamp(final ImageProcessor processor, RenderedImage source,
                                           final Map<String,?> modifiers)
     {
         /*
@@ -215,7 +273,7 @@ final class RecoloredImage extends ImageAdapter {
         final ColorModel cm;
         if (source.getColorModel() instanceof IndexColorModel) {
             /*
-             * Get the range of indices of RGB values than can be used for interpolations.
+             * Get the range of indices of RGB values that can be used for interpolations.
              * We want to exclude qualitative categories (no data, clouds, forests, etc.).
              * In the vast majority of cases, we have at most one quantitative category.
              * But if there is 2 or more, then we select the one having largest intersection
@@ -266,7 +324,26 @@ final class RecoloredImage extends ImageAdapter {
             final SampleModel sm = source.getSampleModel();
             cm = ColorModelFactory.createGrayScale(sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum);
         }
-        return create(source, cm);
+        /*
+         * Verify if an existing ancestor already have the specified color model.
+         * If not, built the new `RecoloredImage` here.
+         */
+        for (;;) {
+            if (cm.equals(source.getColorModel())) {
+                if (source instanceof RecoloredImage) {
+                    final RecoloredImage colored = (RecoloredImage) source;
+                    if (colored.minimum != minimum || colored.maximum != maximum) {
+                        continue;
+                    }
+                }
+                return source;
+            } else if (source instanceof RecoloredImage) {
+                source = ((RecoloredImage) source).source;
+            } else {
+                break;
+            }
+        }
+        return ImageProcessor.unique(new RecoloredImage(source, cm, minimum, maximum));
     }
 
     /**

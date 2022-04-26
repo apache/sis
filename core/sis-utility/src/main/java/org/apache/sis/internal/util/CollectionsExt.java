@@ -978,7 +978,7 @@ public final class CollectionsExt extends Static {
             }
 
             /**
-             * Returns the next element. If there is no more elements,
+             * Returns the next element. If there are no more elements,
              * the exception will be thrown by the wrapped iterator.
              */
             @Override public E next() {

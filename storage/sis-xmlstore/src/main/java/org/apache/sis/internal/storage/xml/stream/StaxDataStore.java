@@ -117,7 +117,7 @@ public abstract class StaxDataStore extends URIDataStore {
 
     /**
      * The underlying stream to close when this {@code StaxDataStore} is closed, or {@code null} if none.
-     * This is often the same reference than {@link #storage} if the later is closeable, but not always.
+     * This is often the same reference than {@link #storage} if the latter is closeable, but not always.
      * For example if {@code storage} is a {@link java.nio.file.Path}, then {@code stream} will be some
      * stream or channel opened for that path.
      *

@@ -275,7 +275,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * Sets the number of spaces to add on the left margin for each indentation level.
      * If the new indentation is smaller than the {@linkplain #getVerticalLinePosition()
-     * vertical line position}, then the later is also set to the given indentation value.
+     * vertical line position}, then the latter is also set to the given indentation value.
      *
      * @param  indentation  the new indentation.
      * @throws IllegalArgumentException if the given value is negative.

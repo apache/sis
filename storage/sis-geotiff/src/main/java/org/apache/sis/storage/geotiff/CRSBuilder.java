@@ -405,7 +405,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 }
             }
             /*
-             * Use Double.toString(…) instead of NumberFormat because the later does not show
+             * Use Double.toString(…) instead of NumberFormat because the latter does not show
              * enough significant digits for parameters like inverse flattening.
              */
             warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(epsg),
@@ -432,7 +432,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 try {
                     expected = Integer.parseInt(id.getCode());
                 } catch (NumberFormatException e) {
-                    reader.store.warning(null, e);                  // Should not happen.
+                    reader.store.listeners().warning(e);            // Should not happen.
                     return;
                 }
                 if (code != expected) {
@@ -562,7 +562,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         if (epsg != null) try {
             return getCSAuthorityFactory().createCartesianCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
-            reader.store.warning(null, e);
+            reader.store.listeners().warning(e);
         }
         return (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
     }
@@ -580,7 +580,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         if (epsg != null) try {
             return getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
-            reader.store.warning(null, e);
+            reader.store.listeners().warning(e);
         }
         return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(cs, unit);
     }

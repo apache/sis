@@ -97,7 +97,7 @@ import static org.apache.sis.util.Numbers.*;
  *
  * <p>While it is possible to create {@code RangeSet<Date>} instances, it is more efficient to
  * use {@code RangeSet<Long>} with millisecond values because {@code RangeSet} will internally
- * use {@code long[]} arrays in the later case.</p>
+ * use {@code long[]} arrays in the latter case.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)

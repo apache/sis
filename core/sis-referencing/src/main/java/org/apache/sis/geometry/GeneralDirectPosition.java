@@ -121,7 +121,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * {@code float} or {@code long} otherwise the {@link #GeneralDirectPosition(int)} constructor would be
      * invoked with a very different meaning. For example for creating a one-dimensional coordinate initialized
      * to the coordinate value 100, use <code>new GeneralDirectPosition(100<u>.0</u>)</code>, <strong>not</strong>
-     * {@code new GeneralDirectPosition(100)}, because the later would actually create a position with 100 dimensions.</p>
+     * {@code new GeneralDirectPosition(100)}, because the latter would actually create a position with 100 dimensions.</p>
      *
      * @param coordinates  the coordinate values. This array is <strong>not</strong> cloned.
      */

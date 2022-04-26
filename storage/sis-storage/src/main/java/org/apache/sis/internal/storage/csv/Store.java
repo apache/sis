@@ -305,6 +305,7 @@ final class Store extends URIDataStore implements FeatureSet {
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
+        listeners.useWarningEventsOnly();
     }
 
     /**
@@ -639,7 +640,7 @@ final class Store extends URIDataStore implements FeatureSet {
             final MetadataBuilder builder = new MetadataBuilder();
             final String format = (timeEncoding != null) && hasTrajectories ? StoreProvider.MOVING : StoreProvider.NAME;
             try {
-                builder.setFormat(format);
+                builder.setPredefinedFormat(format);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(format);
                 listeners.warning(e);
@@ -654,7 +655,7 @@ final class Store extends URIDataStore implements FeatureSet {
             builder.addFeatureType(featureType, -1);
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);
-            metadata = builder.build(true);
+            metadata = builder.buildAndFreeze();
         }
         return metadata;
     }

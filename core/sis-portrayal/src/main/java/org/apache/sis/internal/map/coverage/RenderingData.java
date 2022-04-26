@@ -576,7 +576,7 @@ public class RenderingData implements Cloneable {
          */
         if (CREATE_INDEX_COLOR_MODEL) {
             final ColorModelType ct = ColorModelType.find(recoloredImage.getColorModel());
-            if (ct.isSlow || (processor.getCategoryColors() != null && ct.useColorRamp)) {
+            if (ct.isSlow || (ct.useColorRamp && processor.getCategoryColors() != null)) {
                 return processor.visualize(recoloredImage, bounds, displayToCenter, dataRanges);
             }
         }

@@ -263,7 +263,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
         /*
          * Usually, this is where we would initialize the normalization and denormalization matrices
          * to degrees ↔ radians conversions. But in for this class we will rather copy the work done
-         * by EllipsoidToCentricTransform. Especially since the later performs its own adjustment on
+         * by EllipsoidToCentricTransform. Especially since the latter performs its own adjustment on
          * height values.
          */
         context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION).setMatrix(

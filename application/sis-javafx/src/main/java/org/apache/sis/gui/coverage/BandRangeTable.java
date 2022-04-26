@@ -25,6 +25,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
+import org.opengis.util.GenericName;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
@@ -38,7 +39,7 @@ import org.apache.sis.internal.gui.Styles;
  * the interfaces implemented by this class are implementation convenience that may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -138,7 +139,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
         final Optional<?> text;
         final SampleDimension sd = cell.getValue();
         switch (cell.getTableColumn().getId()) {
-            case NAME:  text = Optional.ofNullable(sd.getName()); break;
+            case NAME:  text = Optional.ofNullable(sd.getName()).map(GenericName::toInternationalString); break;
             case UNITS: text = sd.getUnits(); break;
             default: throw new AssertionError();       // Should not happen.
         }

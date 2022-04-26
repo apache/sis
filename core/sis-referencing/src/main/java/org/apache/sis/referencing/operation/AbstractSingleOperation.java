@@ -45,8 +45,8 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 
@@ -64,7 +64,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@link DefaultPassThroughOperation}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -346,7 +346,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     private void setParameters(final GeneralParameterValue[] values) {
         if (parameters == null) {
             if (!(method instanceof DefaultOperationMethod)) {  // May be a non-null proxy if defined only by xlink:href.
-                throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "method"));
+                throw new IllegalStateException(Identifiers.missingValueForProperty(getName(), "method"));
             }
             /*
              * The descriptors in the <gml:method> element do not know the class of parameter value

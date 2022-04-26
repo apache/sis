@@ -88,7 +88,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * coordinate values along that dimension will ignore 360° offsets.
      *
      * <p>The first array element is the dimension during forward transforms, and the second
-     * array element is the dimension during inverse transforms (can be omitted if the later
+     * array element is the dimension during inverse transforms (can be omitted if the latter
      * is the same than the dimension during forward transforms).</p>
      */
     protected int[] λDimension;
@@ -98,7 +98,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * {@link #zTolerance} value will be used rather than {@link #tolerance}.
      *
      * <p>The first array element is the dimension during forward transforms, and the second
-     * array element is the dimension during inverse transforms (can be omitted if the later
+     * array element is the dimension during inverse transforms (can be omitted if the latter
      * is the same than the dimension during forward transforms).</p>
      */
     protected int[] zDimension;

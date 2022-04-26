@@ -65,6 +65,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
+         * Auxiliary file “{0}” seems too large.
+         */
+        public static final short AuxiliaryFileTooLarge_1 = 71;
+
+        /**
          * Can not create resources based on the content of “{0}” directory.
          */
         public static final short CanNotCreateFolderStore_1 = 43;
@@ -83,6 +88,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not intersect “{0}” data with specified query.
          */
         public static final short CanNotIntersectDataWithQuery_1 = 57;
+
+        /**
+         * Can not read “{0}” auxiliary file.
+         */
+        public static final short CanNotReadAuxiliaryFile_1 = 66;
 
         /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
@@ -110,6 +120,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_4 = 3;
 
         /**
+         * Can not read pixel at ({0}, {1}) indices in the “{2}” file.
+         */
+        public static final short CanNotReadPixel_3 = 68;
+
+        /**
          * Can not remove resource “{1}” from aggregate “{0}”.
          */
         public static final short CanNotRemoveResource_2 = 49;
@@ -123,6 +138,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not save resources of type ‘{1}’ in a “{0}” store.
          */
         public static final short CanNotStoreResourceType_2 = 41;
+
+        /**
+         * Can not write the “{0}” resource.
+         */
+        public static final short CanNotWriteResource_1 = 69;
 
         /**
          * This {0} reader is closed.
@@ -195,6 +215,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DuplicatedSampleDimensionIndex_1 = 53;
 
         /**
+         * Header in the “{0}” file is too large.
+         */
+        public static final short ExcessiveHeaderSize_1 = 67;
+
+        /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */
@@ -226,6 +251,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FoliationRepresentation = 38;
 
         /**
+         * This resource should not fire events of type “{0}”.
+         */
+        public static final short IllegalEventType_1 = 65;
+
+        /**
          * The {0} data store does not accept features of type “{1}”.
          */
         public static final short IllegalFeatureType_2 = 7;
@@ -239,6 +269,11 @@ public final class Resources extends IndexedResourceBundle {
          * The {0} writer does not accept outputs of type ‘{1}’.
          */
         public static final short IllegalOutputTypeForWriter_2 = 9;
+
+        /**
+         * All coverages must have the same grid geometry.
+         */
+        public static final short IncompatibleGridGeometry = 72;
 
         /**
          * Components of the “{1}” name are inconsistent with those of the name previously binded in
@@ -317,6 +352,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ResourceNotFound_2 = 24;
 
         /**
+         * This resource has been removed from its data store.
+         */
+        public static final short ResourceRemoved = 73;
+
+        /**
+         * The “{0}” format does not support rotations.
+         */
+        public static final short RotationNotSupported_1 = 70;
+
+        /**
          * The “{1}” element must be declared before “{0}”.
          */
         public static final short ShallBeDeclaredBefore_2 = 22;
@@ -386,7 +431,7 @@ public final class Resources extends IndexedResourceBundle {
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     *        there are no resources. The resources may be a file or an entry in a JAR file.
      */
     public Resources(final URL resources) {
         super(resources);
