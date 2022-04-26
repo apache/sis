@@ -225,6 +225,19 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns x/y with the requirement that the division must be integer.
+     *
+     * @param  x  the dividend.
+     * @param  y  the divisor.
+     * @return x/y.
+     * @throws ArithmeticException if y is zero of if the result of x/y is not an integer.
+     */
+    public static int wholeDiv(final int x, final int y) {
+        if ((x % y) != 0) throw new ArithmeticException(x + " % " + y + " ≠ 0");
+        return x / y;       // TODO: use Math.divideExact with JDK18.
+    }
+
+    /**
      * Returns {@code value} × {@code multiplier} / {@code divisor} with control against overflow.
      * The result is rounded toward zero.
      *
@@ -238,6 +251,42 @@ public final class Numerics extends Static {
 //      final long high = Math.multiplyHigh(value, multiplier);
 //      return Math.multiplyExact(value * multiplier / divisor, high);
         return Math.multiplyExact(value, multiplier) / divisor;
+    }
+
+    /**
+     * Returns {@code x+y} with saturation if the result overflows long capacity.
+     * This is <cite>saturation arithmetic</cite>.
+     *
+     * @param  x  the value for which to add something.
+     * @param  y  the value to add to {@code x}.
+     * @return {@code x+y} computed with saturation arithmetic.
+     */
+    public static long saturatingAdd(final long x, final int y) {
+        final long result = x + y;
+        if (y >= 0) {
+            if (result < x) return Long.MAX_VALUE;
+        } else {
+            if (result > x) return Long.MIN_VALUE;
+        }
+        return result;
+    }
+
+    /**
+     * Returns {@code x-y} with saturation if the result overflows long capacity.
+     * This is <cite>saturation arithmetic</cite>.
+     *
+     * @param  x  the value for which to add something.
+     * @param  y  the value to subtract from {@code x}.
+     * @return {@code x-y} computed with saturation arithmetic.
+     */
+    public static long saturatingSubtract(final long x, final int y) {
+        final long result = x - y;
+        if (y < 0) {
+            if (result < x) return Long.MAX_VALUE;
+        } else {
+            if (result > x) return Long.MIN_VALUE;
+        }
+        return result;
     }
 
     /**

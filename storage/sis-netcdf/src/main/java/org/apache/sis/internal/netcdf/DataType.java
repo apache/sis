@@ -33,7 +33,7 @@ import org.apache.sis.util.Numbers;
  * </ul>
  *
  * The unsigned data types are not defined in netCDF classical version. However those data types
- * can be inferred from their signed counterpart if the later have a {@code "_Unsigned = true"}
+ * can be inferred from their signed counterpart if the latter have a {@code "_Unsigned = true"}
  * attribute associated to the variable.
  *
  * @author  Johann Sorel (Geomatys)

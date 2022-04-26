@@ -125,7 +125,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * <ul>
      *   <li>If this method is queried from a {@code SingleOperation} instance (usually indirectly as part of a
      *     {@code ProjectedCRS}), then we want to return the "Equidistant Cylindrical (Spherical)" map projection
-     *     parameters without bothering about axis swapping, because the later is described by the {@code Axis["…"]}
+     *     parameters without bothering about axis swapping, because the latter is described by the {@code Axis["…"]}
      *     elements in the enclosing {@code ProjectedCRS} instance.</li>
      *   <li>But if this {@code MathTransform} is formatted directly (not as a component of {@code ProjectedCRS}),
      *     then we want to format it as a matrix, otherwise the users would have no way to see that an axis swapping

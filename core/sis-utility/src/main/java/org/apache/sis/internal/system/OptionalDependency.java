@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Messages;
 /**
  * Base class of internal hooks for accessing optional dependencies.
  * This is used for example for allowing the {@code "sis-metadata"} module to access some
- * services of the {@code "sis-referencing"} module if the later is present on the classpath.
+ * services of the {@code "sis-referencing"} module if the latter is present on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6

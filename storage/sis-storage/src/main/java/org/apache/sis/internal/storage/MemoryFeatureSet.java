@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.Collection;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
+import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -33,7 +34,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -84,7 +85,7 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      * @return the number of features.
      */
     @Override
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         return OptionalLong.of(features.size());
     }
 

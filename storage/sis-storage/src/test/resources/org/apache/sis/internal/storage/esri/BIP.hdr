@@ -1,0 +1,14 @@
+Header file for the `BIP.raw` test raster.
+The BIP test also contains a `BIP.stx` file
+for testing the loading of statistics data.
+
+NROWS  9
+NCOLS  9
+NBANDS 3
+LAYOUT BIP      Band Interleaved by Pixel
+
+ULXMAP -10      Dummy values
+ULYMAP -15
+
+Note: XDIM and YDIM entries are omitted for
+testing their default value, which is 1.

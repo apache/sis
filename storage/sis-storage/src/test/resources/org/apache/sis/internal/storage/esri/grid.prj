@@ -1,0 +1,9 @@
+PROJCS["WGS 84 / World Mercator",
+  GEOGCS["WGS 84",
+    DATUM["World Geodetic System 1984", SPHEROID["WGS 84", 6378137.0, 298.257223563]],
+    PRIMEM["Greenwich", 0.0], UNIT["degree", 0.017453292519943295]],
+  PROJECTION["Mercator_1SP"], UNIT["km", 1000.0]]
+
+Lines after the CRS definitions shall be ignored.
+PRJ files usually contains WKT-1 on a single line,
+but this test uses multi-line for readability.

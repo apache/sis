@@ -118,7 +118,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
     /**
      * Sets the coordinate reference system.
      * This method should be invoked only for newly created geometries. If the geometry library supports
-     * user objects (e.g. JTS), there is no guarantees that this method will not overwrite user setting.
+     * user objects (e.g. JTS), there is no guarantee that this method will not overwrite user setting.
      *
      * @param  crs  the coordinate reference system to set.
      *

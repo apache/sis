@@ -315,7 +315,7 @@ public class FeatureFormat extends TabularFormat<Object> {
         }
         /*
          * Computes the columns to show. We start with the set of columns specified by setAllowedColumns(Set),
-         * then we check if some of those columns are empty. For example in many cases there is no attribute
+         * then we check if some of those columns are empty. For example in many cases there are no attributes
          * with characteritic, in which case we will ommit the whole "characteristics" column. We perform such
          * check only for optional information, not for mandatory information like property names.
          */

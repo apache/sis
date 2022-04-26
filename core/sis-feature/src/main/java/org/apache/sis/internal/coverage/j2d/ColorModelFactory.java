@@ -18,8 +18,8 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.Optional;
 import java.awt.Transparency;
 import java.awt.Color;
 import java.awt.color.ColorSpace;
@@ -28,8 +28,10 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.PackedColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.ComponentColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.DataBuffer;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -42,6 +44,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.0
  * @module
@@ -143,7 +146,7 @@ public final class ColorModelFactory {
      * so this is not really a {@code ColorModelFactory} but a kind of "{@code ColorModelKey}" instead.
      * However, since this constructor is private, user does not need to know that.
      *
-     * @see #createColorModel(int, int, int, ColorsForRange[])
+     * @see #createPiecewise(int, int, int, ColorsForRange[])
      */
     private ColorModelFactory(final int dataType, final int numBands, final int visibleBand, final ColorsForRange[] colors) {
         this.dataType    = dataType;
@@ -223,7 +226,7 @@ public final class ColorModelFactory {
             return createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
         }
         /*
-         * If there is no category, constructs a gray scale palette.
+         * If there are no categories, construct a gray scale palette.
          */
         final int categoryCount = pieceStarts.length - 1;
         if (numBands == 1 && categoryCount <= 0) {
@@ -313,9 +316,9 @@ public final class ColorModelFactory {
      * @see Colorizer
      */
     public static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
-                                             final Collection<Map.Entry<NumberRange<?>,Color[]>> colors)
+                                             final Map<NumberRange<?>, Color[]> colors)
     {
-        return createPiecewise(dataType, numBands, visibleBand, ColorsForRange.list(colors));
+        return createPiecewise(dataType, numBands, visibleBand, ColorsForRange.list(colors.entrySet()));
     }
 
     /**
@@ -382,7 +385,7 @@ public final class ColorModelFactory {
 
     /**
      * Returns a color model interpolated for the given range of values. This is a convenience method for
-     * {@link #createPiecewise(int, int, int, Collection)} when the collection contains only one element.
+     * {@link #createPiecewise(int, int, int, Map)} when the map contains only one element.
      *
      * @param  dataType     the color model type.
      * @param  numBands     the number of bands for the color model (usually 1).
@@ -396,7 +399,7 @@ public final class ColorModelFactory {
                                               final double lower, final double upper, final Color... colors)
     {
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
-            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors)
+            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true)
         });
     }
 
@@ -479,6 +482,56 @@ public final class ColorModelFactory {
     }
 
     /**
+     * Creates a color model for opaque images storing pixels using the given sample model.
+     * The color model can have an arbitrary number of bands, but in current implementation only one band is used.
+     *
+     * <p><b>Warning:</b> the use of this color model may be very slow and the color stretching may not be a good fit.
+     * This method should be used only when no standard color model can be used. This is a last resort method.</p>
+     *
+     * @param  model        the sample model for which to create a gray scale color model.
+     * @param  visibleBand  the band to use for computing colors.
+     * @param  range        the minimal and maximal sample value expected, or {@code null} if none.
+     * @return the color model for the given range of values.
+     */
+    public static ColorModel createGrayScale(final SampleModel model, final int visibleBand, final NumberRange<?> range) {
+        double minimum, maximum;
+        if (range != null) {
+            minimum = range.getMinDouble();
+            maximum = range.getMaxDouble();
+        } else {
+            minimum = 0;
+            maximum = 1;
+            if (ImageUtilities.isIntegerType(model)) {
+                long max = Numerics.bitmask(model.getSampleSize(visibleBand)) - 1;
+                if (!ImageUtilities.isUnsignedType(model)) {
+                    max >>>= 1;
+                    minimum = ~max;         // Tild operator, not minus.
+                }
+                maximum = max;
+            }
+        }
+        return createGrayScale(model.getDataType(), model.getNumBands(), visibleBand, minimum, maximum);
+    }
+
+    /**
+     * Creates a RGB color model for the given sample model.
+     * The sample model shall use integer type and have 3 or 4 bands.
+     *
+     * @param  model  the sample model for which to create a color model.
+     * @return the color model.
+     */
+    public static ColorModel createRGB(final SampleModel model) {
+        final int numBands = model.getNumBands();
+        assert numBands >= 3 && numBands <= 4 : numBands;
+        assert ImageUtilities.isIntegerType(model) : model;
+        int bitsPerSample = 0;
+        for (int i=0; i<numBands; i++) {
+            bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+        }
+        return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
+    }
+
+    /**
      * Creates a RGB color model. The {@code packed} argument should be
      * {@code true}  for color model used with {@link java.awt.image.SinglePixelPackedSampleModel}, and
      * {@code false} for color model used with {@link java.awt.image.BandedSampleModel}.
@@ -511,13 +564,36 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Creates a color model with only a subset of the bands of the given color model.
+     * Creates a color model with only a subset of the bands of the given color model. The returned color model
+     * is compatible with a {@linkplain SampleModel#createSubsetSampleModel(int[]) subset sample model} created
+     * with the same argument than the {@code bands} argument given to this method.
+     * This method might not produce a result in following cases:
+     *
+     * <ul>
+     *   <li>Input color model is null.</li>
+     *   <li>Given color model is not assignable from the following types:
+     *     <ul>
+     *       <li>{@link ComponentColorModel}</li>
+     *       <li>{@link MultiBandsIndexColorModel}</li>
+     *       <li>{@link ScaledColorModel}</li>
+     *     </ul>
+     *   </li>
+     *   <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
+     * </ul>
+     *
+     * <em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>: they're not managed for now, because
+     * they're really designed for a "rigid" case where data buffer values are interpreted directly by the color model.
      *
      * @param  cm     the color model, or {@code null}.
-     * @param  bands  the bands to select.
-     * @return the subset color model, or {@code null} if it can not be created.
+     * @param  bands  the bands to select. Must neither be null nor empty.
+     * @return the subset color model, or {@link Optional#empty() empty} if input was null, or a subset cannot be
+     * deduced.
      */
-    public static ColorModel createSubset(final ColorModel cm, final int[] bands) {
+    public static Optional<ColorModel> createSubset(final ColorModel cm, final int[] bands) {
+        assert (bands != null) && bands.length > 0 : bands;
+        if (cm == null) {
+            return Optional.empty();
+        }
         final ColorModel subset;
         if (cm instanceof MultiBandsIndexColorModel) {
             subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
@@ -526,15 +602,15 @@ public final class ColorModelFactory {
         } else if (bands.length == 1 && cm instanceof ComponentColorModel) {
             final int dataType = cm.getTransferType();
             if (dataType < DataBuffer.TYPE_BYTE || dataType > DataBuffer.TYPE_USHORT) {
-                return Colorizer.NULL_COLOR_MODEL;
+                return Optional.empty();
             }
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             subset = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
         } else {
             // TODO: handle other color models.
-            return Colorizer.NULL_COLOR_MODEL;
+            return Optional.empty();
         }
-        return unique(subset);
+        return Optional.of(unique(subset));
     }
 
     /**
@@ -556,14 +632,16 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns a unique instance of the given color model. This method is automatically invoked by {@code create(…)} methods
-     * in this class. This {@code unique(ColorModel)} method is public for use by color models created by other ways.
+     * Returns a unique instance of the given color model.
+     * This method is automatically invoked by {@code create(…)} methods in this class.
      *
      * @param  <T>  the type of the color model to share.
      * @param  cm   the color model for which to get a unique instance.
      * @return a unique (shared) instance of the given color model.
      */
     private static <T extends ColorModel> T unique(T cm) {
+        // `CACHE` is null-safe and it is sometime okay to return a null color model.
+        // ColorModelPatch is not null-safe, but it will be removed in a future version.
         ColorModelPatch<T> c = new ColorModelPatch<>(cm);
         c = CACHE.unique(c);
         return c.cm;

@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.ParseException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -175,6 +176,18 @@ public class InfoStatements implements Localized, AutoCloseable {
     @Override
     public final Locale getLocale() {
         return database.listeners.getLocale();
+    }
+
+    /**
+     * Returns a function for getting values of components in the given array.
+     * If no match is found, then this method returns {@code null}.
+     *
+     * @param  array  the array from which to get the mapping of component values.
+     * @return converter to the corresponding java type, or {@code null} if this class can not find a mapping.
+     * @throws SQLException if the mapping can not be obtained.
+     */
+    public final ValueGetter<?> getComponentMapping(final Array array) throws SQLException {
+        return database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName()));
     }
 
     /**
@@ -350,7 +363,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                 }
                 /*
                  * Parse the WKT unconditionally, even if we already got the CRS from authority code.
-                 * It the later case, the CRS from WKT will be used only for a consistency check and
+                 * It the latter case, the CRS from WKT will be used only for a consistency check and
                  * the main CRS will be the one from authority.
                  */
                 CoordinateReferenceSystem fromWKT = null;
@@ -388,7 +401,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                     if (warning == null && fromWKT != null) {
                         /*
                          * Following warnings may have occurred during WKT parsing and are considered minor.
-                         * They will be reported only if there is no more important warnings to report.
+                         * They will be reported only if there are no more important warnings to report.
                          */
                         final Warnings w = wktReader.getWarnings();
                         if (w != null) {

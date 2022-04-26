@@ -264,7 +264,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         final boolean p = value;
         /*
          * (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
-         * DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+         * DO NOT REPLACE BY `equals` OR `booleanValue()` — the exact reference value matter.
          */
         if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
             return p;
@@ -442,7 +442,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         southBoundLatitude = Latitude.clamp(southBoundLatitude);
         northBoundLatitude = Latitude.clamp(northBoundLatitude);
         final double span = eastBoundLongitude - westBoundLongitude;
-        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) {           // 'span' may be NaN.
+        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) {           // `span` may be NaN.
             westBoundLongitude = Longitude.normalize(westBoundLongitude);
             eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
             if (span != 0) {
@@ -596,14 +596,14 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
              * the result would be much wort (for each lower rectangle, imagine translating
              * the longuest part in the opposite direction instead of the shortest one).
              *
-             * Note that only one of 'left' and 'right' can be positive, otherwise we would
+             * Note that only one of `left` and `right` can be positive, otherwise we would
              * not be in the case where one box is crossing the anti-meridian while the other
              * box does not.
              */
             if (left  >= 0) return +1;
             if (right >= 0) return -1;
             /*
-             * Both 'left' and 'right' are negative. For each alternatives (translating λmin
+             * Both `left` and `right` are negative. For each alternatives (translating λmin
              * or translating λmax), we will choose the one which give the closest result to
              * a bound of this box:
              *
@@ -618,7 +618,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
             return (left < right) ? -1 : +1;
         }
         /*
-         * Same algorithm than above, but with the sign of 'left' an 'right' inversed.
+         * Same algorithm than above, but with the sign of `left` an `right` inversed.
          * The "if" statements have been combined for avoiding to repeat the +/- operations.
          */
         if (!(left <= 0) && right <= 0 || left > right) {
@@ -665,7 +665,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         double φmin = box.getSouthBoundLatitude();
         double φmax = box.getNorthBoundLatitude();
         /*
-         * Reminder: 'inclusion' is a mandatory attribute, so it should never be null for a
+         * Reminder: `inclusion` is a mandatory attribute, so it should never be null for a
          * valid metadata object.  If the metadata object is invalid, it is better to get a
          * an exception than having a code doing silently some inappropriate work.
          */

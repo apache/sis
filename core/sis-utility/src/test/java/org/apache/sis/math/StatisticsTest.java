@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
  * that are known to produce results inside the range expected by this test class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -185,6 +185,22 @@ public final strictfp class StatisticsTest extends TestCase {
             statistics.accept(-offset); // Accuracy will be better than in previous test.
             assertEquals(expected, statistics.mean(), min(tolerance, 0.1));
         }
+    }
+
+    /**
+     * Tests {@link Statistics#Statistics(CharSequence, int, int, double, double, double, double, boolean)}
+     * constructor.
+     */
+    @Test
+    public void testInitializationToValues() {
+        final Statistics stats = new Statistics("Test", 20, 128, -75, 12, 8, 0.2, false);
+        assertEquals("Test", stats.name().toString());
+        assertEquals( 20,    stats.countNaN());
+        assertEquals(128,    stats.count());
+        assertEquals(-75,    stats.minimum(), STRICT);
+        assertEquals( 12,    stats.maximum(), STRICT);
+        assertEquals(  8,    stats.mean(),    STRICT);  // Comparison can be strict because `count` is a power of 2.
+        assertEquals(0.2,    stats.standardDeviation(false), 1E-14);
     }
 
     /**

@@ -368,7 +368,7 @@ public final class DoubleDouble extends Number {
      * accordingly.
      *
      * @param  value  the value for which to get this error.
-     * @return the error for the given value, or 0 if unknown. In the later case,
+     * @return the error for the given value, or 0 if unknown. In the latter case,
      *         the base 2 representation of the given value is assumed to be accurate enough.
      */
     public static double errorForWellKnownValue(final double value) {

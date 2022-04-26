@@ -378,7 +378,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Double#NaN} values,
-     *         continue and throw the exception only at end. Implementations that fall in the later case should set the
+     *         continue and throw the exception only at end. Implementations that fall in the latter case should set the
      *         {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
      */
     @Override
@@ -489,7 +489,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can't be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the un-transformable points with {@link Float#NaN} values,
-     *         continue and throw the exception only at end. Implementations that fall in the later case should set
+     *         continue and throw the exception only at end. Implementations that fall in the latter case should set
      *         the {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
      */
     @Override
@@ -616,7 +616,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Float#NaN} values,
-     *         continue and throw the exception only at end. Implementations that fall in the later case should set the
+     *         continue and throw the exception only at end. Implementations that fall in the latter case should set the
      *         {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
      */
     @Override
@@ -680,7 +680,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Double#NaN} values,
-     *         continue and throw the exception only at end. Implementations that fall in the later case should set the
+     *         continue and throw the exception only at end. Implementations that fall in the latter case should set the
      *         {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
      */
     @Override
@@ -750,7 +750,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   <li>Copy the coordinate in a temporary array and pass that array to the
      *       {@link #transform(double[], int, double[], int, boolean)} method,
      *       with the {@code derivate} boolean argument set to {@code true}.</li>
-     *   <li>If the later method returned a non-null matrix, returns that matrix.
+     *   <li>If the latter method returned a non-null matrix, returns that matrix.
      *       Otherwise throws {@link TransformException}.</li>
      * </ul>
      *
@@ -838,7 +838,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * </ul>
      *
      * If no optimization is available for the combined transform, then this method returns {@code null}.
-     * In the later case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using
+     * In the latter case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using
      * a generic implementation.
      *
      * <p>The default implementation returns the identity transform if the other transform is the inverse

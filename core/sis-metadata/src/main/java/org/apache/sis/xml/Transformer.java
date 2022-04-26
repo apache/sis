@@ -70,7 +70,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *   <li>Massive code duplication (hundreds of classes, many of them strictly identical except for the namespace).</li>
  *   <li>Handling of above-cited classes duplication requires either a bunch of {@code if (x instanceof Y)} in every
  *       SIS corners, or to modify the {@code xjc} output in order to give to generated classes a common parent class
- *       or interface. In the later case, the auto-generated classes require significant work anyways.</li>
+ *       or interface. In the latter case, the auto-generated classes require significant work anyways.</li>
  *   <li>The namespaces of all versions appear in the {@code xmlns} attributes of the root element (we can not always
  *       create separated JAXB contexts), which is confusing and prevent usage of usual prefixes for all versions
  *       except one.</li>
@@ -381,7 +381,7 @@ abstract class Transformer {
     }
 
     /**
-     * Returns a snapshot of {@link #renamedAttributes} list and clears the later.
+     * Returns a snapshot of {@link #renamedAttributes} list and clears the latter.
      */
     final List<Attribute> attributes() {
         final List<Attribute> attributes;

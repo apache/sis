@@ -60,7 +60,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -87,7 +87,7 @@ final class Dispatcher implements InvocationHandler {
      * have different {@code preferredIndex} values even if their {@link CachedStatement#type} value is the same,
      * since their {@link #identifier} values are different.</div>
      */
-    byte preferredIndex;
+    int preferredIndex;
 
     /**
      * The metadata instance where to store the property (column) values, or {@code null} if not yet created.
@@ -166,6 +166,7 @@ final class Dispatcher implements InvocationHandler {
                     if (value == null) {
                         nullValues = nb;
                         method = supercede(method);
+                        if (method == null) return null;
                         value = fetchValue(source.getLookupInfo(method.getDeclaringClass()), method);
                     }
                 } catch (ReflectiveOperationException | SQLException | MetadataStoreException e) {
@@ -276,7 +277,7 @@ final class Dispatcher implements InvocationHandler {
                                     hasValue |= (fetchValue(info, impl.getMethod(dep)) != null);
                                 }
                                 if (hasValue) {
-                                    cache = this.cache;             // Created by recursive 'invoke(…)' call above.
+                                    cache = this.cache;             // Created by recursive `invoke(…)` call above.
                                     if (cache != null) {
                                         synchronized (cache) {
                                             value = method.invoke(cache);             // Attempt a new computation.
@@ -334,8 +335,16 @@ final class Dispatcher implements InvocationHandler {
      * confuses this {@code Dispatcher} class. We need the method in the base interface.
      */
     private static Method supercede(Method method) throws NoSuchMethodException {
-        if (method.getDeclaringClass() == ResponsibleParty.class && "getRole".equals(method.getName())) {
-            method = DefaultResponsibility.class.getMethod("getRole");
+        if (method.getDeclaringClass() == ResponsibleParty.class) {
+            if ("getRole".equals(method.getName())) {
+                method = DefaultResponsibility.class.getMethod("getRole");
+            } else {
+                /*
+                 * `getIndividualName()`, `getOrganisationName()`, `getPositionName()` and
+                 * `getContactInfo()` has no direct equivalence in `Responsibility` class.
+                 */
+                return null;
+            }
         }
         return method;
     }

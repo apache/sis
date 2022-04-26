@@ -854,7 +854,7 @@ public abstract class Variable extends Node {
      * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
      * This method is invoked only as a fallback if {@link Convention#validRange(Variable)} did not found a
      * range of values by application of CF conventions. The returned range may be a range of packed values
-     * or a range of real values. In the later case, the range shall be an instance of
+     * or a range of real values. In the latter case, the range shall be an instance of
      * {@link org.apache.sis.measure.MeasurementRange}.
      *
      * <p>The default implementation returns the range of values that can be stored with the {@linkplain #getDataType()

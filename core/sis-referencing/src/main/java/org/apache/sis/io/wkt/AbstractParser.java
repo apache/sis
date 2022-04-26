@@ -46,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * Parses <cite>Well Known Text</cite> (WKT). Parsers are the converse of {@link Formatter}.
- * Like the later, a parser is constructed with a given set of {@linkplain Symbols symbols}.
+ * Like the latter, a parser is constructed with a given set of {@linkplain Symbols symbols}.
  * Parsers also need a set of factories to be used for instantiating the parsed objects.
  *
  * <p>In current version, parsers are not intended to be subclassed outside this package.</p>

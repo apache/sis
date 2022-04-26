@@ -621,7 +621,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              * The DAOs list is empty if all Data Access Objects in the queue have been closed.
              * Note that some DAOs may still be in use outside the queue, because the DAOs are
              * added to the queue only after completion of their work.
-             * In the later case, release() will reschedule a new task.
+             * In the latter case, release() will reschedule a new task.
              */
             isCleanScheduled = !(isEmpty = availableDAOs.isEmpty());
         }

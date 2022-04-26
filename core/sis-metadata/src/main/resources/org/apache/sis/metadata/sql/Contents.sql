@@ -13,18 +13,22 @@ CREATE TABLE metadata."Format" (
   "amendmentNumber"             VARCHAR(120),
   "fileDecompressionTechnique"  VARCHAR(120));
 
-INSERT INTO metadata."Citation" ("ID", "alternateTitle", "title") VALUES
-  ('GeoTIFF', 'GeoTIFF', 'GeoTIFF Coverage Encoding Profile'),
-  ('NetCDF',  'NetCDF',  'NetCDF Classic and 64-bit Offset Format'),
-  ('PNG',     'PNG',     'PNG (Portable Network Graphics) Specification'),
-  ('CSV',     'CSV',     'Common Format and MIME Type for Comma-Separated Values (CSV) Files'),
-  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
-  ('GPX',     'GPX',     'GPS Exchange Format');
+INSERT INTO metadata."Citation" ("ID", "alternateTitle", "citedResponsibleParty", "title") VALUES
+  ('GeoTIFF', 'GeoTIFF',    'OGC',  'GeoTIFF Coverage Encoding Profile'),
+  ('NetCDF',  'NetCDF',     'OGC',  'NetCDF Classic and 64-bit Offset Format'),
+  ('PNG',     'PNG',         NULL,  'PNG (Portable Network Graphics) Specification'),
+  ('RAWGRD',   NULL,        'ESRI', 'BIL, BIP, and BSQ raster files'),
+  ('ASCGRD',  'ASCII Grid', 'ESRI', 'ESRI ArcInfo ASCII Grid format'),
+  ('CSV',     'CSV',         NULL,  'Common Format and MIME Type for Comma-Separated Values (CSV) Files'),
+  ('CSV-MF',  'CSV',        'OGC',  'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
+  ('GPX',     'GPX',         NULL,  'GPS Exchange Format');
 
 INSERT INTO metadata."Format" ("ID", "formatSpecificationCitation") VALUES
   ('GeoTIFF', 'GeoTIFF'),
   ('NetCDF',  'NetCDF'),
   ('PNG',     'PNG'),
+  ('RAWGRD',  'RAWGRD'),
+  ('ASCGRD',  'ASCGRD'),
   ('CSV',     'CSV'),
   ('CSV-MF',  'CSV-MF'),
   ('GPX',     'GPX');

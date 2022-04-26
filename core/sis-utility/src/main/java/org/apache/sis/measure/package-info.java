@@ -96,6 +96,7 @@
  * are also recognized at parsing time.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.3
  * @module

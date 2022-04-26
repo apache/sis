@@ -280,7 +280,9 @@ public abstract class GridCoverage extends BandedCoverage {
         final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         final ColorModel colors;
-        if (colorizer.initialize(sampleDimensions[visibleBand]) || colorizer.initialize(source.getColorModel())) {
+        if (colorizer.initialize(source.getSampleModel(), sampleDimensions[visibleBand]) ||
+            colorizer.initialize(source.getColorModel()))
+        {
             colors = colorizer.createColorModel(bandType.toDataBufferType(), sampleDimensions.length, visibleBand);
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;

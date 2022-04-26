@@ -38,7 +38,7 @@ import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
  * Tests {@link ImageUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -103,7 +103,7 @@ public final strictfp class ImageUtilitiesTest extends TestCase {
     }
 
     /**
-     * Verifies that {@link ImageUtilities#bandNames(RenderedImage)} returns expected band names.
+     * Verifies that {@link ImageUtilities#bandNames(ColorModel, SampleModel)} returns expected band names.
      *
      * @param  nde    expected number of data elements. This number categorizes the tests in this class.
      * @param  type   one of the {@link BufferedImage} {@code TYPE_*} constants.
@@ -111,8 +111,9 @@ public final strictfp class ImageUtilitiesTest extends TestCase {
      */
     private static void assertBandNamesEqual(final int nde, final int type, final short... names) {
         final BufferedImage image = new BufferedImage(1, 1, type);
+        final ColorModel cm = image.getColorModel();
         assertEquals("numDataElements", nde, image.getSampleModel().getNumDataElements());
-        assertArrayEquals("bandNames", names, ImageUtilities.bandNames(image));
+        assertArrayEquals("bandNames", names, ImageUtilities.bandNames(cm, image.getSampleModel()));
         /*
          * The following is more for testing our understanding of the way BufferedImage works.
          * We want to verify that no matter which BufferedImage.TYPE_* constant we used, values
@@ -120,7 +121,6 @@ public final strictfp class ImageUtilitiesTest extends TestCase {
          */
         image.getRaster().setPixel(0, 0, new int[] {10, 20, 30, 40});       // Always RGBA order for this test.
         final Object data = image.getRaster().getDataElements(0, 0, null);
-        final ColorModel cm = image.getColorModel();
         for (final short k : names) {
             final int expected, actual;
             switch (k) {

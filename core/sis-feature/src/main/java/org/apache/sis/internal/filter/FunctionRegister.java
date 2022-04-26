@@ -50,7 +50,7 @@ public interface FunctionRegister {
 
     /**
      * Returns the names of all functions that this factory can create.
-     * It is currently implementer responsibility to ensure that there is no name collision with
+     * It is currently implementer responsibility to ensure that there are no name collisions with
      * functions provided by other factories (this problem may be improved in future SIS release).
      *
      * @return set of supported function names.

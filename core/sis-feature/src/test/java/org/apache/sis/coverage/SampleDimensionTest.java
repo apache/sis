@@ -75,8 +75,8 @@ public final strictfp class SampleDimensionTest extends TestCase {
 
     /**
      * Tests {@link SampleDimension.Builder#mapQualitative(CharSequence, Number, float)}.
-     * Expected result (not that "Values" column differ from NaN numbers, which is the
-     * purpose of this test).
+     * Expected result (note that the "Values" column differs from NaN numbers, which is
+     * the purpose of this test).
      *
      * {@preformat text
      * ┌───────────┬───────────────┬─────────────┐

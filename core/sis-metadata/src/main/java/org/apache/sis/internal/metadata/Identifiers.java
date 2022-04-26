@@ -28,13 +28,14 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Methods working on {@link Identifier} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.1
+ * @since   1.2
  * @version 1.0
  * @module
  */
@@ -111,7 +112,7 @@ public final class Identifiers extends Static {
      */
     public static String getIdentifier(final Citation citation, final boolean strict) {
         if (citation != null) {
-            boolean isUnicode = false;      // Whether 'identifier' is a Unicode identifier.
+            boolean isUnicode = false;      // Whether `identifier` is a Unicode identifier.
             String identifier = null;       // The best identifier found so far.
             String codeSpace  = null;       // Code space of the identifier, or null if none.
             for (final Identifier id : CollectionsExt.nonNull(citation.getIdentifiers())) {
@@ -266,5 +267,20 @@ public final class Identifiers extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a message saying that a property is missing for an object having the given identifier.
+     *
+     * @param  owner     identifier of the object for which a property is missing.
+     * @param  property  name of the missing property.
+     * @return a message saying that a value is missing for the given property in the specified identified object.
+     *
+     * @since 1.2
+     */
+    public static String missingValueForProperty(final Identifier owner, final String property) {
+        return (owner == null)
+                ? Errors.format(Errors.Keys.MissingValueForProperty_1, property)
+                : Errors.format(Errors.Keys.MissingValueForProperty_2, owner, property);
     }
 }

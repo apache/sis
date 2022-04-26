@@ -125,7 +125,7 @@ public abstract class TypeRegistration {
      * Implementations will typically perform an {@code instanceof} check, then invoke one
      * of the {@code castOrCopy(…)} static methods defined in various Apache SIS classes.
      *
-     * @return converter for the value to marshal, or {@code null} if there is no value to convert.
+     * @return converter for the value to marshal, or {@code null} if there are no values to convert.
      *
      * @since 0.8
      */

@@ -454,13 +454,18 @@ public final class Resources extends IndexedResourceBundle {
          * Unsupported geometry {0}D object.
          */
         public static final short UnsupportedGeometryObject_1 = 76;
+
+        /**
+         * Sample type with a size of {0} bits can not have ‘{1}’ = “{2}” characteristic.
+         */
+        public static final short UnsupportedSampleType_3 = 78;
     }
 
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     *        there are no resources. The resources may be a file or an entry in a JAR file.
      */
     public Resources(final URL resources) {
         super(resources);

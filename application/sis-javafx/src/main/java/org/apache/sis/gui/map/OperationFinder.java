@@ -81,7 +81,7 @@ abstract class OperationFinder extends Task<MathTransform> {
     /**
      * The coordinate operation from {@link #sourceCRS} to {@link #targetCRS}, computed in background thread.
      * The {@link CoordinateOperation#getMathTransform()} value may not be the complete transform returned by
-     * {@link #getValue()} because the later may include transform from/to {@linkplain #isGridCRS grid CRS}.
+     * {@link #getValue()} because the latter may include transform from/to {@linkplain #isGridCRS grid CRS}.
      */
     private CoordinateOperation operation;
 

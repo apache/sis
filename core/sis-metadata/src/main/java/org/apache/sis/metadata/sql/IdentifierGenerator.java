@@ -121,7 +121,7 @@ final class IdentifierGenerator implements AutoCloseable {
                 String current = rs.getString(1);
                 if (current.equals(proposal)) {
                     /*
-                     * The proposed identifier is already used. If there is no other identifiers,
+                     * The proposed identifier is already used. If there are no other identifiers,
                      * just append "-1" and we are done. Otherwise we need to search for a "hole"
                      * in the sequence of number suffixes.
                      */

@@ -240,7 +240,7 @@ final class FeatureAdapter {
         }
         /*
          * Prepare SQL for a `Statement` if we do not need any condition, or for a `PreparedStatement`
-         * if we need to add a `WHERE` clause. In the later case, we will cache the features already
+         * if we need to add a `WHERE` clause. In the latter case, we will cache the features already
          * created if there is a possibility that many rows reference the same feature instance.
          */
         table.appendFromClause(sql);

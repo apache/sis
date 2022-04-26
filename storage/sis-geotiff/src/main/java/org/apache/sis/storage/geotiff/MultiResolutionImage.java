@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.List;
 import java.util.Arrays;
 import java.io.IOException;
+import org.opengis.util.NameSpace;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
@@ -48,6 +49,12 @@ import org.apache.sis.referencing.CRS;
  * @module
  */
 final class MultiResolutionImage extends GridResourceWrapper {
+    /**
+     * Name of the image at finest resolution.
+     * This is used as the namespace for overviews.
+     */
+    private NameSpace namespace;
+
     /**
      * Descriptions of each <cite>Image File Directory</cite> (IFD) in the GeoTIFF file.
      */
@@ -109,11 +116,19 @@ final class MultiResolutionImage extends GridResourceWrapper {
      * @return image at the given pyramid level.
      */
     private ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException {
+        assert Thread.holdsLock(getSynchronizationLock());
         final ImageFileDirectory dir = levels[index];
         if (dir.hasDeferredEntries) {
             dir.reader.resolveDeferredEntries(dir);
         }
-        dir.validateMandatoryTags();
+        if (dir.validateMandatoryTags() && index != 0) {
+            if (namespace == null) {
+                final ImageFileDirectory base = levels[0];
+                // Identifier should never be empty (see `DataCube.getIdentifier()` contract).
+                namespace = base.reader.nameFactory.createNameSpace(base.getIdentifier().get(), null);
+            }
+            dir.setOverviewIdentifier(namespace, index);
+        }
         return dir;
     }
 
@@ -131,14 +146,19 @@ final class MultiResolutionImage extends GridResourceWrapper {
             final GridGeometry       geometry   = base.getGridGeometry();
             final GridExtent         fullExtent = geometry.getExtent();
             final GridExtent         subExtent  = image.getExtent();
-            final MatrixSIS          gridToCRS  = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER)
-                    .derivative(new DirectPositionView.Double(fullExtent.getPointOfInterest())));
             final double[] scales = new double[fullExtent.getDimension()];
             for (int i=0; i<scales.length; i++) {
                 scales[i] = fullExtent.getSize(i, false) / subExtent.getSize(i, false);
             }
             image.initReducedResolution(base, scales);
-            resolution = gridToCRS.multiply(scales);
+            if (geometry.isDefined(GridGeometry.GRID_TO_CRS)) {
+                final MatrixSIS gridToCRS = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER)
+                                  .derivative(new DirectPositionView.Double(fullExtent.getPointOfInterest())));
+                resolution = gridToCRS.multiply(scales);
+            } else {
+                // Assume an identity transform for the `gridToCRS` of full resolution image.
+                resolution = scales;
+            }
             for (int i=0; i<resolution.length; i++) {
                 resolution[i] = Math.abs(resolution[i]);
             }

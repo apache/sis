@@ -169,7 +169,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *   <li><code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code> shall be equal
      *       to one of the following:
      *     <ul>
-     *       <li>to {@code valueClass} if the later is not an array,</li>
+     *       <li>to {@code valueClass} if the latter is not an array,</li>
      *       <li>or to <code>{@linkplain Numbers#primitiveToWrapper(Class)
      *           primitiveToWrapper}(valueClass.{@linkplain Class#getComponentType() getComponentType()})</code>
      *           if {@code valueClass} is an array.</li>

@@ -31,8 +31,9 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameSpace;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.geotiff.Resources;
@@ -457,15 +458,20 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Returns the identifier in the namespace of the {@link GeoTiffStore}.
      * The first image has the sequence number "1", optionally customized.
-     * Reduced-resolution (overviews) images have no identifier.
+     * If this image is an overview, then its namespace should be the name of the base image
+     * and the tip should be "overview-level" where "level" is a number starting at 1.
+     *
+     * <p>The returned value should never be empty. An empty value would be a
+     * failure to {@linkplain #setOverviewIdentifier initialize overviews}.</p>
      *
      * @see #getMetadata()
      */
     @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
+    public Optional<GenericName> getIdentifier() {
         synchronized (getSynchronizationLock()) {
             if (identifier == null) {
                 if (isReducedResolution()) {
+                    // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
                     return Optional.empty();
                 }
                 final String id = String.valueOf(index + 1);
@@ -478,9 +484,20 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Sets the identifier for an overview level. This is used only for a pyramid.
+     * The image with finest resolution is used as the namespace for all overviews.
+     *
+     * @param  base      name of the image with finest resolution.
+     * @param  overview  1 for the first overview, 2 for the next one, etc.
+     */
+    final void setOverviewIdentifier(final NameSpace base, final int overview) {
+        identifier = reader.nameFactory.createLocalName(base, "overview-" + overview);
+    }
+
+    /**
      * Adds the value read from the current position in the given stream for the entry identified
      * by the given GeoTIFF tag. This method may store the value either in a field of this class,
-     * or directly in the {@link ImageMetadataBuilder}. However in the later case, this method
+     * or directly in the {@link ImageMetadataBuilder}. However in the latter case, this method
      * should not write anything under the {@code "metadata/contentInfo"} node.
      *
      * @param  tag    the GeoTIFF tag to decode.
@@ -1169,10 +1186,11 @@ final class ImageFileDirectory extends DataCube {
      * This method opportunistically computes default value of optional fields
      * when those values can be computed from other (usually mandatory) fields.
      *
+     * @return {@code true} if the method has been invoked for the first time.
      * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
      */
-    final void validateMandatoryTags() throws DataStoreContentException {
-        if (isValidated) return;
+    final boolean validateMandatoryTags() throws DataStoreContentException {
+        if (isValidated) return false;
         if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
         if (imageHeight < 0) throw missingTag(Tags.ImageLength);
         final short offsetsTag, byteCountsTag;
@@ -1295,6 +1313,7 @@ final class ImageFileDirectory extends DataCube {
             throw missingTag(Tags.ModelTiePoints);
         }
         isValidated = true;
+        return true;
     }
 
     /**
@@ -1341,18 +1360,17 @@ final class ImageFileDirectory extends DataCube {
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) try {
                 metadata.addExtent(gridGeometry.getEnvelope());
             } catch (TransformException e) {
-                warning(e);
+                listeners.warning(e);
             }
             referencing.completeMetadata(gridGeometry, metadata);
         }
         /*
          * End of metadata construction from TIFF tags.
          */
-        metadata.finish(this);
-        final DefaultMetadata md = metadata.build(false);
+        metadata.finish(this, listeners);
+        final DefaultMetadata md = metadata.build();
         if (isIndexValid) {
             final Metadata c = reader.store.customizer.customize(index, md);
-            md.transitionTo(DefaultMetadata.State.FINAL);
             if (c != null) return c;
         }
         return md;
@@ -1698,14 +1716,24 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Reports a warning with a message created from the given resource keys and parameters.
+     * Note that the log record will not necessarily be sent to the logging framework;
+     * if the user has registered at least one listener, then the record will be sent to the listeners instead.
+     *
+     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
+     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
+     * Those values assume that the warnings occurred indirectly from a call to {@link GeoTiffStore#components()}.
+     * We do not report private classes or methods as the source of warnings.</p>
      *
      * @param  level       the logging level for the message to log.
      * @param  key         the {@code Resources} key of the message to format.
      * @param  parameters  the parameters to put in the message.
      */
     private void warning(final Level level, final short key, final Object... parameters) {
-        final LogRecord r = reader.resources().getLogRecord(level, key, parameters);
-        reader.store.warning(r);
+        final LogRecord record = reader.resources().getLogRecord(level, key, parameters);
+        record.setSourceClassName(GeoTiffStore.class.getName());
+        record.setSourceMethodName("components()");
+        // Logger name will be set by listeners.warning(record).
+        listeners.warning(record);
     }
 
     /**

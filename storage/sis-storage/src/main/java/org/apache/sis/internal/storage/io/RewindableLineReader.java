@@ -95,7 +95,7 @@ public final class RewindableLineReader extends LineNumberReader {
     /**
      * Returns a reader rewound to the beginning of data to read. This method invokes {@link #reset()} first.
      * If that call succeed, then this method returns {@code this}. Otherwise this method returns a new reader.
-     * In the later case, {@code this} reader should not be used anymore.
+     * In the latter case, {@code this} reader should not be used anymore.
      *
      * @return the reader to use for next read operation (may be {@code this}).
      * @throws IOException if an error occurred while rewinding the reader.

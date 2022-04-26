@@ -149,10 +149,10 @@ public final class StoreProvider extends DataStoreProvider {
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be a folder.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
-     * header.
+     * characteristics.
      *
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable as a folder.
-     * @throws DataStoreException if an I/O or SQL error occurred.
+     * @throws DataStoreException if an I/O error occurred.
      */
     @Override
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {

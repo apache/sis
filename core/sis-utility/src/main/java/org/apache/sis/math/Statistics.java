@@ -23,6 +23,8 @@ import java.util.function.DoubleConsumer;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.*;
 import static java.lang.Double.NaN;
@@ -85,7 +87,7 @@ import static java.lang.Double.doubleToLongBits;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -156,15 +158,72 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * If differences or discrete derivatives are wanted, use the {@link #forSeries forSeries(…)}
      * method instead.</p>
      *
-     * @param  name  the phenomenon for which this object is collecting statistics, or {@code null}
-     *               if none. If non-null, then this name will be shown as column header in the table
-     *               formatted by {@link StatisticsFormat}.
+     * @param  name  the phenomenon for which this object is collecting statistics, or {@code null} if none.
+     *         If non-null, it will be shown as column header in the table formatted by {@link StatisticsFormat}.
      */
     public Statistics(final CharSequence name) {
         if (name == null || name instanceof InternationalString) {
             this.name = (InternationalString) name;
         } else {
             this.name = new SimpleInternationalString(name.toString());
+        }
+    }
+
+    /**
+     * Constructs a set of statistics initialized to the given values.
+     * The {@code countNaN} and {@code count} arguments must be positive.
+     * If {@code count} is 0, all following {@code double} arguments are ignored.
+     * Otherwise the following restrictions apply:
+     *
+     * <ul>
+     *   <li>{@code minimum} and {@code maximum} arguments are mandatory and can not be {@link Double#NaN NaN}.</li>
+     *   <li>{@code mean} argument is mandatory (can not be NaN) if {@code standardDeviation} is not NaN.</li>
+     *   <li>{@code mean} and {@code standardDeviation} arguments can be both {@link Double#NaN NaN} if unknown,
+     *       but statistics initialized that way will always return NaN from {@link #sum()}, {@link #mean()},
+     *       {@link #rms()} and {@link #standardDeviation(boolean)} methods.</li>
+     * </ul>
+     *
+     * @param  name      the phenomenon for which this object is collecting statistics, or {@code null} if none.
+     * @param  countNaN  the number of {@link Double#NaN NaN} samples.
+     * @param  count     the number of samples, excluding {@link Double#NaN NaN} values.
+     * @param  minimum   the minimum sample value. Ignored if {@code count} is zero.
+     * @param  maximum   the maximum sample value. Ignored if {@code count} is zero.
+     * @param  mean      the mean value. Ignored if {@code count} is zero.
+     * @param  standardDeviation  the standard deviation. Ignored if {@code count} is zero.
+     * @param  allPopulation      {@code true} if sample values were the totality of the population under study,
+     *                            or {@code false} if they were only a sampling.
+     *
+     * @since 1.2
+     */
+    public Statistics(final CharSequence name, final int countNaN, final int count,
+                      final double minimum, final double maximum, final double mean,
+                      final double standardDeviation, final boolean allPopulation)
+    {
+        this(name);
+        ArgumentChecks.ensurePositive("countNaN", this.countNaN = countNaN);
+        if (count != 0) {
+            ArgumentChecks.ensurePositive("count", this.count = count);
+            if (!((this.minimum = minimum) <= (this.maximum = maximum))) {      // Use `!` for catching NaN.
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum));
+            }
+            if (!Double.isNaN(mean) || !Double.isNaN(standardDeviation)) {
+                ArgumentChecks.ensureBetween("mean", minimum, maximum, mean);
+            }
+            final DoubleDouble sd = DoubleDouble.createAndGuessError(mean);
+            sd.multiply(count);
+            sum = sd.value;
+            lowBits = sd.error;
+            /*
+             * squareSum = standardDeviation² × (allPopulation ? count : count-1) + sum²/count
+             */
+            sd.square();
+            sd.divide(count);
+            final DoubleDouble sq = DoubleDouble.createAndGuessError(standardDeviation);
+            sq.square();
+            sq.multiply(allPopulation ? count : count-1);
+            sq.add(sd);
+            squareSum = sq.value;
+            squareLowBits = sq.error;
         }
     }
 
@@ -418,6 +477,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
 
     /**
      * Returns the sum, or 0 if none.
+     * May also be NaN if that value was explicitly specified to the constructor.
      *
      * @return the sum, or 0 if none.
      */

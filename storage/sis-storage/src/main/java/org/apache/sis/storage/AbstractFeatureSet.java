@@ -14,30 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.storage;
 
 import java.util.Optional;
 import java.util.OptionalLong;
 import org.opengis.util.GenericName;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.internal.storage.MetadataBuilder;
 
 // Branch-dependent imports
 import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**
- * Base implementation of feature sets contained in data stores. This class provides a {@link #getMetadata()}
- * which extracts information from other methods. Subclasses shall or should override the following methods:
+ * Default implementations of several methods for classes that want to implement the {@link FeatureSet} interface.
+ * Subclasses should override the following methods:
  *
  * <ul>
  *   <li>{@link #getType()} (mandatory)</li>
+ *   <li>{@link #features(boolean parallel)} (mandatory)</li>
  *   <li>{@link #getFeatureCount()} (recommended)</li>
  *   <li>{@link #getEnvelope()} (recommended)</li>
- *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
- *   <li>{@link #features(boolean parallel)} (mandatory)</li>
+ *   <li>{@link #createMetadata()} (optional)</li>
  * </ul>
  *
  * <h2>Thread safety</h2>
@@ -46,17 +45,17 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
+ * @version 1.2
+ * @since   1.2
  * @module
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
-     * Creates a new resource.
+     * Creates a new resource. This resource will have its own set of listeners,
+     * but the listeners of the data store that created this resource will be notified as well.
      *
-     * @param  parent  listeners of the parent resource, or {@code null} if none.
-     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
-     *         that created this resource.
+     * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
+     *         This is usually the listeners of the {@link DataStore} that created this resource.
      */
     protected AbstractFeatureSet(final StoreListeners parent) {
         super(parent);
@@ -83,21 +82,27 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      *
      * @return estimation of the number of features.
      */
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         return OptionalLong.empty();
     }
 
     /**
-     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates metadata
-     * based on information provided by {@link #getType()}, {@link #getIdentifier()} and {@link #getEnvelope()}.
+     * Invoked in a synchronized block the first time that {@code getMetadata()} is invoked.
+     * The default implementation populates metadata based on information provided by
+     * {@link #getIdentifier()   getIdentifier()},
+     * {@link #getEnvelope()     getEnvelope()},
+     * {@link #getType()         getType()} and
+     * {@link #getFeatureCount() getFeatureCount()}.
      * Subclasses should override if they can provide more information.
+     * The default value can be completed by casting to {@link org.apache.sis.metadata.iso.DefaultMetadata}.
      *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     * @return the newly created metadata, or {@code null} if unknown.
+     * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
-        metadata.addFeatureType(getType(), getFeatureCount().orElse(-1));
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, listeners);
+        return builder.build();
     }
 }

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
-import javafx.event.ActionEvent;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -91,6 +90,8 @@ abstract class WindowManager extends Widget {
     /**
      * Returns resources for current locale. We could fetch this information ourselves,
      * but we currently ask to subclass because it has this information anyway.
+     *
+     * @return the resources in current locale.
      */
     abstract Resources localized();
 
@@ -115,7 +116,7 @@ abstract class WindowManager extends Widget {
      * @see #hasWindowsProperty
      */
     public final MenuItem createNewWindowMenu() {
-        final MenuItem menu = localized().menu(Resources.Keys.NewWindow, this::newDataWindow);
+        final MenuItem menu = localized().menu(Resources.Keys.NewWindow, (e) -> newDataWindow());
         menu.setDisable(true);
         newWindowMenus.add(menu);
         return menu;
@@ -150,19 +151,19 @@ abstract class WindowManager extends Widget {
 
     /**
      * Returns the set of currently selected data, or {@code null} if none.
+     *
+     * @return the selected data, or {@code null} if none.
      */
     abstract SelectedData getSelectedData();
 
     /**
      * Invoked when user asked to show the data in a new window. This method may be invoked from various sources:
      * contextual menu on the tab, contextual menu in the explorer tree, or from the "new window" menu item.
-     *
-     * @param  event  ignored (can be {@code null}).
      */
-    private void newDataWindow(final ActionEvent event) {
+    private void newDataWindow() {
         final SelectedData selection = getSelectedData();
         if (selection != null) {
-            final DataWindow window = new DataWindow(event, (Stage) getView().getScene().getWindow(), selection);
+            final DataWindow window = new DataWindow((Stage) getView().getScene().getWindow(), selection);
             window.setTitle(selection.title + " — Apache SIS");
             window.show();
             if (showWindowMenus != null) {

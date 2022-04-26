@@ -608,7 +608,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         /*
          * Then, copy all HashMap values back to the `values` array in the order they are declared in the
          * descriptor. Implementation note: the iteration termination condition uses the values array, not
-         * the descriptors list, because the former is often shorter than the later. We should never reach
+         * the descriptors list, because the former is often shorter than the latter. We should never reach
          * the end of descriptors list before the end of values array because `descriptors` contains all
          * `parameters` keys. This is verified by the `assert` below.
          */

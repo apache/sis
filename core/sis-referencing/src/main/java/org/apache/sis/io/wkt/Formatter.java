@@ -1473,7 +1473,7 @@ public class Formatter implements Localized {
             closeElement(false);
             /*
              * ISO 19162 requires the conversion factor to be positive.
-             * In addition, keywords other than "Unit" are not valid in WKt 1.
+             * In addition, keywords other than "Unit" are not valid in WKT 1.
              */
             if (!(conversion > 0) || (keyword != WKTKeywords.Unit && isWKT1)) {
                 setInvalidWKT(Unit.class, null);
@@ -1695,8 +1695,8 @@ public class Formatter implements Localized {
             if (unit != null && units.remove(unit.getSystemUnit()) != unit) {
                 /*
                  * The unit that we removed was not the expected one. Probably the user has invoked
-                 * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
-                 * However this check does not work in Convention.WKT1_COMMON_UNITS mode, since the
+                 * addContextualUnit(…) again without a matching call to `restoreContextualUnit(…)`.
+                 * However this check does not work in `Convention.WKT1_COMMON_UNITS` mode, since the
                  * map is always empty in that mode.
                  */
                 if (!convention.usesCommonUnits) {
@@ -1707,8 +1707,8 @@ public class Formatter implements Localized {
         } else if (units.put(previous.getSystemUnit(), previous) != unit) {
             /*
              * The unit that we replaced was not the expected one. Probably the user has invoked
-             * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
-             * Note that this case should never happen in Convention.WKT1_COMMON_UNITS mode,
+             * addContextualUnit(…) again without a matching call to `restoreContextualUnit(…)`.
+             * Note that this case should never happen in `Convention.WKT1_COMMON_UNITS` mode,
              * since `previous` should never be non-null in that mode (if the user followed
              * the documented pattern).
              */
@@ -1832,7 +1832,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the warnings after the WKT string. If there is no warnings, then this method does nothing.
+     * Appends the warnings after the WKT string. If there are no warnings, then this method does nothing.
      * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
      */
     final void appendWarnings() throws IOException {

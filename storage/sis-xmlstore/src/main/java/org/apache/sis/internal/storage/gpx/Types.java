@@ -293,7 +293,7 @@ final class Types {
         fc.define(route);
         fc.define(track);
         fc.define(wayPoint);
-        metadata = fc.build(true).getContentInfo();
+        metadata = fc.buildAndFreeze().getContentInfo();
         names = fc.features;
     }
 

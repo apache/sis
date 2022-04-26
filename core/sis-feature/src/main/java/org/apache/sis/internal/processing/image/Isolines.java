@@ -177,7 +177,7 @@ public final class Isolines {
      * when all other computations finished. Pending polylines are sequences of points not yet
      * stored in geometry objects because they were waiting to see if additional points would
      * close them as polygons. This {@code flush()} method is invoked when we know that it will
-     * not be the case because there is no more points to add.
+     * not be the case because there are no more points to add.
      *
      * @param  isolines  the isolines for which to write pending polylines.
      * @return the {@code isolines} array, returned for convenience.

@@ -65,7 +65,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   <li><b>{@linkplain #head() Head}:</b> derived from the identifier {@linkplain #getCodeSpace() code space} if non-null.
  *     If there is no code space, then the scope is derived from the shortest {@linkplain #getAuthority() authority}'s
  *     {@linkplain Citation#getAlternateTitles() alternate titles}, or the {@linkplain Citation#getTitle() main title}
- *     if there is no alternate titles. This policy exploits the ISO 19115 comment saying that citation alternate titles
+ *     if there are no alternate titles. This policy exploits the ISO 19115 comment saying that citation alternate titles
  *     often contain abbreviation (for example "DCW" as an alternative title for <cite>"Digital Chart of the World"</cite>).</li>
  * </ul>
  *

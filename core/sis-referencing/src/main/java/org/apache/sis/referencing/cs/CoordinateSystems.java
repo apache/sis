@@ -234,7 +234,7 @@ public final class CoordinateSystems extends Static {
          * Check for "South along 90° East", etc. directions. Note that this
          * check may perform a relatively costly parsing of axis direction name.
          * (NOTE: the check for 'isUserDefined' is performed outside DirectionAlongMeridian for
-         * avoiding class initialization of the later in the common case where we do not need it).
+         * avoiding class initialization of the latter in the common case where we do not need it).
          */
         final DirectionAlongMeridian srcMeridian, tgtMeridian;
         srcMeridian = AxisDirections.isUserDefined(source) ? DirectionAlongMeridian.parse(source) : null;
@@ -378,13 +378,13 @@ next:   for (final CoordinateSystem cs : targets) {
             final Unit<?> targetUnit = targetCS.getAxis(j).getUnit();
             for (int i=0; i<sourceDim; i++) {
                 if (matrix.getElement(j,i) == 0) {
-                    // There is no dependency between source[i] and target[j]
+                    // There are no dependencies between source[i] and target[j]
                     // (i.e. axes are orthogonal).
                     continue;
                 }
                 final Unit<?> sourceUnit = sourceCS.getAxis(i).getUnit();
                 if (Objects.equals(sourceUnit, targetUnit)) {
-                    // There is no units conversion to apply
+                    // There are no units conversion to apply
                     // between source[i] and target[j].
                     continue;
                 }

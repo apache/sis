@@ -948,7 +948,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Returns a string with leading and trailing whitespace characters omitted.
-     * This method is similar in purpose to {@link String#trim()}, except that the later considers
+     * This method is similar in purpose to {@link String#trim()}, except that the latter considers
      * every {@linkplain Character#isISOControl(int) ISO control codes} below 32 to be a whitespace.
      * That {@code String.trim()} behavior has the side effect of removing the heading of ANSI escape
      * sequences (a.k.a. X3.64), and to ignore Unicode spaces. This {@code trimWhitespaces(…)} method
@@ -1979,7 +1979,7 @@ cmp:    while (ia < lga) {
      * are a common suffix of both texts but nevertheless omitted because they cut a word.</div>
      *
      * <p>If one of those texts is {@code null}, then the other text is returned.
-     * If there is no common words, then this method returns an empty string.</p>
+     * If there are no common words, then this method returns an empty string.</p>
      *
      * <h4>Possible future evolution</h4>
      * Current implementation searches only for a common prefix and a common suffix, ignoring any common words
@@ -2123,7 +2123,7 @@ cmp:    while (ia < lga) {
      * @param  text       the text for which to get the token.
      * @param  fromIndex  index of the fist character to consider in the given text.
      * @return a sub-sequence of {@code text} starting at the given offset, or an empty string
-     *         if there is no non-blank character at or after the given offset.
+     *         if there are no non-blank character at or after the given offset.
      * @throws NullPointerException if the {@code text} argument is null.
      */
     public static CharSequence token(final CharSequence text, int fromIndex) {

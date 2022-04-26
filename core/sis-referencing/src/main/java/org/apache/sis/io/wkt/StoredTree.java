@@ -232,7 +232,7 @@ final class StoredTree implements Serializable {
 
         /**
          * Returns the string representation of the first value, which is usually the element name.
-         * For example in {@code DATUM["WGS 84", …]} this is "WGS 84". If there is no children then
+         * For example in {@code DATUM["WGS 84", …]} this is "WGS 84". If there are no children then
          * this method returns the keyword, which is usually an enumeration value (for example "NORTH"}).
          *
          * @see StoredTree#toString()
@@ -580,7 +580,7 @@ final class StoredTree implements Serializable {
 
     /**
      * Returns the string representation of the first value of the root element, which is usually the element name.
-     * For example in {@code DATUM["WGS 84", …]} this is "WGS 84". If there is no children then this method returns
+     * For example in {@code DATUM["WGS 84", …]} this is "WGS 84". If there are no children then this method returns
      * the keyword, which is usually an enumeration value (for example "NORTH"}).
      */
     @Override

@@ -487,7 +487,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * <p>The given envelope shall encompass all cell surfaces, from the left border of leftmost cell to the right border
      * of the rightmost cell and similarly along other axes. This constructor tries to store a geospatial envelope close
-     * to the specified envelope, but there is no guarantees that the envelope returned by {@link #getEnvelope()} will be
+     * to the specified envelope, but there is no guarantee that the envelope returned by {@link #getEnvelope()} will be
      * equal to the given envelope. The envelope stored in the new {@code GridGeometry} may be slightly smaller, larger or
      * shifted because the floating point values used in geospatial envelope can not always be mapped to the integer
      * coordinates used in {@link GridExtent}.
@@ -510,7 +510,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *                    {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
      * @param  gridToCRS  the mapping from grid coordinates to "real world" coordinates, or {@code null} if unknown.
      * @param  envelope   the geospatial envelope, including its coordinate reference system if available.
-     *                    There is no guarantees that the envelope actually stored in the {@code GridGeometry}
+     *                    There is no guarantee that the envelope actually stored in the {@code GridGeometry}
      *                    will be equal to this specified envelope.
      * @param  rounding   controls behavior of rounding from floating point values to integers.
      * @throws IllegalGridGeometryException if the math transform can not compute the grid extent or the resolution.
@@ -1141,7 +1141,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             final Matrix mat = MathTransforms.getMatrix(step);
             if (mat != null) {
                 /*
-                 * For linear transforms there is no bits to set. However if some bits were set by a previous
+                 * For linear transforms there are no bits to set. However if some bits were set by a previous
                  * iteration, we may need to move them (for example the transform may swap axes). We take the
                  * current bitmasks as source dimensions and find what are the target dimensions for them.
                  */
@@ -1266,8 +1266,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  bitmask  any combination of {@link #CRS}, {@link #ENVELOPE}, {@link #EXTENT},
      *         {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
-     * @return {@code true} if all specified attributes are defined (i.e. invoking the
-     *         corresponding method will not thrown an {@link IncompleteGridGeometryException}).
+     * @return {@code true} if all specified properties are defined (i.e. invoking the
+     *         corresponding getter methods will not throw {@link IncompleteGridGeometryException}).
      * @throws IllegalArgumentException if the specified bitmask is not a combination of known masks.
      *
      * @see #getCoordinateReferenceSystem()

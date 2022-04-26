@@ -118,7 +118,7 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
      *
      * @param  action  the action to execute as soon as the {@code mfidref} change, or {@code null} if none.
      * @param  all     {@code true} for executing the given action on all remaining features.
-     * @return {@code false} if there is no remaining feature after this method call.
+     * @return {@code false} if there are no remaining features after this method call.
      * @throws IOException if an I/O error occurred while reading a feature.
      * @throws IllegalArgumentException if parsing of a number failed, or other error.
      * @throws DateTimeException if parsing of a date failed.

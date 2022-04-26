@@ -22,10 +22,11 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.storage.event.StoreListeners;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.NetcdfFile;
 import org.junit.AfterClass;
@@ -40,7 +41,7 @@ import static org.junit.Assert.*;
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -109,7 +110,28 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
-        return new DecoderWrapper(new NetcdfDataset(createUCAR(file)), GeometryLibrary.JAVA2D, new AbstractResource(null));
+        return new DecoderWrapper(new NetcdfDataset(createUCAR(file)), GeometryLibrary.JAVA2D, createListeners());
+    }
+
+    /**
+     * Creates a dummy set of store listeners.
+     * Used only for constructors that require a non-null {@link StoreListeners} instance.
+     *
+     * @return a dummy set of listeners.
+     */
+    protected static StoreListeners createListeners() {
+        final class DummyResource extends AbstractResource {
+            /** Creates a dummy resource without parent. */
+            DummyResource() {
+                super(null);
+            }
+
+            /** Makes listeners accessible to this package. */
+            StoreListeners listeners() {
+                return listeners;
+            }
+        }
+        return new DummyResource().listeners();
     }
 
     /**

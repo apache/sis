@@ -111,7 +111,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
 
     /**
      * The number of feature instances to skip from the beginning.
-     * This is zero if there is no instance to skip.
+     * This is zero if there are no instances to skip.
      *
      * @see #getOffset()
      * @see #setOffset(long)

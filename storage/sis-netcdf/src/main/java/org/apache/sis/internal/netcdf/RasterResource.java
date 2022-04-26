@@ -28,9 +28,9 @@ import java.nio.Buffer;
 import java.awt.image.DataBuffer;
 
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
@@ -42,6 +42,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.Resource;
@@ -54,6 +55,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.RangeArgument;
 
 
 /**
@@ -68,7 +70,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
  * @since   1.0
  * @module
  */
-public final class RasterResource extends AbstractGridResource implements ResourceOnFileSystem {
+public final class RasterResource extends AbstractGridCoverageResource implements ResourceOnFileSystem {
     /**
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
      * that the variable is a component of a vector. Those words are used in heuristic rules
@@ -256,7 +258,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             } else {
                 /*
                  * At this point we found a variable where all dimensions are in the CRS. This is the usual case;
-                 * there is no band explicitly declared in the netCDF file. However in some cases, we should put
+                 * there are no bands explicitly declared in the netCDF file. However in some cases, we should put
                  * other variables together with the one we just found. Example:
                  *
                  *    1) baroclinic_eastward_sea_water_velocity
@@ -387,11 +389,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * provided by {@link #getIdentifier()}, {@link #getGridGeometry()}, {@link #getSampleDimensions()} and
      * variable names.
      *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
     @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder metadata = new MetadataBuilder();
         String title = null;
         for (final Variable v : data) {
             title = (String) CharSequences.commonWords(title, v.getDescription());
@@ -400,7 +402,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (title != null && !title.isEmpty()) {
             metadata.addTitle(CharSequences.camelCaseToSentence(title).toString());
         }
-        super.createMetadata(metadata);
+        metadata.addDefaultMetadata(this, listeners);
+        return metadata.build();
     }
 
     /**
@@ -523,7 +526,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
              * If we failed to do that, we will not add quantitative category. But we still can add
              * qualitative categories for "no data" sample values in the rest of this method.
              */
-            warning(e);
+            listeners.warning(e);
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -582,7 +585,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
              */
             builder.categories().clear();
             sd = builder.build();
-            warning(e);
+            listeners.warning(e);
         }
         return sd;
     }
@@ -621,14 +624,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
     @Override
     public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
         final long startTime = System.nanoTime();
-        final RangeArgument rangeIndices = validateRangeArgument(ranges.length, range);
+        final RangeArgument rangeIndices = RangeArgument.validate(ranges.length, range, listeners);
         final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.getFirstSpecified()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
             for (int i=0; i<rangeIndices.getNumBands(); i++) {
                 final Variable variable = data[rangeIndices.getSourceIndex(i)];
                 if (!dataType.equals(variable.getDataType())) {
-                    throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
+                    throw new DataStoreContentException(Resources.forLocale(listeners.getLocale()).getString(
                             Resources.Keys.MismatchedVariableType_3, getFilename(), first.getName(), variable.getName()));
                 }
             }
@@ -721,7 +724,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * Provide to `Raster` all information needed for building a `RenderedImage` when requested.
          */
         if (imageBuffer == null) {
-            throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
+            throw new DataStoreContentException(Errors.getResources(listeners.getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         final Variable main = data[visibleBand];
         final Raster raster = new Raster(targetDomain, UnmodifiableArrayList.wrap(bands), imageBuffer,
@@ -735,7 +738,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * Returns the name of the netCDF file. This is used for error messages.
      */
     private String getFilename() {
-        return (location != null) ? location.getFileName().toString() : getSourceName();
+        return (location != null) ? location.getFileName().toString() : listeners.getSourceName();
     }
 
     /**

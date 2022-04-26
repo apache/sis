@@ -126,7 +126,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
             }
         } catch (ParseException exception) {
             /*
-             * Use Exception.getMessage() instead of getLocalizedMessage() because the later
+             * Use Exception.getMessage() instead of getLocalizedMessage() because the latter
              * is formatted in the AngleFormat locale, which is hard-coded to Locale.ROOT in our
              * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
              * which is what we actually want.

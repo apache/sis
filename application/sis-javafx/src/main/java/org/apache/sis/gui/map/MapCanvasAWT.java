@@ -359,7 +359,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
     }
 
     /**
-     * Background tasks for creating a new {@link BufferedImage}. This task is invoked when there is no
+     * Background tasks for creating a new {@link BufferedImage}. This task is invoked when there are no
      * previous resources that we can recycle, either because they have never been created yet or because
      * they are not suitable anymore (for example because the image size changed).
      */

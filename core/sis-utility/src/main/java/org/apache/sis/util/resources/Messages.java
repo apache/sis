@@ -167,6 +167,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertyAssociatedTo_1 = 21;
 
         /**
+         * Ignored value of property ‘{0}’.
+         */
+        public static final short IgnoredPropertyValue_1 = 35;
+
+        /**
          * Parsing of “{0}” done, but some elements were ignored.
          */
         public static final short IncompleteParsing_1 = 22;
@@ -232,7 +237,7 @@ public final class Messages extends IndexedResourceBundle {
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     *        there are no resources. The resources may be a file or an entry in a JAR file.
      */
     Messages(final URL resources) {
         super(resources);

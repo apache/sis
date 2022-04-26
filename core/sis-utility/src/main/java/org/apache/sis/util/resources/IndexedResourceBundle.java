@@ -103,7 +103,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     static final int FIRST = 1;
 
     /**
-     * The path of the binary file containing resources, or {@code null} if there is no resources
+     * The path of the binary file containing resources, or {@code null} if there are no resources
      * or if the resources have already been loaded. The resources may be a file or an entry in a
      * JAR file.
      */
@@ -138,7 +138,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param  resources  the path of the binary file containing resources, or {@code null} if
-     *         there is no resources. The resources may be a file or an entry in a JAR file.
+     *         there are no resources. The resources may be a file or an entry in a JAR file.
      */
     protected IndexedResourceBundle(final URL resources) {
         this.resources = resources;
@@ -280,7 +280,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             values = this.values;
             if (values == null) {
                 /*
-                 * If there is no explicit resources for this instance, inherit the resources
+                 * If there are no explicit resources for this instance, inherit the resources
                  * from the parent. Note that this IndexedResourceBundle instance may still
                  * differ from its parent in the way dates and numbers are formatted.
                  */

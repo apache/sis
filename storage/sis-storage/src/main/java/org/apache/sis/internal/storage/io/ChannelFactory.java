@@ -42,6 +42,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import org.apache.sis.util.logging.Logging;
@@ -55,7 +56,7 @@ import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
- * Opens a readable channel for a given input object (URL, input stream, <i>etc</i>).
+ * Opens a readable or writable channel for a given input object (URL, input stream, <i>etc</i>).
  * The {@link #prepare prepare(…)} method analyzes the given input {@link Object} and tries to return a factory instance
  * capable to open at least a {@link ReadableByteChannel} for that input. For some kinds of input like {@link Path} or
  * {@link URL}, the {@link #readable readable(…)} method can be invoked an arbitrary amount of times for creating as many
@@ -75,15 +76,26 @@ import org.apache.sis.storage.event.StoreListeners;
  */
 public abstract class ChannelFactory {
     /**
-     * Options to be rejected by {@link #prepare(Object, boolean, String, OpenOption[])} for safety reasons.
+     * Options to be rejected by {@link #prepare(Object, boolean, String, OpenOption[])} for safety reasons,
+     * unless {@code allowWriteOnly} is {@code true}.
      */
     private static final Set<StandardOpenOption> ILLEGAL_OPTIONS = EnumSet.of(
             StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
 
     /**
-     * For subclass constructors.
+     * Whether this factory suggests to use direct buffers instead of heap buffers.
+     * Direct buffer should be used for channels on the default file system or other
+     * native source of data, and avoided otherwise.
      */
-    protected ChannelFactory() {
+    public final boolean suggestDirectBuffer;
+
+    /**
+     * For subclass constructors.
+     *
+     * @param  suggestDirectBuffer  whether this factory suggests to use direct buffers instead of heap buffers.
+     */
+    protected ChannelFactory(final boolean suggestDirectBuffer) {
+        this.suggestDirectBuffer = suggestDirectBuffer;
     }
 
     /**
@@ -98,7 +110,7 @@ public abstract class ChannelFactory {
      *   <li>If the given storage is a {@link WritableByteChannel} or an {@link OutputStream}
      *       and the {@code allowWriteOnly} argument is {@code true},
      *       then the factory will return that output directly or indirectly as a wrapper.</li>
-     *   <li>If the given storage if a {@link Path}, {@link File}, {@link URL}, {@link URI}
+     *   <li>If the given storage is a {@link Path}, {@link File}, {@link URL}, {@link URI}
      *       or {@link CharSequence} and the file is not a directory, then the factory will
      *       open new channels on demand.</li>
      * </ul>
@@ -153,10 +165,10 @@ public abstract class ChannelFactory {
      * @throws IOException if an error occurred while processing the given input.
      */
     private static ChannelFactory prepare(Object storage, final boolean allowWriteOnly,
-            final String encoding, OpenOption[] options) throws IOException
+            final String encoding, final OpenOption[] options) throws IOException
     {
         /*
-         * Unconditionally verify the options (unless 'allowWriteOnly' is true),
+         * Unconditionally verify the options (unless `allowWriteOnly` is true),
          * even if we may not use them.
          */
         final Set<OpenOption> optionSet;
@@ -171,17 +183,20 @@ public abstract class ChannelFactory {
             }
         }
         /*
-         * Check for inputs that are already readable channels or input streams.
+         * Check for storages that are already readable/Writable channels or input/output streams.
+         * The channel or stream will be either returned directly or wrapped when first needed,
+         * depending which factory method will be invoked.
+         *
          * Note that Channels.newChannel(InputStream) checks for instances of FileInputStream in order to delegate
          * to its getChannel() method, but only if the input stream type is exactly FileInputStream, not a subtype.
          * If Apache SIS defines its own FileInputStream subclass someday, we may need to add a special case here.
          */
         if (storage instanceof ReadableByteChannel || (allowWriteOnly && storage instanceof WritableByteChannel)) {
-            return new Stream((Channel) storage);
+            return new Stream(storage, storage instanceof FileChannel);
         } else if (storage instanceof InputStream) {
-            return new Stream(Channels.newChannel((InputStream) storage));
+            return new Stream(storage, storage.getClass() == FileInputStream.class);
         } else if (allowWriteOnly && storage instanceof OutputStream) {
-            return new Stream(Channels.newChannel((OutputStream) storage));
+            return new Stream(storage, storage.getClass() == FileOutputStream.class);
         }
         /*
          * In the following cases, we will try hard to convert to Path objects before to fallback
@@ -257,7 +272,13 @@ public abstract class ChannelFactory {
          */
         if (storage instanceof URL) {
             final URL file = (URL) storage;
-            return new ChannelFactory() {
+            return new ChannelFactory(false) {
+                @Override public InputStream inputStream(String filename, StoreListeners listeners) throws IOException {
+                    return file.openStream();
+                }
+                @Override public OutputStream outputStream(String filename, StoreListeners listeners) throws IOException {
+                    return file.openConnection().getOutputStream();
+                }
                 @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
                     return Channels.newChannel(file.openStream());
                 }
@@ -278,7 +299,7 @@ public abstract class ChannelFactory {
         if (storage instanceof Path) {
             final Path path = (Path) storage;
             if (!Files.isDirectory(path)) {
-                return new ChannelFactory() {
+                return new ChannelFactory(true) {
                     @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
@@ -318,6 +339,10 @@ public abstract class ChannelFactory {
      * Returns the readable channel as an input stream. The returned stream is <strong>not</strong> buffered;
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedInputStream} if desired.
      *
+     * <p>The default implementation wraps the channel returned by {@link #readable(String, StoreListeners)}.
+     * This wrapping is preferred to direct instantiation of {@link FileInputStream} in order to take in account
+     * the {@link OpenOption}s.</p>
+     *
      * @param  filename  data store name to report in case of failure.
      * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the input stream.
@@ -333,6 +358,10 @@ public abstract class ChannelFactory {
     /**
      * Returns the writable channel as an output stream. The returned stream is <strong>not</strong> buffered;
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedOutputStream} if desired.
+     *
+     * <p>The default implementation wraps the channel returned by {@link #writable(String, StoreListeners)}.
+     * This wrapping is preferred to direct instantiation of {@link FileOutputStream} in order to take in account
+     * the {@link OpenOption}s.</p>
      *
      * @param  filename  data store name to report in case of failure.
      * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
@@ -375,20 +404,26 @@ public abstract class ChannelFactory {
             throws DataStoreException, IOException;
 
     /**
-     * A factory that returns an existing channel <cite>as-is</cite>.
+     * A factory that returns an existing channel <cite>as-is</cite>. The channel is often wrapping an
+     * {@link InputStream} or {@link OutputStream} (which is the reason for {@code Stream} class name),
+     * otherwise {@link org.apache.sis.storage.StorageConnector} would hare returned the storage object
+     * directly instead of instantiating this factory.
      * The channel can be returned only once.
      */
     private static final class Stream extends ChannelFactory {
         /**
-         * The channel, or {@code null} if it has already been returned.
+         * The stream or channel, or {@code null} if it has already been returned.
+         * Shall be an instance of {@link InputStream}, {@link OutputStream},
+         * {@link ReadableByteChannel} or {@link WritableByteChannel}.
          */
-        private Channel channel;
+        private Object storage;
 
         /**
-         * Creates a new factory for the given channel, which will be returned only once.
+         * Creates a new factory for the given stream or channel, which will be returned only once.
          */
-        Stream(final Channel input) {
-            this.channel = input;
+        Stream(final Object storage, final boolean suggestDirectBuffer) {
+            super(suggestDirectBuffer);
+            this.storage = storage;
         }
 
         /**
@@ -404,21 +439,54 @@ public abstract class ChannelFactory {
          */
         @Override
         public boolean canOpen() {
-            return channel != null;
+            return storage != null;
         }
 
         /**
-         * Returns the readable channel on the first invocation or
-         * throws an exception on all subsequent invocations.
+         * Returns the storage object as an input stream. This is either the stream specified at construction
+         * time if it can be returned directly, or a wrapper around the {@link ReadableByteChannel} otherwise.
+         * The input stream can be returned at most once, otherwise an exception is thrown.
+         */
+        @Override
+        public InputStream inputStream(String filename, StoreListeners listeners) throws DataStoreException, IOException {
+            final Object in = storage;
+            if (in instanceof InputStream) {
+                storage = null;
+                return (InputStream) in;
+            }
+            return super.inputStream(filename, listeners);
+        }
+
+        /**
+         * Returns the storage object as an output stream. This is either the stream specified at construction
+         * time if it can be returned directly, or a wrapper around the {@link WritableByteChannel} otherwise.
+         * The output stream can be returned at most once, otherwise an exception is thrown.
+         */
+        @Override
+        public OutputStream outputStream(String filename, StoreListeners listeners) throws DataStoreException, IOException {
+            final Object out = storage;
+            if (out instanceof OutputStream) {
+                storage = null;
+                return (OutputStream) out;
+            }
+            return super.outputStream(filename, listeners);
+        }
+
+        /**
+         * Returns the readable channel on the first invocation or throws an exception on all subsequent invocations.
+         * This is either the channel specified at construction time, or a wrapper around the {@link InputStream}.
          */
         @Override
         public ReadableByteChannel readable(final String filename, final StoreListeners listeners)
                 throws DataStoreException, IOException
         {
-            final Channel in = channel;
+            final Object in = storage;
             if (in instanceof ReadableByteChannel) {
-                channel = null;
+                storage = null;
                 return (ReadableByteChannel) in;
+            } else if (in instanceof InputStream) {
+                storage = null;
+                return Channels.newChannel((InputStream) in);
             }
             String message = Resources.format(in != null ? Resources.Keys.StreamIsNotReadable_1
                                                          : Resources.Keys.StreamIsReadOnce_1, filename);
@@ -430,17 +498,20 @@ public abstract class ChannelFactory {
         }
 
         /**
-         * Returns the writable channel on the first invocation or
-         * throws an exception on all subsequent invocations.
+         * Returns the writable channel on the first invocation or throws an exception on all subsequent invocations.
+         * This is either the channel specified at construction time, or a wrapper around the {@link OutputStream}.
          */
         @Override
         public WritableByteChannel writable(final String filename, final StoreListeners listeners)
                 throws DataStoreException, IOException
         {
-            final Channel out = channel;
+            final Object out = storage;
             if (out instanceof WritableByteChannel) {
-                channel = null;
+                storage = null;
                 return (WritableByteChannel) out;
+            } else if (out instanceof OutputStream) {
+                storage = null;
+                return Channels.newChannel((OutputStream) out);
             }
             String message = Resources.format(out != null ? Resources.Keys.StreamIsNotWritable_1
                                                           : Resources.Keys.StreamIsWriteOnce_1, filename);
@@ -474,6 +545,7 @@ public abstract class ChannelFactory {
          * Creates a new fallback to use if the given file can not be converted to a {@link Path}.
          */
         Fallback(final File file, final InvalidPathException cause) {
+            super(true);
             this.file  = file;
             this.cause = cause;
         }

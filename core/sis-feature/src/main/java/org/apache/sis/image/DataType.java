@@ -24,6 +24,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 
@@ -33,7 +34,7 @@ import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_F
  * This is a type-safe version of the {@code TYPE_*} constants defined in {@link DataBuffer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -193,6 +194,58 @@ public enum DataType {
         } else {
             throw new RasterFormatException(Resources.format(Resources.Keys.UnknownDataType_1, type));
         }
+    }
+
+    /**
+     * Returns the enumeration value for the given number of bits.
+     * Only the following combinations of argument values are accepted:
+     *
+     * <table class="sis">
+     *   <caption>Valid combinations of argument values</caption>
+     *   <tr><th>size</th>                  <th>real</th>           <th>signed</th></tr>
+     *   <tr><td>1</td>                     <td>{@code false}</td>  <td>{@code false}</td></tr>
+     *   <tr><td>2</td>                     <td>{@code false}</td>  <td>{@code false}</td></tr>
+     *   <tr><td>4</td>                     <td>{@code false}</td>  <td>{@code false}</td></tr>
+     *   <tr><td>{@value Byte#SIZE}</td>    <td>{@code false}</td>  <td>{@code false}</td></tr>
+     *   <tr><td>{@value Short#SIZE}</td>   <td>{@code false}</td>  <td>{@code false} or {@code true}</td></tr>
+     *   <tr><td>{@value Integer#SIZE}</td> <td>{@code false}</td>  <td>{@code true}</td></tr>
+     *   <tr><td>{@value Float#SIZE}</td>   <td>{@code true}</td>   <td>ignored</td></tr>
+     *   <tr><td>{@value Double#SIZE}</td>  <td>{@code true}</td>   <td>ignored</td></tr>
+     * </table>
+     *
+     * @param  size    number of bits as a power of 2 between 1 and {@value Double#SIZE} inclusive.
+     * @param  real    {@code true} for floating point numbers or {@code false} for integers.
+     * @param  signed  {@code true} for signed numbers of {@code false} for unsigned numbers.
+     * @return the data type (never {@code null}) for the given number of bits.
+     * @throws RasterFormatException if the combination of argument values is invalid.
+     *
+     * @since 1.2
+     */
+    public static DataType forNumberOfBits(final int size, final boolean real, final boolean signed) {
+        if (size < 1 || size > Double.SIZE || Integer.lowestOneBit(size) != size) {
+            throw new RasterFormatException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "size", size));
+        }
+        String argument = "real";       // For reporting which argument is inconsistent with sample size.
+        boolean value   =  real;
+        if (real) {
+            switch (size) {
+                case Float.SIZE:  return FLOAT;
+                case Double.SIZE: return DOUBLE;
+            }
+        } else {
+            if (size == Short.SIZE) {
+                return signed ? SHORT : USHORT;
+            }
+            final boolean isInt = (size == Integer.SIZE);
+            if (isInt || size <= Byte.SIZE) {
+                if (isInt == signed) {
+                    return isInt ? INT : BYTE;
+                }
+                argument = "signed";
+                value    =  signed;
+            }
+        }
+        throw new RasterFormatException(Resources.format(Resources.Keys.UnsupportedSampleType_3, size, argument, value));
     }
 
     /**

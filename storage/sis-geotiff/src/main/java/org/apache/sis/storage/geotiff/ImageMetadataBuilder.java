@@ -21,6 +21,7 @@ import javax.measure.quantity.Length;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -168,7 +169,7 @@ final class ImageMetadataBuilder extends MetadataBuilder {
      *
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
-    void finish(final ImageFileDirectory image) throws DataStoreException {
+    void finish(final ImageFileDirectory image, final StoreListeners listeners) throws DataStoreException {
         image.getIdentifier().ifPresent((id) -> addTitle(id.toString()));
         /*
          * Add information about the file format.
@@ -228,7 +229,7 @@ final class ImageMetadataBuilder extends MetadataBuilder {
         while (complement != null) try {
             complement = complement.appendTo(this);
         } catch (Exception ex) {
-            image.warning(image.reader.errors().getString(Errors.Keys.CanNotSetPropertyValue_1, complement.tag()), ex);
+            listeners.warning(image.reader.errors().getString(Errors.Keys.CanNotSetPropertyValue_1, complement.tag()), ex);
         }
     }
 }

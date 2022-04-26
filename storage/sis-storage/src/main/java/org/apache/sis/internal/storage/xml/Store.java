@@ -102,6 +102,7 @@ final class Store extends URIDataStore implements Filter {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        listeners.useWarningEventsOnly();
     }
 
     /**
@@ -210,7 +211,7 @@ final class Store extends URIDataStore implements Filter {
                 final MetadataBuilder builder = new MetadataBuilder();
                 builder.addReferenceSystem((ReferenceSystem) object);
                 builder.addTitle(getDisplayName());
-                metadata = builder.build(true);
+                metadata = builder.buildAndFreeze();
             }
         }
         return metadata;

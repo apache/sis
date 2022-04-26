@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see Arrays
  *
@@ -2063,6 +2063,24 @@ public final class ArraysExt extends Static {
                 if (array[i] != value) {
                     return false;
                 }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if all values in the specified array are equal to the specified value.
+     *
+     * @param  array  the array to check.
+     * @param  value  the expected value.
+     * @return {@code true} if all elements in the given array are equal to the given value.
+     *
+     * @since 1.2
+     */
+    public static boolean allEquals(final int[] array, final int value) {
+        for (int i=0; i<array.length; i++) {
+            if (array[i] != value) {
+                return false;
             }
         }
         return true;

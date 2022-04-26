@@ -34,6 +34,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.CannotEvaluateException;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
@@ -54,7 +55,7 @@ import static org.apache.sis.internal.storage.TiledGridCoverage.Y_DIMENSION;
  * @since   1.1
  * @module
  */
-public abstract class TiledGridResource extends AbstractGridResource {
+public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**
      * A key in the {@link #rasters} cache of tiles.
      * Each key shall be unique within its enclosing {@link TiledGridResource} instance.
@@ -182,7 +183,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
      *         {@code false} if the reader needs to load all bands regardless the {@code range} subset.
      * @throws DataStoreException if an error occurred while fetching the sample model.
      *
-     * @see AbstractGridResource.RangeArgument#select(SampleModel, boolean)
+     * @see RangeArgument#select(SampleModel, boolean)
      */
     protected boolean getDissociableBands() throws DataStoreException {
         return getSampleModel() instanceof ComponentSampleModel;
@@ -328,7 +329,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          */
         public Subset(GridGeometry domain, final int[] range) throws DataStoreException {
             List<SampleDimension> bands        = getSampleDimensions();
-            final RangeArgument   rangeIndices = validateRangeArgument(bands.size(), range);
+            final RangeArgument   rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
             final GridGeometry    gridGeometry = getGridGeometry();
             sourceExtent = gridGeometry.getExtent();
             tileSize = getTileSize();
@@ -409,7 +410,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
             this.ranges              = bands;
             this.includedBands       = includedBands;
             this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
-            this.colorsForBandSubset = rangeIndices.select(getColorModel());
+            this.colorsForBandSubset = rangeIndices.select(getColorModel()).orElse(null);
             this.fillValue           = getFillValue();
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.

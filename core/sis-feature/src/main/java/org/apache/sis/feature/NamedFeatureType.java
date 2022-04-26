@@ -26,7 +26,7 @@ import org.apache.sis.internal.util.Strings;
 /**
  * A feature type identified only by its name. Instances of {@code NamedFeatureType} shall be used only as placeholder
  * while building a cyclic graphs of {@link DefaultFeatureType}. Instances of {@code NamedFeatureType} will be replaced
- * by instances of the actual feature type when the later become known.
+ * by instances of the actual feature type when the latter become known.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

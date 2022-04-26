@@ -178,6 +178,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         children   = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
+        listeners.useWarningEventsOnly();
     }
 
     /**
@@ -278,7 +279,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
                 name = super.getDisplayName();              // User-specified folder (root of this resource).
             }
             mb.addTitleOrIdentifier(name, MetadataBuilder.Scope.RESOURCE);
-            metadata = mb.build(true);
+            metadata = mb.buildAndFreeze();
         }
         return metadata;
     }
@@ -386,7 +387,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * Logs a warning about a file that could be read, but happen to be a directory that we have read previously.
      * We could add the existing {@link Aggregate} instance in the parent {@code Aggregate} that we are building,
      * but doing so may create a cycle. Current version logs a warning instead because users may not be prepared
-     * to handle cycles. Not that we have no guarantee that a cycle really exists at this stage, only that it may
+     * to handle cycles. Note that we have no guarantee that a cycle really exists at this stage, only that it may
      * exist.
      */
     private void sharedRepository(final Path candidate) {

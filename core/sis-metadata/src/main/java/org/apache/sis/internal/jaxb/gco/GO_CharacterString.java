@@ -199,7 +199,7 @@ public class GO_CharacterString {
     /**
      * Returns the text in a {@code <gco:CharacterString>}, {@code <gcx:FileName>} or {@code <gcx:MimeFileType>}
      * element, or {@code null} if none. This method does not return anything for {@code Enum} or {@code CodeList}
-     * instances, as the later are handled by {@link #getCodeList()}.
+     * instances, as the latter are handled by {@link #getCodeList()}.
      *
      * <p>This method is invoked by JAXB at marshalling time and should not need to be invoked directly.</p>
      */

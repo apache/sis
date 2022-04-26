@@ -514,7 +514,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
     /**
      * Returns the EPSG code of a possible coordinate system from EPSG database. This method proceed by brief
-     * inspection of axis directions and units; there is no guarantees that the coordinate system returned by
+     * inspection of axis directions and units; there is no guarantee that the coordinate system returned by
      * this method match the axes defined in the netCDF file. It is caller's responsibility to verify.
      * This is a helper method for {@link #setPredefinedComponents(Decoder)} implementations.
      *

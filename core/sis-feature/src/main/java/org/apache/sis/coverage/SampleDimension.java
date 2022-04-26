@@ -176,7 +176,7 @@ public class SampleDimension implements Serializable {
         this.name       = name;
         this.background = background;
         this.categories = list;
-        if (list.converse.range == null) {                  // Case where there is no quantitative category.
+        if (list.converse.range == null) {                  // Case where there are no quantitative categories.
             transferFunction = null;
             converse = null;
         } else if (list == list.converse) {                 // Case where values are already converted.
@@ -547,6 +547,32 @@ public class SampleDimension implements Serializable {
      */
     public static class Builder {
         /**
+         * The default name used for quantitative categories.
+         *
+         * @see #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)
+         */
+        private static final InternationalString DATA = Vocabulary.formatInternational(Vocabulary.Keys.Data);
+
+        /**
+         * The default name used for qualitative categories.
+         *
+         * @see #addQualitative(CharSequence, NumberRange)
+         */
+        private static final InternationalString NODATA = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
+
+        /**
+         * The default name used for background.
+         * The difference between "no data" and "fill value" is that "no data" is used when a value
+         * is inside the coverage domain of validity but missing, for example because of clouds.
+         * By contrast the fill value is used for values outside the coverage domain of validity
+         * when the empty space must be filled with something. It happens for example when the
+         * coverage is rotated inside the rectangular bounds of the rendered image.
+         *
+         * @see #setBackground(CharSequence, Number)
+         */
+        private static final InternationalString FILL_VALUE = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
+
+        /**
          * Identification for this sample dimension.
          */
         private GenericName dimensionName;
@@ -738,7 +764,7 @@ public class SampleDimension implements Serializable {
         public Builder setBackground(CharSequence name, Number sample) {
             ArgumentChecks.ensureNonNull("sample", sample);
             if (name == null) {
-                name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
+                name = FILL_VALUE;
             }
             final NumberRange<?> samples = range(sample.getClass(), sample, sample);
             // Use of `getMinValue()` below shall be consistent with ToNaN.remove(Category).
@@ -928,7 +954,7 @@ public class SampleDimension implements Serializable {
          */
         public Builder addQualitative(CharSequence name, final NumberRange<?> samples) {
             if (name == null) {
-                name = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
+                name = NODATA;
             }
             add(new Category(name, samples, null, null, toNaN));
             return this;
@@ -989,7 +1015,7 @@ public class SampleDimension implements Serializable {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "NaN #" + ordinal));
             }
             if (name == null) {
-                name = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
+                name = NODATA;
             }
             add(new Category(name, samples, null, null, (v) -> ordinal));
             return this;
@@ -1011,7 +1037,8 @@ public class SampleDimension implements Serializable {
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
-         * @param  name        the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name        the category name as a {@link String} or {@link InternationalString} object,
+         *                     or {@code null} for a default "data" name.
          * @param  samples     the minimum and maximum sample values in the category. Element class is usually
          *                     {@link Integer}, but {@link Float} and {@link Double} values are accepted as well.
          * @param  converted   the range of real values for this category, as an instance of {@link MeasurementRange}
@@ -1049,7 +1076,8 @@ public class SampleDimension implements Serializable {
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
-         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "data" name.
          * @param  minimum  the minimum value (inclusive) in the given units.
          * @param  maximum  the maximum value (inclusive) in the given units.
          * @param  units    the units of measurement, or {@code null} if unknown or not applicable.
@@ -1067,7 +1095,8 @@ public class SampleDimension implements Serializable {
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
-         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "data" name.
          * @param  minimum  the minimum value (inclusive) in the given units.
          * @param  maximum  the maximum value (inclusive) in the given units.
          * @param  units    the units of measurement, or {@code null} if unknown or not applicable.
@@ -1090,6 +1119,7 @@ public class SampleDimension implements Serializable {
          * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object.
+         *                 or {@code null} for a default "data" name.
          * @param  lower   the lower sample value, inclusive.
          * @param  upper   the upper sample value, exclusive.
          * @param  scale   the scale value which is multiplied to sample values for the category. Must be different than zero.
@@ -1116,7 +1146,8 @@ public class SampleDimension implements Serializable {
          * <p>This is the most generic method for adding a quantitative category.
          * All other {@code addQuantitative(name, …)} methods are convenience methods delegating their work to this method.</p>
          *
-         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "data" name.
          * @param  samples  the minimum and maximum sample values in the category. Element class is usually
          *                  {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
          * @param  toUnits  the transfer function from sample values to real values in the specified units.
@@ -1130,6 +1161,9 @@ public class SampleDimension implements Serializable {
          */
         public Builder addQuantitative(CharSequence name, NumberRange<?> samples, MathTransform1D toUnits, Unit<?> units) {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
+            if (name == null) {
+                name = DATA;
+            }
             add(new Category(name, samples, toUnits, units, toNaN));
             return this;
         }

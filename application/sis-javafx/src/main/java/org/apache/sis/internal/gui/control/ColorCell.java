@@ -76,7 +76,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
      * The type of color ramp as determined by {@link ColorColumnHandler#applyColors(Object, ColorRamp)}.
      * This is updated by {@link #updateItem(ColorRamp, boolean)} when the value changes and stored for
      * keeping that value stable (this class does not support mutable colors type).
-     * May be {@code null} if there is no value in the row of this cell.
+     * May be {@code null} if there are no values in the row of this cell.
      */
     private ColorRamp.Type type;
 

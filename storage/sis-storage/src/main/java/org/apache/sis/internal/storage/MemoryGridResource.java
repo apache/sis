@@ -28,6 +28,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -43,7 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.1
  * @module
  */
-public class MemoryGridResource extends AbstractGridResource {
+public class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * The grid coverage specified at construction time.
      */
@@ -94,7 +95,7 @@ public class MemoryGridResource extends AbstractGridResource {
     @Override
     public GridCoverage read(GridGeometry domain, final int... range) {
         List<SampleDimension> bands = coverage.getSampleDimensions();
-        final RangeArgument rangeIndices = validateRangeArgument(bands.size(), range);
+        final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
         /*
          * The given `domain` may use arbitrary `gridToCRS` and `CRS` properties.
          * For this simple implementation we need the same `gridToCRS` and `CRS`

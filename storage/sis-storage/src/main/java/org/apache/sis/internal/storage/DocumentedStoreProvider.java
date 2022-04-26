@@ -31,7 +31,7 @@ import org.apache.sis.internal.system.Modules;
  * The primary key in the {@code MD_Format} table must be the name given at construction time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -43,11 +43,11 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
     private final String name;
 
     /**
-     * {@code true} if the call to {@link #getFormat()} caught an exception. In such case,
-     * we log a warning only the first time and use a finer logging level the other times.
-     * The intent is to avoid polluting the logs with too many warnings.
+     * The format, created when first requested.
+     *
+     * @see #getFormat(StoreListeners)
      */
-    private volatile boolean logged;
+    private transient Format format;
 
     /**
      * Creates a new provider.
@@ -88,29 +88,24 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
      * @param  listeners  where to report the warning in case of error, or {@code null} if none.
      * @return a description of the data format.
      */
-    public final Format getFormat(final StoreListeners listeners) {
-        /*
-         * Note: this method does not cache the format because such caching is already done by MetadataSource.
-         */
-        if (name != null) try {
-            return MetadataSource.getProvided().lookup(Format.class, name);
-        } catch (MetadataStoreException e) {
-            if (listeners != null) {
-                listeners.warning(e);
-            } else {
-                final Level level;
-                if (!logged) {
-                    logged = true;      // Not atomic - not a big deal if we use warning level twice.
-                    level = Level.WARNING;
-                } else {
-                    level = Level.FINE;
-                }
-                final LogRecord record = Resources.forLocale(null).getLogRecord(level,
+    public final synchronized Format getFormat(final StoreListeners listeners) {
+        if (format == null) {
+            if (name != null) try {
+                return format = MetadataSource.getProvided().lookup(Format.class, name);
+            } catch (MetadataStoreException e) {
+                final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                         Resources.Keys.CanNotGetCommonMetadata_2, getShortName(), e.getLocalizedMessage());
+                record.setSourceClassName(getClass().getCanonicalName());
+                record.setSourceMethodName("getFormat");
                 record.setLoggerName(Modules.STORAGE);
-                Logging.log(getClass(), "getFormat", record);
+                if (listeners != null) {
+                    listeners.warning(record);
+                } else {
+                    Logging.getLogger(Modules.STORAGE).log(record);
+                }
             }
+            format = super.getFormat();
         }
-        return super.getFormat();
+        return format;
     }
 }

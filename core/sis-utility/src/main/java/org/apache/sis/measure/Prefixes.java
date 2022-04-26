@@ -45,7 +45,7 @@ final class Prefixes {
     /**
      * The SI prefixes in increasing order. The only two-letters prefix – “da” – is encoded using the JCK compatibility
      * character “㍲”. The Greek letter μ is repeated twice: the U+00B5 character for micro sign (this is the character
-     * that Apache SIS uses in unit symbols) and the U+03BC character for the Greek small letter “mu” (the later is the
+     * that Apache SIS uses in unit symbols) and the U+03BC character for the Greek small letter “mu” (the latter is the
      * character that appears when decomposing JCK compatibility characters with {@link java.text.Normalizer}).
      * Both characters have same appearance but different values.
      *

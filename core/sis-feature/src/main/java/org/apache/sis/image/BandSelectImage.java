@@ -82,13 +82,19 @@ final class BandSelectImage extends SourceAlignedImage {
             return source;
         }
         ArgumentChecks.ensureNonEmpty("bands", bands, 0, numBands - 1, false);
-        final ColorModel cm = ColorModelFactory.createSubset(source.getColorModel(), bands);
+        final ColorModel cm = ColorModelFactory.createSubset(source.getColorModel(), bands)
+                .orElse(null);
         /*
          * If the image is an instance of `BufferedImage`, create the subset immediately
          * (reminder: this operation will not copy pixel data). It allows us to return a
          * new instance of `BufferedImage`, which has optimizations in Java2D.
+         *
+         * Note that buffered images do not support null color models.
+         * In case a color model subset cannot be computed, the BandSelectImage fallback is used,
+         * hoping user won't need the color model. We could have tried to create an arbitrary model,
+         * but it is difficult to know if it would do more good than harm.
          */
-        if (source instanceof BufferedImage) {
+        if (cm != null && source instanceof BufferedImage) {
             final BufferedImage bi = (BufferedImage) source;
             @SuppressWarnings("UseOfObsoleteCollectionType")
             final Hashtable<String,Object> properties = new Hashtable<>(8);

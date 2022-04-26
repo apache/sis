@@ -18,16 +18,16 @@ package org.apache.sis.storage;
 
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.feature.FoliationRepresentation;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
  * Keys in a map of options for configuring the way data are read or written to a storage.
- * {@code DataOptionKey} extends {@link OptionKey} with options about features, coverages or other kinds of structure
- * in data files. Contrarily to {@code OptionKey}, the options defined in this {@code DataOptionKey} class are usually
- * not applicable to other kinds of file (e.g. configuration or program files).
+ * {@code DataOptionKey} extends {@link OptionKey} with options about features, coverages
+ * or other kinds of structure that are specific to some data formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @param <T>  the type of option values.
  *
@@ -39,6 +39,17 @@ public final class DataOptionKey<T> extends OptionKey<T> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 8927757348322016043L;
+
+    /**
+     * The coordinate reference system (CRS) of data to use if not explicitly defined.
+     * This option can be used when the file to read does not describe itself the data CRS.
+     * For example this option can be used when reading ASCII Grid without CRS information,
+     * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
+     *
+     * @since 1.2
+     */
+    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
+            new DataOptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
 
     /**
      * Whether to assemble trajectory fragments (distinct CSV lines) into a single {@code Feature} instance

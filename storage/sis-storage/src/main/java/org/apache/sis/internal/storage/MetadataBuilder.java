@@ -72,12 +72,18 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.storage.AbstractResource;
+import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.storage.AbstractGridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.metadata.Merger;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
@@ -175,7 +181,7 @@ public class MetadataBuilder {
      * Creates the metadata object if it does not already exists, then returns it.
      *
      * @return the metadata (never {@code null}).
-     * @see #build(boolean)
+     * @see #build()
      */
     private DefaultMetadata metadata() {
         if (metadata == null) {
@@ -810,6 +816,85 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds default metadata for the specified resource.
+     * This is used for default implementation of {@link AbstractResource#createMetadata()}.
+     *
+     * @param  resource   the resource for which to add metadata.
+     * @param  listeners  the listeners to notify in case of warning.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
+        // Note: title is mandatory in ISO metadata, contrarily to the identifier.
+        resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
+        resource.getEnvelope().ifPresent((envelope) -> {
+            try {
+                addExtent(envelope);
+            } catch (TransformException | UnsupportedOperationException e) {
+                listeners.warning(e);
+            }
+        });
+    }
+
+    /**
+     * Adds default metadata for the specified resource.
+     * This is used for default implementation of {@link AbstractFeatureSet#createMetadata()}.
+     *
+     * @param  resource   the resource for which to add metadata.
+     * @param  listeners  the listeners to notify in case of warning.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    public final void addDefaultMetadata(final AbstractFeatureSet resource, final StoreListeners listeners) throws DataStoreException {
+        addDefaultMetadata((AbstractResource) resource, listeners);
+        addFeatureType(resource.getType(), resource.getFeatureCount().orElse(-1));
+    }
+
+    /**
+     * Adds default metadata for the specified resource.
+     * This is used for default implementation of {@link AbstractGridCoverageResource#createMetadata()}.
+     *
+     * @param  resource   the resource for which to add metadata.
+     * @param  listeners  the listeners to notify in case of warning.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    public final void addDefaultMetadata(final AbstractGridCoverageResource resource, final StoreListeners listeners) throws DataStoreException {
+        addDefaultMetadata((AbstractResource) resource, listeners);
+        addSpatialRepresentation(null, resource.getGridGeometry(), false);
+        for (final SampleDimension band : resource.getSampleDimensions()) {
+            addNewBand(band);
+        }
+    }
+
+    /**
+     * An international string where localized identifiers are formatted more like an English sentence.
+     * This is used for wrapping {@link GenericName#toInternationalString()} representation for use as
+     * a citation title.
+     */
+    private static final class Sentence extends AbstractInternationalString {
+        /** The generic name localized representation. */
+        private final InternationalString name;
+
+        /** Returns a new wrapper for the given generic name. */
+        Sentence(final GenericName name) {
+            this.name = name.toInternationalString();
+        }
+
+        /** Returns the generic name as an English-like sentence. */
+        @Override public String toString(final Locale locale) {
+            return CharSequences.camelCaseToSentence(name.toString(locale)).toString();
+        }
+
+        /** Returns a hash code value for this sentence. */
+        @Override public int hashCode() {
+            return ~name.hashCode();
+        }
+
+        /** Compares the given object with this sentence for equality. */
+        @Override public boolean equals(final Object other) {
+            return (other instanceof Sentence) && name.equals(((Sentence) other).name);
+        }
+    }
+
+    /**
      * Creates or fetches a citation for the given title. The same citation may be shared by many metadata objects,
      * for example identifiers or groups of keywords. Current implementation creates a {@link DefaultCitation} for
      * the given title and caches the result. Future implementations may return predefined citation constants from
@@ -921,7 +1006,7 @@ public class MetadataBuilder {
      *
      * {@preformat java
      *     try {
-     *         metadata.setFormat("MyFormat");
+     *         metadata.setPredefinedFormat("MyFormat");
      *     } catch (MetadataStoreException e) {
      *         metadata.addFormatName("MyFormat");
      *         listeners.warning(null, e);
@@ -936,7 +1021,7 @@ public class MetadataBuilder {
      * @see #addCompression(CharSequence)
      * @see #addFormatName(CharSequence)
      */
-    public final void setFormat(final String abbreviation) throws MetadataStoreException {
+    public final void setPredefinedFormat(final String abbreviation) throws MetadataStoreException {
         if (abbreviation != null && abbreviation.length() != 0) {
             if (format == null) {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
@@ -1814,9 +1899,13 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addExtent(final Envelope envelope) throws TransformException {
         if (envelope != null) {
-            addReferenceSystem(envelope.getCoordinateReferenceSystem());
+            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+            addReferenceSystem(crs);
             if (!(envelope instanceof AbstractEnvelope && ((AbstractEnvelope) envelope).isAllNaN())) {
-                extent().addElements(envelope);
+                if (crs != null) {
+                    extent().addElements(envelope);
+                }
+                // Future version could add as a geometry in unspecified CRS.
             }
         }
     }
@@ -1981,7 +2070,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * This method does not add the envelope provided by {@link GridGeometry#getEnvelope()}.
      * That envelope appears in a separated node, which can be added by {@link #addExtent(Envelope)}.
-     * This separation is required by {@link AbstractGridResource} for instance.
+     * This separation is required by {@link AbstractGridCoverageResource} for instance.
      *
      * @param  description    a general description of the "grid to CRS" transformation, or {@code null} if none.
      *                        Can also be specified later by a call to {@link #setGridToCRS(CharSequence)}.
@@ -2994,12 +3083,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setFormat(String)},
-     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
      *
      * @param value  the format name, or {@code null} for no-operation.
      *
-     * @see #setFormat(String)
+     * @see #setPredefinedFormat(String)
      * @see #setFormatEdition(CharSequence)
      * @see #addCompression(CharSequence)
      */
@@ -3024,12 +3113,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/edition}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setFormat(String)},
-     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
      *
      * @param value  the format edition, or {@code null} for no-operation.
      *
-     * @see #setFormat(String)
+     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void setFormatEdition(final CharSequence value) {
@@ -3053,12 +3142,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setFormat(String)},
-     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
      *
      * @param value  the compression name, or {@code null} for no-operation.
      *
-     * @see #setFormat(String)
+     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void addCompression(final CharSequence value) {
@@ -3205,7 +3294,7 @@ parse:      for (int i = 0; i < length;) {
      * The given source should be an instance of {@link Metadata},
      * but some types of metadata components are accepted as well.
      *
-     * <p>This method should be invoked last, just before the call to {@link #build(boolean)}.
+     * <p>This method should be invoked last, just before the call to {@link #build()}.
      * Any identification information, responsible party, extent, coverage description, <i>etc.</i>
      * added after this method call will be stored in new metadata object (not merged).</p>
      *
@@ -3264,14 +3353,11 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Returns the metadata, optionally as an unmodifiable object.
-     * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
+     * Returns the metadata as a modifiable object.
      *
-     * @param  freeze  {@code true} if this method should set the returned metadata to
-     *                 {@link DefaultMetadata.State#FINAL}, or {@code false} for leaving the metadata editable.
-     * @return the metadata, never {@code null}.
+     * @return the metadata (never {@code null}).
      */
-    public final DefaultMetadata build(final boolean freeze) {
+    public final DefaultMetadata build() {
         flush();
         final DefaultMetadata md = metadata();
         if (standardISO != 0) {
@@ -3281,9 +3367,17 @@ parse:      for (int i = 0; i < length;) {
             }
             md.setMetadataStandards(c);
         }
-        if (freeze) {
-            md.transitionTo(DefaultMetadata.State.FINAL);
-        }
+        return md;
+    }
+
+    /**
+     * Returns the metadata as an unmodifiable object.
+     *
+     * @return the metadata (never {@code null}).
+     */
+    public final DefaultMetadata buildAndFreeze() {
+        final DefaultMetadata md = build();
+        md.transitionTo(DefaultMetadata.State.FINAL);
         return md;
     }
 
@@ -3302,7 +3396,7 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
-     * metadata values on the instance returned by {@link #build(boolean)}.
+     * metadata values on the instance returned by {@link #build()}.
      *
      * @param   value  a double value.
      * @return  the given value, but as an existing instance if possible.
@@ -3316,7 +3410,7 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
-     * metadata values on the instance returned by {@link #build(boolean)}.
+     * metadata values on the instance returned by {@link #build()}.
      *
      * @param   value  an integer value.
      * @return  the same value, but as an existing instance if possible.

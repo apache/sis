@@ -19,7 +19,9 @@ package org.apache.sis.internal.storage.io;
 import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
+import static java.lang.Math.incrementExact;
 import static java.lang.Math.toIntExact;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
 
@@ -39,7 +41,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -99,8 +101,8 @@ public final class Region {
      * </ul>
      *
      * @param  size         the number of elements along each dimension.
-     * @param  regionLower  index of the first value to read or write along each dimension.
-     * @param  regionUpper  index after the last value to read or write along each dimension.
+     * @param  regionLower  indices of the first value to read or write along each dimension.
+     * @param  regionUpper  indices after the last value to read or write along each dimension.
      * @param  subsampling  subsampling along each dimension. Shall be greater than zero.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
      *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
@@ -115,8 +117,8 @@ public final class Region {
         for (int i=0; i<dimension;) {
             final int  step  = subsampling[i];
             final long lower = regionLower[i];
-            final long count = ceilDiv(regionUpper[i] - lower, step);
-            final long upper = lower + ((count-1) * step + 1);
+            final long count = ceilDiv(subtractExact(regionUpper[i], lower), step);
+            final long upper = addExact(lower, incrementExact(multiplyExact(count-1, step)));
             final long span  = size[i];
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
 
@@ -232,6 +234,16 @@ public final class Region {
             size *= targetSize[i];
         }
         return toIntExact(size);
+    }
+
+    /**
+     * Returns the size after reading only the sub-region at the given subsampling in the given dimension.
+     *
+     * @param  dimension  the dimension for which to get the target size.
+     * @return expected number of elements in the given dimension.
+     */
+    public final int getTargetSize(final int dimension) {
+        return targetSize[dimension];
     }
 
     /**

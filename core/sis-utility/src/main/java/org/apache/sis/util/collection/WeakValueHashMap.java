@@ -88,7 +88,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Comparison mode for key objects. The standard mode is {@code EQUALS}, which means that keys are compared
      * using their {@link Object#equals(Object)} method. But {@code WeakValueHashMap} will automatically select
-     * {@code DEEP_EQUALS} if there is a chance that some keys are arrays. In the later case, comparisons will
+     * {@code DEEP_EQUALS} if there is a chance that some keys are arrays. In the latter case, comparisons will
      * be done by the more costly {@link Objects#deepEquals(Object, Object)} method instead.
      *
      * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitly asks for this mode

@@ -601,7 +601,7 @@ class CoordinateOperationRegistry {
                     /*
                      * If we found at least one non-deprecated operation, we will stop the search at
                      * the first deprecated one (assuming that deprecated operations are sorted last).
-                     * Deprecated operations are kept only if there is no non-deprecated operations.
+                     * Deprecated operations are kept only if there are no non-deprecated operations.
                      */
                     try {
                         for (final CoordinateOperation candidate : authoritatives) {
@@ -629,7 +629,7 @@ class CoordinateOperationRegistry {
          * We will loop over all coordinate operations and select the one having the largest intersection
          * with the area of interest. Note that if the user did not specified an area of interest himself,
          * then we need to get one from the CRS. This is necessary for preventing the transformation from
-         * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the later has a larger area).
+         * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the latter has a larger area).
          */
         CoordinateOperationSorter.sort(operations, Extents.getGeographicBoundingBox(areaOfInterest));
         final ListIterator<CoordinateOperation> it = operations.listIterator();
@@ -909,7 +909,7 @@ class CoordinateOperationRegistry {
             throws IllegalArgumentException, FactoryException
     {
         /*
-         * If the user-provided CRS are approximately equal to the coordinate operation CRS, keep the later.
+         * If the user-provided CRS are approximately equal to the coordinate operation CRS, keep the latter.
          * The reason is that coordinate operation CRS are built from the definitions provided by the authority,
          * while the user-provided CRS can be anything (e.g. parsed from a quite approximated WKT).
          */

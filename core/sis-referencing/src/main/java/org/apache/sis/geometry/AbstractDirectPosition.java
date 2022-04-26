@@ -388,7 +388,7 @@ parse:  while (i < length) {
                 c = Character.codePointAt(wkt, i);
             } while (!Character.isSpaceChar(c));
             /*
-             * Parsing the number may throw a NumberFormatException. But the later is an
+             * Parsing the number may throw a NumberFormatException. But the latter is an
              * IllegalArgumentException subclass, so we are compliant with the contract.
              */
             final double value = Double.parseDouble(wkt.subSequence(start, i).toString());

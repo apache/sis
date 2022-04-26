@@ -203,6 +203,16 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridExtent#contains(long...)}.
+     */
+    @Test
+    public void testContains() {
+        final GridExtent extent = create3D();
+        assertTrue (extent.contains(100, 200, 40));
+        assertFalse(extent.contains(100, 200, 39));
+    }
+
+    /**
      * Tests {@link GridExtent#intersect(GridExtent)}.
      */
     @Test

@@ -169,7 +169,7 @@ public enum CodeType {
         }
         /*
          * If the ':' is followed by '\', then the part before ':' is presumed to be a Windows drive letter.
-         * Example "C:\file" or "C:..\file". Note that it does NOT include "C:file" since the later can not
+         * Example "C:\file" or "C:..\file". Note that it does NOT include "C:file" since the latter can not
          * be distinguished from an authority code. If a relative filename is desired, use "C:.\file".
          */
         if (c == '\\' || c == File.separatorChar || end == start+1) {

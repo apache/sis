@@ -131,9 +131,9 @@ public final class PerformanceLevel extends Level {
      * may have an indirect impact of other performance levels:
      *
      * <ul>
-     *   <li>If the given duration is longer than the duration of slower levels, then the later
+     *   <li>If the given duration is longer than the duration of slower levels, then the latter
      *       are also set to the given duration.</li>
-     *   <li>If the given duration is shorter than the duration of faster levels, then the later
+     *   <li>If the given duration is shorter than the duration of faster levels, then the latter
      *       are also set to the given duration.</li>
      * </ul>
      *

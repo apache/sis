@@ -84,7 +84,7 @@ import org.apache.sis.util.Debug;
 
 /**
  * A canvas for {@link RenderedImage} provided by a {@link GridCoverage} or a {@link GridCoverageResource}.
- * In the later case where the source of data is specified by {@link #resourceProperty}, the grid coverage
+ * In the latter case where the source of data is specified by {@link #resourceProperty}, the grid coverage
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -659,10 +659,18 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final GridCoverageResource resource;
 
         /**
-         * If a coverage has been loaded from the {@linkplain #resource}, the coverage.
-         * Otherwise {@code null} for meaning "no change".
+         * The coverage specified by user or the coverage loaded from the {@linkplain #resource}.
+         * May be {@code null} if coverages are loaded from resource but did not changed since last rendering.
          */
         private GridCoverage coverage;
+
+        /**
+         * Whether the value of {@link #coverage} changed since the last rendering.
+         * It may happen if {@link #resource} is non-null, contains pyramided data
+         * and the pyramid level used by this rendering is different than the pyramid
+         * level used in previous rendering.
+         */
+        private boolean coverageChanged;
 
         @Deprecated private final GridExtent sliceExtent;
 
@@ -809,6 +817,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 if (resource != null) {
                     data.coverageLoader = MultiResolutionImageLoader.getInstance(resource, data.coverageLoader);
                     coverage = data.ensureCoverageLoaded(objectiveToDisplay, objectivePOI);
+                    coverageChanged = (coverage != null);
                 }
                 if (data.ensureImageLoaded(coverage, sliceExtent)) {
                     recoloredImage = null;
@@ -910,7 +919,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Invoked after a paint event for caching rendering data.
+     * Invoked in JavaFX thread after a paint event for caching rendering data.
      * If the resampled image changed, all previously cached images are discarded.
      */
     private void cacheRenderingData(final Worker worker) {
@@ -918,6 +927,14 @@ public class CoverageCanvas extends MapCanvasAWT {
             trace("cacheRenderingData(…): new visual coverage:%n%s", worker.data);
         }
         data = worker.data;
+        /*
+         * Cache the recolored image. It does not consume lot of memory (mostly the memory used by the color model).
+         * The recolored image are based on the original data, so the cache does not vary with zoom level except if
+         * a change of zoom level caused a change of the image read from the data store.
+         */
+        if (worker.coverageChanged) {
+            derivedImages.clear();
+        }
         derivedImages.put(data.selectedDerivative, worker.recoloredImage);
         resampledImage = worker.resampledImage;
         if (TRACE) {
@@ -963,13 +980,13 @@ public class CoverageCanvas extends MapCanvasAWT {
             errorOccurred(report.getThrown());
         }
         /*
-         * If the coverage changed, notify user. Note that a null coverage means "no change".
+         * If the coverage changed, notify user. The coverage may have changed because of a change
+         * in the pyramid level when the underlying data store has pyramided data.
          */
-        if (!isCoverageAdjusting) {
-            final GridCoverage coverage = worker.coverage;
-            if (coverage != null) try {
+        if (worker.coverageChanged) {
+            if (!isCoverageAdjusting) try {
                 isCoverageAdjusting = true;
-                setCoverage(coverage);
+                setCoverage(worker.coverage);
             } finally {
                 isCoverageAdjusting = false;
             }

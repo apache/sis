@@ -124,7 +124,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         /*
          * Pretend that we changed our mind and now want a Double type instead of Float.
          * In current implementation this requires the creation of a new builder instance,
-         * but there is no guarantees that it will always be the case in future versions.
+         * but there is no guarantee that it will always be the case in future versions.
          */
         final AttributeTypeBuilder<Double> newb = builder.setValueClass(Double.class);
         assertEquals("name",          "temperature",      newb.getName().toString());

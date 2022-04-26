@@ -264,26 +264,19 @@ public final class ImageUtilities extends Static {
     }
 
     /**
-     * Returns names of bands based on inspection of the color model.
+     * Returns names of bands based on inspection of the sample model and color model.
      * The bands are identified by {@link Vocabulary.Keys} values for
      * red, green, blue, cyan, magenta, yellow, black, gray, <i>etc</i>.
      * If a band can not be identified, then its corresponding value is 0.
      *
-     * @param  image  the image for which to get band names (can not be null).
+     * @param  cm  the color model for which to get band names, or {@code null} if unknown.
+     * @param  sm  the image sample model (can not be null).
      * @return {@link Vocabulary.Keys} identifying the bands.
      */
     @SuppressWarnings("fallthrough")
-    public static short[] bandNames(final RenderedImage image) {
-        final SampleModel sm = image.getSampleModel();
-        final int n;
-        if (sm != null) {
-            n = sm.getNumBands();
-        } else {
-            // Should not happen since SampleModel is essential, but we try to be robust.
-            n = image.getTile(image.getMinTileX(), image.getMinTileY()).getNumBands();
-        }
+    public static short[] bandNames(final ColorModel cm, final SampleModel sm) {
+        final int n = sm.getNumBands();
         final short[] keys = new short[n];
-        final ColorModel cm = image.getColorModel();
         if (cm instanceof IndexColorModel) {
             /*
              * IndexColorModel normally uses exactly one band. But SIS has a custom subtype which

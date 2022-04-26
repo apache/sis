@@ -35,8 +35,8 @@ import org.apache.sis.internal.system.Modules;
  * Keys in a map of options for configuring various services
  * ({@link org.apache.sis.storage.DataStore}, <i>etc</i>).
  * {@code OptionKey}s are used for aspects that usually do not need to be configured, except in a few specialized cases.
- * For example most data file formats read by SIS do not require the user to specify the character encoding, since the
- * encoding it is often given in the file header or in the format specification. However if SIS needs to read plain
+ * For example most data file formats read by SIS do not require the user to specify the character encoding, because
+ * the encoding is often given in the file header or in the format specification. However if SIS needs to read plain
  * text files <em>and</em> the default platform encoding is not suitable, then the user can specify the desired encoding
  * explicitly using the {@link #ENCODING} option.
  *

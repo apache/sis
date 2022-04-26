@@ -112,6 +112,10 @@ final class TableHierarchy {
      * For example if the given type is {@code Party.class} and the given identifier is
      * {@code "{Organisation}EPSG"}, then this method returns {@code Organisation.class}.
      * Otherwise this method returns {@code type} unchanged.
+     *
+     * @param  type        base metadata type.
+     * @param  identifier  primary key in the database.
+     * @return actual type of the metadata object.
      */
     static Class<?> subType(Class<?> type, final String identifier) {
         if (identifier.charAt(0) == TYPE_OPEN) {

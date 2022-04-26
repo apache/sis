@@ -602,7 +602,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <p>This method is also invoked when searching a parameter or operation method for a given name.
      * For example the same projection is known as {@code "Mercator (variant A)"} (the primary name according EPSG)
-     * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the later is still in frequent use, SIS
+     * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the latter is still in frequent use, SIS
      * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
      *
      * <h4>Overriding by subclasses</h4>
@@ -1095,7 +1095,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             } else {
                 /*
                  * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
-                 * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+                 * so the `instanceof` check should not be necessary. But we do a paranoiac check anyway.
                  */
                 final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
                 if (alias == null) {

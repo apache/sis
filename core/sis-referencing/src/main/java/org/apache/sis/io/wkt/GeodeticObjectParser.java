@@ -758,9 +758,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         /*
-         * If there is no explicit AXIS[…] elements, or if the user asked to ignore them, then we need to
-         * create default axes. This is possible only if we know the type of the CS to create, and only
-         * for some of those CS types.
+         * If there are no explicit AXIS[…] elements, or if the user asked to ignore them,
+         * then we need to create default axes. This is possible only if we know the type
+         * of the CS to create, and only for some of those CS types.
          */
         final CSFactory csFactory = factories.getCSFactory();
         if (axes == null) {
@@ -1002,7 +1002,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  csType       the coordinate system type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
      * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
      * @return the {@code "AXIS"} element as a {@link CoordinateSystemAxis} object,
-     *         or {@code null} if the axis was not required and there is no axis object.
+     *         or {@code null} if the axis was not required and there are no axis objects.
      * @throws ParseException if the {@code "AXIS"} element can not be parsed.
      */
     private CoordinateSystemAxis parseAxis(final int mode, final Element parent, final String csType,
@@ -1118,9 +1118,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (n2 != null) {
                 return n1 - n2;
             }
-            return -1;                      // Axis 1 before Axis 2 since the later has no 'ORDER' element.
+            return -1;                      // Axis 1 before Axis 2 since the latter has no 'ORDER' element.
         } else if (n2 != null) {
-            return +1;                      // Axis 2 before Axis 1 since the later has no 'ORDER' element.
+            return +1;                      // Axis 2 before Axis 1 since the latter has no 'ORDER' element.
         }
         return 0;
     }
@@ -1272,7 +1272,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Identifier id      = toIdentifier(properties.remove(IdentifiedObject.IDENTIFIERS_KEY));  // See NOTE 2 in parseDerivingConversion.
         /*
          * The map projection method may be specified by an EPSG identifier (or any other authority),
-         * which is preferred to the method name since the later is potentially ambiguous. However not
+         * which is preferred to the method name since the latter is potentially ambiguous. However not
          * all CoordinateOperationFactory may accept identifier as an argument to 'getOperationMethod'.
          * So if an identifier is present, we will try to use it but fallback on the name if we can
          * not use the identifier.
@@ -1605,7 +1605,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Unit<?> unit   = parseUnit(element);
         /*
          * An EngineeringCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS.
-         * In the later case, the datum is null and we have instead DerivingConversion element from a base CRS.
+         * In the latter case, the datum is null and we have instead DerivingConversion element from a base CRS.
          */
         EngineeringDatum datum    = null;
         SingleCRS        baseCRS  = null;
@@ -1790,7 +1790,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String name = element.pullString("name");
         /*
          * A GeodeticCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind GeodeticCRS.
-         * In the later case, the datum is null and we have instead DerivingConversion element from a BaseGeodCRS.
+         * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseGeodCRS.
          */
         SingleCRS  baseCRS  = null;
         Conversion fromBase = null;
@@ -1890,7 +1890,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Unit<?> unit   = parseUnit(element);
         /*
          * A VerticalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind VerticalCRS.
-         * In the later case, the datum is null and we have instead DerivingConversion element from a BaseVertCRS.
+         * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseVertCRS.
          */
         VerticalDatum datum    = null;
         SingleCRS     baseCRS  = null;
@@ -1971,7 +1971,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Unit<Time> unit = parseScaledUnit(element, WKTKeywords.TimeUnit, Units.SECOND);
         /*
          * A TemporalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind TemporalCRS.
-         * In the later case, the datum is null and we have instead DerivingConversion element from a BaseTimeCRS.
+         * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseTimeCRS.
          */
         TemporalDatum datum    = null;
         SingleCRS     baseCRS  = null;
@@ -2032,7 +2032,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Unit<?> unit = parseUnit(element);
         /*
          * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
-         * In the later case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
+         * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
         Datum           datum    = null;
         SingleCRS       baseCRS  = null;

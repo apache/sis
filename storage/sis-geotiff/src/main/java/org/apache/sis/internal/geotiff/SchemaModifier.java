@@ -31,7 +31,7 @@ import org.opengis.util.GenericName;
  *
  * <h2>Image indices</h2>
  * All image {@code index} arguments in this interfaces starts with 0 for the first (potentially pyramided) image
- * are are incremented by 1 after each <em>pyramid</em>, as defined by the cloud Optimized GeoTIFF specification.
+ * and are incremented by 1 after each <em>pyramid</em>, as defined by the cloud Optimized GeoTIFF specification.
  * Consequently those indices may differ from TIFF <cite>Image File Directory</cite> (IFD) indices.
  *
  * @todo May move to public API (in revised form) in a future version.
@@ -50,9 +50,8 @@ public interface SchemaModifier {
      * @param  identifier  the default identifier computed by {@code GeoTiffStore}. May be {@code null}
      *                     if {@code GeoTiffStore} has been unable to determine an identifier by itself.
      * @return the identifier to use, or {@code null} if none.
-     * @throws DataStoreException if an exception occurred while computing a new identifier.
      */
-    default GenericName customize(final int image, final GenericName identifier) throws DataStoreException {
+    default GenericName customize(final int image, final GenericName identifier) {
         return identifier;
     }
 

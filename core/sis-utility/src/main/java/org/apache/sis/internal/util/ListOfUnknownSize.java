@@ -49,11 +49,11 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
     }
 
     /**
-     * Returns {@link #size()} if its value is already known, or -1 if the size is still unknown.
+     * Returns {@link #size()} if its value is already known, or a negative value if the size is still unknown.
      * The size may become known for example if it has been cached by the subclass. In such case,
      * some {@code ListOfUnknownSize} methods will take a more efficient path.
      *
-     * @return {@link #size()} if its value is already known, or -1 if it still costly to compute.
+     * @return {@link #size()} if its value is already known, or any negative value if it still costly to compute.
      */
     protected int sizeIfKnown() {
         return -1;

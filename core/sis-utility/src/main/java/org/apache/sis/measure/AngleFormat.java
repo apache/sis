@@ -650,7 +650,7 @@ public class AngleFormat extends Format implements Localized {
 
     /**
      * Actual implementation of {@link #toPattern()} and {@code toLocalizedPattern()}
-     * (the later method may be provided in a future SIS version).
+     * (the latter method may be provided in a future SIS version).
      *
      * @param  symbols  an array of code points containing the reserved symbols as upper-case letters.
      *                  this is always the {@link #SYMBOLS} array, unless we apply localized patterns.

@@ -108,7 +108,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
      * we will proceed as if we had only collections, wrapping value object in a singleton collection.
      *
      * @param  type   the type of elements. Note that this is not necessarily the type
-     *                of given {@code element} argument if the later is a collection.
+     *                of given {@code element} argument if the latter is a collection.
      * @param  value  value of the metadata element being visited.
      */
     @Override

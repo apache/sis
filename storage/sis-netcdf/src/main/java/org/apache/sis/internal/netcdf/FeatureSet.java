@@ -141,7 +141,7 @@ final class FeatureSet extends DiscreteSampling {
      *   <li>{@link GeometryType#LINEAR} with coordinates stored in {@link #dynamicProperties}.</li>
      * </ul>
      *
-     * If there is no coordinates ({@link #referencingDimension} = 0), then this field shall be {@code true}.
+     * If there are no coordinates ({@link #referencingDimension} = 0), then this field shall be {@code true}.
      * This is a convenience for the way we compute an {@code isEmpty} flag in {@code tryAdvance(Consumer)}.
      * This policy may change in any future version.
      *
@@ -588,7 +588,7 @@ skip:           for (final Variable v : properties) {
      * @return the number of features.
      */
     @Override
-    protected OptionalLong getFeatureCount() {
+    public OptionalLong getFeatureCount() {
         if (counts != null) {
             return OptionalLong.of(counts.size());
         }

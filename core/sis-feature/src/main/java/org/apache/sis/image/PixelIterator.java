@@ -553,6 +553,20 @@ public class PixelIterator {
     }
 
     /**
+     * Returns the type used for storing data in the raster buffer.
+     * The data type identifies the {@link DataBuffer} subclass used for storage.
+     *
+     * @return the type used for storing data in the raster buffer.
+     *
+     * @see SampleModel#getDataType()
+     *
+     * @since 1.2
+     */
+    public DataType getDataType() {
+        return DataType.forDataBufferType(getSampleModel().getDataType());
+    }
+
+    /**
      * Returns the most efficient type ({@code int}, {@code float} or {@code double}) for transferring data between the
      * underlying rasters and this iterator. The transfer type is not necessarily the storage type used by the rasters.
      * For example {@code int} values will be used for transferring data even if the underlying rasters store all sample
@@ -564,6 +578,8 @@ public class PixelIterator {
      * {@link TransferType#DOUBLE}, then {@link #getSampleDouble(int)} will be both more efficient and avoid accuracy lost.</p>
      *
      * @return the most efficient data type for transferring data.
+     *
+     * @see SampleModel#getTransferType()
      */
     public TransferType<?> getTransferType() {
         return TransferType.valueOf(getSampleModel().getTransferType());
@@ -745,7 +761,7 @@ public class PixelIterator {
      * Any invocation of a {@code getSample(int)} method will result in a {@link NoSuchElementException} to be
      * thrown.</p>
      *
-     * @return {@code true} if the current pixel is valid, or {@code false} if there is no more pixels.
+     * @return {@code true} if the current pixel is valid, or {@code false} if there are no more pixels.
      * @throws IllegalStateException if this iterator already reached end of iteration in a previous call
      *         to {@code next()}, and {@link #rewind()} or {@link #moveTo(int,int)} have not been invoked.
      */

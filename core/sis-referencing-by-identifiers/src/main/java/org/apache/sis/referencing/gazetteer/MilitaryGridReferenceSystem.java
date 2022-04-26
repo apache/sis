@@ -129,7 +129,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>

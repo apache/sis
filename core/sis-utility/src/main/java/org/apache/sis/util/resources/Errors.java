@@ -426,6 +426,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalPropertyValueClass_3 = 59;
 
         /**
+         * Property “{0}” can not take the “{1}” value.
+         */
+        public static final short IllegalPropertyValue_2 = 198;
+
+        /**
          * Range [{0} … {1}] is not valid.
          */
         public static final short IllegalRange_2 = 60;
@@ -434,6 +439,11 @@ public final class Errors extends IndexedResourceBundle {
          * Value {1} for “{0}” is not a valid Unicode code point.
          */
         public static final short IllegalUnicodeCodePoint_2 = 61;
+
+        /**
+         * Illegal value for property “{1}” in “{0}”.
+         */
+        public static final short IllegalValueForProperty_2 = 196;
 
         /**
          * Can not use the {1} format with “{0}”.
@@ -597,6 +607,11 @@ public final class Errors extends IndexedResourceBundle {
          * Missing value for “{0}” property.
          */
         public static final short MissingValueForProperty_1 = 89;
+
+        /**
+         * Missing value for “{1}” property in “{0}”.
+         */
+        public static final short MissingValueForProperty_2 = 197;
 
         /**
          * Missing value in the “{0}” column.
@@ -1052,7 +1067,7 @@ public final class Errors extends IndexedResourceBundle {
      * Constructs a new resource bundle loading data from the given UTF file.
      *
      * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     *        there are no resources. The resources may be a file or an entry in a JAR file.
      */
     Errors(final URL resources) {
         super(resources);

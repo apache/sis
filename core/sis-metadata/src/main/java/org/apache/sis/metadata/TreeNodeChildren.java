@@ -459,7 +459,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
             }
             /*
              * Search for the next property, which may be either a singleton or the first element
-             * of a sub-collection. In the later case, we will create a sub-iterator.
+             * of a sub-collection. In the latter case, we will create a sub-iterator.
              */
             final int count = childCount();
             while (nextInAccessor < count) {

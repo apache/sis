@@ -766,7 +766,7 @@ final class Element {
     /**
      * Returns {@code true} if this element does not contains any remaining child.
      *
-     * @return {@code true} if there is no child remaining.
+     * @return {@code true} if there are no children remaining.
      */
     public boolean isEmpty() {
         return children.isEmpty();
@@ -780,8 +780,8 @@ final class Element {
     }
 
     /**
-     * Closes this element. This method verifies that there is no unprocessed value (dates,
-     * numbers, booleans or strings), but ignores inner elements as required by ISO 19162.
+     * Closes this element. This method verifies that there are no unprocessed values
+     * (dates, numbers, booleans or strings), but ignores inner elements as required by ISO 19162.
      *
      * This method adds the keywords of ignored elements in the {@code ignoredElements} map as below:
      * <ul>

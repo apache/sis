@@ -1364,6 +1364,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
      * @param  position    the coordinate to format.
      * @param  toAppendTo  where the text is to be appended.
      * @throws IOException if an error occurred while writing to the given appendable.
+     * @throws ArithmeticException if a date value exceed the capacity of {@code long} type.
      */
     @Override
     @SuppressWarnings({"UnnecessaryBoxing", "null"})
@@ -1434,7 +1435,16 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
                     case LONGITUDE: valueObject = new Longitude (value); break;
                     case LATITUDE:  valueObject = new Latitude  (value); break;
                     case ANGLE:     valueObject = new Angle     (value); break;
-                    case DATE:      valueObject = new Date(Math.addExact(Math.round(value), epochs[i])); break;
+                    case DATE: {
+                        if (Double.isFinite(value)) {
+                            valueObject = new Date(Math.addExact(Math.round(value), epochs[i]));
+                        } else {
+                            if (i != 0) toAppendTo.append(separator);
+                            toAppendTo.append(String.valueOf(value));
+                            continue;
+                        }
+                        break;
+                    }
                 }
             } else {
                 valueObject = value;

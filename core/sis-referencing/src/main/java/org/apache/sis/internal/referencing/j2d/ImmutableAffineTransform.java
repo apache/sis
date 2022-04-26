@@ -27,7 +27,7 @@ import org.apache.sis.internal.referencing.Resources;
  * throw an exception (which is the default), then {@code AffineTransform} is immutable.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -49,10 +49,20 @@ public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Constructs a new transform that is a copy of the specified {@code AffineTransform} object.
      *
-     * @param tr The affine transform to copy.
+     * @param tr the affine transform to copy.
      */
     public ImmutableAffineTransform(final AffineTransform tr) {
         super(tr);
+    }
+
+    /**
+     * Constructs a new transform from an array of values representing either the 4 non-translation
+     * entries or the 6 specifiable entries of the 3×3 matrix.
+     *
+     * @param elements  the matrix elements in an array of length 4 or 6.
+     */
+    public ImmutableAffineTransform(final double[] elements) {
+        super(elements);
     }
 
     /**

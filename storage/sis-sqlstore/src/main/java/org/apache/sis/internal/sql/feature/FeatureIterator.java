@@ -293,7 +293,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
 
     /**
      * Executes the current {@link #statement} and stores all features in a list.
-     * Returns {@code null} if there is no feature, or returns the feature instance
+     * Returns {@code null} if there are no features, or returns the feature instance
      * if there is only one such instance, or returns a list of features otherwise.
      *
      * @param  owner  if the features to fetch are components of another feature, that container feature instance.

@@ -48,7 +48,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -84,16 +84,37 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
-        forcePositiveZeros();   // Must be invoked before to set the 'matrix' value.
+        forcePositiveZeros();   // Must be invoked before to set the `matrix` value.
         matrix = new AffineMatrix(this, null);
     }
 
     /**
-     * Constructs a new {@code AffineTransform2D} from the given 9 or 18 values.
+     * Constructs a new transform from an array of values representing either the 4 non-translation
+     * entries or the 6 specifiable entries of the 3×3 matrix.
      *
-     * @param elements  the matrix elements, optionally with error terms.
+     * @param elements  the matrix elements in an array of length 4 or 6.
      */
     public AffineTransform2D(final double[] elements) {
+        super(elements);
+        forcePositiveZeros();
+        matrix = new AffineMatrix(this, null);
+    }
+
+    /**
+     * Constructs a new {@code AffineTransform2D} from the 9 or 18 values of the given matrix.
+     *
+     * @param matrix  the matrix from which to get the (potentially extended) elements.
+     */
+    public AffineTransform2D(final ExtendedPrecisionMatrix matrix) {
+        this(matrix, matrix.getExtendedElements());
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private AffineTransform2D(final ExtendedPrecisionMatrix m, final double[] elements) {
         super(pz(elements[0]), pz(elements[3]),
               pz(elements[1]), pz(elements[4]),
               pz(elements[2]), pz(elements[5]));
@@ -124,7 +145,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * if there is zeros of opposite sign.
      *
      * <p>The inconsistency is in the use of {@link Double#doubleToLongBits(double)} for hash code and
-     * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the later is not.</p>
+     * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the latter is not.</p>
      */
     @Workaround(library="JDK", version="8")                         // Last verified in 1.8.0_05.
     private static double pz(final double value) {
@@ -307,8 +328,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
                      * this matrix inversion is multiplied with other matrices: the double-double accuracy allows
                      * us to better detect the terms that are 0 or 1 after matrix concatenation.
                      */
-                    final AffineTransform2D work = new AffineTransform2D(
-                            ((ExtendedPrecisionMatrix) Matrices.inverse(matrix)).getExtendedElements());
+                    AffineTransform2D work = new AffineTransform2D(((ExtendedPrecisionMatrix) Matrices.inverse(matrix)));
                     work.inverse = this;
                     inverse = work;                 // Set only on success.
                 }
@@ -402,7 +422,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     /**
      * Returns a new affine transform which is a modifiable copy of this transform. This implementation always
      * returns an instance of {@link AffineTransform}, <strong>not</strong> {@code AffineTransform2D}, because
-     * the later is unmodifiable and cloning it make little sense.
+     * the latter is unmodifiable and cloning it make little sense.
      *
      * @return a modifiable copy of this affine transform.
      */

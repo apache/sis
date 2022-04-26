@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.2
  * @since   0.5
  * @module
  */
@@ -98,7 +98,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  n  the minimal number of additional bytes that the {@linkplain #buffer buffer} shall accept.
      * @throws IOException if an error occurred while writing to the channel.
      */
-    private void ensureBufferAccepts(final int n) throws IOException {
+    public final void ensureBufferAccepts(final int n) throws IOException {
         final int capacity = buffer.capacity();
         assert n >= 0 && n <= capacity : n;
         int after = buffer.position() + n;

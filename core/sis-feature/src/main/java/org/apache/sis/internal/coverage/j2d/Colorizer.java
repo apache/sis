@@ -28,6 +28,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -40,7 +41,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -58,8 +58,8 @@ import org.apache.sis.util.Debug;
  * There is no {@code initialize(Raster)} or {@code initialize(RenderedImage)} method because if those methods
  * were present, users may expect them to iterate over sample values for finding minimum and maximum values.
  * We do not perform such iteration because they are potentially costly and give unstable results:
- * the resulting color model varies from image to image, which is confusing when they are images of the same
- * product as different depth or different time.
+ * the resulting color model varies from image to image, which is confusing when many images exist
+ * for the same product at different times or at different depths.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -76,6 +76,21 @@ public final class Colorizer {
      * color model to {@code null}. It may happen when no {@code initialize(…)} method can be applied.
      */
     public static final ColorModel NULL_COLOR_MODEL = null;
+
+    /**
+     * Names to use for the synthetic categories and sample dimensions created for visualization purposes.
+     * Transparent pixel is usually 0 and opaque pixels are in the range 1 to {@value #MAX_VALUE} inclusive.
+     *
+     * <p>For safety, we use names that are different than the default "No data" and "Data" names assigned by
+     * {@link SampleDimension.Builder}. The "[No] data" default names are often used by formats that are poor
+     * in metadata, for example ASCII Grid. If we were using the same names, a {@link #colors} function could
+     * confuse synthetic categories with "real" categories with uninformative name, and consequently apply
+     * wrong colors.</p>
+     */
+    private static final InternationalString
+            TRANSPARENT = Vocabulary.formatInternational(Vocabulary.Keys.Transparent),
+            COLOR_INDEX = Vocabulary.formatInternational(Vocabulary.Keys.ColorIndex),
+            VISUAL      = Vocabulary.formatInternational(Vocabulary.Keys.Visual);
 
     /**
      * Maximal index value which can be used with a 8 bits {@link IndexColorModel}, inclusive.
@@ -95,17 +110,6 @@ public final class Colorizer {
      */
     public static final Function<Category,Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
-
-    /**
-     * Blue to red color palette with white in the middle. Useful for data with a clear 0 (white)
-     * in the middle of the range and with minimal value equals to the negative of maximal value
-     * (to appear blue and red respectively).
-     * Used for debugging purposes; production code should use a {@code PaletteFactory} instead.
-     */
-    @Debug
-    public static final Function<Category,Color[]> BELL =
-            (category) -> category.isQuantitative() ? new Color[] {
-                Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED} : null;
 
     /**
      * The colors to use for each category. Never {@code null}.
@@ -192,20 +196,33 @@ public final class Colorizer {
      * the sample dimension, colors will be determined by a call to {@code colors.apply(category)}
      * where {@code colors} is the function specified at construction time.
      *
+     * @param  model   the sample model used with the data, or {@code null} if unknown.
      * @param  source  description of range of values in the source image, or {@code null}.
      * @return {@code true} on success, or {@code false} if no range of values has been found.
      * @throws IllegalStateException if a sample dimension is already defined on this colorizer.
      */
-    public boolean initialize(final SampleDimension source) {
+    public boolean initialize(final SampleModel model, final SampleDimension source) {
         checkInitializationStatus(false);
         if (source != null) {
             this.source = source;
             final List<Category> categories = source.getCategories();
             if (!categories.isEmpty()) {
-                final ColorsForRange[] entries = new ColorsForRange[categories.size()];
+                boolean missingNodata = true;
+                ColorsForRange[] entries = new ColorsForRange[categories.size()];
                 for (int i=0; i<entries.length; i++) {
                     final Category category = categories.get(i);
-                    entries[i] = new ColorsForRange(category, category.getSampleRange(), colors.apply(category));
+                    entries[i] = new ColorsForRange(category, colors);
+                    missingNodata &= category.isQuantitative();
+                }
+                /*
+                 * If the model uses floating point values and there is no "no data" category, add one.
+                 * We force a "no data" category because floating point values may be NaN.
+                 */
+                if (missingNodata && (model == null || !ImageUtilities.isIntegerType(model))) {
+                    final int count = entries.length;
+                    entries = Arrays.copyOf(entries, count + 1);
+                    entries[count] = new ColorsForRange(TRANSPARENT,
+                            NumberRange.create(Float.class, Float.NaN), null, false);
                 }
                 // Leave `target` to null. It will be computed by `compact()` if needed.
                 this.entries = entries;
@@ -271,8 +288,9 @@ public final class Colorizer {
      * Applies colors on the given range of values. The 0 index will be reserved for NaN value,
      * and indices in the [1 … 255] will be mapped to the given range.
      *
-     * <p>This method is typically used as a last resort fallback when other {@code initialize(…)}
-     * methods failed or can not be applied.</p>
+     * <p>This method is typically used as a last resort fallback when all other {@code initialize(…)}
+     * methods failed or can not be applied. This method assumes that no {@link Category} information
+     * is available.</p>
      *
      * @param  minimum  minimum value, inclusive.
      * @param  maximum  maximum value, inclusive.
@@ -284,16 +302,21 @@ public final class Colorizer {
         ArgumentChecks.ensureFinite("maximum", maximum);
         defaultRange = NumberRange.create(minimum, true, maximum, true);
         target = new SampleDimension.Builder()
-                .setBackground(null, 0)
-                .addQuantitative(Vocabulary.formatInternational(Vocabulary.Keys.Data),
-                        NumberRange.create(1, true, MAX_VALUE, true), defaultRange).build();
-
+                .setBackground(TRANSPARENT, 0)
+                .addQuantitative(COLOR_INDEX, NumberRange.create(1, true, MAX_VALUE, true), defaultRange)
+                .setName(VISUAL).build();
+        /*
+         * We created a synthetic `SampleDimension` with the specified range of values.
+         * Recompute `source` and `entries` fields for consistency with the new ranges.
+         * The `source` is recreated as a matter of principle, but will not be used by
+         * `compact()` because `target` will take precedence.
+         */
         source = target.forConvertedValues(true);
-        final List<Category> categories = source.getCategories();
+        final List<Category> categories = target.getCategories();
         final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
-            entries[i] = new ColorsForRange(category, category.forConvertedValues(false).getSampleRange(), colors.apply(category));
+            entries[i] = new ColorsForRange(category, category.getName() == TRANSPARENT ? GRAYSCALE : colors);
         }
         this.entries = entries;
     }
@@ -418,13 +441,12 @@ reuse:  if (source != null) {
         for (int i=0; i<count; i++) {
             final ColorsForRange entry = entries[i];
             NumberRange<?> sourceRange = entry.sampleRange;
-            if (!entry.isData()) {
+            if (!entry.isData) {
                 if (lower >= MAX_VALUE) {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
                 }
                 final NumberRange<Integer> targetRange = NumberRange.create(lower, true, ++lower, false);
                 if (mapper.put(targetRange, entry) == null) {
-                    final CharSequence name = entry.name();
                     final double value = sourceRange.getMinDouble();
                     /*
                      * In the usual case where we have a mix of quantitative and qualitative categories,
@@ -434,12 +456,12 @@ reuse:  if (source != null) {
                      * computing a transfer function, but those categories should not be returned to user.
                      */
                     if (Double.isNaN(value)) {
-                        builder.mapQualitative(name, targetRange, (float) value);
+                        builder.mapQualitative(entry.name, targetRange, (float) value);
                     } else {
                         if (value == entry.sampleRange.getMaxDouble()) {
                             sourceRange = NumberRange.create(value - 0.5, true, value + 0.5, false);
                         }
-                        builder.addQuantitative(name, targetRange, sourceRange);
+                        builder.addQuantitative(entry.name, targetRange, sourceRange);
                         themes = (themes != null) ? themes.unionAny(sourceRange) : sourceRange;
                     }
                 }
@@ -473,7 +495,7 @@ reuse:  if (source != null) {
                 span += sourceRange.getSpan();
                 final ColorsForRange[] tmp = Arrays.copyOf(entries, ++count);
                 System.arraycopy(entries, deferred, tmp, ++deferred, count - deferred);
-                tmp[deferred-1] = new ColorsForRange(null, sourceRange, new Color[] {Color.BLACK, Color.WHITE});
+                tmp[deferred-1] = new ColorsForRange(null, sourceRange, new Color[] {Color.BLACK, Color.WHITE}, true);
                 entries = tmp;
             }
         }
@@ -495,7 +517,7 @@ reuse:  if (source != null) {
             }
             final NumberRange<Integer> samples = NumberRange.create(lower, true, upper, false);
             if (mapper.put(samples, entry) == null) {
-                builder.addQuantitative(entry.name(), samples, entry.sampleRange);
+                builder.addQuantitative(entry.name, samples, entry.sampleRange);
             }
             lower = upper;
         }
@@ -506,7 +528,7 @@ reuse:  if (source != null) {
         if (source != null) {
             builder.setName(source.getName());
         } else {
-            builder.setName(Vocabulary.format(Vocabulary.Keys.Visual));
+            builder.setName(VISUAL);
         }
         target = builder.build();
         for (final Category category : target.getCategories()) {

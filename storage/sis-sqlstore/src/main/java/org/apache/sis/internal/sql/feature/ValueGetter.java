@@ -17,6 +17,8 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Calendar;
+import java.util.Collection;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
@@ -28,7 +30,10 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.math.BigDecimal;
+import org.apache.sis.math.Vector;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -97,8 +102,12 @@ public abstract class ValueGetter<T> {
         private AsObject() {super(Object.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Object getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
-            return source.getObject(columnIndex);
+        @Override public Object getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws Exception {
+            Object value = source.getObject(columnIndex);
+            if (value instanceof Array) {
+                value = toCollection(stmts, null, (Array) value);
+            }
+            return value;
         }
     }
 
@@ -368,5 +377,73 @@ public abstract class ValueGetter<T> {
             final int offsetMinute = time.getTimezoneOffset();
             return time.toLocalTime().atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
         }
+    }
+
+    /**
+     * A getter of values specified as Java array.
+     * This is okay for array of reasonable size.
+     * Should not be used for very large arrays.
+     */
+    static final class AsArray extends ValueGetter<Collection<?>> {
+        /** The getter for components in the array, or {@code null} for automatic. */
+        public final ValueGetter<?> cmget;
+
+        /** Accessor for components of automatic type. */
+        public static final AsArray INSTANCE = new AsArray(null);
+
+        /** Creates a new getter of arrays. */
+        @SuppressWarnings({"unchecked","rawtypes"})
+        AsArray(final ValueGetter<?> cmget) {
+            super((Class) Collection.class);
+            this.cmget = cmget;
+        }
+
+        /** Fetches the value from the specified column in the given result set. */
+        @Override public Collection<?> getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws Exception {
+            return toCollection(stmts, cmget, source.getArray(columnIndex));
+        }
+    }
+
+    /**
+     * Converts the given SQL array to a Java array and free the SQL array.
+     * The returned array may be a primitive array or an array of objects.
+     *
+     * @param  stmts  information about the statement being executed, or {@code null} if none.
+     * @param  cmget  the getter for components in the array, or {@code null} for automatic.
+     * @param  array  the SQL array, or {@code null} if none.
+     * @return the Java array, or {@code null} if the given SQL array is null.
+     * @throws Exception if an error occurred. May be an SQL error, a WKB parsing error, <i>etc.</i>
+     */
+    protected static Collection<?> toCollection(final InfoStatements stmts, ValueGetter<?> cmget, final Array array) throws Exception {
+        if (array == null) {
+            return null;
+        }
+        Object result = array.getArray();
+        if (cmget == null && stmts != null) {
+            cmget = stmts.getComponentMapping(array);
+        }
+        Class<?> componentType = Numbers.primitiveToWrapper(result.getClass().getComponentType());
+        if (cmget != null && !cmget.valueType.isAssignableFrom(componentType)) {
+            /*
+             * If the elements in the `result` array are not of the expected type, fetch them again
+             * but this time using the converter. This fallback is inefficient because we fetch the
+             * same data that we already have, but the array should be short and this fallback will
+             * hopefully not be needed most of the time. It is also the only way to have the number
+             * of elements in advance.
+             */
+            componentType = Numbers.wrapperToPrimitive(cmget.valueType);
+            final int length = java.lang.reflect.Array.getLength(result);
+            result = java.lang.reflect.Array.newInstance(componentType, length);
+            try (ResultSet r = array.getResultSet()) {
+                while (r.next()) {
+                    java.lang.reflect.Array.set(result, r.getInt(1) - 1, cmget.getValue(stmts, r, 2));
+                }
+            }
+        }
+        array.free();
+        if (Numbers.isNumber(componentType)) {
+            return Vector.create(result, true);
+        }
+        return UnmodifiableArrayList.wrap((Object[]) result);
     }
 }

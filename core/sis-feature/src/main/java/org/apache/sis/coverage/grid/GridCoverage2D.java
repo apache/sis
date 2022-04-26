@@ -395,7 +395,12 @@ public class GridCoverage2D extends GridCoverage {
                                                            final RenderedImage data, final int numBands)
     {
         if (range == null) {
-            final short[] names = (data != null) ? ImageUtilities.bandNames(data) : ArraysExt.EMPTY_SHORT;
+            final short[] names;
+            if (data != null) {
+                names = ImageUtilities.bandNames(data.getColorModel(), data.getSampleModel());
+            } else {
+                names = ArraysExt.EMPTY_SHORT;
+            }
             final SampleDimension[] sd = new SampleDimension[numBands];
             final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
             for (int i=0; i<numBands; i++) {

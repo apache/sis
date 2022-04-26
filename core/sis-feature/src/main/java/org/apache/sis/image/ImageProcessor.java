@@ -425,7 +425,7 @@ public class ImageProcessor implements Cloneable {
      * (after unit conversion if needed), the smallest value is taken.
      *
      * <p>Those values are only hints, the {@code ImageProcessor} is free to ignore them.
-     * In any cases there is no guarantees that computed images will met those accuracies.
+     * In any cases there is no guarantee that computed images will met those accuracies.
      * The given values are honored on a <em>best effort</em> basis only.</p>
      *
      * <p>In current implementation, {@code ImageProcessor} recognizes only accuracies in {@link Units#PIXEL}.
@@ -712,7 +712,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p>The minimum and maximum value can be either specified explicitly,
      * or determined from {@link #valueOfStatistics statistics} on the image.
-     * In the later case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
+     * In the latter case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
      * and {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
      * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.</p>
      *
@@ -941,7 +941,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
         ensureNonEmpty(bounds);
-        final ColorModel  cm = source.getColorModel();
+        final RenderedImage colored = source;
         final SampleModel sm = source.getSampleModel();
         boolean isIdentity = toSource.isIdentity();
         RenderedImage resampled = null;
@@ -986,7 +986,12 @@ public class ImageProcessor implements Cloneable {
                     bounds, toSource, interpolation, fillValues, positionalAccuracyHints));
             break;
         }
-        return RecoloredImage.create(resampled, cm);
+        /*
+         * Preserve the color model of the original image, including information about how it
+         * has been constructed. If the source image was not an instance of `RecoloredImage`,
+         * then above call should return `resampled` unchanged.
+         */
+        return RecoloredImage.applySameColors(resampled, colored);
     }
 
     /**
@@ -1035,7 +1040,7 @@ public class ImageProcessor implements Cloneable {
      * the ranges of values in the destination image.</p>
      *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
-     * There is no guarantees about the number of bands in returned image or about which formula is used for converting
+     * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
      * <h4>Properties used</h4>
@@ -1072,7 +1077,7 @@ public class ImageProcessor implements Cloneable {
      * the ranges of values in the destination image.</p>
      *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
-     * There is no guarantees about the number of bands in returned image or about which formula is used for converting
+     * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
      * <h4>Properties used</h4>
@@ -1106,7 +1111,7 @@ public class ImageProcessor implements Cloneable {
      * more advantageous to keep above method calls separated instead of using this {@code visualize(…)} method.
      *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
-     * There is no guarantees about the number of bands in returned image or about which formula is used for converting
+     * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
      * <h4>Properties used</h4>
@@ -1162,7 +1167,7 @@ public class ImageProcessor implements Cloneable {
      * Isolines will be computed for every bands in the given image.
      * For each band, the result is given as a {@code Map} where keys are the specified {@code levels}
      * and values are the isolines at the associated level.
-     * If there is no isoline for a given level, there will be no corresponding entry in the map.
+     * If there are no isolines for a given level, there will be no corresponding entry in the map.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -1178,7 +1183,7 @@ public class ImageProcessor implements Cloneable {
      *                    Integer source coordinates are located at pixel centers.
      * @return the isolines for specified levels in each band. The {@code List} size is the number of bands.
      *         For each band, the {@code Map} size is equal or less than {@code levels[band].length}.
-     *         Map keys are the specified levels, excluding those for which there is no isoline.
+     *         Map keys are the specified levels, excluding those for which there are no isolines.
      *         Map values are the isolines as a Java2D {@link Shape}.
      * @throws ImagingOpException if an error occurred during calculation.
      */

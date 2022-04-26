@@ -239,8 +239,8 @@ public abstract class DataStoreProvider {
      * with the format. The most typical return values are:
      *
      * <ul>
-     *   <li>{@link ProbeResult#SUPPORTED} if the {@code DataStore}s created by this provider
-     *       can open the given storage.</li>
+     *   <li>{@link ProbeResult#SUPPORTED} or another instance with {@linkplain ProbeResult#isSupported() supported}
+     *       status if the {@code DataStore}s created by this provider can open the given storage.</li>
      *   <li>{@link ProbeResult#UNSUPPORTED_STORAGE} if the given storage does not appear to be in a format
      *       supported by this {@code DataStoreProvider}.</li>
      * </ul>
@@ -259,8 +259,8 @@ public abstract class DataStoreProvider {
      * </div>
      *
      * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
-     * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable by the {@code DataStore}
-     *         instances created by this provider.
+     * @return a {@linkplain ProbeResult#isSupported() supported} status if the given storage
+     *         seems to be readable by the {@code DataStore} instances created by this provider.
      * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
      *         structure of the storage.
      */
@@ -636,7 +636,7 @@ public abstract class DataStoreProvider {
      * of the subclass of this {@code DataStoreProvider} instance. Subclasses should override
      * this method if they can provide a more specific logger.</p>
      *
-     * @return the logger to use as a fallback (when there is no listeners) for warning messages.
+     * @return the logger to use as a fallback (when there are no listeners) for warning messages.
      *
      * @see org.apache.sis.storage.event.StoreListeners#getLogger()
      *

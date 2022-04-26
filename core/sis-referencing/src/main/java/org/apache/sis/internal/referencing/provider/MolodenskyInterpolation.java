@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTran
  *
  * <p>This operation method is not standard, and as of SIS 0.7 not yet registered in the operation methods
  * provided by {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
- * This class extends {@code FranceGeocentricInterpolation} for now because the later is currently
+ * This class extends {@code FranceGeocentricInterpolation} for now because the latter is currently
  * the only operation performing interpolation in the geocentric domain.
  * However this class hierarchy may be revisited in any future SIS version.</p>
  *
