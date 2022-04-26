@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
-import org.opengis.coverage.grid.SequenceType;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -41,6 +40,9 @@ import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
+
+// Branch-dependent imports
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**
