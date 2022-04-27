@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -65,7 +66,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -116,11 +117,30 @@ public class TransverseMercator extends NormalizedProjection {
     private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**
-     * The "South orientated" variant of Transverse Mercator projection.
-     * Currently this is informative only (the south variant is handled
-     * with {@link ParameterRole} instead).
+     * Variants of the map projection. Currently this is informative only
+     * (the south variant is handled with {@link ParameterRole} instead).
      */
-    private static final byte SOUTH_VARIANT = 1;
+    private enum Variant implements ProjectionVariant {
+        /** The "South orientated" variant of Transverse Mercator projection. */
+        SOUTH_ORIENTATED(".*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+        private Variant(final String operationName, final String identifier) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+            this.identifier    = identifier;
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
+    }
 
     /**
      * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only,
@@ -181,11 +201,11 @@ public class TransverseMercator extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final boolean isSouth = identMatch(method, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
+        final Variant variant = variant(method, Variant.values(), null);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         ParameterRole xOffset = ParameterRole.FALSE_EASTING;
         ParameterRole yOffset = ParameterRole.FALSE_NORTHING;
-        if (isSouth) {
+        if (variant == Variant.SOUTH_ORIENTATED) {
             xOffset = ParameterRole.FALSE_WESTING;
             yOffset = ParameterRole.FALSE_SOUTHING;
         }
@@ -193,7 +213,7 @@ public class TransverseMercator extends NormalizedProjection {
         roles.put(ParameterRole.SCALE_FACTOR, SCALE_FACTOR);
         roles.put(xOffset, FALSE_EASTING);
         roles.put(yOffset, FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, isSouth ? SOUTH_VARIANT : STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**

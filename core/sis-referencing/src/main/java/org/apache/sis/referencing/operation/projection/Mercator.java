@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
@@ -27,14 +28,17 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
+import org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -73,7 +77,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @author  Rueben Schulz (UBC)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.2
  *
  * @see TransverseMercator
  * @see ObliqueMercator
@@ -85,51 +89,75 @@ public class Mercator extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2564172914329253286L;
+    private static final long serialVersionUID = 8732555724521630563L;
 
     /**
-     * Codes for variants of Mercator projection. Those variants modify the way the projections are constructed
+     * Variants of Mercator projection. Those variants modify the way the projections are constructed
      * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
      * Those variants are not exactly the same than variants A, B and C used by EPSG, but they are related.
      *
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
-     *
-     * <p><b>CONVENTION:</b> <strong>Spherical cases must be odd, all other cases must be even.</strong>
-     * This allow us to perform quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
-     *
-     * @see #variant
-     * @see #getVariant(OperationMethod)
      */
-    private static final byte SPHERICAL = 1, PSEUDO = 3,            // Must be odd and SPHERICAL must be 1.
-                              REGIONAL  = 2, MILLER = 4;            // Must be even.
+    private enum Variant implements ProjectionVariant {
+        // Declaration order matter. Patterns are matched in that order.
 
-    /**
-     * Returns the variant of the projection based on the name and identifier of the given operation method.
-     */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
-        if (identMatch(method, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
-        if (identMatch(method, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
-        if (identMatch(method, "(?i).*\\bMiller.*",          null))                         return MILLER;
-        return STANDARD_VARIANT;
+        /** The <cite>"Mercator (variant A)"</cite> projection (one standard parallel). */
+        ONE_PARALLEL(".*\\bvariant\\s*A\\b.*", Mercator1SP.IDENTIFIER, false),
+
+        /** The <cite>"Mercator (variant B)"</cite> projection (two standard parallels). */
+        TWO_PARALLELS(".*\\bvariant\\s*B\\b.*", Mercator2SP.IDENTIFIER, false),
+
+        /** The <cite>"Mercator (variant C)"</cite> projection. */
+        REGIONAL(".*\\bvariant\\s*C\\b.*", RegionalMercator.IDENTIFIER, false),
+
+        /** The <cite>"Mercator (Spherical)"</cite> projection. */
+        SPHERICAL(".*\\bSpherical\\b.*", MercatorSpherical.IDENTIFIER, true),
+
+        /** The <cite>"Popular Visualisation Pseudo Mercator"</cite> projection. */
+        PSEUDO(".*\\bPseudo.*", PseudoMercator.IDENTIFIER, true),
+
+        /** The <cite>"Mercator Auxiliary Sphere"</cite> projection. */
+        AUXILIARY(".*\\bAuxiliary\\s*Sphere\\b.*", null, true),
+
+        /** Miller projection. */
+        MILLER(".*\\bMiller.*", null, false);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+        /** Whether spherical case is used.   */ final boolean spherical;
+        /** Creates a new enumeration value.  */
+        private Variant(final String operationName, final String identifier, final boolean spherical) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+            this.identifier    = identifier;
+            this.spherical     = spherical;
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
     }
 
     /**
      * The type of Mercator projection. Possible values are:
      * <ul>
-     *   <li>{@link #STANDARD_VARIANT} if this projection is a Mercator variant A or B.</li>
-     *   <li>{@link #REGIONAL}         if this projection is the "Mercator (variant C)" case.</li>
-     *   <li>{@link #SPHERICAL}        if this projection is the "Mercator (Spherical)" case.</li>
-     *   <li>{@link #PSEUDO}           if this projection is the "Pseudo Mercator" case.</li>
-     *   <li>{@link #MILLER}           if this projection is the "Miller Cylindrical" case.</li>
+     *   <li>{@link Variant#DEFAULT}   if this projection is a Mercator variant A or B.</li>
+     *   <li>{@link Variant#REGIONAL}  if this projection is the "Mercator (variant C)" case.</li>
+     *   <li>{@link Variant#SPHERICAL} if this projection is the "Mercator (Spherical)" case.</li>
+     *   <li>{@link Variant#PSEUDO}    if this projection is the "Pseudo Mercator" case.</li>
+     *   <li>{@link Variant#MILLER}    if this projection is the "Miller Cylindrical" case.</li>
+     *   <li>{@link Variant#AUXILIARY} if this projection is the "Mercator Auxiliary Sphere" case.</li>
      * </ul>
      *
      * Other cases may be added in the future.
-     *
-     * @see #getVariant(OperationMethod)
      */
-    private final byte variant;
+    private final Variant variant;
 
     /**
      * Creates a Mercator projection from the given parameters.
@@ -140,6 +168,7 @@ public class Mercator extends ConformalProjection {
      *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
      *   <li><cite>"Mercator (variant C)"</cite>.</li>
      *   <li><cite>"Mercator (Spherical)"</cite>.</li>
+     *   <li><cite>"Mercator Auxiliary Sphere"</cite>.</li>
      *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
      *   <li><cite>"Miller Cylindrical"</cite>.</li>
      * </ul>
@@ -158,7 +187,7 @@ public class Mercator extends ConformalProjection {
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final byte variant = getVariant(method);
+        final Variant variant = variant(method, Variant.values(), Variant.TWO_PARALLELS);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Longitude of origin" is a parameter of all Mercator projections, but is intentionally omitted from
@@ -208,7 +237,7 @@ public class Mercator extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private Mercator(final Initializer initializer) {
         super(initializer);
-        this.variant = initializer.variant;
+        variant = (Variant) initializer.variant;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
          * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
@@ -227,7 +256,7 @@ public class Mercator extends ConformalProjection {
          * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
-        final double φ0 = toRadians(initializer.getAndStore((variant == REGIONAL)
+        final double φ0 = toRadians(initializer.getAndStore((variant == Variant.REGIONAL)
                 ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
@@ -244,7 +273,7 @@ public class Mercator extends ConformalProjection {
          *
          * However in the particular case of Mercator projection, we will apply the longitude rotation in the
          * denormalization matrix instead.   This is possible only for this particular projection because the
-         * 'transform(…)' methods pass the longitude values unchanged. By keeping the normalization affine as
+         * `transform(…)` methods pass the longitude values unchanged. By keeping the normalization affine as
          * simple as possible, we increase the chances of efficient concatenation of an inverse with a forward
          * projection.
          */
@@ -255,7 +284,7 @@ public class Mercator extends ConformalProjection {
         if (λ0 != 0) {
             /*
              * Use double-double arithmetic here for consistency with the work done in the normalization matrix.
-             * The intent is to have exact value at 'double' precision when computing Matrix.invert(). Note that
+             * The intent is to have exact value at `double` precision when computing Matrix.invert(). Note that
              * there is no such goal for other parameters computed from sine or consine functions.
              */
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
@@ -265,9 +294,34 @@ public class Mercator extends ConformalProjection {
         if (φ0 != 0) {
             denormalize.convertBefore(1, null, new DoubleDouble(-log(expΨ(φ0, eccentricity * sin(φ0)))));
         }
-        if (variant == MILLER) {
+        /*
+         * Variants of the Mercator projection which can be handled by scale factors.
+         * In the "Mercator Auxiliary Sphere" case, sphere types are:
+         *
+         *   0 = use semimajor axis or radius of the geographic coordinate system.
+         *   1 = use semiminor axis or radius.
+         *   2 = calculate and use authalic radius.
+         *   3 = use authalic radius and convert geodetic latitudes to authalic latitudes.
+         *       The conversion is not handled by this class and must be done by the caller.
+         */
+        if (variant == Variant.MILLER) {
             normalize  .convertBefore(1, 0.80, null);
             denormalize.convertBefore(1, 1.25, null);
+        } else if (variant == Variant.AUXILIARY) {
+            DoubleDouble ratio = null;
+            final int type = initializer.getAndStore(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE, 0);
+            switch (type) {
+                case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
+                case 1: ratio = initializer.axisLengthRatio(); break;
+                case 2:
+                case 3: ratio = new DoubleDouble(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().value)); break;
+                default: {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
+                            MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE.getName().getCode(), type));
+                }
+            }
+            denormalize.convertAfter(0, ratio, null);
+            denormalize.convertAfter(1, ratio, null);
         }
         /*
          * At this point we are done, but we add here a little bit a maniac precision hunting.
@@ -322,7 +376,7 @@ public class Mercator extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Mercator kernel = this;
-        if ((variant & SPHERICAL) != 0 || eccentricity == 0) {
+        if (variant.spherical || eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -58,7 +59,7 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * However this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -66,34 +67,55 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8840395516658904421L;
+    private static final long serialVersionUID = 5659955047326708663L;
 
     /**
-     * Returns the variant of the projection based on the name and identifier of the given operation method.
+     * The variants of the projection based on the name and identifier of the given operation method.
      * See {@link #variant} for the list of possible values.
      */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bSpherical\\b.*", LambertCylindricalEqualAreaSpherical.IDENTIFIER)) {
-            return Initializer.AUTHALIC_RADIUS;
+    private enum Variant implements ProjectionVariant {
+        /**
+         * The "Lambert Cylindrical Equal Area (Spherical)" case.
+         */
+        SPHERICAL(".*\\bSpherical\\b.*", LambertCylindricalEqualAreaSpherical.IDENTIFIER);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+        /** Creates a new enumeration value.  */
+        private Variant(final String operationName, final String identifier) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+            this.identifier    = identifier;
         }
-        return STANDARD_VARIANT;
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
+
+        /** Requests the use of authalic radius. */
+        @Override public boolean useAuthalicRadius() {
+            return true;
+        }
     }
 
     /**
      * The type of Cylindrical Equal Area projection. Possible values are:
      *
      * <ul>
-     *   <li>{@link #STANDARD_VARIANT} if this projection is a default variant.</li>
-     *   <li>{@link Initializer#AUTHALIC_RADIUS} if this projection is the "Lambert Cylindrical Equal Area (Spherical)"
-     *       case, in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
+     *   <li>{@code null} if this projection is a default variant.</li>
+     *   <li>{@link Variant#SPHERICAL} if this projection is the "Lambert Cylindrical Equal Area (Spherical)" case,
+     *       in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
      *       (this replacement is performed by the {@link Initializer} constructor).</li>
      * </ul>
      *
      * Other cases may be added in the future.
-     *
-     * @see #getVariant(OperationMethod)
      */
-    private final byte variant;
+    private final Variant variant;
 
     /**
      * Creates a Cylindrical Equal Area projection from the given parameters.
@@ -112,6 +134,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final Variant variant = variant(method, Variant.values(), null);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Longitude of origin" and "scale factor" are intentionally omitted from this map because they will
@@ -120,7 +143,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         roles.put(ParameterRole.SCALE_FACTOR,   SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,  FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING, FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -130,7 +153,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @Workaround(library="JDK", version="1.7")
     private CylindricalEqualArea(final Initializer initializer) {
         super(initializer);
-        variant = initializer.variant;
+        variant = (Variant) initializer.variant;
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*
          * The longitude of origin is normally subtracted in the 'normalize' matrix. But in the particular of case
@@ -194,7 +217,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CylindricalEqualArea kernel = this;
-        if (variant == Initializer.AUTHALIC_RADIUS || eccentricity == 0) {
+        if (variant == Variant.SPHERICAL || eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

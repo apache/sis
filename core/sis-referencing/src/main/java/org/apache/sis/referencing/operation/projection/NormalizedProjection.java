@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.metadata.Identifier;
@@ -174,12 +175,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
-
-    /**
-     * In map projection implementations that can have some variants, the constant for identifying
-     * the most standard form of the projection.
-     */
-    static final byte STANDARD_VARIANT = 0;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
@@ -426,7 +421,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
-        this(new Initializer(method, parameters, roles, STANDARD_VARIANT));
+        this(new Initializer(method, parameters, roles, null));
     }
 
     /**
@@ -455,30 +450,33 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns {@code true} if the projection specified by the given method has the given keyword or identifier.
-     * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the keyword.
+     * Returns the variant of the map projection described by the given operation method.
+     * Identifiers are tested first because they have precedence over operation names.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * Since callers usually give a constant string for the {@code regex} argument, it would be more efficient to
-     * compile the {@link java.util.regex.Pattern} once for all. However the regular expression is used only as a
-     * fallback if the descriptor does not contain EPSG identifier, which should be rare. Usually, the regular
-     * expression will never be compiled.</div>
-     *
-     * @param  method      the user-specified projection method.
-     * @param  regex       the regular expression to use when using the operation name as the criterion.
-     * @param  identifier  the identifier to compare against the operation method name.
-     * @return {@code true} if the name of the given operation method contains the given keyword
-     *         or has an EPSG identifier equals to the given identifier.
+     * @param  method        the user-specified projection method.
+     * @param  variants      possible variants for the map projection.
+     * @param  defaultValue  value to return if no match is found.
+     * @return the variant of the given operation method, or {@code defaultValue} if none.
      */
-    static boolean identMatch(final OperationMethod method, final String regex, final String identifier) {
-        if (identifier != null) {
-            for (final Identifier id : method.getIdentifiers()) {
-                if (Constants.EPSG.equals(id.getCodeSpace())) {
-                    return identifier.equals(id.getCode());
+    static <V extends ProjectionVariant> V variant(final OperationMethod method, final V[] variants, final V defaultValue) {
+        for (final V variant : variants) {
+            final String identifier = variant.getIdentifier();
+            if (identifier != null) {
+                for (final Identifier id : method.getIdentifiers()) {
+                    if (Constants.EPSG.equals(id.getCodeSpace()) && identifier.equals(id.getCode())) {
+                        return variant;
+                    }
                 }
             }
         }
-        return method.getName().getCode().replace('_',' ').matches(regex);
+        final String name = method.getName().getCode().replace('_',' ');
+        for (final V variant : variants) {
+            final Pattern regex = variant.getOperationNamePattern();
+            if (regex.matcher(name).matches()) {
+                return variant;
+            }
+        }
+        return defaultValue;
     }
 
     /**

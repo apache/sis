@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
@@ -49,7 +50,7 @@ import static org.apache.sis.internal.referencing.provider.Mollweide.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -58,6 +59,30 @@ public class Mollweide extends NormalizedProjection {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 712275000459795291L;
+
+    /**
+     * Allowed projection variants. Current implementation supports only spherical formulas.
+     * We do not yet use this enumeration for detecting variants from the operation name.
+     */
+    private enum Variant implements ProjectionVariant {
+        /** The spherical case. */
+        SPHERICAL;
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return null;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return null;
+        }
+
+        /** Requests the use of authalic radius. */
+        @Override public boolean useAuthalicRadius() {
+            return true;
+        }
+    }
 
     /**
      * Work around for RFE #4093999 in Sun's bug database
@@ -69,7 +94,7 @@ public class Mollweide extends NormalizedProjection {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, Initializer.AUTHALIC_RADIUS);
+        return new Initializer(method, parameters, roles, Variant.SPHERICAL);
     }
 
     /**

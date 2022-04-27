@@ -61,7 +61,7 @@ public class Sinusoidal extends MeridianArcBased {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**

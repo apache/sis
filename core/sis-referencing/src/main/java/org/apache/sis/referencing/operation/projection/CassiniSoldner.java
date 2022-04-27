@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -49,7 +50,7 @@ import static org.apache.sis.internal.referencing.provider.CassiniSoldner.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   1.1
  * @module
  */
@@ -57,7 +58,7 @@ public class CassiniSoldner extends MeridianArcBased {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8306467537772990906L;
+    private static final long serialVersionUID = 616536461409425434L;
 
     /**
      * The hyperbolic variants of this projection. {@link #VANUA} is the special case
@@ -66,7 +67,37 @@ public class CassiniSoldner extends MeridianArcBased {
      *
      * @see #variant
      */
-    private static final byte HYPERBOLIC = 1, VANUA = 2;
+    private enum Variant implements ProjectionVariant {
+        /**
+         * The <cite>"Hyperbolic Cassini-Soldner"</cite> variant, which is non-invertible.
+         */
+        HYPERBOLIC(Pattern.compile(".*\\bHyperbolic\\b.*", Pattern.CASE_INSENSITIVE), HyperbolicCassiniSoldner.IDENTIFIER),
+
+        /**
+         * The special case of <cite>"Vanua Levu Grid"</cite> at φ₀=16°15′S.
+         * This is the only hyperbolic variant for which inverse projection is supported.
+         * This special case is detected by checking the value of the latitude of origin.
+         */
+        VANUA(HYPERBOLIC.operationName, HyperbolicCassiniSoldner.IDENTIFIER);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+        /** Creates a new enumeration value.  */
+        private Variant(final Pattern operationName, final String identifier) {
+            this.operationName = operationName;
+            this.identifier    = identifier;
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
+    }
 
     /**
      * The latitude of {@link #VANUA} variant (16°15′S) in radians.
@@ -77,14 +108,14 @@ public class CassiniSoldner extends MeridianArcBased {
      * The type of Cassini-Soldner projection. Possible values are:
      *
      * <ul>
-     *   <li>{@link #STANDARD_VARIANT} if this projection is the standard variant.</li>
-     *   <li>{@link #HYPERBOLIC} if this projection is the "Hyperbolic Cassini-Soldner" case.</li>
-     *   <li>{@link #VANUA} if this projection is the "Hyperbolic Cassini-Soldner" case at φ₀=16°15′S.</li>
+     *   <li>{@code null} if this projection is the standard variant.</li>
+     *   <li>{@link Variant#HYPERBOLIC} if this projection is the "Hyperbolic Cassini-Soldner" case.</li>
+     *   <li>{@link Variant#VANUA} if this projection is the "Hyperbolic Cassini-Soldner" case at φ₀=16°15′S.</li>
      * </ul>
      *
      * Other cases may be added in the future.
      */
-    private final byte variant;
+    private final Variant variant;
 
     /**
      * Meridional distance <var>M</var> from equator to latitude of origin φ₀.
@@ -93,17 +124,6 @@ public class CassiniSoldner extends MeridianArcBased {
      * denormalization matrix}.
      */
     private final double M0;
-
-    /**
-     * Returns the variant of the projection based on the name and identifier of the given operation method.
-     * See {@link #variant} for the list of possible values.
-     */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bHyperbolic\\b.*", HyperbolicCassiniSoldner.IDENTIFIER)) {
-            return HYPERBOLIC;
-        }
-        return STANDARD_VARIANT;
-    }
 
     /**
      * Creates a Cassini-Soldner projection from the given parameters.
@@ -127,12 +147,13 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final Variant variant = variant(method, new Variant[] {Variant.HYPERBOLIC}, null);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -142,14 +163,14 @@ public class CassiniSoldner extends MeridianArcBased {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         M0 = distance(φ0, sin(φ0), cos(φ0));
-        if (initializer.variant == STANDARD_VARIANT) {
+        if (initializer.variant == null) {
             final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
         } else if (abs(φ0 - VANUA_LATITUDE) <= ANGULAR_TOLERANCE) {
-            variant = VANUA;
+            variant = Variant.VANUA;
             return;
         }
-        variant = initializer.variant;
+        variant = (Variant) initializer.variant;
     }
 
     /**
@@ -167,7 +188,7 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     @Override
     final String[] getInternalParameterNames() {
-        if (variant != STANDARD_VARIANT) {
+        if (variant != null) {
             return new String[] {"M₀"};
         } else {
             return super.getInternalParameterNames();
@@ -180,7 +201,7 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     @Override
     final double[] getInternalParameterValues() {
-        if (variant != STANDARD_VARIANT) {
+        if (variant != null) {
             return new double[] {M0};
         } else {
             return super.getInternalParameterValues();
@@ -201,7 +222,7 @@ public class CassiniSoldner extends MeridianArcBased {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CassiniSoldner kernel = this;
-        if (eccentricity == 0 && variant == STANDARD_VARIANT) {
+        if (eccentricity == 0 && variant == null) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -256,7 +277,7 @@ public class CassiniSoldner extends MeridianArcBased {
         if (dstPts != null) {
             dstPts[dstOff  ] = (A - T*A3/6 + Q*T*(A3*A2) / 120) / rν;
             dstPts[dstOff+1] = distance(φ, sinφ, cosφ) + tanφ*A2*(0.5 + S/4) / rν;
-            if (variant != STANDARD_VARIANT) {
+            if (variant != null) {
                 /*
                  * Offset: X³ / (6ρν)    where    ρ = (1 – ℯ²)⋅ν³
                  *       = X³ / (6⋅(1 – ℯ²)⋅ν⁴)
@@ -268,7 +289,7 @@ public class CassiniSoldner extends MeridianArcBased {
         if (!derivate) {
             return null;
         }
-        if (variant != STANDARD_VARIANT) {
+        if (variant != null) {
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
         /*
@@ -306,8 +327,8 @@ public class CassiniSoldner extends MeridianArcBased {
     {
         double x = srcPts[srcOff  ];
         double y = srcPts[srcOff+1];
-        if (variant != STANDARD_VARIANT) {
-            if (variant != VANUA) {
+        if (variant != null) {
+            if (variant != Variant.VANUA) {
                 throw new ProjectionException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, "φ₀≠16°15′S"));
             }
             /*

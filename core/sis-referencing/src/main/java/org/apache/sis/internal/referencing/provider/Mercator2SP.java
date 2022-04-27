@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.6
+ * @version 1.2
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/mercator_2sp.html">GeoTIFF parameters for Mercator 2SP</a>
  *
@@ -44,6 +44,11 @@ public final class Mercator2SP extends AbstractMercator {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6356028352681135786L;
+
+    /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9805";
 
     /*
      * ACCESS POLICY: Only formal EPSG parameters shall be public.
@@ -126,7 +131,7 @@ public final class Mercator2SP extends AbstractMercator {
                 .setRemarks(remarks).setDeprecated(true));
 
         PARAMETERS = builder
-                .addIdentifier(             "9805")
+                .addIdentifier(             IDENTIFIER)
                 .addName(                   "Mercator (variant B)")     // Starting from EPSG version 7.6
                 .addName(                   "Mercator (2SP)")           // Prior to EPSG version 7.6
                 .addName(Citations.OGC,     "Mercator_2SP")

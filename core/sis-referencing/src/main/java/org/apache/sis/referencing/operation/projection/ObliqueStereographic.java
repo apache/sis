@@ -129,7 +129,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**

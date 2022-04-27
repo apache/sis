@@ -111,7 +111,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         roles.put(ParameterRole.FALSE_EASTING,    EASTING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.FALSE_NORTHING,   NORTHING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_FALSE_ORIGIN);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**
