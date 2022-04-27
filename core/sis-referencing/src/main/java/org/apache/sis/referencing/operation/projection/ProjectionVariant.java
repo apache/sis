@@ -33,7 +33,7 @@ interface ProjectionVariant {
      * Returns the regular expression pattern to use for determining if the name of an operation method
      * identifies this variant.
      *
-     * @return the operation name pattern for this variant.
+     * @return the operation name pattern for this variant, or {@code null} if none.
      */
     Pattern getOperationNamePattern();
 

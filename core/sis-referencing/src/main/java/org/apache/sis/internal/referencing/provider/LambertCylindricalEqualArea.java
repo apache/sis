@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  * The provider for <cite>"Lambert Cylindrical Equal Area"</cite> projection (EPSG:9835).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
  *
@@ -43,6 +43,11 @@ public final class LambertCylindricalEqualArea extends MapProjection {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -672278344635217838L;
+
+    /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9835";
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of 1st standard parallel</cite> (φ₁) parameter value.
@@ -140,7 +145,7 @@ public final class LambertCylindricalEqualArea extends MapProjection {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-                .addIdentifier(             "9835")
+                .addIdentifier(             IDENTIFIER)
                 .addName(                   "Lambert Cylindrical Equal Area")
                 .addName(Citations.OGC,     "Cylindrical_Equal_Area")
                 .addName(Citations.ESRI,    "Cylindrical_Equal_Area")

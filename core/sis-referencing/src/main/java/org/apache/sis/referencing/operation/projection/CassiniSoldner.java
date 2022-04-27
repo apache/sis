@@ -68,6 +68,9 @@ public class CassiniSoldner extends MeridianArcBased {
      * @see #variant
      */
     private enum Variant implements ProjectionVariant {
+        /** The <cite>Cassini-Soldner</cite> projection. */
+        DEFAULT(null, IDENTIFIER_OF_BASE),
+
         /**
          * The <cite>"Hyperbolic Cassini-Soldner"</cite> variant, which is non-invertible.
          */
@@ -147,7 +150,7 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final Variant variant = variant(method, new Variant[] {Variant.HYPERBOLIC}, null);
+        final Variant variant = variant(method, new Variant[] {Variant.HYPERBOLIC}, Variant.DEFAULT);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
@@ -163,14 +166,15 @@ public class CassiniSoldner extends MeridianArcBased {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         M0 = distance(φ0, sin(φ0), cos(φ0));
-        if (initializer.variant == null) {
+        if (initializer.variant == Variant.DEFAULT) {
             final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
+            variant = null;
         } else if (abs(φ0 - VANUA_LATITUDE) <= ANGULAR_TOLERANCE) {
             variant = Variant.VANUA;
-            return;
+        } else {
+            variant = (Variant) initializer.variant;
         }
-        variant = (Variant) initializer.variant;
     }
 
     /**

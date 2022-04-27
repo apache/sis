@@ -75,15 +75,21 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      */
     private enum Variant implements ProjectionVariant {
         /**
+         * The "Lambert Cylindrical Equal Area" case.
+         */
+        ELLIPSOIDAL(null, IDENTIFIER),
+
+        /**
          * The "Lambert Cylindrical Equal Area (Spherical)" case.
          */
-        SPHERICAL(".*\\bSpherical\\b.*", LambertCylindricalEqualAreaSpherical.IDENTIFIER);
+        SPHERICAL(Pattern.compile(".*\\bSpherical\\b.*", Pattern.CASE_INSENSITIVE),
+                  LambertCylindricalEqualAreaSpherical.IDENTIFIER);
 
         /** Name pattern for this variant.    */ private final Pattern operationName;
         /** EPSG identifier for this variant. */ private final String  identifier;
         /** Creates a new enumeration value.  */
-        private Variant(final String operationName, final String identifier) {
-            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+        private Variant(final Pattern operationName, final String identifier) {
+            this.operationName = operationName;
             this.identifier    = identifier;
         }
 
@@ -99,7 +105,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
 
         /** Requests the use of authalic radius. */
         @Override public boolean useAuthalicRadius() {
-            return true;
+            return this == SPHERICAL;
         }
     }
 
@@ -107,7 +113,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      * The type of Cylindrical Equal Area projection. Possible values are:
      *
      * <ul>
-     *   <li>{@code null} if this projection is a default variant.</li>
+     *   <li>{@link Variant#ELLIPSOIDAL}  if this projection is a default variant.</li>
      *   <li>{@link Variant#SPHERICAL} if this projection is the "Lambert Cylindrical Equal Area (Spherical)" case,
      *       in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
      *       (this replacement is performed by the {@link Initializer} constructor).</li>
@@ -134,7 +140,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final Variant variant = variant(method, Variant.values(), null);
+        final Variant variant = variant(method, Variant.values(), Variant.ELLIPSOIDAL);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Longitude of origin" and "scale factor" are intentionally omitted from this map because they will

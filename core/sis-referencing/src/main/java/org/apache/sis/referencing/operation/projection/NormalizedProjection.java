@@ -472,7 +472,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         final String name = method.getName().getCode().replace('_',' ');
         for (final V variant : variants) {
             final Pattern regex = variant.getOperationNamePattern();
-            if (regex.matcher(name).matches()) {
+            if (regex != null && regex.matcher(name).matches()) {
                 return variant;
             }
         }

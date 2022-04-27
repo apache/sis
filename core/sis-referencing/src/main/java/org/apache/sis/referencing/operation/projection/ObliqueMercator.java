@@ -77,7 +77,7 @@ public class ObliqueMercator extends ConformalProjection {
      */
     private enum Variant implements ProjectionVariant {
         /** The <cite>Hotine Oblique Mercator (variant A)</cite> projection. */
-        DEFAULT(".*\\bvariant\\s*A\\b.*", IDENTIFIER_A, false, false),
+        DEFAULT(".*\\bvariant\\s*A\\b.*", IDENTIFIER_OF_BASE, false, false),
 
         /** The <cite>Hotine Oblique Mercator (variant B)</cite> projection. */
         CENTER(".*\\bvariant\\s*B\\b.*", IDENTIFIER, false, true),
