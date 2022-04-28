@@ -66,7 +66,7 @@ public final class MercatorAuxiliarySphere extends AbstractMercator {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.ESRI, "ESRI");
         AUXILIARY_SPHERE_TYPE = builder.addName("Auxiliary_Sphere_Type").createBounded(0, 3, 0);
 
-        final ParameterDescriptor<?>[] descriptors = toArray(MercatorSpherical.PARAMETERS.descriptors(), 1);
+        final ParameterDescriptor<?>[] descriptors = toArray(Mercator2SP.PARAMETERS.descriptors(), 1);
         descriptors[descriptors.length - 1] = AUXILIARY_SPHERE_TYPE;
         PARAMETERS = builder.addName("Mercator_Auxiliary_Sphere").createGroupForMapProjection(descriptors);
     }

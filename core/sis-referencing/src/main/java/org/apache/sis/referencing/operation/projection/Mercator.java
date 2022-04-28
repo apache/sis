@@ -311,14 +311,21 @@ public class Mercator extends ConformalProjection {
             DoubleDouble ratio = null;
             final int type = initializer.getAndStore(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE, 0);
             switch (type) {
-                case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
-                case 1: ratio = initializer.axisLengthRatio(); break;
-                case 2:
-                case 3: ratio = new DoubleDouble(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().value)); break;
                 default: {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
                             MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE.getName().getCode(), type));
                 }
+                case 3: {
+                    throw new IllegalArgumentException("Type 3 not yet supported.");
+                    /*
+                     * For supporting this case, we need to convert geodetic latitude (φ) to authalic latitude (ß)
+                     * using for example the formulas for Lambert Azimuthal Equal Area. We could set a flag telling
+                     * that we need to instantiate a subclass. Then we fall-through case 2 below.
+                     */
+                }
+                case 2: ratio = new DoubleDouble(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().value)); break;
+                case 1: ratio = initializer.axisLengthRatio(); break;
+                case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
             }
             denormalize.convertAfter(0, ratio, null);
             denormalize.convertAfter(1, ratio, null);

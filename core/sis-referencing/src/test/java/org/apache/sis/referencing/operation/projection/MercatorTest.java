@@ -19,14 +19,18 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
+import org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -43,7 +47,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -261,6 +265,36 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @DependsOnMethod("testMercator1SP")
     public void testMiller() throws FactoryException, TransformException {
         createGeoApiTest(new MillerCylindrical()).testMiller();
+    }
+
+    /**
+     * Tests the <cite>"Mercator Auxiliary Sphere"</cite> case.
+     * For the sphere type 0, which is the default, this is equivalent to pseudo-Mercator.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testPseudoMercator")
+    public void testMercatorAuxiliarySphere() throws FactoryException, TransformException {
+        final MercatorAuxiliarySphere provider = new MercatorAuxiliarySphere();
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        for (int type = 0; type <= 2; type++) {
+            final Parameters values = Parameters.castOrWrap(provider.getParameters().createValue());
+            values.parameter(Constants.SEMI_MAJOR).setValue(WGS84_A);
+            values.parameter(Constants.SEMI_MINOR).setValue(WGS84_B);
+            values.parameter("Auxiliary_Sphere_Type").setValue(type);
+            transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
+            validate();
+            final double expected;
+            switch (type) {
+                case 0: expected = WGS84_A;    break;   // 6378137
+                case 1: expected = WGS84_B;    break;   // 6356752.31
+                case 2: expected = 6371007.18; break;   // Authalic radius
+                default: throw new AssertionError(type);
+            }
+            verifyTransform(new double[] {180/Math.PI, 0, 0, 0}, new double[] {expected, 0, 0, 0});
+        }
     }
 
     /**
