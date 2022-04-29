@@ -32,7 +32,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * hierarchy with {@link ConformalProjection} and {@link EqualAreaProjection} being two distinct classes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -40,7 +40,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2221537810038553082L;
+    private static final long serialVersionUID = 5880625564193782957L;
 
     /**
      * The threshold value of {@link #eccentricity} at which we consider the accuracy of the
@@ -65,7 +65,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      * <div class="note"><b>Serialization note:</b>
      * we do not strictly need to serialize those fields since they could be computed after deserialization.
-     * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
+     * But we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
      * fields final) and because values computed after deserialization could be slightly different than the
      * ones computed after construction if a future version of the constructor uses the double-double values
      * provided by {@link Initializer}.</div>
@@ -74,8 +74,21 @@ abstract class EqualAreaProjection extends NormalizedProjection {
 
     /**
      * Value of {@link #qm(double)} function (part of Snyder equation (3-12)) at pole (sinφ = 1).
+     * The <var>q</var><sub>p</sub> constant is defined by EPSG guidance note as:
+     *
+     * <blockquote>(1 – ℯ²)⋅([1 / (1 – ℯ²)] – {[1/(2ℯ)] ln [(1 – ℯ) / (1 + ℯ)]})</blockquote>
+     *
+     * But in this class, we omit the (1 – ℯ²) factor.
+     *
+     * <h4>Spherical case</h4>
+     * In the spherical case (ℯ=0), the value is exactly 2.
      */
-    private final double qmPolar;
+    final double qmPolar;
+
+    /**
+     * {@code true} if {@link #eccentricity} is zero.
+     */
+    final boolean isSpherical;
 
     /**
      * {@code true} if the {@link #eccentricity} value is greater than or equals to the eccentricity threshold,
@@ -90,6 +103,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      */
     EqualAreaProjection(final Initializer initializer) {
         super(initializer);
+        isSpherical = (eccentricitySquared == 0);
         final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
@@ -135,6 +149,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
         c4β     = other.c4β;
         c6β     = other.c6β;
         qmPolar = other.qmPolar;
+        isSpherical   = other.isSpherical;
         useIterations = other.useIterations;
     }
 
@@ -165,7 +180,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
          * Check for zero eccentricity is required because qm_ellipsoid(sinφ) would
          * simplify to sinφ + atanh(0) / 0 == sinφ + 0/0, thus producing NaN.
          */
-        return (eccentricity == 0) ? 2*sinφ : qm_ellipsoid(sinφ);
+        return isSpherical ? 2*sinφ : qm_ellipsoid(sinφ);
     }
 
     /**
@@ -201,6 +216,10 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      * be used in replacement of the iterative method. However in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
+     *
+     * <h4>Spherical case</h4>
+     * In the spherical case, this method returns {@code asin(y/2)}. This method does not use that
+     * simplification for the spherical case. This optimization is left to the caller if desired.
      *
      * @param  y  in the cylindrical case, this is northing on the normalized ellipsoid.
      * @return the latitude in radians.
