@@ -170,28 +170,20 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *   <li>q(0) = 0</li>
      * </ul>
      *
+     * <h4>Spherical case</h4>
      * In the spherical case, <var>q</var> = 2⋅sinφ.
+     * We pay the cost of checking for the spherical case in each method invocation because otherwise,
+     * users creating their own map projection subclasses could get a non-working implementation.
      *
      * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm(final double sinφ) {
         /*
-         * Check for zero eccentricity is required because qm_ellipsoid(sinφ) would
+         * Check for zero eccentricity is required because `qm(sinφ)` would
          * simplify to sinφ + atanh(0) / 0 == sinφ + 0/0, thus producing NaN.
          */
-        return isSpherical ? 2*sinφ : qm_ellipsoid(sinφ);
-    }
-
-    /**
-     * Same as {@link #qm(double)} but without check about whether the map projection is a spherical case.
-     * It is caller responsibility to ensure that this method is not invoked in the spherical case, since
-     * this implementation does not work in such case.
-     *
-     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
-     * @return <var>q</var> from Snyder equation (3-12).
-     */
-    final double qm_ellipsoid(final double sinφ) {
+        if (isSpherical) return 2*sinφ;
         final double ℯsinφ = eccentricity * sinφ;
         return sinφ / (1 - ℯsinφ*ℯsinφ) + atanh(ℯsinφ) / eccentricity;
     }

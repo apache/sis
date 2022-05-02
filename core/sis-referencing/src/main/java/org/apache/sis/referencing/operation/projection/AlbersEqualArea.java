@@ -244,7 +244,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
         final double sinφ = sin(φ);
-        final double ρ = sqrt(C - nm*qm_ellipsoid(sinφ));
+        final double ρ = sqrt(C - nm*qm(sinφ));
         if (dstPts != null) {
             dstPts[dstOff  ] = ρ * sinθ;
             dstPts[dstOff+1] = ρ * cosθ;

@@ -246,8 +246,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         final double φ    = srcPts[srcOff+1];
         final double sinφ = sin(φ);
         if (dstPts != null) {
-            dstPts[dstOff  ] = srcPts[srcOff];      // Multiplication by k₀ will be applied by the denormalization matrix.
-            dstPts[dstOff+1] = qm_ellipsoid(sinφ);  // Multiplication by (1-ℯ²)/(2k₀) will be applied by the denormalization matrix.
+            dstPts[dstOff  ] = srcPts[srcOff];  // Multiplication by k₀ will be applied by the denormalization matrix.
+            dstPts[dstOff+1] = qm(sinφ);        // Multiplication by (1-ℯ²)/(2k₀) will be applied by the denormalization matrix.
         }
         /*
          * End of map projection. Now compute the derivative, if requested.
@@ -275,8 +275,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
              */
             dstOff--;
             while (--numPts >= 0) {
-                final double φ = dstPts[dstOff += DIMENSION];           // Same as srcPts[srcOff + 1].
-                dstPts[dstOff] = qm_ellipsoid(sin(φ));                  // Part of Snyder equation (10-15)
+                final double φ = dstPts[dstOff += DIMENSION];       // Same as srcPts[srcOff + 1].
+                dstPts[dstOff] = qm(sin(φ));                        // Part of Snyder equation (10-15)
             }
         }
     }
