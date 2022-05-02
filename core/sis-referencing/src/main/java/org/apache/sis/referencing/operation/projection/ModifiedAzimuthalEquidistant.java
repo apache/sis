@@ -139,7 +139,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -148,7 +148,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         AzimuthalEquidistant kernel = this;
-        if (eccentricity == 0) {
+        if (eccentricity == 0 && getClass() == ModifiedAzimuthalEquidistant.class) {
             kernel = new AzimuthalEquidistant(this);
         }
         return context.completeTransform(factory, kernel);
