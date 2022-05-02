@@ -55,6 +55,11 @@ public final class MercatorAuxiliarySphere extends AbstractMercator {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Auxiliary_Sphere_Type </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [0…3]</li>
+     *   <li>Default value: 0</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Integer> AUXILIARY_SPHERE_TYPE;
 

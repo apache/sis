@@ -307,7 +307,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
-        createNormalizedProjection(false); // Spherical case
+        createNormalizedProjection(false);          // Spherical case
         testSpecialLatitudes();
         testDerivative();
 
