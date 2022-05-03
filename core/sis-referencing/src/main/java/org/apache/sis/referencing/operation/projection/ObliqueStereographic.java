@@ -137,7 +137,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     private ObliqueStereographic(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0     = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final double sinφ0  = sin(φ0);
         final double ℯsinφ0 = eccentricity * sinφ0;
@@ -191,7 +191,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Creates a new projection initialized to the same parameters than the given one.
      */
     ObliqueStereographic(final ObliqueStereographic other) {
-        super(other);
+        super(null, other);
         χ0      = other.χ0;
         sinχ0   = other.sinχ0;
         cosχ0   = other.cosχ0;

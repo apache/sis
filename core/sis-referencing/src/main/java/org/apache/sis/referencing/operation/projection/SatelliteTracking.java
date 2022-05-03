@@ -135,7 +135,7 @@ public class SatelliteTracking extends NormalizedProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     private SatelliteTracking(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final double φ1 = toRadians(initializer.getAndStore(STANDARD_PARALLEL_1));
         final double φ2 = toRadians(initializer.getAndStore(STANDARD_PARALLEL_2));

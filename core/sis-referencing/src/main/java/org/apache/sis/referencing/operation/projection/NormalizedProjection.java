@@ -421,32 +421,37 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
-        this(new Initializer(method, parameters, roles, null));
+        this(new Initializer(method, parameters, roles, null), null);
     }
 
     /**
-     * Creates a new normalized projection from the parameters computed by the given initializer.
+     * Creates a new normalized projection from the parameters computed by the given initializer,
+     * or from the parameters already computed by another projection.
+     * Exactly one of {@code initializer} or {@code other} shall be non-null.
      *
-     * @param initializer  the initializer for computing map projection internal parameters.
+     * The {@code other} argument may be used after we determined that the default implementation can
+     * be replaced by another one, for example using spherical formulas instead of the ellipsoidal ones.
+     * This constructor allows to transfer all parameters to the new instance without recomputing them.
+     *
+     * <h4>Design note</h4>
+     * We do not define two separated constructors because doing so can force some subclasses
+     * to duplicate non-trivial calculations in the two constructors.
+     *
+     * @param initializer  the initializer for computing map projection internal parameters, or {@code null}.
+     * @param other        the other projection from which to compute parameters, or {@code null}.
      */
-    NormalizedProjection(final Initializer initializer) {
-        context             = initializer.context;
-        eccentricitySquared = initializer.eccentricitySquared.doubleValue();
-        eccentricity        = sqrt(eccentricitySquared);    // DoubleDouble.sqrt() does not make any difference here.
-        inverse             = new Inverse(this);
-    }
-
-    /**
-     * Creates a new projection initialized to the values of the given one. This constructor may be invoked after
-     * we determined that the default implementation can be replaced by an other one, for example using spherical
-     * formulas instead of the ellipsoidal ones. This constructor allows to transfer all parameters to the new
-     * instance without recomputing them.
-     */
-    NormalizedProjection(final NormalizedProjection other) {
-        context             = other.context;
-        eccentricity        = other.eccentricity;
-        eccentricitySquared = other.eccentricitySquared;
-        inverse             = new Inverse(this);
+    NormalizedProjection(final Initializer initializer, final NormalizedProjection other) {
+        if (initializer != null) {
+            context             = initializer.context;
+            eccentricitySquared = initializer.eccentricitySquared.doubleValue();
+            eccentricity        = sqrt(eccentricitySquared);
+            // Use of DoubleDouble.sqrt() does not make any difference here.
+        } else {
+            context             = other.context;
+            eccentricity        = other.eccentricity;
+            eccentricitySquared = other.eccentricitySquared;
+        }
+        inverse = new Inverse(this);
     }
 
     /**

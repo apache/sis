@@ -158,7 +158,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
      */
     @Workaround(library="JDK", version="1.7")
     private CylindricalEqualArea(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         variant = (Variant) initializer.variant;
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*

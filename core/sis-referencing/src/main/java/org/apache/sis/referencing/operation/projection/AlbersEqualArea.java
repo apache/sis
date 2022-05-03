@@ -120,7 +120,7 @@ public class AlbersEqualArea extends AuthalicConversion {
      */
     @Workaround(library="JDK", version="1.7")
     private AlbersEqualArea(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         double φ0 = initializer.getAndStore(LATITUDE_OF_FALSE_ORIGIN);
         double φ1 = initializer.getAndStore(STANDARD_PARALLEL_1, φ0);
         double φ2 = initializer.getAndStore(STANDARD_PARALLEL_2, φ1);

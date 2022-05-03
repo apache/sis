@@ -315,14 +315,7 @@ public class Mercator extends ConformalProjection {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
                             MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE.getName().getCode(), type));
                 }
-                case 3: {
-                    throw new IllegalArgumentException("Type 3 not yet supported.");
-                    /*
-                     * For supporting this case, we need to convert geodetic latitude (φ) to authalic latitude (β)
-                     * using for example the formulas for Lambert Azimuthal Equal Area. We could set a flag telling
-                     * that we need to instantiate a subclass. Then we fall-through case 2 below.
-                     */
-                }
+                case AuthalicMercator.TYPE:
                 case 2: ratio = new DoubleDouble(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().value)); break;
                 case 1: ratio = initializer.axisLengthRatio(); break;
                 case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
@@ -382,8 +375,15 @@ public class Mercator extends ConformalProjection {
      */
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
-        Mercator kernel = this;
-        if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.class) {
+        NormalizedProjection kernel = this;
+subst:  if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.class) {
+            if (variant == Variant.AUXILIARY && eccentricity != 0) {
+                final int type = context.getValue(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE);
+                if (type == AuthalicMercator.TYPE) {
+                    kernel = new AuthalicMercator(this);
+                    break subst;
+                }
+            }
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

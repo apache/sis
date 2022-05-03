@@ -221,7 +221,7 @@ public class TransverseMercator extends NormalizedProjection {
      * This constructor is used also by {@link ZonedGridSystem}.
      */
     TransverseMercator(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         /*
          * Opportunistically use double-double arithmetic for computation of B since we will store
@@ -337,7 +337,7 @@ public class TransverseMercator extends NormalizedProjection {
      * Creates a new projection initialized to the same parameters than the given one.
      */
     TransverseMercator(final TransverseMercator other) {
-        super(other);
+        super(null, other);
         cf2 = other.cf2;
         cf4 = other.cf4;
         cf6 = other.cf6;

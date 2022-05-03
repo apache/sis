@@ -111,7 +111,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * @param  initializer  the initializer for computing map projection internal parameters.
      */
     ConformalProjection(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         useIterations = (eccentricity >= ECCENTRICITY_THRESHOLD);
         final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
@@ -154,7 +154,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * instance without recomputing them.
      */
     ConformalProjection(final ConformalProjection other) {
-        super(other);
+        super(null, other);
         useIterations = other.useIterations;
         c2χ = other.c2χ;
         c4χ = other.c4χ;

@@ -101,7 +101,7 @@ public class Orthographic extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.8")
     private Orthographic(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         sinφ0 = sin(φ0);
         cosφ0 = cos(φ0);

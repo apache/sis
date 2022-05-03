@@ -103,7 +103,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
      */
     @Workaround(library="JDK", version="1.7")
     private LambertAzimuthalEqualArea(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0    = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final double sinφ0 = sin(φ0);
         final double cosφ0 = cos(φ0);

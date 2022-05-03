@@ -119,7 +119,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      * @param initializer  the initializer for computing map projection internal parameters.
      */
     AzimuthalEquidistant(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         cosφ0 = cos(φ0);
         sinφ0 = sin(φ0);
@@ -129,7 +129,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      * Creates a new projection initialized to the same parameters than the given one.
      */
     AzimuthalEquidistant(final AzimuthalEquidistant other) {
-        super(other);
+        super(null, other);
         cosφ0 = other.cosφ0;
         sinφ0 = other.sinφ0;
     }

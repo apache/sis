@@ -106,12 +106,15 @@ abstract class AuthalicConversion extends NormalizedProjection {
     private final boolean useIterations;
 
     /**
-     * Creates a new normalized projection from the parameters computed by the given initializer.
+     * Creates a new normalized projection from the parameters computed by the given initializer,
+     * or from the parameters already computed by another projection.
+     * Exactly one of {@code initializer} or {@code other} shall be non-null.
      *
-     * @param  initializer  the initializer for computing map projection internal parameters.
+     * @param initializer  the initializer for computing map projection internal parameters, or {@code null}.
+     * @param other        the other projection from which to compute parameters, or {@code null}.
      */
-    AuthalicConversion(final Initializer initializer) {
-        super(initializer);
+    AuthalicConversion(final Initializer initializer, final NormalizedProjection other) {
+        super(initializer, other);
         isSpherical = (eccentricitySquared == 0);
         final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
@@ -153,11 +156,11 @@ abstract class AuthalicConversion extends NormalizedProjection {
      * instance without recomputing them.
      */
     AuthalicConversion(final AuthalicConversion other) {
-        super(other);
-        c2β     = other.c2β;
-        c4β     = other.c4β;
-        c6β     = other.c6β;
-        qmPolar = other.qmPolar;
+        super(null, other);
+        c2β           = other.c2β;
+        c4β           = other.c4β;
+        c6β           = other.c6β;
+        qmPolar       = other.qmPolar;
         isSpherical   = other.isSpherical;
         useIterations = other.useIterations;
     }

@@ -110,7 +110,7 @@ public class Mollweide extends NormalizedProjection {
      * @param parameters  the parameter values of the projection to create.
      */
     public Mollweide(final OperationMethod method, final Parameters parameters) {
-        super(initializer(method, parameters));
+        super(initializer(method, parameters), null);
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         normalize  .convertAfter (0, 2*SQRT_2, null);
