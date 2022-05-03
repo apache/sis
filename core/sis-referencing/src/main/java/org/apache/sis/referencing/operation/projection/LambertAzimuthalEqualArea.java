@@ -54,16 +54,16 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
 
     /**
      * Sine and cosine of authalic latitude of origin. In the spherical case,
-     * the authalic latitude ß and the geodetic latitude φ are the same.
+     * the authalic latitude β and the geodetic latitude φ are the same.
      *
      * <h4>Possible simplification</h4>
-     * In equatorial case, sin(ß₀)=0 and cos(ß₀)=1. We could do special cases with simplifications in the
+     * In equatorial case, sin(β₀)=0 and cos(β₀)=1. We could do special cases with simplifications in the
      * {@code transform(…)} formulas, but the result does not seem simpler enough to worth code branching.
      *
-     * <p>In the polar case, sin(ß₀)=1 and cos(ß₀)=0. But the equations become indeterminate (we get 0/0)
+     * <p>In the polar case, sin(β₀)=1 and cos(β₀)=0. But the equations become indeterminate (we get 0/0)
      * and a different set of equations must be used.</p>
      */
-    private final double sinß0, cosß0;
+    private final double sinβ0, cosβ0;
 
     /**
      * {@code true} if the projection is at a pole.
@@ -108,10 +108,10 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
         final double sinφ0 = sin(φ0);
         final double cosφ0 = cos(φ0);
         polar = abs(sinφ0) == 1;            // sin(φ) == 1 implies a tolerance ∆φ≈1E-6°.
-        sinß0 = sinβ(sinφ0);
-        cosß0 = sqrt(1 - sinß0*sinß0);
+        sinβ0 = sinβ(sinφ0);
+        cosβ0 = sqrt(1 - sinβ0*sinβ0);
         /*
-         * In the polar case we have cos(φ₀) ≈ 0 and cos(ß₀) ≈ 0, which cause D = 0/0.
+         * In the polar case we have cos(φ₀) ≈ 0 and cos(β₀) ≈ 0, which cause D = 0/0.
          * Trying to evaluate the indeterminate with L'Hôpital's rule produce infinity.
          * Consequently a different set of formulas for the polar form must be used not
          * only here but also in the `transform(…)` and `inverseTransform(…)` methods.
@@ -127,7 +127,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
                 denormalize.convertBefore(1, -1, null);
             }
         } else {
-            final double D = cosφ0 / (sqrt(1 - eccentricitySquared*(sinφ0*sinφ0)) * cosß0);
+            final double D = cosφ0 / (sqrt(1 - eccentricitySquared*(sinφ0*sinφ0)) * cosβ0);
             final double Rq2 = (1 - eccentricitySquared) * qmPolar/2;
             denormalize.convertBefore(0,     D, null);
             denormalize.convertBefore(1, Rq2/D, null);
@@ -139,8 +139,8 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
      */
     LambertAzimuthalEqualArea(final LambertAzimuthalEqualArea other) {
         super(other);
-        sinß0 = other.sinß0;
-        cosß0 = other.cosß0;
+        sinβ0 = other.sinβ0;
+        cosβ0 = other.cosβ0;
         polar = other.polar;
     }
 
@@ -150,7 +150,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
      */
     @Override
     final String[] getInternalParameterNames() {
-        return new String[] {"ß₀"};
+        return new String[] {"β₀"};
     }
 
     /**
@@ -159,7 +159,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
      */
     @Override
     final double[] getInternalParameterValues() {
-        return new double[] {asin(sinß0)};
+        return new double[] {asin(sinβ0)};
     }
 
     /**
@@ -182,11 +182,11 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
         final double sinφ = sin(φ);
         if (!polar) {
             /*
-             * Note: in the spherical case, ß = φ (ß is the authalic radius).
+             * Note: in the spherical case, β = φ (β is the authalic radius).
              */
-            final double sinß = sinβ(sinφ);
-            final double cosß = sqrt(1 - sinß*sinß);
-            final double c    = sinß0*sinß + cosß0*cosß*cosλ + 1;
+            final double sinβ = sinβ(sinφ);
+            final double cosβ = sqrt(1 - sinβ*sinβ);
+            final double c    = sinβ0*sinβ + cosβ0*cosβ*cosλ + 1;
             /*
              * The `c` factor is 0 when projecting the antipodal point of origin.
              * The antipodal point is actually all points on a circle of radius 2.
@@ -196,8 +196,8 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
             if (B == Double.POSITIVE_INFINITY) {
                 B = Double.NaN;
             }
-            final double x = cosß*sinλ;                         // (x,y)×B = (E,N)
-            final double y = cosß0*sinß - sinß0*cosß*cosλ;
+            final double x = cosβ*sinλ;                         // (x,y)×B = (E,N)
+            final double y = cosβ0*sinβ - sinβ0*cosβ*cosλ;
             if (dstPts != null) {
                 dstPts[dstOff  ] = B * x;
                 dstPts[dstOff+1] = B * y;
@@ -208,16 +208,16 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
             if (!derivate) {
                 return null;
             }
-            final double dsinß_dφ  = dqm_dφ(sinφ, cos(φ)) / qmPolar;
-            final double dcosß_dφ  = -dsinß_dφ * (sinß/cosß);
-            final double cosλdcosß =  dcosß_dφ * cosλ;
-            final double dy_dλ     =   sinß0*x;
-            final double db_dλ     =   cosß0*x / (2*c);
-            final double dy_dφ     =  (cosß0*dsinß_dφ - sinß0*cosλdcosß);
-            final double db_dφ     = -(sinß0*dsinß_dφ + cosß0*cosλdcosß) / (2*c);
+            final double dsinβ_dφ  = dqm_dφ(sinφ, cos(φ)) / qmPolar;
+            final double dcosβ_dφ  = -dsinβ_dφ * (sinβ/cosβ);
+            final double cosλdcosβ =  dcosβ_dφ * cosλ;
+            final double dy_dλ     =   sinβ0*x;
+            final double db_dλ     =   cosβ0*x / (2*c);
+            final double dy_dφ     =  (cosβ0*dsinβ_dφ - sinβ0*cosλdcosβ);
+            final double db_dφ     = -(sinβ0*dsinβ_dφ + cosβ0*cosλdcosβ) / (2*c);
             return new Matrix2(
-                    B * (cosλ     + db_dλ*sinλ)*cosß,
-                    B * (dcosß_dφ + db_dφ*cosß)*sinλ,
+                    B * (cosλ     + db_dλ*sinλ)*cosβ,
+                    B * (dcosβ_dφ + db_dφ*cosβ)*sinλ,
                     B * (dy_dλ    + db_dλ*y),
                     B * (dy_dφ    + db_dφ*y));
         }
@@ -257,28 +257,28 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
     {
         double x = srcPts[srcOff  ];
         double y = srcPts[srcOff+1];
-        double sinß;
+        double sinβ;
         if (polar) {
-            sinß = (x*x + y*y)/qmPolar - 1;
+            sinβ = (x*x + y*y)/qmPolar - 1;
         } else {
             final double ρ     = fastHypot(x, y);
             final double C     = 2*asin(ρ / 2);
             final double cosC  = cos(C);
             final double sinC  = sin(C);
             final double ysinC = y*sinC;
-            sinß = cosC*sinß0;
+            sinβ = cosC*sinβ0;
             if (cosC != 1) {                    // cos(C) == 1 implies y/ρ = 0/0.
-                sinß += ysinC*cosß0/ρ;
+                sinβ += ysinC*cosβ0/ρ;
             }
-            y  = ρ*cosC*cosß0 - ysinC*sinß0;
+            y  = ρ*cosC*cosβ0 - ysinC*sinβ0;
             x *= sinC;
         }
         dstPts[dstOff  ] = atan2(x, y);
-        dstPts[dstOff+1] = isSpherical ? asin(sinß) : φ(sinß);
+        dstPts[dstOff+1] = isSpherical ? asin(sinβ) : φ(sinβ);
     }
 
     /*
      * We do not provide a specialized sub-class for the spherical case because
-     * simplifications are too small. We only need to skip the φ ↔ ß conversion.
+     * simplifications are too small. We only need to skip the φ ↔ β conversion.
      */
 }

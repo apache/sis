@@ -318,7 +318,7 @@ public class Mercator extends ConformalProjection {
                 case 3: {
                     throw new IllegalArgumentException("Type 3 not yet supported.");
                     /*
-                     * For supporting this case, we need to convert geodetic latitude (φ) to authalic latitude (ß)
+                     * For supporting this case, we need to convert geodetic latitude (φ) to authalic latitude (β)
                      * using for example the formulas for Lambert Azimuthal Equal Area. We could set a flag telling
                      * that we need to instantiate a subclass. Then we fall-through case 2 below.
                      */
