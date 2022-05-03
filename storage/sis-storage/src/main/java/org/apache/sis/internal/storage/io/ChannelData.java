@@ -192,6 +192,7 @@ public abstract class ChannelData implements Markable {
 
     /**
      * Returns the current byte position of the stream.
+     * The returned value is relative to the position that the stream had at {@code ChannelData} construction time.
      *
      * @return the position of the stream.
      */
@@ -202,6 +203,7 @@ public abstract class ChannelData implements Markable {
 
     /**
      * Returns the current byte position of the stream, ignoring overriding by subclasses.
+     * The returned value is relative to the position that the stream had at {@code ChannelData} construction time.
      */
     private long position() {
         return Math.addExact(bufferOffset, buffer.position());
