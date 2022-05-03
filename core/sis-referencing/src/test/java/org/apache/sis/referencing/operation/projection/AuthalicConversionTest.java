@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
  * Tests {@link AuthalicConversion}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
@@ -89,7 +89,7 @@ public final strictfp class AuthalicConversionTest extends MapProjectionTestCase
         for (int i=0; i<100; i++) {
             final double y = random.nextDouble() * 3 - 1.5;
             final double reference = reference(projection, y);
-            final double actual    = projection.φ(y);
+            final double actual    = projection.φ(y / projection.qmPolar);
             assertEquals(reference, actual, NormalizedProjection.ITERATION_TOLERANCE);
         }
     }
@@ -116,7 +116,7 @@ public final strictfp class AuthalicConversionTest extends MapProjectionTestCase
             final CylindricalEqualArea projection = new CylindricalEqualArea(provider, parameters);
             for (double y = -1.25; y <= 1.25; y += 0.01) {
                 final double reference = reference(projection, y);
-                final double actual = projection.φ(y);
+                final double actual = projection.φ(y / projection.qmPolar);
                 if (abs(actual - reference) > NormalizedProjection.ANGULAR_TOLERANCE) {
                     System.out.println("Error exceeds tolerance threshold at eccentricity " + e);
                     return;

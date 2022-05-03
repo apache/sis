@@ -50,7 +50,7 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
@@ -274,12 +274,12 @@ public class AlbersEqualArea extends AuthalicConversion {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         /*
-         * Note: Snyder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not done in Apache SIS
-         * implementation because (x,y) are premultiplied by n (by the normalization affine transform) before to enter
-         * in this method, so if n was negative those values have already their sign reverted.
+         * Note: Snyder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not be done
+         * in SIS implementation because (x,y) are premultiplied by n (by the normalization affine transform)
+         * before to enter in this method, so if n was negative those values have already their sign reverted.
          */
         dstPts[dstOff  ] = atan2(x, y);
-        dstPts[dstOff+1] = φ((C - (x*x + y*y)) / nm);
+        dstPts[dstOff+1] = φ((C - (x*x + y*y)) / (nm*qmPolar));
         /*
          * Note: Snyder 14-19 gives  q = (C - ρ²n²/a²)/n  where  ρ = √(x² + (ρ₀ - y)²).
          * But in Apache SIS implementation, ρ₀ has already been subtracted by the matrix before we reach this point.
@@ -290,7 +290,7 @@ public class AlbersEqualArea extends AuthalicConversion {
          *      q  =  (C - (x² + y²)) / n
          *
          * We divide by nm instead of n, so a (1-ℯ²) term is missing. But that missing term will be cancelled with
-         * the missing (1-ℯ²) term in qmPolar (the divisor applied by the φ(double) method that we invoke).
+         * the missing (1-ℯ²) term in `qmPolar`. The division by `qmPolar` is for converting y to sin(β).
          */
     }
 

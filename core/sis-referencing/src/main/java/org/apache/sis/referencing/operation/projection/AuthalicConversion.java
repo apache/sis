@@ -184,7 +184,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
      * We pay the cost of checking for the spherical case in each method invocation because otherwise,
      * users creating their own map projection subclasses could get a non-working implementation.
      *
-     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
+     * @param  sinφ  the sine of the geodetic latitude for which <var>q</var> is calculated.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm(final double sinφ) {
@@ -194,7 +194,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
          */
         if (isSpherical) return 2*sinφ;
         final double ℯsinφ = eccentricity * sinφ;
-        return sinφ / (1 - ℯsinφ*ℯsinφ) + atanh(ℯsinφ) / eccentricity;
+        return sinφ/(1 - ℯsinφ*ℯsinφ) + atanh(ℯsinφ)/eccentricity;
     }
 
     /**
@@ -212,21 +212,38 @@ abstract class AuthalicConversion extends NormalizedProjection {
     }
 
     /**
+     * Converts the sine of geodetic latitude to the sin of authalic latitude.
+     * This is defined by {@code qm(sinφ) / qmPolar}.
+     *
+     * @param  sinφ  the sine of the geodetic latitude.
+     * @return the sine of the authalic latitude.
+     */
+    final double sinβ(double sinφ) {
+        // Edited copy of `qm(double)` method.
+        if (isSpherical) return sinφ;
+        sinφ *= eccentricity;           // Become `ℯsinφ` from here.
+        return (sinφ/(1 - sinφ*sinφ) + atanh(sinφ)) / (eccentricity * qmPolar);
+    }
+
+    /**
      * Computes the latitude using equation 3-18 from Snyder, followed by iterative resolution of Snyder 3-16.
      * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
      * be used in replacement of the iterative method. However in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *
-     * <h4>Spherical case</h4>
-     * In the spherical case, this method returns {@code asin(y/2)}. This method does not use that
-     * simplification for the spherical case. This optimization is left to the caller if desired.
+     * <h4>Relationship with northing</h4>
+     * The simplest projection using this formula is the {@link CylindricalEqualArea} projection.
+     * In that case, sin(β) = <var>y</var> / {@link #qmPolar}.
      *
-     * @param  y  in the cylindrical case, this is northing on the normalized ellipsoid.
-     * @return the latitude in radians.
+     * <h4>Spherical case</h4>
+     * In the spherical case, this method returns {@code β = asin(sinβ)}. This method does not check for
+     * that simplification for the spherical case. This optimization is left to the caller if desired.
+     *
+     * @param  sinβ  sine of the authalic latitude.
+     * @return the geodetic latitude in radians.
      */
-    final double φ(final double y) throws ProjectionException {
-        final double sinβ = y / qmPolar;
+    final double φ(final double sinβ) throws ProjectionException {
         final double sinβ2 = sinβ * sinβ;
         final double β = asin(sinβ);
         /*
@@ -244,6 +261,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
              * as  q = (C - ρ²)/n  (see comment in AlbersEqualArea.inverseTransform(…) for the mathematic).
              * The y value given to this method is y = (C - ρ²) / (n⋅(1-ℯ²)) = q/(1-ℯ²), the desired value.
              */
+            final double y = qmPolar * sinβ;
             for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
                 final double sinφ  = sin(φ);
                 final double cosφ  = cos(φ);
@@ -277,9 +295,10 @@ abstract class AuthalicConversion extends NormalizedProjection {
          */
         final double as = abs(sinβ);
         if (abs(as - 1) < ANGULAR_TOLERANCE) {
+            final double y = qmPolar * sinβ;        // Do not use β because it may be NaN.
             return copySign(PI/2, y);               // Value is at a pole.
         }
-        if (as >= 1 || Double.isNaN(y)) {
+        if (!(as < 1)) {                            // Use `!` for catching NaN.
             return Double.NaN;                      // Value "after" the pole.
         }
         // Value should have converged but did not.

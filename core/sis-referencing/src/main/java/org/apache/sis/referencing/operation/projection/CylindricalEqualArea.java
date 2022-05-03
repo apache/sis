@@ -294,7 +294,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
     {
         final double y   = srcPts[srcOff+1];            // Must be before writing x.
         dstPts[dstOff  ] = srcPts[srcOff  ];            // Must be before writing y.
-        dstPts[dstOff+1] = φ(y);
+        dstPts[dstOff+1] = φ(y / qmPolar);
         /*
          * Equation 10-26 of Snyder gives β = asin(2y⋅k₀/(a⋅qPolar)).
          * In our case it simplifies to sinβ = (y/qmPolar) because:

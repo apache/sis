@@ -108,7 +108,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
         final double sinφ0 = sin(φ0);
         final double cosφ0 = cos(φ0);
         polar = abs(sinφ0) == 1;            // sin(φ) == 1 implies a tolerance ∆φ≈1E-6°.
-        sinß0 = qm(sinφ0) / qmPolar;
+        sinß0 = sinβ(sinφ0);
         cosß0 = sqrt(1 - sinß0*sinß0);
         /*
          * In the polar case we have cos(φ₀) ≈ 0 and cos(ß₀) ≈ 0, which cause D = 0/0.
@@ -180,16 +180,11 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
         final double sinλ = sin(λ);
         final double cosλ = cos(λ);
         final double sinφ = sin(φ);
-        final double qm   = qm(sinφ);
         if (!polar) {
             /*
              * Note: in the spherical case, ß = φ (ß is the authalic radius).
-             * We could do an optimization, but it would be a cost for the ellipsoidal
-             * case without saving a lot for the spherical case. The general path is:
-             *
-             *     sinß   =   qm(sinφ) / qmPolar   =   2*sinφ / 2   =   sinφ
              */
-            final double sinß = qm / qmPolar;
+            final double sinß = sinβ(sinφ);
             final double cosß = sqrt(1 - sinß*sinß);
             final double c    = sinß0*sinß + cosß0*cosß*cosλ + 1;
             /*
@@ -232,7 +227,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
          * affine transform (which cause the sign of q to be also reversed). After the transform, sign of
          * y will be reversed by the denormalize affine transform, so it should not be reversed here.
          */
-        double ρ = sqrt(qmPolar + qm);
+        double ρ = sqrt(qmPolar + qm(sinφ));
         if (sinφ == 1) {
             ρ = Double.NaN;     // Antipodal point.
         }
@@ -262,25 +257,24 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
     {
         double x = srcPts[srcOff  ];
         double y = srcPts[srcOff+1];
-        double sinß_qp;                         // sin(ß) × qmPolar
+        double sinß;
         if (polar) {
-            sinß_qp = (x*x + y*y) - qmPolar;
+            sinß = (x*x + y*y)/qmPolar - 1;
         } else {
             final double ρ     = fastHypot(x, y);
             final double C     = 2*asin(ρ / 2);
             final double cosC  = cos(C);
             final double sinC  = sin(C);
             final double ysinC = y*sinC;
-            sinß_qp = cosC*sinß0;
+            sinß = cosC*sinß0;
             if (cosC != 1) {                    // cos(C) == 1 implies y/ρ = 0/0.
-                sinß_qp += ysinC*cosß0/ρ;
+                sinß += ysinC*cosß0/ρ;
             }
-            sinß_qp *= qmPolar;
             y  = ρ*cosC*cosß0 - ysinC*sinß0;
             x *= sinC;
         }
         dstPts[dstOff  ] = atan2(x, y);
-        dstPts[dstOff+1] = isSpherical ? asin(sinß_qp/2) : φ(sinß_qp);
+        dstPts[dstOff+1] = isSpherical ? asin(sinß) : φ(sinß);
     }
 
     /*
