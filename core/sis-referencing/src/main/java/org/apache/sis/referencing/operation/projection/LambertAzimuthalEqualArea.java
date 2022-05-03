@@ -46,7 +46,7 @@ import static org.apache.sis.internal.referencing.provider.LambertAzimuthalEqual
  * @since   1.2
  * @module
  */
-public class LambertAzimuthalEqualArea extends EqualAreaProjection {
+public class LambertAzimuthalEqualArea extends AuthalicConversion {
     /**
      * For cross-version compatibility.
      */
@@ -182,6 +182,13 @@ public class LambertAzimuthalEqualArea extends EqualAreaProjection {
         final double sinφ = sin(φ);
         final double qm   = qm(sinφ);
         if (!polar) {
+            /*
+             * Note: in the spherical case, ß = φ (ß is the authalic radius).
+             * We could do an optimization, but it would be a cost for the ellipsoidal
+             * case without saving a lot for the spherical case. The general path is:
+             *
+             *     sinß   =   qm(sinφ) / qmPolar   =   2*sinφ / 2   =   sinφ
+             */
             final double sinß = qm / qmPolar;
             final double cosß = sqrt(1 - sinß*sinß);
             final double c    = sinß0*sinß + cosß0*cosß*cosλ + 1;
@@ -277,7 +284,7 @@ public class LambertAzimuthalEqualArea extends EqualAreaProjection {
     }
 
     /*
-     * We do not provide a specialized sub-class for the spherical case
-     * because the simplifications are too small.
+     * We do not provide a specialized sub-class for the spherical case because
+     * simplifications are too small. We only need to skip the φ ↔ ß conversion.
      */
 }

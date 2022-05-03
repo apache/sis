@@ -54,7 +54,7 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  * @since   0.8
  * @module
  */
-public class AlbersEqualArea extends EqualAreaProjection {
+public class AlbersEqualArea extends AuthalicConversion {
     /**
      * For cross-version compatibility.
      */

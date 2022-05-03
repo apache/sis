@@ -63,7 +63,7 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * @since   0.8
  * @module
  */
-public class CylindricalEqualArea extends EqualAreaProjection {
+public class CylindricalEqualArea extends AuthalicConversion {
     /**
      * For cross-version compatibility.
      */
@@ -327,7 +327,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          */
         Spherical(final CylindricalEqualArea other) {
             super(other);
-            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(1, DIMENSION, null);
+            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(1, 2, null);
         }
 
         /**
