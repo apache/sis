@@ -28,6 +28,7 @@ import java.io.DataOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.io.EOFException;
 import java.nio.file.Path;
 import java.awt.image.RenderedImage;
 import javax.imageio.ImageReader;
@@ -38,6 +39,7 @@ import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.spi.ImageReaderWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
@@ -143,7 +145,13 @@ enum FormatFilter {
                 for (final Class<?> type : provider.getInputTypes()) {
                     if (ArraysExt.contains(VALID_INPUTS, type)) {
                         final Object input = connector.getStorageAs(type);
-                        if (input != null) {
+                        final long origin;
+                        if (input instanceof ChannelDataInput) {
+                            origin = ((ChannelDataInput) input).getStreamPosition();
+                        } else {
+                            origin = -1;
+                        }
+                        if (input != null) try {
                             /*
                              * We do not try to mark/reset the input because it should be done
                              * by `canDecodeInput(…)` as per Image I/O contract. Doing our own
@@ -153,6 +161,14 @@ enum FormatFilter {
                                 return provider;
                             }
                             break;          // Skip other input types, try the next provider.
+                        } catch (EOFException e) {
+                            /*
+                             * Not all `ImageReader` implementations verify that there is enough bytes in the stream.
+                             * If the stream was our `ChannelDataInput` implementation, we know that we can recover.
+                             * Otherwise conservatively let the exception propagate.
+                             */
+                            if (origin < 0) throw e;
+                            ((ChannelDataInput) input).seek(origin);
                         }
                     }
                 }
