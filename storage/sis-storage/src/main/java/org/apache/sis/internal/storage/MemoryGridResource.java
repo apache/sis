@@ -57,7 +57,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
      * @param  coverage  stored coverage retained as-is (not copied). Can not be null.
      */
     public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage) {
-        super(parent);
+        super(parent, false);
         ArgumentChecks.ensureNonNull("coverage", coverage);
         this.coverage = coverage;
     }

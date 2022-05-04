@@ -117,7 +117,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     WorldFileResource(final WorldFileStore store, final StoreListeners parent,
                       final int imageIndex, final GridGeometry gridGeometry)
     {
-        super(parent);
+        super(parent, false);
         this.store        = store;
         this.imageIndex   = imageIndex;
         this.gridGeometry = gridGeometry;

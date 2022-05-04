@@ -55,7 +55,7 @@ final strictfp class GridResourceMock extends AbstractGridCoverageResource {
      * Creates a resource mock with the given grid geometry.
      */
     GridResourceMock(final GridGeometry gridGeometry) {
-        super(null);
+        super(null, false);
         assertNotNull(gridGeometry);
         this.gridGeometry     = gridGeometry;
         this.sampleDimensions = Collections.singletonList(new SampleDimension.Builder().setName(0).build());

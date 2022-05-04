@@ -124,7 +124,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
         final class DummyResource extends AbstractResource {
             /** Creates a dummy resource without parent. */
             DummyResource() {
-                super(null);
+                super(null, false);
             }
 
             /** Makes listeners accessible to this package. */

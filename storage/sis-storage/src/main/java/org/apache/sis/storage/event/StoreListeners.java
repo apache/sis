@@ -93,7 +93,7 @@ public class StoreListeners implements Localized {
     /**
      * The declared source of events. This is not necessarily the real source,
      * but this is the source that the implementer wants to declare as public API.
-     * Never {@code null} but may be {@code this}.
+     * Shall not be {@code null}.
      */
     private final Resource source;
 

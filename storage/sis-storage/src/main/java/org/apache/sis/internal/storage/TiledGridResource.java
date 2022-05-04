@@ -125,7 +125,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *         that created this resource.
      */
     protected TiledGridResource(final StoreListeners parent) {
-        super(parent);
+        super(parent, false);
         rasters = new WeakValueHashMap<>(CacheKey.class);
     }
 

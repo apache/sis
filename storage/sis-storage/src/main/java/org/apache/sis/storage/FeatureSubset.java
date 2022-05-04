@@ -64,7 +64,7 @@ final class FeatureSubset extends AbstractFeatureSet {
      * This given query is stored as-is (it is not cloned neither optimized).
      */
     FeatureSubset(final FeatureSet source, final FeatureQuery query) {
-        super(source instanceof StoreListeners ? (StoreListeners) source : null);
+        super(source instanceof StoreListeners ? (StoreListeners) source : null, false);
         this.source = source;
         this.query = query;
     }
