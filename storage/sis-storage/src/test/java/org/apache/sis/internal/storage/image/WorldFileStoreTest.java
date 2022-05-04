@@ -76,7 +76,15 @@ public final strictfp class WorldFileStoreTest extends TestCase {
     public void testMetadata() throws DataStoreException {
         final WorldFileStoreProvider provider = new WorldFileStoreProvider();
         try (WorldFileStore store = provider.open(testData())) {
+            /*
+             * Opportunistic check of store type. Should be read-only,
+             * and should have been simplified to the "single image" case.
+             */
             assertFalse(store instanceof WritableStore);
+            assertTrue(store instanceof SingleImageStore);
+            /*
+             * Verify metadata content.
+             */
             assertEquals("gradient", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             final Identification id = getSingleton(metadata.getIdentificationInfo());
@@ -98,6 +106,8 @@ public final strictfp class WorldFileStoreTest extends TestCase {
 
     /**
      * Tests reading the coverage and writing it in a new file.
+     * This test unconditionally open the data store as an aggregate,
+     * i.e. it bypasses the simplification of PNG files as {@link SingleImageStore} view.
      *
      * @throws DataStoreException if an error occurred during Image I/O or data store operations.
      * @throws IOException if an error occurred when creating, reading or deleting temporary files.
@@ -106,7 +116,7 @@ public final strictfp class WorldFileStoreTest extends TestCase {
     public void testReadWrite() throws DataStoreException, IOException {
         final Path directory = Files.createTempDirectory("SIS-");
         try {
-            final WorldFileStoreProvider provider = new WorldFileStoreProvider();
+            final WorldFileStoreProvider provider = new WorldFileStoreProvider(false);
             try (WorldFileStore source = provider.open(testData())) {
                 assertFalse(source instanceof WritableStore);
                 final GridCoverageResource resource = getSingleton(source.components());

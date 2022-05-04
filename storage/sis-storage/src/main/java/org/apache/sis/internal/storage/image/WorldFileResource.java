@@ -117,7 +117,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     WorldFileResource(final WorldFileStore store, final StoreListeners parent,
                       final int imageIndex, final GridGeometry gridGeometry)
     {
-        super(parent, false);
+        super(parent, store.isComponentHidden());
         this.store        = store;
         this.imageIndex   = imageIndex;
         this.gridGeometry = gridGeometry;
@@ -208,7 +208,8 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     }
 
     /**
-     * Returns the ranges of sample values.
+     * Returns the ranges of sample values in each band. Those sample dimensions describe colors
+     * because the World File format does not provide more information.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
