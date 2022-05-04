@@ -44,6 +44,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
@@ -179,7 +180,15 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                     }
                     id = base + n;
                 }
-                identifier = Names.createLocalName(store.getDisplayName(), null, id);
+                /*
+                 * Get the filename and omit the extension. The `store.suffix` field is null if the input
+                 * source was not a File/Path/URI/URL, in which case we do not try to trim the extension.
+                 */
+                String filename = store.getDisplayName();
+                if (store.suffix != null) {
+                    filename = IOUtilities.filenameWithoutExtension(filename);
+                }
+                identifier = Names.createLocalName(filename, null, id);
             }
             return Optional.of(identifier);
         }

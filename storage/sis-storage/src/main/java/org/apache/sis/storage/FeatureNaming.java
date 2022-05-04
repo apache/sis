@@ -128,6 +128,7 @@ public class FeatureNaming<E> {
     /**
      * Returns the display name for the given data store, or the localizable "unnamed" string
      * if the given data store is null or does not have a display name.
+     * This is used for error message in exceptions.
      */
     private static CharSequence name(final DataStore store) {
         if (store != null) {
