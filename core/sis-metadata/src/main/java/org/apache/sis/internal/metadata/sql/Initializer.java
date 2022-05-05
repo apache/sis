@@ -22,8 +22,6 @@ import java.util.concurrent.Callable;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -369,15 +367,7 @@ public abstract class Initializer {
      */
     public static boolean hasJNDI() {
         return NamingManager.hasInitialContextFactoryBuilder() ||
-               AccessController.doPrivileged((PrivilegedAction<Boolean>) Initializer::isContextDefined);
-    }
-
-    /**
-     * Returns whether an initial context factory is specified.
-     * Defined as a separated method for clearer stack trace in case of security exception.
-     */
-    private static Boolean isContextDefined() {
-        return System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
+                System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
     }
 
     /**

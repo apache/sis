@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -52,7 +50,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see DirectPosition1D
  * @see DirectPosition2D
@@ -294,10 +292,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     static Field getCoordinatesField(final Class<?> type) throws NoSuchFieldException {
         final Field field = type.getDeclaredField("coordinates");
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            field.setAccessible(true);
-            return null;
-        });
+        field.setAccessible(true);
         return field;
     }
 

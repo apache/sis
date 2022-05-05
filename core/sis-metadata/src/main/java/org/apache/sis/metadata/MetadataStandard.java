@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.InvalidClassException;
-import java.security.AccessController;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
@@ -91,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see AbstractMetadata
  *
@@ -1081,7 +1080,7 @@ public class MetadataStandard implements Serializable {
             throws InvalidClassException
     {
         try {
-            AccessController.doPrivileged(new FinalFieldSetter<>(classe, name)).set(instance, new ConcurrentHashMap<>());
+            FinalFieldSetter.set(classe, name, instance, new ConcurrentHashMap<>());
         } catch (ReflectiveOperationException e) {
             throw FinalFieldSetter.readFailure(e);
         }

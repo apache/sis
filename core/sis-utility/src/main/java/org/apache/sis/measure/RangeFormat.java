@@ -35,7 +35,6 @@ import java.time.format.FormatStyle;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.Temporal;
 import java.time.Instant;
-import java.security.AccessController;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
@@ -1080,8 +1079,8 @@ public class RangeFormat extends Format implements Localized {
     public RangeFormat clone() {
         final RangeFormat f = (RangeFormat) super.clone();
         try {
-            AccessController.doPrivileged(new FinalFieldSetter<>(RangeFormat.class, "elementFormat", "unitFormat"))
-                            .set(f, elementFormat.clone(), unitFormat.clone());
+            FinalFieldSetter.set(RangeFormat.class, "elementFormat", "unitFormat",
+                                 f, elementFormat.clone(), unitFormat.clone());
         } catch (ReflectiveOperationException e) {
             throw FinalFieldSetter.cloneFailure(e);
         }
