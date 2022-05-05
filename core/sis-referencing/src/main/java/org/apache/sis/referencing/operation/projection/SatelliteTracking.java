@@ -116,7 +116,7 @@ public class SatelliteTracking extends NormalizedProjection {
         final EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(NormalizedProjection.ParameterRole.class);
         roles.put(NormalizedProjection.ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS, LATITUDE_OF_ORIGIN);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**
@@ -135,7 +135,7 @@ public class SatelliteTracking extends NormalizedProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     private SatelliteTracking(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final double φ1 = toRadians(initializer.getAndStore(STANDARD_PARALLEL_1));
         final double φ2 = toRadians(initializer.getAndStore(STANDARD_PARALLEL_2));

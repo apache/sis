@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Mercator projections, and for Mercator-like projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -78,15 +78,19 @@ class AbstractMercator extends MapProjection {
 
     /**
      * Returns the given descriptor as an array, excluding the two first elements which are assumed
-     * to be the axis lengths.This method assumes that all elements in the given list are instances
+     * to be the axis lengths. This method assumes that all elements in the given list are instances
      * of {@link ParameterDescriptor}.
      *
+     * @param  descriptors  the descriptors to return as an array.
+     * @param  expansion    number of additional elements in the returned array.
+     * @return the given descriptors without the two first elements.
      * @throws ArrayStoreException if a {@code descriptors} element is not an instance of {@link ParameterDescriptor}.
      */
     @SuppressWarnings("SuspiciousToArrayCall")
-    static ParameterDescriptor<?>[] toArray(List<GeneralParameterDescriptor> descriptors) {
+    static ParameterDescriptor<?>[] toArray(List<GeneralParameterDescriptor> descriptors, int expansion) {
         descriptors = descriptors.subList(2, descriptors.size());
-        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);  // Intentional array subtype.
+        // Intentionallly use an array subtype in call to `toArray(…)`.
+        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size() + expansion]);
     }
 
     /**

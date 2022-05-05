@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.OperationMethod;
@@ -69,31 +70,58 @@ public class ObliqueMercator extends ConformalProjection {
     /**
      * For compatibility with different versions during deserialization.
      */
-    private static final long serialVersionUID = -5289761492678147674L;
+    private static final long serialVersionUID = -2194259651400234956L;
 
     /**
-     * Bitmask for projections having easting/northing values defined at projection center
-     * instead of at coordinate system natural origin.
-     * This bit is unset for <cite>Hotine Oblique Mercator (variant A)</cite> (EPSG:9812)
-     * and is set for        <cite>Hotine Oblique Mercator (variant B)</cite> (EPSG:9815).
+     * Variants of Oblique Mercator projection.
      */
-    private static final byte CENTER = 1;
+    private enum Variant implements ProjectionVariant {
+        /** The <cite>Hotine Oblique Mercator (variant A)</cite> projection. */
+        DEFAULT(".*\\bvariant\\s*A\\b.*", IDENTIFIER_OF_BASE, false, false),
 
-    /**
-     * Bitmask for projections having their central line defined by two points instead of an azimuth angle.
-     * The two points variants are used by ESRI.
-     */
-    private static final byte TWO_POINTS = 2;
+        /** The <cite>Hotine Oblique Mercator (variant B)</cite> projection. */
+        CENTER(".*\\bvariant\\s*B\\b.*", IDENTIFIER, false, true),
 
-    /**
-     * Returns the type of the projection based on the name and identifier of the given operation method.
-     */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bvariant\\s*A\\b.*", IDENTIFIER_A))        return 0;
-        if (identMatch(method, "(?i).*\\bvariant\\s*B\\b.*", IDENTIFIER  ))        return CENTER;
-        if (identMatch(method, "(?i).*\\bTwo[_\\s]Point[_\\s]Natural\\b.*", null)) return TWO_POINTS;
-        if (identMatch(method, "(?i).*\\bTwo[_\\s]Point[_\\s]Center\\b.*",  null)) return TWO_POINTS | CENTER;
-        return STANDARD_VARIANT;                // Unidentified case, to be considered as variant A.
+        /** The "<cite>Oblique Mercator</cite>" projection specified by two points on the central line. */
+        TWO_POINTS(".*\\bTwo\\s*Point\\s*Natural\\b.*", null, true, false),
+
+        /** The "<cite>Oblique Mercator</cite>" projection specified by two points on the central line. */
+        TWO_POINTS_CENTER(".*\\bTwo\\s*Point\\s*Center\\b.*", null, true, true);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+
+        /**
+         * Whether the projection has its central line defined by two points instead of an azimuth angle.
+         * The two points variants are used by ESRI.
+         */
+        final boolean twoPoints;
+
+        /**
+         * Whether easting/northing values are defined at projection
+         * center instead of at coordinate system natural origin.
+         * This is {@code false} for <cite>Hotine Oblique Mercator (variant A)</cite>
+         * and {@code true} for <cite>Hotine Oblique Mercator (variant B)</cite>.
+         */
+        final boolean center;
+
+        /** Creates a new enumeration value.  */
+        private Variant(final String operationName, final String identifier, final boolean twoPoints, final boolean center) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+            this.identifier    = identifier;
+            this.twoPoints     = twoPoints;
+            this.center        = center;
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
     }
 
     /**
@@ -133,13 +161,12 @@ public class ObliqueMercator extends ConformalProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final byte variant = getVariant(method);
-        final boolean isCenter = (variant & CENTER) != 0;
+        final Variant variant = variant(method, Variant.values(), Variant.DEFAULT);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
 //      ParameterRole.CENTRAL_MERIDIAN intentionally excluded. It will be handled in the constructor instead.
         roles.put(ParameterRole.SCALE_FACTOR,   SCALE_FACTOR);
-        roles.put(ParameterRole.FALSE_EASTING,  isCenter ? EASTING_AT_CENTRE  : FALSE_EASTING);
-        roles.put(ParameterRole.FALSE_NORTHING, isCenter ? NORTHING_AT_CENTRE : FALSE_NORTHING);
+        roles.put(ParameterRole.FALSE_EASTING,  variant.center ? EASTING_AT_CENTRE  : FALSE_EASTING);
+        roles.put(ParameterRole.FALSE_NORTHING, variant.center ? NORTHING_AT_CENTRE : FALSE_NORTHING);
         return new Initializer(method, parameters, roles, variant);
     }
 
@@ -149,6 +176,7 @@ public class ObliqueMercator extends ConformalProjection {
      */
     private ObliqueMercator(final Initializer initializer) {
         super(initializer);
+        final Variant variant = (Variant) initializer.variant;
         final double λc = toRadians(initializer.getAndStore(LONGITUDE_OF_CENTRE));
         final double φc = toRadians(initializer.getAndStore(LATITUDE_OF_CENTRE));
         final double sinφ  = sin(φc);
@@ -180,7 +208,7 @@ public class ObliqueMercator extends ConformalProjection {
          * Only the azimuth case is described in EPSG guidance notes.
          */
         double αc, γc, γ0, λ0;
-        if ((initializer.variant & TWO_POINTS) == 0) {
+        if (!variant.twoPoints) {
             αc = initializer.getAndStore(AZIMUTH);                                      // Convert to radians later.
             γc = toRadians(initializer.getAndStore(RECTIFIED_GRID_ANGLE, αc));
             αc = toRadians(αc);
@@ -259,7 +287,7 @@ public class ObliqueMercator extends ConformalProjection {
          *         = A⋅(λc – λ₀)  if  αc = 90°.
          */
         final double ArB = A / B;
-        if ((initializer.variant & CENTER) != 0) {
+        if (variant.center) {
             final double uc;
             if (abs(abs(αc) - PI/2) < ANGULAR_TOLERANCE) {
                 uc = A * (λc - λ0);

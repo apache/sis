@@ -61,8 +61,8 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      */
     public MemoryFeatureSet(final StoreListeners parent,
                             final DefaultFeatureType type, final Collection<AbstractFeature> features)
-{
-        super(parent);
+    {
+        super(parent, false);
         ArgumentChecks.ensureNonNull("type",     type);
         ArgumentChecks.ensureNonNull("features", features);
         this.type     = type;

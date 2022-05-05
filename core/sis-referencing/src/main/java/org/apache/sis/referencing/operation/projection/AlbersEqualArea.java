@@ -50,11 +50,11 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
-public class AlbersEqualArea extends EqualAreaProjection {
+public class AlbersEqualArea extends AuthalicConversion {
     /**
      * For cross-version compatibility.
      */
@@ -111,7 +111,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         roles.put(ParameterRole.FALSE_EASTING,    EASTING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.FALSE_NORTHING,   NORTHING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_FALSE_ORIGIN);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**
@@ -120,7 +120,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private AlbersEqualArea(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         double φ0 = initializer.getAndStore(LATITUDE_OF_FALSE_ORIGIN);
         double φ1 = initializer.getAndStore(STANDARD_PARALLEL_1, φ0);
         double φ2 = initializer.getAndStore(STANDARD_PARALLEL_2, φ1);
@@ -210,7 +210,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
      *
      * @param  factory The factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -219,7 +219,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         AlbersEqualArea kernel = this;
-        if (eccentricity == 0) {
+        if (eccentricity == 0 && getClass() == AlbersEqualArea.class) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -244,7 +244,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
         final double sinφ = sin(φ);
-        final double ρ = sqrt(C - nm*qm_ellipsoid(sinφ));
+        final double ρ = sqrt(C - nm*qm(sinφ));
         if (dstPts != null) {
             dstPts[dstOff  ] = ρ * sinθ;
             dstPts[dstOff+1] = ρ * cosθ;
@@ -274,12 +274,12 @@ public class AlbersEqualArea extends EqualAreaProjection {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         /*
-         * Note: Snyder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not done in Apache SIS
-         * implementation because (x,y) are premultiplied by n (by the normalization affine transform) before to enter
-         * in this method, so if n was negative those values have already their sign reverted.
+         * Note: Snyder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not be done
+         * in SIS implementation because (x,y) are premultiplied by n (by the normalization affine transform)
+         * before to enter in this method, so if n was negative those values have already their sign reverted.
          */
         dstPts[dstOff  ] = atan2(x, y);
-        dstPts[dstOff+1] = φ((C - (x*x + y*y)) / nm);
+        dstPts[dstOff+1] = φ((C - (x*x + y*y)) / (nm*qmPolar));
         /*
          * Note: Snyder 14-19 gives  q = (C - ρ²n²/a²)/n  where  ρ = √(x² + (ρ₀ - y)²).
          * But in Apache SIS implementation, ρ₀ has already been subtracted by the matrix before we reach this point.
@@ -290,7 +290,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
          *      q  =  (C - (x² + y²)) / n
          *
          * We divide by nm instead of n, so a (1-ℯ²) term is missing. But that missing term will be cancelled with
-         * the missing (1-ℯ²) term in qmPolar (the divisor applied by the φ(double) method that we invoke).
+         * the missing (1-ℯ²) term in `qmPolar`. The division by `qmPolar` is for converting y to sin(β).
          */
     }
 

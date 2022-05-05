@@ -71,7 +71,7 @@ public final class MillerCylindrical extends AbstractMercator {
                 .addIdentifier(Citations.GEOTIFF,  "20")
                 .addName      (Citations.PROJ4,    "mill")
                 .addIdentifier(Citations.MAP_INFO, "11")
-                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors(), 0));
     }
 
     /**

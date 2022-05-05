@@ -16,10 +16,7 @@
  */
 package org.apache.sis.internal.storage.image;
 
-import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.function.BiConsumer;
-import java.io.File;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.nio.file.StandardOpenOption;
@@ -33,7 +30,6 @@ import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.spi.ImageReaderWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.FileImageOutputStream;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -69,12 +65,20 @@ import org.apache.sis.setup.OptionKey;
  * The image writer will be {@linkplain ImageWriter#dispose() disposed}
  * and its output closed (if {@link AutoCloseable}) when this data store is {@linkplain #close() closed}.</p>
  *
+ * <h2>Handling of multi-image files</h2>
+ * Because some image formats can store an arbitrary amount of images,
+ * this data store is considered as an aggregate with one resource per image.
+ * All image should have the same size and all resources will share the same {@link GridGeometry}.
+ * However this base class does not implement the {@link WritableAggregate} interface directly in order
+ * to give a chance to subclasses to implement {@link GridCoverageResource} directly when the format is
+ * known to support only one image per file.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-final class WritableStore extends WorldFileStore implements WritableAggregate {
+class WritableStore extends WorldFileStore {
     /**
      * Position of the input/output stream beginning. This is usually 0.
      */
@@ -101,68 +105,28 @@ final class WritableStore extends WorldFileStore implements WritableAggregate {
     /**
      * Creates a new store from the given file, URL or stream.
      *
-     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  format  information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    WritableStore(final WorldFileStoreProvider provider, final StorageConnector connector)
-            throws DataStoreException, IOException
-    {
-        super(provider, connector, false);
-        final Object storage = connector.getStorage();
-        final ImageReader reader = getCurrentReader();
-        final Object inout;
-        if (reader != null) {
-            inout = reader.getInput();
-            numImages = -1;
-        } else if (storage instanceof ImageWriter) {
-            writer = (ImageWriter) storage;
-            inout  = writer.getOutput();
-            configureWriter();
+    WritableStore(final FormatFinder format) throws DataStoreException, IOException {
+        super(format, false);
+        if (getCurrentReader() != null) {
             numImages = -1;
         } else {
-            /*
-             * If it was possible to initialize an image reader, wait to see if an image writer is needed.
-             * Otherwise (i.e. if the destination file does not exist), create the image writer immediately.
-             * The code below is a copy of the code in parent class constructor (for creating `ImageReader`),
-             * but adapted to the case of creating an `ImageWriter`.
-             */
-            final Map<ImageWriterSpi,Boolean> deferred = new LinkedHashMap<>();
-            if (suffix != null) {
-                writer = FormatFilter.SUFFIX.createWriter(suffix, connector, null, deferred);
-            }
+            writer = format.getOrCreateWriter();
             if (writer == null) {
-                writer = FormatFilter.SUFFIX.createWriter(null, connector, null, deferred);
-fallback:       if (writer == null) {
-                    ImageOutputStream stream = null;
-                    for (final Map.Entry<ImageWriterSpi,Boolean> entry : deferred.entrySet()) {
-                        if (entry.getValue()) {
-                            if (stream == null) {
-                                final File file = connector.getStorageAs(File.class);
-                                if (file != null) {
-                                    stream = new FileImageOutputStream(file);
-                                } else {
-                                    stream = ImageIO.createImageOutputStream(storage);
-                                    if (stream == null) break;
-                                }
-                            }
-                            final ImageWriterSpi p = entry.getKey();
-                            connector.closeAllExcept(storage);
-                            writer = p.createWriterInstance();
-                            writer.setOutput(stream);
-                            break fallback;
-                        }
-                    }
-                    throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
-                                storage, connector.getOption(OptionKey.OPEN_OPTIONS));
-                }
+                throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
+                            format.storage, format.connector.getOption(OptionKey.OPEN_OPTIONS));
             }
             configureWriter();
-            inout = writer.getOutput();
-            // Leave `numImages` to 0 because we know that the stream is empty.
+            if (!format.fileIsEmpty) {
+                numImages = -1;
+            } else {
+                // Leave `numImages` to 0.
+            }
         }
-        streamBeginning = (inout instanceof ImageInputStream) ? ((ImageInputStream) inout).getStreamPosition() : 0;
+        streamBeginning = (format.storage instanceof ImageInputStream) ? ((ImageInputStream) format.storage).getStreamPosition() : 0;
     }
 
     /**
@@ -303,7 +267,6 @@ writeCoeffs:    for (int i=0;; i++) {
      * @return the effectively added resource.
      * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate}.
      */
-    @Override
     public synchronized Resource add(final Resource resource) throws DataStoreException {
         Exception cause = null;
         if (resource instanceof GridCoverageResource) try {

@@ -77,7 +77,7 @@ public class Orthographic extends NormalizedProjection {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**
@@ -101,7 +101,7 @@ public class Orthographic extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.8")
     private Orthographic(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         sinφ0 = sin(φ0);
         cosφ0 = cos(φ0);

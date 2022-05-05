@@ -50,7 +50,7 @@ public final class PseudoMercator extends AbstractMercator {
         PARAMETERS = builder()
                 .addIdentifier(IDENTIFIER)
                 .addName("Popular Visualisation Pseudo Mercator")
-                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors(), 0));
     }
 
     /**

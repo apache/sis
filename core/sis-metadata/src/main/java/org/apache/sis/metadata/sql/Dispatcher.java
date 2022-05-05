@@ -341,7 +341,7 @@ final class Dispatcher implements InvocationHandler {
             } else {
                 /*
                  * `getIndividualName()`, `getOrganisationName()`, `getPositionName()` and
-                 * `getContactInfo()` has no direct equivalence in `Responsibility` class.
+                 * `getContactInfo()` have no direct equivalence in `Responsibility` class.
                  */
                 return null;
             }

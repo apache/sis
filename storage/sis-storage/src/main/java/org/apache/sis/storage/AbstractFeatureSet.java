@@ -51,14 +51,24 @@ import org.apache.sis.feature.DefaultFeatureType;
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
-     * Creates a new resource. This resource will have its own set of listeners,
-     * but the listeners of the data store that created this resource will be notified as well.
+     * Creates a new resource which can send notifications to the given set of listeners.
+     * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of
+     * listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
+     * It will be possible to add and remove listeners independently from the set of parent listeners.
+     * Conversely if {@code hidden} is {@code true}, then the given listeners will be used directly
+     * and this resource will not appear as the source of any event.
      *
-     * @param  parent  listeners of the parent resource or data store, or {@code null} if none.
+     * <p>In any cases, the listeners of all parents (ultimately the data store that created this resource)
+     * will always be notified, either directly if {@code hidden} is {@code true}
+     * or indirectly if {@code hidden} is {@code false}.</p>
+     *
+     * @param  parentListeners  listeners of the parent resource, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.
+     * @param  hidden  {@code false} if this resource shall use its own {@link StoreListeners}
+     *         with the specified parent, or {@code true} for using {@code parentListeners} directly.
      */
-    protected AbstractFeatureSet(final StoreListeners parent) {
-        super(parent);
+    protected AbstractFeatureSet(final StoreListeners parentListeners, final boolean hidden) {
+        super(parentListeners, hidden);
     }
 
     /**

@@ -148,6 +148,10 @@ enum FormatFilter {
                              * We do not try to mark/reset the input because it should be done
                              * by `canDecodeInput(…)` as per Image I/O contract. Doing our own
                              * mark/reset may interfere with the `canDecodeInput(…)` marks.
+                             *
+                             * Note: `ImageReaderSpi` implementations in Java 18 read up to 8 bytes
+                             * without verifying if those bytes exist. Consequently there is a risk
+                             * of `EOFException` here. A patch has been submitted to OpenJDK.
                              */
                             if (provider.canDecodeInput(input)) {
                                 return provider;
@@ -168,14 +172,15 @@ enum FormatFilter {
      * This is intentionally not done automatically by {@link StorageConnector}.
      *
      * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
-     * @param  connector   provider of the input to be given to the new reader instance.
+     * @param  format      provider of the input to be given to the new reader instance.
      * @param  deferred    initially empty map to be populated with providers tested by this method.
      * @return the new image reader instance with its input initialized, or {@code null} if none was found.
      * @throws DataStoreException if an error occurred while opening a stream from the storage connector.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    final ImageReader createReader(final String identifier, final StorageConnector connector,
-                                   final Map<ImageReaderSpi,Boolean> deferred) throws IOException, DataStoreException
+    final ImageReader createReader(final String identifier, final FormatFinder format,
+                                   final Map<ImageReaderSpi,Boolean> deferred)
+            throws IOException, DataStoreException
     {
         final Iterator<ImageReaderSpi> it = getServiceProviders(ImageReaderSpi.class, identifier);
         while (it.hasNext()) {
@@ -183,12 +188,12 @@ enum FormatFilter {
             if (deferred.putIfAbsent(provider, Boolean.FALSE) == null) {
                 for (final Class<?> type : provider.getInputTypes()) {
                     if (ArraysExt.contains(VALID_INPUTS, type)) {
-                        final Object input = connector.getStorageAs(type);
+                        final Object input = format.connector.getStorageAs(type);
                         if (input != null) {
                             if (provider.canDecodeInput(input)) {
-                                connector.closeAllExcept(input);
                                 final ImageReader reader = provider.createReaderInstance();
                                 reader.setInput(input, false, true);
+                                format.keepOpen = input;
                                 return reader;
                             }
                             break;        // Skip other input types, try the next provider.
@@ -209,14 +214,14 @@ enum FormatFilter {
      * This is intentionally not done automatically by {@link StorageConnector}.
      *
      * @param  identifier  the property value to use as a filtering criterion, or {@code null} if none.
-     * @param  output      the output to be given to the new reader instance.
+     * @param  format      provider of the output to be given to the new writer instance.
      * @param  image       the image to write, or {@code null} if unknown.
      * @param  deferred    initially empty map to be populated with providers tested by this method.
      * @return the new image writer instance with its output initialized, or {@code null} if none was found.
      * @throws DataStoreException if an error occurred while opening a stream from the storage connector.
      * @throws IOException if an error occurred while creating the image writer instance.
      */
-    final ImageWriter createWriter(final String identifier, final StorageConnector connector, final RenderedImage image,
+    final ImageWriter createWriter(final String identifier, final FormatFinder format, final RenderedImage image,
                                    final Map<ImageWriterSpi,Boolean> deferred) throws IOException, DataStoreException
     {
         final Iterator<ImageWriterSpi> it = getServiceProviders(ImageWriterSpi.class, identifier);
@@ -226,11 +231,11 @@ enum FormatFilter {
                 if (image == null || provider.canEncodeImage(image)) {
                     for (final Class<?> type : provider.getOutputTypes()) {
                         if (ArraysExt.contains(VALID_OUTPUTS, type)) {
-                            final Object output = connector.getStorageAs(type);
+                            final Object output = format.connector.getStorageAs(type);
                             if (output != null) {
-                                connector.closeAllExcept(output);
                                 final ImageWriter writer = provider.createWriterInstance();
                                 writer.setOutput(output);
+                                format.keepOpen = output;
                                 return writer;
                             }
                         }

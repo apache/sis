@@ -69,7 +69,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      *         that created this resource.
      */
     protected AggregatedFeatureSet(final StoreListeners parent) {
-        super(parent);
+        super(parent, false);
     }
 
     /**

@@ -31,22 +31,22 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * Tests {@link EqualAreaProjection}.
+ * Tests {@link AuthalicConversion}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   1.0
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class EqualAreaProjectionTest extends MapProjectionTestCase {
+public final strictfp class AuthalicConversionTest extends MapProjectionTestCase {
     /**
      * Creates the projection to be tested.
      *
      * @param  ellipsoidal   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @return a test instance of the projection.
      */
-    private EqualAreaProjection create(final boolean ellipsoidal) {
+    private AuthalicConversion create(final boolean ellipsoidal) {
         final DefaultOperationMethod provider = new LambertCylindricalEqualArea();
         final CylindricalEqualArea projection = new CylindricalEqualArea(provider, parameters(provider, ellipsoidal));
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
@@ -60,7 +60,7 @@ public final strictfp class EqualAreaProjectionTest extends MapProjectionTestCas
      * @param  y  in the cylindrical case, this is northing on the normalized ellipsoid.
      * @return the latitude in radians.
      */
-    private static double reference(final EqualAreaProjection projection, final double y) {
+    private static double reference(final AuthalicConversion projection, final double y) {
         final double e    = projection.eccentricity;
         final double e2   = projection.eccentricitySquared;
         final double e4   = e2 * e2;
@@ -78,32 +78,32 @@ public final strictfp class EqualAreaProjectionTest extends MapProjectionTestCas
     }
 
     /**
-     * Compares {@link EqualAreaProjection#φ(double)} with formula taken as references.
+     * Compares {@link AuthalicConversion#φ(double)} with formula taken as references.
      *
      * @throws ProjectionException if the function does not converge.
      */
     @Test
     public void compareWithReference() throws ProjectionException {
-        final EqualAreaProjection projection = create(true);
+        final AuthalicConversion projection = create(true);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
             final double y = random.nextDouble() * 3 - 1.5;
             final double reference = reference(projection, y);
-            final double actual    = projection.φ(y);
+            final double actual    = projection.φ(y / projection.qmPolar);
             assertEquals(reference, actual, NormalizedProjection.ITERATION_TOLERANCE);
         }
     }
 
     /**
-     * Searches a value for {@link EqualAreaProjection#ECCENTRICITY_THRESHOLD}.
+     * Searches a value for {@link AuthalicConversion#ECCENTRICITY_THRESHOLD}.
      * This method is not part of test suite. Steps to enable:
      *
      * <ol>
-     *   <li>In {@link EqualAreaProjection#φ(double)} method, for {@code useIterations} to {@code false}.</li>
+     *   <li>In {@link AuthalicConversion#φ(double)} method, for {@code useIterations} to {@code false}.</li>
      *   <li>Add a {@link Test} annotation on this method.
      * </ol>
      *
-     * @throws ProjectionException if {@link EqualAreaProjection#φ(double)} did not converge.
+     * @throws ProjectionException if {@link AuthalicConversion#φ(double)} did not converge.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void searchThreshold() throws ProjectionException {
@@ -116,7 +116,7 @@ public final strictfp class EqualAreaProjectionTest extends MapProjectionTestCas
             final CylindricalEqualArea projection = new CylindricalEqualArea(provider, parameters);
             for (double y = -1.25; y <= 1.25; y += 0.01) {
                 final double reference = reference(projection, y);
-                final double actual = projection.φ(y);
+                final double actual = projection.φ(y / projection.qmPolar);
                 if (abs(actual - reference) > NormalizedProjection.ANGULAR_TOLERANCE) {
                     System.out.println("Error exceeds tolerance threshold at eccentricity " + e);
                     return;

@@ -44,6 +44,13 @@ public class CassiniSoldner extends MapProjection {
     private static final long serialVersionUID = 7280273456465057368L;
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     * The {@code IDENTIFIER_OF_BASE} name is for avoiding confusion with
+     * the {@code IDENTIFIER} name used in subclasses.
+     */
+    public static final String IDENTIFIER_OF_BASE = "9806";
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * Valid values range is [-90 … 90]° and default value is 0°.
      *
@@ -135,7 +142,7 @@ public class CassiniSoldner extends MapProjection {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-                .addIdentifier(              "9806")
+                .addIdentifier(              IDENTIFIER_OF_BASE)
                 .addName(                    "Cassini-Soldner")
                 .addName(Citations.OGC,      "Cassini_Soldner")
                 .addName(Citations.ESRI,     "Cassini_Soldner")

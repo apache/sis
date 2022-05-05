@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.6
+ * @version 1.2
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/mercator_1sp.html">GeoTIFF parameters for Mercator 1SP</a>
  *
@@ -43,6 +43,11 @@ public final class Mercator1SP extends AbstractMercator {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5886510621481710072L;
+
+    /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9804";
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
@@ -126,7 +131,7 @@ public final class Mercator1SP extends AbstractMercator {
                 .addName(Citations.PROJ4,   "k"));
 
         PARAMETERS = builder
-                .addIdentifier(              "9804")                        // The ellipsoidal case
+                .addIdentifier(              IDENTIFIER)                    // The ellipsoidal case
                 .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
                 .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
                 .addName(Citations.OGC,      "Mercator_1SP")

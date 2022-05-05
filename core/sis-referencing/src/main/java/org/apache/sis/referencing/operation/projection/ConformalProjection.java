@@ -27,8 +27,8 @@ import static java.lang.Math.*;
  * However we do not put this base class in public API because not all conformal projections extend this base class.
  * For example the {@link TransverseMercator} projection, despite being conformal, uses very different formulas.
  *
- * <p>Note that no projection can be both conformal and equal-area. This restriction is implemented in class
- * hierarchy with {@link ConformalProjection} and {@link EqualAreaProjection} being two distinct classes.</p>
+ * <p>Note that no projection can be both conformal and equal-area. So the formulas in this class are usually
+ * mutually exclusive with formulas in {@link AuthalicConversion} class (used for equal-area projections).</p>
  *
  * <p>This base class can been seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
  * which includes some other projections like Mercator and Polar Stereographic as special cases.
@@ -111,7 +111,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * @param  initializer  the initializer for computing map projection internal parameters.
      */
     ConformalProjection(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         useIterations = (eccentricity >= ECCENTRICITY_THRESHOLD);
         final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
@@ -154,7 +154,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * instance without recomputing them.
      */
     ConformalProjection(final ConformalProjection other) {
-        super(other);
+        super(null, other);
         useIterations = other.useIterations;
         c2χ = other.c2χ;
         c4χ = other.c4χ;

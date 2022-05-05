@@ -990,18 +990,16 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Sets whether the next {@code Identifier} or {@code IdentifiedObject}s to create shall be considered deprecated.
-     * Deprecated objects exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like
-     * the EPSG database.
-     *
-     * <p>Note that this method does not apply to name and identifiers, which have their own
-     * {@code addDeprecatedFoo(…)} methods.</p>
+     * Sets whether the next {@code GenericName}s, {@code Identifier}s or {@code IdentifiedObject}s
+     * to create shall be considered deprecated.
+     * Deprecated objects exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories}
+     * like the EPSG database.
      *
      * <p><b>Lifetime:</b>
      * Deprecation status is cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  deprecated {@code true} if the next names, identifiers and identified objects should be
-     *         considered deprecated, or {@code false} otherwise.
+     * @param  deprecated  {@code true} if the next names, identifiers and identified
+     *         objects should be considered deprecated, or {@code false} otherwise.
      * @return {@code this}, for method call chaining.
      *
      * @see AbstractIdentifiedObject#isDeprecated()

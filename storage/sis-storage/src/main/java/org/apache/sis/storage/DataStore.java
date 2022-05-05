@@ -266,7 +266,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * in identifiers like white spaces.</p>
      *
      * <p>This method should never throw an exception since it may be invoked for producing error
-     * messages, in which case throwing an exception here would mask the original exception.</p>
+     * messages, in which case throwing an exception here would hide the original exception.</p>
      *
      * <p>This method differs from {@link #getIdentifier()} in that it is typically a file name
      * known at construction time instead of a property read from metadata.

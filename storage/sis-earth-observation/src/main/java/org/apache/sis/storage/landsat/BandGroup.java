@@ -70,7 +70,7 @@ final class BandGroup extends AbstractResource implements Aggregate {
     private BandGroup(final StoreListeners parent, final BandGroupName group,
                       final Band[] resources, final int count)
     {
-        super(parent);
+        super(parent, false);
         this.group = group;
         int n = 0;
         Band[] components = new Band[resources.length];

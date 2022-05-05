@@ -19,12 +19,16 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
+import org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -45,7 +49,7 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -254,6 +258,70 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
+     * Tests the <cite>"Mercator Auxiliary Sphere"</cite> case with type 3.
+     * This type mandate conversion between geodetic latitude and authalic latitude.
+     * The values used in this test are close to <cite>"Mercator (Spherical)"</cite> (EPSG:1026) case.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testMercatorSpherical")
+    public void testAuthalicLatitudeConversion() throws FactoryException, TransformException {
+        final double[] source = {-100.33333333333333, 24.381786944444446};
+        final double[] target = {
+            -11156569.90  -      0.31,      // Expected value from spherical test − empirical correction.
+              2796869.94  -  11759.14
+        };
+        createAuxiliarySphereProjection(AuthalicMercator.TYPE);
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(source, target);
+    }
+
+    /**
+     * Tests the <cite>"Mercator Auxiliary Sphere"</cite> case.
+     * For the sphere type 0, which is the default, this is equivalent to pseudo-Mercator.
+     * This simple test measures the length of an arc of 1 radian at equator.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testPseudoMercator")
+    public void testMercatorAuxiliarySphere() throws FactoryException, TransformException {
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        for (int type = 0; type <= AuthalicMercator.TYPE; type++) {
+            createAuxiliarySphereProjection(type);
+            final double expected;
+            switch (type) {
+                case 0: expected = WGS84_A;    break;   // 6378137
+                case 1: expected = WGS84_B;    break;   // 6356752.31
+                case 2: expected = 6371007.18; break;   // Authalic radius
+                case 3: expected = 6371007.18; break;
+                default: throw new AssertionError(type);
+            }
+            verifyTransform(new double[] {180/Math.PI, 0, 0, 0}, new double[] {expected, 0, 0, 0});
+        }
+    }
+
+    /**
+     * Creates an ESRI  <cite>"Mercator Auxiliary Sphere"</cite> projection.
+     * The axis lengths are those of WGS 84, which result in an authalic radius of about 6371007 meters.
+     *
+     * @param  type  the <cite>"Auxiliary sphere type"</cite> parameter value.
+     * @throws FactoryException if an error occurred while creating the map projection.
+     */
+    private void createAuxiliarySphereProjection(final int type) throws FactoryException {
+        final MercatorAuxiliarySphere provider = new MercatorAuxiliarySphere();
+        final Parameters values = Parameters.castOrWrap(provider.getParameters().createValue());
+        values.parameter(Constants.SEMI_MAJOR).setValue(WGS84_A);
+        values.parameter(Constants.SEMI_MINOR).setValue(WGS84_B);
+        values.parameter("Auxiliary_Sphere_Type").setValue(type);
+        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
+        validate();
+    }
+
+    /**
      * Performs the same tests than {@link #testSpecialLatitudes()} and {@link #testDerivative()},
      * but using spherical formulas.
      *
@@ -263,7 +331,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
-        createNormalizedProjection(false); // Spherical case
+        createNormalizedProjection(false);          // Spherical case
         testSpecialLatitudes();
         testDerivative();
 

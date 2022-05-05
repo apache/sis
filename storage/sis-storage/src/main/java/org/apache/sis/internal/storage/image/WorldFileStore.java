@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.io.EOFException;
@@ -32,8 +31,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
-import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -53,7 +50,6 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.PRJDataStore;
-import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.ListOfUnknownSize;
@@ -109,13 +105,16 @@ import org.apache.sis.setup.OptionKey;
  * Because some image formats can store an arbitrary amount of images,
  * this data store is considered as an aggregate with one resource per image.
  * All image should have the same size and all resources will share the same {@link GridGeometry}.
+ * However this base class does not implement the {@link Aggregate} interface directly in order to
+ * give a chance to subclasses to implement {@link GridCoverageResource} directly when the format
+ * is known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
  * @module
  */
-class WorldFileStore extends PRJDataStore implements Aggregate {
+class WorldFileStore extends PRJDataStore {
     /**
      * Image I/O format names (ignoring case) for which we have an entry in the {@code SpatialMetadata} database.
      */
@@ -217,84 +216,45 @@ class WorldFileStore extends PRJDataStore implements Aggregate {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @param  readOnly   whether to fail if the channel can not be opened at least in read mode.
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    WorldFileStore(final WorldFileStoreProvider provider, final StorageConnector connector, final boolean readOnly)
+    public WorldFileStore(final WorldFileStoreProvider provider, final StorageConnector connector)
             throws DataStoreException, IOException
     {
-        super(provider, connector);
-        identifiers = new HashMap<>();
+        this(new FormatFinder(provider, connector), true);
+    }
+
+    /**
+     * Creates a new store from the given file, URL or stream.
+     *
+     * @param  format    information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
+     * @param  readOnly  {@code true} if the store should be open in read-only mode, ignoring {@code format}.
+     *                   This is a workaround for RFE #4093999 in Sun's bug database, for allowing us to invoke
+     *                   {@link FormatFinder#cleanup()} when invoked from the public constructor.
+     * @throws DataStoreException if an error occurred while opening the stream.
+     * @throws IOException if an error occurred while creating the image reader instance.
+     */
+    WorldFileStore(final FormatFinder format, final boolean readOnly) throws DataStoreException, IOException {
+        super(format.provider, format.connector);
         listeners.useWarningEventsOnly();
-        final Object storage = connector.getStorage();
-        if (storage instanceof ImageReader) {
-            reader = (ImageReader) storage;
-            suffix = IOUtilities.extension(reader.getInput());
-            configureReader();
-            return;
-        }
-        if (storage instanceof ImageWriter) {
-            suffix = IOUtilities.extension(((ImageWriter) storage).getOutput());
-            return;
-        }
-        suffix = IOUtilities.extension(storage);
-        if (!(readOnly || fileExists(connector))) {
-            /*
-             * If the store is opened in read-write mode, create the image reader only
-             * if the file exists and is non-empty. Otherwise we let `reader` to null
-             * and the caller will create an image writer instead.
-             */
-            return;
-        }
-        /*
-         * Search for a reader that claim to be able to read the storage input.
-         * First we try readers associated to the file suffix. If no reader is
-         * found, we try all other readers.
-         */
-        final Map<ImageReaderSpi,Boolean> deferred = new LinkedHashMap<>();
-        if (suffix != null) {
-            reader = FormatFilter.SUFFIX.createReader(suffix, connector, deferred);
-        }
-        if (reader == null) {
-            reader = FormatFilter.SUFFIX.createReader(null, connector, deferred);
-fallback:   if (reader == null) {
-                /*
-                 * If no reader has been found, maybe `StorageConnector` has not been able to create
-                 * an `ImageInputStream`. It may happen if the storage object is of unknown type.
-                 * Check if it is the case, then try all providers that we couldn't try because of that.
-                 */
-                ImageInputStream stream = null;
-                for (final Map.Entry<ImageReaderSpi,Boolean> entry : deferred.entrySet()) {
-                    if (entry.getValue()) {
-                        if (stream == null) {
-                            if (!readOnly) {
-                                // ImageOutputStream is both read and write.
-                                stream = ImageIO.createImageOutputStream(storage);
-                            }
-                            if (stream == null) {
-                                stream = ImageIO.createImageInputStream(storage);
-                                if (stream == null) break;
-                            }
-                        }
-                        final ImageReaderSpi p = entry.getKey();
-                        if (p.canDecodeInput(stream)) {
-                            connector.closeAllExcept(storage);
-                            reader = p.createReaderInstance();
-                            reader.setInput(stream);
-                            break fallback;
-                        }
-                    }
-                }
+        identifiers = new HashMap<>();
+        suffix = format.suffix;
+        if (readOnly || !format.openAsWriter) {
+            reader = format.getOrCreateReader();
+            if (reader == null) {
                 throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
-                            storage, connector.getOption(OptionKey.OPEN_OPTIONS));
+                            format.storage, format.connector.getOption(OptionKey.OPEN_OPTIONS));
             }
+            configureReader();
+            if (readOnly) {
+                format.close();
+            }
+            /*
+             * Do not invoke any method that may cause the image reader to start reading the stream,
+             * because the `WritableStore` subclass will want to save the initial stream position.
+             */
         }
-        configureReader();
-        /*
-         * Do not invoke any method that may cause the image reader to start reading the stream,
-         * because the `WritableStore` subclass will want to save the initial stream position.
-         */
     }
 
     /**
@@ -567,7 +527,6 @@ loop:   for (int convention=0;; convention++) {
      *
      * @return list of images in this store.
      */
-    @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
         if (components == null) try {
@@ -760,6 +719,15 @@ loop:   for (int convention=0;; convention++) {
      */
     WorldFileResource createImageResource(final int index) throws DataStoreException, IOException {
         return new WorldFileResource(this, listeners, index, getGridGeometry(index));
+    }
+
+    /**
+     * Whether the component of this data store is used only as a delegate.
+     * This is {@code false} when the components will be given to the user,
+     * or {@code true} if the singleton component will be used only for internal purposes.
+     */
+    boolean isComponentHidden() {
+        return false;
     }
 
     /**

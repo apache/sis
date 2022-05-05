@@ -105,7 +105,7 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
     private static final class DummyResource extends AbstractGridCoverageResource {
         /** Creates a dummy resource. */
         DummyResource() {
-            super(null);
+            super(null, false);
         }
 
         /** Returns the preferred resolutions in units of CRS axes. */
