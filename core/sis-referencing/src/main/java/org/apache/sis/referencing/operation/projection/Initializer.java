@@ -56,7 +56,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -93,21 +93,9 @@ final class Initializer {
     private final byte signum_λ0;
 
     /**
-     * Map projection variant.
-     * Values from 0 to 127 inclusive are convenience values at the discretion of {@link NormalizedProjection} subclasses.
-     * Values from 128 to 255 inclusive are values handled in a special way by {@link Initializer} constructor.
+     * Map projection variant, or {@code null} if none.
      */
-    final byte variant;
-
-    /**
-     * A {@link #variant} value telling the constructor to computing the authalic radius instead of using
-     * the semi-major and semi-minor axis lengths directly.
-     *
-     * <p>Note that this value is not necessarily equivalent to the {@code SPHERICAL} value defined in some
-     * map projection, because EPSG guidance notes recommend different approaches for spherical implementations.
-     * For example the Mercator projection will use the radius of conformal sphere instead of the authalic radius.</p>
-     */
-    static final byte AUTHALIC_RADIUS = (byte) 128;
+    final ProjectionVariant variant;
 
     /**
      * Creates a new initializer. The parameters are described in
@@ -117,13 +105,11 @@ final class Initializer {
      * @param parameters  the parameters of the projection to be created.
      * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
      *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
-     * @param variant     convenience field left at the discretion of {@link NormalizedProjection} subclasses.
-     *                    Values equal or greater than 128 are special values recognized by this constructor
-     *                    (see {@link #AUTHALIC_RADIUS}).
+     * @param variant     the map projection variant, or {@code null} if none.
      */
     Initializer(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
-            final byte variant)
+                final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
+                final ProjectionVariant variant)
     {
         ensureNonNull("method",     method);
         ensureNonNull("parameters", parameters);
@@ -153,7 +139,7 @@ final class Initializer {
         eccentricitySquared = new DoubleDouble();
         DoubleDouble k = DoubleDouble.createAndGuessError(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
-            if (variant == AUTHALIC_RADIUS) {
+            if (variant != null && variant.useAuthalicRadius()) {
                 k.value = Formulas.getAuthalicRadius(a, b);
                 k.error = 0;
             } else {
@@ -271,7 +257,7 @@ final class Initializer {
 
     /**
      * Same as {@link #getAndStore(ParameterDescriptor)}, but returns the given default value if the parameter
-     * is not specified.  This method shall be used only for parameters having a default value more complex than
+     * is not specified. This method shall be used only for parameters having a default value more complex than
      * what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
      */
     final double getAndStore(final ParameterDescriptor<Double> descriptor, final double defaultValue) {
@@ -280,6 +266,18 @@ final class Initializer {
             return defaultValue;
         }
         MapProjection.validate(descriptor, value);
+        context.getOrCreate(descriptor).setValue(value);
+        return value;
+    }
+
+    /**
+     * Same as {@link #getAndStore(ParameterDescriptor, double)} but working on integer values.
+     */
+    final int getAndStore(final ParameterDescriptor<Integer> descriptor, final int defaultValue) {
+        final Integer value = parameters.getValue(descriptor);
+        if (value == null) {
+            return defaultValue;
+        }
         context.getOrCreate(descriptor).setValue(value);
         return value;
     }

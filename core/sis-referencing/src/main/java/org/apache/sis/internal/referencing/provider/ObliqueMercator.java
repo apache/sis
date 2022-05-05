@@ -50,8 +50,10 @@ public class ObliqueMercator extends AbstractMercator {
     /**
      * The {@value} EPSG identifier for <cite>"Hotine Oblique Mercator (variant A)"</cite>.
      * Should be preferred to the name when available.
+     * The {@code IDENTIFIER_OF_BASE} name is for avoiding confusion with
+     * the {@code IDENTIFIER} name used in subclasses.
      */
-    public static final String IDENTIFIER_A = "9812";
+    public static final String IDENTIFIER_OF_BASE = "9812";
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of projection centre</cite> (φc) parameter value.
@@ -199,7 +201,7 @@ public class ObliqueMercator extends AbstractMercator {
                 .rename    (Citations.NETCDF));                                 // Remove the netCDF name.
 
         PARAMETERS_A = builder
-                .addIdentifier(IDENTIFIER_A)
+                .addIdentifier(IDENTIFIER_OF_BASE)
                 .addName("Hotine Oblique Mercator (variant A)")                 // Starting from EPSG version 7.6
                 .addName("Hotine Oblique Mercator")                             // Prior to EPSG version 7.6
                 .addName      (Citations.OGC,     "Hotine_Oblique_Mercator")

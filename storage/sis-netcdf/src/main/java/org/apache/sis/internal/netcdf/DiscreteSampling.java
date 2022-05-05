@@ -58,7 +58,7 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners, final Object lock) {
-        super(listeners);
+        super(listeners, false);
         factory = Geometries.implementation(library);
         this.lock = lock;
     }

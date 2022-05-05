@@ -173,7 +173,7 @@ final class Table extends AbstractFeatureSet {
      *                   the table identified by {@link #name}.
      */
     Table(final Database<?> database, final FeatureAnalyzer analyzer, final String query) throws Exception {
-        super(database.listeners);
+        super(database.listeners, false);
         this.database = database;
         this.query    = query;
         name          = analyzer.id;
@@ -194,7 +194,7 @@ final class Table extends AbstractFeatureSet {
      *       A starting point is {@link org.apache.sis.storage.FeatureQuery#expectedType(FeatureType)}.
      */
     Table(final Table parent) {
-        super(parent.listeners);
+        super(parent.listeners, false);
         database = parent.database;
         query    = parent.query;
         name     = parent.name;

@@ -188,7 +188,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands,
             final int numBands, final int bandDim, final Object lock)
     {
-        super(decoder.listeners);
+        super(decoder.listeners, false);
         this.lock     = lock;
         gridGeometry  = grid;
         bandDimension = bandDim;

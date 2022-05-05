@@ -64,7 +64,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      * Creates a new normalized projection from the parameters computed by the given initializer.
      */
     MeridianArcBased(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double e2  = eccentricitySquared;
         final double e4  = e2*e2;
         final double e6  = e2*e4;
@@ -152,7 +152,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      * Creates a new projection initialized to the same parameters than the given one.
      */
     MeridianArcBased(final MeridianArcBased other) {
-        super(other);
+        super(null, other);
         cf0 = other.cf0;
         cf1 = other.cf1;
         cf2 = other.cf2;

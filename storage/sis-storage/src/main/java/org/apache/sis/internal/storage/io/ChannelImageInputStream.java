@@ -244,22 +244,35 @@ loop:   while ((c = read()) >= 0) {
 
     /**
      * Skips over <var>n</var> bytes of data from the input stream.
-     * This implementation does not skip more bytes than the buffer capacity.
+     * A negative value move backward in the input stream (some .
      *
-     * @param  n  maximal number of bytes to skip.
+     * <h4>Design note</h4>
+     * A previous version was skipping no more bytes than the buffer capacity.
+     * But experience shows that various {@code ImageReader} implementations outside Apache SIS
+     * expect that we skip exactly the specified amount of bytes and ignore the returned value.
+     *
+     * @param  n  maximal number of bytes to skip. Can be negative.
      * @return number of bytes actually skipped.
      * @throws IOException if an error occurred while reading.
      */
     @Override
     public final int skipBytes(int n) throws IOException {
-        if (!hasRemaining()) {
-            return 0;
+        if (n != 0) {
+            long p = buffer.position() + n;
+            if (p >= 0 && p <= buffer.limit()) {
+                buffer.position((int) p);
+                clearBitOffset();
+            } else {
+                final long offset = getStreamPosition();
+                p = Math.max(Math.addExact(offset, n), 0);
+                final long length = length();
+                if (length >= offset && p > length) {
+                    p = length;
+                }
+                n = Math.toIntExact(p - offset);
+                seek(p);
+            }
         }
-        int r = buffer.remaining();
-        if (n >= r) {
-            n = r;
-        }
-        buffer.position(buffer.position() + n);
         return n;
     }
 

@@ -60,7 +60,7 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      * @param features   collection of stored features. This collection will not be copied.
      */
     public MemoryFeatureSet(final StoreListeners parent, final FeatureType type, final Collection<Feature> features) {
-        super(parent);
+        super(parent, false);
         ArgumentChecks.ensureNonNull("type",     type);
         ArgumentChecks.ensureNonNull("features", features);
         this.type     = type;

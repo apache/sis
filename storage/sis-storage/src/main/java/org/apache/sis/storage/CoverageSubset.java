@@ -61,7 +61,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * @param query   the domain and range to read from the {@code source} coverage.
      */
     CoverageSubset(final GridCoverageResource source, final CoverageQuery query) {
-        super(source instanceof StoreListeners ? (StoreListeners) source : null);
+        super(source instanceof StoreListeners ? (StoreListeners) source : null, false);
         this.source = source;
         this.query  = query;
     }

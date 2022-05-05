@@ -23,24 +23,33 @@ import static org.apache.sis.math.MathFunctions.atanh;
 
 
 /**
- * Base class of {@link AlbersEqualArea} and {@link CylindricalEqualArea} projections.
- * Those projections have in common the property of being <cite>equal-area</cite>.
- * However we do not put this base class in public API because not all equal-area projections extend this base class.
+ * Base class of projections doing conversions between <cite>geodetic</cite> latitude and <cite>authalic</cite> latitude.
+ * This is used by <cite>equal-area</cite> projections such as {@link AlbersEqualArea} and {@link CylindricalEqualArea}.
+ * However not all equal-area projections extend this base class, and conversely not all sub-classes are equal-area.
  * For example the {@link Sinusoidal} projection, despite being equal-area, uses different formulas.
  *
- * <p>Note that no projection can be both conformal and equal-area. This restriction is implemented in class
- * hierarchy with {@link ConformalProjection} and {@link EqualAreaProjection} being two distinct classes.</p>
+ * <p>Note that no projection can be both conformal and equal-area. So the formulas in this class
+ * are usually mutually exclusive with formulas in {@link ConformalProjection} class.</p>
+ *
+ * <h2>Note on class naming</h2>
+ * Lee (1944) defines an <cite>authalic map projection</cite> to be one in which at any point the scales in
+ * two orthogonal directions are inversely proportional. Those map projections have a constant areal scale.
+ * However this {@code AuthalicConversion} is <strong>not</strong> necessarily an authalic projection.
+ * Subclasses may want to use the latitude conversion formulas for other purposes.
+ *
+ * <h3>References</h3>
+ * <p>Lee, L. P. "The Nomenclature and Classification of Map Projections." Empire Survey Review 7, 190-200, 1944.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.8
  * @module
  */
-abstract class EqualAreaProjection extends NormalizedProjection {
+abstract class AuthalicConversion extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2221537810038553082L;
+    private static final long serialVersionUID = 5880625564193782957L;
 
     /**
      * The threshold value of {@link #eccentricity} at which we consider the accuracy of the
@@ -65,7 +74,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      * <div class="note"><b>Serialization note:</b>
      * we do not strictly need to serialize those fields since they could be computed after deserialization.
-     * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
+     * But we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
      * fields final) and because values computed after deserialization could be slightly different than the
      * ones computed after construction if a future version of the constructor uses the double-double values
      * provided by {@link Initializer}.</div>
@@ -74,8 +83,21 @@ abstract class EqualAreaProjection extends NormalizedProjection {
 
     /**
      * Value of {@link #qm(double)} function (part of Snyder equation (3-12)) at pole (sinφ = 1).
+     * The <var>q</var><sub>p</sub> constant is defined by EPSG guidance note as:
+     *
+     * <blockquote>(1 – ℯ²)⋅([1 / (1 – ℯ²)] – {[1/(2ℯ)] ln [(1 – ℯ) / (1 + ℯ)]})</blockquote>
+     *
+     * But in this class, we omit the (1 – ℯ²) factor.
+     *
+     * <h4>Spherical case</h4>
+     * In the spherical case (ℯ=0), the value is exactly 2.
      */
-    private final double qmPolar;
+    final double qmPolar;
+
+    /**
+     * {@code true} if {@link #eccentricity} is zero.
+     */
+    final boolean isSpherical;
 
     /**
      * {@code true} if the {@link #eccentricity} value is greater than or equals to the eccentricity threshold,
@@ -84,12 +106,16 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     private final boolean useIterations;
 
     /**
-     * Creates a new normalized projection from the parameters computed by the given initializer.
+     * Creates a new normalized projection from the parameters computed by the given initializer,
+     * or from the parameters already computed by another projection.
+     * Exactly one of {@code initializer} or {@code other} shall be non-null.
      *
-     * @param  initializer  the initializer for computing map projection internal parameters.
+     * @param initializer  the initializer for computing map projection internal parameters, or {@code null}.
+     * @param other        the other projection from which to compute parameters, or {@code null}.
      */
-    EqualAreaProjection(final Initializer initializer) {
-        super(initializer);
+    AuthalicConversion(final Initializer initializer, final NormalizedProjection other) {
+        super(initializer, other);
+        isSpherical = (eccentricitySquared == 0);
         final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
@@ -129,12 +155,13 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      * formulas instead of the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
-    EqualAreaProjection(final EqualAreaProjection other) {
-        super(other);
-        c2β     = other.c2β;
-        c4β     = other.c4β;
-        c6β     = other.c6β;
-        qmPolar = other.qmPolar;
+    AuthalicConversion(final AuthalicConversion other) {
+        super(null, other);
+        c2β           = other.c2β;
+        c4β           = other.c4β;
+        c6β           = other.c6β;
+        qmPolar       = other.qmPolar;
+        isSpherical   = other.isSpherical;
         useIterations = other.useIterations;
     }
 
@@ -155,30 +182,22 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *   <li>q(0) = 0</li>
      * </ul>
      *
+     * <h4>Spherical case</h4>
      * In the spherical case, <var>q</var> = 2⋅sinφ.
+     * We pay the cost of checking for the spherical case in each method invocation because otherwise,
+     * users creating their own map projection subclasses could get a non-working implementation.
      *
-     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
+     * @param  sinφ  the sine of the geodetic latitude for which <var>q</var> is calculated.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm(final double sinφ) {
         /*
-         * Check for zero eccentricity is required because qm_ellipsoid(sinφ) would
+         * Check for zero eccentricity is required because `qm(sinφ)` would
          * simplify to sinφ + atanh(0) / 0 == sinφ + 0/0, thus producing NaN.
          */
-        return (eccentricity == 0) ? 2*sinφ : qm_ellipsoid(sinφ);
-    }
-
-    /**
-     * Same as {@link #qm(double)} but without check about whether the map projection is a spherical case.
-     * It is caller responsibility to ensure that this method is not invoked in the spherical case, since
-     * this implementation does not work in such case.
-     *
-     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
-     * @return <var>q</var> from Snyder equation (3-12).
-     */
-    final double qm_ellipsoid(final double sinφ) {
+        if (isSpherical) return 2*sinφ;
         final double ℯsinφ = eccentricity * sinφ;
-        return sinφ / (1 - ℯsinφ*ℯsinφ) + atanh(ℯsinφ) / eccentricity;
+        return sinφ/(1 - ℯsinφ*ℯsinφ) + atanh(ℯsinφ)/eccentricity;
     }
 
     /**
@@ -196,17 +215,38 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     }
 
     /**
+     * Converts the sine of geodetic latitude to the sin of authalic latitude.
+     * This is defined by {@code qm(sinφ) / qmPolar}.
+     *
+     * @param  sinφ  the sine of the geodetic latitude.
+     * @return the sine of the authalic latitude.
+     */
+    final double sinβ(double sinφ) {
+        // Edited copy of `qm(double)` method.
+        if (isSpherical) return sinφ;
+        sinφ *= eccentricity;           // Become `ℯsinφ` from here.
+        return (sinφ/(1 - sinφ*sinφ) + atanh(sinφ)) / (eccentricity * qmPolar);
+    }
+
+    /**
      * Computes the latitude using equation 3-18 from Snyder, followed by iterative resolution of Snyder 3-16.
      * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
      * be used in replacement of the iterative method. However in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *
-     * @param  y  in the cylindrical case, this is northing on the normalized ellipsoid.
-     * @return the latitude in radians.
+     * <h4>Relationship with northing</h4>
+     * The simplest projection using this formula is the {@link CylindricalEqualArea} projection.
+     * In that case, sin(β) = <var>y</var> / {@link #qmPolar}.
+     *
+     * <h4>Spherical case</h4>
+     * In the spherical case, this method returns {@code β = asin(sinβ)}. This method does not check for
+     * that simplification for the spherical case. This optimization is left to the caller if desired.
+     *
+     * @param  sinβ  sine of the authalic latitude.
+     * @return the geodetic latitude in radians.
      */
-    final double φ(final double y) throws ProjectionException {
-        final double sinβ = y / qmPolar;
+    final double φ(final double sinβ) throws ProjectionException {
         final double sinβ2 = sinβ * sinβ;
         final double β = asin(sinβ);
         /*
@@ -224,6 +264,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
              * as  q = (C - ρ²)/n  (see comment in AlbersEqualArea.inverseTransform(…) for the mathematic).
              * The y value given to this method is y = (C - ρ²) / (n⋅(1-ℯ²)) = q/(1-ℯ²), the desired value.
              */
+            final double y = qmPolar * sinβ;
             for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
                 final double sinφ  = sin(φ);
                 final double cosφ  = cos(φ);
@@ -257,9 +298,10 @@ abstract class EqualAreaProjection extends NormalizedProjection {
          */
         final double as = abs(sinβ);
         if (abs(as - 1) < ANGULAR_TOLERANCE) {
+            final double y = qmPolar * sinβ;        // Do not use β because it may be NaN.
             return copySign(PI/2, y);               // Value is at a pole.
         }
-        if (as >= 1 || Double.isNaN(y)) {
+        if (!(as < 1)) {                            // Use `!` for catching NaN.
             return Double.NaN;                      // Value "after" the pole.
         }
         // Value should have converged but did not.

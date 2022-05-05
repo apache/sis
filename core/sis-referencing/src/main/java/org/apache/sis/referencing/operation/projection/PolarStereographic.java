@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -56,7 +57,7 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.6
+ * @version 1.2
  *
  * @see ObliqueStereographic
  *
@@ -70,28 +71,48 @@ public class PolarStereographic extends ConformalProjection {
     private static final long serialVersionUID = -6635298308431138524L;
 
     /**
-     * Codes for variants of Polar Stereographic projection. Those variants modify the way the projections are
-     * constructed (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
+     * Variants of Polar Stereographic projection. Those variants modify the way the projections are constructed
+     * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
      * Those variants are not exactly the same than variants A, B and C used by EPSG, but they are closely related.
      *
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
      *
-     * @see #getVariant(OperationMethod)
+     * <p>The default case is {@link #B}.</p>
      */
-    private static final byte A = 1, B = 2, C = 3, NORTH = 4, SOUTH = 5;
+    private enum Variant implements ProjectionVariant {
+        /** The <cite>"Polar Stereographic (Variant A)"</cite> projection. */
+        A(".*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER),
 
-    /**
-     * Returns the type of the projection based on the name and identifier of the given operation method.
-     * If this method can not identify the type, then the parameters should be considered as a 2SP case.
-     */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER)) return A;
-        if (identMatch(method, "(?i).*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER)) return B;
-        if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
-        if (identMatch(method, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
-        if (identMatch(method, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
-        return STANDARD_VARIANT;            // Unidentified case, to be considered as variant B.
+        /** The <cite>"Polar Stereographic (Variant B)"</cite> projection. */
+        B(".*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER),
+
+        /** The <cite>"Polar Stereographic (Variant C)"</cite> projection. */
+        C(".*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER),
+
+        /** <cite>"Stereographic North Pole"</cite> projection (ESRI). */
+        NORTH(".*\\bNorth\\b.*", null),
+
+        /** <cite>"Stereographic South Pole"</cite> projection (ESRI). */
+        SOUTH(".*\\bSouth\\b.*", null);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+        /** Creates a new enumeration value.  */
+        private Variant(final String operationName, final String identifier) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+            this.identifier    = identifier;
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
     }
 
     /**
@@ -99,9 +120,11 @@ public class PolarStereographic extends ConformalProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Polar Stereographic (Variant A)"</cite>.</li>
-     *   <li><cite>"Polar Stereographic (Variant B)"</cite>.</li>
-     *   <li><cite>"Polar Stereographic (Variant C)"</cite>.</li>
+     *   <li><cite>"Polar Stereographic (Variant A)"</cite> (EPSG:9810).</li>
+     *   <li><cite>"Polar Stereographic (Variant B)"</cite> (EPSG:9829).</li>
+     *   <li><cite>"Polar Stereographic (Variant C)"</cite> (EPSG:9830).</li>
+     *   <li><cite>"Stereographic North Pole"</cite> (ESRI).</li>
+     *   <li><cite>"Stereographic South Pole"</cite> (ESRI).</li>
      * </ul>
      *
      * @param method      description of the projection parameters.
@@ -117,18 +140,18 @@ public class PolarStereographic extends ConformalProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final byte variant = getVariant(method);
+        final Variant variant = variant(method, Variant.values(), Variant.B);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         ParameterDescriptor<Double> falseEasting  = PolarStereographicA.FALSE_EASTING;
         ParameterDescriptor<Double> falseNorthing = PolarStereographicA.FALSE_NORTHING;
-        if (variant == C) {
+        if (variant == Variant.C) {
             falseEasting  = PolarStereographicC.EASTING_AT_FALSE_ORIGIN;
             falseNorthing = PolarStereographicC.NORTHING_AT_FALSE_ORIGIN;
         }
         roles.put(ParameterRole.FALSE_EASTING,    falseEasting);
         roles.put(ParameterRole.FALSE_NORTHING,   falseNorthing);
         roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == A)
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == Variant.A)
                 ? PolarStereographicA.LONGITUDE_OF_ORIGIN
                 : PolarStereographicB.LONGITUDE_OF_ORIGIN);
         return new Initializer(method, parameters, roles, variant);
@@ -141,7 +164,7 @@ public class PolarStereographic extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private PolarStereographic(final Initializer initializer) {
         super(initializer);
-        final byte variant = initializer.variant;
+        final Variant variant = (Variant) initializer.variant;
         /*
          * "Standard parallel" and "Latitude of origin" should be mutually exclusive,
          * but this is not a strict requirement for the constructor.
@@ -158,19 +181,19 @@ public class PolarStereographic extends ConformalProjection {
          *   └───────────────────────────────────┴────────────────────┴─────────────┘
          */
         double φ0;
-        if (variant == A) {
+        if (variant == Variant.A) {
             φ0 = initializer.getAndStore(PolarStereographicA.LATITUDE_OF_ORIGIN);   // Mandatory
         } else {
             φ0 = initializer.getAndStore(PolarStereographicA.LATITUDE_OF_ORIGIN,    // Optional (should not be present)
-                    (variant == NORTH) ? Latitude.MAX_VALUE :
-                    (variant == SOUTH) ? Latitude.MIN_VALUE : Double.NaN);
+                    (variant == Variant.NORTH) ? Latitude.MAX_VALUE :
+                    (variant == Variant.SOUTH) ? Latitude.MIN_VALUE : Double.NaN);
         }
         if (abs(abs(φ0) - Latitude.MAX_VALUE) > Formulas.ANGULAR_TOLERANCE) {       // Can be only -90°, +90° or NaN
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalParameterValue_2,
                     PolarStereographicA.LATITUDE_OF_ORIGIN.getName(), φ0));
         }
         double φ1;
-        if (variant == B || variant == C || Double.isNaN(φ0)) {
+        if (variant == Variant.B || variant == Variant.C || Double.isNaN(φ0)) {
             φ1 = initializer.getAndStore(PolarStereographicB.STANDARD_PARALLEL);        // Mandatory
         } else {
             φ1 = initializer.getAndStore(PolarStereographicB.STANDARD_PARALLEL, φ0);    // Optional
@@ -231,7 +254,7 @@ public class PolarStereographic extends ConformalProjection {
             final double sinφ1 = sin(φ1);
             final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
             ρ = new DoubleDouble(mF / expΨ(φ1, eccentricity*sinφ1));
-            ρF = (variant == C) ? new DoubleDouble(-mF) : null;
+            ρF = (variant == Variant.C) ? new DoubleDouble(-mF) : null;
         }
         /*
          * At this point, all parameters have been processed. Now process to their
@@ -261,7 +284,7 @@ public class PolarStereographic extends ConformalProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -270,7 +293,7 @@ public class PolarStereographic extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         PolarStereographic kernel = this;
-        if (eccentricity == 0) {
+        if (eccentricity == 0 && getClass() == PolarStereographic.class) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

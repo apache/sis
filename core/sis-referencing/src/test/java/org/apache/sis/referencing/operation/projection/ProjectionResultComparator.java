@@ -82,7 +82,7 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
      * Creates a projection which will compare the results of the two given projections.
      */
     ProjectionResultComparator(final NormalizedProjection reference, final NormalizedProjection tested) {
-        super(reference);
+        super(null, reference);
         this.reference = reference;
         this.tested    = tested;
     }

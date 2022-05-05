@@ -578,11 +578,7 @@ final class Store extends URIDataStore implements FeatureSet {
             }
             properties.add(createProperty(name, type, minOccurrence, maxOccurrence, characteristics));
         }
-        String name = super.getDisplayName();
-        final int s = name.lastIndexOf('.');
-        if (s > 0) {                            // Exclude 0 because shall not be the first character.
-            name = name.substring(0, s);
-        }
+        final String name = IOUtilities.filenameWithoutExtension(super.getDisplayName());
         return new DefaultFeatureType(Collections.singletonMap(DefaultFeatureType.NAME_KEY, name),
                 false, null, properties.toArray(new PropertyType[properties.size()]));
     }

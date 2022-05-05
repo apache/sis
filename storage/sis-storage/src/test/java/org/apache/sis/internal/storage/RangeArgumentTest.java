@@ -42,7 +42,7 @@ public final strictfp class RangeArgumentTest extends TestCase implements Locali
     /**
      * A resource performing no operation.
      */
-    private final AbstractGridCoverageResource resource = new AbstractGridCoverageResource(null) {
+    private final AbstractGridCoverageResource resource = new AbstractGridCoverageResource(null, false) {
         @Override public GridGeometry          getGridGeometry()     {throw new UnsupportedOperationException();}
         @Override public List<SampleDimension> getSampleDimensions() {throw new UnsupportedOperationException();}
         @Override public GridCoverage read(GridGeometry d, int... r) {throw new UnsupportedOperationException();}

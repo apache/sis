@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -58,42 +59,69 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * However this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */
-public class CylindricalEqualArea extends EqualAreaProjection {
+public class CylindricalEqualArea extends AuthalicConversion {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8840395516658904421L;
+    private static final long serialVersionUID = 5659955047326708663L;
 
     /**
-     * Returns the variant of the projection based on the name and identifier of the given operation method.
+     * The variants of the projection based on the name and identifier of the given operation method.
      * See {@link #variant} for the list of possible values.
      */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bSpherical\\b.*", LambertCylindricalEqualAreaSpherical.IDENTIFIER)) {
-            return Initializer.AUTHALIC_RADIUS;
+    private enum Variant implements ProjectionVariant {
+        /**
+         * The "Lambert Cylindrical Equal Area" case.
+         */
+        ELLIPSOIDAL(null, IDENTIFIER),
+
+        /**
+         * The "Lambert Cylindrical Equal Area (Spherical)" case.
+         */
+        SPHERICAL(Pattern.compile(".*\\bSpherical\\b.*", Pattern.CASE_INSENSITIVE),
+                  LambertCylindricalEqualAreaSpherical.IDENTIFIER);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String  identifier;
+        /** Creates a new enumeration value.  */
+        private Variant(final Pattern operationName, final String identifier) {
+            this.operationName = operationName;
+            this.identifier    = identifier;
         }
-        return STANDARD_VARIANT;
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
+
+        /** Requests the use of authalic radius. */
+        @Override public boolean useAuthalicRadius() {
+            return this == SPHERICAL;
+        }
     }
 
     /**
      * The type of Cylindrical Equal Area projection. Possible values are:
      *
      * <ul>
-     *   <li>{@link #STANDARD_VARIANT} if this projection is a default variant.</li>
-     *   <li>{@link Initializer#AUTHALIC_RADIUS} if this projection is the "Lambert Cylindrical Equal Area (Spherical)"
-     *       case, in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
+     *   <li>{@link Variant#ELLIPSOIDAL}  if this projection is a default variant.</li>
+     *   <li>{@link Variant#SPHERICAL} if this projection is the "Lambert Cylindrical Equal Area (Spherical)" case,
+     *       in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
      *       (this replacement is performed by the {@link Initializer} constructor).</li>
      * </ul>
      *
      * Other cases may be added in the future.
-     *
-     * @see #getVariant(OperationMethod)
      */
-    private final byte variant;
+    private final Variant variant;
 
     /**
      * Creates a Cylindrical Equal Area projection from the given parameters.
@@ -112,6 +140,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final Variant variant = variant(method, Variant.values(), Variant.ELLIPSOIDAL);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Longitude of origin" and "scale factor" are intentionally omitted from this map because they will
@@ -120,7 +149,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         roles.put(ParameterRole.SCALE_FACTOR,   SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,  FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING, FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -129,8 +158,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private CylindricalEqualArea(final Initializer initializer) {
-        super(initializer);
-        variant = initializer.variant;
+        super(initializer, null);
+        variant = (Variant) initializer.variant;
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*
          * The longitude of origin is normally subtracted in the 'normalize' matrix. But in the particular of case
@@ -185,7 +214,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -194,7 +223,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CylindricalEqualArea kernel = this;
-        if (variant == Initializer.AUTHALIC_RADIUS || eccentricity == 0) {
+        if ((variant == Variant.SPHERICAL || eccentricity == 0) && getClass() == CylindricalEqualArea.class) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -217,8 +246,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         final double φ    = srcPts[srcOff+1];
         final double sinφ = sin(φ);
         if (dstPts != null) {
-            dstPts[dstOff  ] = srcPts[srcOff];      // Multiplication by k₀ will be applied by the denormalization matrix.
-            dstPts[dstOff+1] = qm_ellipsoid(sinφ);  // Multiplication by (1-ℯ²)/(2k₀) will be applied by the denormalization matrix.
+            dstPts[dstOff  ] = srcPts[srcOff];  // Multiplication by k₀ will be applied by the denormalization matrix.
+            dstPts[dstOff+1] = qm(sinφ);        // Multiplication by (1-ℯ²)/(2k₀) will be applied by the denormalization matrix.
         }
         /*
          * End of map projection. Now compute the derivative, if requested.
@@ -246,8 +275,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
              */
             dstOff--;
             while (--numPts >= 0) {
-                final double φ = dstPts[dstOff += DIMENSION];           // Same as srcPts[srcOff + 1].
-                dstPts[dstOff] = qm_ellipsoid(sin(φ));                  // Part of Snyder equation (10-15)
+                final double φ = dstPts[dstOff += DIMENSION];       // Same as srcPts[srcOff + 1].
+                dstPts[dstOff] = qm(sin(φ));                        // Part of Snyder equation (10-15)
             }
         }
     }
@@ -265,7 +294,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     {
         final double y   = srcPts[srcOff+1];            // Must be before writing x.
         dstPts[dstOff  ] = srcPts[srcOff  ];            // Must be before writing y.
-        dstPts[dstOff+1] = φ(y);
+        dstPts[dstOff+1] = φ(y / qmPolar);
         /*
          * Equation 10-26 of Snyder gives β = asin(2y⋅k₀/(a⋅qPolar)).
          * In our case it simplifies to sinβ = (y/qmPolar) because:
@@ -298,7 +327,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          */
         Spherical(final CylindricalEqualArea other) {
             super(other);
-            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(1, DIMENSION, null);
+            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(1, 2, null);
         }
 
         /**

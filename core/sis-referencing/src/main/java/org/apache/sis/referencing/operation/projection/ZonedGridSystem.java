@@ -125,7 +125,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
         roles.put(NormalizedProjection.ParameterRole.SCALE_FACTOR,   SCALE_FACTOR);
         roles.put(NormalizedProjection.ParameterRole.FALSE_EASTING,  FALSE_EASTING);
         roles.put(NormalizedProjection.ParameterRole.FALSE_NORTHING, FALSE_NORTHING);
-        final Initializer initializer = new Initializer(method, parameters, roles, NormalizedProjection.STANDARD_VARIANT);
+        final Initializer initializer = new Initializer(method, parameters, roles, null);
         initialLongitude = initializer.getAndStore(INITIAL_LONGITUDE);
         zoneWidth        = initializer.getAndStore(ZONE_WIDTH);
         final MatrixSIS normalize = initializer.context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);

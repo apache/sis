@@ -129,7 +129,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
+        return new Initializer(method, parameters, roles, null);
     }
 
     /**
@@ -137,7 +137,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     private ObliqueStereographic(final Initializer initializer) {
-        super(initializer);
+        super(initializer, null);
         final double φ0     = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final double sinφ0  = sin(φ0);
         final double ℯsinφ0 = eccentricity * sinφ0;
@@ -191,7 +191,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Creates a new projection initialized to the same parameters than the given one.
      */
     ObliqueStereographic(final ObliqueStereographic other) {
-        super(other);
+        super(null, other);
         χ0      = other.χ0;
         sinχ0   = other.sinχ0;
         cosχ0   = other.cosχ0;
@@ -230,7 +230,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -250,7 +250,7 @@ public class ObliqueStereographic extends NormalizedProjection {
             }
         }
         ObliqueStereographic kernel = this;
-        if (eccentricity == 0) {
+        if (eccentricity == 0 && getClass() == ObliqueStereographic.class) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

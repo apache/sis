@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -61,7 +62,7 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.6
  * @module
  */
@@ -69,34 +70,53 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8971522854919443706L;
+    private static final long serialVersionUID = -8786460743797422415L;
 
     /**
-     * Codes for variants of Lambert Conical Conformal projection. Those variants modify the way the projections are
-     * constructed (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
+     * Variants of Lambert Conical Conformal projection. Those variants modify the way the projections are constructed
+     * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
      * Those variants are not exactly the same than variants 1SP and 2SP used by EPSG, but they are closely related.
      *
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
-     *
-     * <p><b>CONVENTION:</b> Codes for SP1 case must be odd, and codes for SP2 case must be even.
-     *
-     * @see #getVariant(OperationMethod)
      */
-    private static final byte SP1  = 1,  WEST    = 3,                   // Must be odd
-                              SP2  = 2,  BELGIUM = 4,  MICHIGAN = 6;    // Must be even
+    private enum Variant implements ProjectionVariant {
+        // Declaration order matter. Patterns are matched in that order.
 
-    /**
-     * Returns the type of the projection based on the name and identifier of the given operation method.
-     * If this method can not identify the type, then the parameters should be considered as a 2SP case.
-     */
-    private static byte getVariant(final OperationMethod method) {
-        if (identMatch(method, "(?i).*\\bBelgium\\b.*",  LambertConformalBelgium .IDENTIFIER)) return BELGIUM;
-        if (identMatch(method, "(?i).*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER)) return MICHIGAN;
-        if (identMatch(method, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
-        if (identMatch(method, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
-        if (identMatch(method, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
-        return STANDARD_VARIANT;                         // Unidentified case, to be considered as 2SP.
+        /** The <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection. */
+        BELGIUM(".*\\bBelgium\\b.*", LambertConformalBelgium.IDENTIFIER, false),
+
+        /** The <cite>"Lambert Conic Conformal (2SP Michigan)"</cite> projection. */
+        MICHIGAN(".*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER, false),
+
+        /** The <cite>"Lambert Conic Conformal (West Orientated)"</cite> projection. */
+        WEST(".*\\bWest\\b.*", LambertConformalWest.IDENTIFIER, true),
+
+        /** The <cite>"Lambert Conic Conformal (1SP)"</cite> projection. */
+        ONE_PARALLEL(".*\\b1SP\\b.*", LambertConformal1SP.IDENTIFIER, true),
+
+        /** The  <cite>"Lambert Conic Conformal (2SP)"</cite> projection. */
+        TWO_PARALLELS(".*\\b2SP\\b.*", LambertConformal2SP.IDENTIFIER, false);
+
+        /** Name pattern for this variant.    */ private final Pattern operationName;
+        /** EPSG identifier for this variant. */ private final String identifier;
+        /** Number of standard parallels.     */ final boolean is1SP;
+        /** Creates a new enumeration value.  */
+        private Variant(final String operationName, final String identifier, final boolean is1SP) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+            this.identifier    = identifier;
+            this.is1SP         = is1SP;
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return identifier;
+        }
     }
 
     /**
@@ -176,7 +196,7 @@ public class LambertConicConformal extends ConformalProjection {
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final byte variant = getVariant(method);
+        final Variant variant = variant(method, Variant.values(), Variant.TWO_PARALLELS);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Scale factor" is not formally a "Lambert Conformal (2SP)" argument, but we accept it
@@ -193,7 +213,7 @@ public class LambertConicConformal extends ConformalProjection {
                 eastingDirection = ParameterRole.FALSE_WESTING;
                 // Fallthrough
             }
-            case SP1: {
+            case ONE_PARALLEL: {
                 roles.put(eastingDirection,               LambertConformal1SP.FALSE_EASTING);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal1SP.FALSE_NORTHING);
                 roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.LONGITUDE_OF_ORIGIN);
@@ -203,9 +223,8 @@ public class LambertConicConformal extends ConformalProjection {
                 scaleFactor = LambertConformalMichigan.SCALE_FACTOR;    // Ellipsoid scaling factor (EPSG:1038)
                 // Fallthrough
             }
-            case STANDARD_VARIANT:
             case BELGIUM:
-            case SP2: {
+            case TWO_PARALLELS: {
                 roles.put(eastingDirection,               LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
                 roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN);
@@ -224,8 +243,10 @@ public class LambertConicConformal extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConicConformal(final Initializer initializer) {
         super(initializer);
-        double φ0 = initializer.getAndStore(((initializer.variant & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
-                LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
+        final Variant variant = (Variant) initializer.variant;
+        double φ0 = initializer.getAndStore(variant.is1SP
+                  ? LambertConformal1SP.LATITUDE_OF_ORIGIN
+                  : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
          * Standard parallels (SP) are defined only for the 2SP case, but we look for them unconditionally
          * in case the user gave us non-standard parameters. For the 1SP case, or for the 2SP case left to
@@ -249,8 +270,8 @@ public class LambertConicConformal extends ConformalProjection {
          *
          *     t = tan(π/4 – φ/2) / [(1 – ℯ⋅sinφ)/(1 + ℯ⋅sinφ)] ^ (ℯ/2)
          *
-         * while our 'expΨ' function is defined like above, but with tan(π/4 + φ/2) instead of tan(π/4 - φ/2).
-         * Those two expressions are the reciprocal of each other if we reverse the sign of φ (see 'expΨ' for
+         * while our `expΨ` function is defined like above, but with tan(π/4 + φ/2) instead of tan(π/4 - φ/2).
+         * Those two expressions are the reciprocal of each other if we reverse the sign of φ (see `expΨ` for
          * trigonometric identities), but their accuracies are not equivalent: the hemisphere having values
          * closer to zero is favorized. The EPSG formulas favorize the North hemisphere.
          *
@@ -258,8 +279,8 @@ public class LambertConicConformal extends ConformalProjection {
          * values in order to match the EPSG formulas, but we will do that only if the map projection is
          * for the North hemisphere.
          *
-         * TEST: whether 'isNorth' is true of false does not change the formulas "correctness": it is only
-         * a small accuracy improvement. One can safely force this boolean value to 'true' or 'false' for
+         * TEST: whether `isNorth` is true of false does not change the formulas "correctness": it is only
+         * a small accuracy improvement. One can safely force this boolean value to `true` or `false` for
          * testing purpose.
          */
         final boolean isNorth = isPositive(φ0);
@@ -285,7 +306,7 @@ public class LambertConicConformal extends ConformalProjection {
          * for reducing the amount of calls to the logarithmic function. Note that this equation
          * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
          */
-        if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {                    // Should be 'true' for 2SP case.
+        if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {                    // Should be `true` for 2SP case.
             final double sinφ2 = sin(φ2);
             final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
             final double t2 = expΨ(φ2, eccentricity*sinφ2);
@@ -310,7 +331,7 @@ public class LambertConicConformal extends ConformalProjection {
          * Compute the radius of the parallel of latitude of the false origin.
          * This is related to the "ρ₀" term in Snyder. From EPG guide:
          *
-         *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our 'expΨ' function.
+         *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our `expΨ` function.
          *
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
@@ -326,7 +347,7 @@ public class LambertConicConformal extends ConformalProjection {
          * Normalization:
          *   - Subtract central meridian to longitudes (done by the super-class constructor).
          *   - Convert longitudes and latitudes from degrees to radians (done by the super-class constructor)
-         *   - Multiply longitude by 'n'.
+         *   - Multiply longitude by `n`.
          *   - In the Belgium case only, subtract BELGE_A to the scaled longitude.
          *
          * Denormalization
@@ -346,7 +367,7 @@ public class LambertConicConformal extends ConformalProjection {
         }
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        normalize  .convertAfter(0, sλ, (initializer.variant == BELGIUM) ? belgeA() : null);
+        normalize  .convertAfter(0, sλ, (variant == Variant.BELGIUM) ? belgeA() : null);
         normalize  .convertAfter(1, sφ, null);
         denormalize.convertBefore(0, F, null); F.negate();
         denormalize.convertBefore(1, F, rF);
@@ -386,7 +407,7 @@ public class LambertConicConformal extends ConformalProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform will be replaced by a simplified implementation.</p>
+     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
      *
      * @param  factory  the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -395,7 +416,7 @@ public class LambertConicConformal extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         LambertConicConformal kernel = this;
-        if (eccentricity == 0) {
+        if (eccentricity == 0 && getClass() == LambertConicConformal.class) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

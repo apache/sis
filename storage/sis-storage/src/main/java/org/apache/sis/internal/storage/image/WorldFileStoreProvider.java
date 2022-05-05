@@ -18,10 +18,7 @@ package org.apache.sis.internal.storage.image;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.io.DataOutput;
 import java.io.IOException;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageReaderSpi;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -30,7 +27,9 @@ import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -52,9 +51,41 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
     static final String NAME = "World file";
 
     /**
+     * Name of image formats that are considered to allow only one image.
+     * There is no public Image I/O API giving this information, so we have to use a hard-coded list.
+     * All formats not in this list are assumed to allow more than one image.
+     *
+     * <h4>Case of JPEG</h4>
+     * The JPEG image reader implementation in standard JDK seems to count a number of images that can be anything.
+     * However documentation on the web often describes the JPEG format as a container for a single image.
+     * It is not clear if we should include JPEG in this list or not.
+     */
+    private static final String[] SINGLE_IMAGE_FORMATS = {"PNG", "BMP", "WBMP", "JPEG"};
+
+    /**
+     * Whether the provider is allowed to create {@link GridCoverageResource} instances
+     * instead of {@link Aggregate} instances.
+     */
+    private final boolean allowSingleton;
+
+    /**
      * Creates a new provider.
      */
     public WorldFileStoreProvider() {
+        allowSingleton = true;
+    }
+
+    /**
+     * Creates a new provider with the given configuration.
+     * If {@code allowSingleton} is {@code false}, then this provider will unconditionally create
+     * {@link WorldFileStore} instances that implement the {@link Aggregate} interface, regardless
+     * if the image format allows many pictures or not.
+     *
+     * @param allowSingleton  whether the provider is allowed to create {@code GridCoverageResource} instances
+     *        instead of {@code Aggregate} instances.
+     */
+    public WorldFileStoreProvider(final boolean allowSingleton) {
+        this.allowSingleton = allowSingleton;
     }
 
     /**
@@ -78,25 +109,29 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
      */
     @Override
     public WorldFileStore open(final StorageConnector connector) throws DataStoreException {
-        final Object storage = connector.getStorage();
-        boolean isWritable = (storage instanceof ImageWriter);
-        if (!isWritable) {
-            if (storage instanceof ImageReader) {
-                Object input = ((ImageReader) storage).getInput();
-                isWritable = (input instanceof DataOutput);         // Parent of ImageOutputStream.
-            } else {
-                isWritable = isWritable(connector);
+        final WorldFileStore store;
+        try (FormatFinder format = new FormatFinder(this, connector)) {
+            boolean isSingleton = false;
+            if (allowSingleton) {
+                final String[] names = format.getFormatName();
+                if (names != null) {
+                    for (final String name : names) {
+                        isSingleton = ArraysExt.containsIgnoreCase(SINGLE_IMAGE_FORMATS, name);
+                        if (isSingleton) break;
+                    }
+                }
             }
-        }
-        try {
-            if (isWritable) {
-                return new WritableStore(this, connector);
+            if (format.isWritable) {
+                store = isSingleton ? new SingleImageStore.Writable(format)
+                                    : new  MultiImageStore.Writable(format);
             } else {
-                return new WorldFileStore(this, connector, true);
+                store = isSingleton ? new SingleImageStore(format)
+                                    : new  MultiImageStore(format);
             }
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+        return store;
     }
 
     /**
