@@ -18,7 +18,7 @@
 /**
  * Factories for geodetic objects defined in a SQL database, typically the EPSG dataset.
  * This package provides support for all codes prefixed by {@code "EPSG:"} in the Apache SIS's
- * <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">list of authority codes</a>.
+ * <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">list of authority codes</a>.
  * The main class in this package is {@link org.apache.sis.referencing.factory.sql.EPSGFactory},
  * which requires a {@link javax.sql.DataSource} providing connections to an EPSG database.
  *

@@ -133,7 +133,7 @@ public final class Configuration {
      *         The supplier may return {@code null}, in which case it will be ignored.
      * @throws IllegalStateException if {@link DataSource} has already be obtained before this method call.
      *
-     * @see <a href="http://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
+     * @see <a href="https://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
      */
     public void setDatabase(final Supplier<DataSource> source) {
         ArgumentChecks.ensureNonNull("source", source);

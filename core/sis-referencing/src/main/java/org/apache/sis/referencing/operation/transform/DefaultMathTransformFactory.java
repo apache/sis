@@ -96,7 +96,7 @@ import org.apache.sis.util.resources.Errors;
  * <h2>Standard parameters</h2>
  * {@code MathTransform} instances are created from {@linkplain DefaultParameterValueGroup parameter values}.
  * The parameters expected by each operation available in a default Apache SIS installation is
- * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
+ * <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
  * The set of parameters varies for each operation or projection, but the following can be considered typical:
  *
  * <ul>
@@ -486,7 +486,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Returns the default parameter values for a math transform using the given operation method.
      * The {@code method} argument is the name of any {@code OperationMethod} instance returned by
      * <code>{@link #getAvailableMethods(Class) getAvailableMethods}({@linkplain SingleOperation}.class)</code>.
-     * Valid names are <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
+     * Valid names are <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
      *
      * <p>This function creates new parameter instances at every call.
      * Parameters are intended to be modified by the user before to be given to the

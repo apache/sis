@@ -38,6 +38,7 @@ import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.AlbersEqualArea;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.ObliqueMercator;
+import org.apache.sis.internal.util.URLs;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -57,7 +58,7 @@ import org.opengis.metadata.Identifier;
 
 /**
  * Generates a list of projection parameters in a HTML page. This class is used for updating the
- * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">CoordinateOperationMethods.html</a> page.
+ * <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">CoordinateOperationMethods.html</a> page.
  * The {@linkplain #main(String[])} method creates the "{@code CoordinateOperationMethods.html}" file in the current
  * default directory if it does not already exists. Users is responsible for moving the generated file to the Apache
  * SIS {@code "content/"} site directory.
@@ -165,9 +166,9 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         openTag("li");
         println("The <code>semi-major</code> and <code>semi-minor</code> parameters are needed for all map projections,");
         println("but usually do not need to be specified explicitly since they are inferred from the ellipsoid");
-        println("(unless <a href=\"http://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>).");
-        println("For this reason, those parameters are usually not shown in <a href=\"https://epsg.org/\">EPSG repository</a>");
-        println("or <a href=\"http://docs.opengeospatial.org/is/12-063r5/12-063r5.html\">Well Known Text</a> (WKT) definitions.");
+        println("(unless <a href=\"https://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>).");
+        println("For this reason, those parameters are usually not shown in <a href=\"" + URLs.EPSG + "\">EPSG repository</a>");
+        println("or <a href=\"" + URLs.WKT_SPECIFICATION + "\">Well Known Text</a> (WKT) definitions.");
         reopenTag("li");
         println("The <code>earth_radius</code> and <code>inverse_flattening</code> parameters (not shown below) are implicitly supported by all map projections.");
         println("They are other ways to specify the ellipsoid (actually rarely used).");
