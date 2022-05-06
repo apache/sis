@@ -25,12 +25,12 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -114,9 +114,11 @@ import org.apache.sis.setup.OptionKey;
  * @since   1.2
  * @module
  */
-class WorldFileStore extends PRJDataStore {
+public class WorldFileStore extends PRJDataStore {
     /**
      * Image I/O format names (ignoring case) for which we have an entry in the {@code SpatialMetadata} database.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-300">SIS-300 — Complete the information provided in Citations constants</a>
      */
     private static final String[] KNOWN_FORMATS = {
         "PNG"
@@ -271,25 +273,6 @@ class WorldFileStore extends PRJDataStore {
     }
 
     /**
-     * Returns {@code true} if the image file exists and is non-empty.
-     * This is used for checking if an {@link ImageReader} should be created.
-     * If the file is going to be truncated, then it is considered already empty.
-     *
-     * @param  connector  the connector to use for opening the file.
-     * @return whether the image file exists and is non-empty.
-     */
-    private boolean fileExists(final StorageConnector connector) throws DataStoreException, IOException {
-        if (!ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.TRUNCATE_EXISTING)) {
-            for (Path path : super.getComponentFiles()) {
-                if (Files.isRegularFile(path) && Files.size(path) > 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns the preferred suffix for the auxiliary world file. For TIFF images, this is {@code "tfw"}.
      * This method tries to use the same case (lower-case or upper-case) than the suffix of the main file.
      */
@@ -415,13 +398,34 @@ loop:   for (int convention=0;; convention++) {
     }
 
     /**
+     * Returns the Image I/O format names or MIME types of the image read by this data store.
+     * More than one names may be returned if the format has aliases or if the MIME type
+     * has legacy types (e.g. official {@code "image/png"} and legacy {@code "image/x-png"}).
+     *
+     * @param  asMimeType  {@code true} for MIME types, or {@code false} for format names.
+     * @return the requested names, or an empty array if none or unknown.
+     */
+    public String[] getImageFormat(final boolean asMimeType) {
+        if (reader != null) {
+            final ImageReaderSpi provider = reader.getOriginatingProvider();
+            if (provider != null) {
+                final String[] names = asMimeType ? provider.getMIMETypes() : provider.getFormatNames();
+                if (names != null) {
+                    return names;
+                }
+            }
+        }
+        return CharSequences.EMPTY_ARRAY;
+    }
+
+    /**
      * Returns paths to the main file together with auxiliary files.
      *
      * @return paths to the main file and auxiliary files, or an empty array if unknown.
      * @throws DataStoreException if the URI can not be converted to a {@link Path}.
      */
     @Override
-    public final synchronized Path[] getComponentFiles() throws DataStoreException {
+    public synchronized Path[] getComponentFiles() throws DataStoreException {
         if (suffixWLD == null) try {
             getGridGeometry(MAIN_IMAGE);                // Will compute `suffixWLD` as a side effect.
         } catch (IOException e) {
@@ -490,7 +494,7 @@ loop:   for (int convention=0;; convention++) {
      * Returns information about the data store as a whole.
      */
     @Override
-    public final synchronized Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
             final MetadataBuilder builder = new MetadataBuilder();
             String format = reader().getFormatName();
@@ -528,7 +532,7 @@ loop:   for (int convention=0;; convention++) {
      * @return list of images in this store.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
+    public synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
         if (components == null) try {
             components = new Components(reader().getNumImages(false));
         } catch (IOException e) {

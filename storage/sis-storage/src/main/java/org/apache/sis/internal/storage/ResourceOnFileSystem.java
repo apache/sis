@@ -66,6 +66,9 @@ public interface ResourceOnFileSystem extends Resource {
      *
      * @return files used by this resource. Should never be {@code null}.
      * @throws DataStoreException if an error on the file system prevent the creation of the list.
+     *
+     * @todo Should be renamed to something else, because current name creates a confusion with
+     *       {@link org.apache.sis.storage.Aggregate#components()}.
      */
     Path[] getComponentFiles() throws DataStoreException;
 }
