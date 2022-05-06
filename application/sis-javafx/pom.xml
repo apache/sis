@@ -108,6 +108,9 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <manifest>
+              <mainClass>org.apache.sis.gui.DataViewer</mainClass>
+            </manifest>
             <manifestEntries>
               <Automatic-Module-Name>
                 org.apache.sis.gui
