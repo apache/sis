@@ -36,7 +36,7 @@ public final strictfp class KeyPathMatcherTest extends TestCase {
      */
     @Test
     public void testGlob() {
-        final KeyPathMatcher matcher = new KeyPathMatcher("glob:bar*foo/fuu/**/f?i");
+        final KeyPathMatcher matcher = new KeyPathMatcher("glob:bar*foo/fuu/**/f?i", ClientFileSystem.DEFAULT_SEPARATOR);
         final ClientFileSystem fs = ClientFileSystemTest.create();
         assertTrue (matcher.matches(new KeyPath(fs, "bar_skip_foo/fuu/d1/d2/d3/f_i", false)));
         assertFalse(matcher.matches(new KeyPath(fs, "bar_sk/p_foo/fuu/d1/d2/d3/f_i", false)));

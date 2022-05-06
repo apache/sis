@@ -44,8 +44,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
  *
  * <p>AWS S3 has no concept of file directories.
  * Instead a bucket is more like a big {@link java.util.HashMap} with arbitrary {@link String} keys.
- * Those keys may contain the {@value #SEPARATOR} character, but AWS S3 gives no special meaning to it.
- * The interpretation of {@value #SEPARATOR} as a path separator is done by this class.</p>
+ * Those keys may contain the {@code "/"} character, but AWS S3 gives no special meaning to it.
+ * The interpretation of {@link ClientFileSystem#separator} as a path separator is done by this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -69,13 +69,6 @@ final class KeyPath implements Path {
     private static final int SCHEME_LENGTH = SCHEME.length() + SCHEME_SEPARATOR.length();
 
     /**
-     * The character used as a separator in path component.
-     *
-     * @see ClientFileSystem#getSeparator()
-     */
-    static final char SEPARATOR = '/';
-
-    /**
      * The file system that created this path. This file system gives access to the
      * {@link software.amazon.awssdk.services.s3.S3Client} instance from AWS SDK.
      *
@@ -93,8 +86,8 @@ final class KeyPath implements Path {
 
     /**
      * The key for locating the S3 object (shall not be empty), or {@code null} if this path is the root.
-     * If the key contains {@value #SEPARATOR} character, it will be interpreted as a list of path components.
-     * However that character has no special meaning for S3; this is an interpretation added by this wrapper.
+     * If the key contains {@link ClientFileSystem#separator}, it will be interpreted as a list of path components.
+     * However the separator characters have no special meaning for S3; this is an interpretation added by this wrapper.
      */
     final String key;
 
@@ -142,8 +135,9 @@ final class KeyPath implements Path {
      * Creates an absolute path for an object in the S3 storage.
      * This is used when iterating over the files in a pseudo-directory.
      *
-     * <p>When using this constructor, it may happen that the path ends with the {@value #SEPARATOR} character
-     * if the S3 object really has that name, and still have the {@link #isDirectory} flag set to {@code false}.
+     * <p>When using this constructor, it may happen that the path ends with the {@link ClientFileSystem#separator}
+     * character if the S3 object really has that name, and this {@code KeyPath} still have the {@link #isDirectory}
+     * flag set to {@code false}.
      * We keep it that way because it describes what is really on the S3 file system, even if confusing.</p>
      *
      * @param root      a path from which to inherit the file system and the root.
@@ -193,8 +187,8 @@ final class KeyPath implements Path {
     /**
      * Creates a new path by parsing the given components.
      * This is used for creating from character strings or URI.
-     * This constructor accepts the following strings,
-     * where {@code key} can be a path with {@value #SEPARATOR} separators:
+     * This constructor accepts the following strings, where {@code key} can be a path
+     * with any number of occurrences of the {@link ClientFileSystem#separator} separator:
      *
      * <ul>
      *   <li>{@code "S3://bucket/key"} (note that {@code "accessKey@bucket"} is not accepted)</li>
@@ -226,7 +220,7 @@ final class KeyPath implements Path {
             isAbsolute = true;
         } else if (first.isEmpty()) {
             throw emptyPath(first, 0);
-        } else if (first.charAt(0) == SEPARATOR) {
+        } else if (first.startsWith(fs.separator)) {
             isAbsolute = true;
             start = 1;
         }
@@ -236,21 +230,22 @@ final class KeyPath implements Path {
          * if and only if the path is absolute. The bucket name is the string before the first '/' character
          * and everything else is the S3 object key. The "everything else" is stored in the `StringBuilder`.
          */
+        final int separatorLength = fs.separator.length();
         StringBuilder buffer = null;
         if (isAbsolute) {
-            int end = first.indexOf(SEPARATOR, start);
+            int end = first.indexOf(fs.separator, start);
             if (end < 0) {
                 bucket = first.substring(start);
             } else {
-                bucket = first.substring(start, end);      // Take characters before the first '/'.
-                start  = end + 1;                          // Remaining path after the first '/'.
+                bucket = first.substring(start, end);       // Take characters before the first '/'.
+                start  = end + separatorLength;             // Remaining path after the first '/'.
                 end    = first.length();
                 while (start < end) {
-                    if (first.charAt(end - 1) != SEPARATOR) {
+                    if (!first.startsWith(fs.separator, end - separatorLength)) {
                         buffer = new StringBuilder(end - start).append(first, start, end);
                         break;
                     }
-                    end--;              // Skip trailing '/' characters.
+                    end -= separatorLength;                 // Skip trailing '/' characters.
                 }
             }
             start = first.length();     // Tells that there is nothing more from `start` to append.
@@ -268,12 +263,12 @@ final class KeyPath implements Path {
             if (more.length == 0) {
                 String path = first;
                 int end = path.length();
-                do path = path.replace("//", "/");
+                do path = path.replace(fs.duplicatedSeparator, fs.separator);
                 while (end > (end = path.length()));
-                if (end == 0) {
+                if ((end -= separatorLength) < 0) {
                     throw emptyPath(first, 0);
                 }
-                isDirectory = (path.charAt(--end) == SEPARATOR);
+                isDirectory = path.endsWith(fs.separator);
                 key = isDirectory ? path.substring(0, end) : path;
                 return;
             }
@@ -286,12 +281,12 @@ final class KeyPath implements Path {
         for (final String component : more) {
             final int end = component.length();
             for (int i=0; i<end; i++) {
-                if (component.charAt(i) != SEPARATOR) {
+                if (!component.startsWith(fs.separator, i)) {
                     if (buffer == null) {
                         buffer = new StringBuilder(first.substring(start));
                     }
                     if (buffer.length() != 0) {
-                        buffer.append(SEPARATOR);
+                        buffer.append(fs.separator);
                     }
                     buffer.append(component, i, end);
                     break;
@@ -306,12 +301,12 @@ final class KeyPath implements Path {
          */
         if (buffer != null) {
             int i = buffer.length();
-            while ((i = buffer.lastIndexOf("//", i)) >= 0) {
-                buffer.deleteCharAt(i + 1);
+            while ((i = buffer.lastIndexOf(fs.duplicatedSeparator, i)) >= 0) {
+                buffer.delete(i, i + separatorLength);
             }
-            i = buffer.length() - 1;
+            i = buffer.length() - separatorLength;
             if (i >= 0) {
-                isDirectory = (buffer.charAt(i) == SEPARATOR);
+                isDirectory = CharSequences.regionMatches(buffer, i, fs.separator);
                 if (isDirectory) {
                     if (i == 0) {
                         if (bucket == null) {
@@ -385,7 +380,7 @@ final class KeyPath implements Path {
     final ListObjectsV2Request.Builder request() {
         ListObjectsV2Request.Builder request = ListObjectsV2Request.builder().bucket(bucket).delimiter(fs.getSeparator());
         if (key != null) {
-            request = request.prefix(isDirectory ? (key + KeyPath.SEPARATOR) : key);
+            request = request.prefix(isDirectory ? key.concat(fs.separator) : key);
         }
         return request;
     }
@@ -425,8 +420,9 @@ final class KeyPath implements Path {
     @Override
     public Path getFileName() {
         if (key != null) {
-            final String name = key.substring(key.lastIndexOf(SEPARATOR) + 1);
-            if (bucket != null || !key.equals(name)) {
+            final int i = key.lastIndexOf(fs.separator);
+            if (bucket != null || i >= 0) {
+                final String name = (i >= 0) ? key.substring(i + fs.separator.length()) : key;
                 return new KeyPath(fs, name, isDirectory);
             }
         }
@@ -441,7 +437,7 @@ final class KeyPath implements Path {
     @Override
     public Path getParent() {
         if (key != null) {
-            final int i = key.lastIndexOf(SEPARATOR);
+            final int i = key.lastIndexOf(fs.separator);
             if (i >= 0) {
                 return new KeyPath(this, key.substring(0, i), true);
             }
@@ -455,7 +451,7 @@ final class KeyPath implements Path {
      */
     @Override
     public int getNameCount() {
-        int count = CharSequences.count(key, SEPARATOR);
+        int count = CharSequences.count(key, fs.separator);
         if (key    != null) count++;
         if (bucket != null) count++;
         return count;
@@ -480,7 +476,7 @@ final class KeyPath implements Path {
      */
     @Override
     public Path subpath(final int beginIndex, final int endIndex) {
-        int count  = endIndex - beginIndex;
+        int count = endIndex - beginIndex;
         if (beginIndex >= 0 && count > 0) {
             int skip = beginIndex;
             boolean includeRoot = false;
@@ -494,23 +490,28 @@ final class KeyPath implements Path {
                 }
                 skip--;
             }
+            final int separatorLength = fs.separator.length();
 search:     if (key != null) {
-                int offset = 0;
+                int start = 0;
                 while (--skip >= 0) {
-                    offset = key.indexOf(SEPARATOR, offset) + 1;
-                    if (offset == 0) break search;
+                    start = key.indexOf(fs.separator, start);
+                    if (start < 0) break search;
+                    start += separatorLength;
                 }
-                int stop = offset;
-                while (--count >= 0) {
-                    stop = key.indexOf(SEPARATOR, stop + 1);
-                    if (stop < 0 && count != 0) break search;
+                int stop = start;
+                if (--count >= 0) {
+                    stop = key.indexOf(fs.separator, start);
+                    while (--count >= 0) {
+                        if (stop < 0) break search;
+                        stop = key.indexOf(fs.separator, stop + separatorLength);
+                    }
                 }
                 boolean isParent = (stop >= 0);
                 if (!isParent && beginIndex == 0) {
                     assert endIndex == getNameCount() : endIndex;
                     return this;
                 }
-                final String part = isParent ? key.substring(offset, stop) : key.substring(offset);
+                final String part = isParent ? key.substring(start, stop) : key.substring(start);
                 isParent |= isDirectory;
                 if (includeRoot) {
                     return new KeyPath(this, part, isParent);
@@ -554,14 +555,14 @@ search:     if (key != null) {
                             case STARTS_WITH: {
                                 if (key.startsWith(part.key)) {
                                     final int end = part.key.length();
-                                    return end == key.length() || key.charAt(end) == SEPARATOR;
+                                    return end == key.length() || key.startsWith(fs.separator, end);
                                 }
                                 break;
                             }
                             case ENDS_WITH: {
                                 if (key.endsWith(part.key)) {
                                     final int start = key.length() - part.key.length();
-                                    return start == 0 || key.charAt(start - 1) == SEPARATOR;
+                                    return start == 0 || key.startsWith(fs.separator, start - fs.separator.length());
                                 }
                                 break;
                             }
@@ -620,7 +621,7 @@ search:     if (key != null) {
     }
 
     /**
-     * Resolve the given path against this path. If the given path is absolute, then it is returned.
+     * Resolves the given path against this path. If the given path is absolute, then it is returned.
      * Otherwise this method returns the concatenation of this path with the given path.
      */
     @Override
@@ -634,10 +635,10 @@ search:     if (key != null) {
         }
         part = part.replace(other.getFileSystem().getSeparator(), fs.getSeparator());
         if (key != null) {      // If non-null, shall not be empty.
-            if (key.charAt(key.length() - 1) == SEPARATOR || part.charAt(0) == SEPARATOR) {
+            if (key.endsWith(fs.separator) || part.startsWith(fs.separator)) {
                 part = key + part;
             } else {
-                part = key + SEPARATOR + part;
+                part = key + fs.separator + part;
             }
         }
         return new KeyPath(this, part, (other instanceof KeyPath) && ((KeyPath) other).isDirectory);
@@ -681,7 +682,7 @@ search:     if (key != null) {
         if (other instanceof KeyPath) {
             final KeyPath kp = (KeyPath) other;
             if (kp.startsWith(this) && key != null) {
-                final String suffix = kp.key.substring(key.length() + 1);
+                final String suffix = kp.key.substring(key.length() + fs.separator.length());
                 if (!suffix.isEmpty()) {
                     return new KeyPath(kp.fs, suffix, kp.isDirectory);
                 }
@@ -715,7 +716,7 @@ search:     if (key != null) {
 
     /**
      * Returns a string representation of this path.
-     * By convention, a trailing {@value #SEPARATOR} is appended to directories.
+     * By convention, a trailing {@link ClientFileSystem#separator} is appended to directories.
      */
     @Override
     public String toString() {
@@ -728,12 +729,12 @@ search:     if (key != null) {
             if (fs.accessKey != null) {
                 sb.append(fs.accessKey).append('@');
             }
-            sb.append(bucket).append(SEPARATOR);
+            sb.append(bucket).append(fs.separator);
         }
         if (key != null) {
             sb.append(key);
             if (isDirectory) {
-                sb.append(SEPARATOR);
+                sb.append(fs.separator);
             }
         }
         return sb.toString();
@@ -813,7 +814,7 @@ search:     if (key != null) {
          */
         Iter() {
             if (bucket == null) {
-                end = key.indexOf(SEPARATOR);       // If `bucket` is null, then `key` shall be non-null.
+                end = key.indexOf(fs.separator);        // If `bucket` is null, then `key` shall be non-null.
             }
         }
 
@@ -831,7 +832,7 @@ search:     if (key != null) {
             if (end == 0) {
                 // Set `start` and `end` to the values needed for next element (after this one).
                 if (key != null) {
-                    end = key.indexOf(SEPARATOR);
+                    end = key.indexOf(fs.separator);
                 } else {
                     start = -1;
                 }
@@ -843,8 +844,8 @@ search:     if (key != null) {
                 if (end >= 0) {
                     name  = key.substring(start, end);
                     dir   = true;
-                    start = end + 1;
-                    end   = key.indexOf(SEPARATOR, start);
+                    start = end + fs.separator.length();
+                    end   = key.indexOf(fs.separator, start);
                 } else {
                     name  = key.substring(start);
                     dir   = isDirectory;

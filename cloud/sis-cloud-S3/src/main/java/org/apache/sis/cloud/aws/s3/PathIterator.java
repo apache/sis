@@ -90,7 +90,7 @@ final class PathIterator implements DirectoryStream<Path>, Iterator<Path> {
         this.response  = directory.fs.client().listObjectsV2(directory.request().build());
         this.buffer    = new StringBuilder();
         if (directory.key != null) {
-            buffer.append(directory.key).append(KeyPath.SEPARATOR);
+            buffer.append(directory.key).append(directory.fs.separator);
         }
         parentLength = buffer.length();
     }
@@ -118,7 +118,7 @@ final class PathIterator implements DirectoryStream<Path>, Iterator<Path> {
             String path = directories.next().prefix();
             int length = path.length();
             if (length > 0) {
-                if (path.charAt(length - 1) == KeyPath.SEPARATOR) {
+                if (path.endsWith(directory.fs.separator)) {
                     if (--length == 0) {
                         continue;
                     }
@@ -185,10 +185,12 @@ verify:     do if (directories == null || !nextDirectory()) {
     private boolean accept() throws IOException {
         final String path = next.key;
         if (path != null) {
+            final String separator = directory.fs.separator;
+            final int separatorLength = separator.length();
             int last = path.length();
-            do if (--last < 0) return false;
-            while (path.charAt(last) == KeyPath.SEPARATOR);
-            if (path.regionMatches(0, directory.key, 0, last + 1)) {
+            do if ((last -= separatorLength) < 0) return false;
+            while (path.startsWith(separator, last));
+            if (path.regionMatches(0, directory.key, 0, last + separatorLength)) {
                 return false;
             }
         }

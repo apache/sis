@@ -55,8 +55,6 @@ public final strictfp class ClientFileSystemTest extends TestCase {
      */
     @Test
     public void testGetSeparator() {
-        final String separator = fs.getSeparator();
-        assertEquals(1, separator.length());
-        assertEquals(KeyPath.SEPARATOR, separator.charAt(0));
+        assertEquals("/", fs.getSeparator());
     }
 }
