@@ -20,9 +20,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Version;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.StoreMetadata;
@@ -40,16 +42,17 @@ import org.apache.sis.internal.util.Constants;
  * the part of the caller. However the {@link GeoTiffStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  *
  * @see GeoTiffStore
  *
  * @since 0.8
  * @module
  */
-@StoreMetadata(formatName   = Constants.GEOTIFF,
-               fileSuffixes = {"tiff", "tif"},
-               capabilities = Capability.READ)
+@StoreMetadata(formatName    = Constants.GEOTIFF,
+               fileSuffixes  = {"tiff", "tif"},
+               capabilities  = Capability.READ,
+               resourceTypes = {Aggregate.class, GridCoverageResource.class})
 public class GeoTiffStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for GeoTIFF files.

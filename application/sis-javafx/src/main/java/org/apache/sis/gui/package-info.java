@@ -17,6 +17,14 @@
 
 /**
  * JavaFX application for Apache SIS.
+ * See the <a href="https://sis.apache.org/javafx.html">JavaFX application</a> page
+ * on the Apache SIS web site for more information.
+ *
+ * <h2>File size limit</h2>
+ * There is usually no size limit when viewing only the metadata, because only the file headers are read at that time.
+ * When viewing the data, there is no size limit if the data are pyramided and tiled with tiles of reasonable size,
+ * because the application loads only the tiles needed for the area being displayed.
+ * An example of file format supporting tiling is GeoTIFF.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)

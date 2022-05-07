@@ -20,8 +20,13 @@ import org.apache.sis.util.Static;
 
 
 /**
- * Hard-coded URLs other than XML namespaces.
- * The are mostly for documentation.
+ * Hard-coded URLs other than XML namespaces. Those URLs are mostly for documentation.
+ * Note: other URLs are listed in the following classes:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.xml.Namespaces} for XML namespaces.</li>
+ *   <li>{@link org.apache.sis.setup.OptionalInstallations} for location of optional data to download.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

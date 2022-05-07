@@ -859,6 +859,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.4.0</version>
         <configuration>
+          <release>17</release>
           <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->

@@ -19,7 +19,7 @@
 set -o errexit
 
 BASE_DIR="`dirname $0`/.."
-source "$BASE_DIR/conf/setenv.sh"
+. "$BASE_DIR/conf/setenv.sh"
 
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
