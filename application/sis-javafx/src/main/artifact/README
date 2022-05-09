@@ -1,6 +1,6 @@
-=============================================
-Welcome to Apache SIS <http://sis.apache.org>
-=============================================
+==============================================
+Welcome to Apache SIS <https://sis.apache.org>
+==============================================
 
 SIS is a project of the Apache Software Foundation <https://www.apache.org>
 for developing geospatial applications in the Java programming language.
@@ -15,10 +15,10 @@ Installation
 
 For developing applications using the SIS library or for using on command-line,
 the only requirement is Java 8 or later. For launching the desktop application,
-requirements are Java 11 or later and JavaFX 13 or later.
+requirements are Java 16 or later and JavaFX 13 or later.
 
-1) Unzip `apache-sis-1.1-bin.zip` in any directory.
-2) Add the `apache-sis-1.1/bin` directory to the path.
+1) Unzip `apache-sis-1.2-bin.zip` in any directory.
+2) Add the `apache-sis-1.2/bin` directory to the path.
 3) Invoke `sis` or `sisfx` on the command line.
 
 
@@ -39,7 +39,7 @@ range of file formats like NcML files.
 License (see also LICENSE)
 ==========================
 
-Collective work: Copyright 2010-2021 The Apache Software Foundation.
+Collective work: Copyright 2010-2022 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with

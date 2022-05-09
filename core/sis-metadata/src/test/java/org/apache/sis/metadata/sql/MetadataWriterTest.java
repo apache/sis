@@ -162,9 +162,9 @@ public final strictfp class MetadataWriterTest extends TestCase {
         assertEquals("International Association of Oil & Gas Producers", party.getName().toString());
         final Contact contact = TestUtilities.getSingleton(party.getContactInfo());
         /*
-         * Invoke for the deprecated 'getOnlineResource()' method (singular form) before the non-deprecated
-         * 'getOnlineResources()' (plural form) replacement. They shall give the same result no matter which
-         * form were stored in the database.
+         * Invoke the deprecated `getOnlineResource()` method (singular form) before the non-deprecated
+         * `getOnlineResources()` (plural form) replacement. They shall give the same result no matter
+         * which form were stored in the database.
          */
         @SuppressWarnings("deprecation")
         final OnlineResource resource = contact.getOnlineResource();

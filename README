@@ -1,6 +1,6 @@
-=============================================
-Welcome to Apache SIS <http://sis.apache.org>
-=============================================
+==============================================
+Welcome to Apache SIS <https://sis.apache.org>
+==============================================
 
 SIS is a Java language library for developing geospatial applications.
 The library is an implementation of GeoAPI 3.0.1 interfaces and can be used
@@ -15,7 +15,7 @@ of coordinates between different reference systems. The SIS storage modules
 provide a common approach to the reading and writing of metadata, features and
 coverages applicable to simple imagery as to many dimensional data structures.
 
-SIS is a project of the Apache Software Foundation <http://www.apache.org/>.
+SIS is a project of the Apache Software Foundation <https://www.apache.org/>.
 
 Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
 project logo are trademarks of The Apache Software Foundation.
@@ -24,20 +24,22 @@ project logo are trademarks of The Apache Software Foundation.
 Getting Started
 ===============
 
-Running Apache SIS requires Java 8 or higher. Building SIS requires Java 17
-or higher together with Maven 3 <http://maven.apache.org/> build system.
+Running the library part of Apache SIS requires Java 8 or higher.
+Running the JavaFX application part requires Java 16 or higher.
+Building SIS requires Java 17 or higher
+together with Maven 3 <https://maven.apache.org/> build system.
 To build SIS, use the following command in this directory:
 
     mvn install
 
 Information for running a command-line tool can be found on the web site:
-(<http://sis.apache.org/command-line.html>)
+(<https://sis.apache.org/command-line.html>)
 
 
 License (see also LICENSE)
 ==========================
 
-Collective work: Copyright 2010-2021 The Apache Software Foundation.
+Collective work: Copyright 2010-2022 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
