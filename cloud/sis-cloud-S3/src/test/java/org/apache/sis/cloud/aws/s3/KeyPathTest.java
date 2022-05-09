@@ -143,14 +143,14 @@ public final strictfp class KeyPathTest extends TestCase {
      */
     @Test
     public void testGetName() {
-        assertEquals("S3://the-bucket/", absolute.getName(0).toString());
-        assertEquals("first/",           absolute.getName(1).toString());
-        assertEquals("second/",          absolute.getName(2).toString());
-        assertEquals("third/",           absolute.getName(3).toString());
-        assertEquals("the-file",         absolute.getName(4).toString());
-        assertEquals("second/",          relative.getName(0).toString());
-        assertEquals("third/",           relative.getName(1).toString());
-        assertEquals("the-file",         relative.getName(2).toString());
+        assertEquals("S3://the-bucket", absolute.getName(0).toString());
+        assertEquals("first",           absolute.getName(1).toString());
+        assertEquals("second",          absolute.getName(2).toString());
+        assertEquals("third",           absolute.getName(3).toString());
+        assertEquals("the-file",        absolute.getName(4).toString());
+        assertEquals("second",          relative.getName(0).toString());
+        assertEquals("third",           relative.getName(1).toString());
+        assertEquals("the-file",        relative.getName(2).toString());
         try {
             absolute.getName(5);
             fail("Expected an exception.");
@@ -164,10 +164,10 @@ public final strictfp class KeyPathTest extends TestCase {
      */
     @Test
     public void testSubpath() {
-        assertEquals("S3://the-bucket/first/second/", absolute.subpath(0, 3).toString());
-        assertEquals("second/third/the-file",         absolute.subpath(2, 5).toString());
-        assertEquals("second/third/",                 absolute.subpath(2, 4).toString());
-        assertEquals("third/the-file",                relative.subpath(1, 3).toString());
+        assertEquals("S3://the-bucket/first/second", absolute.subpath(0, 3).toString());
+        assertEquals("second/third/the-file",        absolute.subpath(2, 5).toString());
+        assertEquals("second/third",                 absolute.subpath(2, 4).toString());
+        assertEquals("third/the-file",               relative.subpath(1, 3).toString());
         assertSame(absolute, absolute.subpath(0, 5));
         assertSame(relative, relative.subpath(0, 3));
     }

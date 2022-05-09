@@ -122,10 +122,13 @@ public final class IOUtilities extends Static {
     private static String part(final Object path, final boolean extension) {
         int fromIndex = 0;
         final String name;
+        int end;
         if (path instanceof File) {
             name = ((File) path).getName();
+            end  = name.length();
         } else if (path instanceof Path) {
             name = ((Path) path).getFileName().toString();
+            end  = name.length();
         } else {
             char separator = '/';
             if (path instanceof URL) {
@@ -139,20 +142,29 @@ public final class IOUtilities extends Static {
             } else {
                 return null;
             }
-            fromIndex = name.lastIndexOf('/') + 1;
-            if (separator != '/') {
-                // Search for platform-specific character only if the object is neither a URL or a URI.
-                fromIndex = Math.max(fromIndex, CharSequences.lastIndexOf(name, separator, fromIndex, name.length()) + 1);
-            }
+            /*
+             * Search for the last '/' separator character (looking also for '\' on Windows).
+             * If the separator is the very last character of the name, search for the previous one.
+             * The intent is to ignore the trailing separator in "foo/".
+             */
+            end = name.length();
+            do {
+                fromIndex = name.lastIndexOf('/', --end) + 1;
+                if (separator != '/') {
+                    // Search for platform-specific character only if the object is neither a URL or a URI.
+                    fromIndex = Math.max(fromIndex, CharSequences.lastIndexOf(name, separator, fromIndex, end+1) + 1);
+                }
+            } while (fromIndex > end);
+            end++;
         }
         if (extension) {
-            fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, name.length()) + 1;
+            fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, end) + 1;
             if (fromIndex <= 1) {
                 // If the dot is the first character, do not consider as a filename extension.
                 return "";
             }
         }
-        return name.substring(fromIndex);
+        return name.substring(fromIndex, end);
     }
 
     /**

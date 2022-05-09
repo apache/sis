@@ -716,7 +716,6 @@ search:     if (key != null) {
 
     /**
      * Returns a string representation of this path.
-     * By convention, a trailing {@link ClientFileSystem#separator} is appended to directories.
      */
     @Override
     public String toString() {
@@ -729,13 +728,13 @@ search:     if (key != null) {
             if (fs.accessKey != null) {
                 sb.append(fs.accessKey).append('@');
             }
-            sb.append(bucket).append(fs.separator);
+            sb.append(bucket);
         }
         if (key != null) {
-            sb.append(key);
-            if (isDirectory) {
+            if (bucket != null) {
                 sb.append(fs.separator);
             }
+            sb.append(key);
         }
         return sb.toString();
     }
