@@ -1,8 +1,8 @@
-=============================================
-Welcome to Apache SIS <http://sis.apache.org>
-=============================================
+==============================================
+Welcome to Apache SIS <https://sis.apache.org>
+==============================================
 
-SIS is a project of the Apache Software Foundation <http://www.apache.org>
+SIS is a project of the Apache Software Foundation <https://www.apache.org>
 for developing geospatial applications in the Java programming language.
 The library can be used for desktop or server applications.
 
@@ -17,37 +17,37 @@ SIS requires Java 8 or later.
 
 Unix
 ----
-1) Unzip 'apache-sis-1.1-bin.zip' in any directory.
-2) Add the 'apache-sis-1.1/bin' directory to the path.
-3) Invoke 'sis' on the command line.
+1) Unzip `apache-sis-1.2-bin.zip` in any directory.
+2) Add the `apache-sis-1.2/bin` directory to the path.
+3) Invoke `sis` on the command line.
 
 Windows
 -------
-There is not yet 'sis.bat' file for Windows.
+There is not yet `sis.bat` file for Windows.
 The following steps need to be done manually:
 
-1) Unzip 'apache-sis-1.1-bin.zip' in any directory.
-2) Invoke 'java -jar lib/sis.jar' on the command line.
+1) Unzip `apache-sis-1.2-bin.zip` in any directory.
+2) Invoke `java -jar lib/sis.jar` on the command line.
 
 
 Configuration (Unix only)
 =========================
 
-A 'SIS_OPTS' environment variable can optionally be set for specifying options
+A `SIS_OPTS` environment variable can optionally be set for specifying options
 to be given to any execution of Apache SIS. For example for setting the
 encoding to UTF-8:
 
     export SIS_OPTS="--encoding UTF-8"
 
-Optional dependencies can be added to the 'lib' folder. For example adding the
-UCAR netCDF library in the 'lib' folder will cause Apache SIS to decode a
+Optional dependencies can be added to the `lib` folder. For example adding the
+UCAR netCDF library in the `lib` folder will cause Apache SIS to decode a
 wider range of file formats like NcML files.
 
 
 License (see also LICENSE)
 ==========================
 
-Collective work: Copyright 2010-2021 The Apache Software Foundation.
+Collective work: Copyright 2010-2022 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
