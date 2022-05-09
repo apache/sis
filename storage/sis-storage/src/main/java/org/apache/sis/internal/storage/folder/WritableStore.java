@@ -221,7 +221,7 @@ final class WritableStore extends Store implements WritableAggregate {
 
             /**
              * Invoked for a file in a directory. Deletes the file provided that it is not the {@code root} argument.
-             * The later can happen if the path given to {@code deleteRecursively(…)} is a file rather than a directory.
+             * The latter can happen if the path given to {@code deleteRecursively(…)} is a file rather than a directory.
              */
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

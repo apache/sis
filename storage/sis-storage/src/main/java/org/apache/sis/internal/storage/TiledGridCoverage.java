@@ -826,7 +826,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         /**
          * Stores the given raster in the cache. If another raster existed previously in the cache,
          * the old raster will be reused if it has the same size and model, or discarded otherwise.
-         * The later case may happen if {@link AOI#getCachedTile()} determined that a cached raster
+         * The latter case may happen if {@link AOI#getCachedTile()} determined that a cached raster
          * exists but can not be reused.
          *
          * @param  tile  the raster to cache.

@@ -875,7 +875,7 @@ public class RangeFormat extends Format implements Localized {
         } else {
             /*
              * We found an opening bracket. Skip the whitespaces. If the next character is a closing bracket,
-             * then we have an empty range. The later case is an extension to the standard format since empty
+             * then we have an empty range. The latter case is an extension to the standard format since empty
              * ranges are usually represented by {} instead of [].
              */
             isMinIncluded = (c == openInclusive);

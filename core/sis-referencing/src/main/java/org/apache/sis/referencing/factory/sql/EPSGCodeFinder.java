@@ -166,7 +166,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      *     SELECT <codeColumn> FROM <table> WHERE <column> >= <value - ε> AND <column> <= <value + ε>
      * }
      *
-     * The later form is used if {@code <filters>} is a floating point value.
+     * The latter form is used if {@code <filters>} is a floating point value.
      * Otherwise, {@code <filters>} are typically EPSG codes of dependencies.
      */
     private static class Condition {

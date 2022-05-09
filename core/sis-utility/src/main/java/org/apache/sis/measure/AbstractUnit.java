@@ -427,7 +427,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     /**
      * If the inverse of the given multiplier is an integer, returns that inverse. Otherwise returns 1.
      * This method is used for replacing e.g. {@code multiply(0.001)} calls by {@code divide(1000)} calls.
-     * The later allows more accurate operations because of the way {@link LinearConverter} is implemented.
+     * The latter allows more accurate operations because of the way {@link LinearConverter} is implemented.
      */
     private static double inverse(final double multiplier) {
         if (Math.abs(multiplier) < 1) {

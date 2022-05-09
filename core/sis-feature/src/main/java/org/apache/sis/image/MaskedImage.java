@@ -65,7 +65,7 @@ final class MaskedImage extends SourceAlignedImage {
 
     /**
      * Bounds of the {@linkplain #clip} in pixels coordinates and in tile coordinates.
-     * The later provides a fast way to determine if a tile intersects the mask.
+     * The latter provides a fast way to determine if a tile intersects the mask.
      * The bounds are computed together when first needed.
      *
      * @see #getMaskTiles()

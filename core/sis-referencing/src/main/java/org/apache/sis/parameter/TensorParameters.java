@@ -335,7 +335,7 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * Initializes the fields used for cached values: {@link #zero}, {@link #one} and the {@link #parameters} array.
-     * The later is not assigned to the {@code parameters} field, but rather returned.
+     * The latter is not assigned to the {@code parameters} field, but rather returned.
      * Caller shall assign himself the returned value to the {@link #parameters} field.
      *
      * <p>This method is invoked by constructor and on deserialization.</p>

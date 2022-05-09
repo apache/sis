@@ -424,7 +424,7 @@ class PropertyAccessor {
                 }
                 /*
                  * The candidate method should be declared in the interface. If not, then we require it to have
-                 * a @UML annotation. The later case happen when the Apache SIS implementation contains methods
+                 * a @UML annotation. The latter case happen when the Apache SIS implementation contains methods
                  * for a new international standard not yet reflected in the GeoAPI interfaces.
                  */
                 if (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) {
