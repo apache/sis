@@ -62,7 +62,7 @@ import org.apache.sis.gui.Widget;
  *
  * <h2>Limitations</h2>
  * Current implementation is restricted to {@link GridCoverage} instances, but a future
- * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.
+ * implementation may generalize to {@code org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

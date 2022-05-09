@@ -517,7 +517,7 @@ public class SampleDimension implements Serializable {
      *
      * <p>A <cite>quantitative category</cite> is a range of sample values associated to numbers with units of measurement.
      * For example 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>. A quantitative category has a
-     * {@linkplain org.opengis.metadata.content.SampleDimension#getTransferFunctionType() transfer function}
+     * transfer function
      * (typically a scale factor and an offset) for converting sample values to values expressed
      * in the unit of measurement.</p>
      *
