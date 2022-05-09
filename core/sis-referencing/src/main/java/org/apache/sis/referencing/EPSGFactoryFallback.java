@@ -46,8 +46,12 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Fallback;
+import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.URLs;
+import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
@@ -61,7 +65,7 @@ import org.apache.sis.measure.Units;
  * in the {@link CRS#forCode(String)} method javadoc is always available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -91,6 +95,15 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
      * The authority, created when first needed.
      */
     private Citation authority;
+
+    /**
+     * URL  where users can get more information about the installation process.
+     * Fetched when first needed.
+     *
+     * @see #getInstallationURL()
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-336">SIS-336</a>
+     */
+    private String installationURL;
 
     /**
      * Constructor for the singleton instance.
@@ -353,7 +366,36 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
             throw e;
         }
         throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCodeInSubset_4,
-                Constants.EPSG, toClass(kind), code, "http://sis.apache.org/epsg.html"), AUTHORITY, code);
+                Constants.EPSG, toClass(kind), code, getInstallationURL()), AUTHORITY, code);
+    }
+
+    /**
+     * Returns a URL where users can get more information about the installation process.
+     */
+    private synchronized String getInstallationURL() {
+        if (installationURL == null) {
+            installationURL = URLs.EPSG_INSTALL;            // To be used as fallback.
+            final Iterable<InstallationResources> services =
+                    DefaultFactories.createServiceLoader(InstallationResources.class);
+            /*
+             * Following loop will be executed one or two times. First, we check for resources that are
+             * specifically for EPSG geodetic dataset. If none are found, fallback on embedded database.
+             */
+            boolean embedded = false;
+            do {
+                final String authority = embedded ? MetadataServices.EMBEDDED : Constants.EPSG;
+                for (InstallationResources res : services) {
+                    if (res.getAuthorities().contains(authority)) {
+                        final String url = res.getInstructionURL();
+                        if (url != null) {
+                            installationURL = url;
+                            return url;
+                        }
+                    }
+                }
+            } while ((embedded = !embedded) == true);
+        }
+        return installationURL;
     }
 
     /**

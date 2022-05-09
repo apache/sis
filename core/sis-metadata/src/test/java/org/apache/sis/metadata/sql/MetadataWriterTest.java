@@ -28,6 +28,7 @@ import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.internal.util.URLs;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -168,7 +169,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
         @SuppressWarnings("deprecation")
         final OnlineResource resource = contact.getOnlineResource();
         assertSame(resource, TestUtilities.getSingleton(contact.getOnlineResources()));
-        assertEquals("https://epsg.org/", resource.getLinkage().toString());
+        assertEquals(URLs.EPSG, resource.getLinkage().toString());
         assertEquals(OnLineFunction.INFORMATION, resource.getFunction());
         /*
          * Ask columns that are known to not exist.

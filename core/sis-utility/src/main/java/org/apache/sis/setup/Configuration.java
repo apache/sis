@@ -85,7 +85,7 @@ public final class Configuration {
      *       Apache SIS may create the database since it is located in the directory managed by Apache SIS.</li>
      *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the classpath,
      *       use the embedded database.</li>
-     *   <li>Otherwise if the {@code "derby.system.home"} property is defined,
+     *   <li>Otherwise if the "{@systemProperty derby.system.home}" property is defined,
      *       use the data source for {@code "jdbc:derby:SpatialMetadata"} database.
      *       This database will <strong>not</strong> be created if it does not exist.</li>
      * </ol>
@@ -133,7 +133,7 @@ public final class Configuration {
      *         The supplier may return {@code null}, in which case it will be ignored.
      * @throws IllegalStateException if {@link DataSource} has already be obtained before this method call.
      *
-     * @see <a href="http://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
+     * @see <a href="https://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
      */
     public void setDatabase(final Supplier<DataSource> source) {
         ArgumentChecks.ensureNonNull("source", source);

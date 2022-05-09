@@ -42,7 +42,7 @@ import org.apache.sis.storage.DataStoreContentException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */

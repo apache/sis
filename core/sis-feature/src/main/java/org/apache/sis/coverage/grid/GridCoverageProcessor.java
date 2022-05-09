@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.awt.Shape;
 import java.util.Objects;
-import java.security.AccessController;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
@@ -311,8 +310,7 @@ public class GridCoverageProcessor implements Cloneable {
     public GridCoverageProcessor clone() {
         try {
             final GridCoverageProcessor clone = (GridCoverageProcessor) super.clone();
-            AccessController.doPrivileged(new FinalFieldSetter<>(GridCoverageProcessor.class, "imageProcessor"))
-                            .set(clone, imageProcessor.clone());
+            FinalFieldSetter.set(GridCoverageProcessor.class, "imageProcessor", clone, imageProcessor.clone());
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);

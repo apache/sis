@@ -304,7 +304,7 @@ public final class Strings extends Static {
      *
      * <p>The content is specified by (<var>key</var>=<var>value</var>) pairs. If a value is {@code null},
      * the whole entry is omitted. If a key is {@code null}, the value is written without the {@code "key="}
-     * part. The later happens typically when the first value is the object name.</p>
+     * part. The latter happens typically when the first value is the object name.</p>
      *
      * @param  classe      the class to format.
      * @param  properties  the (<var>key</var>=<var>value</var>) pairs.

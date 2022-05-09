@@ -33,7 +33,7 @@ import org.apache.sis.util.Deprecable;
 
 /**
  * Base class of all classes used to generate HTML pages to be published on
- * the <a href="http://sis.apache.org/">http://sis.apache.org/</a> web site.
+ * the <a href="https://sis.apache.org/">https://sis.apache.org/</a> web site.
  *
  * <p>This class creates files in the current default directory. It is user's responsibility
  * to move the files to the appropriate Apache SIS {@code "content/"} site directory.</p>

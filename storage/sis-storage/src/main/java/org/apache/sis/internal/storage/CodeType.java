@@ -43,7 +43,7 @@ public enum CodeType {
     /**
      * The code is a URL like {@code "http:"} or {@code "file:"},
      * with the exception of HTTP in the "www.opengis.net" domain.
-     * The later case is identified by {@link #HTTP_OGC} instead of this enum.
+     * The latter case is identified by {@link #HTTP_OGC} instead of this enum.
      */
     URL(false),
 

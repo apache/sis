@@ -81,7 +81,7 @@ import org.apache.sis.util.Localized;
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
- * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
+ * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
  * @since 0.7
  * @module
@@ -372,7 +372,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * The EPSG dataset can not be distributed with Apache SIS at this time for licensing reasons.
      * Users need to either install the dataset manually (for example with the help of this method),
      * or add on the classpath to a separated bundle like {@code org.apache.sis:non-free:sis-epsg.jar}.
-     * See <a href="http://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.
+     * See <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.
      *
      * @param  connection  connection to the database where to create the EPSG schema.
      * @throws UnavailableFactoryException if installation failed. The exception will have a

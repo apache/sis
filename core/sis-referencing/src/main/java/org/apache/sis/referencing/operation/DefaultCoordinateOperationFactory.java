@@ -576,7 +576,7 @@ next:   for (int i=components.size(); --i >= 0;) {
         }
         /*
          * Now create the coordinate operation of the requested type. If we can not find a concrete class for the
-         * requested type, we will instantiate a SingleOperation in last resort.  The later action is a departure
+         * requested type, we will instantiate a SingleOperation in last resort. The latter action is a departure
          * from ISO 19111 since `SingleOperation` is conceptually abstract.  But we do that as a way to said that
          * we are missing this important piece of information but still go ahead.
          *

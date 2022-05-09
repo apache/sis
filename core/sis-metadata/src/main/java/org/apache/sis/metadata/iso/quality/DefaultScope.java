@@ -45,7 +45,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @module
  *
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
- *             The later is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.
+ *             The latter is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.
  */
 @Deprecated
 @XmlTransient

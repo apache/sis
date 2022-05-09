@@ -245,7 +245,8 @@ public final class Exceptions extends Static {
      *
      * <div class="note"><b>Note:</b>
      * {@link java.security.PrivilegedActionException} is also a wrapper exception, but is not included in above list
-     * because it is used in very specific contexts.</div>
+     * because it is used in very specific contexts. Furthermore classes related to security manager are deprecated
+     * since Java 17.</div>
      *
      * This method uses only the exception class and the absence of {@linkplain Exception#getSuppressed() suppressed
      * exceptions} as criterion; it does not verify if the exception messages are the same.

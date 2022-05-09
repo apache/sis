@@ -39,7 +39,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>24</version>
+    <version>26</version>
   </parent>
 
 
@@ -456,7 +456,7 @@
       <dependency>
         <groupId>net.sf.geographiclib</groupId>
         <artifactId>GeographicLib-Java</artifactId>
-        <version>1.52</version>
+        <version>2.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -468,12 +468,12 @@
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jaxb.version}</version>
+        <version>2.3.3</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
-        <version>${jaxb.version}</version>
+        <version>2.3.6</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -498,13 +498,13 @@
       <dependency>
         <groupId>com.h2database</groupId>
         <artifactId>h2</artifactId>
-        <version>2.1.210</version>
+        <version>2.1.212</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.3.3</version>
+        <version>42.3.5</version>
         <scope>test</scope>
       </dependency>
 
@@ -518,7 +518,7 @@
       <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>cdm-core</artifactId>
-        <version>5.5.2</version>
+        <version>5.5.3</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -559,7 +559,6 @@
     <sis.non-free.version>1.1</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
     <javafx.version>17</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>3.1-SNAPSHOT</geoapi.version>
-    <jaxb.version>2.3.3</jaxb.version>
   </properties>
 
   <profiles>
@@ -668,7 +667,7 @@
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.9.0</version>
+        <version>3.10.1</version>
         <configuration>
           <release>${maven.compiler.target}</release>
           <encoding>${project.build.sourceEncoding}</encoding>
@@ -684,7 +683,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>3.0.0-M6</version>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
           <includes>
@@ -858,8 +857,9 @@
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.3.2</version>
+        <version>3.4.0</version>
         <configuration>
+          <release>17</release>
           <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->

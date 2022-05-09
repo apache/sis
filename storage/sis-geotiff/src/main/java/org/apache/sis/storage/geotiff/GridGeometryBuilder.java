@@ -190,7 +190,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
      * If {@link #affine} has been specified with only the scale factor, computes the translation terms now.
      * If needed, this method computes the translation terms from the (usually singleton) tie point.
      * This happen when the GeoTIFF file has a {@link Tags#ModelPixelScaleTag} and {@link Tags#ModelTiePoints}.
-     * The later should have a single record.
+     * The latter should have a single record.
      *
      * @return {@code true} on success (including nothing to compute), or {@code false} if the computation attempt
      *         failed because of missing {@link Tags#ModelTiePoints}.

@@ -68,7 +68,7 @@ public final strictfp class StoreTest extends TestCase {
             "          <gmd:onlineResource>\n" +
             "            <gmd:CI_OnlineResource>\n" +
             "              <gmd:linkage>\n" +
-            "                <gmd:URL>http://sis.apache.org</gmd:URL>\n" +
+            "                <gmd:URL>https://sis.apache.org</gmd:URL>\n" +
             "              </gmd:linkage>\n" +
             "              <gmd:function>\n" +
             "                <gmd:CI_OnLineFunctionCode codeListValue=\"information\" codeSpace=\"fra\">Information</gmd:CI_OnLineFunctionCode>\n" +
@@ -106,7 +106,7 @@ public final strictfp class StoreTest extends TestCase {
         assertEquals(StandardCharsets.UTF_8,      getSingleton(metadata.getLocalesAndCharsets().values()));
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, resp.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getName()));
-        assertEquals("http://sis.apache.org",     String.valueOf(resource.getLinkage()));
+        assertEquals("https://sis.apache.org",    String.valueOf(resource.getLinkage()));
         assertEquals(OnLineFunction.INFORMATION,  resource.getFunction());
     }
 }

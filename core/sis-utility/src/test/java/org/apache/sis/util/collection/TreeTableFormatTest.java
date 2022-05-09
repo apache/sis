@@ -219,7 +219,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
 
     /**
      * Implementation of {@link #testLocalizedFormat()}, to be executed only after the default locale
-     * has been forced to English. The later is necessary as long as the GeoAPI elements tested below
+     * has been forced to English. The latter is necessary as long as the GeoAPI elements tested below
      * do not have translations in all tested languages.
      */
     private static void testLocalizedFormatInEnglishEnvironment() {

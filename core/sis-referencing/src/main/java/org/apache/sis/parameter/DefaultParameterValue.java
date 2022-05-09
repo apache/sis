@@ -100,7 +100,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
  * Descriptors are usually pre-defined by map projection or process providers. Given a descriptor, a parameter value can
  * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
- * {@link ParameterDescriptor#createValue()} method. The later is recommended since it allows descriptors to return
+ * {@link ParameterDescriptor#createValue()} method. The latter is recommended since it allows descriptors to return
  * specialized implementations.
  *
  * <h2>Implementation note for subclasses</h2>

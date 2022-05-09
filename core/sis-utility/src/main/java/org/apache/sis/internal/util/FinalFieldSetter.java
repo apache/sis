@@ -18,13 +18,11 @@ package org.apache.sis.internal.util;
 
 import java.lang.reflect.Field;
 import java.io.InvalidClassException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.apache.sis.internal.system.Modules;
 
 
 /**
- * Convenience methods for setting the final field of an object with privileged permissions.
+ * Convenience methods for setting the final field of an object.
  * This class shall be used only after deserialization or cloning of Apache SIS objects.
  * The usage pattern is:
  *
@@ -34,104 +32,78 @@ import org.apache.sis.internal.system.Modules;
  *         in.defaultReadObject();
  *         Object someValue = ...;
  *         try {
- *             AccessController.doPrivileged(new FinalFieldSetter<>(MyClass.class, "myField")).set(this, someValue);
+ *             FinalFieldSetter.set(MyClass.class, "myField", this, someValue);
  *         } catch (ReflectiveOperationException e) {
  *             throw FinalFieldSetter.readFailure(e);
  *         }
  *     }
  * }
  *
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * <p><b>On clone:</b></p>
+ * Same as above but invoking {@code cloneFailure(e)} if the operation failed.
+ * The exception to be thrown is not the same.
  *
- * @param <T> the type of object in which to set a final field. Should be Apache SIS classes only.
+ * <h2>Historical note</h2>
+ * Previous version was implementing {@code PrivilegedAction<FinalFieldSetter<T>>}
+ * for working in the context of a security manager. This feature has been removed
+ * since {@code java.security.AccessController} has been deprecated in Java 17.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
+ *
+ * @see <a href="https://openjdk.java.net/jeps/411">JEP-411</a>
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-525">SIS-525</a>
  *
  * @since 1.0
  * @module
  */
-public final class FinalFieldSetter<T> implements PrivilegedAction<FinalFieldSetter<T>> {
+public final class FinalFieldSetter {
     /**
-     * The field to make accessible in a privileged context.
+     * Do not allow instantiation of this class.
      */
-    private final Field field;
-
-    /**
-     * A second field to make accessible, or {@code null} if none.
-     */
-    private Field second;
-
-    /**
-     * Creates a new setter for a final field.
-     *
-     * <div class="note"><b>API note:</b>
-     * this constructor is executed in a non-privileged context because {@link SecurityException} may happen here
-     * only if the given class was loaded with a different class loader than this {@code FinalFieldSetter} class.
-     * If such situation happen, then the given class is probably not an Apache SIS one.</div>
-     *
-     * @param  classe  the Apache SIS class of object for which to set a final field.
-     * @param  field   the name of the final field for which to set a value.
-     * @throws NoSuchFieldException if the given field has not been found.
-     * @throws SecurityException may happen if the given class has been loaded with an unexpected class loader.
-     */
-    public FinalFieldSetter(final Class<T> classe, final String field) throws NoSuchFieldException {
-        assert classe.getName().startsWith(Modules.CLASSNAME_PREFIX) : classe;
-        this.field = classe.getDeclaredField(field);
-    }
-
-    /**
-     * Creates a new setter for two final fields.
-     *
-     * @param  classe  the Apache SIS class of object for which to set a final field.
-     * @param  field   the name of the first final field for which to set a value.
-     * @param  second  the name of the second final field for which to set a value.
-     * @throws NoSuchFieldException if the given field has not been found.
-     * @throws SecurityException may happen if the given class has been loaded with an unexpected class loader.
-     */
-    public FinalFieldSetter(final Class<T> classe, final String field, final String second) throws NoSuchFieldException {
-        this(classe, field);
-        this.second = classe.getDeclaredField(second);
-    }
-
-    /**
-     * Makes the final fields accessible.
-     * This is a callback for {@link AccessController#doPrivileged(PrivilegedAction)}.
-     * That call must be done from the caller, not from this {@code FinalFieldSetter} class,
-     * because {@link AccessController} check the caller for determining the permissions.
-     *
-     * @return {@code this}.
-     * @throws SecurityException if write permission has been denied.
-     */
-    @Override
-    public FinalFieldSetter<T> run() throws SecurityException {
-        field.setAccessible(true);
-        if (second != null) {
-            second.setAccessible(true);
-        }
-        return this;
+    private FinalFieldSetter() {
     }
 
     /**
      * Sets the value of the final field.
      *
+     * @param  <T>       the type of object in which to set a final field. Should be Apache SIS classes only.
+     * @param  classe    the Apache SIS class of object for which to set a final field.
+     * @param  field     the name of the final field for which to set a value.
      * @param  instance  the instance on which to set the value.
      * @param  value     the value to set.
-     * @throws IllegalAccessException may happen if {@link #run()} has not been invoked before this method.
+     * @throws NoSuchFieldException if the given field has not been found.
+     * @throws IllegalAccessException if the value can not be set.
      */
-    public final void set(final T instance, final Object value) throws IllegalAccessException {
-        field.set(instance, value);
+    public static <T> void set(final Class<T> classe, final String field, final T instance,
+            final Object value) throws NoSuchFieldException, IllegalAccessException
+    {
+        assert classe.getName().startsWith(Modules.CLASSNAME_PREFIX) : classe;
+        final Field f = classe.getDeclaredField(field);
+        f.setAccessible(true);
+        f.set(instance, value);
     }
 
     /**
      * Sets the values of the final fields.
      *
+     * @param  <T>       the type of object in which to set a final field. Should be Apache SIS classes only.
+     * @param  classe    the Apache SIS class of object for which to set a final field.
+     * @param  field     the name of the first final field for which to set a value.
+     * @param  second    the name of the second final field for which to set a value.
      * @param  instance  the instance on which to set the value.
      * @param  value     the value of the first field to set.
      * @param  more      the value of the second field to set.
-     * @throws IllegalAccessException may happen if {@link #run()} has not been invoked before this method.
+     * @throws NoSuchFieldException if a given field has not been found.
+     * @throws IllegalAccessException if a value can not be set.
      */
-    public final void set(final T instance, final Object value, final Object more) throws IllegalAccessException {
-        field .set(instance, value);
-        second.set(instance, more);
+    public static <T> void set(final Class<T> classe, final String field, final String second, final T instance,
+            final Object value, final Object more) throws NoSuchFieldException, IllegalAccessException
+    {
+        set(classe, field, instance, value);
+        final Field f = classe.getDeclaredField(second);
+        f.setAccessible(true);
+        f.set(instance, more);
     }
 
     /**

@@ -715,7 +715,7 @@ public final class DefinitionURI {
      */
     private void appendStringTo(final StringBuilder buffer, char separator) {
         if (isHTTP) {
-            buffer.append("http://").append(DOMAIN).append("/def");
+            buffer.append(Constants.HTTP + "//").append(DOMAIN).append("/def");
             separator = '/';
         }
         int n = 4;

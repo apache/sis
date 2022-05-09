@@ -40,11 +40,17 @@ import org.opengis.util.ControlledVocabulary;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.6
  * @module
  */
 public class MetadataServices extends OptionalDependency {
+    /**
+     * A pseudo-authority name used by {@link org.apache.sis.setup.InstallationResources} for identifying
+     * the embedded data resources. The actual data are provided by the metadata module.
+     */
+    public static final String EMBEDDED = "Embedded";
+
     /**
      * The services, fetched when first needed.
      */

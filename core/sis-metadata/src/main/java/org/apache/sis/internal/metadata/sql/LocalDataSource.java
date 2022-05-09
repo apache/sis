@@ -30,8 +30,6 @@ import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
@@ -110,7 +108,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
             final String home;
             switch (dialect) {
                 // More cases may be added in the future.
-                case DERBY: home = AccessController.doPrivileged((PrivilegedAction<String>) LocalDataSource::getDerbyHome); break;
+                case DERBY: home = System.getProperty(DERBY_HOME_KEY); break;
                 default:    home = null; break;
             }
             final String  dbFile;
@@ -162,14 +160,6 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
         sources = ArraysExt.resize(sources, count);
         Arrays.sort(sources);
         return sources;
-    }
-
-    /**
-     * Returns the home directory of Derby databases, or {@code null} if none.
-     * Defined as a separated method for clearer stack trace in case of security exception.
-     */
-    private static String getDerbyHome() {
-        return System.getProperty(DERBY_HOME_KEY);
     }
 
     /**

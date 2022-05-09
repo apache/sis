@@ -92,7 +92,7 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
      * instance using spherical formulas, by new steps for the same map projection, but comparing the spherical formulas
      * with the elliptical ones. This method searches for a {@link NormalizedProjection} instance, which is expected to
      * be an inner class named "Spherical". The inner class is then converted to the outer class using reflection, and
-     * those two classes are given to the {@link ProjectionResultComparator} constructor. The later is inserted in the
+     * those two classes are given to the {@link ProjectionResultComparator} constructor. The latter is inserted in the
      * chain in place of the original spherical formulas.
      */
     static MathTransform sphericalAndEllipsoidal(MathTransform transform) {

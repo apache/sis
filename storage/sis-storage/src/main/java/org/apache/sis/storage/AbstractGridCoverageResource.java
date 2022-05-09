@@ -185,7 +185,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      * The log level will be {@link Level#FINE} if the operation was quick enough,
      * or {@link PerformanceLevel#SLOW} or higher level otherwise.
      *
-     * @param  file       the file that was opened, or {@code null} for {@link #getSourceName()}.
+     * @param  file       the file that was opened, or {@code null} for {@link StoreListeners#getSourceName()}.
      * @param  domain     domain of the created grid coverage.
      * @param  startTime  value of {@link System#nanoTime()} when the loading process started.
      */

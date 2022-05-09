@@ -86,6 +86,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.URLs;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -159,7 +160,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  *
- * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
+ * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
  * @since 0.7
  * @module
@@ -473,8 +474,8 @@ addURIs:    for (int i=0; ; i++) {
                 OnLineFunction function;
                 InternationalString description = null;
                 switch (i) {
-                    case 0: url = "https://epsg.org/"; function = OnLineFunction.SEARCH; break;
-                    case 1: url = "https://epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
+                    case 0: url = URLs.EPSG; function = OnLineFunction.SEARCH; break;
+                    case 1: url = URLs.EPSG; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
                         url = SQLUtilities.getSimplifiedURL(metadata);
                         function = OnLineFunction.valueOf(CONNECTION);

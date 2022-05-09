@@ -43,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
 @StoreMetadata(formatName    = WorldFileStoreProvider.NAME,
                fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list, intentionally excluding TIFF.
                capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
-               resourceTypes = GridCoverageResource.class)
+               resourceTypes = {Aggregate.class, GridCoverageResource.class})
 public final class WorldFileStoreProvider extends PRJDataStore.Provider {
     /**
      * The format name.

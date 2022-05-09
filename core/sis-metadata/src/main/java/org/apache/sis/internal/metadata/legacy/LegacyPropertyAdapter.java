@@ -97,7 +97,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
 
     /**
      * Returns {@code this} if the collection given at construction time was non-null, or {@code null} otherwise.
-     * The later case may happen at marshalling time.
+     * The latter case may happen at marshalling time.
      *
      * @return {@code this} or {@code null}.
      */

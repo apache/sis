@@ -352,12 +352,12 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("TITLE",           "Apache SIS™ Coordinate Reference System (CRS) codes");
         properties.setProperty("PRODUCT.NAME",    "Apache SIS™");
         properties.setProperty("PRODUCT.VERSION", getVersion());
-        properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
-        properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
+        properties.setProperty("PRODUCT.URL",     "https://sis.apache.org");
+        properties.setProperty("JAVADOC.GEOAPI",  "https://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
         properties.setProperty("FACTORY.VERSION", "9.9.1");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
-        properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"http://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
+        properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"https://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
                 "<ul>\n" +
                 "  <li>The " + YX_ORDER + " symbol in front of authority codes (${PERCENT.ANNOTATED} of them) identifies" +
