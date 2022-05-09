@@ -21,6 +21,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.PoleRotation;
@@ -43,7 +44,10 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.2
+ *
+ * @see NorthPoleRotation
+ *
+ * @since 1.2
  * @module
  */
 @XmlTransient
@@ -146,6 +150,16 @@ public final class SouthPoleRotation extends AbstractProvider {
      */
     public SouthPoleRotation() {
         super(2, 2, PARAMETERS);
+    }
+
+    /**
+     * Returns the operation type for this map projection.
+     *
+     * @return {@code Conversion.class} or a sub-type.
+     */
+    @Override
+    public Class<? extends Conversion> getOperationType() {
+        return Conversion.class;
     }
 
     /**

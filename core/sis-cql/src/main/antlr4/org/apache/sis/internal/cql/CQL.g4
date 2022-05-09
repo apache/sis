@@ -136,7 +136,7 @@ WITHIN      : W I T H I N ;
 
 DATE : DIGIT DIGIT DIGIT DIGIT '-' DIGIT DIGIT '-' DIGIT DIGIT 'T' DIGIT DIGIT ':' DIGIT DIGIT ':' DIGIT DIGIT ('.' DIGIT+)? 'Z';
 DURATION_P : P (INT 'Y')? (INT 'M')? (INT 'D')? (INT 'H')? (INT 'M')? (INT 'S')?;
-DURATION_T : T (INT 'H')? (INT 'M')? (INT 'S')?;
+DURATION_T : P T (INT 'H')? (INT 'M')? (INT 'S')?;
 
 AFTER		: A F T E R ;
 ANYINTERACTS	: A N Y I N T E R A C T S ;

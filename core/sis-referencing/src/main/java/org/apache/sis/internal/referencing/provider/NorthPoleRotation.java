@@ -21,6 +21,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.PoleRotation;
@@ -40,6 +41,7 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *
+ * @see SouthPoleRotation
  * @see <a href="https://cfconventions.org/cf-conventions/cf-conventions.html#_rotated_pole">Rotated pole in CF-conventions</a>
  *
  * @since 1.2
@@ -137,6 +139,16 @@ public final class NorthPoleRotation extends AbstractProvider {
      */
     public NorthPoleRotation() {
         super(2, 2, PARAMETERS);
+    }
+
+    /**
+     * Returns the operation type for this map projection.
+     *
+     * @return {@code Conversion.class} or a sub-type.
+     */
+    @Override
+    public Class<? extends Conversion> getOperationType() {
+        return Conversion.class;
     }
 
     /**
