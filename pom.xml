@@ -556,7 +556,7 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <sis.non-free.version>1.1</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
+    <sis.non-free.version>1.2</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
     <javafx.version>17</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>3.0.1</geoapi.version>
   </properties>
