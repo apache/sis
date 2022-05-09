@@ -116,7 +116,7 @@
            Sub-modules included in the build
        =========================================================== -->
   <modules>
-    <module>sis-cloud-S3</module>
+    <module>sis-cloud-aws</module>
   </modules>
 
 </project>
