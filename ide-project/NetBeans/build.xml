@@ -87,11 +87,6 @@
       <fileset dir="${project.root}/storage/sis-sqlstore/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
-      <!-- Pending discussion about how to handle resources in the Shapefile module.
-      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
-        <include name="**/*.utf"/>
-      </fileset>
-      -->
       <fileset dir="${project.root}/application/sis-javafx/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
@@ -328,12 +323,6 @@
       </fileset>
       <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
         <include name="**/*.txt"/>
-      </fileset>
-      <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
-        <include name="**/*.dbf"/>
-        <include name="**/*.prj"/>
-        <include name="**/*.shp"/>
-        <include name="**/*.shx"/>
       </fileset>
       <fileset dir="${project.root}/profiles/sis-french-profile/src/test/resources">
         <include name="**/*.xml"/>
