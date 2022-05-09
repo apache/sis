@@ -1966,7 +1966,7 @@ cmp:    while (ia < lga) {
      * shorter for avoiding to cut in the middle of a word.
      *
      * <p>The purpose of this method is to create a global identifier from a list of component identifiers.
-     * The later are often eastward and northward components of a vector, in which case this method provides
+     * The latter are often eastward and northward components of a vector, in which case this method provides
      * an identifier for the vector as a whole.</p>
      *
      * <div class="note"><b>Example:</b>

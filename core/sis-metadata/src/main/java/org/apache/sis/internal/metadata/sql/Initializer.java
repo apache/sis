@@ -22,8 +22,6 @@ import java.util.concurrent.Callable;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -47,6 +45,8 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Configuration;
 
+import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
+
 
 /**
  * Manages the unique {@link DataSource} instance to the {@code $SIS_DATA/Databases/SpatialMetadata} database.
@@ -67,7 +67,7 @@ import org.apache.sis.util.Configuration;
  * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -85,11 +85,6 @@ public abstract class Initializer {
      * Name of the JNDI resource to lookup in the {@code "java:comp/env"} context.
      */
     public static final String JNDI = "jdbc/" + DATABASE;
-
-    /**
-     * A pseudo-authority name used by {@link InstallationResources} for the embedded data resources.
-     */
-    public static final String EMBEDDED = "Embedded";
 
     /**
      * Data source specified by the user, to be used if no data source is specified by JNDI.
@@ -369,15 +364,7 @@ public abstract class Initializer {
      */
     public static boolean hasJNDI() {
         return NamingManager.hasInitialContextFactoryBuilder() ||
-               AccessController.doPrivileged((PrivilegedAction<Boolean>) Initializer::isContextDefined);
-    }
-
-    /**
-     * Returns whether an initial context factory is specified.
-     * Defined as a separated method for clearer stack trace in case of security exception.
-     */
-    private static Boolean isContextDefined() {
-        return System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
+                System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
     }
 
     /**

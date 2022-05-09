@@ -31,6 +31,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.ArgumentChecks;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
@@ -50,6 +51,11 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
  */
 final class ClientFileSystem extends FileSystem {
     /**
+     * The default separator.
+     */
+    static final String DEFAULT_SEPARATOR = "/";
+
+    /**
      * The AWS S3 access key, or {@code null} if none.
      * Also used as key of this file system in the {@link FileService#fileSystems} map.
      */
@@ -67,12 +73,25 @@ final class ClientFileSystem extends FileSystem {
     private volatile S3Client client;
 
     /**
-     * Creates a file system with default credential.
+     * The character used as a separator in path component.
+     * This is usually "/".
+     */
+    final String separator;
+
+    /**
+     * The {@link #separator} repeated twice. Used for detecting empty paths.
+     */
+    final String duplicatedSeparator;
+
+    /**
+     * Creates a file system with default credential and default separator.
      */
     ClientFileSystem(final FileService provider, final S3Client client) {
         this.provider  = provider;
         this.client    = client;
         this.accessKey = null;
+        this.separator = DEFAULT_SEPARATOR;
+        duplicatedSeparator = DEFAULT_SEPARATOR + DEFAULT_SEPARATOR;
     }
 
     /**
@@ -81,9 +100,16 @@ final class ClientFileSystem extends FileSystem {
      * @param provider    the provider creating this file system.
      * @param region      the AWS region, or {@code null} for default.
      * @param accessKey   the AWS S3 access key for this file system.
-     * @param properties  properties to configure the file system, or {@code null} if none.
+     * @param secret      the password.
+     * @param separator   the separator in paths, or {@code null} for the default value.
      */
-    ClientFileSystem(final FileService provider, final Region region, final String accessKey, final String secret) {
+    ClientFileSystem(final FileService provider, final Region region, final String accessKey, final String secret,
+                     String separator)
+    {
+        if (separator == null) {
+            separator = DEFAULT_SEPARATOR;
+        }
+        ArgumentChecks.ensureNonEmpty("separator", separator);
         this.provider  = provider;
         this.accessKey = accessKey;
         S3ClientBuilder builder = S3Client.builder().credentialsProvider(
@@ -92,6 +118,8 @@ final class ClientFileSystem extends FileSystem {
             builder = builder.region(region);
         }
         client = builder.build();
+        this.separator = separator;
+        duplicatedSeparator = separator.concat(separator);
     }
 
     /**
@@ -150,12 +178,10 @@ final class ClientFileSystem extends FileSystem {
 
     /**
      * Returns the name separator used to separate names in a path string.
-     *
-     * @see KeyPath#SEPARATOR
      */
     @Override
     public String getSeparator() {
-        return "/";
+        return separator;
     }
 
     /**
@@ -217,7 +243,7 @@ final class ClientFileSystem extends FileSystem {
      */
     @Override
     public PathMatcher getPathMatcher(final String syntaxAndPattern) {
-        return new KeyPathMatcher(syntaxAndPattern);
+        return new KeyPathMatcher(syntaxAndPattern, separator);
     }
 
     /**

@@ -32,7 +32,7 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
 
 /**
  * Encapsulates a {@code gml:TimeInstant}. This element may be used alone, or included in a
- * {@link TimePeriodBound.GML2} object. The later is itself included in {@link TimePeriod}.
+ * {@link TimePeriodBound.GML2} object. The latter is itself included in {@link TimePeriod}.
  * Note that GML3 does not anymore include {@code TimeInstant} inside {@code TimePeriod}.
  *
  * @author  Guilhem Legal (Geomatys)

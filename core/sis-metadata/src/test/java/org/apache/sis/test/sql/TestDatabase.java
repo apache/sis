@@ -218,7 +218,7 @@ public strictfp class TestDatabase implements AutoCloseable {
      * @return connection to a PostgreSQL database
      * @throws SQLException if an error occurred while connecting to the database or creating the schema.
      *
-     * @see <a href="http://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
+     * @see <a href="https://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
      *
      * @since 1.0
      */

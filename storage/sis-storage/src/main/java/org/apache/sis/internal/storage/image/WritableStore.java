@@ -143,6 +143,28 @@ class WritableStore extends WorldFileStore {
     }
 
     /**
+     * Returns the Image I/O format names or MIME types of the image read or written by this data store.
+     * More than one names may be returned if the format has aliases or if the MIME type
+     * has legacy types (e.g. official {@code "image/png"} and legacy {@code "image/x-png"}).
+     *
+     * @param  asMimeType  {@code true} for MIME types, or {@code false} for format names.
+     * @return the requested names, or an empty array if none or unknown.
+     */
+    @Override
+    public String[] getImageFormat(final boolean asMimeType) {
+        if (writer != null) {
+            final ImageWriterSpi provider = writer.getOriginatingProvider();
+            if (provider != null) {
+                final String[] names = asMimeType ? provider.getMIMETypes() : provider.getFormatNames();
+                if (names != null) {
+                    return names;
+                }
+            }
+        }
+        return super.getImageFormat(asMimeType);
+    }
+
+    /**
      * Returns whether this data store contains more than one image.
      * This is used for deciding if {@link WritableStore} can overwrite a grid geometry.
      *

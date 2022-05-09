@@ -102,7 +102,7 @@ import org.apache.sis.util.Static;
  * <h2>Usage example</h2>
  * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
  * and {@link #findOperation findOperation(…)}. An usage example is like below
- * (see the <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
+ * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
  * Reference System (CRS) codes</a> page for the complete list of EPSG codes):
  *
  * {@preformat java
@@ -148,7 +148,7 @@ public final class CRS extends Static {
     /**
      * Returns the Coordinate Reference System for the given authority code.
      * The set of available codes depends on the {@link CRSAuthorityFactory} instances available on the classpath.
-     * There is many thousands of <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">CRS
+     * There is many thousands of <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">CRS
      * defined by EPSG authority or by other authorities</a>.
      * The following table lists a very small subset of codes which are guaranteed to be available
      * on any installation of Apache SIS:

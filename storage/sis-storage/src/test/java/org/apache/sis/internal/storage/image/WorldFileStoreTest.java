@@ -31,6 +31,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.ResourceAlreadyExistsException;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -82,6 +83,11 @@ public final strictfp class WorldFileStoreTest extends TestCase {
              */
             assertFalse(store instanceof WritableStore);
             assertTrue(store instanceof SingleImageStore);
+            /*
+             * Verify format name and MIME type.
+             */
+            assertTrue(ArraysExt.contains(store.getImageFormat(false), "PNG"));
+            assertTrue(ArraysExt.contains(store.getImageFormat(true), "image/png"));
             /*
              * Verify metadata content.
              */

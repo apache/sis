@@ -24,6 +24,7 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.URLs;
 import org.apache.sis.util.Static;
 
 import static java.util.Collections.singleton;
@@ -90,7 +91,7 @@ public final strictfp class HardCodedCitations extends Static {
      */
     public static final DefaultCitation EPSG;
     static {
-        final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("https://epsg.org/"));
+        final DefaultOnlineResource r = new DefaultOnlineResource(URI.create(URLs.EPSG));
         r.setFunction(OnLineFunction.INFORMATION);
 
         final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
@@ -106,7 +107,7 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * Codespace for objects specific to <a href="http://sis.apache.org">Apache SIS</a>.
+     * Codespace for objects specific to <a href="https://sis.apache.org">Apache SIS</a>.
      */
     public static final DefaultCitation SIS;
     static {

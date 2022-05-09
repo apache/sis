@@ -112,7 +112,7 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
         AuthorityFactoryProxy<?> proxy;
         /*
          * Try the proxy using the 'createGeographicCRS', 'createCoordinateReferenceSystem'
-         * and 'createObject' methods. The later uses a generic implementation, while the
+         * and 'createObject' methods. The latter uses a generic implementation, while the
          * first two should use specialized implementations.
          */
         proxy = AuthorityFactoryProxy.getInstance(GeographicCRS.class);

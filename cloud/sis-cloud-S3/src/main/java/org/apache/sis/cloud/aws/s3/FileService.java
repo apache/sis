@@ -122,6 +122,15 @@ public class FileService extends FileSystemProvider {
     public static final String AWS_REGION = "aws.region";
 
     /**
+     * The property for the name-separator characters.
+     * The default value is "/" for simulating Unix paths.
+     * The separator must contain at least one character.
+     * They usually have only one character, but longer separators are accepted.
+     * The separator can contain any characters which are valid in a S3 object name.
+     */
+    public static final String SEPARATOR = "separator";
+
+    /**
      * All file systems created by this provider. Keys are AWS S3 access keys.
      */
     private final ConcurrentMap<String, ClientFileSystem> fileSystems;
@@ -199,6 +208,7 @@ public class FileService extends FileSystemProvider {
         if (accessKey == null || (secret = Containers.property(properties, AWS_SECRET_ACCESS_KEY, String.class)) == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.MissingAccessKey_2, (accessKey == null) ? 0 : 1, uri));
         }
+        final String separator = Containers.property(properties, SEPARATOR, String.class);
         final Region region = Containers.property(properties, AWS_REGION, Region.class);
         final class Creator implements Function<String, ClientFileSystem> {
             /** Identifies if a new file system is created. */ boolean created;
@@ -206,7 +216,7 @@ public class FileService extends FileSystemProvider {
             /** Invoked if the map does not already contains the file system. */
             @Override public ClientFileSystem apply(final String key) {
                 created = true;
-                return new ClientFileSystem(FileService.this, region, key, secret);
+                return new ClientFileSystem(FileService.this, region, key, secret, separator);
             }
         }
         final Creator c = new Creator();
@@ -278,7 +288,7 @@ public class FileService extends FileSystemProvider {
             fs = getDefaultFileSystem();
         } else {
             // TODO: we may need a way to get password here.
-            fs = fileSystems.computeIfAbsent(accessKey, (key) -> new ClientFileSystem(FileService.this, null, key, null));
+            fs = fileSystems.computeIfAbsent(accessKey, (key) -> new ClientFileSystem(FileService.this, null, key, null, null));
         }
         return new KeyPath(fs, uri.getHost(), new String[] {uri.getPath()}, true);
     }

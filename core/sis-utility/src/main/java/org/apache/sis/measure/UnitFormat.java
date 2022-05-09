@@ -30,7 +30,6 @@ import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.security.AccessController;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
@@ -1650,8 +1649,8 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     public UnitFormat clone() {
         final UnitFormat f = (UnitFormat) super.clone();
         try {
-            AccessController.doPrivileged(new FinalFieldSetter<>(UnitFormat.class, "unitToLabel", "labelToUnit"))
-                            .set(f, clone(unitToLabel), clone(labelToUnit));
+            FinalFieldSetter.set(UnitFormat.class, "unitToLabel", "labelToUnit",
+                                 f, clone(unitToLabel), clone(labelToUnit));
         } catch (ReflectiveOperationException e) {
             throw FinalFieldSetter.cloneFailure(e);
         }

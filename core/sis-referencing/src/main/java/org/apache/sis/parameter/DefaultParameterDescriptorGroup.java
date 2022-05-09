@@ -469,7 +469,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *       But the value class of {@code ParameterDescriptor} components are unknown because this information
      *       is not part of GML.</li>
      *   <li>Next, this method is invoked during unmarshalling of the {@code DefaultParameterValueGroup} enclosing
-     *       element with the descriptors found inside the {@code ParameterValue} components. The later do have the
+     *       element with the descriptors found inside the {@code ParameterValue} components. The latter do have the
      *       {@code valueClass} information, so we want to use them in replacement of descriptors of step 1.</li>
      * </ol>
      *

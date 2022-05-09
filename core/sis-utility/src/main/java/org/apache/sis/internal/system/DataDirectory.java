@@ -23,8 +23,6 @@ import java.nio.file.Paths;
 import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 
@@ -142,7 +140,7 @@ public enum DataDirectory {
      * @since 0.8
      */
     public static String getenv() throws SecurityException {
-        return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getenv(ENV));
+        return System.getenv(ENV);
     }
 
     /**

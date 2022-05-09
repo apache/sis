@@ -377,7 +377,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Inverts in-place the sign of rotation terms ({@link #rX}, {@link #rY}, {@link #rZ}).
      * This method can be invoked for converting a <cite>Coordinate Frame Rotation</cite> transformation
      * (EPSG operation method 9607) to a <em>Position Vector</em> transformation (EPSG operation method 9606).
-     * The later convention is used by IAG and recommended by ISO 19111.
+     * The latter convention is used by IAG and recommended by ISO 19111.
      */
     public void reverseRotation() {
         rX = -rX;

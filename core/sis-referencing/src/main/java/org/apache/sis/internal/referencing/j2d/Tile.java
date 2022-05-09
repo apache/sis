@@ -80,7 +80,7 @@ import org.apache.sis.io.TableAppender;
  *
  *     <div class="note"><b>NOTE 1:</b>
  *     the semantic assumes that overviews are produced by subsampling, not by interpolation or pixel averaging.
- *     The later are not prohibited, but doing so introduce some subsampling-dependent variations in images read,
+ *     The latter are not prohibited, but doing so introduce some subsampling-dependent variations in images read,
  *     which would not be what we would expect from a strictly compliant {@link ImageReader}.</div>
  *
  *     <div class="note"><b>NOTE 2:</b>

@@ -282,7 +282,7 @@ public class MetadataWriter extends MetadataSource {
         }
         /*
          * Process to the table creation if it does not already exists. If the table has parents, they will be
-         * created first. The later will work only for database supporting table inheritance, like PostgreSQL.
+         * created first. The latter will work only for database supporting table inheritance, like PostgreSQL.
          * For other kind of database engine, we can not store metadata having parent interfaces.
          */
         Boolean isChildTable = createTable(stmt, interfaceType, table, columns);

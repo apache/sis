@@ -38,7 +38,7 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
  * <p>The inherited {@link #data} buffer contains the sample values, potentially multi-banded. If there is more than
  * one band to put in the rendered image, then each band is a {@linkplain DataBuffer#getNumBanks() separated bank}
  * in the buffer, even if two banks are actually wrapping the same arrays with different offsets.
- * The later case is better represented by {@link java.awt.image.PixelInterleavedSampleModel},
+ * The latter case is better represented by {@link java.awt.image.PixelInterleavedSampleModel},
  * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

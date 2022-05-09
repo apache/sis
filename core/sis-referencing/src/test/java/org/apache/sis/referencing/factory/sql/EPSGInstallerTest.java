@@ -59,7 +59,7 @@ import static org.junit.Assume.assumeTrue;
  * <p>This test requires that {@code $SIS_DATA/Databases/ExternalSources} directory contains
  * the {@code EPSG_Tables.sql}, {@code EPSG_Data.sql} and {@code EPSG_FKeys.sql} files.
  * Those files can be <a href="https://epsg.org/">downloaded from the source</a> or from
- * <a href="http://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
+ * <a href="https://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
  *
  * <p>Every databases created by this test suite exist only in memory.
  * This class does not write anything to disk (except maybe some temporary files).</p>

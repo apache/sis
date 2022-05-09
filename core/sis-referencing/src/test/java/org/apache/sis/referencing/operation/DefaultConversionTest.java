@@ -134,7 +134,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     {
         /*
          * The following code fills the parameter values AND creates itself the MathTransform instance
-         * (indirectly, through the matrix). The later step is normally not our business, since we are
+         * (indirectly, through the matrix). The latter step is normally not our business, since we are
          * supposed to only fill the parameter values and let MathTransformFactory creates the transform
          * from the parameters. But we don't do the normal steps here because this class is a unit test:
          * we want to test DefaultConversion in isolation of MathTransformFactory.

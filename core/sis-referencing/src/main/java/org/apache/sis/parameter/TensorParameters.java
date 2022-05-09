@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import java.security.AccessController;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -139,7 +138,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.2
  *
  * @param <E>  the type of tensor element values.
  *
@@ -336,7 +335,7 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * Initializes the fields used for cached values: {@link #zero}, {@link #one} and the {@link #parameters} array.
-     * The later is not assigned to the {@code parameters} field, but rather returned.
+     * The latter is not assigned to the {@code parameters} field, but rather returned.
      * Caller shall assign himself the returned value to the {@link #parameters} field.
      *
      * <p>This method is invoked by constructor and on deserialization.</p>
@@ -835,7 +834,7 @@ public class TensorParameters<E> implements Serializable {
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         try {
-            AccessController.doPrivileged(new FinalFieldSetter<>(TensorParameters.class, "parameters")).set(this, createCache());
+            FinalFieldSetter.set(TensorParameters.class, "parameters", this, createCache());
         } catch (ReflectiveOperationException e) {
             throw FinalFieldSetter.readFailure(e);
         }

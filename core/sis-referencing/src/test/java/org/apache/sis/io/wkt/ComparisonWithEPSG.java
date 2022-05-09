@@ -149,7 +149,7 @@ public final strictfp class ComparisonWithEPSG extends TestCase {
 
     /**
      * Compares a projected CRS parsed from a WKT with a the CRS built from EPSG database.
-     * The later is taken as the reference.
+     * The latter is taken as the reference.
      */
     private static void compare(final String wkt, final int epsg) throws FactoryException {
         final CoordinateReferenceSystem crs = CRS.fromWKT(wkt);

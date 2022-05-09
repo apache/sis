@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.Locale;
 import java.io.IOException;
 import java.io.BufferedReader;
+import org.apache.sis.internal.util.URLs;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.MetadataServices;
 
 
 /**
@@ -58,12 +61,12 @@ import java.io.BufferedReader;
  *
  * Above registration is usually done automatically when extension modules are added on the classpath.
  * For example adding the {@code org.apache.sis.non-free:sis-epsg} Maven dependency as documented on
- * the <a href="http://sis.apache.org/epsg.html">Apache SIS web site</a> is the only step needed for
+ * the <a href="https://sis.apache.org/epsg.html">Apache SIS web site</a> is the only step needed for
  * allowing Apache SIS to read the EPSG scripts (however SIS still needs an installation directory
  * for writing the database; see above-cited web page for more information).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.2
  * @since   0.7
  * @module
  */
@@ -99,6 +102,21 @@ public abstract class InstallationResources {
      * @return identifiers of resources that this instance can distribute.
      */
     public abstract Set<String> getAuthorities();
+
+    /**
+     * Returns a URL where users can get more information about the installation process.
+     *
+     * @return URL to installation instruction, or {@code null} if none.
+     *
+     * @since 1.2
+     */
+    public String getInstructionURL() {
+        final Set<String> authorities = getAuthorities();
+        if (authorities.contains(Constants.EPSG) || authorities.contains(MetadataServices.EMBEDDED)) {
+            return URLs.EPSG_INSTALL;
+        }
+        return null;
+    }
 
     /**
      * Returns the terms of use of the resources distributed by the specified authority, or {@code null} if none.

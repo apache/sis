@@ -52,6 +52,7 @@ public final strictfp class IOUtilitiesTest extends TestCase {
         assertEquals("Map.png", IOUtilities.filename(new File(     "/Users/name/Map.png")));
         assertEquals("Map.png", IOUtilities.filename(new URI ("file:/Users/name/Map.png")));
         assertEquals("Map.png", IOUtilities.filename(new URL ("file:/Users/name/Map.png")));
+        assertEquals("name",    IOUtilities.filename(new URI ("file:/Users/name/")));
         assertNull(IOUtilities.filename(Boolean.FALSE));
         assertNull(IOUtilities.filename(null));
     }

@@ -586,8 +586,7 @@ public final class ColorModelFactory {
      *
      * @param  cm     the color model, or {@code null}.
      * @param  bands  the bands to select. Must neither be null nor empty.
-     * @return the subset color model, or {@link Optional#empty() empty} if input was null, or a subset cannot be
-     * deduced.
+     * @return the subset color model, or empty if input was null or if a subset cannot be deduced.
      */
     public static Optional<ColorModel> createSubset(final ColorModel cm, final int[] bands) {
         assert (bands != null) && bands.length > 0 : bands;

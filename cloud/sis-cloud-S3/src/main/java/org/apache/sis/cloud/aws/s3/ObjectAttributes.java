@@ -200,7 +200,7 @@ final class ObjectAttributes implements BasicFileAttributeView {
          */
         @Override
         public boolean isRegularFile() {
-            return !isDirectory;
+            return !isDirectory && size != 0;
         }
 
         /**

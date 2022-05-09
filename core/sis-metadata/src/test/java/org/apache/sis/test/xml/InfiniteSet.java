@@ -26,7 +26,7 @@ import java.util.Iterator;
  * An unmodifiable set used as a sentinel value meaning "all" elements.
  * All {@code add(…)} operations are no-op since the set already contains everything.
  * All {@code contains(…)} operations always return {@code true}.
- * The later is not strictly correct since we should check the type,
+ * The latter is not strictly correct since we should check the type,
  * but this is not needed for the purpose of this internal class.
  *
  * @author  Martin Desruisseaux (Geomatys)

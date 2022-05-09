@@ -137,7 +137,7 @@ public final class Constants extends Static {
 
     /**
      * The netCDF parameter name for inverse flattening, and whether that parameter is definitive.
-     * The later is specific to SIS.
+     * The latter is specific to SIS.
      */
     public static final String INVERSE_FLATTENING = "inverse_flattening",
                                IS_IVF_DEFINITIVE  = "is_ivf_definitive";

@@ -45,6 +45,11 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  *   <li>{@code "EPSG"} for the EPSG geodetic dataset.</li>
  * </ul>
  *
+ * Data are downloaded from URLs hard-coded in this class. Those URLs depend on the Apache SIS versions in use,
+ * typically because more recent SIS versions will reference more recent data.
+ * The default URLs can be overridden using system properties documented in {@link #getDownloadURL(String)}.
+ * This is useful as a workaround if a URL is no longer accessible.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
@@ -52,18 +57,10 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
     /**
-     * The {@systemProperty org.apache.sis.epsg.downloadURL} system property for overriding
-     * the {@link #DOWNLOAD_URL} value. This is useful for testing purpose before a release,
-     * or for providing a work-around for bad URL after release.
-     *
-     * @since 1.2
-     */
-    private static final String DOWNLOAD_PROPERTY = "org.apache.sis.epsg.downloadURL";
-
-    /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
-    private static final String DOWNLOAD_URL = "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.1/sis-epsg-1.1.jar";
+    private static final String EPSG_DOWNLOAD_URL =
+            "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.1/sis-epsg-1.1.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.
@@ -173,10 +170,21 @@ public abstract class OptionalInstallations extends InstallationResources implem
 
     /**
      * Returns the URL from where to download data for the specified authority.
+     * The URLs are hard-coded and may change in any Apache SIS version.
+     * The default URLs can be overridden using system properties documented below:
+     *
+     * <table class="sis">
+     *   <caption>Configuration of download URLs</caption>
+     *   <tr><th>Authority</th>  <th>System property</th></tr>
+     *   <tr><td>EPSG</td>       <td>{@systemProperty org.apache.sis.epsg.downloadURL}</td></tr>
+     * </table>
+     *
+     * The use of above-listed system properties is usually not needed,
+     * except as a workaround if a hard-coded URL is no longer accessible.
      */
     private String getDownloadURL(final String authority) {
         switch (authority) {
-            case EPSG: return System.getProperty(DOWNLOAD_PROPERTY, DOWNLOAD_URL);
+            case EPSG: return System.getProperty("org.apache.sis.epsg.downloadURL", EPSG_DOWNLOAD_URL);
             default: throw unsupported(authority);      // More authorities may be added in the future.
         }
     }

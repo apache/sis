@@ -35,7 +35,6 @@ import java.time.format.FormatStyle;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.Temporal;
 import java.time.Instant;
-import java.security.AccessController;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
@@ -876,7 +875,7 @@ public class RangeFormat extends Format implements Localized {
         } else {
             /*
              * We found an opening bracket. Skip the whitespaces. If the next character is a closing bracket,
-             * then we have an empty range. The later case is an extension to the standard format since empty
+             * then we have an empty range. The latter case is an extension to the standard format since empty
              * ranges are usually represented by {} instead of [].
              */
             isMinIncluded = (c == openInclusive);
@@ -1080,8 +1079,8 @@ public class RangeFormat extends Format implements Localized {
     public RangeFormat clone() {
         final RangeFormat f = (RangeFormat) super.clone();
         try {
-            AccessController.doPrivileged(new FinalFieldSetter<>(RangeFormat.class, "elementFormat", "unitFormat"))
-                            .set(f, elementFormat.clone(), unitFormat.clone());
+            FinalFieldSetter.set(RangeFormat.class, "elementFormat", "unitFormat",
+                                 f, elementFormat.clone(), unitFormat.clone());
         } catch (ReflectiveOperationException e) {
             throw FinalFieldSetter.cloneFailure(e);
         }

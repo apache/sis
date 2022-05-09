@@ -341,7 +341,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * Compares this affine transform with the given object for equality. This method behaves as documented
      * in the {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable.equals(…)} method,
      * except for the following case: if the given mode is {@link ComparisonMode#STRICT}, then this method
-     * delegates to {@link #equals(Object)}. The later method has different rules than the ones documented
+     * delegates to {@link #equals(Object)}. The latter method has different rules than the ones documented
      * in the {@code LenientComparable} interface, because of the {@code AffineTransform} inheritance.
      *
      * @param  object  the object to compare to {@code this}.

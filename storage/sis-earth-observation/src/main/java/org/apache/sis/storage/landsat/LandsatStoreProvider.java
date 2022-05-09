@@ -20,9 +20,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.Capability;
@@ -44,8 +46,9 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @since   1.1
  * @module
  */
-@StoreMetadata(formatName   = LandsatStoreProvider.NAME,
-               capabilities = Capability.READ)
+@StoreMetadata(formatName    = LandsatStoreProvider.NAME,
+               capabilities  = Capability.READ,
+               resourceTypes = {Aggregate.class, GridCoverageResource.class})
 public class LandsatStoreProvider extends DataStoreProvider {
     /**
      * The format name.

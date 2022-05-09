@@ -1153,7 +1153,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.parameter.DefaultParameterDescriptor
-     * @see <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">Apache SIS™ Coordinate Operation Methods</a>
+     * @see <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">Apache SIS™ Coordinate Operation Methods</a>
      */
     public ParameterDescriptor<?> createParameterDescriptor(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -1167,7 +1167,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
      *
      * <p>Available methods depend both on the {@linkplain #getAuthorityCodes(Class) set declared by the authority} and on the
-     * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">list of methods implemented in Apache SIS</a>.
+     * <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">list of methods implemented in Apache SIS</a>.
      * In order to be supported, an operation method must have its formulas coded in the Java programming language.
      * See {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} for more information.</p>
      *
@@ -1181,7 +1181,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod
-     * @see <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">Apache SIS™ Coordinate Operation Methods</a>
+     * @see <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">Apache SIS™ Coordinate Operation Methods</a>
      */
     public OperationMethod createOperationMethod(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(OperationMethod.class, createObject(code), code);

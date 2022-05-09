@@ -611,10 +611,10 @@ next:       for (int i=0; i <= limit; i++) {
     /**
      * Searches pre-defined {@link AxisDirection} for a given name. This method searches for a match in the set
      * of known axis directions as returned by {@link AxisDirection#values()}, plus a few special cases like
-     * <cite>"Geocentre &gt; equator/90°E"</cite>. The later are used in the EPSG database for geocentric CRS.
+     * <cite>"Geocentre &gt; equator/90°E"</cite>. The latter are used in the EPSG database for geocentric CRS.
      *
      * <p>This method does not know about {@code org.apache.sis.referencing.cs.DirectionAlongMeridian}.
-     * The later is a parser which may create new directions, while this method searches only in a set
+     * The latter is a parser which may create new directions, while this method searches only in a set
      * of predefined directions and never create new ones.</p>
      *
      * @param  name  the name of the axis direction to search.

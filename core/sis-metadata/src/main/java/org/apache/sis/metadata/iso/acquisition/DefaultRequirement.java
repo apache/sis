@@ -353,6 +353,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     }
 
     /**
+     * Sets the plan that identifies solution to satisfy the requirement.
+     *
      * @param  newValues  the new satisfied plans values.
      */
     public void setSatisfiedPlans(final Collection<? extends Plan> newValues) {

@@ -213,7 +213,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
 
     /**
      * Returns the type of this datum, or infers the type from the datum name if no type were specified.
-     * The later case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
+     * The latter case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      * It may also happen if the datum were created using reflection.
      *
      * <p>This method uses heuristic rules and may be changed in any future SIS version. If the type can not be

@@ -147,12 +147,13 @@ public class Mercator extends ConformalProjection {
     /**
      * The type of Mercator projection. Possible values are:
      * <ul>
-     *   <li>{@link Variant#DEFAULT}   if this projection is a Mercator variant A or B.</li>
-     *   <li>{@link Variant#REGIONAL}  if this projection is the "Mercator (variant C)" case.</li>
-     *   <li>{@link Variant#SPHERICAL} if this projection is the "Mercator (Spherical)" case.</li>
-     *   <li>{@link Variant#PSEUDO}    if this projection is the "Pseudo Mercator" case.</li>
-     *   <li>{@link Variant#MILLER}    if this projection is the "Miller Cylindrical" case.</li>
-     *   <li>{@link Variant#AUXILIARY} if this projection is the "Mercator Auxiliary Sphere" case.</li>
+     *   <li>{@link Variant#ONE_PARALLEL}  if this projection is a Mercator variant A.</li>
+     *   <li>{@link Variant#TWO_PARALLELS} if this projection is a Mercator variant A.</li>
+     *   <li>{@link Variant#REGIONAL}      if this projection is the "Mercator (variant C)" case.</li>
+     *   <li>{@link Variant#SPHERICAL}     if this projection is the "Mercator (Spherical)" case.</li>
+     *   <li>{@link Variant#PSEUDO}        if this projection is the "Pseudo Mercator" case.</li>
+     *   <li>{@link Variant#MILLER}        if this projection is the "Miller Cylindrical" case.</li>
+     *   <li>{@link Variant#AUXILIARY}     if this projection is the "Mercator Auxiliary Sphere" case.</li>
      * </ul>
      *
      * Other cases may be added in the future.

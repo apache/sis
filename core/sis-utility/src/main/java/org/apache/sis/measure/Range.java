@@ -504,7 +504,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * Compares the {@linkplain #getMinValue() minimum value} of this range with the given endpoint of
      * another range. Since the given value is either the minimal or maximal value of another range,
-     * it may be inclusive or exclusive. The later is specified by {@code position} as below:
+     * it may be inclusive or exclusive. The latter is specified by {@code position} as below:
      *
      * <ul>
      *   <li> 0 if {@code value} is inclusive.</li>
@@ -602,7 +602,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * In particular this method returns {@code true} if the ranges are empty regardless their minimum and maximum values,
      * and also returns {@code true} if the bounds are wrappers for some {@link Float#NaN} or {@link Double#NaN} values
      * even if their {@linkplain Double#doubleToRawLongBits(double) raw bits pattern} are not the same.
-     * The later is because {@link Float#equals(Object)} and {@link Double#equals(Object)} consider all NaN values as equal.
+     * The latter is because {@link Float#equals(Object)} and {@link Double#equals(Object)} consider all NaN values as equal.
      *
      * @param  object  the object to compare with this range for equality.
      * @return {@code true} if the given object is equal to this range.

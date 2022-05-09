@@ -320,13 +320,13 @@ public abstract class DataStoreProvider {
      * @param  <S>        the compile-time type of the {@code type} argument (the source or storage type).
      * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @param  type       the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
-     *                    class or other types documented in {@link #getStorageAs(Class)}.
+     *                    class or other {@linkplain StorageConnector#getStorageAs(Class) documented types}.
      * @param  prober     the test to apply on the source of the given type.
      * @return the result of executing the probe action with a source of the given type,
      *         or {@link ProbeResult#UNSUPPORTED_STORAGE} if the given type is supported
      *         but no view can be created for the source given at construction time.
      * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types.
-     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
+     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain StorageConnector#closeAllExcept closed}.
      * @throws DataStoreException if an error occurred while opening a stream or database connection,
      *         or during the execution of the probe action.
      *

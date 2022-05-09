@@ -35,7 +35,7 @@
  * {@link java.util.Formatter java.util.Formatter} is an alternative to {@link java.text.MessageFormat} providing
  * similar functionalities with a C/C++ like syntax. However {@code MessageFormat} has two advantages: it provides
  * a {@code choice} format type (useful for handling plural forms), and localizes properly objects of unspecified type
- * (by contrast, the {@code Formatter} {@code "%s"} type always invoke {@code toString()}). The later advantage is
+ * (by contrast, the {@code Formatter} {@code "%s"} type always invoke {@code toString()}). The latter advantage is
  * important for messages in which the same argument could receive {@link java.lang.Number} or {@link java.util.Date}
  * instances as well as {@link java.lang.String}. Furthermore, the {@link java.util.logging} framework is designed for
  * use with {@code MessageFormat} (see the {@code Formatter.formatMessage(LogRecord)} method).</div>
@@ -43,9 +43,8 @@
  * Apache SIS developers can add resources by editing the {@code *.properties} file in the source code directory,
  * then run the localized resources compiler provided in the {@code sis-build-helper} module.
  * Developers shall <strong>not</strong> apply the {@code MessageFormat} rules for using quotes,
- * since the resources compiler will apply itself the <cite>doubled single quotes</cite> when
- * necessary. This avoid the unfortunate confusion documented in the warning section of
- * {@link java.text.MessageFormat} javadoc.
+ * since the resources compiler will apply itself the <cite>doubled single quotes</cite> when necessary.
+ * This avoid the unfortunate confusion documented in the warning section of {@link java.text.MessageFormat} javadoc.
  *
  * <h2>Usage</h2>
  * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses provide a

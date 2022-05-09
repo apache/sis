@@ -62,7 +62,7 @@
  * <strong>except</strong> if the object to be marshalled is an instance of
  * {@link org.apache.sis.metadata.iso.DefaultMetadata}, in which case the value given to the
  * {@link org.apache.sis.metadata.iso.DefaultMetadata#setLanguage setLanguage(Locale)} method
- * will have precedence. The later behavior is compliant with INSPIRE rules.
+ * will have precedence. The latter behavior is compliant with INSPIRE rules.
  *
  * <h2>Null values, nil objects and collections</h2>
  * All constructors and setter methods accept {@code null} arguments.

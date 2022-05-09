@@ -46,10 +46,11 @@ final class KeyPathMatcher implements PathMatcher {
      * Creates a new matcher.
      *
      * @param  syntaxAndPattern  filtering criteria of the {@code syntax:pattern}.
+     * @param  separator         the {@link ClientFileSystem#separator} value.
      * @throws PatternSyntaxException if the pattern is invalid.
      * @throws UnsupportedOperationException if the pattern syntax is not known to this implementation.
      */
-    KeyPathMatcher(final String syntaxAndPattern) {
+    KeyPathMatcher(final String syntaxAndPattern, final String separator) {
         final int s = syntaxAndPattern.indexOf(':');
         if (s < 0) {
             throw new IllegalArgumentException();
@@ -85,7 +86,13 @@ loop:       for (int i = s; ++i < length;) {
                         final boolean multi = (i+1 < length && syntaxAndPattern.charAt(i+1) == '*');
                         if (multi) i++;
                         if (quote) sb.append("\\E");
-                        sb.append(multi ? ".*" : "[^" + KeyPath.SEPARATOR + "]*");
+                        if (multi) {
+                            sb.append(".*");
+                        } else if (separator.length() == 1) {
+                            sb.append("[^").append(separator).append("]*");
+                        } else {
+                            throw unsupportedSyntax(syntaxAndPattern, s);
+                        }
                         quote = false;
                         continue;
                     }
@@ -96,10 +103,17 @@ loop:       for (int i = s; ++i < length;) {
             if (quote) sb.append("\\E");
             p = sb.toString();
         } else {
-            throw new UnsupportedOperationException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "syntax", syntaxAndPattern.substring(0, s)));
+            throw unsupportedSyntax(syntaxAndPattern, s);
         }
         pattern = Pattern.compile(p);
+    }
+
+    /**
+     * Returns the exception to throw for an unsupported syntax.
+     */
+    private static UnsupportedOperationException unsupportedSyntax(final String syntaxAndPattern, final int s) {
+        return new UnsupportedOperationException(Errors.format(
+                Errors.Keys.IllegalArgumentValue_2, "syntax", syntaxAndPattern.substring(0, s)));
     }
 
     /**
