@@ -18,6 +18,11 @@ package org.apache.sis.cql;
 
 import java.time.Instant;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalUnit;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -147,36 +152,40 @@ public final strictfp class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Incomplete use if java.time in CQL parser.")
     public void testDate() throws CQLException, ParseException{
         //dates are expected to be formated in ISO 8601 : yyyy-MM-dd'T'HH:mm:ss'Z'
         final String cql = "2012-03-21T05:42:36Z";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
         final Literal expression = (Literal) obj;
-        assertEquals(Instant.parse("2012-03-21T05:42:36Z"), expression.getValue());
+        Object value = expression.getValue();
+        assertTrue(value instanceof TemporalAccessor);
+        TemporalAccessor acc = (TemporalAccessor) value;
+        assertEquals(Instant.parse("2012-03-21T05:42:36Z"), Instant.from(acc));
     }
 
     @Test
-    @Ignore("Unreconized expression.")
     public void testDuration() throws CQLException, ParseException{
-        final String cql = "P7Y6M5D4H3M2S";
+        final String cql = "P7Y6M5D";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
         final Literal expression = (Literal) obj;
-        final long duration = (Long) expression.getValue();
-        assertEquals(236966582000l, duration);
+        assertTrue(expression.getValue() instanceof Period);
+        final Period period = (Period) expression.getValue();
+        assertEquals(7, period.getYears());
+        assertEquals(6, period.getMonths());
+        assertEquals(5, period.getDays());
     }
 
     @Test
-    @Ignore("Unreconized expression.")
     public void testDuration2() throws CQLException, ParseException{
-        final String cql = "T4H3M2S";
+        final String cql = "PT4H3M2S";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
         final Literal expression = (Literal) obj;
-        final long duration = (Long) expression.getValue();
-        assertEquals(14582000,duration);
+        assertTrue(expression.getValue() instanceof Duration);
+        final Duration duration = (Duration) expression.getValue();
+        assertEquals(14582, duration.get(ChronoUnit.SECONDS));
     }
 
     @Test

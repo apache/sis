@@ -16,6 +16,8 @@
  */
 package org.apache.sis.cql;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.temporal.TemporalAccessor;
@@ -296,6 +298,10 @@ public final class CQL {
                     text = text.replaceAll("\\\\'", "'");
                     return ff.literal(text.substring(1, text.length() - 1));
                 }
+                case DURATION_P :
+                    return ff.literal(Period.parse(tree.getText()));
+                case DURATION_T :
+                    return ff.literal(Duration.parse(tree.getText()));
             }
         } else if (tree instanceof ExpressionGeometryContext) {
             //: POINT ( EMPTY | coordinateSerie )
