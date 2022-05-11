@@ -302,7 +302,7 @@ public class ResourceTree extends TreeView<Resource> {
                 if (added) {
                     ((Item) findOrRemove(store, false)).path = path;
                 }
-                handler.handle(new LoadEvent(this, path));
+                handler.handle(new ResourceEvent(this, path, ResourceEvent.LOADED));
             }
         }
     }

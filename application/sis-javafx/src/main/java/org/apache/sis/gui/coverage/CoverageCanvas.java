@@ -90,7 +90,7 @@ import static java.util.logging.Logger.getLogger;
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see CoverageExplorer
  *
@@ -160,19 +160,6 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #onPropertySpecified(ObjectProperty)
      */
     private boolean isCoverageAdjusting;
-
-    /**
-     * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
-     *
-     * @see #getSliceExtent()
-     * @see #setSliceExtent(GridExtent)
-     * @see GridCoverage#render(GridExtent)
-     *
-     * @deprecated We will need a different mechanism for specifying slice dimensions.
-     */
-    @Deprecated
-    public final ObjectProperty<GridExtent> sliceExtentProperty;
 
     /**
      * The interpolation method to use for resampling the image.
@@ -256,11 +243,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         derivedImages         = new EnumMap<>(Stretching.class);
         resourceProperty      = new SimpleObjectProperty<>(this, "resource");
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
-        sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.processor.getInterpolation());
         resourceProperty     .addListener((p,o,n) -> onPropertySpecified(n, null, coverageProperty));
         coverageProperty     .addListener((p,o,n) -> onPropertySpecified(null, n, resourceProperty));
-        sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getCoverage(), null));
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
     }
 
@@ -375,37 +360,6 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Returns a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     *
-     * @return subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     *
-     * @see #sliceExtentProperty
-     * @see GridCoverage#render(GridExtent)
-     *
-     * @deprecated We will need a different mechanism for specifying slice dimensions.
-     */
-    @Deprecated
-    public final GridExtent getSliceExtent() {
-        return sliceExtentProperty.get();
-    }
-
-    /**
-     * Sets a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     *
-     * @param  sliceExtent  subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     *
-     * @see #sliceExtentProperty
-     * @see GridCoverage#render(GridExtent)
-     *
-     * @deprecated We will need a different mechanism for specifying slice dimensions.
-     */
-    @Deprecated
-    public final void setSliceExtent(final GridExtent sliceExtent) {
-        sliceExtentProperty.set(sliceExtent);
-        // Will indirectly invoke `onPropertySpecified(…)`.
-    }
-
-    /**
      * Gets the interpolation method used during resample operations.
      *
      * @return the current interpolation method.
@@ -516,7 +470,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (isCoverageAdjusting) {
             return;
         }
-        if (toClear != null) try {
+        try {
             isCoverageAdjusting = true;
             toClear.set(null);
         } finally {
@@ -674,7 +628,13 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         private boolean coverageChanged;
 
-        @Deprecated private final GridExtent sliceExtent;
+        /**
+         * The two-dimensional slice to display.
+         *
+         * @todo We do not yet have a mechanism for computing it.
+         *       May become a non-static field in a future version.
+         */
+        private static final GridExtent sliceExtent = null;
 
         /**
          * Value of {@link CoverageCanvas#data} at the time this worker has been initialized.
@@ -758,7 +718,6 @@ public class CoverageCanvas extends MapCanvasAWT {
             resource           = canvas.getResource();
             coverage           = canvas.getCoverage();
             data               = canvas.data.clone();
-            sliceExtent        = canvas.getSliceExtent();
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
             displayBounds      = canvas.getDisplayBounds();
