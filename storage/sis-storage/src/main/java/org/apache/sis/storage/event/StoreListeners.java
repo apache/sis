@@ -551,7 +551,7 @@ public class StoreListeners implements Localized {
             final String name = description.getLoggerName();
             final Logger logger;
             if (name != null) {
-                logger = Logging.getLogger(name);
+                logger = Logger.getLogger(name);
             } else {
                 logger = getLogger();
                 description.setLoggerName(logger.getName());

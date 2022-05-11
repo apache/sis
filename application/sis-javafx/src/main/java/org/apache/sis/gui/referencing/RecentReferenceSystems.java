@@ -56,6 +56,8 @@ import org.apache.sis.internal.gui.RecentChoices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A short list (~10 items) of most recently used {@link ReferenceSystem}s.
@@ -894,6 +896,6 @@ next:       for (int i=0; i<count; i++) {
      */
     protected void errorOccurred(final FactoryException e) {
         OptionalDataDownloader.reportIfInstalling(e);
-        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "updateItems", e);
+        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "updateItems", e);
     }
 }

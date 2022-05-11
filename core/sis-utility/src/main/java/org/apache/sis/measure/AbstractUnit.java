@@ -33,6 +33,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Base class of all unit implementations. There is conceptually 4 kinds of units,
@@ -300,7 +302,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         if (symbol != null) try {
             return UnitFormat.getBundle(Locale.getDefault()).getString(symbol);
         } catch (MissingResourceException e) {
-            Logging.ignorableException(Logging.getLogger(Loggers.MEASURE), AbstractUnit.class, "getName", e);
+            Logging.ignorableException(getLogger(Loggers.MEASURE), AbstractUnit.class, "getName", e);
             // Ignore as per this method contract.
         }
         return null;

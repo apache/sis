@@ -51,6 +51,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 
@@ -420,7 +421,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                  * Other exceptions would probably be more serious errors, but it still non-fatal
                  * for this method since we can continue with what Normalizer created.
                  */
-                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "forConvention", e);
+                Logging.recoverableException(getLogger(Modules.REFERENCING), getClass(), "forConvention", e);
             }
         }
         return this;

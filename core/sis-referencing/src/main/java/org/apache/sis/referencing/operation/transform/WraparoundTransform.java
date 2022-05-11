@@ -38,6 +38,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Enforces coordinate values in the range of a wraparound axis (typically longitude).
@@ -525,7 +527,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                 }
             } catch (NoninvertibleTransformException e) {
                 // Should not happen. But if it is the case, just abandon the optimization effort.
-                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
+                Logging.recoverableException(getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
             }
         }
         return null;

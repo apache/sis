@@ -55,6 +55,8 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Provider of textual content to show in a {@link StatusBar} for values under cursor position.
@@ -613,7 +615,7 @@ public abstract class ValuesUnderCursor {
         final String message = e.getMessage();
         if (!message.equals(lastErrorMessage)) {
             lastErrorMessage = message;
-            Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), ValuesUnderCursor.class, method, e);
+            Logging.recoverableException(getLogger(Modules.APPLICATION), ValuesUnderCursor.class, method, e);
         }
     }
 }

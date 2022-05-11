@@ -38,6 +38,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Computes or interpolates values of sample dimensions at given positions.
@@ -466,6 +468,6 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * @param  exception  the exception that occurred.
      */
     private static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
+        Logging.recoverableException(getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
     }
 }

@@ -47,6 +47,8 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A list of authority codes (usually for CRS) which fetch code values in a background thread
@@ -519,7 +521,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
     private void errorOccurred(final Throwable e) {
         if (!hasError) {
             hasError = true;    // Not a big problem if we have race condition; error will just be logged twice.
-            Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), AuthorityCodes.class, "get", e);
+            Logging.unexpectedException(getLogger(Modules.APPLICATION), AuthorityCodes.class, "get", e);
         }
     }
 }

@@ -327,12 +327,12 @@ public class MonolineFormatter extends Formatter {
         try {
             timeFormat(manager.getProperty(classname + ".time"));
         } catch (IllegalArgumentException exception) {
-            Logging.configurationException(Logging.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
+            Logging.configurationException(Logger.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
         }
         try {
             sourceFormat(manager.getProperty(classname + ".source"));
         } catch (IllegalArgumentException exception) {
-            Logging.configurationException(Logging.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
+            Logging.configurationException(Logger.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
         }
         /*
          * Applies the default set of colors only if the handler is writing to the console.
@@ -981,7 +981,7 @@ loop:   for (int i=0; ; i++) {
      */
     @Configuration
     public static MonolineFormatter install() throws SecurityException {
-        return install(Logging.getLogger(""), null);
+        return install(Logger.getLogger(""), null);
     }
 
     /**

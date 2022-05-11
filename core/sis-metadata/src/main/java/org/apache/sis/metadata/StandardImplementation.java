@@ -26,6 +26,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Information about an Apache SIS metadata standard implementation.
@@ -158,8 +160,7 @@ final class StandardImplementation extends MetadataStandard {
                         implementations.put(type, candidate);
                         return candidate.asSubclass(type);
                     } catch (ClassNotFoundException e) {
-                        Logging.recoverableException(Logging.getLogger(Modules.METADATA),
-                                MetadataStandard.class, "getImplementation", e);
+                        Logging.recoverableException(getLogger(Modules.METADATA), MetadataStandard.class, "getImplementation", e);
                     }
                     implementations.put(type, Void.TYPE);                       // Marker for "class not found".
                 }

@@ -57,6 +57,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.UnconvertibleObjectException;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -598,7 +599,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                      * Level.FINE (not WARNING) because this log duplicates the exception
                      * that `setValue(Object, Unit)` may throw (with a better message).
                      */
-                    Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                    Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                             DefaultParameterValue.class, "setValue", e);
                 } else {
                     /*

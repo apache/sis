@@ -57,6 +57,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * The parameters that describe a sequence of
@@ -1012,6 +1014,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * transform.</p>
      */
     private static void unexpectedException(final IllegalStateException e) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
+        Logging.unexpectedException(getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
     }
 }

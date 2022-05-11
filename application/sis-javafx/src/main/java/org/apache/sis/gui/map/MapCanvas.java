@@ -84,6 +84,7 @@ import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.referencing.IdentifiedObjects;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 
@@ -1284,7 +1285,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Invoked when an unexpected exception occurred but it is okay to continue despite it.
      */
     private static void unexpectedException(final String method, final Exception e) {
-        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MapCanvas.class, method, e);
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), MapCanvas.class, method, e);
     }
 
     /**

@@ -46,6 +46,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Finds a transform from grid cells in a source coverage to geospatial positions in the CRS of a target coverage.
@@ -744,6 +746,6 @@ apply:          if (forwardChangeOfCRS == null) {
      * @param  e       the ignorable exception.
      */
     private static void recoverableException(final String caller, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), CoordinateOperationFinder.class, caller, e);
+        Logging.recoverableException(getLogger(Modules.RASTER), CoordinateOperationFinder.class, caller, e);
     }
 }

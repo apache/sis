@@ -69,6 +69,8 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * The {@code RenderedImage} to draw in a {@link PlanarCanvas} together with transforms from pixel coordinates
@@ -768,7 +770,7 @@ public class RenderingData implements Cloneable {
      * This method pretends that the warning come from {@link PlanarCanvas} class since it is the public API.
      */
     private static void recoverableException(final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Modules.PORTRAYAL), PlanarCanvas.class, "render", e);
+        Logging.recoverableException(getLogger(Modules.PORTRAYAL), PlanarCanvas.class, "render", e);
     }
 
     /**

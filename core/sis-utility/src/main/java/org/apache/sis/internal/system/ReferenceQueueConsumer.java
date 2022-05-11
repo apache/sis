@@ -21,6 +21,8 @@ import java.lang.ref.ReferenceQueue;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A thread processing all {@link Reference} instances enqueued in a {@link ReferenceQueue}.
@@ -127,7 +129,7 @@ public final class ReferenceQueueConsumer extends DaemonThread {
                  * We need to test 'isKillRequested()' below.
                  */
             } catch (Throwable exception) {
-                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), getClass(), "run", exception);
+                Logging.unexpectedException(getLogger(Loggers.SYSTEM), getClass(), "run", exception);
             }
             if (isKillRequested()) {
                 break;

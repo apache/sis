@@ -26,6 +26,8 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Mask of missing values.
@@ -57,7 +59,7 @@ final class MaskImage extends SourceAlignedImage {
             converter = ((Visualization.InterpConvert) image.interpolation).converter.inverse();
         } catch (NoninvertibleTransformException e) {
             // ResampledImage.getProperty("org.apache.sis.Mask") is the public caller of this constructor.
-            Logging.unexpectedException(Logging.getLogger(Modules.RASTER), ResampledImage.class, "getProperty", e);
+            Logging.unexpectedException(getLogger(Modules.RASTER), ResampledImage.class, "getProperty", e);
         }
     }
 

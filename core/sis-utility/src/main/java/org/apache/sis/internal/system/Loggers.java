@@ -146,7 +146,7 @@ public final class Loggers extends Static {
                  * In such case forget the problematic fields and search the next one. This is okay
                  * since this method is only for information purpose.
                  */
-                Logging.unexpectedException(Logging.getLogger(SYSTEM), Loggers.class, "getEffectiveLevels", e);
+                Logging.unexpectedException(Logger.getLogger(SYSTEM), Loggers.class, "getEffectiveLevels", e);
             }
         }
         /*
@@ -157,7 +157,7 @@ public final class Loggers extends Static {
         while (it.hasNext()) {
             final Map.Entry<String,Level> entry = it.next();
             final String name = entry.getKey();
-            final Logger logger = Logging.getLogger(name);
+            final Logger logger = Logger.getLogger(name);
             Level level = getEffectiveLevel(logger);
             final Level h = getHandlerLevel(logger);
             if (h.intValue() > level.intValue()) {

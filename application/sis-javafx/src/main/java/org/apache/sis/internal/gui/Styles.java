@@ -33,6 +33,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Static;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A central place where to store some appearance choices such as colors used by SIS application.
@@ -158,7 +160,7 @@ public final class Styles extends Static {
             error = e;
         }
         if (error != null) {
-            Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), caller, method, error);
+            Logging.unexpectedException(getLogger(Modules.APPLICATION), caller, method, error);
         }
         return image;
     }

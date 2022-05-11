@@ -48,6 +48,8 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
@@ -373,7 +375,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 keyID = getKeyConstants().getKeyValue(key);
             } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
-                Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
+                Logging.recoverableException(getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
                 return null;                // This is okay as of 'handleGetObject' contract.
             }
         }

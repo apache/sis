@@ -18,17 +18,19 @@ package org.apache.sis.setup;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import java.util.Locale;
-import java.util.TimeZone;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -351,7 +353,7 @@ public class OptionKey<T> implements Serializable {
              * we override the 'equals' and 'hashCode' methods. This option is likely to be ignored,
              * but options are expected to be optional...
              */
-            Logging.recoverableException(Logging.getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);
+            Logging.recoverableException(getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);
             return this;
         }
     }

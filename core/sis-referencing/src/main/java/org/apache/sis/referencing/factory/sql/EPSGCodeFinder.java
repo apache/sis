@@ -55,6 +55,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
@@ -147,7 +148,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
                 if (id != null) try {                                                   // Should never be null, but let be safe.
                     filters.add(Integer.parseInt(id.getCode()));
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), EPSGCodeFinder.class, "getCodeCandidates", e);
+                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGCodeFinder.class, "getCodeCandidates", e);
                 }
             }
             if (!filters.isEmpty()) {

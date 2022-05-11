@@ -35,6 +35,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Finds a coordinate operation between two CRS in the context of a {@link MapCanvas}.
@@ -129,7 +131,7 @@ abstract class OperationFinder extends Task<MathTransform> {
             bbox.setBounds(areaOfInterest);
         } catch (TransformException e) {
             bbox = null;
-            Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), getCallerClass(), getCallerMethod(), e);
+            Logging.recoverableException(getLogger(Modules.APPLICATION), getCallerClass(), getCallerMethod(), e);
         }
         MathTransform before = null;
         MathTransform after  = null;

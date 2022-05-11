@@ -74,6 +74,8 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A view of data {@link Resource}s organized as a tree.
@@ -584,14 +586,14 @@ public class ResourceTree extends TreeView<Resource> {
      * Reports an ignorable exception in the given method.
      */
     private static void recoverableException(final String method, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
+        Logging.recoverableException(getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
     }
 
     /**
      * Reports an unexpected but non-fatal exception in the given method.
      */
     static void unexpectedException(final String method, final Exception e) {
-        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
     }
 
 

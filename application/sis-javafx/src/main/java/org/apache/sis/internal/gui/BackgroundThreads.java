@@ -32,6 +32,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Threads;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Provides the thread pool for JavaFX application. This thread pool is different than the pool used by
@@ -177,6 +179,6 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * @param  e       the exception that interrupted the waiting process.
      */
     private static void interrupted(final String method, final InterruptedException e) {
-        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), BackgroundThreads.class, method, e);
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), BackgroundThreads.class, method, e);
     }
 }

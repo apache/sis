@@ -68,6 +68,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
@@ -146,7 +148,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 } catch (FactoryException e) {
                     if (findOpCaller != null) {
                         // See javadoc for the assumption that optional mode is used by Envelopes.findOperation(…).
-                        Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), Envelopes.class, findOpCaller, e);
+                        Logging.recoverableException(getLogger(Modules.REFERENCING), Envelopes.class, findOpCaller, e);
                         return null;
                     }
                     throw new TransformException(Resources.format(Resources.Keys.CanNotTransformEnvelopeToGeodetic), e);

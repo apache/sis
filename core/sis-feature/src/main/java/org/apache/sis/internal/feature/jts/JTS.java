@@ -39,6 +39,8 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Utilities for Java Topology Suite (JTS) objects.
@@ -214,7 +216,7 @@ public final class JTS extends Static {
             bbox.setBounds(env);
         } catch (TransformException ex) {
             bbox = null;
-            Logging.ignorableException(Logging.getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
+            Logging.ignorableException(getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
         }
         return CRS.findOperation(sourceCRS, targetCRS, bbox);
     }

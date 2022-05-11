@@ -56,6 +56,8 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A view of metadata represented by a {@link TreeTable}. This base class can represent
@@ -382,7 +384,7 @@ check:      if (data != null) {
                 flush();
                 value = buffer.toString();
             } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
-                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), Formatter.class, "call", e);
+                Logging.unexpectedException(getLogger(Modules.APPLICATION), Formatter.class, "call", e);
                 // Leave `value` as-is. It will be formatted using `Object.toString()`.
             }
             return new ReadOnlyObjectWrapper<>(value);

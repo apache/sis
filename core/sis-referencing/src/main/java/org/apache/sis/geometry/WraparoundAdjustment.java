@@ -35,6 +35,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * An envelope or position converter making them more compatible with a given domain of validity.
@@ -189,7 +191,7 @@ public class WraparoundAdjustment {
             geographicDomainKnown = true;                       // Shall be set even in case of failure.
             geographicDomain = ReferencingServices.getInstance().setBounds(domainOfValidity, null, null);
         } catch (TransformException e) {
-            Logging.ignorableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), WraparoundAdjustment.class, "<init>", e);
+            Logging.ignorableException(getLogger(Loggers.COORDINATE_OPERATION), WraparoundAdjustment.class, "<init>", e);
             // No more attempt will be done.
         }
         try {

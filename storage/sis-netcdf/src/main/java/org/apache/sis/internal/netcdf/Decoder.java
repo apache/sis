@@ -40,7 +40,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -65,7 +64,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * The logger to use for messages other than warnings specific to the file being read.
      */
-    static final Logger LOGGER = Logging.getLogger(Modules.NETCDF);
+    static final Logger LOGGER = Logger.getLogger(Modules.NETCDF);
 
     /**
      * The format name to use in error message. We use lower-case "n" because it seems to be what the netCDF community uses.

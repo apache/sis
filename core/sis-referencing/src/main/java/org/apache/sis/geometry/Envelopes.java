@@ -58,6 +58,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.MathFunctions;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 
@@ -270,7 +271,7 @@ public final class Envelopes extends Static {
                      * Note: we may succeed to transform `source` and fail to transform `target` to geographic bounding box,
                      * but the opposite is unlikely because `source` should not have less dimensions than `target`.
                      */
-                    Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), Envelopes.class, "findOperation", e);
+                    Logging.recoverableException(getLogger(Loggers.GEOMETRY), Envelopes.class, "findOperation", e);
                 }
                 return CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
             }
@@ -283,7 +284,7 @@ public final class Envelopes extends Static {
      * Those exceptions must be minor enough that they can be silently ignored in most cases.
      */
     static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
-        Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), caller, "transform", exception);
+        Logging.recoverableException(getLogger(Loggers.GEOMETRY), caller, "transform", exception);
     }
 
     /**

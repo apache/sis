@@ -63,6 +63,8 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
+import static java.util.logging.Logger.getLogger;
+
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
 import org.opengis.coverage.grid.GridCoordinates;
@@ -1047,7 +1049,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         } catch (FactoryException e) {
             // "toEnvelope" is the closest public method that may invoke this method.
-            Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
+            Logging.recoverableException(getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
         }
         return envelope;
     }

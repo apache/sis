@@ -69,6 +69,8 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.referencing.CRS;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Formats spatiotemporal coordinates using number, angle and date formats inferred from the coordinate system.
@@ -1779,7 +1781,7 @@ checkDirection: if (direction != null) {
      * @param  error   the error that occurred.
      */
     private static void unexpectedException(final String method, final Exception error) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.MEASURE), CoordinateFormat.class, method, error);
+        Logging.unexpectedException(getLogger(Loggers.MEASURE), CoordinateFormat.class, method, error);
     }
 
     /**

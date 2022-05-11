@@ -72,6 +72,8 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
+import static java.util.logging.Logger.getLogger;
+
 // Branch-dependent imports
 import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.metadata.citation.Party;
@@ -277,7 +279,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             party = MetadataSource.getProvided().lookup(Party.class, "{org}NATO");
         } catch (MetadataStoreException e) {
             party = null;
-            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
+            Logging.unexpectedException(getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
                     MilitaryGridReferenceSystem.class, "<init>", e);
         }
         return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), party);

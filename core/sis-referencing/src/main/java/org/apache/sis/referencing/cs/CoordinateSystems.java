@@ -49,6 +49,8 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Utility methods working on {@link CoordinateSystem} objects and their axes.
@@ -651,7 +653,7 @@ forDim: switch (axes.length) {
                                     break forDim;
                                 }
                             } catch (IncommensurableException e) {      // Should never happen since we checked that units are angular.
-                                Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
+                                Logging.unexpectedException(getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
                                 break forDim;
                             }
                         }

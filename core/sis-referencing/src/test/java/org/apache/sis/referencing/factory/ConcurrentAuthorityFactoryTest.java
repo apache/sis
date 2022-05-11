@@ -24,11 +24,11 @@ import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.logging.Logger.getLogger;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -185,7 +185,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
         int n = 3;
         while (factory.isCleanScheduled()) {
-            Logging.getLogger(Loggers.CRS_FACTORY)
+            getLogger(Loggers.CRS_FACTORY)
                     .warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
             Thread.sleep(TIMEOUT);
             System.gc();

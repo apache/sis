@@ -81,6 +81,8 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Debug;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A canvas for {@link RenderedImage} provided by a {@link GridCoverage} or a {@link GridCoverageResource}.
@@ -1048,7 +1050,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
      */
     private static void unexpectedException(final Exception e) {
-        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
     }
 
     /**

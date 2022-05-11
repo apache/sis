@@ -27,6 +27,8 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Mapping between some legacy codes (e.g. ISO 19115:2003) and newer codes (e.g. ISO 19115:2014).
@@ -54,7 +56,7 @@ final class LegacyCodes {
         try (InputStream in = Metadata.class.getResourceAsStream("2003/charset-codes.properties")) {
             codes.load(in);
         } catch (IOException e) {
-            Logging.unexpectedException(Logging.getLogger(Loggers.XML), ValueConverter.class, "toCharset[Code]", e);
+            Logging.unexpectedException(getLogger(Loggers.XML), ValueConverter.class, "toCharset[Code]", e);
         }
         final int capacity = Containers.hashMapCapacity(codes.size());
         IANA_TO_LEGACY = new HashMap<>(capacity);

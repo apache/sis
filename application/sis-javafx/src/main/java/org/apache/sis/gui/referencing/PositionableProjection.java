@@ -40,6 +40,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Provider of map projections centered on a point of interest.
@@ -112,7 +114,7 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
             try {
                 cd = CommonCRS.forDatum(baseCRS);
             } catch (IllegalArgumentException e) {
-                Logging.recoverableException(Logging.getLogger(Modules.APPLICATION),
+                Logging.recoverableException(getLogger(Modules.APPLICATION),
                             PositionableProjection.class, "createProjectedCRS", e);
                 cd = CommonCRS.WGS84;
             }

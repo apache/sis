@@ -80,6 +80,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.referencing.CRS.findOperation;
 
 
@@ -578,7 +579,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  exception  the exception that occurred.
      */
     static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
+        Logging.recoverableException(getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
     }
 
     /**

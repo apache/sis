@@ -23,6 +23,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -419,7 +420,7 @@ public final class DefinitionURI {
                                 splitAt = s;                      // Set only on success.
                             } catch (NumberFormatException e) {
                                 // Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
-                                Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
+                                Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
                             }
                             orderedComponents.put(sequenceNumber, parse(uri, isURN, splitAt, next));
                             splitAt = next;

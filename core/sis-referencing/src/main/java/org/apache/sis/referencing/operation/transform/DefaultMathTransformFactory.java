@@ -84,6 +84,8 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Low level factory for creating {@linkplain AbstractMathTransform math transforms}.
@@ -910,7 +912,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      * from another implementation. We can safely abandon our attempt to set the inverse flattening value,
                      * since it was redundant with semi-minor axis length.
                      */
-                    Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                    Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                             DefaultMathTransformFactory.class, "createParameterizedTransform", e);
                 }
             }
@@ -1094,7 +1096,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     throw exception;
                 }
                 method = getOperationMethod(methodName);
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                         DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
             }
             if (!(method instanceof MathTransformProvider)) {

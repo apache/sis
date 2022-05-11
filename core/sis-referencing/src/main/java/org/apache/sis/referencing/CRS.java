@@ -90,6 +90,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
+import static java.util.logging.Logger.getLogger;
+
 // Branch-dependent imports
 import org.opengis.geometry.Geometry;
 
@@ -424,7 +426,7 @@ public final class CRS extends Static {
                         record.setSourceClassName(CRS.class.getName());
                         record.setSourceMethodName("fromAuthority");
                         if (warningFilter.isLoggable(record)) {
-                            Logging.getLogger(Modules.REFERENCING).log(record);
+                            getLogger(Modules.REFERENCING).log(record);
                         }
                     }
                 }
@@ -1433,6 +1435,6 @@ check:  while (lower != 0 || upper != dimension) {
      * <strong>must</strong> have a reasonable fallback (otherwise it should propagate the exception).
      */
     private static void unexpectedException(final String methodName, final Exception exception) {
-        Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CRS.class, methodName, exception);
+        Logging.unexpectedException(getLogger(Modules.REFERENCING), CRS.class, methodName, exception);
     }
 }

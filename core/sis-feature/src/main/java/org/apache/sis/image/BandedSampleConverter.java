@@ -41,6 +41,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * An image where each sample value is computed independently of other sample values and independently
@@ -214,7 +216,7 @@ class BandedSampleConverter extends ComputedImage {
             }
             return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses);
         } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.RASTER), ImageProcessor.class, "convert", e);
+            Logging.recoverableException(getLogger(Modules.RASTER), ImageProcessor.class, "convert", e);
         }
         return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters);
     }

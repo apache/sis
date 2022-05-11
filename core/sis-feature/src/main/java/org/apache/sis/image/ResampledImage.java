@@ -50,6 +50,8 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * An image which is the result of resampling the pixel values of another image.
@@ -461,7 +463,7 @@ public class ResampledImage extends ComputedImage {
      * @param  error   the ignore which can be ignored.
      */
     private static void recoverableException(final String method, final Exception error) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), ResampledImage.class, method, error);
+        Logging.recoverableException(getLogger(Modules.RASTER), ResampledImage.class, method, error);
     }
 
     /**

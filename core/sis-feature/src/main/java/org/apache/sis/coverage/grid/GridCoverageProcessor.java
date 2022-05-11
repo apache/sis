@@ -31,6 +31,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.coverage.RegionOfInterest;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A predefined set of operations on grid coverages as convenience methods.
@@ -272,7 +274,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  ex      the ignorable exception.
      */
     static void recoverableException(final String caller, final Exception ex) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridCoverageProcessor.class, caller, ex);
+        Logging.recoverableException(getLogger(Modules.RASTER), GridCoverageProcessor.class, caller, ex);
     }
 
     /**
