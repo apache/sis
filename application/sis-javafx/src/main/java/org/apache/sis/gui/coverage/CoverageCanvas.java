@@ -470,7 +470,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (isCoverageAdjusting) {
             return;
         }
-        try {
+        if (toClear != null) try {
             isCoverageAdjusting = true;
             toClear.set(null);
         } finally {
