@@ -47,7 +47,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -79,6 +79,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * @see LambertConicConformalTest#testNormalizedWKT()
      */
     @Test
+    @DependsOnMethod("verifyDegreesToUnity")
     public void testNormalizedWKT() throws NoninvertibleTransformException {
         createNormalizedProjection(true);
         assertWktEquals("PARAM_MT[“Mercator (radians domain)”,\n" +
@@ -139,12 +140,12 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         if (transform == null) {                    // May have been initialized by 'testSphericalCase'.
             createNormalizedProjection(true);       // Elliptical case
         }
-        assertEquals ("Not a number",     NaN,                    transform(NaN),           tolerance);
-        assertEquals ("Out of range",     NaN,                    transform(+2),            tolerance);
-        assertEquals ("Out of range",     NaN,                    transform(-2),            tolerance);
-        assertEquals ("Forward 0°N",      0,                      transform(0),             tolerance);
-        assertEquals ("Forward 90°N",     POSITIVE_INFINITY,      transform(+PI/2),         tolerance);
-        assertEquals ("Forward 90°S",     NEGATIVE_INFINITY,      transform(-PI/2),         tolerance);
+        assertEquals ("Not a number",     NaN,                    transform(NaN),             tolerance);
+        assertEquals ("Out of range",     NaN,                    transform(+2),              tolerance);
+        assertEquals ("Out of range",     NaN,                    transform(-2),              tolerance);
+        assertEquals ("Forward 0°N",      0,                      transform(0),               tolerance);
+        assertEquals ("Forward 90°N",     POSITIVE_INFINITY,      transform(+PI/2),           tolerance);
+        assertEquals ("Forward 90°S",     NEGATIVE_INFINITY,      transform(-PI/2),           tolerance);
         assertEquals ("Forward (90+ε)°N", POSITIVE_INFINITY,      transform(nextUp  ( PI/2)), tolerance);
         assertEquals ("Forward (90+ε)°S", NEGATIVE_INFINITY,      transform(nextDown(-PI/2)), tolerance);
         assertBetween("Forward (90-ε)°N", +MIN_VALUE, +MAX_VALUE, transform(nextDown( PI/2)));
@@ -372,5 +373,40 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
                 100);       // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
+    }
+
+    /**
+     * Tests points with a projection having central meridian at 100°E. Conversion of points
+     * at -179° and 181° of longitude (on the same latitude) should give the same result.
+     * Those points are located at only 81° of central meridian.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-547">SIS-547</a>
+     */
+    @Test
+    public void testWraparound() throws FactoryException, TransformException {
+        // Use "WGS 84 / Mercator 41" (EPSG:3994)
+        createCompleteProjection(new Mercator2SP(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                100,        // Central meridian
+                NaN,        // Latitude of origin (none)
+                -41,        // Standard parallel 1
+                NaN,        // Standard parallel 2 (none)
+                1,          // Scale factor
+                0,          // False easting
+                0);         // False northing
+
+        final double[] coordinates = {179, -41, 181, -41, -179, -41};
+        final double[] expected = {
+            6646679.62, -3767131.99,
+            6814949.99, -3767131.99,
+            6814949.99, -3767131.99     // This result was different before SIS-547 fix.
+        };
+        isInverseTransformSupported = false;
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(coordinates, expected);
     }
 }
