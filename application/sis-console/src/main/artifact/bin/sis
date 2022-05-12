@@ -24,7 +24,7 @@ SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
 
 # Execute SIS with any optional JAR that the user may put in the 'lib' directory.
-java -classpath "$BASE_DIR/lib/sis-console-1.2-SNAPSHOT.jar" \
+java -classpath "$BASE_DIR/lib/sis-console-1.3-SNAPSHOT.jar" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
      -Dderby.stream.error.file="$BASE_DIR/log/derby.log" \
      org.apache.sis.console.Command $SIS_OPTS "$@"
