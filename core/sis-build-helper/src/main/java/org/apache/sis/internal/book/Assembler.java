@@ -66,7 +66,7 @@ import static org.apache.sis.internal.book.CodeColorizer.toArray;
  * See package javadoc for usage example.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  */
 public final class Assembler {
@@ -634,18 +634,20 @@ public final class Assembler {
             System.err.println("Not a directory: " + directory);
             System.exit(1);
         }
-        final File input = new File(directory, "source/developer-guide/index.html");
+        final File source = new File(directory, "main/source");
+        final File target = new File(directory, "asf-staging/book");
+        final File input  = new File(source, "developer-guide/index.html");
         if (!input.isFile()) {
             System.err.println("File not found: " + input);
             System.err.println("Is the given directory the root of `sis-site` project?");
             System.exit(1);
         }
         Assembler assembler = new Assembler(input, Locale.ENGLISH);
-        assembler.run(new File(directory, "static/book/en/developer-guide.html"));
+        assembler.run(new File(target, "en/developer-guide.html"));
         /*
          * Localized versions.
          */
-        assembler = new Assembler(new File(directory, "source/fr/developer-guide/index.html"), Locale.FRENCH);
-        assembler.run(new File(directory, "static/book/fr/developer-guide.html"));
+        assembler = new Assembler(new File(source, "fr/developer-guide/index.html"), Locale.FRENCH);
+        assembler.run(new File(target, "fr/developer-guide.html"));
     }
 }

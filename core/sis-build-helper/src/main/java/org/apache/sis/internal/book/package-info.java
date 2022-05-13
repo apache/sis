@@ -27,8 +27,10 @@
  * │   └─ core
  * │       └─ sis-build-helper
  * └─ site
- *     ├─ source
- *     └─ static
+ *     ├─ main
+ *     │   └─ source
+ *     └─ asf-staging
+ *         └─ book
  * </pre>
  *
  * Then the command can be used as below on Unix systems:
@@ -47,7 +49,7 @@
  * See <a href="http://www.xmlmind.com/tutorials/HTML5Books/HTML5Books.html">HTML5 as an alternative to DITA and DocBook</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  */
 package org.apache.sis.internal.book;
