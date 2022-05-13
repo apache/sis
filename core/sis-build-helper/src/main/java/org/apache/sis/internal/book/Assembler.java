@@ -19,9 +19,7 @@ package org.apache.sis.internal.book;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.io.File;
 import java.io.IOException;
@@ -57,10 +55,6 @@ import static org.apache.sis.internal.book.CodeColorizer.toArray;
  *
  *   <li>Replace the {@code <!-- TOC -->} comment by a table of content generated from all {@code <h1>}, {@code <h2>}, <i>etc.</i>
  *       found in the document.</li>
- *
- *   <li>Generate below {@code <h1>} elements a table of content containing only the sections in that chapter.</li>
- *
- *   <li>Generate below {@code <h1>} elements the navigation bar with links to the previous and next chapters.</li>
  * </ul>
  *
  * See package javadoc for usage example.
@@ -116,11 +110,6 @@ public final class Assembler {
     private final Element tableOfContent;
 
     /**
-     * The node where to write the table of content for the current chapter.
-     */
-    private Element tableOfChapterContent;
-
-    /**
      * The {@code title} attributes found in abbreviations.
      */
     private final Map<String,String> abbreviations = new HashMap<>();
@@ -137,16 +126,6 @@ public final class Assembler {
     private final int[] sectionNumbering = new int[9];
 
     /**
-     * The last {@code <h1>} element found while parsing the document, or {@code null} if none.
-     */
-    private Element previousChapter;
-
-    /**
-     * Localized resources.
-     */
-    private final ResourceBundle resources;
-
-    /**
      * Helper class for applying colors on content of {@code <code>} and {@code <samp>} elements.
      */
     private final CodeColorizer colorizer;
@@ -155,16 +134,14 @@ public final class Assembler {
      * Creates a new assembler for the given input and output files.
      *
      * @param  input   the input file (e.g. {@code "sis-site/main/source/developer-guide/index.html"}).
-     * @param  locale  the locale for the message to generates in HTML code.
      * @throws ParserConfigurationException if this constructor can not build the XML document.
      * @throws IOException if an error occurred while reading the file.
      * @throws SAXException if an error occurred while parsing the XML.
      * @throws BookException if a logical error occurred while initializing the assembler.
      */
-    public Assembler(final File input, final Locale locale)
+    public Assembler(final File input)
             throws ParserConfigurationException, IOException, SAXException, BookException
     {
-        resources = ResourceBundle.getBundle("org.apache.sis.internal.book.Resources", locale);
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // No setXIncludeAware(true) -  we will handle <xi:include> elements ourself.
         factory.setNamespaceAware(true);
@@ -173,7 +150,6 @@ public final class Assembler {
         document       = load(input);
         colorizer      = new CodeColorizer(document);
         tableOfContent = document.createElement("ul");
-        tableOfContent.setAttribute("class", "toc");
         /*
          * Remove the "http://www.w3.org/2001/XInclude" namespace since we
          * should have no <xi:include> elements left in the output file.
@@ -404,23 +380,6 @@ public final class Assembler {
                                     sectionNumbering[c-1]++;
                                     Arrays.fill(sectionNumbering, c, sectionNumbering.length, 0);
                                     appendToTableOfContent(tableOfContent, c, (Element) node);
-                                    if (c == 1) {
-                                        linkToSiblingChapters((Element) node);
-                                        tableOfChapterContent = document.createElement("ul");
-                                        tableOfChapterContent.setAttribute("class", "toc");
-                                        final Node nav = document.createElement("nav");
-                                        final Node p = document.createElement("p");
-                                        p.appendChild(document.createTextNode(resources.getString("this-chapter")));
-                                        nav.appendChild(p);
-                                        nav.appendChild(tableOfChapterContent);
-                                        Node insertionPoint = node.getParentNode();             // The <header> element.
-                                        do insertionPoint = insertionPoint.getNextSibling();    // The first paragraph.
-                                        while (insertionPoint.getNodeType() == Node.TEXT_NODE);
-                                        insertionPoint.getParentNode().insertBefore(nav, insertionPoint);
-                                        insertLineSeparator(insertionPoint);
-                                    } else {
-                                        appendToTableOfContent(tableOfChapterContent, c-1, (Element) node);
-                                    }
                                     prependSectionNumber(c, node);                      // Only after insertion in TOC.
                                 }
                             }
@@ -487,50 +446,6 @@ public final class Assembler {
     }
 
     /**
-     * Generates a {@code <nav>} element below the given {@code <h1>} element with navigation links
-     * to previous and next chapters.
-     *
-     * @param  head  the {@code <h1>} element.
-     */
-    private void linkToSiblingChapters(final Element head) throws BookException {
-        final Element links = document.createElement("div");
-        links.setAttribute("class", "chapter-links");
-        if (previousChapter != null) {
-            /*
-             * Generate the link to previous chapter with the following pattern:
-             *
-             *     <div class="previous-chapter">⬅ <a href="#id">Previous chapter</a></div>
-             */
-            final Element previous = document.createElement("div");
-            previous.setAttribute("class", "previous-chapter");
-            previous.appendChild(document.createTextNode("⬅ "));
-            previous.appendChild(createLink(previousChapter.getAttribute("id"), resources.getString("previous-chapter")));
-            links.appendChild(previous);
-            /*
-             * Update the previous <h1> element with the link to the next chapter,
-             * which is the given 'head' element. The pattern is:
-             *
-             *     <div class="next-chapter"><a href="#id">Next chapter</a> ➡</div>
-             */
-            final Element next = document.createElement("div");
-            next.setAttribute("class", "next-chapter");
-            next.appendChild(createLink(head.getAttribute("id"), resources.getString("next-chapter")));
-            next.appendChild(document.createTextNode(" ➡"));
-
-            Node previousNav = previousChapter;
-            previousNav = previousNav.getNextSibling();     // The line separator after <h1>.
-            previousNav = previousNav.getNextSibling();     // The <nav> element.
-            previousNav = previousNav.getFirstChild();      // The <div class="chapter-links"> element.
-            previousNav.appendChild(next);
-        }
-        final Element nav = document.createElement("nav");
-        nav.appendChild(links);
-        head.getParentNode().insertBefore(nav, head.getNextSibling());
-        insertLineSeparator(nav);
-        previousChapter = head;
-    }
-
-    /**
      * Creates a {@code <a href="reference">text</a>} node.
      */
     private Element createLink(final String reference, final String text) throws BookException {
@@ -586,13 +501,6 @@ public final class Assembler {
     }
 
     /**
-     * Inserts a line separator just before the given node.
-     */
-    private void insertLineSeparator(final Node insertionPoint) {
-        insertionPoint.getParentNode().insertBefore(document.createTextNode(LINE_SEPARATOR), insertionPoint);
-    }
-
-    /**
      * Assembles the document and writes to the destination.
      *
      * @param  output  the output file (e.g. {@code "site/content/en/developer-guide.html"}).
@@ -642,12 +550,12 @@ public final class Assembler {
             System.err.println("Is the given directory the root of `sis-site` project?");
             System.exit(1);
         }
-        Assembler assembler = new Assembler(input, Locale.ENGLISH);
+        Assembler assembler = new Assembler(input);
         assembler.run(new File(target, "en/developer-guide.html"));
         /*
          * Localized versions.
          */
-        assembler = new Assembler(new File(source, "fr/developer-guide/index.html"), Locale.FRENCH);
+        assembler = new Assembler(new File(source, "fr/developer-guide/index.html"));
         assembler.run(new File(target, "fr/developer-guide.html"));
     }
 }
