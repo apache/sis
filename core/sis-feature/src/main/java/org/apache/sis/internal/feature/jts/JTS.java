@@ -207,16 +207,19 @@ public final class JTS extends Static {
                                                      final Geometry areaOfInterest)
             throws FactoryException
     {
-        DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
-        try {
-            final Envelope e = areaOfInterest.getEnvelopeInternal();
-            final GeneralEnvelope env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
-            env.setRange(0, e.getMinX(), e.getMaxX());
-            env.setRange(1, e.getMinY(), e.getMaxY());
-            bbox.setBounds(env);
-        } catch (TransformException ex) {
-            bbox = null;
-            Logging.ignorableException(getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
+        DefaultGeographicBoundingBox bbox = null;
+        if (!areaOfInterest.isEmpty()) {
+            bbox = new DefaultGeographicBoundingBox();
+            try {
+                final Envelope e = areaOfInterest.getEnvelopeInternal();
+                final GeneralEnvelope env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
+                env.setRange(0, e.getMinX(), e.getMaxX());
+                env.setRange(1, e.getMinY(), e.getMaxY());
+                bbox.setBounds(env);
+            } catch (TransformException ex) {
+                bbox = null;
+                Logging.ignorableException(getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
+            }
         }
         return CRS.findOperation(sourceCRS, targetCRS, bbox);
     }
