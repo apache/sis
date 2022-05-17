@@ -147,7 +147,7 @@ public class GridCoverage2D extends GridCoverage {
     {
         super(source.gridGeometry, range);
         final DataType bandType = ConvertedGridCoverage.getBandType(range, isConverted, source);
-        data           = convert(source.data, bandType, converters);
+        data           = convert(source.data, bandType, converters, Lazy.PROCESSOR);
         gridToImageX   = source.gridToImageX;
         gridToImageY   = source.gridToImageY;
         xDimension     = source.xDimension;
