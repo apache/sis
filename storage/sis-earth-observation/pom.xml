@@ -39,7 +39,7 @@
   <artifactId>sis-earth-observation</artifactId>
   <name>Apache SIS Earth Observation storage</name>
   <description>
-    Landsat and MODIS metadata files to ISO 19115 metadata.
+    Read a directory of Landsat files as a single resource.
   </description>
 
 
