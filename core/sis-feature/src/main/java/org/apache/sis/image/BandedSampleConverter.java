@@ -227,14 +227,12 @@ class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public Object getProperty(final String key) {
-        if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
-            if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
-                if (sampleResolutions != null) {
-                    return sampleResolutions.clone();
-                }
-            } else {
-                return getSource().getProperty(key);
+        if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
+            if (sampleResolutions != null) {
+                return sampleResolutions.clone();
             }
+        } else if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
+            return getSource().getProperty(key);
         }
         return super.getProperty(key);
     }
