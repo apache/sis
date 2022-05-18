@@ -597,7 +597,7 @@ loop:   for (int i=0; ; i++) {
         colors.put(Level.INFO,    X364.BACKGROUND_GREEN);
         colors.put(Level.WARNING, X364.BACKGROUND_YELLOW);
         colors.put(Level.SEVERE,  X364.BACKGROUND_RED);
-        colors.put(PerformanceLevel.SLOW, X364.BACKGROUND_CYAN);
+        colors.put(PerformanceLevel.SLOWNESS, X364.BACKGROUND_CYAN);
     }
 
     /**

@@ -183,7 +183,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
     /**
      * Logs the execution of a {@link #read(GridGeometry, int...)} operation.
      * The log level will be {@link Level#FINE} if the operation was quick enough,
-     * or {@link PerformanceLevel#SLOW} or higher level otherwise.
+     * or {@link PerformanceLevel#SLOWNESS} or higher level otherwise.
      *
      * @param  file       the file that was opened, or {@code null} for {@link StoreListeners#getSourceName()}.
      * @param  domain     domain of the created grid coverage.

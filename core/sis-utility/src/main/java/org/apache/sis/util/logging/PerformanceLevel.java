@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * Logging levels for data processing with execution time measurements.
  * Those levels are used for events that would normally be logged at {@link Level#FINE},
  * but with the possibility to use a slightly higher level if execution time was long.
- * Different logging levels - {@link #SLOW} and {@link #SLOWER} - are provided for logging
+ * Different logging levels - {@link #SLOWNESS} and {@link #SLOWER} - are provided for logging
  * only the events taking more time than some thresholds. For example the console could log
  * only the slowest events, while a file could log all events considered slow.
  *
@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -64,17 +64,25 @@ public final class PerformanceLevel extends Level {
     /**
      * The level for logging relatively slow events. By default, only events having an execution
      * time equals or greater than 1 second are logged at this level. However this threshold can
-     * be changed by a call to <code>SLOW.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
+     * be changed by a call to <code>SLOWNESS.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
+     *
+     * @since 1.3
      */
-    public static final PerformanceLevel SLOW = new PerformanceLevel("SLOW", Vocabulary.Keys.Slow, 620, 1000_000_000L);
+    public static final PerformanceLevel SLOWNESS = new PerformanceLevel("SLOWNESS", Vocabulary.Keys.Slowness, 620, 1000_000_000L);
 
     /**
-     * The level for logging only events slower than the ones logged at the {@link #SLOW} level.
+     * The level for logging only events slower than the ones logged at the {@link #SLOWNESS} level.
      * By default, only events having an execution time equals or greater than 10 seconds are
      * logged at this level. However this threshold can be changed by a call to
      * <code>SLOWER.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
     public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", Vocabulary.Keys.Slower, 630, 10_000_000_000L);
+
+    /**
+     * @deprecated Renamed {@link #SLOWNESS}.
+     */
+    @Deprecated
+    public static final PerformanceLevel SLOW = SLOWNESS;
 
     /**
      * The minimal duration (in nanoseconds) for logging the record.
@@ -101,7 +109,7 @@ public final class PerformanceLevel extends Level {
 
     /**
      * Returns the level to use for logging an event of the given duration.
-     * The method may return {@link Level#FINE}, {@link #SLOW} or {@link #SLOWER}
+     * The method may return {@link Level#FINE}, {@link #SLOWNESS} or {@link #SLOWER}
      * depending on the duration.
      *
      * @param  duration  the event duration.
@@ -110,10 +118,10 @@ public final class PerformanceLevel extends Level {
      */
     public static Level forDuration(long duration, final TimeUnit unit) {
         duration = unit.toNanos(duration);
-        if (duration < SLOW.minDuration) {
+        if (duration < SLOWNESS.minDuration) {
             return Level.FINE;              // Most common case.
         }
-        return (duration >= SLOWER.minDuration) ? SLOWER : SLOW;
+        return (duration >= SLOWER.minDuration) ? SLOWER : SLOWNESS;
     }
 
     /**
@@ -148,11 +156,11 @@ public final class PerformanceLevel extends Level {
         duration = unit.toNanos(duration);
         final int value = intValue();
         synchronized (PerformanceLevel.class) {
-            if (value >= SLOWER.intValue() && duration < SLOW.minDuration) {
-                SLOW.minDuration = duration;
+            if (value >= SLOWER.intValue() && duration < SLOWNESS.minDuration) {
+                SLOWNESS.minDuration = duration;
             }
             minDuration = duration;
-            if (value <= SLOW.intValue() && duration > SLOWER.minDuration) {
+            if (value <= SLOWNESS.intValue() && duration > SLOWER.minDuration) {
                 SLOWER.minDuration = duration;
             }
         }
