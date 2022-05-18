@@ -65,7 +65,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -381,6 +381,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @see #close()
      */
     private Reader reader() throws DataStoreException {
+        assert Thread.holdsLock(this);
         final Reader r = reader;
         if (r == null) {
             throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
@@ -402,7 +403,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<GridCoverageResource> components() throws DataStoreException {
+    public synchronized List<GridCoverageResource> components() throws DataStoreException {
         if (components == null) {
             components = new Components();
         }
@@ -420,15 +421,19 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
         /** Returns the size or -1 if not yet known. */
         @Override protected int sizeIfKnown() {
-            return size;
+            synchronized (GeoTiffStore.this) {
+                return size;
+            }
         }
 
         /** Returns the size, computing and caching it if needed. */
         @Override public int size() {
-            if (size < 0) {
-                size = super.size();
+            synchronized (GeoTiffStore.this) {
+                if (size < 0) {
+                    size = super.size();
+                }
+                return size;
             }
-            return size;
         }
 
         /** Returns whether the given index is valid. */
@@ -448,7 +453,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         /** Returns element at the given index or returns {@code null} if the index is invalid. */
         private GridCoverageResource getImageFileDirectory(final int index) {
             try {
-                return reader().getImage(index);
+                synchronized (GeoTiffStore.this) {
+                    return reader().getImage(index);
+                }
             } catch (IOException e) {
                 throw new BackingStoreException(errorIO(e));
             } catch (DataStoreException e) {
@@ -465,7 +472,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @throws DataStoreException if the requested image can not be obtained.
      */
     @Override
-    public GridCoverageResource findResource(final String sequence) throws DataStoreException {
+    public synchronized GridCoverageResource findResource(final String sequence) throws DataStoreException {
         Exception cause;
         int index;
         try {
