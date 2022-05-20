@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import org.apache.sis.internal.book.Characters;
 
 
 /**
@@ -240,7 +241,7 @@ process:    while (i < stopAt) {
                     if (c == '(') c = content.codePointAt(++i);
                     if (c == ')') c = content.codePointAt(++i);
                     if ((c == '.' || c == '_') && Character.isJavaIdentifierStart(content.codePointAt(i+1))) {
-                        content.insert(i++, '\u200B');              // Zero width space.
+                        content.insert(i++, Characters.ZERO_WIDTH_SPACE);
                         stopAt++;
                     }
                 }

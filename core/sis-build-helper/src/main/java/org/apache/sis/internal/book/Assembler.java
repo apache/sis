@@ -110,6 +110,11 @@ public final class Assembler {
     private final Element tableOfContent;
 
     /**
+     * Maximal header level to include in {@link #tableOfContent}, inclusive.
+     */
+    private static final int MAX_TOC_LEVEL = 3;
+
+    /**
      * The {@code title} attributes found in abbreviations.
      */
     private final Map<String,String> abbreviations = new HashMap<>();
@@ -379,7 +384,9 @@ public final class Assembler {
                                 if (index) {
                                     sectionNumbering[c-1]++;
                                     Arrays.fill(sectionNumbering, c, sectionNumbering.length, 0);
-                                    appendToTableOfContent(tableOfContent, c, (Element) node);
+                                    if (c <= MAX_TOC_LEVEL) {
+                                        appendToTableOfContent(tableOfContent, c, (Element) node);
+                                    }
                                     prependSectionNumber(c, node);                      // Only after insertion in TOC.
                                 }
                             }
@@ -486,7 +493,7 @@ public final class Assembler {
                                         if (buffer == null) {
                                             buffer = new StringBuilder(text);
                                         }
-                                        buffer.insert(i, '\u200B');     // Zero-width space.
+                                        buffer.insert(i, Characters.ZERO_WIDTH_SPACE);
                                         break;
                                     }
                                 }

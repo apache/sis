@@ -39,7 +39,7 @@ import org.w3c.dom.NodeList;
  * standard, in GeoAPI or in Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -125,6 +125,32 @@ public final class CodeColorizer {
     }
 
     /**
+     * Returns the re-defined identifiers and authority who defined it for the given word.
+     *
+     * @param  word  the word for which to get a specifier.
+     * @return the specifier for the given word, or {@code null} if none.
+     */
+    private Specifier getSpecifier(String word) {
+        StringBuilder buffer = null;
+        final int length = word.length();
+        for (int i=0; i<length; ) {
+            final int c = word.codePointAt(i);
+            if (Character.isIdentifierIgnorable(c)) {
+                if (buffer == null) {
+                    buffer = new StringBuilder(length).append(word, 0, i);
+                }
+            } else if (buffer != null) {
+                buffer.appendCodePoint(c);
+            }
+            i += Character.charCount(c);
+        }
+        if (buffer != null) {
+            word = buffer.toString();
+        }
+        return identifierSpecifiers.get(word);
+    }
+
+    /**
      * Returns {@code true} if the given string starts with the given prefix,
      * and the character following the prefix is not an identifier character.
      */
@@ -135,7 +161,7 @@ public final class CodeColorizer {
 
     /**
      * Returns {@code true} if the given string from {@code i} inclusive to {@code upper} exclusive
-     * is a Java identifier.
+     * is a Java identifier. Ignore zero-width space and soft hyphen.
      */
     private static boolean isJavaIdentifier(final String identifier, int i, final int upper) {
         if (upper <= i) {
@@ -199,7 +225,7 @@ public final class CodeColorizer {
          * without package name or XML prefix. Fully qualified names are less commons but easier to
          * check since the package/prefix name is sufficient.
          */
-        Specifier specifier = identifierSpecifiers.get(word);
+        Specifier specifier = getSpecifier(word);
         if (specifier == null) {
             if (startsWithWord(word, "org.opengis") || startsWithWord(word, "geoapi")) {
                 specifier = Specifier.GEOAPI;
@@ -218,7 +244,7 @@ public final class CodeColorizer {
                         return null;
                     }
                 }
-                specifier = identifierSpecifiers.get(word.substring(0, i));
+                specifier = getSpecifier(word.substring(0, i));
                 switch (c) {
                     default: {
                         return null;
@@ -261,6 +287,7 @@ public final class CodeColorizer {
      * @throws BookException if an element can not be processed.
      */
     public void highlight(final Node parent, final String type) throws BookException {
+        if ("wkt".equals(type)) return;
         final boolean isXML = "xml".equals(type);
         final boolean isJava = !isXML;                              // Future version may add more choices.
         Element syntacticElement = null;                            // E.g. comment block or a String.
@@ -366,7 +393,7 @@ public final class CodeColorizer {
                             if (JAVA_KEYWORDS.contains(word)) {
                                 emphase = document.createElement("b");
                             } else if (isJava) {
-                                final Specifier origin = identifierSpecifiers.get(word);
+                                final Specifier origin = getSpecifier(word);
                                 if (origin != null) {
                                     emphase = document.createElement("code");
                                     emphase.setAttribute("class", origin.style);
