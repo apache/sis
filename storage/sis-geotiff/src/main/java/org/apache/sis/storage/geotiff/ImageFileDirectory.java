@@ -391,6 +391,8 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Returns {@link #referencing}, created when first needed. We delay its creation since
      * this object is not needed for ordinary TIFF files (i.e. without the GeoTIFF extension).
+     * This method is invoked only during the parsing of TIFF tags. If no GeoTIFF information
+     * is found, then this field keeps the {@code null} value.
      */
     private GridGeometryBuilder referencing() {
         if (referencing == null) {
@@ -1507,6 +1509,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected SampleModel getSampleModel() throws DataStoreContentException {
+        assert Thread.holdsLock(getSynchronizationLock());
         if (sampleModel == null) try {
             sampleModel = new SampleModelFactory(getDataType(), tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
         } catch (IllegalArgumentException | RasterFormatException e) {
@@ -1594,6 +1597,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected ColorModel getColorModel() throws DataStoreContentException {
+        assert Thread.holdsLock(getSynchronizationLock());
         if (colorModel == null) {
             final SampleModel sm  = getSampleModel();
             final int dataType    = sm.getDataType();
