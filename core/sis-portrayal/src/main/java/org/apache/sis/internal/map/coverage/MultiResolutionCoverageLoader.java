@@ -41,8 +41,8 @@ import org.apache.sis.io.TableAppender;
 
 
 /**
- * A helper class for reading {@link GridCoverage} instances at various resolution.
- * The resolution are inferred from {@link GridCoverageResource#getResolutions()},
+ * A helper class for reading {@link GridCoverage} instances at various resolutions.
+ * The resolutions are inferred from {@link GridCoverageResource#getResolutions()},
  * using default values if necessary. The objective CRS does not need to be the same
  * than the coverage CRS, in which case transformations are applied at the point in
  * the center of the display bounds.
