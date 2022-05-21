@@ -23,12 +23,15 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
@@ -40,7 +43,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * mechanisms are implemented in the view (different views may load a different amount of data).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -68,7 +71,20 @@ abstract class ViewAndControls {
     Toggle selector;
 
     /**
-     * The controls put together in an accordion. Built only if requested
+     * The main component which is showing coverage data or image together with status bar.
+     * This is the component to show on the right (largest) part of the split pane.
+     */
+    final VBox viewAndNavigation;
+
+    /**
+     * The panes for controlling the view, set by subclass constructors and unmodified after construction.
+     * Those panes are the components to show on the left (smaller) part of the split pane.
+     * Callers will typically put those components in an {@link Accordion}.
+     */
+    TitledPane[] controlPanes;
+
+    /**
+     * The {@link #controlPanes} put together in an accordion. Built only if requested
      * (may never be requested if the caller creates its own accordion with additional panes,
      * as {@link org.apache.sis.gui.dataset.ResourceExplorer} does).
      *
@@ -81,9 +97,9 @@ abstract class ViewAndControls {
      * Subclasses should define the following method:
      *
      * {@preformat java
-     *     private void coverageChanged(final Resource source, final GridCoverage data) {
+     *     private void onPropertySet(final Resource resource, final GridCoverage data) {
      *         // Update subclass-specific controls here, before to forward to explorer.
-     *         owner.coverageChanged(source, data);
+     *         owner.notifyDataChanged(resource, data);
      *     }
      * }
      */
@@ -92,11 +108,52 @@ abstract class ViewAndControls {
     /**
      * Creates a new view-control pair.
      *
-     * @param  owner  the widget which create this view. Can not be null.
+     * @param  owner  the widget which creates this view. Can not be null.
      */
-    ViewAndControls(final CoverageExplorer owner) {
+    protected ViewAndControls(final CoverageExplorer owner) {
         this.owner = owner;
+        viewAndNavigation = new VBox();
     }
+
+    /**
+     * Invoked by subclass constructors for declaring the main visual component.
+     * The given component will be added to the {@link #viewAndNavigation} node.
+     */
+    final void setView(final Region view, final StatusBar status) {
+        final Region bar = status.getView();
+        VBox.setVgrow(view, Priority.ALWAYS);
+        VBox.setVgrow(bar,  Priority.NEVER);
+        viewAndNavigation.getChildren().setAll(view, bar);
+        SplitPane.setResizableWithParent(viewAndNavigation, Boolean.TRUE);
+    }
+
+    /**
+     * Returns the controls for controlling the view.
+     * This is the component to show on the left (smaller) part of the split pane.
+     */
+    final Accordion controls() {
+        if (controls == null) {
+            final TitledPane[] panes = controlPanes;
+            controls = new Accordion(panes);
+            controls.setExpandedPane(panes[0]);
+            SplitPane.setResizableWithParent(controls, Boolean.FALSE);
+        }
+        return controls;
+    }
+
+    /**
+     * Sets the view content to the given resource, coverage or image.
+     * This method is invoked when a new source of data (either a resource or a coverage) is specified,
+     * or when a previously hidden view is made visible. Implementations may start a background thread.
+     *
+     * @param  request  the resource, coverage or image to set, or {@code null} for clearing the view.
+     */
+    abstract void load(ImageRequest request);
+
+
+
+
+    // ════════ Helper methods for subclass constructors ════════════════════════════════════════════════════════
 
     /**
      * Creates a label with the specified text (fetched from localized resources) associated to the given control.
@@ -140,42 +197,4 @@ abstract class ViewAndControls {
     private static Font fontOfGroup() {
         return Font.font(null, FontWeight.BOLD, -1);
     }
-
-    /**
-     * Returns the main component, which is showing coverage data or image.
-     * This is the component to show on the right (largest) part of the split pane.
-     */
-    abstract Region view();
-
-    /**
-     * Returns the list of control panels for controlling the view.
-     * They are the components to show on the left (smaller) part of the split pane.
-     * Callers will typically put those components in an {@link javafx.scene.control.Accordion}.
-     *
-     * @return the controls. This method does not clone the returned array; do not modify!
-     */
-    abstract TitledPane[] controlPanes();
-
-    /**
-     * Returns the controls for controlling the view.
-     * This is the component to show on the left (smaller) part of the split pane.
-     */
-    final Accordion controls() {
-        if (controls == null) {
-            final TitledPane[] panes = controlPanes();
-            controls = new Accordion(panes);
-            controls.setExpandedPane(panes[0]);
-            SplitPane.setResizableWithParent(controls, Boolean.FALSE);
-        }
-        return controls;
-    }
-
-    /**
-     * Sets the view content to the given resource, coverage or image.
-     * This method is invoked when a new source of data (either a resource or a coverage) is specified,
-     * or when a previously hidden view is made visible. Implementations may start a background thread.
-     *
-     * @param  request  the resource, coverage or image to set, or {@code null} for clearing the view.
-     */
-    abstract void load(ImageRequest request);
 }

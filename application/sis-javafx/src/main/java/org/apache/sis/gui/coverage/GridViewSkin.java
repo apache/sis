@@ -27,7 +27,6 @@ import javafx.scene.Cursor;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.control.skin.VirtualContainerBase;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -56,7 +55,7 @@ import org.apache.sis.internal.gui.Styles;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -198,14 +197,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         /*
          * The list of children is initially empty. We need to add the virtual flow
          * (together with headers, selection, etc.), otherwise nothing will appear.
-         * The status bar is declared unmanaged for avoiding relayout of the whole
-         * widget every time that coordinates are formatted. This is okay because
-         * the `layoutChildren(…)` method in this class does layout itself.
          */
-        final Region bar = view.statusBar.getView();
-        bar.setManaged(false);
         getChildren().addAll(topBackground, leftBackground, selectedColumn,
-                             selectedRow, headerRow, selection, bar, flow);
+                             selectedRow, headerRow, selection, flow);
         /*
          * Keyboard and drag events for moving the viewed bounds.
          */
@@ -547,9 +541,8 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         final Flow   flow         = (Flow) getVirtualFlow();
         final double cellHeight   = flow.getFixedCellSize();
         final double headerHeight = cellHeight + 2*cellSpacing;
-        final double statusHeight = view.statusBar.getView().getHeight();
         final double dataY        = y + headerHeight;
-        final double dataHeight   = height - headerHeight - statusHeight;
+        final double dataHeight   = height - headerHeight;
         layoutAll |= (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
         flow.resizeRelocate(x, dataY, width, dataHeight);
         /*
@@ -596,8 +589,6 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         if (layoutAll || oldPos != leftPosition) {
             layoutInArea(headerRow, x, y, width, headerHeight,
                          Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
-            layoutInArea(view.statusBar.getView(), x, height - statusHeight, width, statusHeight,
-                         Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.BOTTOM);
             final ObservableList<Node> children = headerRow.getChildren();
             final int count   = children.size();
             final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;

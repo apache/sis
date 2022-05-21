@@ -18,7 +18,6 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
 import javafx.scene.control.TitledPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -45,7 +44,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * The controls are updated when the coverage shown in {@link CoverageCanvas} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -68,19 +67,9 @@ final class CoverageControls extends ViewAndControls {
     private final IsolineRenderer isolines;
 
     /**
-     * The controls for changing {@link #view}.
-     */
-    private final TitledPane[] controls;
-
-    /**
-     * The image together with the status bar.
-     */
-    private final BorderPane imageAndStatus;
-
-    /**
      * Creates a new set of coverage controls.
      *
-     * @param  owner  the widget which create this view. Can not be null.
+     * @param  owner  the widget which creates this view. Can not be null.
      */
     CoverageControls(final CoverageExplorer owner) {
         super(owner);
@@ -91,8 +80,6 @@ final class CoverageControls extends ViewAndControls {
         view = new CoverageCanvas(locale);
         view.setBackground(Color.BLACK);
         view.statusBar = new StatusBar(owner.referenceSystems, view);
-        imageAndStatus = new BorderPane(view.getView());
-        imageAndStatus.setBottom(view.statusBar.getView());
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);
         menu.addCopyOptions(view.statusBar);
@@ -148,12 +135,12 @@ final class CoverageControls extends ViewAndControls {
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
-        controls = new TitledPane[] {
+        final TitledPane deferred;                  // Control to be built only if requested.
+        controlPanes = new TitledPane[] {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
+            deferred = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
         };
-        final TitledPane delayed = controls[2];     // Control to be built only if requested.
         /*
          * Set listeners: changes on `CoverageCanvas` properties are propagated to the corresponding
          * `CoverageExplorer` properties. This constructor does not install listeners in the opposite
@@ -161,7 +148,8 @@ final class CoverageControls extends ViewAndControls {
          */
         view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
         view.coverageProperty.addListener((p,o,n) -> onPropertySet(view.getResourceIfAdjusting(), n));
-        delayed.expandedProperty().addListener(new PropertyPaneCreator(view, delayed));
+        deferred.expandedProperty().addListener(new PropertyPaneCreator(view, deferred));
+        setView(view.getView(), view.statusBar);
     }
 
     /**
@@ -202,23 +190,5 @@ final class CoverageControls extends ViewAndControls {
             coverage = null;
         }
         view.setCoverage(resource, coverage);
-    }
-
-    /**
-     * Returns the main component, which is showing coverage tabular data.
-     */
-    @Override
-    final Region view() {
-        return imageAndStatus;
-    }
-
-    /**
-     * Returns the controls for controlling the view of tabular data.
-     * This method does not clone the returned array; do not modify!
-     */
-    @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final TitledPane[] controlPanes() {
-        return controls;
     }
 }

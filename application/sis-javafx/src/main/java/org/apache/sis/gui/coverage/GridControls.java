@@ -22,7 +22,6 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -37,7 +36,7 @@ import org.apache.sis.internal.gui.Styles;
  * The controls are updated when the image shown in {@link GridView} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -48,11 +47,6 @@ final class GridControls extends ViewAndControls {
     private final GridView view;
 
     /**
-     * The controls for changing {@link #view}.
-     */
-    private final TitledPane[] controls;
-
-    /**
      * The control showing sample dimensions for the current coverage.
      */
     private final TableView<SampleDimension> sampleDimensions;
@@ -60,7 +54,7 @@ final class GridControls extends ViewAndControls {
     /**
      * Creates a new set of grid controls.
      *
-     * @param  owner  the widget which create this view. Can not be null.
+     * @param  owner  the widget which creates this view. Can not be null.
      */
     GridControls(final CoverageExplorer owner) {
         super(owner);
@@ -90,10 +84,11 @@ final class GridControls extends ViewAndControls {
         /*
          * All sections put together.
          */
-        controls = new TitledPane[] {
+        controlPanes = new TitledPane[] {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane)
             // TODO: more controls to be added in a future version.
         };
+        setView(view, view.statusBar);
     }
 
     /**
@@ -111,10 +106,10 @@ final class GridControls extends ViewAndControls {
      * Invoked after {@link GridView#setImage(ImageRequest)} for updating the table of sample
      * dimensions when information become available. This method is invoked in JavaFX thread.
      *
-     * @param  source  the new source of coverage, or {@code null} if none.
-     * @param  data    the new coverage, or {@code null} if none.
+     * @param  resource  the new source of coverage, or {@code null} if none.
+     * @param  data      the new coverage, or {@code null} if none.
      */
-    final void notifyDataChanged(final GridCoverageResource source, final GridCoverage data) {
+    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage data) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (data != null) {
             items.setAll(data.getSampleDimensions());
@@ -122,7 +117,7 @@ final class GridControls extends ViewAndControls {
         } else {
             items.clear();
         }
-        owner.notifyDataChanged(source, data);
+        owner.notifyDataChanged(resource, data);
     }
 
     /**
@@ -135,23 +130,5 @@ final class GridControls extends ViewAndControls {
     @Override
     final void load(final ImageRequest request) {
         view.setImage(request);
-    }
-
-    /**
-     * Returns the main component, which is showing coverage tabular data.
-     */
-    @Override
-    final Region view() {
-        return view;
-    }
-
-    /**
-     * Returns the controls for controlling the view of tabular data.
-     * This method does not clone the returned array; do not modify!
-     */
-    @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final TitledPane[] controlPanes() {
-        return controls;
     }
 }

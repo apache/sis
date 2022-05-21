@@ -65,7 +65,7 @@ import org.apache.sis.gui.Widget;
  * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see CoverageCanvas
  * @see GridView
@@ -283,7 +283,6 @@ public class CoverageExplorer extends Widget {
                 case IMAGE: c = new CoverageControls(this); break;
                 default: throw new AssertionError(type);
             }
-            SplitPane.setResizableWithParent(c.view(), Boolean.TRUE);
             views.put(type, c);
             load = true;
         }
@@ -335,7 +334,7 @@ public class CoverageExplorer extends Widget {
             final View type = getViewType();
             final ViewAndControls c = getViewAndControls(type, false);
             group.selectToggle(group.getToggles().get(type.ordinal()));
-            content = new SplitPane(c.controls(), c.view());
+            content = new SplitPane(c.controls(), c.viewAndNavigation);
             ToolbarButton.insert(content, buttons);
             /*
              * The divider position is supposed to be a fraction between 0 and 1. A value of 1 would mean
@@ -350,8 +349,9 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * Returns the region containing only the data visualization component, without controls.
-     * This is a {@link GridView} or {@link CoverageCanvas} together with their {@link StatusBar}.
+     * Returns the region containing the data visualization component, without controls other than navigation.
+     * This is a {@link GridView} or {@link CoverageCanvas} together with their {@link StatusBar}
+     * and navigation controls for selecting the slice in a <var>n</var>-dimensional data cube.
      * The {@link Region} subclass returned by this method is implementation dependent and may change
      * in any future version.
      *
@@ -361,7 +361,7 @@ public class CoverageExplorer extends Widget {
     public final Region getDataView(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).view();
+        return getViewAndControls(type, false).viewAndNavigation;
     }
 
     /**
@@ -374,7 +374,7 @@ public class CoverageExplorer extends Widget {
     public final TitledPane[] getControls(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).controlPanes().clone();
+        return getViewAndControls(type, false).controlPanes.clone();
     }
 
     /**
@@ -433,7 +433,7 @@ public class CoverageExplorer extends Widget {
     private void onViewTypeSet(final View type) {
         final ViewAndControls c = getViewAndControls(type, true);
         if (content != null) {
-            content.getItems().setAll(c.controls(), c.view());
+            content.getItems().setAll(c.controls(), c.viewAndNavigation);
             final Toggle selector = c.selector;
             if (selector != null) {
                 selector.setSelected(true);

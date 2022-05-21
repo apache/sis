@@ -181,6 +181,7 @@ public class ResourceExplorer extends WindowManager {
         final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
         controls = new Accordion(resourcesPane);
         controls.setExpandedPane(resourcesPane);
+        SplitPane.setResizableWithParent(controls, Boolean.FALSE);
         expandedPane = new EnumMap<>(CoverageExplorer.View.class);
         /*
          * "Summary" tab showing a summary of resource metadata.
@@ -223,7 +224,7 @@ public class ResourceExplorer extends WindowManager {
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         content = new SplitPane(controls, tabs);
-        content.setDividerPosition(0, 0.2);
+        content.setDividerPosition(0, 1./3);
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
         /*
