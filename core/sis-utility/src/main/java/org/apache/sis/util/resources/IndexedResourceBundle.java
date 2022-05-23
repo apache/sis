@@ -77,7 +77,7 @@ import static java.util.logging.Logger.getLogger;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -492,6 +492,16 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
         } else {
             toAppendTo.append(':');
         }
+    }
+
+    /**
+     * Returns the given string followed by a colon.
+     *
+     * @param  text  the text to follow be a colon.
+     * @return the given text followed by a colon.
+     */
+    public final String toLabel(final String text) {
+        return text.concat(colon());
     }
 
     /**

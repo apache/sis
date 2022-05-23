@@ -107,17 +107,18 @@ final class GridControls extends ViewAndControls {
      * dimensions when information become available. This method is invoked in JavaFX thread.
      *
      * @param  resource  the new source of coverage, or {@code null} if none.
-     * @param  data      the new coverage, or {@code null} if none.
+     * @param  coverage  the new coverage, or {@code null} if none.
      */
-    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage data) {
+    @Override
+    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
-        if (data != null) {
-            items.setAll(data.getSampleDimensions());
+        if (coverage != null) {
+            items.setAll(coverage.getSampleDimensions());
             sampleDimensions.getSelectionModel().clearAndSelect(view.getBand());
         } else {
             items.clear();
         }
-        owner.notifyDataChanged(resource, data);
+        super.notifyDataChanged(resource, coverage);
     }
 
     /**

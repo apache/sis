@@ -115,6 +115,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short AxisChanges = 12;
 
         /**
+         * Axis {0}
+         */
+        public static final short Axis_1 = 269;
+
+        /**
          * Azimuth
          */
         public static final short Azimuth = 13;

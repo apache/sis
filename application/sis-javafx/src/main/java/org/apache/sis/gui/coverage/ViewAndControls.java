@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
@@ -28,8 +29,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.collections.ObservableList;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -65,13 +68,18 @@ abstract class ViewAndControls {
     static final Insets CONTENT_MARGIN = new Insets(0, 0, 0, Styles.FORM_INSETS.getLeft());
 
     /**
+     * Index of {@link #sliceSelector} in the list of children of {@link #viewAndNavigation}.
+     */
+    private static final int SLICE_SELECTOR_INDEX = 2;
+
+    /**
      * The toolbar button for selecting this view.
      * This is initialized after construction and only if a button bar exists.
      */
     Toggle selector;
 
     /**
-     * The main component which is showing coverage data or image together with status bar.
+     * The main component which is showing coverage data or image together with status bar and {@link #sliceSelector}.
      * This is the component to show on the right (largest) part of the split pane.
      */
     final VBox viewAndNavigation;
@@ -93,17 +101,16 @@ abstract class ViewAndControls {
     private Accordion controls;
 
     /**
-     * The widget which contain this view. This is the widget to inform when the coverage changed.
-     * Subclasses should define the following method:
-     *
-     * {@preformat java
-     *     private void onPropertySet(final Resource resource, final GridCoverage data) {
-     *         // Update subclass-specific controls here, before to forward to explorer.
-     *         owner.notifyDataChanged(resource, data);
-     *     }
-     * }
+     * The control for selecting a slice in a <var>n</var>-dimensional data cube.
      */
-    protected final CoverageExplorer owner;
+    protected final GridSliceSelector sliceSelector;
+
+    /**
+     * The widget which contain this view. This is the widget to inform when the coverage changed.
+     *
+     * @see #notifyDataChanged(GridCoverageResource, GridCoverage)
+     */
+    private final CoverageExplorer owner;
 
     /**
      * Creates a new view-control pair.
@@ -112,6 +119,7 @@ abstract class ViewAndControls {
      */
     protected ViewAndControls(final CoverageExplorer owner) {
         this.owner = owner;
+        sliceSelector = new GridSliceSelector(owner.getLocale());
         viewAndNavigation = new VBox();
     }
 
@@ -121,9 +129,11 @@ abstract class ViewAndControls {
      */
     final void setView(final Region view, final StatusBar status) {
         final Region bar = status.getView();
+        final Region nav = sliceSelector.getView();
         VBox.setVgrow(view, Priority.ALWAYS);
         VBox.setVgrow(bar,  Priority.NEVER);
-        viewAndNavigation.getChildren().setAll(view, bar);
+        VBox.setVgrow(nav,  Priority.NEVER);
+        viewAndNavigation.getChildren().setAll(view, bar);      // `nav` will be added only when non-empty.
         SplitPane.setResizableWithParent(viewAndNavigation, Boolean.TRUE);
     }
 
@@ -149,6 +159,29 @@ abstract class ViewAndControls {
      * @param  request  the resource, coverage or image to set, or {@code null} for clearing the view.
      */
     abstract void load(ImageRequest request);
+
+    /**
+     * Notifies all controls that a new coverage has been loaded.
+     * Subclasses shall invoke this method in the JavaFX thread after loading completed.
+     *
+     * @param  resource  the new source of coverage, or {@code null} if none.
+     * @param  coverage  the new coverage, or {@code null} if none.
+     */
+    void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+        sliceSelector.gridGeometry.set(coverage != null ? coverage.getGridGeometry() : null);
+        final ObservableList<Node> components = viewAndNavigation.getChildren();
+        final int count = components.size();
+        if (sliceSelector.isEmpty()) {
+            if (count > SLICE_SELECTOR_INDEX) {
+                components.remove(SLICE_SELECTOR_INDEX);
+            }
+        } else {
+            if (count <= SLICE_SELECTOR_INDEX) {
+                components.add(sliceSelector.getView());
+            }
+        }
+        owner.notifyDataChanged(resource, coverage);
+    }
 
 
 

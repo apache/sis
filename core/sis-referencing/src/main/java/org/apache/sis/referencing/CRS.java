@@ -141,7 +141,7 @@ import org.opengis.geometry.Geometry;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -1349,6 +1349,7 @@ public final class CRS extends Static {
      * @since 0.5
      */
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
+        if (crs == null) return null;     // Skip bounds check.
         int dimension = ReferencingUtilities.getDimension(crs);
         ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
 check:  while (lower != 0 || upper != dimension) {

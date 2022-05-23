@@ -146,8 +146,8 @@ final class CoverageControls extends ViewAndControls {
          * `CoverageExplorer` properties. This constructor does not install listeners in the opposite
          * direction; instead `CoverageExplorer` will invoke `load(ImageRequest)`.
          */
-        view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
-        view.coverageProperty.addListener((p,o,n) -> onPropertySet(view.getResourceIfAdjusting(), n));
+        view.resourceProperty.addListener((p,o,n) -> notifyDataChanged(n, null));
+        view.coverageProperty.addListener((p,o,n) -> notifyDataChanged(view.getResourceIfAdjusting(), n));
         deferred.expandedProperty().addListener(new PropertyPaneCreator(view, deferred));
         setView(view.getView(), view.statusBar);
     }
@@ -160,7 +160,8 @@ final class CoverageControls extends ViewAndControls {
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    private void onPropertySet(final GridCoverageResource resource, final GridCoverage coverage) {
+    @Override
+    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<Category> items = categoryTable.getItems();
         if (coverage == null) {
             items.clear();
@@ -168,7 +169,7 @@ final class CoverageControls extends ViewAndControls {
             final int visibleBand = 0;          // TODO: provide a selector for the band to show.
             items.setAll(coverage.getSampleDimensions().get(visibleBand).getCategories());
         }
-        owner.notifyDataChanged(resource, coverage);
+        super.notifyDataChanged(resource, coverage);
     }
 
     /**
