@@ -50,6 +50,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.event.StoreListenersTest.class,
     org.apache.sis.storage.CoverageQueryTest.class,
     org.apache.sis.storage.FeatureQueryTest.class,
+    org.apache.sis.storage.tiling.TileMatricesTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.StoreProviderTest.class,
     org.apache.sis.internal.storage.xml.StoreTest.class,
