@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -283,18 +284,18 @@ public abstract class ValueGetter<T> {
 
     /**
      * A getter of {@link Date} values from the current row of a {@link ResultSet}.
-     * This getter delegates to {@link ResultSet#getDate(int)} and returns that value with no change.
-     *
-     * @todo Delegate to {@link ResultSet#getDate(int, Calendar)} instead.
+     * This getter delegates to {@link ResultSet#getDate(int)} then convert that value to {@link LocalDate java time API}.
      */
-    static final class AsDate extends ValueGetter<Date> {
+    static final class AsDate extends ValueGetter<LocalDate> {
         /** The unique instance of this accessor. */
         public static final AsDate INSTANCE = new AsDate();
-        private AsDate() {super(Date.class);}
+        private AsDate() {super(LocalDate.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Date getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
-            return source.getDate(columnIndex);
+        @Override public LocalDate getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
+            final Date rawValue = source.getDate(columnIndex);
+            if (rawValue == null) return null;
+            else return rawValue.toLocalDate();
         }
     }
 
@@ -303,7 +304,10 @@ public abstract class ValueGetter<T> {
      * This getter delegates to {@link ResultSet#getTime(int)}, then converts the object
      * by a call to {@link Time#toLocalTime()}.
      *
-     * @todo Delegate to {@link ResultSet#getTime(int, Calendar)} instead.
+     * @todo java.sql.Time does not provide sub-second precision in its local time conversion.
+     * However, some databases support it. A better conversion function would be:
+     * {@code LocalTime.ofNanoOfDay(Math.multiplyExact(sqlTime.getTime(), 1_000_000L));}
+     * But it is less "standard". We should test across multiple database engines to verify the related impact.
      */
     static final class AsLocalTime extends ValueGetter<LocalTime> {
         /** The unique instance of this accessor. */
@@ -320,19 +324,17 @@ public abstract class ValueGetter<T> {
     /**
      * A getter of {@link Instant} values from the current row of a {@link ResultSet}.
      * This getter delegates to {@link ResultSet#getTimestamp(int)}, then converts the
-     * object by a call to {@link Timestamp#toInstant()}.
-     *
-     * @todo Delegate to {@link ResultSet#getTimestamp(int, Calendar)} instead.
+     * object by a call to {@link Timestamp#toLocalDateTime()}.
      */
-    static final class AsInstant extends ValueGetter<Instant> {
+    static final class AsLocalDateTime extends ValueGetter<LocalDateTime> {
         /** The unique instance of this accessor. */
-        public static final AsInstant INSTANCE = new AsInstant();
-        private AsInstant() {super(Instant.class);}
+        public static final AsLocalDateTime INSTANCE = new AsLocalDateTime();
+        private AsLocalDateTime() {super(LocalDateTime.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Instant getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
+        @Override public LocalDateTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Timestamp time = source.getTimestamp(columnIndex);
-            return (time != null) ? time.toInstant() : null;
+            return (time != null) ? time.toLocalDateTime() : null;
         }
     }
 
@@ -341,19 +343,27 @@ public abstract class ValueGetter<T> {
      * This getter delegates to {@link ResultSet#getTimestamp(int)}, converts the object by a
      * call to {@link Timestamp#toInstant()} then apply the time zone offset.
      *
-     * @todo Delegate to {@link ResultSet#getTimestamp(int, Calendar)} instead.
+     * Note: This converter is only meant for "Timestamp with time zone" data types, that describe a fixed/absolute point in time.
+     * Semantically, an SQL "timestamp with time zone" should better match {@link OffsetDateTime}.
+     * However, none of the tested JDBC drivers (PostgreSQL and HSQLDB) return the zone offset given at insertion.
+     * They both return the timestamp UTC, meaning that in any cases, the original zone offset information in lost.
+     * Therefore, it is more straightforward to return an UTC Timestamp, i.e {@link Instant} anyway.
+     *
+     * WARNING: timeStamps returned by HSQLDB looks flawed. To bypass the problem, we add a special case to check if the
+     * driver directly returns a java.time data type. If not, then we fallback to {@link Timestamp SQL Timestamps}.
      */
-    static final class AsOffsetDateTime extends ValueGetter<OffsetDateTime> {
+    static final class AsInstant extends ValueGetter<Instant> {
         /** The unique instance of this accessor. */
-        public static final AsOffsetDateTime INSTANCE = new AsOffsetDateTime();
-        private AsOffsetDateTime() {super(OffsetDateTime.class);}
+        public static final AsInstant INSTANCE = new AsInstant();
+        private AsInstant() {super(Instant.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public OffsetDateTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
-            final Timestamp time = source.getTimestamp(columnIndex);
-            if (time == null) return null;
-            final int offsetMinute = time.getTimezoneOffset();
-            return time.toInstant().atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
+        @Override public Instant getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
+            final Object rawValue = source.getObject(columnIndex);
+            if (rawValue == null) return null;
+            else if (rawValue instanceof Instant) return (Instant) rawValue;
+            else if (rawValue instanceof OffsetDateTime) return (((OffsetDateTime) rawValue).toInstant());
+            else return source.getTimestamp(columnIndex).toInstant();
         }
     }
 
@@ -362,7 +372,11 @@ public abstract class ValueGetter<T> {
      * This getter delegates to {@link ResultSet#getTime(int)}, converts the object by a call
      * to {@link Time#toLocalTime()} then apply the time zone offset.
      *
-     * @todo Delegate to {@link ResultSet#getTime(int, Calendar)} instead.
+     * @todo As for {@link AsLocalTime}, sub-second precision is lost here.
+     *
+     * Note: Timezone used on value insertion is lost here, we always return an UTC time.
+     * The main reason is that multiple database (Postgres, HSQLDB) engines convert times to UTC on save,
+     * so it is impossible to retrieve the information later.
      */
     static final class AsOffsetTime extends ValueGetter<OffsetTime> {
         /** The unique instance of this accessor. */
@@ -371,10 +385,15 @@ public abstract class ValueGetter<T> {
 
         /** Fetches the value from the specified column in the given result set. */
         @Override public OffsetTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
-            final Time time = source.getTime(columnIndex);
-            if (time == null) return null;
-            final int offsetMinute = time.getTimezoneOffset();
-            return time.toLocalTime().atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
+            final Object rawValue = source.getObject(columnIndex);
+            if (rawValue == null) return null;
+            // Workaround/shortcut for HSQLDB and H2
+            else if (rawValue instanceof OffsetTime) return (OffsetTime) rawValue;
+            else {
+                final Time time = source.getTime(columnIndex);
+                final long timeNanoseconds = Math.multiplyExact(time.getTime(), 1_000_000L);
+                return LocalTime.ofNanoOfDay(timeNanoseconds).atOffset(ZoneOffset.UTC);
+            }
         }
     }
 

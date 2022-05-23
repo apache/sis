@@ -567,9 +567,9 @@ public class Database<G> extends Syntax  {
             case Types.LONGVARCHAR:               return ValueGetter.AsString.INSTANCE;
             case Types.DATE:                      return ValueGetter.AsDate.INSTANCE;
             case Types.TIME:                      return ValueGetter.AsLocalTime.INSTANCE;
-            case Types.TIMESTAMP:                 return ValueGetter.AsInstant.INSTANCE;
+            case Types.TIMESTAMP:                 return ValueGetter.AsLocalDateTime.INSTANCE;
             case Types.TIME_WITH_TIMEZONE:        return ValueGetter.AsOffsetTime.INSTANCE;
-            case Types.TIMESTAMP_WITH_TIMEZONE:   return ValueGetter.AsOffsetDateTime.INSTANCE;
+            case Types.TIMESTAMP_WITH_TIMEZONE:   return ValueGetter.AsInstant.INSTANCE;
             case Types.BLOB:                      return ValueGetter.AsBytes.INSTANCE;
             case Types.OTHER:
             case Types.JAVA_OBJECT:               return getDefaultMapping();
