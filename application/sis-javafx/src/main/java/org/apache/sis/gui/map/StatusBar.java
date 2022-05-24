@@ -110,7 +110,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -271,8 +271,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * The source local indices before conversion to geospatial coordinates (never {@code null}).
      * The number of dimensions is often {@value #BIDIMENSIONAL}. May be the same array than
-     * <code>{@linkplain #targetCoordinates}.coordinates</code> because some transforms are
-     * faster when the source and destination arrays are the same.
+     * <code>{@linkplain #targetCoordinates}.coordinates</code> if both are two-dimensional
+     * (if more than 2 dimensions, we need to avoid overwriting values in extra dimensions).
      *
      * @see #targetCoordinates
      * @see #position
@@ -660,7 +660,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          */
         ((LocalToObjective) localToObjectiveCRS).setNoCheck(localToCRS);
         targetCoordinates   = new GeneralDirectPosition(tgtDim);
-        sourceCoordinates   = (srcDim == tgtDim) ? targetCoordinates.coordinates : new double[srcDim];
+        sourceCoordinates   = new double[srcDim];
         objectiveCRS        = crs;
         localToPositionCRS  = localToCRS;                           // May be updated again below.
         inflatePrecisions   = inflate;
@@ -709,10 +709,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (tgtDim != 0 && tgtDim != targetCoordinates.getDimension()) {
             precisions = null;
             targetCoordinates = new GeneralDirectPosition(tgtDim);
-            if (sourceCoordinates.length == tgtDim) {
-                // Sharing the same array make some transforms faster.
-                sourceCoordinates = targetCoordinates.coordinates;
-            }
         }
         targetCoordinates.setCoordinateReferenceSystem(crs);
     }
@@ -1102,10 +1098,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
             /*
              * Estimate the precision by looking at the maximal displacement in the CRS caused by
-             * a displacement of one cell (i.e. when moving by one row or column).  We search for
-             * maximal displacement instead of minimal because we expect the displacement to be
-             * zero along some axes (e.g. one row down does not change longitude value in a Plate
-             * Carrée projection).
+             * a displacement of one cell (i.e. when moving by one row or column). We search for
+             * maximal displacement because we expect the displacement to be zero along some axes
+             * (e.g. one row down does not change longitude value in a Plate Carrée projection).
              */
             for (int j=derivative.getNumRow(); --j >= 0;) {
                 double p = 0;
