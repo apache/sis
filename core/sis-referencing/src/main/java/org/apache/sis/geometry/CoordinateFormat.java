@@ -100,7 +100,7 @@ import static java.util.logging.Logger.getLogger;
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
@@ -1331,6 +1331,31 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
     @Override
     public final Class<DirectPosition> getValueType() {
         return DirectPosition.class;
+    }
+
+    /**
+     * Creates a new format to use for parsing and formatting values of the given type.
+     * This method is invoked by {@link #getFormat(Class)} the first time that a format
+     * is needed for the given type.
+     *
+     * <p>See {@linkplain CompoundFormat#createFormat(Class) super-class} for a description of recognized types.
+     * This method override uses the short date pattern instead of the (longer) default one.</p>
+     *
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
+     */
+    @Override
+    protected Format createFormat(final Class<?> valueType) {
+        if (valueType == Date.class) {
+            final Locale locale = super.getLocale();
+            if (!Locale.ROOT.equals(locale)) {
+                final DateFormat format;
+                format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+                format.setTimeZone(getTimeZone());
+                return format;
+            }
+        }
+        return super.createFormat(valueType);
     }
 
     /**
