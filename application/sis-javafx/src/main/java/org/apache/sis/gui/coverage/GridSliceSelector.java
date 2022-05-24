@@ -36,6 +36,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -99,6 +100,13 @@ public class GridSliceSelector extends Widget {
     public final ObjectProperty<GridGeometry> gridGeometry;
 
     /**
+     * The currently selected grid extent.
+     *
+     * @see #selectedExtentProperty()
+     */
+    private final ReadOnlyObjectWrapper<GridExtent> selectedExtent;
+
+    /**
      * The locale to use for axis labels, or {@code null} for a default locale.
      */
     private final Locale locale;
@@ -142,6 +150,7 @@ public class GridSliceSelector extends Widget {
         view.setVgap(9);
         view.setHgap(12);
         view.setPadding(PADDING);
+        selectedExtent = new ReadOnlyObjectWrapper<>(this, "selectedExtent");
         gridGeometry = new SimpleObjectProperty<>(this, "gridGeometry");
         gridGeometry.addListener((p,o,n) -> setGridGeometry(n));
     }
@@ -166,6 +175,7 @@ public class GridSliceSelector extends Widget {
         int childrenCount = 0;
         int row = -BIDIMENSIONAL - 1;
         final GridExtent extent = gg.getExtent();
+        GridExtent selected = extent;
         final int dimension = extent.getDimension();
         for (int dim=0; dim < dimension; dim++) {
             final long min = extent.getLow (dim);
@@ -196,6 +206,7 @@ public class GridSliceSelector extends Widget {
                     converter = new Converter();
                     slider.setLabelFormatter(converter);
                     slider.widthProperty().addListener(converter);
+                    slider.valueChangingProperty().addListener(new Listener(dim));
                 }
                 /*
                  * Configure the slider for the current grid axis.
@@ -215,6 +226,7 @@ public class GridSliceSelector extends Widget {
                 slider.setMin(min);
                 slider.setMax(max);
                 slider.setValue(min);
+                selected = selected.setRange(dim, min, min);        // Initially selected slice.
                 converter.configure(gg, gridToCRS, dim, min, max, envelope, resolution);
                 converter.setTickSpacing(slider, slider.getWidth());
                 /*
@@ -232,7 +244,11 @@ public class GridSliceSelector extends Widget {
             }
         }
         children.remove(childrenCount, children.size());
+        selectedExtent.set(selected);
     }
+
+
+
 
     /**
      * Handle conversion of grid indices to "real world" coordinates or dates.
@@ -449,6 +465,56 @@ public class GridSliceSelector extends Widget {
             }
             return dateFormat;
         }
+    }
+
+
+
+
+    /**
+     * Listener notified when the position of a slider changed. We take the change only after
+     * the user finished to drag the slider in order to avoid causing to many load requests.
+     */
+    private final class Listener implements ChangeListener<Boolean> {
+        /**
+         * Index of the grid axis where the position changed.
+         */
+        private final int dimension;
+
+        /**
+         * Creates a new listener for the grid axis on the specified dimension.
+         *
+         * @param  dimension  index of the grid axis where the position can change.
+         */
+        Listener(final int dimension) {
+            this.dimension = dimension;
+        }
+
+        /**
+         * Invoked when the slider changed its position.
+         */
+        @Override
+        public void changed(final ObservableValue<? extends Boolean> property, final Boolean oldValue, final Boolean newValue) {
+            if (!newValue) {
+                final GridExtent extent = selectedExtent.get();
+                if (extent != null) {
+                    final Slider slider = (Slider) ((ReadOnlyProperty) property).getBean();
+                    final long p = Math.round(slider.getValue());
+                    if (p != extent.getLow(dimension)) {
+                        selectedExtent.set(extent.setRange(dimension, p, p));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the property for the currently selected grid extent.
+     * This value varies after the user finished to drag the slider.
+     *
+     * @return the currently selected grid extent as a read-only property.
+     */
+    public final ReadOnlyProperty<GridExtent> selectedExtentProperty() {
+        return selectedExtent.getReadOnlyProperty();
     }
 
     /**
