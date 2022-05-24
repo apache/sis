@@ -88,7 +88,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -126,7 +126,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * A pool of shared {@link DimensionNameType} arrays. We use a pool
-     * because a small amount of arrays is shared by most grid extent.
+     * because a small amount of arrays is shared by most grid extents.
      */
     private static final WeakValueHashMap<DimensionNameType[],DimensionNameType[]> POOL = new WeakValueHashMap<>(DimensionNameType[].class);
 
@@ -221,9 +221,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Creates an initially empty grid envelope with the given number of dimensions.
+     * Creates an initially empty grid extent with the given number of dimensions.
      * All grid coordinate values are initialized to zero. This constructor is private
-     * since {@code GridExtent} coordinate values can not be modified by public API.
+     * because {@code GridExtent} coordinate values can not be modified by public API.
      *
      * @param dimension  number of dimensions.
      * @param axisTypes  the axis types, or {@code null} if unspecified.
@@ -290,7 +290,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Constructs a new grid envelope set to the specified coordinates.
+     * Constructs a new grid extent set to the specified coordinates.
      * The given arrays contain a minimum (inclusive) and maximum value for each dimension of the grid coverage.
      * The lowest valid grid coordinates are often zero, but this is not mandatory.
      * As a convenience for this common case, a null {@code low} array means that all low coordinates are zero.
@@ -578,7 +578,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * Creates a copy of the given grid extent. The {@link #coordinates} array is cloned
      * while the {@link #types} array is shared between the two instances. This constructor
      * is reserved to methods that modify the coordinates after construction. It must be
-     * private since we do not allow coordinates modifications by public API.
+     * private because we do not allow coordinates modifications by public API.
      *
      * @see #GridExtent(int, DimensionNameType[])
      */
@@ -588,9 +588,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Creates a new grid envelope as a copy of the given one.
+     * Creates a new grid extent as a copy of the given one.
      *
-     * @param  extent  the grid envelope to copy.
+     * @param  extent  the grid extent to copy.
      * @throws IllegalArgumentException if a coordinate value in the low part is
      *         greater than the corresponding coordinate value in the high part.
      *
@@ -609,12 +609,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns the given grid envelope as a {@code GridExtent} implementation.
+     * Returns the given grid extent as a {@code GridExtent} implementation.
      * If the given extent is already a {@code GridExtent} instance or is null, then it is returned as-is.
      * Otherwise a new extent is created using the {@linkplain #GridExtent(GridEnvelope) copy constructor}.
      *
-     * @param  extent  the grid envelope to cast or copy, or {@code null}.
-     * @return the grid envelope as a {@code GridExtent}, or {@code null} if the given extent was null.
+     * @param  extent  the grid extent to cast or copy, or {@code null}.
+     * @return the grid extent as a {@code GridExtent}, or {@code null} if the given extent was null.
      */
     public static GridExtent castOrCopy(final GridEnvelope extent) {
         if (extent == null || extent instanceof GridExtent) {
@@ -686,6 +686,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The sequence contains a minimum value for each dimension of the grid coverage.
      *
      * @return the valid minimum grid coordinates, inclusive.
+     *
+     * @see #getLow(int)
      */
     @Override
     public GridCoordinates getLow() {
@@ -697,6 +699,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The sequence contains a maximum value for each dimension of the grid coverage.
      *
      * @return the valid maximum grid coordinates, <strong>inclusive</strong>.
+     *
+     * @see #getHigh(int)
      */
     @Override
     public GridCoordinates getHigh() {
@@ -713,6 +717,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getLow()
      * @see #getHigh(int)
+     * @see #setRange(int, long, long)
      */
     @Override
     public long getLow(final int index) {
@@ -730,6 +735,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getHigh()
      * @see #getLow(int)
+     * @see #setRange(int, long, long)
      */
     @Override
     public long getHigh(final int index) {
@@ -750,6 +756,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getLow(int)
      * @see #getHigh(int)
+     * @see #resize(long...)
      */
     @Override
     public long getSize(final int index) {
@@ -921,6 +928,37 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns a grid extent identical to this grid extent except for the coordinate values in the specified dimension.
+     *
+     * @param  index  the dimension for which to set the coordinate values.
+     * @param  low    the low coordinate value at the given dimension, inclusive.
+     * @param  high   the high coordinate value at the given dimension, <strong>inclusive</strong>.
+     * @return a grid extent with the specified coordinate values, or {@code this} if values are unchanged.
+     * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
+     *
+     * @see #getLow(int)
+     * @see #getHigh(int)
+     *
+     * @since 1.3
+     */
+    public GridExtent setRange(final int index, final long low, final long high) {
+        int ih = getDimension();
+        ArgumentChecks.ensureValidIndex(ih, index);
+        ih += index;
+        if (coordinates[index] == low && coordinates[ih] == high) {
+            return this;
+        }
+        if (low > high) {
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.IllegalGridEnvelope_3, getAxisIdentification(index, index), low, high));
+        }
+        final GridExtent copy = new GridExtent(this);
+        copy.coordinates[index] = low;
+        copy.coordinates[ih] = high;
+        return copy;
+    }
+
+    /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
      * The transform shall map <em>cell corner</em> to real world coordinates.
      *
@@ -1055,7 +1093,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a new grid envelope with the specified dimension inserted at the given index in this grid envelope.
+     * Returns a new grid extent with the specified dimension inserted at the given index in this grid extent.
      * To append a new dimension after all existing dimensions, set {@code offset} to {@link #getDimension()}.
      *
      * @param  offset          where to insert the new dimension, from 0 to {@link #getDimension()} inclusive.
@@ -1065,7 +1103,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  isHighIncluded  {@code true} if the {@code high} value is inclusive (as in ISO 19123 specification),
      *                         or {@code false} if it is exclusive (as in Java2D usage).
      *                         This argument does not apply to {@code low} value, which is always inclusive.
-     * @return a new grid envelope with the specified dimension added.
+     * @return a new grid extent with the specified dimension added.
      * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
      *
      * @since 1.1
@@ -1098,6 +1136,30 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns a grid extent that encompass only some dimensions of this grid extent.
+     * This method copies the specified dimensions of this grid extent into a new grid extent.
+     * The given dimensions must be in strictly ascending order without duplicated values.
+     * The number of dimensions of the sub grid extent will be {@code dimensions.length}.
+     *
+     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
+     * converse of {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
+     * This method can not be used for changing dimension order.</p>
+     *
+     * @param  dimensions  the dimensions to select, in strictly increasing order.
+     * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
+     * @throws IndexOutOfBoundsException if an index is out of bounds.
+     *
+     * @see #getSubspaceDimensions(int)
+     * @see GridGeometry#reduce(int...)
+     *
+     * @since 1.1
+     */
+    public GridExtent reduceDimension(int... dimensions) {
+        dimensions = verifyDimensions(dimensions, getDimension());
+        return (dimensions != null) ? reorder(dimensions) : this;
+    }
+
+    /**
      * Verifies the validity of a given {@code dimensions} argument.
      *
      * @param  dimensions  the user-supplied argument to validate.
@@ -1120,6 +1182,29 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
+    }
+
+    /**
+     * Changes axis order or reduces the number of dimensions.
+     * It is caller responsibility to ensure that the given dimensions are valid.
+     */
+    final GridExtent reorder(final int[] dimensions) {
+        final int sd = getDimension();
+        final int td = dimensions.length;
+        DimensionNameType[] tt = null;
+        if (types != null) {
+            tt = new DimensionNameType[td];
+            for (int i=0; i<td; i++) {
+                tt[i] = types[dimensions[i]];
+            }
+        }
+        final GridExtent sub = new GridExtent(td, tt);
+        for (int i=0; i<td; i++) {
+            final int j = dimensions[i];
+            sub.coordinates[i]    = coordinates[j];
+            sub.coordinates[i+td] = coordinates[j+sd];
+        }
+        return sub;
     }
 
     /**
@@ -1208,6 +1293,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return a grid extent having the given sizes, or {@code this} if there is no change.
      * @throws ArithmeticException if resizing this extent to the given size overflows {@code long} capacity.
      *
+     * @see #getSize(int)
      * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent resize(final long... sizes) {
@@ -1236,53 +1322,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             c[i+m] = upper;
         }
         return Arrays.equals(c, coordinates) ? this : resize;
-    }
-
-    /**
-     * Returns a grid extent that encompass only some dimensions of this grid extent.
-     * This method copies the specified dimensions of this grid extent into a new grid extent.
-     * The given dimensions must be in strictly ascending order without duplicated values.
-     * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
-     *
-     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
-     * converse of {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
-     * This method can not be used for changing dimension order.</p>
-     *
-     * @param  dimensions  the dimensions to select, in strictly increasing order.
-     * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
-     * @throws IndexOutOfBoundsException if an index is out of bounds.
-     *
-     * @see #getSubspaceDimensions(int)
-     * @see GridGeometry#reduce(int...)
-     *
-     * @since 1.1
-     */
-    public GridExtent reduceDimension(int... dimensions) {
-        dimensions = verifyDimensions(dimensions, getDimension());
-        return (dimensions != null) ? reorder(dimensions) : this;
-    }
-
-    /**
-     * Changes axis order or reduces the number of dimensions.
-     * It is caller responsibility to ensure that the given dimensions are valid.
-     */
-    final GridExtent reorder(final int[] dimensions) {
-        final int sd = getDimension();
-        final int td = dimensions.length;
-        DimensionNameType[] tt = null;
-        if (types != null) {
-            tt = new DimensionNameType[td];
-            for (int i=0; i<td; i++) {
-                tt[i] = types[dimensions[i]];
-            }
-        }
-        final GridExtent sub = new GridExtent(td, tt);
-        for (int i=0; i<td; i++) {
-            final int j = dimensions[i];
-            sub.coordinates[i]    = coordinates[j];
-            sub.coordinates[i+td] = coordinates[j+sd];
-        }
-        return sub;
     }
 
     /**
@@ -1535,10 +1574,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a hash value for this grid envelope. This value needs not to remain
+     * Returns a hash value for this grid extent. This value needs not to remain
      * consistent between different implementations of the same class.
      *
-     * @return a hash value for this grid envelope.
+     * @return a hash value for this grid extent.
      */
     @Override
     public int hashCode() {
@@ -1546,11 +1585,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Compares the specified object with this grid envelope for equality.
+     * Compares the specified object with this grid extent for equality.
      * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
-     * @param  object  the object to compare with this grid envelope for equality.
-     * @return {@code true} if the given object is equal to this grid envelope.
+     * @param  object  the object to compare with this grid extent for equality.
+     * @return {@code true} if the given object is equal to this grid extent.
      */
     @Override
     public final boolean equals(final Object object) {
@@ -1558,13 +1597,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Compares the specified object with this grid envelope for equality.
+     * Compares the specified object with this grid extent for equality.
      * If the mode is {@link ComparisonMode#IGNORE_METADATA} or more flexible,
      * then the {@linkplain #getAxisType(int) axis types} are ignored.
      *
-     * @param  object  the object to compare with this grid envelope for equality.
+     * @param  object  the object to compare with this grid extent for equality.
      * @param  mode    the strictness level of the comparison.
-     * @return {@code true} if the given object is equal to this grid envelope.
+     * @return {@code true} if the given object is equal to this grid extent.
      *
      * @since 1.1
      */
@@ -1588,7 +1627,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a string representation of this grid envelope. The returned string
+     * Returns a string representation of this grid extent. The returned string
      * is implementation dependent and is provided for debugging purposes only.
      */
     @Override
@@ -1603,7 +1642,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Writes a string representation of this grid envelope in the given buffer.
+     * Writes a string representation of this grid extent in the given buffer.
      * This method is provided for allowing caller to recycle the same buffer.
      *
      * @param out         where to write the string representation.
