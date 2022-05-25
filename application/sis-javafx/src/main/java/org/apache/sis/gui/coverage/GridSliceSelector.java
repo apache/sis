@@ -59,6 +59,7 @@ import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
@@ -248,18 +249,7 @@ public class GridSliceSelector extends Widget {
                 selected = selected.setRange(dim, min, min);        // Initially selected slice.
                 converter.configure(gg, gridToCRS, dim, min, max, envelope, resolution);
                 converter.setTickSpacing(slider, slider.getWidth());
-                /*
-                 * Use the coordinate system axis abbreviation with its unit as a label,
-                 * or default to grid axis name if we have ne information about the CRS.
-                 */
-                final String name;
-                final DimensionNameType axis = extent.getAxisType(dim).orElse(null);
-                if (axis != null) {
-                    name = Types.getCodeTitle(axis).toString(locale);
-                } else {
-                    name = vocabulary.getString(Vocabulary.Keys.Axis_1, dim);
-                }
-                label.setText(vocabulary.toLabel(name));
+                label.setText(vocabulary.toLabel(converter.getAxisLabel(extent, vocabulary)));
             }
         }
         children.remove(childrenCount, children.size());
@@ -362,6 +352,7 @@ public class GridSliceSelector extends Widget {
                     if (timeCRS == null) {
                         final Unit<?> unit = axis.getUnit();
                         if (unit != null) {
+                            final Locale locale = GridSliceSelector.this.locale;
                             final UnitFormat f = new UnitFormat(locale != null ? locale : Locale.getDefault());
                             f.setStyle(UnitFormat.Style.NAME);
                             unitName = ' ' + f.format(unit);
@@ -412,6 +403,40 @@ public class GridSliceSelector extends Widget {
                 if (timeCRS != null) {
                     timeResolutionThreshold = timeCRS.toValue(Duration.ofDays(1)) / spacing;
                 }
+            }
+        }
+
+        /**
+         * Returns a label for the slider, or {@code null} if unknown.
+         * The label is derived from the CRS axis name. If none, fallbacks on grid axis name.
+         *
+         * @param  extent      the grid geometry extent, used as a fallback if no CRS axis label is found.
+         * @param  vocabulary  localized resources for latitude, longitude, height and time words.
+         */
+        final String getAxisLabel(final GridExtent extent, final Vocabulary vocabulary) {
+            if (axis != null) {
+                String label = CoordinateSystems.getShortName(axis, locale);
+                if (label != null) {
+                    if (timeCRS == null) {
+                        final Unit<?> unit = axis.getUnit();
+                        if (unit != null) {
+                            String symbol = unit.toString();
+                            if (!symbol.isEmpty()) {
+                                label = label + " (" + symbol + ')';
+                            }
+                        }
+                    }
+                    return label;
+                }
+            }
+            /*
+             * Fallback on grid axis name if no CRS axis name is found.
+             */
+            final DimensionNameType axis = extent.getAxisType(dimension).orElse(null);
+            if (axis != null) {
+                return Types.getCodeTitle(axis).toString(locale);
+            } else {
+                return vocabulary.getString(Vocabulary.Keys.Axis_1, dimension);
             }
         }
 

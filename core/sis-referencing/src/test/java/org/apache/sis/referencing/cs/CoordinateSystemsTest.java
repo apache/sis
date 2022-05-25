@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.referencing.operation.Matrix;
@@ -46,7 +47,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CoordinateSystems} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -324,6 +325,16 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
             }
         });
         assertEqualsIgnoreMetadata(targetCS, actualCS);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#getShortName(CoordinateSystemAxis, Locale)}
+     */
+    @Test
+    public void testGetShortName() {
+        assertEquals("Latitude", CoordinateSystems.getShortName(HardCodedAxes.GEODETIC_LATITUDE,  Locale.ENGLISH));
+        assertEquals("Height",   CoordinateSystems.getShortName(HardCodedAxes.ELLIPSOIDAL_HEIGHT, Locale.ENGLISH));
+        assertEquals("Hauteur",  CoordinateSystems.getShortName(HardCodedAxes.ELLIPSOIDAL_HEIGHT, Locale.FRENCH));
     }
 
     /**

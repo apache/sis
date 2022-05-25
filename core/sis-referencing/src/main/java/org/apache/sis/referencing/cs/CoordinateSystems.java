@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -59,7 +60,7 @@ import static java.util.logging.Logger.getLogger;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -566,6 +567,23 @@ next:   for (final CoordinateSystem cs : targets) {
             ArgumentChecks.ensureNonNullElement("cs[#].direction", i, directions[i] = axis.getDirection());
         }
         return directions;
+    }
+
+    /**
+     * Returns a short (if possible) localized name for the given axis. This method replaces
+     * names such as "Geodetic latitude" or "Geocentric latitude" by a simple "Latitude" word.
+     * This method can be used for example in column or row headers when the context is known
+     * and the space is rare.
+     *
+     * @param  axis    the axis for which to get a short label.
+     * @param  locale  desired locale for the label.
+     * @return a relatively short axis label, in the desired locale if possible.
+     *
+     * @since 1.3
+     */
+    public static String getShortName(final CoordinateSystemAxis axis, final Locale locale) {
+        ArgumentChecks.ensureNonNull("axis", axis);
+        return AxisName.find(axis, locale);
     }
 
     /**
