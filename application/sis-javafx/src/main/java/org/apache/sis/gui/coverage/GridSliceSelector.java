@@ -38,6 +38,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -55,6 +56,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
@@ -128,16 +131,31 @@ public class GridSliceSelector extends Widget {
     /**
      * The object to use for formatting dates without time, created when first needed.
      *
-     * @see #getDateFormat(boolean)
+     * @see #getDateFormat(boolean, boolean)
      */
     private DateFormat dateFormat;
 
     /**
      * The object to use for formatting dates with time, created when first needed.
      *
-     * @see #getDateFormat(boolean)
+     * @see #getDateFormat(boolean, boolean)
      */
     private DateFormat dateAndTimeFormat;
+
+    /**
+     * The object to use for formatting long date and time in the status bar, created when first needed.
+     *
+     * @see #getDateFormat(boolean, boolean)
+     */
+    private DateFormat longDateFormat;
+
+    /**
+     * The status bar where to report the selected position during adjustment, or {@code null} if none.
+     *
+     * @todo Should be replaced by a {@link ReadOnlyProperty} which computes the value only if there is
+     *       at least one listener.
+     */
+    StatusBar status;
 
     /**
      * Creates a new widget.
@@ -205,8 +223,9 @@ public class GridSliceSelector extends Widget {
                     GridPane.setValignment(label, VPos.TOP);
                     converter = new Converter();
                     slider.setLabelFormatter(converter);
-                    slider.widthProperty().addListener(converter);
-                    slider.valueChangingProperty().addListener(new Listener(dim));
+                    slider.widthProperty().addListener((p,o,n) -> converter.setTickSpacing(slider, n.doubleValue()));
+                    slider.valueProperty().addListener((p,o,n) -> converter.formatMessage(Math.rint(n.doubleValue())));
+                    slider.valueChangingProperty().addListener(converter);
                 }
                 /*
                  * Configure the slider for the current grid axis.
@@ -252,8 +271,16 @@ public class GridSliceSelector extends Widget {
 
     /**
      * Handle conversion of grid indices to "real world" coordinates or dates.
+     * This is also a listener notified when the position of a slider changed.
+     * We take the change only after the user finished to drag the slider
+     * in order to avoid causing to many load requests.
      */
-    private final class Converter extends StringConverter<Double> implements ChangeListener<Number> {
+    private final class Converter extends StringConverter<Double> implements ChangeListener<Boolean> {
+        /**
+         * Index of the grid axis where the position changed.
+         */
+        private int dimension;
+
         /**
          * Conversion from grid indices to "real world" coordinates, or {@code null} if none.
          */
@@ -290,6 +317,11 @@ public class GridSliceSelector extends Widget {
         private double spacingNumerator;
 
         /**
+         * The unit name to append after the value in verbose display, or {@code null} if none.
+         */
+        private String unitName;
+
+        /**
          * Creates a new converter.
          */
         Converter() {
@@ -309,8 +341,10 @@ public class GridSliceSelector extends Widget {
         final void configure(final GridGeometry gg, final TransformSeparator ts, final int dim,
                     final double min, final double max, final Envelope env, final double[] res)
         {
+            dimension   = dim;
             gridToCRS   = null;
             axis        = null;
+            unitName    = null;
             timeCRS     = null;
             resolution  = 1;
             timeResolutionThreshold = Double.NaN;
@@ -325,6 +359,14 @@ public class GridSliceSelector extends Widget {
                     final CoordinateReferenceSystem c = CRS.getComponentAt(crs, targetDim, targetDim+1);
                     timeCRS = (c instanceof TemporalCRS) ? DefaultTemporalCRS.castOrCopy((TemporalCRS) c) : null;
                     axis    = crs.getCoordinateSystem().getAxis(targetDim);
+                    if (timeCRS == null) {
+                        final Unit<?> unit = axis.getUnit();
+                        if (unit != null) {
+                            final UnitFormat f = new UnitFormat(locale != null ? locale : Locale.getDefault());
+                            f.setStyle(UnitFormat.Style.NAME);
+                            unitName = ' ' + f.format(unit);
+                        }
+                    }
                 }
                 /*
                  * `span` and `resolution` must be updated together, assuming linear conversion.
@@ -334,7 +376,9 @@ public class GridSliceSelector extends Widget {
                 if (env != null && res != null && res[targetDim] > 0) {
                     resolution = res[targetDim];
                     span = env.getSpan(targetDim);
-                    timeResolutionThreshold = timeCRS.toValue(Duration.ofDays(1));
+                    if (timeCRS != null) {
+                        timeResolutionThreshold = timeCRS.toValue(Duration.ofDays(1));
+                    }
                 }
             } catch (FactoryException | ClassCastException e) {
                 Logging.ignorableException(Logger.getLogger(Modules.APPLICATION), GridSliceSelector.class,
@@ -372,20 +416,45 @@ public class GridSliceSelector extends Widget {
         }
 
         /**
-         * Invoked when the slider changed its size.
-         * This method updates the number of ticks based on available space.
+         * Invoked when the user begins of finished to adjust the slider position.
+         * The grid extent is updated only after the user finished to adjust.
          */
         @Override
-        public void changed(final ObservableValue<? extends Number> property, final Number oldValue, final Number newValue) {
-            setTickSpacing((Slider) ((ReadOnlyProperty) property).getBean(), newValue.doubleValue());
+        public void changed(final ObservableValue<? extends Boolean> property, final Boolean oldValue, final Boolean newValue) {
+            final Slider slider = (Slider) ((ReadOnlyProperty<?>) property).getBean();
+            final long position = Math.round(slider.getValue());
+            if (newValue) {
+                formatMessage(position);
+            } else {
+                final StatusBar bar = status;
+                if (bar != null) {
+                    bar.setInfoMessage(null);           // Clear the position that we wrote in the status bar.
+                }
+                final GridExtent extent = selectedExtent.get();
+                if (extent != null && position != extent.getLow(dimension)) {
+                    selectedExtent.set(extent.setRange(dimension, position, position));
+                }
+            }
+        }
+
+        /**
+         * Invoked when the slider changed its position.
+         * This method updates the message in the status bar.
+         */
+        final void formatMessage(final double position) {
+            final StatusBar bar = status;
+            if (bar != null) {
+                bar.setInfoMessage(toString(position, true));
+            }
         }
 
         /**
          * Converts a grid index to a string representation.
+         *
+         * @param  value    the grid index. Should be an integer value.
+         * @param  verbose  whether to use a verbose format.
          */
-        @Override
-        public String toString(final Double index) {
-            double value = index;
+        private String toString(double value, final boolean verbose) {
             double derivative;
             int    numDigits;
             if (gridToCRS != null) try {
@@ -399,14 +468,27 @@ public class GridSliceSelector extends Widget {
                 numDigits  = 0;
             }
             if (timeCRS != null) {
-                final DateFormat f = getDateFormat(derivative < timeResolutionThreshold);
+                final DateFormat f = getDateFormat(verbose, derivative < timeResolutionThreshold);
                 return f.format(timeCRS.toDate(value));
             } else {
                 final NumberFormat f = getNumberFormat();
                 f.setMinimumFractionDigits(numDigits);
                 f.setMaximumFractionDigits(numDigits);
-                return f.format(value);
+                String text = f.format(value);
+                if (verbose && unitName != null) {
+                    text = text.concat(unitName);
+                }
+                return text;
             }
+        }
+
+        /**
+         * Converts a grid index to a string representation.
+         * The given value is rounded to nearest integer for making sure that it describes a cell position.
+         */
+        @Override
+        public String toString(final Double index) {
+            return toString(Math.rint(index), false);
         }
 
         /**
@@ -418,7 +500,7 @@ public class GridSliceSelector extends Widget {
             double value;
             try {
                 if (timeCRS != null) {
-                    value = timeCRS.toValue(getDateFormat(true).parse(text));
+                    value = timeCRS.toValue(getDateFormat(false, true).parse(text));
                 } else {
                     value = getNumberFormat().parse(text).doubleValue();
                 }
@@ -447,10 +529,18 @@ public class GridSliceSelector extends Widget {
     /**
      * Returns the object to use for formatting dates.
      *
+     * @param  verbose   whether to use a verbose format for display on as a message (as opposed to label).
      * @param  withTime  {@code false} for dates only, or {@code true} for dates with times.
      */
-    private DateFormat getDateFormat(final boolean withTime) {
-        if (withTime) {
+    private DateFormat getDateFormat(final boolean verbose, final boolean withTime) {
+        if (verbose) {
+            if (longDateFormat == null) {
+                longDateFormat = (locale != null)
+                        ? DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale)
+                        : DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+            }
+            return longDateFormat;
+        } else if (withTime) {
             if (dateAndTimeFormat == null) {
                 dateAndTimeFormat = (locale != null)
                         ? DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale)
@@ -469,43 +559,6 @@ public class GridSliceSelector extends Widget {
 
 
 
-
-    /**
-     * Listener notified when the position of a slider changed. We take the change only after
-     * the user finished to drag the slider in order to avoid causing to many load requests.
-     */
-    private final class Listener implements ChangeListener<Boolean> {
-        /**
-         * Index of the grid axis where the position changed.
-         */
-        private final int dimension;
-
-        /**
-         * Creates a new listener for the grid axis on the specified dimension.
-         *
-         * @param  dimension  index of the grid axis where the position can change.
-         */
-        Listener(final int dimension) {
-            this.dimension = dimension;
-        }
-
-        /**
-         * Invoked when the slider changed its position.
-         */
-        @Override
-        public void changed(final ObservableValue<? extends Boolean> property, final Boolean oldValue, final Boolean newValue) {
-            if (!newValue) {
-                final GridExtent extent = selectedExtent.get();
-                if (extent != null) {
-                    final Slider slider = (Slider) ((ReadOnlyProperty) property).getBean();
-                    final long p = Math.round(slider.getValue());
-                    if (p != extent.getLow(dimension)) {
-                        selectedExtent.set(extent.setRange(dimension, p, p));
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Returns the property for the currently selected grid extent.

@@ -24,6 +24,7 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -70,7 +71,7 @@ abstract class ViewAndControls {
     /**
      * Index of {@link #sliceSelector} in the list of children of {@link #viewAndNavigation}.
      */
-    private static final int SLICE_SELECTOR_INDEX = 2;
+    private static final int SLICE_SELECTOR_INDEX = 3;
 
     /**
      * The toolbar button for selecting this view.
@@ -133,8 +134,10 @@ abstract class ViewAndControls {
         VBox.setVgrow(view, Priority.ALWAYS);
         VBox.setVgrow(bar,  Priority.NEVER);
         VBox.setVgrow(nav,  Priority.NEVER);
-        viewAndNavigation.getChildren().setAll(view, bar);      // `nav` will be added only when non-empty.
+        final Separator sep = new Separator();
+        viewAndNavigation.getChildren().setAll(view, sep, bar);     // `nav` will be added only when non-empty.
         SplitPane.setResizableWithParent(viewAndNavigation, Boolean.TRUE);
+        sliceSelector.status = status;
     }
 
     /**

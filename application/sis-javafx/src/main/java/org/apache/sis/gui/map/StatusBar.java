@@ -413,7 +413,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
         message = new Label();
         message.setVisible(false);                      // Waiting for getting a message to display.
-        message.setTextFill(Styles.ERROR_TEXT);
         message.setMaxWidth(Double.POSITIVE_INFINITY);
         HBox.setHgrow(message, Priority.ALWAYS);
 
@@ -1056,7 +1055,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
             /*
              * Make sure that there is enough space for keeping the coordinates always visible.
-             * This is the needed if there is an error message on the left which may be long.
+             * This is needed if there is an error message on the left which may be long.
              */
             if (text.length() > maximalPositionLength) {
                 maximalPositionLength = text.length();
@@ -1250,16 +1249,46 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
+     * Returns the message currently shown. It may be an error message or an informative message.
+     *
+     * @return the current message, or an empty value if none.
+     *
+     * @since 1.3
+     */
+    public Optional<String> getMessage() {
+        return Optional.ofNullable(message.getText());
+    }
+
+    /**
      * Returns the error message currently shown.
      *
      * @return the current error message, or an empty value if none.
+     *
+     * @deprecated Renamed {@link #getMessage()}.
      */
+    @Deprecated
     public Optional<String> getErrorMessage() {
         return Optional.ofNullable(message.getText());
     }
 
     /**
-     * Show or hide an error message on the status bar, optionally with a button showing details in a dialog box.
+     * Shows or hides an informative message on the status bar.
+     * The message should be temporary, for example for telling that a loading is in progress.
+     *
+     * @param  text  the message to show, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    public void setInfoMessage(String text) {
+        text = Strings.trimOrNull(text);
+        message.setVisible(text != null);
+        message.setGraphic(null);
+        message.setText(text);
+        message.setTextFill(Styles.LOADING_TEXT);
+    }
+
+    /**
+     * Shows or hides an error message on the status bar, optionally with a button showing details in a dialog box.
      * The {@code text} argument specifies the message to show on the status bar.
      * If {@code text} is null, the message will be taken from the {@code details} if non-null.
      * If {@code details} is also null, then the error message will be hidden.

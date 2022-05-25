@@ -84,7 +84,7 @@ public final class Styles extends Static {
     /**
      * Color of the text saying that data are in process of being loaded.
      */
-    public static final Color LOADING_TEXT = Color.BLUE;
+    public static final Color LOADING_TEXT = Color.STEELBLUE;
 
     /**
      * Color of text for authority codes.
