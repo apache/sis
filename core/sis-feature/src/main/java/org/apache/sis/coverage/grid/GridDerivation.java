@@ -520,7 +520,7 @@ public class GridDerivation {
                 throw new IllegalGridGeometryException(e, "areaOfInterest");
             }
             // The `domain` extent must be the source of the `mapCenters` transform.
-            scales = GridGeometry.resolution(mapCenters, domain);
+            scales = GridGeometry.resolution(mapCenters, domain, PixelInCell.CELL_CENTER);
         }
         /*
          * The subsampling will determine the scale factors in the transform from the given desired grid geometry
@@ -771,9 +771,12 @@ public class GridDerivation {
      * Returns the point of interest of current {@link #baseExtent}, keeping only the remaining
      * dimensions after {@link #dropUnusedDimensions(MathTransform, int)} execution.
      * The position is in units of {@link #base} grid coordinates.
+     *
+     * <p>This method assumes that the transform will be used with a "cell corner to CRS" transform
+     * instead of the usual "cell center to CRS".</p>
      */
     private double[] getPointOfInterest() {
-        final double[] pointOfInterest = baseExtent.getPointOfInterest();
+        final double[] pointOfInterest = baseExtent.getPointOfInterest(PixelInCell.CELL_CORNER);
         if (modifiedDimensions == null) {
             return pointOfInterest;
         }

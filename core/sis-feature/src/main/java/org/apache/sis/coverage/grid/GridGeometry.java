@@ -129,7 +129,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * The same instance can be shared by different {@link GridCoverage} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -367,12 +367,12 @@ public class GridGeometry implements LenientComparable, Serializable {
                         MathTransforms.uniformTranslation(dimension, -0.5));
                 cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
                 gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
-                resolution  = resolution(gridToCRS, extent);
+                resolution  = resolution(gridToCRS, extent, PixelInCell.CELL_CENTER);
                 nonLinears  = findNonLinearTargets(gridToCRS);
             } else {
                 cornerToCRS = null;
                 gridToCRS   = null;
-                resolution  = resolution(toOther, extent);      // Save resolution even if `gridToCRS` is null.
+                resolution  = resolution(toOther, extent, PixelInCell.CELL_CENTER);     // Save resolution even if `gridToCRS` is null.
                 nonLinears  = findNonLinearTargets(toOther);
             }
         }
@@ -445,7 +445,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
             this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
             this.envelope    = computeEnvelope(gridToCRS, crs, null);   // `gridToCRS` specified by the user, not `this.gridToCRS`.
-            this.resolution  = resolution(gridToCRS, extent);           // `gridToCRS` or `cornerToCRS` does not matter here.
+            this.resolution  = resolution(gridToCRS, extent, anchor);   // `gridToCRS` or `cornerToCRS` does not matter here.
             this.nonLinears  = findNonLinearTargets(gridToCRS);
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "gridToCRS");
@@ -541,7 +541,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
                 // `gridToCRS` can not be null if `cornerToCRS` is non-null.
-                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor)));
                 numToIgnore = 0;
             } catch (TransformException e) {
                 recoverableException("<init>", e);
@@ -1029,7 +1029,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <ul>
      *   <li>{@link Double#NaN} if {@code allowEstimates} is {@code false}.</li>
      *   <li>An arbitrary representative resolution otherwise.
-     *       Current implementation computes the resolution at {@link GridExtent#getPointOfInterest() grid center},
+     *       Current implementation computes the resolution at {@link GridExtent#getPointOfInterest(PixelInCell) grid center},
      *       but different implementations may use alternative algorithms.</li>
      * </ul>
      *
@@ -1067,14 +1067,15 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  gridToCRS  a transform for which to compute the resolution, or {@code null} if none.
      * @param  domain     the domain for which to get a resolution, or {@code null} if none.
      *                    If non-null, must be the source of {@code gridToCRS}.
+     * @param  anchor     the pixel corner versus pixel center convention to use.
      * @return the resolutions as positive numbers. May contain NaN values.
      */
-    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) {
+    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain, final PixelInCell anchor) {
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
         if (matrix != null) {
             return resolution(matrix, 1);
         } else if (domain != null && gridToCRS != null) try {
-            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest())), 0);
+            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest(anchor))), 0);
         } catch (TransformException e) {
             recoverableException("resolution", e);
         }

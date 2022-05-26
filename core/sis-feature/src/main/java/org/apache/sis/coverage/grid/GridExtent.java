@@ -33,6 +33,7 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -786,22 +787,46 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * @deprecated Replaced by {@link #getPointOfInterest(PixelInCell)}.
+     *
+     * @return the grid coordinates of a representative point.
+     */
+    @Deprecated
+    public double[] getPointOfInterest() {
+        return getPointOfInterest(PixelInCell.CELL_CORNER);
+    }
+
+    /**
      * Returns the grid coordinates of a representative point.
      * This point may be used for estimating a {@linkplain GridGeometry#getResolution(boolean) grid resolution}.
      * The default implementation returns the median (or center) coordinates of this grid extent,
      * but subclasses can override this method if another point is considered more representative.
      *
+     * <p>The {@code anchpr} argument tells {@linkplain GridGeometry#getGridToCRS(PixelInCell) which transform}
+     * the caller intend to use for converting the grid coordinates to "real world" coordinates.
+     * With the default implementation, the coordinate values returned with {@code CELL_CORNER}
+     * are 0.5 cell units higher than the coordinate values returned with {@code CELL_CENTER}.
+     * Subclasses are free to ignore this argument.</p>
+     *
+     * @param  anchor  the convention to be used for conversion to "real world" coordinates.
      * @return the grid coordinates of a representative point.
+     *
+     * @since 1.3
      */
-    public double[] getPointOfInterest() {
+    public double[] getPointOfInterest(final PixelInCell anchor) {
         final int dimension = getDimension();
         final double[] center = new double[dimension];
+        final boolean isCorner = PixelInCell.CELL_CORNER.equals(anchor);
         for (int i=0; i<dimension; i++) {
             /*
              * We want the average of (low + hi+1). However for the purpose of computing an average, it does
              * not matter if we add 1 to `low` or `hi`. So we add 1 to `low` because it should not overflow.
              */
-            center[i] = MathFunctions.average(Math.incrementExact(coordinates[i]), coordinates[i + dimension]);
+            long low = coordinates[i];
+            if (isCorner) {
+                low = Math.incrementExact(coordinates[i]);
+            }
+            center[i] = MathFunctions.average(low, coordinates[i + dimension]);
         }
         return center;
     }

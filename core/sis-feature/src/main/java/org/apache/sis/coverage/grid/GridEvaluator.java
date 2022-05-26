@@ -187,7 +187,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
                 final GridExtent extent = gridGeometry.getExtent();
                 MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
                 gridToWraparound = MathTransforms.concatenate(gridToCRS, f.preferredToSpecified.inverse());
-                final Matrix m = gridToWraparound.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+                final Matrix m = gridToWraparound.derivative(new DirectPositionView.Double(extent.getPointOfInterest(PixelInCell.CELL_CENTER)));
                 /*
                  * `gridToWraparound` is the transform from grid coordinates to a CRS where wraparound axes exist.
                  * It may be the coverage CRS or its base CRS. The wraparound axes are identified by `periods`.

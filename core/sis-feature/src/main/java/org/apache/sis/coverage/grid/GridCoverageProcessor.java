@@ -273,7 +273,7 @@ public class GridCoverageProcessor implements Cloneable {
      *   </tr><tr>
      *     <td>{@linkplain GridGeometry#getExtent() Grid extent}</td>
      *     <td>A default size preserving resolution at source
-     *       {@linkplain GridExtent#getPointOfInterest() point of interest}.</td>
+     *       {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest}.</td>
      *   </tr><tr>
      *     <td>{@linkplain GridGeometry#getGridToCRS Grid to CRS transform}</td>
      *     <td>Whatever it takes for fitting data inside the supplied extent.</td>

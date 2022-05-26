@@ -645,7 +645,7 @@ apply:          if (forwardChangeOfCRS == null) {
             @SuppressWarnings("ReturnOfCollectionOrArrayField")
             private double[] coordinates() {
                 if (coordinates == null) try {
-                    final double[] poi = grid.getExtent().getPointOfInterest();
+                    final double[] poi = grid.getExtent().getPointOfInterest(PixelInCell.CELL_CENTER);
                     MathTransform tr = grid.getGridToCRS(PixelInCell.CELL_CENTER);
                     if (changeOfCRS != null) {
                         tr = MathTransforms.concatenate(tr, changeOfCRS);

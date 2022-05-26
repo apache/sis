@@ -1079,7 +1079,7 @@ public class Canvas extends Observable implements Localized {
                 crs = null;
                 newPOI = new GeneralDirectPosition(gridToCRS.getTargetDimensions());
             }
-            gridToCRS.transform(extent.getPointOfInterest(), 0, newPOI.coordinates, 0, 1);
+            gridToCRS.transform(extent.getPointOfInterest(PixelInCell.CELL_CORNER), 0, newPOI.coordinates, 0, 1);
             /*
              * Get the CRS component in the dimensions shown by this canvas.
              *

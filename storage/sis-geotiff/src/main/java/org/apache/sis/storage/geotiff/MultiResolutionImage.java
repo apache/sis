@@ -152,8 +152,8 @@ final class MultiResolutionImage extends GridResourceWrapper {
             }
             image.initReducedResolution(base, scales);
             if (geometry.isDefined(GridGeometry.GRID_TO_CRS)) {
-                final MatrixSIS gridToCRS = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER)
-                                  .derivative(new DirectPositionView.Double(fullExtent.getPointOfInterest())));
+                DirectPosition poi = new DirectPositionView.Double(fullExtent.getPointOfInterest(PixelInCell.CELL_CENTER));
+                MatrixSIS gridToCRS = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER).derivative(poi));
                 resolution = gridToCRS.multiply(scales);
             } else {
                 // Assume an identity transform for the `gridToCRS` of full resolution image.
@@ -211,7 +211,7 @@ final class MultiResolutionImage extends GridResourceWrapper {
                  * If the `domain` grid geometry has a resolution and an envelope, then it should have
                  * an extent and a "grid to CRS" transform (otherwise it may be a `GridGeometry` bug)
                  */
-                DirectPosition poi = new DirectPositionView.Double(domain.getExtent().getPointOfInterest());
+                DirectPosition poi = new DirectPositionView.Double(domain.getExtent().getPointOfInterest(PixelInCell.CELL_CENTER));
                 poi = domain.getGridToCRS(PixelInCell.CELL_CENTER).transform(poi, null);
                 final MatrixSIS derivative = MatrixSIS.castOrCopy(sourceToCoverage.derivative(poi));
                 resolution = derivative.multiply(resolution);
