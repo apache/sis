@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.map;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -71,6 +72,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
@@ -117,6 +119,8 @@ import org.apache.sis.referencing.IdentifiedObjects;
 public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * The {@value} value, for identifying code that assume two-dimensional objects.
+     *
+     * @see #getXYDimensions()
      */
     private static final int BIDIMENSIONAL = 2;
 
@@ -600,6 +604,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          */
         MathTransform localToCRS = null;
         CoordinateReferenceSystem crs = null;
+        sourceCoordinates = ArraysExt.EMPTY_DOUBLE;
         double resolution = 1;
         double[] inflate = null;
         Unit<?> unit = Units.PIXEL;
@@ -640,6 +645,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 for (int i=0; i<n; i++) {
                     inflate[i] = (0.5 / extent.getSize(i)) + 1;
                 }
+                sourceCoordinates = extent.getPointOfInterest(PixelInCell.CELL_CENTER);
             }
         }
         final boolean sameCRS = Utilities.equalsIgnoreMetadata(objectiveCRS, crs);
@@ -658,8 +664,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * Instead we will wait for the next mouse event to provide new local coordinates.
          */
         ((LocalToObjective) localToObjectiveCRS).setNoCheck(localToCRS);
+        sourceCoordinates   = Arrays.copyOf(sourceCoordinates, srcDim);
         targetCoordinates   = new GeneralDirectPosition(tgtDim);
-        sourceCoordinates   = new double[srcDim];
         objectiveCRS        = crs;
         localToPositionCRS  = localToCRS;                           // May be updated again below.
         inflatePrecisions   = inflate;
@@ -693,8 +699,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Other properties, in particular {@link #objectiveToPositionCRS}, must be valid.
      */
     private void updateLocalToPositionCRS() {
+        localToPositionCRS = localToObjectiveCRS.get();
         if (objectiveToPositionCRS != null) {
-            localToPositionCRS = MathTransforms.concatenate(localToObjectiveCRS.get(), objectiveToPositionCRS);
+            localToPositionCRS = MathTransforms.concatenate(localToPositionCRS, objectiveToPositionCRS);
         }
         setTargetCRS(format.getDefaultCRS());
     }
@@ -979,6 +986,21 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
+     * Returns the indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
+     * They are the indices where to assign the values of the <var>x</var> and <var>y</var> arguments in
+     * calls to <code>{@linkplain #setLocalCoordinates(double, double) setLocalCoordinates}(x,y)</code>.
+     * The default value is {0,1}, i.e. the 2 first dimensions in a coordinate tuple.
+     *
+     * @return indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
+     *
+     * @since 1.3
+     */
+    public final int[] getXYDimensions() {
+        // Fixed for now, future version may allow configuration.
+        return ArraysExt.range(0, BIDIMENSIONAL);
+    }
+
+    /**
      * Returns the lowest value appended as "± <var>accuracy</var>" after the coordinate values.
      * This is the last value specified to {@link #setLowestAccuracy(Quantity)}.
      *
@@ -1023,6 +1045,12 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * Converts and formats the given pixel coordinates. Those coordinates will be automatically
      * converted to geographic or projected coordinates if a "local to CRS" conversion is available.
+     *
+     * <h4>Supplemental dimensions</h4>
+     * If local coordinates have more than 2 dimensions, then the given (x,y) values will be assigned
+     * to the dimensions specified by {@link #getXYDimensions()}. Coordinates in all other dimensions
+     * will have the values given by {@link GridExtent#getPointOfInterest(PixelInCell)} from the extent
+     * of the grid geometry given to {@link #applyCanvasGeometry(GridGeometry)}.
      *
      * @param  x  the <var>x</var> coordinate local to the view.
      * @param  y  the <var>y</var> coordinate local to the view.

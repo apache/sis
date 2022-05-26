@@ -457,7 +457,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The {@link #extent}, {@link #gridToCRS} and {@link #cornerToCRS} fields must be set before this method is invoked.
      *
      * @param  specified  the transform specified by the user. This is not necessarily {@link #gridToCRS}.
-     * @param  crs        the coordinate reference system to declare in the envelope.
+     * @param  crs        the coordinate reference system to declare in the envelope. May be {@code null}.
      * @param  limits     if non-null, intersect with that envelope. The CRS must be the same than {@code crs}.
      */
     private ImmutableEnvelope computeEnvelope(final MathTransform specified, final CoordinateReferenceSystem crs,
@@ -1380,6 +1380,37 @@ public class GridGeometry implements LenientComparable, Serializable {
             t2 = MathTransforms.concatenate(t, t2);
         }
         return new GridGeometry(te, t1, t2, envelope, resolution, nonLinears);
+    }
+
+    /**
+     * Returns a grid geometry with the given grid extent, which implies a new "real world" computation.
+     * The "grid to CRS" transforms and the resolution stay the same than this {@code GridGeometry}.
+     * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.
+     *
+     * <p>The given extent is taken verbatim; this method does no clipping.
+     * The given extent does not need to intersect the extent of this grid geometry.</p>
+     *
+     * @param  extent  extent of the grid geometry to return.
+     * @return grid geometry with the given extent. May be {@code this} if there is no change.
+     * @throws TransformException if the geospatial envelope can not be recomputed with the new grid extent.
+     *
+     * @since 1.3
+     */
+    public GridGeometry relocate(final GridExtent extent) throws TransformException {
+        ArgumentChecks.ensureNonNull("size", extent);
+        if (extent.equals(this.extent)) {
+            return this;
+        }
+        ensureDimensionMatches(getDimension(), extent);
+        final ImmutableEnvelope relocated;
+        if (cornerToCRS != null) {
+            final GeneralEnvelope env = extent.toCRS(cornerToCRS, gridToCRS, null);
+            env.setCoordinateReferenceSystem(getCoordinateReferenceSystem(envelope));
+            relocated = new ImmutableEnvelope(env);
+        } else {
+            relocated = envelope;           // Either null or contains only the CRS.
+        }
+        return new GridGeometry(extent, gridToCRS, cornerToCRS, relocated, resolution, nonLinears);
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.FutureTask;
 import java.awt.image.RenderedImage;
 import javafx.scene.Node;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -28,7 +29,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 
@@ -81,13 +81,13 @@ public class ImageRequest {
 
     /**
      * A subspace of the grid coverage extent to render, or {@code null} for the whole extent.
-     * If the extent has more than two dimensions, then the image will be rendered along the
-     * two first dimensions having a size greater than 1 cell.
+     * It can be used for specifying a slice in a <var>n</var>-dimensional data cube.
+     * If not specified by the user, will be updated to the extent actually rendered.
      *
      * @see #getSliceExtent()
      * @see #setSliceExtent(GridExtent)
      */
-    private GridExtent sliceExtent;
+    private volatile GridExtent sliceExtent;
 
     /**
      * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.
@@ -209,18 +209,18 @@ public class ImageRequest {
 
     /**
      * Returns the subspace of the grid coverage extent to render.
-     * This is the {@code sliceExtent} argument specified to the following constructor:
+     * This method returns the first non-empty value in the following choices:
      *
-     * <blockquote>{@link #ImageRequest(GridCoverage, GridExtent)}</blockquote>
-     *
-     * This argument will be forwarded verbatim to the following method
-     * (see its javadoc for more explanation):
-     *
-     * <blockquote>{@link GridCoverage#render(GridExtent)}</blockquote>
-     *
-     * If non-empty, then all dimensions except two should have a size of 1 cell.
+     * <ol>
+     *   <li>The last value specified to {@link #setSliceExtent(GridExtent)}.</li>
+     *   <li>The value specified to the {@link #ImageRequest(GridCoverage, GridExtent)} constructor.</li>
+     *   <li>The extent of the default slice selected by this {@code ImageRequest}
+     *       after completion of the reading task.</li>
+     * </ol>
      *
      * @return subspace of the grid coverage extent to render.
+     *
+     * @see GridCoverage#render(GridExtent)
      */
     public final Optional<GridExtent> getSliceExtent() {
         return Optional.ofNullable(sliceExtent);
@@ -228,15 +228,22 @@ public class ImageRequest {
 
     /**
      * Sets a new subspace of the grid coverage extent to render.
+     * This method can be used for specifying a two-dimensional slice in a <var>n</var>-dimensional data cube,
+     * as specified in {@link GridCoverage#render(GridExtent)} documentation.
      *
      * <div class="note"><b>API design note:</b>
      * this {@code sliceExtent} argument is not specified
      * to the {@link #ImageRequest(GridCoverageResource, GridGeometry, int[])} constructor because when reading data
      * from a {@link GridCoverageResource}, a slicing can already be done by the {@link GridGeometry} {@code domain}
      * argument. This method is provided for the rare cases where it may be useful to specify both the {@code domain}
-     * and the {@code sliceExtent}.</div>
+     * and the {@code sliceExtent}. The difference between the two ways to specify a slice is that the {@code domain}
+     * argument is used at reading time for reducing the amount of data to load, while this {@link sliceExtent}
+     * property is typically used after data has been read.</div>
      *
      * @param  sliceExtent  subspace of the grid coverage extent to render, or {@code null} for the whole extent.
+     *         All dimensions except two shall have a size of 1 cell.
+     *
+     * @see GridCoverage#render(GridExtent)
      */
     public final void setSliceExtent(final GridExtent sliceExtent) {
         this.sliceExtent = sliceExtent;
@@ -269,15 +276,19 @@ public class ImageRequest {
                 cv = MultiResolutionImageLoader.getInstance(resource, null).getOrLoad(domain, range);
             }
             coverage = cv = cv.forConvertedValues(true);
-            if (task.isCancelled()) {
-                return null;
-            }
             GridExtent ex = sliceExtent;
             if (ex == null) {
                 final GridGeometry gg = cv.getGridGeometry();
-                if (gg.getDimension() > MultiResolutionImageLoader.BIDIMENSIONAL) {
-                    ex = MultiResolutionImageLoader.slice(gg.derive(), gg.getExtent()).getIntersection();
+                if (gg.isDefined(GridGeometry.EXTENT)) {
+                    ex = gg.getExtent();
+                    if (gg.getDimension() > MultiResolutionImageLoader.BIDIMENSIONAL) {
+                        ex = MultiResolutionImageLoader.slice(gg.derive(), ex).getIntersection();
+                    }
+                    sliceExtent = ex;
                 }
+            }
+            if (task.isCancelled()) {
+                return null;
             }
             return cv.render(ex);
         } finally {
@@ -287,30 +298,35 @@ public class ImageRequest {
 
     /**
      * Configures the given status bar with the geometry of the grid coverage we have just read.
-     * This method is invoked in JavaFX thread after {@link GridView#setImage(ImageRequest)}
-     * loaded in background thread a new image, successfully or not.
+     * This method is invoked in JavaFX thread after above {@link #load(FutureTask)} background
+     * task completed, regardless if successful or not.
+     * The two method calls are done (indirectly) by {@link GridView#setImage(ImageRequest)}.
      */
     final void configure(final StatusBar bar) {
         final Long id = LogHandler.loadingStart(resource);
         try {
-            final GridCoverage cv = coverage;
-            final GridExtent ex = sliceExtent;
-            bar.applyCanvasGeometry(cv != null ? cv.getGridGeometry() : null);
-            /*
-             * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
-             * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
-             * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.  It is okay to
-             * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`, so it will
-             * not be overwritten by gesture events (zoom, pan, etc).
-             */
-            if (ex != null) {
-                final double[] origin = new double[ex.getDimension()];
-                for (int i=0; i<origin.length; i++) {
-                    origin[i] = ex.getLow(i);
+            GridExtent ex = sliceExtent;
+            GridCoverage cv = coverage;
+            GridGeometry gg = (cv != null) ? cv.getGridGeometry() : null;
+            if (gg != null && ex != null) {
+                /*
+                 * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
+                 * to the requested `GridExtent`. Consequently we need to translate the grid coordinates so that the
+                 * request coordinates start at zero.
+                 */
+                final long[] offset = new long[ex.getDimension()];
+                for (final int i : bar.getXYDimensions()) {
+                    offset[i] = Math.negateExact(ex.getLow(i));
                 }
-                bar.localToObjectiveCRS.set(MathTransforms.concatenate(
-                        MathTransforms.translation(origin), bar.localToObjectiveCRS.get()));
+                ex = ex.translate(offset);
+                gg = gg.translate(offset);          // Does not change the "real world" envelope.
+                try {
+                    gg = gg.relocate(ex);           // Changes the "real world" envelope.
+                } catch (TransformException e) {
+                    bar.setErrorMessage(null, e);
+                }
             }
+            bar.applyCanvasGeometry(gg);
         } finally {
             LogHandler.loadingStop(id);
         }

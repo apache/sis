@@ -43,7 +43,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link GridGeometry} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -486,6 +486,35 @@ public final strictfp class GridGeometryTest extends TestCase {
         grid = grid.translate(12, 15);
         assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, grid.getExtent());
         assertEquals(envelope, grid.getEnvelope());
+    }
+
+    /**
+     * Tests {@link GridGeometry#relocate(GridExtent)}.
+     *
+     * @throws TransformException if the relocated envelope can not be computed.
+     */
+    @Test
+    public void testRelocate() throws TransformException {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(10, 10),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                    2,  0,  10,
+                    0,  3,  20,
+                    0,  0,   1)),
+                HardCodedCRS.WGS84);
+
+        assertSame(grid, grid.relocate(new GridExtent(10, 10)));
+        final GridGeometry relocated = grid.relocate(new GridExtent(20, 20));
+        assertSame(grid.gridToCRS,   relocated.gridToCRS);
+        assertSame(grid.cornerToCRS, relocated.cornerToCRS);
+        assertSame(grid.resolution,  relocated.resolution);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {10, 20},
+                new double[] {30, 50}), grid.envelope, STRICT);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {10, 20},
+                new double[] {50, 80}), relocated.envelope, STRICT);
     }
 
     /**

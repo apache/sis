@@ -122,6 +122,12 @@ abstract class ViewAndControls {
         this.owner = owner;
         sliceSelector = new GridSliceSelector(owner.getLocale());
         viewAndNavigation = new VBox();
+        sliceSelector.selectedExtentProperty().addListener((p,o,n) -> {
+            final GridCoverage coverage = ViewAndControls.this.owner.getCoverage();
+            if (coverage != null) {
+                load(new ImageRequest(coverage, n));    // Show a new slice of data.
+            }
+        });
     }
 
     /**
