@@ -717,7 +717,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getLow()
      * @see #getHigh(int)
-     * @see #setRange(int, long, long)
+     * @see #withRange(int, long, long)
      */
     @Override
     public long getLow(final int index) {
@@ -735,7 +735,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getHigh()
      * @see #getLow(int)
-     * @see #setRange(int, long, long)
+     * @see #withRange(int, long, long)
      */
     @Override
     public long getHigh(final int index) {
@@ -929,6 +929,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Returns a grid extent identical to this grid extent except for the coordinate values in the specified dimension.
+     * This grid extent is not modified.
      *
      * @param  index  the dimension for which to set the coordinate values.
      * @param  low    the low coordinate value at the given dimension, inclusive.
@@ -941,7 +942,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @since 1.3
      */
-    public GridExtent setRange(final int index, final long low, final long high) {
+    public GridExtent withRange(final int index, final long low, final long high) {
         int ih = getDimension();
         ArgumentChecks.ensureValidIndex(ih, index);
         ih += index;

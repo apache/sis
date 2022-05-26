@@ -186,13 +186,13 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#setRange(int, long, long)}.
+     * Tests {@link GridExtent#withRange(int, long, long)}.
      */
     @Test
-    public void testSetRange() {
+    public void testWithRange() {
         GridExtent extent = create3D();
-        assertSame(extent, extent.setRange(1, 200, 799));
-        extent = extent.setRange(2, 30, 60);
+        assertSame(extent, extent.withRange(1, 200, 799));
+        extent = extent.withRange(2, 30, 60);
         assertExtentEquals(extent, 0, 100, 499);
         assertExtentEquals(extent, 1, 200, 799);
         assertExtentEquals(extent, 2,  30,  60);

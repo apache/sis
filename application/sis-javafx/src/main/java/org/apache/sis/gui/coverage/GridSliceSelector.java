@@ -246,7 +246,7 @@ public class GridSliceSelector extends Widget {
                 slider.setMin(min);
                 slider.setMax(max);
                 slider.setValue(min);
-                selected = selected.setRange(dim, min, min);        // Initially selected slice.
+                selected = selected.withRange(dim, min, min);       // Initially selected slice.
                 converter.configure(gg, gridToCRS, dim, min, max, envelope, resolution);
                 converter.setTickSpacing(slider, slider.getWidth());
                 label.setText(vocabulary.toLabel(converter.getAxisLabel(extent, vocabulary)));
@@ -457,7 +457,7 @@ public class GridSliceSelector extends Widget {
                 }
                 final GridExtent extent = selectedExtent.get();
                 if (extent != null && position != extent.getLow(dimension)) {
-                    selectedExtent.set(extent.setRange(dimension, position, position));
+                    selectedExtent.set(extent.withRange(dimension, position, position));
                 }
             }
         }
