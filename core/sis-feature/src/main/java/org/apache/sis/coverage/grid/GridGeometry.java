@@ -465,7 +465,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     {
         final GeneralEnvelope env;
         if (extent != null && cornerToCRS != null) {
-            env = extent.toCRS(cornerToCRS, specified, limits);
+            env = extent.toEnvelope(cornerToCRS, specified, limits);
             env.setCoordinateReferenceSystem(crs);
             if (limits != null) {
                 env.intersect(limits);
@@ -533,7 +533,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
                 extent = new GridExtent(env, rounding, GridClippingMode.STRICT, null, null, null, null);
-                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // `gridToCRS` specified by the user, not `this.gridToCRS`.
+                env = extent.toEnvelope(cornerToCRS, gridToCRS, envelope);
+                // Use `gridToCRS` specified by the user, not `this.gridToCRS`.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
             }
@@ -934,7 +935,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 clip = null;
             }
             MathTransform tr = MathTransforms.concatenate(cornerToCRS, op.getMathTransform());
-            final GeneralEnvelope env = extent.toCRS(tr, tr, clip);
+            final GeneralEnvelope env = extent.toEnvelope(tr, tr, clip);
             env.setCoordinateReferenceSystem(op.getTargetCRS());
             env.normalize();
             if (clip != null) {
@@ -1404,7 +1405,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         ensureDimensionMatches(getDimension(), extent);
         final ImmutableEnvelope relocated;
         if (cornerToCRS != null) {
-            final GeneralEnvelope env = extent.toCRS(cornerToCRS, gridToCRS, null);
+            final GeneralEnvelope env = extent.toEnvelope(cornerToCRS, gridToCRS, null);
             env.setCoordinateReferenceSystem(getCoordinateReferenceSystem(envelope));
             relocated = new ImmutableEnvelope(env);
         } else {

@@ -392,7 +392,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *                             This argument is ignored if {@code enclosing} is null.
      * @throws DisjointExtentException if the given envelope does not intersect the enclosing grid extent.
      *
-     * @see #toCRS(MathTransform, MathTransform, Envelope)
+     * @see #toEnvelope(MathTransform, MathTransform, Envelope)
      * @see #slice(DirectPosition, int[])
      */
     GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final GridClippingMode clipping,
@@ -420,12 +420,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             final boolean isMaxValid = (max <= Long.MAX_VALUE);
             if (min > max || (enclosing == null && !(isMinValid & isMaxValid))) {
                 /*
-                 * We do not throw an exception if `enclosing` is non-null and envelope bounds are NaN
-                 * because this case occurs when the gridToCRS transform has a NaN scale factor.  Such
-                 * scale factor may occur with ranges like [0 … 0]. With a non-null `enclosing` extent,
-                 * we can still have grid coordinates: they are inherited from `enclosing`. We require
-                 * the two bounds to be NaN, otherwise the reason for those NaN envelope bounds is not
-                 * a NaN scale factor.
+                 * We do not throw an exception for NaN envelope bounds if `enclosing` is non-null
+                 * because this case occurs when the `gridToCRS` transform has a NaN scale factor.
+                 * Such scale factor may result from ranges like [0 … 0]. We tolerate them because
+                 * with a non-null `enclosing` extent, we can still have grid coordinates: they are
+                 * inherited from `enclosing`. Note that we require the two bounds to be NaN, because
+                 * otherwise the reason for those NaN envelope bounds is not a NaN scale factor.
                  */
                 throw new IllegalArgumentException(Resources.format(
                         Resources.Keys.IllegalGridEnvelope_3, getAxisIdentification(i,i), min, max));
@@ -999,7 +999,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
-        final GeneralEnvelope envelope = toCRS(cornerToCRS, cornerToCRS, null);
+        final GeneralEnvelope envelope = toEnvelope(cornerToCRS, cornerToCRS, null);
         final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
         if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
             envelope.setCoordinateReferenceSystem(GridExtentCRS.build(gridToCRS, (types != null) ? types : DEFAULT_TYPES, null));
@@ -1014,10 +1014,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The transform shall map <em>cell corner</em> to real world coordinates.
      * This method does not set the envelope coordinate reference system.
      *
-     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates, or {@code null} if none.
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
      *                      If different, then this is assumed to map cell centers instead of cell corners.
-     * @param  fallback     bounds to use if some values still NaN, or {@code null} if none.
+     * @param  fallback     bounds to use if some values are still NaN after conversion, or {@code null} if none.
      * @return this grid extent in real world coordinates.
      * @throws TransformException if the envelope can not be computed with the given transform.
      *
@@ -1025,28 +1025,70 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see GridGeometry#getEnvelope(CoordinateReferenceSystem)
      */
-    final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
+    final GeneralEnvelope toEnvelope(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
             throws TransformException
     {
+        final GeneralEnvelope envelope = Envelopes.transform(cornerToCRS, toEnvelope());
+        complete(envelope, gridToCRS, gridToCRS != cornerToCRS, fallback);
+        return envelope;
+    }
+
+    /**
+     * Returns the coordinates of this grid extent in an envelope.
+     * The returned envelope has no CRS.
+     */
+    final GeneralEnvelope toEnvelope() {
         final int dimension = getDimension();
-        GeneralEnvelope envelope = new GeneralEnvelope(dimension);
+        final GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
             long high = coordinates[i + dimension];
             if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
             envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
         }
-        if (cornerToCRS == null) {
-            return envelope;
+        return envelope;
+    }
+
+    /**
+     * Transforms this grid extent to "real world" envelopes using the given transform.
+     * This method usually returns exactly one envelope, but may return more envelopes if the given transform
+     * contains at least one {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} step.
+     *
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
+     * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
+     *                      If different, then this is assumed to map cell centers instead of cell corners.
+     * @param  fallback     bounds to use if some values are still NaN after conversion, or {@code null} if none.
+     * @return this grid extent in real world coordinates.
+     * @throws TransformException if the envelope can not be computed with the given transform.
+     *
+     * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
+     *
+     * @see GridGeometry#getEnvelope(CoordinateReferenceSystem)
+     */
+    final GeneralEnvelope[] toEnvelopes(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
+            throws TransformException
+    {
+        final GeneralEnvelope[] envelopes = Envelopes.transformWraparounds(cornerToCRS, toEnvelope());
+        for (final GeneralEnvelope envelope : envelopes) {
+            complete(envelope, gridToCRS, gridToCRS != cornerToCRS, fallback);
         }
-        envelope = Envelopes.transform(cornerToCRS, envelope);
+        return envelopes;
+    }
+
+    /**
+     * If the envelope contains some NaN values, tries to replace them by constant values inferred from the math transform.
+     * We must use the {@link MathTransform} specified by the user ({@code gridToCRS}), not necessarily {@code cornerToCRS},
+     * because inferring a {@code cornerToCRS} by translating a {@code centerToCRS} by 0.5 cell increase the amount of NaN
+     * values in the matrix. For giving a chance to {@link TransformSeparator} to perform its work,
+     * we need the minimal amount of NaN values.
+     *
+     * @param  envelope   the envelope to complete if empty.
+     * @param  gridToCRS  the transform specified by user.
+     * @param  isCenter   whether the "grid to CRS" transform maps cell center instead of cell corners.
+     * @param  fallback   bounds to use if some values are still NaN after conversion, or {@code null} if none.
+     */
+    private void complete(final GeneralEnvelope envelope, final MathTransform gridToCRS, final boolean isCenter, final Envelope fallback) {
         if (envelope.isEmpty()) try {
-            /*
-             * If the envelope contains some NaN values, try to replace them by constant values inferred from the math transform.
-             * We must use the MathTransform specified by the user (gridToCRS), not necessarily the cornerToCRS transform, because
-             * inferring a `cornerToCRS` by translating a `centerToCRS` by 0.5 cell increase the amount of NaN values in the matrix.
-             * For giving a chance to TransformSeparator to perform its work, we need the minimal amount of NaN values.
-             */
-            final boolean isCenter = (gridToCRS != cornerToCRS);
+            final int dimension = getDimension();
             TransformSeparator separator = null;
             for (int srcDim=0; srcDim < dimension; srcDim++) {
                 if (coordinates[srcDim + dimension] == 0 && coordinates[srcDim] == 0) {
@@ -1115,7 +1157,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             // "toEnvelope" is the closest public method that may invoke this method.
             Logging.recoverableException(getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
         }
-        return envelope;
     }
 
     /**
@@ -1588,15 +1629,43 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return the intersection result. May be one of the existing instances.
      */
     final GridExtent intersect(final GridExtent other) {
+        return combine(other, false);
+    }
+
+    /**
+     * Returns the union of this grid extent with to the given grid extent.
+     * The given extent shall have the same number of dimensions.
+     *
+     * <p>This method is not public because we do not yet have a policy
+     * about whether we should verify if axis {@link #types} match.</p>
+     *
+     * @param  other  the grid to combine with.
+     * @return the union result. May be one of the existing instances.
+     */
+    final GridExtent union(final GridExtent other) {
+        return combine(other, true);
+    }
+
+    /**
+     * Implementation of {@link #union(GridExtent)} and {@link #intersect(GridExtent)}
+     */
+    private GridExtent combine(final GridExtent other, final boolean union) {
         final int n = coordinates.length;
         final int m = n >>> 1;
         final long[] clipped = new long[n];
         int i = 0;
-        while (i < m) {clipped[i] = Math.max(coordinates[i], other.coordinates[i]); i++;}
-        while (i < n) {clipped[i] = Math.min(coordinates[i], other.coordinates[i]); i++;}
+        while (i < m) {clipped[i] = extremum(coordinates[i], other.coordinates[i], !union); i++;}
+        while (i < n) {clipped[i] = extremum(coordinates[i], other.coordinates[i],  union); i++;}
         if (Arrays.equals(clipped,  this.coordinates)) return this;
         if (Arrays.equals(clipped, other.coordinates)) return other;
         return new GridExtent(this, clipped);
+    }
+
+    /**
+     * Returns the minimum or maximum value between the given pair of values.
+     */
+    private static long extremum(final long a, final long b, final boolean max) {
+        return max ? Math.max(a, b) : Math.min(a, b);
     }
 
     /**

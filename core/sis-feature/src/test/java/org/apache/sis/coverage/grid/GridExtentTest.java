@@ -246,19 +246,38 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
+     * Creates another arbitrary extent for tests of union and intersection.
+     */
+    private static GridExtent createOther() {
+        return new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {150, 220, 35}, new long[] {400, 820, 47}, false);
+    }
+
+    /**
      * Tests {@link GridExtent#intersect(GridExtent)}.
      */
     @Test
     public void testIntersect() {
-        final GridExtent domain = new GridExtent(
-                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
-                new long[] {150, 220, 35}, new long[] {400, 820, 47}, false);
-        GridExtent extent = create3D();
-        extent = extent.intersect(domain);
+        final GridExtent domain = createOther();
+        final GridExtent extent = create3D().intersect(domain);
         assertExtentEquals(extent, 0, 150, 399);
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
         assertSame(extent.intersect(domain), extent);
+    }
+
+    /**
+     * Tests {@link GridExtent#union(GridExtent)}.
+     */
+    @Test
+    public void testUnion() {
+        final GridExtent domain = createOther();
+        final GridExtent extent = create3D().union(domain);
+        assertExtentEquals(extent, 0, 100, 499);
+        assertExtentEquals(extent, 1, 200, 819);
+        assertExtentEquals(extent, 2, 35,  49);
+        assertSame(extent.union(domain), extent);
     }
 
     /**

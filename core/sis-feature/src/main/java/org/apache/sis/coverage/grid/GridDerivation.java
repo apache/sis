@@ -79,7 +79,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see GridGeometry#derive()
  * @see GridGeometry#reduce(int...)
@@ -510,7 +510,13 @@ public class GridDerivation {
                 finder.nowraparound();
                 mapCenters = finder.gridToGrid();                               // We will use only the scale factors.
                 if (domain != null) {
-                    setBaseExtentClipped(domain.toCRS(mapCorners, mapCenters, null));
+                    final GeneralEnvelope[] envelopes;
+                    if (mapCorners != null) {
+                        envelopes = domain.toEnvelopes(mapCorners, mapCenters, null);
+                    } else {
+                        envelopes = new GeneralEnvelope[] {domain.toEnvelope()};
+                    }
+                    setBaseExtentClipped(envelopes);
                     if (baseExtent != base.extent && baseExtent.equals(domain)) {
                         baseExtent = domain;                                    // Share common instance.
                     }
@@ -805,8 +811,19 @@ public class GridDerivation {
      *
      * @see #getBaseExtentExpanded(boolean)
      */
-    private void setBaseExtentClipped(final GeneralEnvelope indices) {
-        final GridExtent sub = new GridExtent(indices, rounding, clipping, margin, chunkSize, baseExtent, modifiedDimensions);
+    private void setBaseExtentClipped(final GeneralEnvelope... indices) {
+        GridExtent sub = null;
+        IllegalArgumentException error = null;
+        for (final GeneralEnvelope ix : indices) try {
+            final GridExtent c = new GridExtent(ix, rounding, clipping, margin, chunkSize, baseExtent, modifiedDimensions);
+            sub = (sub == null) ? c : sub.union(c);
+        } catch (IllegalArgumentException e) {
+            if (error == null) error = e;
+            else error.addSuppressed(e);
+        }
+        if (sub == null) {
+            throw error;        // Should never be null because `indices` should never be empty.
+        }
         if (!sub.equals(baseExtent)) {
             baseExtent = sub;
         }
@@ -1100,7 +1117,7 @@ public class GridDerivation {
          *
          *   • x = (h₂ + f) × c⋅s      where        h₂ = floor(h₁/s)      and       f = ((h₁ mod s) + 1)/s
          *
-         * Because s ≥ 1, then f ≤ 1. But the f value actually used by GridExtent.toCRS(…) is hard-coded to 1
+         * Because s ≥ 1, then f ≤ 1. But the f value actually used by GridExtent.toEnvelope(…) is hard-coded to 1
          * since it assumes that all cells are whole, i.e. it does not take in account that the last cell may
          * actually be fraction of a cell. Since 1 ≥ f, the computed envelope may be larger. This explains the
          * need for envelope clipping performed by GridGeometry constructor.

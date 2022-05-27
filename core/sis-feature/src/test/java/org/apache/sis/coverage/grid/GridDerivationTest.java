@@ -56,7 +56,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -628,6 +628,35 @@ public final strictfp class GridDerivationTest extends TestCase {
      */
     @Test
     public void testAntiMeridianCrossingInSubgrid() {
+        final GridExtent be = new GridExtent(null, new long[] {0, -64800}, new long[] {168000, 21600}, false);
+        final GridExtent qe = new GridExtent(256, 256);
+        final double bs = 350d / 168000;                    // We will use [-175 …  175]° of longitude.
+        final double qs =  10d / 256;                       // We will use [-182 … -172]° of longitude.
+        final AffineTransform2D bt = new AffineTransform2D(bs, 0, 0, -bs, -175, -45);
+        final AffineTransform2D qt = new AffineTransform2D(qs, 0, 0, -qs, -182,  90);
+        final GridGeometry base  = new GridGeometry(be, PixelInCell.CELL_CORNER, bt, HardCodedCRS.WGS84);
+        final GridGeometry query = new GridGeometry(qe, PixelInCell.CELL_CORNER, qt, HardCodedCRS.WGS84);
+        /*
+         * The [-182 … -172]° longitude range intersects [-175 …  175]° only in the [-175 … -172]° part.
+         * The [-182 … -175]° part becomes [178 … 185]° after wraparound, which still outside the base
+         * and should not be included in the intersection result.
+         */
+        GridGeometry result = base.derive().subgrid(query).build();
+        assertExtentEquals(new long[] {0, -3410}, new long[] {75, -3158}, result.getExtent());
+        assertEnvelopeEquals(new Envelope2D(null,
+                -175,           // Expected minimum value.
+                  80,           // Not interresting for this test.
+                -172 - -175,    // Expected maximum value minus minimum.
+                  90 -   80),
+                result.getEnvelope(), 0.02);
+    }
+
+    /**
+     * Tests deriving a grid geometry with a request crossing the antimeridian.
+     * The request uses an envelope instead of a {@link GridGeometry}.
+     */
+    @Test
+    public void testAntiMeridianCrossingInEnvelope() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(

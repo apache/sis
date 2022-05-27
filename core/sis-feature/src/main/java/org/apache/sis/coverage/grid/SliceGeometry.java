@@ -181,7 +181,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         }
         GeneralEnvelope subArea = null;
         if (useSubExtent && cornerToCRS != null) try {
-            subArea = extent.toCRS(cornerToCRS, gridToCRS, null);
+            subArea = extent.toEnvelope(cornerToCRS, gridToCRS, null);
         } catch (TransformException e) {
             // GridGeometry.reduce(…) is the public method invoking indirectly this method.
             GridGeometry.recoverableException("reduce", e);

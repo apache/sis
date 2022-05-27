@@ -475,7 +475,7 @@ final class ResampledGridCoverage extends GridCoverage {
             final MathTransform crsToGrid, final boolean center) throws TransformException
     {
         final MathTransform sourceToTarget = MathTransforms.concatenate(cornerToCRS, crsToGrid);
-        final GeneralEnvelope bounds = source.toCRS(sourceToTarget, sourceToTarget, null);
+        final GeneralEnvelope bounds = source.toEnvelope(sourceToTarget, sourceToTarget, null);
         if (center) {
             final double[] vector = new double[bounds.getDimension()];
             Arrays.fill(vector, 0.5);
@@ -507,7 +507,7 @@ final class ResampledGridCoverage extends GridCoverage {
              * If a dimension can not be converted (e.g. because a `gridToCRS` transform has a NaN
              * factor in that dimension), the corresponding source grid coordinates will be copied.
              */
-            final GeneralEnvelope sourceBounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+            final GeneralEnvelope sourceBounds = sliceExtent.toEnvelope(toSourceCorner, toSourceCenter, null);
             final int dimension = sourceBounds.getDimension();
             if (sourceBounds.isEmpty()) {
                 final GridExtent se = source.gridGeometry.getExtent();
