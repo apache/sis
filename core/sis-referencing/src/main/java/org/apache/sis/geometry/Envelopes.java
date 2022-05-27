@@ -22,7 +22,9 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Set;
+import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.time.Instant;
 import org.opengis.geometry.Envelope;
@@ -98,7 +100,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -362,49 +364,28 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Transforms an envelope using the given math transform.
-     * The transformation is only approximated: the returned envelope may be bigger than necessary,
-     * or smaller than required if the bounding box contains a pole.
-     * The coordinate reference system of the returned envelope will be null.
-     *
-     * <h4>Limitation</h4>
-     * This method can not handle the case where the envelope contains the North or South pole,
-     * or when it crosses the ±180° longitude, because {@link MathTransform} does not carry sufficient information.
-     * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.
+     * Shared implementation of {@link #transform(MathTransform, Envelope)}
+     * and {@link #transformWraparounds(MathTransform, Envelope)}.
+     * Offers also the opportunity to save the transformed center coordinates.
      *
      * @param  transform  the transform to use.
-     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
-     * @return the transformed envelope, or {@code null} if {@code envelope} was null.
-     * @throws TransformException if a transform failed.
-     *
-     * @see #transform(CoordinateOperation, Envelope)
-     *
-     * @since 0.5
-     */
-    public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope)
-            throws TransformException
-    {
-        ArgumentChecks.ensureNonNull("transform", transform);
-        return (envelope != null) ? transform(transform, envelope, null) : null;
-    }
-
-    /**
-     * Implementation of {@link #transform(MathTransform, Envelope)} with the opportunity to
-     * save the projected center coordinate.
-     *
-     * @param  targetPt  after this method call, the center of the source envelope projected to the target CRS.
-     *                   The length of this array must be the number of target dimensions.
-     *                   May be {@code null} if this information is not needed.
+     * @param  envelope   envelope to transform. This envelope will not be modified.
+     * @param  targetPt   after this method call, the center of the source envelope transformed to the target CRS.
+     *                    The length of this array must be the number of target dimensions.
+     *                    May be {@code null} if this information is not needed.
+     * @param  results    where to store the individual results when the transform contains wraparound steps,
+     *                    or {@code null} for computing the union of all results instead.
+     * @return the transformed envelope. May be {@code null} if {@code results} was non-null.
      */
     @SuppressWarnings("null")
-    private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope, double[] targetPt)
-            throws TransformException
+    private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope,
+            double[] targetPt, final List<GeneralEnvelope> results) throws TransformException
     {
         if (transform.isIdentity()) {
             /*
              * Slight optimization: Just copy the envelope. Note that we need to set the CRS
              * to null because we don't know what the target CRS was supposed to be. Even if
-             * an identity transform often imply that the target CRS is the same one than the
+             * an identity transform often implies that the target CRS is the same one than the
              * source CRS, it is not always the case. The metadata may be differents, or the
              * transform may be a datum shift without Bursa-Wolf parameters, etc.
              */
@@ -590,6 +571,15 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                 System.arraycopy(coordinates, coordinates.length - targetDim, targetPt, 0, targetDim);
                 targetPt = null;
             }
+            /*
+             * If the caller wants individual results, store them in the list.
+             * Do not filter empty envelopes, because some callers such as
+             * `GridExtent` have algorithms for completing empty envelopes.
+             */
+            if (results != null) {
+                results.add(transformed);
+                transformed = null;
+            }
         } while (wc.translate());
         return transformed;
     }
@@ -653,7 +643,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
         }
         final MathTransform mt = operation.getMathTransform();
         final double[] centerPt = new double[mt.getTargetDimensions()];
-        final GeneralEnvelope transformed = transform(mt, envelope, centerPt);
+        final GeneralEnvelope transformed = transform(mt, envelope, centerPt, null);
         /*
          * If the source envelope crosses the expected range of valid coordinates, also projects
          * the range bounds as a safety. Example: if the source envelope goes from 150 to 200°E,
@@ -952,6 +942,68 @@ poles:  for (int i=0; i<dimension; i++) {
             recoverableException(Envelopes.class, warning);
         }
         return transformed;
+    }
+
+    /**
+     * Transforms an envelope using the given math transform.
+     * The transformation is only approximated: the returned envelope may be bigger than necessary,
+     * or smaller than required if the bounding box contains a pole.
+     * The coordinate reference system of the returned envelope will be null.
+     *
+     * <h4>Limitation</h4>
+     * This method can not handle the case where the envelope contains the North or South pole.
+     * Envelopes crossing the ±180° longitude are handled only if the given transform contains
+     * {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} steps;
+     * this method does not add such steps itself.
+     * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.
+     *
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelope, or {@code null} if {@code envelope} was null.
+     * @throws TransformException if a transform failed.
+     *
+     * @see #transform(CoordinateOperation, Envelope)
+     *
+     * @since 0.5
+     */
+    public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope)
+            throws TransformException
+    {
+        ArgumentChecks.ensureNonNull("transform", transform);
+        return (envelope != null) ? transform(transform, envelope, null, null) : null;
+    }
+
+    /**
+     * Transforms potentially many times an envelope using the given math transform.
+     * If the given envelope is {@code null}, then this method returns an empty envelope.
+     * Otherwise if the transform does not contain any
+     * {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} step,
+     * then this method is equivalent to {@link #transform(MathTransform, Envelope)} returned in an array of length 1.
+     * Otherwise this method returns many transformed envelopes where each envelope describes approximately the same region.
+     * If the envelope CRS is geographic, the many envelopes are the same envelope shifted by 360° of longitude.
+     * If the envelope CRS is projected, then the 360° shifts are applied before the map projection.
+     * It may result in very different coordinates.
+     *
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelopes, or an empty array if {@code envelope} was null.
+     * @throws TransformException if a transform failed.
+     *
+     * @since 1.3
+     */
+    public static GeneralEnvelope[] transformWraparounds(final MathTransform transform, final Envelope envelope)
+            throws TransformException
+    {
+        ArgumentChecks.ensureNonNull("transform", transform);
+        if (envelope == null) {
+            return new GeneralEnvelope[0];
+        }
+        final List<GeneralEnvelope> results = new ArrayList<>(4);
+        final GeneralEnvelope transformed = transform(transform, envelope, null, results);
+        if (results.isEmpty() && transformed != null) {
+            return new GeneralEnvelope[] {transformed};
+        }
+        return results.toArray(new GeneralEnvelope[results.size()]);
     }
 
     /**
