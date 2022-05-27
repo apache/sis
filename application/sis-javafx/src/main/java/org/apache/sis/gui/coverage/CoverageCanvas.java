@@ -162,6 +162,16 @@ public class CoverageCanvas extends MapCanvasAWT {
     private boolean isCoverageAdjusting;
 
     /**
+     * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
+     *
+     * @see #getSliceExtent()
+     * @see #setSliceExtent(GridExtent)
+     * @see GridCoverage#render(GridExtent)
+     */
+    final ObjectProperty<GridExtent> sliceExtentProperty;
+
+    /**
      * The interpolation method to use for resampling the image.
      *
      * @see #getInterpolation()
@@ -243,9 +253,11 @@ public class CoverageCanvas extends MapCanvasAWT {
         derivedImages         = new EnumMap<>(Stretching.class);
         resourceProperty      = new SimpleObjectProperty<>(this, "resource");
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
+        sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.processor.getInterpolation());
         resourceProperty     .addListener((p,o,n) -> onPropertySpecified(n, null, coverageProperty));
         coverageProperty     .addListener((p,o,n) -> onPropertySpecified(null, n, resourceProperty));
+        sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getCoverage(), null));
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
     }
 
@@ -342,21 +354,28 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Sets both resource and coverage properties together. Typically only one of those properties is non-null.
-     * If both are non-null, then it is caller's responsibility to ensure that they are consistent.
+     * Returns a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @return subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @see #sliceExtentProperty
+     * @see GridCoverage#render(GridExtent)
      */
-    final void setCoverage(final GridCoverageResource resource, final GridCoverage coverage) {
-        if (getResource() != resource || getCoverage() != coverage) {
-            final boolean p = isCoverageAdjusting;
-            try {
-                isCoverageAdjusting = true;
-                setResource(resource);
-                setCoverage(coverage);
-            } finally {
-                isCoverageAdjusting = p;
-            }
-            onPropertySpecified(resource, coverage, null);
-        }
+    final GridExtent getSliceExtent() {
+        return sliceExtentProperty.get();
+    }
+
+    /**
+     * Sets a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @param  sliceExtent  subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @see #sliceExtentProperty
+     * @see GridCoverage#render(GridExtent)
+     */
+    final void setSliceExtent(final GridExtent sliceExtent) {
+        sliceExtentProperty.set(sliceExtent);
+        // Will indirectly invoke `onPropertySpecified(…)`.
     }
 
     /**
@@ -452,6 +471,39 @@ public class CoverageCanvas extends MapCanvasAWT {
             LogHandler.loadingStop(id);
         }
         clearIsolines();
+    }
+
+    /**
+     * Sets both resource and coverage properties together. Typically only one of those properties is non-null.
+     * If both are non-null, then it is caller's responsibility to ensure that they are consistent.
+     *
+     * @param  request  the resource or coverage to set, or {@code null} for clearing the view.
+     */
+    final void setImage(final ImageRequest request) {
+        final GridCoverageResource resource;
+        final GridCoverage coverage;
+        final GridExtent sliceExtent;
+        if (request != null) {
+            resource    = request.resource;
+            coverage    = request.getCoverage().orElse(null);
+            sliceExtent = request.getSliceExtent().orElse(null);
+        } else {
+            resource    = null;
+            coverage    = null;
+            sliceExtent = null;
+        }
+        if (getResource() != resource || getCoverage() != coverage || getSliceExtent() != sliceExtent) {
+            final boolean p = isCoverageAdjusting;
+            try {
+                isCoverageAdjusting = true;
+                setResource(resource);
+                setCoverage(coverage);
+                setSliceExtent(sliceExtent);
+            } finally {
+                isCoverageAdjusting = p;
+            }
+            onPropertySpecified(resource, coverage, null);
+        }
     }
 
     /**
@@ -630,11 +682,8 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * The two-dimensional slice to display.
-         *
-         * @todo We do not yet have a mechanism for computing it.
-         *       May become a non-static field in a future version.
          */
-        private static final GridExtent sliceExtent = null;
+        private final GridExtent sliceExtent;
 
         /**
          * Value of {@link CoverageCanvas#data} at the time this worker has been initialized.
@@ -718,6 +767,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             resource           = canvas.getResource();
             coverage           = canvas.getCoverage();
             data               = canvas.data.clone();
+            sliceExtent        = canvas.getSliceExtent();
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
             displayBounds      = canvas.getDisplayBounds();

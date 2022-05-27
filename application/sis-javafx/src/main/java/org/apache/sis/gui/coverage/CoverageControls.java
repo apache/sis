@@ -181,15 +181,6 @@ final class CoverageControls extends ViewAndControls {
      */
     @Override
     final void load(final ImageRequest request) {
-        final GridCoverageResource resource;
-        final GridCoverage coverage;
-        if (request != null) {
-            resource = request.resource;
-            coverage = request.getCoverage().orElse(null);
-        } else {
-            resource = null;
-            coverage = null;
-        }
-        view.setCoverage(resource, coverage);
+        view.setImage(request);
     }
 }
