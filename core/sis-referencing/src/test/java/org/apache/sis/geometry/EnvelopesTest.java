@@ -306,18 +306,18 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
     }
 
     /**
-     * Tests {@link Envelopes#transformWraparounds(MathTransform, Envelope)}.
+     * Tests {@link Envelopes#wraparound(MathTransform, Envelope)}.
      *
      * @throws TransformException if a coordinate transformation failed.
      */
     @Test
-    public void testTransformWraparounds() throws TransformException {
+    public void testWraparound() throws TransformException {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -200, -100);
         envelope.setRange(1, 5, 9);
         final MathTransform tr = WraparoundTransform.create(2, 0, 360, -180, 0);
         assertTrue(tr instanceof WraparoundTransform);
-        final GeneralEnvelope[] results = Envelopes.transformWraparounds(tr, envelope);
+        final GeneralEnvelope[] results = Envelopes.wraparound(tr, envelope);
         assertEquals(2, results.length);
         assertEnvelopeEquals(new GeneralEnvelope(new double[] {-200, 5}, new double[] {-100, 9}), results[0]);
         assertEnvelopeEquals(new GeneralEnvelope(new double[] { 160, 5}, new double[] { 260, 9}), results[1]);

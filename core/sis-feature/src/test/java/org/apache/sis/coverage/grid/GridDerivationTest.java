@@ -625,6 +625,8 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry with a request crossing the antimeridian.
      * The {@link GridGeometry} crossing the anti-meridian is the one given in
      * argument to {@link GridDerivation#subgrid(GridGeometry)}.
+     *
+     * <a href="https://issues.apache.org/jira/browse/SIS-548">SIS-548</a>
      */
     @Test
     public void testAntiMeridianCrossingInSubgrid() {

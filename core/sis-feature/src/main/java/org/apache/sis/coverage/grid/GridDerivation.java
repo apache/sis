@@ -806,7 +806,8 @@ public class GridDerivation {
      * As a consequence of above context, margin and chunk size are in units of the base extent.
      * They are not in units of cells of the size that we get after subsampling.
      *
-     * @param  indices  the envelope to intersect in units of {@link #base} grid coordinates.
+     * @param  indices  the envelopes to intersect in units of {@link #base} grid coordinates.
+     *                  Shall contains at least one element.
      * @throws DisjointExtentException if the given envelope does not intersect the grid extent.
      *
      * @see #getBaseExtentExpanded(boolean)
@@ -814,13 +815,15 @@ public class GridDerivation {
     private void setBaseExtentClipped(final GeneralEnvelope... indices) {
         GridExtent sub = null;
         IllegalArgumentException error = null;
-        for (final GeneralEnvelope ix : indices) try {
-            final GridExtent c = new GridExtent(ix, rounding, clipping, margin, chunkSize, baseExtent, modifiedDimensions);
+        int i = 0;
+        do try {
+            // Intentional IndexOutOfBoundsException if the `indices` array does not contain at least one element.
+            GridExtent c = new GridExtent(indices[i], rounding, clipping, margin, chunkSize, baseExtent, modifiedDimensions);
             sub = (sub == null) ? c : sub.union(c);
-        } catch (IllegalArgumentException e) {
+        } catch (DisjointExtentException e) {
             if (error == null) error = e;
             else error.addSuppressed(e);
-        }
+        } while (++i < indices.length);
         if (sub == null) {
             throw error;        // Should never be null because `indices` should never be empty.
         }

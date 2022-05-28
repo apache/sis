@@ -1067,7 +1067,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     final GeneralEnvelope[] toEnvelopes(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
             throws TransformException
     {
-        final GeneralEnvelope[] envelopes = Envelopes.transformWraparounds(cornerToCRS, toEnvelope());
+        final GeneralEnvelope[] envelopes = Envelopes.wraparound(cornerToCRS, toEnvelope());
         for (final GeneralEnvelope envelope : envelopes) {
             complete(envelope, gridToCRS, gridToCRS != cornerToCRS, fallback);
         }

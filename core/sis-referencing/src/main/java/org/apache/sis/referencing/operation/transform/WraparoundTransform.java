@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -72,7 +73,10 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
+ *
+ * @since 1.1
  * @module
  */
 public class WraparoundTransform extends AbstractMathTransform implements Serializable {

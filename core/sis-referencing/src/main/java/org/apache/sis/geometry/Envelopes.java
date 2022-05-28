@@ -365,7 +365,7 @@ public final class Envelopes extends Static {
 
     /**
      * Shared implementation of {@link #transform(MathTransform, Envelope)}
-     * and {@link #transformWraparounds(MathTransform, Envelope)}.
+     * and {@link #wraparound(MathTransform, Envelope)} public methods.
      * Offers also the opportunity to save the transformed center coordinates.
      *
      * @param  transform  the transform to use.
@@ -989,9 +989,12 @@ poles:  for (int i=0; i<dimension; i++) {
      * @return the transformed envelopes, or an empty array if {@code envelope} was null.
      * @throws TransformException if a transform failed.
      *
+     * @see #transform(MathTransform, Envelope)
+     * @see org.apache.sis.referencing.operation.transform.WraparoundTransform
+     *
      * @since 1.3
      */
-    public static GeneralEnvelope[] transformWraparounds(final MathTransform transform, final Envelope envelope)
+    public static GeneralEnvelope[] wraparound(final MathTransform transform, final Envelope envelope)
             throws TransformException
     {
         ArgumentChecks.ensureNonNull("transform", transform);
