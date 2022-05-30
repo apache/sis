@@ -242,7 +242,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selectedRow   .setVisible(visible);
         selectedColumn.setVisible(visible);
         if (!visible) {
-            getSkinnable().statusBar.handle(null);
+            getSkinnable().hideCoordinates();
         }
     }
 
@@ -315,7 +315,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
-        getSkinnable().statusBar.handle(null);      // Hide the coordinates.
+        getSkinnable().hideCoordinates();
     }
 
     /**

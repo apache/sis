@@ -78,6 +78,8 @@ import org.apache.sis.util.resources.Vocabulary;
 public class GridSliceSelector extends Widget {
     /**
      * Constants used for identifying the code assuming a two-dimensional space.
+     *
+     * @see #getXYDimensions()
      */
     private static final int BIDIMENSIONAL = 2;
 
@@ -109,6 +111,14 @@ public class GridSliceSelector extends Widget {
      * @see #selectedExtentProperty()
      */
     private final ReadOnlyObjectWrapper<GridExtent> selectedExtent;
+
+    /**
+     * Indices of {@link GridExtent} dimensions which are assigned to <var>x</var> and <var>y</var> coordinates.
+     * They are usually 0 for <var>x</var> and 1 for <var>y</var>.
+     *
+     * @see #BIDIMENSIONAL
+     */
+    private int xDimension, yDimension;
 
     /**
      * The locale to use for axis labels, or {@code null} for a default locale.
@@ -172,6 +182,7 @@ public class GridSliceSelector extends Widget {
         selectedExtent = new ReadOnlyObjectWrapper<>(this, "selectedExtent");
         gridGeometry = new SimpleObjectProperty<>(this, "gridGeometry");
         gridGeometry.addListener((p,o,n) -> setGridGeometry(n));
+        yDimension = 1;
     }
 
     /**
@@ -199,7 +210,11 @@ public class GridSliceSelector extends Widget {
         for (int dim=0; dim < dimension; dim++) {
             final long min = extent.getLow (dim);
             final long max = extent.getHigh(dim);
-            if (min < max && ++row >= 0) {
+            if (min < max) {
+                switch (++row) {
+                    case -2: xDimension = dim; continue;
+                    case -1: yDimension = dim; continue;
+                }
                 /*
                  * A new slider needs to be shown. Recycle existing slider and label if any,
                  * or create new controls if we already used all existing controls.
@@ -593,6 +608,17 @@ public class GridSliceSelector extends Widget {
      */
     public final ReadOnlyProperty<GridExtent> selectedExtentProperty() {
         return selectedExtent.getReadOnlyProperty();
+    }
+
+    /**
+     * Returns the grid dimensions of <var>x</var> and <var>y</var> axes rendered in a two-dimensional image or table.
+     * This value is inferred from the {@linkplain #gridGeometry grid geometry} property value.
+     * It is almost always {0,1}, i.e. the 2 first dimensions in a coordinate tuple.
+     *
+     * @return indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
+     */
+    public final int[] getXYDimensions() {
+        return new int[] {xDimension, yDimension};
     }
 
     /**

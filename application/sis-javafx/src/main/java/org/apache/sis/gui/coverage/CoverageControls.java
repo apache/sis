@@ -31,7 +31,6 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.map.MapMenu;
-import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.control.ValueColorMapper;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
@@ -77,12 +76,12 @@ final class CoverageControls extends ViewAndControls {
         final Resources  resources  = Resources.forLocale(locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
 
-        view = new CoverageCanvas(locale);
+        view = new CoverageCanvas(this, locale);
         view.setBackground(Color.BLACK);
-        view.statusBar = new StatusBar(owner.referenceSystems, view);
+        status.track(view);
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);
-        menu.addCopyOptions(view.statusBar);
+        menu.addCopyOptions(status);
         /*
          * "Display" section with the following controls:
          *    - Current CRS
@@ -149,7 +148,7 @@ final class CoverageControls extends ViewAndControls {
         view.resourceProperty.addListener((p,o,n) -> notifyDataChanged(n, null));
         view.coverageProperty.addListener((p,o,n) -> notifyDataChanged(view.getResourceIfAdjusting(), n));
         deferred.expandedProperty().addListener(new PropertyPaneCreator(view, deferred));
-        setView(view.getView(), view.statusBar);
+        setView(view.getView());
     }
 
     /**
@@ -160,8 +159,7 @@ final class CoverageControls extends ViewAndControls {
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    @Override
-    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+    private void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<Category> items = categoryTable.getItems();
         if (coverage == null) {
             items.clear();
@@ -169,7 +167,15 @@ final class CoverageControls extends ViewAndControls {
             final int visibleBand = 0;          // TODO: provide a selector for the band to show.
             items.setAll(coverage.getSampleDimensions().get(visibleBand).getCategories());
         }
-        super.notifyDataChanged(resource, coverage);
+        owner.notifyDataChanged(resource, coverage);
+    }
+
+    /**
+     * Returns the grid coverage shown in the view, or {@code null} if none.
+     */
+    @Override
+    GridCoverage getCoverage() {
+        return view.getCoverage();
     }
 
     /**

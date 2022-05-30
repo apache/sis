@@ -58,7 +58,7 @@ final class GridControls extends ViewAndControls {
      */
     GridControls(final CoverageExplorer owner) {
         super(owner);
-        view = new GridView(this, owner.referenceSystems);
+        view = new GridView(this);
         final Vocabulary vocabulary = Vocabulary.getResources(owner.getLocale());
         sampleDimensions = new BandRangeTable(view.cellFormat).create(vocabulary);
         BandSelectionListener.bind(view.bandProperty, sampleDimensions.getSelectionModel());
@@ -88,7 +88,7 @@ final class GridControls extends ViewAndControls {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane)
             // TODO: more controls to be added in a future version.
         };
-        setView(view, view.statusBar);
+        setView(view);
     }
 
     /**
@@ -109,7 +109,6 @@ final class GridControls extends ViewAndControls {
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    @Override
     final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (coverage != null) {
@@ -118,7 +117,7 @@ final class GridControls extends ViewAndControls {
         } else {
             items.clear();
         }
-        super.notifyDataChanged(resource, coverage);
+        owner.notifyDataChanged(resource, coverage);
     }
 
     /**

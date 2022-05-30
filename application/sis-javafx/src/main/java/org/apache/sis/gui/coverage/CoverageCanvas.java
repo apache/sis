@@ -47,6 +47,7 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
@@ -57,16 +58,15 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
-import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
@@ -79,6 +79,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 
 import static java.util.logging.Logger.getLogger;
@@ -162,6 +163,11 @@ public class CoverageCanvas extends MapCanvasAWT {
     private boolean isCoverageAdjusting;
 
     /**
+     * Whether at least one of {@link #coverageProperty} or {@link #resourceProperty} has a non-null value.
+     */
+    private boolean hasCoverageOrResource;
+
+    /**
      * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
      * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
      *
@@ -181,8 +187,8 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * The {@code RenderedImage} to draw together with transform from pixel coordinates to display coordinates.
-     * Shall never be {@code null} but may be {@link StyledRenderingData#isEmpty() empty}. This instance shall
-     * be read and modified in JavaFX thread only and cloned if those data are needed by a background thread.
+     * Shall never be {@code null} but may be empty. This instance shall be read and modified in JavaFX thread
+     * only and cloned if those data are needed by a background thread.
      *
      * @see Worker
      */
@@ -213,10 +219,12 @@ public class CoverageCanvas extends MapCanvasAWT {
     private ImagePropertyExplorer propertyExplorer;
 
     /**
-     * The status bar associated to this {@code MapCanvas}.
-     * This is non-null only if this {@link CoverageCanvas} is used together with {@link CoverageControls}.
+     * If this canvas is associated with controls, the controls. Otherwise {@code null}.
+     * This is used only for notifications; a future version may use a more generic listener.
+     *
+     * @see CoverageControls#notifyDataChanged(GridCoverageResource, GridCoverage)
      */
-    StatusBar statusBar;
+    private final CoverageControls controls;
 
     /**
      * If errors occurred during tile computations, details about the error. Otherwise {@code null}.
@@ -239,16 +247,18 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
      */
     public CoverageCanvas() {
-        this(Locale.getDefault());
+        this(null, Locale.getDefault());
     }
 
     /**
      * Creates a new two-dimensional canvas using the given locale.
      *
-     * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
+     * @param  controls  the controls of this canvas, or {@code null} if none.
+     * @param  locale    the locale to use for labels and some messages, or {@code null} for default.
      */
-    CoverageCanvas(final Locale locale) {
+    CoverageCanvas(final CoverageControls controls, final Locale locale) {
         super(locale);
+        this.controls         = controls;
         data                  = new StyledRenderingData((report) -> errorReport = report.getDescription());
         derivedImages         = new EnumMap<>(Stretching.class);
         resourceProperty      = new SimpleObjectProperty<>(this, "resource");
@@ -367,6 +377,8 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Sets a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     * Note that values set on this property may be overwritten at any time by user interactions if this
+     * {@code CoverageCanvas} is associated with a {@link GridSliceSelector}.
      *
      * @param  sliceExtent  subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
      *
@@ -485,8 +497,8 @@ public class CoverageCanvas extends MapCanvasAWT {
         final GridExtent sliceExtent;
         if (request != null) {
             resource    = request.resource;
-            coverage    = request.getCoverage().orElse(null);
-            sliceExtent = request.getSliceExtent().orElse(null);
+            coverage    = request.coverage;
+            sliceExtent = request.slice;
         } else {
             resource    = null;
             coverage    = null;
@@ -519,6 +531,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     private void onPropertySpecified(final GridCoverageResource resource, final GridCoverage coverage,
                                      final ObjectProperty<?> toClear)
     {
+        hasCoverageOrResource = (resource != null || coverage != null);
         if (isCoverageAdjusting) {
             return;
         }
@@ -531,15 +544,17 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (resource == null && coverage == null) {
             runAfterRendering(this::clear);
         } else {
-            BackgroundThreads.execute(new Task<Envelope>() {
-                /** The coverage geometry reduced to two dimensions. */
-                private GridGeometry domain;
-
+            BackgroundThreads.execute(new Task<GridGeometry>() {
                 /** Information about all bands. */
                 private List<SampleDimension> ranges;
 
-                /** Fetch coverage domain, range and geospatial envelope. */
-                @Override protected Envelope call() throws Exception {
+                /**
+                 * Fetches coverage domain and range. In some {@link GridCoverageResource} implementations,
+                 * fetching the grid geometry is a costly operation. So we do it in a background thread and
+                 * invoke {@code setNewSource(…)} later with the result. No rendering happen here.
+                 */
+                @Override protected GridGeometry call() throws Exception {
+                    GridGeometry domain;
                     final Long id = LogHandler.loadingStart(resource);
                     try {
                         if (coverage != null) {
@@ -549,26 +564,33 @@ public class CoverageCanvas extends MapCanvasAWT {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
                         }
-                        domain = MultiResolutionImageLoader.slice(domain);
-                        if (domain != null) {
-                            if (domain.isDefined(GridGeometry.ENVELOPE)) {
-                                return domain.getEnvelope();
-                            }
-                            if (domain.isDefined(GridGeometry.EXTENT)) {
-                                final GeneralEnvelope ge = domain.getExtent().toEnvelope(MathTransforms.identity(BIDIMENSIONAL));
-                                ge.setCoordinateReferenceSystem(CommonCRS.Engineering.DISPLAY.crs());
-                                return ge;
-                            }
+                        /*
+                         * The domain should never be null and should always be complete (including envelope).
+                         * Nevertheless we try to be safe, since `setNewSource(…)` wants a complete geometry.
+                         * So if the envelope is missing but the extent is present, then the missing part was
+                         * the "grid to CRS" transform. We use an identity transform with a "display CRS".
+                         */
+                        if (domain != null && !domain.isDefined(GridGeometry.ENVELOPE) && domain.isDefined(GridGeometry.EXTENT)) {
+                            final GridExtent extent = domain.getExtent();
+                            final int dimension = extent.getDimension();
+                            domain = new GridGeometry(extent, PixelInCell.CELL_CORNER, MathTransforms.identity(dimension),
+                                            (dimension == BIDIMENSIONAL) ? CommonCRS.Engineering.DISPLAY.crs() : null);
                         }
-                        return null;
                     } finally {
                         LogHandler.loadingStop(id);
                     }
+                    return domain;
                 }
 
-                /** Invoked in JavaFX thread for setting the grid geometry we just fetched. */
+                /**
+                 * Invoked in JavaFX thread for setting the grid geometry we just fetched.
+                 * This method requests a repaint, which will occur in another thread.
+                 */
                 @Override protected void succeeded() {
-                    runAfterRendering(() -> setNewSource(getValue(), domain, ranges));
+                    runAfterRendering(() -> {
+                        setNewSource(getValue(), ranges);
+                        requestRepaint();                   // Cause `Worker` class to be executed.
+                    });
                 }
 
                 /**
@@ -587,17 +609,16 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Invoked when a new resource or coverage has been specified.
-     * The call to this method is followed by a repaint event,
-     * which will cause the image to be loaded and resampled in a background thread.
+     * Caller should invoke {@link #requestRepaint()} after this method
+     * for loading and resampling the image in a background thread.
      *
      * <p>All arguments can be {@code null} for clearing the canvas.
      * This method is invoked in JavaFX thread.</p>
      *
-     * @param  bounds  geospatial bounds, or {@code null} if none or unknown.
-     * @param  domain  the two-dimensional grid geometry, or {@code null} if there is no data.
+     * @param  domain  the multi-dimensional grid geometry, or {@code null} if there is no data.
      * @param  ranges  descriptions of bands, or {@code null} if there is no data.
      */
-    private void setNewSource(final Envelope bounds, final GridGeometry domain, final List<SampleDimension> ranges) {
+    private void setNewSource(GridGeometry domain, final List<SampleDimension> ranges) {
         if (TRACE) {
             trace("setNewSource(…): the new domain of data is:%n\t%s", domain);
         }
@@ -606,9 +627,39 @@ public class CoverageCanvas extends MapCanvasAWT {
         resampledImage = null;
         derivedImages.clear();
         data.clear();
-        data.setCoverageSpace(domain, ranges);
+        /*
+         * Configure the `GridSliceSelector`, which will compute a new slice extent as a side effect.
+         * It will overwrite the previous value of `sliceExtent` property in this class, which needs
+         * to be done before to start the `Worker` process in a background thread.
+         */
+        int[] xyDimensions;
+        if (controls != null) try {
+            isCoverageAdjusting = true;
+            setSliceExtent(controls.setGeometry(domain));
+            xyDimensions = controls.sliceSelector.getXYDimensions();
+        } finally {
+            isCoverageAdjusting = false;
+        } else {
+            xyDimensions = ArraysExt.range(0, BIDIMENSIONAL);
+            final GridExtent extent = getSliceExtent();
+            if (extent != null) try {
+                xyDimensions = extent.getSubspaceDimensions(BIDIMENSIONAL);
+            } catch (SubspaceNotSpecifiedException e) {
+                unexpectedException(e);                     // We can continue with dimensions {0,1}.
+            }
+        }
+        /*
+         * Notify the `RenderingData` and `MapCanvas`. All information below must be two-dimensional.
+         */
+        Envelope bounds = null;
+        if (domain != null) {
+            domain = domain.reduce(xyDimensions);
+            if (domain.isDefined(GridGeometry.ENVELOPE)) {
+                bounds = domain.getEnvelope();
+            }
+        }
+        data.setImageSpace(domain, ranges, xyDimensions);
         setObjectiveBounds(bounds);
-        requestRepaint();                       // Cause `Worker` class to be executed.
     }
 
     /**
@@ -642,7 +693,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected Renderer createRenderer() {
-        return (data.getSourceImage() != null || getResource() != null) ? new Worker(this) : null;
+        return hasCoverageOrResource ? new Worker(this) : null;
     }
 
     /**
@@ -668,20 +719,22 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * The coverage specified by user or the coverage loaded from the {@linkplain #resource}.
-         * May be {@code null} if coverages are loaded from resource but did not changed since last rendering.
+         * Should never be {@code null} after successful execution of {@link #render()}.
          */
         private GridCoverage coverage;
 
         /**
          * Whether the value of {@link #coverage} changed since the last rendering.
-         * It may happen if {@link #resource} is non-null, contains pyramided data
-         * and the pyramid level used by this rendering is different than the pyramid
-         * level used in previous rendering.
+         * It may happen if {@link #resource} is non-null, contains pyramided data and the pyramid level
+         * used by this rendering is different than the pyramid level used during the previous rendering.
+         * Note that a {@code false} value does not mean that {@link #sliceExtent} did not changed.
          */
         private boolean coverageChanged;
 
         /**
-         * The two-dimensional slice to display.
+         * The two-dimensional slice to display. May change for the same coverage when using
+         * {@link ViewAndControls#sliceSelector} for navigation in dimensions other than the
+         * {@value #BIDIMENSIONAL} first dimensions.
          */
         private final GridExtent sliceExtent;
 
@@ -827,10 +880,12 @@ public class CoverageCanvas extends MapCanvasAWT {
                 data.setObjectiveCRS(objectiveCRS);
                 if (resource != null) {
                     data.coverageLoader = MultiResolutionImageLoader.getInstance(resource, data.coverageLoader);
-                    coverage = data.ensureCoverageLoaded(objectiveToDisplay, objectivePOI);
-                    coverageChanged = (coverage != null);
+                    final GridCoverage loaded = data.ensureCoverageLoaded(objectiveToDisplay, objectivePOI);
+                    if (coverageChanged = (loaded != null)) {
+                        coverage = loaded;
+                    }
                 }
-                if (data.ensureImageLoaded(coverage, sliceExtent)) {
+                if (data.ensureImageLoaded(coverage, sliceExtent, coverageChanged)) {
                     recoloredImage = null;
                 }
                 /*
@@ -966,7 +1021,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          * Adjust the accuracy of coordinates shown in the status bar.
          * The number of fraction digits depend on the zoom factor.
          */
-        if (statusBar != null) {
+        if (controls != null) {
             final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
             Quantity<Length> accuracy = null;
             if (value instanceof Quantity<?>[]) {
@@ -979,7 +1034,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                     }
                 }
             }
-            statusBar.setLowestAccuracy(accuracy);
+            controls.status.setLowestAccuracy(accuracy);
         }
         /*
          * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.
@@ -1081,7 +1136,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (TRACE) {
             trace("clear()");
         }
-        setNewSource(null, null, null);
+        setNewSource(null, null);
         super.clear();
     }
 

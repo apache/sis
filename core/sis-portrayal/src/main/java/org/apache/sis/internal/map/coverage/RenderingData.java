@@ -19,6 +19,7 @@ package org.apache.sis.internal.map.coverage;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
@@ -42,8 +43,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.PixelTranslation;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
@@ -65,6 +66,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
@@ -75,6 +77,8 @@ import static java.util.logging.Logger.getLogger;
 /**
  * The {@code RenderedImage} to draw in a {@link PlanarCanvas} together with transforms from pixel coordinates
  * to display coordinates. This is a helper class for implementations of stateful renderer.
+ * All grid geometries and transforms managed by this class are two-dimensional.
+ * If the source data have more dimensions, a two-dimensional slice will be taken.
  *
  * <h2>Note on Java2D optimizations</h2>
  * {@link Graphics2D#drawRenderedImage(RenderedImage, AffineTransform)} implementation
@@ -100,13 +104,15 @@ import static java.util.logging.Logger.getLogger;
  * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
 public class RenderingData implements Cloneable {
     /**
      * The {@value} value, for identifying code that assume two-dimensional objects.
+     *
+     * @see #xyDimensions
      */
     private static final int BIDIMENSIONAL = 2;
 
@@ -119,8 +125,8 @@ public class RenderingData implements Cloneable {
     private static final boolean CREATE_INDEX_COLOR_MODEL = true;
 
     /**
-     * Loader for reading and caching coverages at various resolutions. Used if no image has been
-     * explicitly assigned to {@link #data}, or if the image may vary depending on the resolution.
+     * Loader for reading and caching coverages at various resolutions.
+     * Required if no image has been explicitly assigned to {@link #data}.
      * The same instance may be shared by many {@link RenderingData} objects.
      */
     public MultiResolutionCoverageLoader coverageLoader;
@@ -131,7 +137,20 @@ public class RenderingData implements Cloneable {
     private int currentPyramidLevel;
 
     /**
-     * The data fetched from {@link GridCoverage#render(GridExtent)} for current {@code sliceExtent}.
+     * The slice extent which has been used for rendering the {@linkplain #data}.
+     * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
+     */
+    private GridExtent currentSlice;
+
+    /**
+     * The dimensions to select in the grid coverage for producing an image.
+     * This is an array of length {@value #BIDIMENSIONAL} almost always equal to {0,1}.
+     * The values are inferred from {@link #currentSlice}.
+     */
+    private int[] xyDimensions;
+
+    /**
+     * The data fetched from {@link GridCoverage#render(GridExtent)} for {@link #currentSlice}.
      * This rendered image may be tiled and fetching those tiles may require computations to be performed
      * in background threads. Pixels in this {@code data} image are mapped to pixels in the display
      * {@link PlanarCanvas} by the following chain of operations:
@@ -146,8 +165,7 @@ public class RenderingData implements Cloneable {
      *
      * @see #dataGeometry
      * @see #dataRanges
-     * @see #isEmpty()
-     * @see #loadIfNeeded(LinearTransform, DirectPosition, GridExtent)
+     * @see #ensureImageLoaded(GridCoverage, GridExtent, boolean)
      * @see #getSourceImage()
      */
     private RenderedImage data;
@@ -161,7 +179,7 @@ public class RenderingData implements Cloneable {
      *
      * @see #data
      * @see #dataRanges
-     * @see #setCoverageSpace(GridGeometry, List)
+     * @see #setImageSpace(GridGeometry, List, int[])
      */
     private GridGeometry dataGeometry;
 
@@ -169,7 +187,7 @@ public class RenderingData implements Cloneable {
      * Ranges of sample values in each band of {@link #data}. This is used for determining on which sample values
      * to apply colors when user asked to apply a color ramp. May be {@code null}.
      *
-     * @see #setCoverageSpace(GridGeometry, List)
+     * @see #setImageSpace(GridGeometry, List, int[])
      * @see #statistics()
      */
     private List<SampleDimension> dataRanges;
@@ -243,6 +261,8 @@ public class RenderingData implements Cloneable {
         data               = null;
         dataRanges         = null;
         dataGeometry       = null;
+        xyDimensions       = null;
+        currentSlice       = null;
     }
 
     /**
@@ -270,19 +290,22 @@ public class RenderingData implements Cloneable {
     }
 
     /**
-     * Sets the input space (domain) and output space (ranges) of the coverage to be rendered.
-     * It should be followed by a call to {@link #ensureImageLoaded(GridCoverage, GridExtent)}.
+     * Sets the input space (domain) and output space (ranges) of the image to be rendered.
+     * Those values can be initially provided by {@link org.apache.sis.storage.GridCoverageResource}
+     * and replaced later by the actual {@link GridCoverage} values after coverage loading is completed.
+     * It is caller's responsibility to reduce <var>n</var>-dimensional domain to two dimensions.
      *
      * @param  domain  the two-dimensional grid geometry, or {@code null} if there is no data.
      * @param  ranges  descriptions of bands, or {@code null} if there is no data.
-     *
-     * @see #isEmpty()
+     * @param  xyDims  the dimensions to select in the grid coverage for producing an image.
+     *                 This is an array of length {@value #BIDIMENSIONAL} almost always equal to {0,1}.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public final void setCoverageSpace(final GridGeometry domain, final List<SampleDimension> ranges) {
+    public final void setImageSpace(final GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
         processor.setFillValues(SampleDimensions.backgrounds(ranges));
         dataRanges   = ranges;      // Not cloned because already an unmodifiable list.
         dataGeometry = domain;
+        xyDimensions = xyDims;
         /*
          * If the grid geometry does not define a "grid to CRS" transform, set it to an identity transform.
          * We do that because this class needs a complete `GridGeometry` as much as possible.
@@ -305,7 +328,7 @@ public class RenderingData implements Cloneable {
      * It is caller's responsibility to ensure that {@link #coverageLoader} has a non-null value
      * and is using the right resource before to invoke this method.
      *
-     * <p>Caller should invoke {@link #ensureImageLoaded(GridCoverage, GridExtent)}
+     * <p>Caller should invoke {@link #ensureImageLoaded(GridCoverage, GridExtent, boolean)}
      * after this method (this is not done automatically).</p>
      *
      * @param  objectiveToDisplay  transform used for rendering the coverage on screen.
@@ -315,37 +338,40 @@ public class RenderingData implements Cloneable {
      * @throws TransformException if an error occurred while computing resolution from given transforms.
      * @throws DataStoreException if an error occurred while loading the coverage.
      *
-     * @see #setCoverageSpace(GridGeometry, List)
+     * @see #setImageSpace(GridGeometry, List, int[])
      */
     public final GridCoverage ensureCoverageLoaded(final LinearTransform objectiveToDisplay, final DirectPosition objectivePOI)
             throws TransformException, DataStoreException
     {
         final MathTransform dataToObjective = (changeOfCRS != null) ? changeOfCRS.getMathTransform() : null;
-        final int level = coverageLoader.findPyramidLevel(dataToObjective, objectiveToDisplay, objectivePOI);
+        final MultiResolutionCoverageLoader loader = coverageLoader;
+        final int level = loader.findPyramidLevel(dataToObjective, objectiveToDisplay, objectivePOI);
         if (data != null && level == currentPyramidLevel) {
             return null;
         }
         data = null;
         currentPyramidLevel = level;
-        return coverageLoader.getOrLoad(level);
+        return loader.getOrLoad(level);
     }
 
     /**
-     * Fetches the rendered image if {@linkplain #data} is null. This method needs to be invoked at least
-     * once after {@link #setCoverageSpace(GridGeometry, List)}. The {@code coverage} given in argument
-     * may be the value returned by {@link #ensureCoverageLoaded(LinearTransform, DirectPosition)}.
+     * Fetches the rendered image if {@linkplain #data} is null or is for a different slice.
+     * This method needs to be invoked at least once after {@link #setImageSpace(GridGeometry, List, int[])}.
+     * The {@code coverage} given in argument should be the value returned by a previous call to
+     * {@link #ensureCoverageLoaded(LinearTransform, DirectPosition)}, except that it shall not be null.
      *
-     * @param  coverage     the coverage from which to read data, or {@code null} if the coverage did not changed.
+     * @param  coverage     the coverage from which to read data. Shall not be null.
      * @param  sliceExtent  a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
+     *                      May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
+     * @param  force        whether to force data loading. Should be {@code true} if {@code coverage} changed since last call.
      * @return whether the {@linkpalin #data} changed.
      * @throws FactoryException if the CRS changed but the transform from old to new CRS can not be determined.
      * @throws TransformException if an error occurred while transforming coordinates from old to new CRS.
      */
-    public final boolean ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent)
+    public final boolean ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent, final boolean force)
             throws FactoryException, TransformException
     {
-        if (data != null || coverage == null) {
+        if (!force && data != null && Objects.equals(currentSlice, sliceExtent)) {
             return false;
         }
         coverage = coverage.forConvertedValues(true);
@@ -353,9 +379,19 @@ public class RenderingData implements Cloneable {
         final List<SampleDimension> ranges = coverage.getSampleDimensions();
         final RenderedImage image = coverage.render(sliceExtent);
         final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
-        final GridGeometry domain = (value instanceof GridGeometry) ? (GridGeometry) value
-                : new ImageRenderer(coverage, sliceExtent).getImageGeometry(BIDIMENSIONAL);
-        setCoverageSpace(domain, ranges);
+        final GridGeometry domain;
+        final int[] xyDims;
+        if (value instanceof GridGeometry) {
+            domain = (GridGeometry) value;
+            xyDims = (sliceExtent == null) ? ArraysExt.range(0, BIDIMENSIONAL)
+                     : sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
+        } else {
+            ImageRenderer r = new ImageRenderer(coverage, sliceExtent);
+            domain = r.getImageGeometry(BIDIMENSIONAL);
+            xyDims = r.getXYDimensions();
+        }
+        setImageSpace(domain, ranges, xyDims);
+        currentSlice = sliceExtent;
         data = image;
         /*
          * Update the transforms in a way that preserve the current zoom level, translation, etc.
@@ -412,7 +448,7 @@ public class RenderingData implements Cloneable {
     /**
      * Returns the image which will be used as the source for rendering operations.
      *
-     * @return the image loaded be {@link #ensureImageLoaded(GridCoverage, GridExtent)}.
+     * @return the image loaded be {@link #ensureImageLoaded(GridCoverage, GridExtent, boolean)}.
      */
     public final RenderedImage getSourceImage() {
         return data;
@@ -453,10 +489,27 @@ public class RenderingData implements Cloneable {
     protected final Map<String,Object> statistics() throws DataStoreException {
         if (statistics == null) {
             RenderedImage image = data;
-            if (coverageLoader != null) {
-                final int level = coverageLoader.getLastLevel();
+            final MultiResolutionCoverageLoader loader = coverageLoader;
+            if (loader != null) {
+                final int level = loader.getLastLevel();
                 if (level != currentPyramidLevel) {
-                    image = coverageLoader.getOrLoad(level).forConvertedValues(true).render(null);
+                    /*
+                     * If coarser data are available, we will compute statistics on those data instead of on the
+                     * current pyramid level. We need to adjust the slice extent to the coordinates of coarser data.
+                     */
+                    final GridCoverage coarse = loader.getOrLoad(level).forConvertedValues(true);
+                    GridExtent sliceExtent = currentSlice;
+                    if (sliceExtent != null) {
+                        if (sliceExtent.getDimension() <= BIDIMENSIONAL) {
+                            sliceExtent = null;
+                        } else {
+                            final GridExtent ce = coarse.getGridGeometry().getExtent();
+                            for (final int i : xyDimensions) {
+                                sliceExtent = sliceExtent.withRange(i, ce.getLow(i), ce.getHigh(i));
+                            }
+                        }
+                    }
+                    image = coarse.render(sliceExtent);
                 }
             }
             statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(processor, dataRanges));

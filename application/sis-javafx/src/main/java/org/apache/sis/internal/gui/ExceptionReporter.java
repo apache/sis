@@ -41,6 +41,9 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.util.Classes;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -49,7 +52,7 @@ import org.apache.sis.util.Classes;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -178,6 +181,27 @@ public final class ExceptionReporter extends Widget {
         } else {
             show(getWindow(owner), (short) 0, (short) 0, null, exception);
         }
+    }
+
+    /**
+     * Shows the reporter for a failure to read a file.
+     * This method does nothing if the exception is null.
+     *
+     * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
+     * @param  resource   the resource that can not be read.
+     * @param  exception  the error that occurred.
+     */
+    public static void canNotReadFile(final Node owner, final Resource resource, final Throwable exception) {
+        final String name;
+        if (resource instanceof DataStore) {
+            name = ((DataStore) resource).getDisplayName();
+        } else if (resource instanceof StoreListeners) {
+            name = ((StoreListeners) resource).getSourceName();
+        } else {
+            canNotUseResource(owner, exception);
+            return;
+        }
+        canNotReadFile(owner, name, exception);
     }
 
     /**

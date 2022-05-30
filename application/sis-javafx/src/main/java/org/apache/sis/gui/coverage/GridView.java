@@ -36,13 +36,16 @@ import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.gui.map.StatusBar;
-import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.gui.ExceptionReporter;
 
 
 /**
@@ -56,7 +59,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  * consider using the standard JavaFX {@link javafx.scene.control.TableView} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see CoverageExplorer
  *
@@ -202,11 +205,6 @@ public class GridView extends Control {
     final CellFormat cellFormat;
 
     /**
-     * The status bar where to show coordinates of selected cell.
-     */
-    final StatusBar statusBar;
-
-    /**
      * If this grid view is associated with controls, the controls. Otherwise {@code null}.
      * This is used only for notifications; a future version may use a more generic listener.
      * We use this specific mechanism because there is no {@code coverageProperty} in this class.
@@ -220,17 +218,16 @@ public class GridView extends Control {
      * construction by a call to {@link #setImage(RenderedImage)}.
      */
     public GridView() {
-        this(null, null);
+        this(null);
     }
 
     /**
      * Creates an initially empty grid view. The content can be set after
      * construction by a call to {@link #setImage(RenderedImage)}.
      *
-     * @param  controls          the controls of this grid view, or {@code null} if none.
-     * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
+     * @param  controls  the controls of this grid view, or {@code null} if none.
      */
-    GridView(final GridControls controls, final RecentReferenceSystems referenceSystems) {
+    GridView(final GridControls controls) {
         this.controls    = controls;
         bandProperty     = new BandProperty();
         imageProperty    = new SimpleObjectProperty<>(this, "image");
@@ -241,7 +238,6 @@ public class GridView extends Control {
         headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
         headerFormat     = NumberFormat.getIntegerInstance();
         cellFormat       = new CellFormat(this);
-        statusBar        = new StatusBar(referenceSystems);
         tiles            = new GridTileCache();
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
@@ -334,15 +330,15 @@ public class GridView extends Control {
     /**
      * Invoked after the image has been loaded or after failure.
      *
-     * @param  source  the coverage or resource to load (never {@code null}).
-     * @param  image   the loaded image, or {@code null} on failure.
+     * @param  resource  the new source of coverage, or {@code null} if none.
+     * @param  coverage  the new coverage, or {@code null} if none.
+     * @param  image     the loaded image, or {@code null} on failure.
      */
-    private void setLoadedImage(final ImageRequest request, final RenderedImage image) {
+    private void setLoadedImage(GridCoverageResource resource, GridCoverage coverage, RenderedImage image) {
         loader = null;          // Must be first for preventing cancellation.
         setImage(image);
-        request.configure(statusBar);
         if (controls != null) {
-            controls.notifyDataChanged(request.resource, request.getCoverage().orElse(null));
+            controls.notifyDataChanged(resource, coverage);
         }
     }
 
@@ -358,6 +354,12 @@ public class GridView extends Control {
         private final ImageRequest request;
 
         /**
+         * The coverage that has been read.
+         * It may either be specified explicitly in the {@link #request}, or read from the resource.
+         */
+        private GridCoverage coverage;
+
+        /**
          * Creates a new task for loading an image from the specified coverage resource.
          *
          * @param  request  source of the image to load.
@@ -367,15 +369,29 @@ public class GridView extends Control {
         }
 
         /**
-         * Loads the image. If the coverage has more than 2 dimensions, only two of them are taken for the image;
-         * for all other dimensions, only the values at lowest index will be read.
+         * Invoked in a background thread for loading the image.
          *
          * @return the image loaded from the source given at construction time.
          * @throws DataStoreException if an error occurred while loading the grid coverage.
          */
         @Override
-        protected RenderedImage call() throws DataStoreException {
-            return request.load(this);
+        protected RenderedImage call() throws Exception {
+            final Long id = LogHandler.loadingStart(request.resource);
+            try {
+                coverage = request.load().forConvertedValues(true);
+                if (isCancelled()) {
+                    return null;
+                }
+                GridExtent slice = request.slice;
+                final GridControls c = controls;
+                if (c != null) {
+                    final GridGeometry gg = coverage.getGridGeometry();
+                    slice = BackgroundThreads.runAndWait(() -> c.setGeometry(gg));
+                }
+                return coverage.render(slice);
+            } finally {
+                LogHandler.loadingStop(id);
+            }
         }
 
         /**
@@ -384,7 +400,15 @@ public class GridView extends Control {
          */
         @Override
         protected void succeeded() {
-            setLoadedImage(request, getValue());
+            setLoadedImage(request.resource, coverage, getValue());
+        }
+
+        /**
+         * Invoked in JavaFX thread on cancellation. This method clears all controls.
+         */
+        @Override
+        protected void cancelled() {
+            setLoadedImage(null, null, null);
         }
 
         /**
@@ -393,8 +417,8 @@ public class GridView extends Control {
          */
         @Override
         protected void failed() {
-            setLoadedImage(request, null);
-            request.reportError(GridView.this, getException());
+            cancelled();
+            ExceptionReporter.canNotReadFile(GridView.this, request.resource, getException());
         }
     }
 
@@ -627,7 +651,18 @@ public class GridView extends Control {
      * Then the pixel coordinates are converted to "real world" coordinates and formatted.
      */
     final void formatCoordinates(final int x, final int y) {
-        statusBar.setLocalCoordinates(minX + x, minY + y);
+        if (controls != null) {
+            controls.status.setLocalCoordinates(minX + x, minY + y);
+        }
+    }
+
+    /**
+     * Hides coordinates in the status bar.
+     */
+    final void hideCoordinates() {
+        if (controls != null) {
+            controls.status.handle(null);
+        }
     }
 
     /**

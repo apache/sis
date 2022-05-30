@@ -35,8 +35,10 @@ import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.gui.map.StatusBar;
 
 
 /**
@@ -107,11 +109,16 @@ abstract class ViewAndControls {
     protected final GridSliceSelector sliceSelector;
 
     /**
+     * The status bar where to show cursor coordinates.
+     */
+    protected final StatusBar status;
+
+    /**
      * The widget which contain this view. This is the widget to inform when the coverage changed.
      *
-     * @see #notifyDataChanged(GridCoverageResource, GridCoverage)
+     * @see CoverageExplorer#notifyDataChanged(GridCoverageResource, GridCoverage)
      */
-    private final CoverageExplorer owner;
+    protected final CoverageExplorer owner;
 
     /**
      * Creates a new view-control pair.
@@ -120,10 +127,11 @@ abstract class ViewAndControls {
      */
     protected ViewAndControls(final CoverageExplorer owner) {
         this.owner = owner;
+        status = new StatusBar(owner.referenceSystems);
         sliceSelector = new GridSliceSelector(owner.getLocale());
         viewAndNavigation = new VBox();
         sliceSelector.selectedExtentProperty().addListener((p,o,n) -> {
-            final GridCoverage coverage = ViewAndControls.this.owner.getCoverage();
+            final GridCoverage coverage = getCoverage();
             if (coverage != null) {
                 load(new ImageRequest(coverage, n));    // Show a new slice of data.
             }
@@ -134,7 +142,7 @@ abstract class ViewAndControls {
      * Invoked by subclass constructors for declaring the main visual component.
      * The given component will be added to the {@link #viewAndNavigation} node.
      */
-    final void setView(final Region view, final StatusBar status) {
+    final void setView(final Region view) {
         final Region bar = status.getView();
         final Region nav = sliceSelector.getView();
         VBox.setVgrow(view, Priority.ALWAYS);
@@ -161,6 +169,13 @@ abstract class ViewAndControls {
     }
 
     /**
+     * Returns the grid coverage shown in the view, or {@code null} if none.
+     */
+    GridCoverage getCoverage() {
+        return owner.getCoverage();
+    }
+
+    /**
      * Sets the view content to the given resource, coverage or image.
      * This method is invoked when a new source of data (either a resource or a coverage) is specified,
      * or when a previously hidden view is made visible. Implementations may start a background thread.
@@ -170,14 +185,15 @@ abstract class ViewAndControls {
     abstract void load(ImageRequest request);
 
     /**
-     * Notifies all controls that a new coverage has been loaded.
-     * Subclasses shall invoke this method in the JavaFX thread after loading completed.
+     * Invoked when a new coverage or coverage resource has been specified.
+     * This method configures the status bar, adjusts the sliders and returns
+     * the new selected slice. This method shall be invoked in JavaFX thread.
      *
-     * @param  resource  the new source of coverage, or {@code null} if none.
-     * @param  coverage  the new coverage, or {@code null} if none.
+     * @param  geometry  grid geometry of the coverage or resource, or {@code null} if none.
+     * @return new slice to take as the currently selected slice.
      */
-    void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
-        sliceSelector.gridGeometry.set(coverage != null ? coverage.getGridGeometry() : null);
+    final GridExtent setGeometry(final GridGeometry geometry) {
+        sliceSelector.gridGeometry.set(geometry);
         final ObservableList<Node> components = viewAndNavigation.getChildren();
         final int count = components.size();
         if (sliceSelector.isEmpty()) {
@@ -189,7 +205,11 @@ abstract class ViewAndControls {
                 components.add(sliceSelector.getView());
             }
         }
-        owner.notifyDataChanged(resource, coverage);
+        // The selected slice changed as a result of new grid geometry.
+        final GridExtent slice = sliceSelector.selectedExtentProperty().getValue();
+        final int[] xyDimensions = sliceSelector.getXYDimensions();
+        status.applyCanvasGeometry(geometry, slice, xyDimensions[0], xyDimensions[1]);
+        return slice;
     }
 
 

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.awt.image.RenderedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.measure.Unit;
@@ -65,6 +66,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.CoordinateFormat;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.portrayal.RenderException;
@@ -162,7 +164,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * <p>Note that if this field is non-null, then the {@link #localToObjectiveCRS} property value may be overwritten
      * at any time, for example every time that a gesture event such as pan, zoom or rotation happens.</p>
      */
-    private final MapCanvas canvas;
+    private MapCanvas canvas;
 
     /**
      * The manager of reference systems chosen by user, or {@code null} if none.
@@ -212,7 +214,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * <p>This transform shall never be null. It is initially an identity transform and is modified by
      * {@link #applyCanvasGeometry(GridGeometry)}. The transform is usually (but not necessarily) affine
      * and should have no {@linkplain CoordinateOperation#getCoordinateOperationAccuracy() inaccuracy}
-     * (ignoring rounding error). This is normally the inverse of {@linkplain #canvas}
+     * (ignoring rounding error). This transform is normally the inverse of {@linkplain #canvas}
      * {@linkplain MapCanvas#getObjectiveToDisplay() objective to display} transform,
      * but temporary mismatches may exist during gesture events such as pans, zooms and rotations.</p>
      *
@@ -271,6 +273,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @see OperationFinder#fullOperationSearchRequired()
      */
     private Predicate<MapCanvas> fullOperationSearchRequired;
+
+    /**
+     * Indices where to assign the values of the <var>x</var> and <var>y</var> arguments in {@link #sourceCoordinates}.
+     * They are usually 0 for <var>x</var> and 1 for <var>y</var>.
+     *
+     * @see #BIDIMENSIONAL
+     */
+    private int xDimension, yDimension;
 
     /**
      * The source local indices before conversion to geospatial coordinates (never {@code null}).
@@ -384,12 +394,12 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Creates a new status bar for showing coordinates of mouse cursor position in a canvas.
-     * If the {@code canvas} argument is non-empty, this {@code StatusBar} will show coordinates
+     * If {@link #track(Canvas)} is invoked, then this {@code StatusBar} will show coordinates
      * (usually geographic or projected) of mouse cursor position when the mouse is over that canvas.
      * Note that in such case, the {@link #localToObjectiveCRS} property value will be overwritten
      * at any time (for example every time that a gesture event such as pan, zoom or rotation happens).
      *
-     * <p>If the {@code choices} argument is non-null, user will be able to select different CRS
+     * <p>If the {@code systemChooser} argument is non-null, user will be able to select different CRS
      * using the contextual menu on the status bar.</p>
      *
      * <h4>Limitations</h4>
@@ -398,21 +408,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * to exist as long as the {@code MapCanvas} and {@code RecentReferenceSystems} instances
      * given to this constructor.
      *
-     * <p>Current implementation accepts only zero or one {@code MapCanvas}. A future implementation
-     * may accept a larger amount of canvas for tracking many views with a single status bar
-     * (for example images over the same area but at different times).</p>
-     *
      * @param  systemChooser  the manager of reference systems chosen by user, or {@code null} if none.
-     * @param  toTrack        the canvas that this status bar is tracking.
-     *                        Currently restricted to an array of length 0 or 1.
      */
-    public StatusBar(final RecentReferenceSystems systemChooser, final MapCanvas... toTrack) {
+    public StatusBar(final RecentReferenceSystems systemChooser) {
         positionReferenceSystem = new PositionSystem();
         localToObjectiveCRS     = new LocalToObjective();
         localToPositionCRS      = localToObjectiveCRS.get();
         targetCoordinates       = new GeneralDirectPosition(BIDIMENSIONAL);
         sourceCoordinates       = targetCoordinates.coordinates;
         lastX = lastY           = Double.NaN;
+        yDimension              = 1;
         format                  = new CoordinateFormat();
 
         message = new Label();
@@ -485,42 +490,69 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (n != null) items.add(0, n.valueChoices);
             setSampleValuesVisible(n != null && !n.isEmpty());
         });
+    }
+
+    /**
+     * @deprecated Replaced by {@link #StatusBar(RecentReferenceSystems)} followed by {@link #track(MapCanvas)}.
+     *
+     * @param  systemChooser  the manager of reference systems chosen by user, or {@code null} if none.
+     * @param  toTrack        the canvas that this status bar is tracking.
+     */
+    @Deprecated
+    public StatusBar(final RecentReferenceSystems systemChooser, final MapCanvas... toTrack) {
+        this(systemChooser);
+        for (final MapCanvas canvas : toTrack) {
+            track(canvas);
+        }
+    }
+
+    /**
+     * Registers listeners on the following canvas for track mouse movements.
+     * After this method call, this {@code StatusBar} will show coordinates (usually geographic or projected)
+     * of mouse cursor position when the mouse is over that canvas. The {@link #localToObjectiveCRS} property
+     * value may be overwritten at any time, for example after each gesture event such as pan, zoom or rotation.
+     *
+     * <h4>Limitations</h4>
+     * Current implementation accepts only zero or one {@code MapCanvas}. A future implementation
+     * may accept a larger amount of canvas for tracking many views with a single status bar
+     * (for example images over the same area but at different times).
+     *
+     * @param  canvas  the canvas that this status bar is tracking.
+     *
+     * @since 1.3
+     */
+    public void track(final MapCanvas canvas) {
+        ArgumentChecks.ensureNonNull("canvas", canvas);
+        if (this.canvas != null) {
+            throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.TooManyCollectionElements_3, "canvas", 1, 2));
+        }
         /*
          * If a canvas is specified, register listeners for mouse position, rendering events, errors, etc.
          * We do not allow the canvas to be changed after construction because of the added complexity
          * (e.g. we would have to remember all registered listeners so we can unregister them).
          */
-        if (toTrack != null && toTrack.length != 0) {
-            if (toTrack.length != 1) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.TooManyCollectionElements_3, "toTrack", 1, toTrack.length));
-            }
-            canvas = toTrack[0];
+        this.canvas = canvas;
+        sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
+        canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
+        canvas.renderingProperty().addListener((p,o,n) -> {if (!n) applyCanvasGeometry();});
+        applyCanvasGeometry();
+        if (canvas.getObjectiveCRS() != null) {
+            registerMouseListeners();
         } else {
-            canvas = null;
-        }
-        if (canvas != null) {
-            sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
-            canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
-            canvas.renderingProperty().addListener((p,o,n) -> {if (!n) applyCanvasGeometry();});
-            applyCanvasGeometry();
-            if (canvas.getObjectiveCRS() != null) {
-                registerMouseListeners();
-            } else {
-                /*
-                 * Wait for objective CRS to be known before to register listeners.
-                 * The canvas "objective CRS" is null only for unitialized canvas.
-                 * After the canvas has been initialized, it can not be null anymore.
-                 * We delay listeners registration because if listeners were enabled
-                 * on uninitialized canvas, the status bar would show irrelevant coordinates.
-                 */
-                canvas.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, new PropertyChangeListener() {
-                    @Override public void propertyChange(final PropertyChangeEvent event) {
-                        canvas.removePropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
-                        registerMouseListeners();
-                    }
-                });
-            }
+            /*
+             * Wait for objective CRS to be known before to register listeners.
+             * The canvas "objective CRS" is null only for unitialized canvas.
+             * After the canvas has been initialized, it can not be null anymore.
+             * We delay listeners registration because if listeners were enabled
+             * on uninitialized canvas, the status bar would show irrelevant coordinates.
+             */
+            canvas.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, new PropertyChangeListener() {
+                @Override public void propertyChange(final PropertyChangeEvent event) {
+                    canvas.removePropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
+                    registerMouseListeners();
+                }
+            });
         }
     }
 
@@ -584,6 +616,50 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     public void applyCanvasGeometry(final GridGeometry geometry) {
         position.setText(null);
+        xDimension = 0;
+        yDimension = 1;
+        apply(geometry);
+    }
+
+    /**
+     * Configures this status bar for showing coordinates of a slice of a grid coverage.
+     * This method is useful for tracking the pixel coordinates of an image obtained by
+     * a call to {@link GridCoverage#render(GridExtent)}.
+     * By {@code render(GridExtent)} contract, the {@link RenderedImage} pixel coordinates
+     * are relative to the requested {@link GridExtent}. Consequently we need to translate
+     * the grid coordinates so that the request coordinates start at zero.
+     * This method handles that translation.
+     *
+     * @param  geometry     geometry of the coverage which produced the {@link RenderedImage} to track, or {@code null}.
+     * @param  sliceExtent  the extent specified in call to {@link GridCoverage#render(GridExtent)} (can be {@code null}).
+     * @param  xdim         the grid dimension where to assign the values of <var>x</var> pixel coordinates.
+     * @param  ydim         the grid dimension where to assign the values of <var>y</var> pixel coordinates.
+     *
+     * @since 1.3
+     */
+    public void applyCanvasGeometry(GridGeometry geometry, GridExtent sliceExtent, final int xdim, final int ydim) {
+        position.setText(null);
+        if (geometry != null) {
+            final int dimension = geometry.getDimension();
+            ArgumentChecks.ensureDimensionMatches("sliceExtent", dimension, sliceExtent);
+            ArgumentChecks.ensureBetween("xdim", 0,      dimension-1, xdim);
+            ArgumentChecks.ensureBetween("ydim", xdim+1, dimension-1, ydim);
+            xDimension = xdim;
+            yDimension = ydim;                      // Shall be assigned before call to `getXYDimensions()` below.
+            if (sliceExtent != null) {
+                final long[] offset = new long[dimension];
+                for (final int i : getXYDimensions()) {
+                    offset[i] = Math.negateExact(sliceExtent.getLow(i));
+                }
+                sliceExtent = sliceExtent.translate(offset);
+                geometry = geometry.translate(offset);              // Does not change the "real world" envelope.
+                try {
+                    geometry = geometry.relocate(sliceExtent);      // Changes the "real world" envelope.
+                } catch (TransformException e) {
+                    setErrorMessage(null, e);
+                }
+            }
+        }
         apply(geometry);
     }
 
@@ -989,15 +1065,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Returns the indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
      * They are the indices where to assign the values of the <var>x</var> and <var>y</var> arguments in
      * calls to <code>{@linkplain #setLocalCoordinates(double, double) setLocalCoordinates}(x,y)</code>.
-     * The default value is {0,1}, i.e. the 2 first dimensions in a coordinate tuple.
+     *
+     * <p>The default value is {0,1}, i.e. the 2 first dimensions in a coordinate tuple.
+     * The value can be changed by call to {@link #applyCanvasGeometry(GridGeometry, GridExtent, int, int)}.</p>
      *
      * @return indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
      *
      * @since 1.3
      */
     public final int[] getXYDimensions() {
-        // Fixed for now, future version may allow configuration.
-        return ArraysExt.range(0, BIDIMENSIONAL);
+        return new int[] {xDimension, yDimension};
     }
 
     /**
@@ -1059,8 +1136,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     public void setLocalCoordinates(final double x, final double y) {
         if (x != lastX || y != lastY) {
-            sourceCoordinates[0] = lastX = x;
-            sourceCoordinates[1] = lastY = y;
+            sourceCoordinates[xDimension] = lastX = x;
+            sourceCoordinates[yDimension] = lastY = y;
             String text, values = null;
             try {
                 convertCoordinates();
@@ -1151,8 +1228,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  y  the <var>y</var> coordinate local to the view.
      */
     final String formatCoordinates(final double x, final double y) throws TransformException {
-        sourceCoordinates[0] = x;
-        sourceCoordinates[1] = y;
+        sourceCoordinates[xDimension] = x;
+        sourceCoordinates[yDimension] = y;
         final String separator = format.getSeparator();
         try {
             format.setSeparator("\t");
