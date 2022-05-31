@@ -175,7 +175,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #setSliceExtent(GridExtent)
      * @see GridCoverage#render(GridExtent)
      */
-    final ObjectProperty<GridExtent> sliceExtentProperty;
+    public final ObjectProperty<GridExtent> sliceExtentProperty;
 
     /**
      * The interpolation method to use for resampling the image.
@@ -371,7 +371,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #sliceExtentProperty
      * @see GridCoverage#render(GridExtent)
      */
-    final GridExtent getSliceExtent() {
+    public final GridExtent getSliceExtent() {
         return sliceExtentProperty.get();
     }
 
@@ -385,7 +385,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #sliceExtentProperty
      * @see GridCoverage#render(GridExtent)
      */
-    final void setSliceExtent(final GridExtent sliceExtent) {
+    public final void setSliceExtent(final GridExtent sliceExtent) {
         sliceExtentProperty.set(sliceExtent);
         // Will indirectly invoke `onPropertySpecified(…)`.
     }
@@ -543,6 +543,11 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         if (resource == null && coverage == null) {
             runAfterRendering(this::clear);
+        } else if (controls != null && controls.isAdjustingSlice) {
+            runAfterRendering(() -> {
+                clearRenderedImage();
+                requestRepaint();
+            });
         } else {
             BackgroundThreads.execute(new Task<GridGeometry>() {
                 /** Information about all bands. */
@@ -608,6 +613,21 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
+     * Clears the rendered image but keep the resource, coverage, grid geometry and sample dimensions unchanged.
+     * Invoking this method alone is useful when only the selected two-dimensional slice changed.
+     * If the {@link StyledRenderingData#clear()} method is not invoked, then the map projection,
+     * zoom, <i>etc.</i> are preserved.
+     *
+     * @see #clear()
+     */
+    private void clearRenderedImage() {
+        clearError();
+        clearIsolines();
+        resampledImage = null;
+        derivedImages.clear();
+    }
+
+    /**
      * Invoked when a new resource or coverage has been specified.
      * Caller should invoke {@link #requestRepaint()} after this method
      * for loading and resampling the image in a background thread.
@@ -622,20 +642,20 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (TRACE) {
             trace("setNewSource(…): the new domain of data is:%n\t%s", domain);
         }
-        clearError();
-        clearIsolines();
-        resampledImage = null;
-        derivedImages.clear();
+        clearRenderedImage();
         data.clear();
         /*
          * Configure the `GridSliceSelector`, which will compute a new slice extent as a side effect.
          * It will overwrite the previous value of `sliceExtent` property in this class, which needs
          * to be done before to start the `Worker` process in a background thread.
+         *
+         * Note: we do not configure that status bar here, because `StatucBar` configures itself by
+         * listening to `MapCanvas` rendering events.
          */
         int[] xyDimensions;
         if (controls != null) try {
             isCoverageAdjusting = true;
-            setSliceExtent(controls.setGeometry(domain));
+            setSliceExtent(controls.configureSliceSelector(domain));
             xyDimensions = controls.sliceSelector.getXYDimensions();
         } finally {
             isCoverageAdjusting = false;

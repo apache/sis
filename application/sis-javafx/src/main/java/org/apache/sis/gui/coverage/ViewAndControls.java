@@ -105,6 +105,9 @@ abstract class ViewAndControls {
 
     /**
      * The control for selecting a slice in a <var>n</var>-dimensional data cube.
+     *
+     * @see #isAdjustingSlice
+     * @see #configureSliceSelector(GridGeometry)
      */
     protected final GridSliceSelector sliceSelector;
 
@@ -121,6 +124,13 @@ abstract class ViewAndControls {
     protected final CoverageExplorer owner;
 
     /**
+     * Whether a repaint event is requested as a consequence of a change in {@link #sliceSelector}.
+     * In such case, the resource, the coverage and the sample dimensions should be considered the same.
+     * This is important for avoiding to set {@link CoverageExplorer#resourceProperty} value to {@code null}.
+     */
+    boolean isAdjustingSlice;
+
+    /**
      * Creates a new view-control pair.
      *
      * @param  owner  the widget which creates this view. Can not be null.
@@ -130,12 +140,7 @@ abstract class ViewAndControls {
         status = new StatusBar(owner.referenceSystems);
         sliceSelector = new GridSliceSelector(owner.getLocale());
         viewAndNavigation = new VBox();
-        sliceSelector.selectedExtentProperty().addListener((p,o,n) -> {
-            final GridCoverage coverage = getCoverage();
-            if (coverage != null) {
-                load(new ImageRequest(coverage, n));    // Show a new slice of data.
-            }
-        });
+        sliceSelector.selectedExtentProperty().addListener((p,o,n) -> onSliceChanged(n));
     }
 
     /**
@@ -169,10 +174,17 @@ abstract class ViewAndControls {
     }
 
     /**
-     * Returns the grid coverage shown in the view, or {@code null} if none.
+     * Invoked when the two-dimensional slice to show has changed
+     * as a result of user interaction with {@link #sliceSelector}.
      */
-    GridCoverage getCoverage() {
-        return owner.getCoverage();
+    private void onSliceChanged(final GridExtent slice) {
+        final GridCoverage coverage = owner.getCoverage();
+        if (coverage != null) try {
+            isAdjustingSlice = true;
+            load(new ImageRequest(coverage, slice));        // Show a new slice of data.
+        } finally {
+            isAdjustingSlice = false;
+        }
     }
 
     /**
@@ -186,13 +198,13 @@ abstract class ViewAndControls {
 
     /**
      * Invoked when a new coverage or coverage resource has been specified.
-     * This method configures the status bar, adjusts the sliders and returns
-     * the new selected slice. This method shall be invoked in JavaFX thread.
+     * This method configures adjusts the sliders and returns the new selected slice.
+     * This method shall be invoked in JavaFX thread.
      *
-     * @param  geometry  grid geometry of the coverage or resource, or {@code null} if none.
+     * @param  geometry   grid geometry of the coverage or resource, or {@code null} if none.
      * @return new slice to take as the currently selected slice.
      */
-    final GridExtent setGeometry(final GridGeometry geometry) {
+    final GridExtent configureSliceSelector(final GridGeometry geometry) {
         sliceSelector.gridGeometry.set(geometry);
         final ObservableList<Node> components = viewAndNavigation.getChildren();
         final int count = components.size();
@@ -206,10 +218,7 @@ abstract class ViewAndControls {
             }
         }
         // The selected slice changed as a result of new grid geometry.
-        final GridExtent slice = sliceSelector.selectedExtentProperty().getValue();
-        final int[] xyDimensions = sliceSelector.getXYDimensions();
-        status.applyCanvasGeometry(geometry, slice, xyDimensions[0], xyDimensions[1]);
-        return slice;
+        return sliceSelector.selectedExtentProperty().getValue();
     }
 
 

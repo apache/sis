@@ -337,7 +337,7 @@ public class GridView extends Control {
     private void setLoadedImage(GridCoverageResource resource, GridCoverage coverage, RenderedImage image) {
         loader = null;          // Must be first for preventing cancellation.
         setImage(image);
-        if (controls != null) {
+        if (controls != null && !controls.isAdjustingSlice) {
             controls.notifyDataChanged(resource, coverage);
         }
     }
@@ -369,7 +369,8 @@ public class GridView extends Control {
         }
 
         /**
-         * Invoked in a background thread for loading the image.
+         * Invoked in a background thread for loading the coverage and rendering the image.
+         * The slice selector and the status bar will be updated as soon as the coverage is available.
          *
          * @return the image loaded from the source given at construction time.
          * @throws DataStoreException if an error occurred while loading the grid coverage.
@@ -386,7 +387,12 @@ public class GridView extends Control {
                 final GridControls c = controls;
                 if (c != null) {
                     final GridGeometry gg = coverage.getGridGeometry();
-                    slice = BackgroundThreads.runAndWait(() -> c.setGeometry(gg));
+                    slice = BackgroundThreads.runAndWait(() -> {
+                        final GridExtent s = c.configureSliceSelector(gg);
+                        final int[] xydims = c.sliceSelector.getXYDimensions();
+                        c.status.applyCanvasGeometry(gg, s, xydims[0], xydims[1]);
+                        return s;
+                    });
                 }
                 return coverage.render(slice);
             } finally {

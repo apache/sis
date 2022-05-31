@@ -240,8 +240,8 @@ public class GridSliceSelector extends Widget {
                     converter = new Converter();
                     slider.setLabelFormatter(converter);
                     slider.widthProperty().addListener((p,o,n) -> converter.setTickSpacing(slider, n.doubleValue()));
-                    slider.valueProperty().addListener((p,o,n) -> converter.formatMessage(Math.rint(n.doubleValue())));
-                    slider.valueChangingProperty().addListener(converter);
+                    slider.valueProperty().addListener(converter);
+                    slider.valueChangingProperty().addListener((p,o,n) -> converter.setPosition(n, Math.round(slider.getValue())));
                 }
                 /*
                  * Configure the slider for the current grid axis.
@@ -280,7 +280,7 @@ public class GridSliceSelector extends Widget {
      * We take the change only after the user finished to drag the slider
      * in order to avoid causing to many load requests.
      */
-    private final class Converter extends StringConverter<Double> implements ChangeListener<Boolean> {
+    private final class Converter extends StringConverter<Double> implements ChangeListener<Number> {
         /**
          * Index of the grid axis where the position changed.
          */
@@ -459,17 +459,12 @@ public class GridSliceSelector extends Widget {
          * Invoked when the user begins of finished to adjust the slider position.
          * The grid extent is updated only after the user finished to adjust.
          */
-        @Override
-        public void changed(final ObservableValue<? extends Boolean> property, final Boolean oldValue, final Boolean newValue) {
-            final Slider slider = (Slider) ((ReadOnlyProperty<?>) property).getBean();
-            final long position = Math.round(slider.getValue());
-            if (newValue) {
-                formatMessage(position);
-            } else {
-                final StatusBar bar = status;
-                if (bar != null) {
-                    bar.setInfoMessage(null);           // Clear the position that we wrote in the status bar.
-                }
+        final void setPosition(final boolean adjusting, final long position) {
+            final StatusBar bar = status;
+            if (bar != null) {
+                bar.setInfoMessage(adjusting ? toString(position, true) : null);
+            }
+            if (!adjusting) {
                 final GridExtent extent = selectedExtent.get();
                 if (extent != null && position != extent.getLow(dimension)) {
                     selectedExtent.set(extent.withRange(dimension, position, position));
@@ -478,14 +473,13 @@ public class GridSliceSelector extends Widget {
         }
 
         /**
-         * Invoked when the slider changed its position.
-         * This method updates the message in the status bar.
+         * Invoked when the slider position changed. If the user is adjusting the position,
+         * we only update the message on the status bar. Otherwise the slice extent is updated.
          */
-        final void formatMessage(final double position) {
-            final StatusBar bar = status;
-            if (bar != null) {
-                bar.setInfoMessage(toString(position, true));
-            }
+        @Override
+        public void changed(final ObservableValue<? extends Number> property, final Number oldValue, final Number newValue) {
+            final Slider slider = (Slider) ((ReadOnlyProperty<?>) property).getBean();
+            setPosition(slider.isValueChanging(), Math.round(newValue.doubleValue()));
         }
 
         /**

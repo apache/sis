@@ -163,7 +163,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @see #renderingStartTime
      */
-    private static final long WAIT_CURSOR_DELAY = (1000 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
+    private static final long WAIT_CURSOR_DELAY = (500 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
 
     /**
      * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.

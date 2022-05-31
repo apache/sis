@@ -160,6 +160,9 @@ final class CoverageControls extends ViewAndControls {
      * @param  coverage  the new coverage, or {@code null} if none.
      */
     private void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+        if (isAdjustingSlice) {
+            return;
+        }
         final ObservableList<Category> items = categoryTable.getItems();
         if (coverage == null) {
             items.clear();
@@ -168,14 +171,6 @@ final class CoverageControls extends ViewAndControls {
             items.setAll(coverage.getSampleDimensions().get(visibleBand).getCategories());
         }
         owner.notifyDataChanged(resource, coverage);
-    }
-
-    /**
-     * Returns the grid coverage shown in the view, or {@code null} if none.
-     */
-    @Override
-    GridCoverage getCoverage() {
-        return view.getCoverage();
     }
 
     /**
