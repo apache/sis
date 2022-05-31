@@ -26,6 +26,7 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
@@ -296,7 +297,7 @@ public class BufferedGridCoverage extends GridCoverage {
                  * So it should not be rethrown as PointOutsideCoverageException.
                  */
                 pos = Math.toIntExact(index);
-            } catch (ArithmeticException | TransformException ex) {
+            } catch (ArithmeticException | FactoryException | TransformException ex) {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
             }
             final double[] values = this.values;

@@ -19,7 +19,8 @@ package org.apache.sis.internal.gui;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import javafx.beans.property.ObjectProperty;
+import java.util.Locale;
+import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -38,6 +39,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Workaround;
 
 
@@ -45,7 +47,7 @@ import org.apache.sis.util.Workaround;
  * Miscellaneous utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -57,14 +59,30 @@ public final class GUIUtilities extends Static {
     }
 
     /**
+     * Returns the locale of the JavaBean containing the given property, or {@code null} if unknown.
+     *
+     * @param  property  the property for which to get the locale, or {@code null}.
+     * @return the locale for the container of the given property, or {@code null}.
+     */
+    public static Locale getLocale(final ObservableValue<?> property) {
+        if (property instanceof ReadOnlyProperty<?>) {
+            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
+            if (bean instanceof Localized) {
+                return ((Localized) bean).getLocale();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the window of the bean associated to the given property.
      *
      * @param  property  the property for which to get the window of the control, or {@code null}.
      * @return the window, or {@code null} if unknown.
      */
     public static Window getWindow(final ObservableValue<?> property) {
-        if (property instanceof ObjectProperty<?>) {
-            final Object bean = ((ObjectProperty<?>) property).getBean();
+        if (property instanceof ReadOnlyProperty<?>) {
+            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
             if (bean instanceof Node) {
                 final Scene scene = ((Node) bean).getScene();
                 if (scene != null) {

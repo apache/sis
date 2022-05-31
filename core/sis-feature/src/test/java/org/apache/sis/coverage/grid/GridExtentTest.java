@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -310,10 +311,12 @@ public final strictfp class GridExtentTest extends TestCase {
 
     /**
      * Tests {@link GridExtent#getSubspaceDimensions(int)}.
+     * Opportunistically tests {@link GridExtent#getSliceCoordinates()} since the two methods closely related.
      */
     @Test
     public void testGetSubspaceDimensions() {
         final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
+        assertMapEquals(JDK9.mapOf(1, 5L, 3, 40L), extent.getSliceCoordinates());
         assertArrayEquals(new int[] {0,  2  }, extent.getSubspaceDimensions(2));
         assertArrayEquals(new int[] {0,1,2  }, extent.getSubspaceDimensions(3));
         assertArrayEquals(new int[] {0,1,2,3}, extent.getSubspaceDimensions(4));

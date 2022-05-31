@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -249,6 +250,38 @@ final class ConvertedGridCoverage extends GridCoverage {
         }
 
         /**
+         * Returns the default slice where to perform evaluation, or an empty map if unspecified.
+         */
+        @Override
+        public Map<Integer,Long> getDefaultSlice() {
+            return evaluator.getDefaultSlice();
+        }
+
+        /**
+         * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
+         */
+        @Override
+        public void setDefaultSlice(Map<Integer,Long> slice) {
+            evaluator.setDefaultSlice(slice);
+        }
+
+        /**
+         * Returns {@code true} if this evaluator is allowed to wraparound coordinates that are outside the grid.
+         */
+        @Override
+        public boolean isWraparoundEnabled() {
+            return evaluator.isWraparoundEnabled();
+        }
+
+        /**
+         * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the grid.
+         */
+        @Override
+        public void setWraparoundEnabled(final boolean allow) {
+            evaluator.setWraparoundEnabled(allow);
+        }
+
+        /**
          * Forwards configuration to the wrapped evaluator.
          */
         @Override
@@ -275,6 +308,14 @@ final class ConvertedGridCoverage extends GridCoverage {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
             }
             return values;
+        }
+
+        /**
+         * Converts the specified geospatial position to grid coordinates.
+         */
+        @Override
+        public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
+            return evaluator.toGridCoordinates(point);
         }
     }
 

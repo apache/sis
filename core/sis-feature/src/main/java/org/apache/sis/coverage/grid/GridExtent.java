@@ -18,6 +18,8 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
@@ -829,6 +831,28 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             center[i] = MathFunctions.average(low, coordinates[i + dimension]);
         }
         return center;
+    }
+
+    /**
+     * Returns the grid coordinates for all dimensions where the grid has a size of 1.
+     * Keys are dimensions as values from 0 inclusive to {@link #getDimension()} exclusive.
+     * Values are the {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
+     * (which are equal) in the associated dimension.
+     *
+     * @return grid coordinates for all dimensions where the grid has a size of 1.
+     *
+     * @since 1.3
+     */
+    public SortedMap<Integer,Long> getSliceCoordinates() {
+        final TreeMap<Integer,Long> slice = new TreeMap<>();
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            final long value = coordinates[i];
+            if (value == coordinates[i + dimension]) {
+                slice.put(i, value);
+            }
+        }
+        return slice;
     }
 
     /**

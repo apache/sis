@@ -32,6 +32,7 @@ import java.awt.image.SampleModel;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
@@ -545,7 +546,7 @@ public class GridCoverage2D extends GridCoverage {
             } catch (PointOutsideCoverageException ex) {
                 ex.setOffendingLocation(point);
                 throw ex;
-            } catch (RuntimeException | TransformException ex) {
+            } catch (RuntimeException | FactoryException | TransformException ex) {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
             }
         }

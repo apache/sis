@@ -28,7 +28,6 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
@@ -41,17 +40,18 @@ import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.gui.coverage.CoverageCanvas;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridEvaluator;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -68,7 +68,7 @@ import static java.util.logging.Logger.getLogger;
  * {@code ValuesUnderCursor} methods will be invoked from JavaFX thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -143,22 +143,6 @@ public abstract class ValuesUnderCursor {
     }
 
     /**
-     * Returns the locale of the JavaBean containing the given property, or {@code null} if unknown.
-     * The bean is typically an instance of {@link MapCanvas}.
-     *
-     * @see MapCanvas#getLocale()
-     */
-    private static Locale getLocale(final ObservableValue<?> property) {
-        if (property instanceof ReadOnlyProperty<?>) {
-            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
-            if (bean instanceof Localized) {
-                return ((Localized) bean).getLocale();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Invoked when {@link StatusBar#sampleValuesProvider} changed. Each {@link ValuesUnderCursor} instance
      * can be used by at most one {@link StatusBar} instance. Current implementation silently does nothing
      * if this is not the case.
@@ -181,12 +165,14 @@ public abstract class ValuesUnderCursor {
      */
     static ValuesUnderCursor create(final MapCanvas canvas) {
         if (canvas instanceof CoverageCanvas) {
+            final CoverageCanvas cc = (CoverageCanvas) canvas;
             final FromCoverage listener = new FromCoverage();
-            final ObjectProperty<GridCoverage> coverageProperty = ((CoverageCanvas) canvas).coverageProperty;
-            coverageProperty.addListener(new WeakChangeListener<>(listener));
-            final GridCoverage coverage = coverageProperty.get();
+            cc.coverageProperty.addListener(new WeakChangeListener<>(listener));
+            cc.sliceExtentProperty.addListener((p,o,n) -> listener.setSlice(n));
+            final GridCoverage coverage = cc.coverageProperty.get();
             if (coverage != null) {
                 listener.changed(null, null, coverage);
+                listener.setSlice(cc.getSliceExtent());
             }
             return listener;
         } else {
@@ -201,7 +187,7 @@ public abstract class ValuesUnderCursor {
      * values to show when the coverage is changed.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
+     * @version 1.3
      * @since   1.1
      * @module
      */
@@ -286,23 +272,24 @@ public abstract class ValuesUnderCursor {
         }
 
         /**
-         * Returns the grid coverage used as the source of sample values.
-         * This is usually the value of {@link CoverageCanvas#coverageProperty}.
-         *
-         * @return the source coverage, or {@code null} if none.
-         *
-         * @see CoverageCanvas#coverageProperty
-         */
-        public final GridCoverage getCoverage() {
-            return (evaluator != null) ? evaluator.getCoverage() : null;
-        }
-
-        /**
          * Returns {@code true} if all bands are unselected.
          */
         @Override
         public boolean isEmpty() {
             return selectedBands.isEmpty();
+        }
+
+        /**
+         * Returns the canvas which contains the given property.
+         */
+        private static Optional<CoverageCanvas> canvas(final ObservableValue<?> property) {
+            if (property instanceof ReadOnlyProperty<?>) {
+                final Object bean = ((ReadOnlyProperty<?>) property).getBean();
+                if (bean instanceof CoverageCanvas) {
+                    return Optional.of((CoverageCanvas) bean);
+                }
+            }
+            return Optional.empty();
         }
 
         /**
@@ -331,6 +318,7 @@ public abstract class ValuesUnderCursor {
             }
             evaluator = coverage.forConvertedValues(true).evaluator();
             evaluator.setNullIfOutside(true);
+            canvas(property).ifPresent((c) -> setSlice(c.getSliceExtent()));
             if (previous != null && bands.equals(previous.getSampleDimensions())) {
                 // Same configuration than previous coverage.
                 return;
@@ -354,7 +342,7 @@ public abstract class ValuesUnderCursor {
              */
             final Map<Integer,NumberFormat> sharedFormats = new HashMap<>();
             final Map<Unit<?>,String>       sharedSymbols = new HashMap<>();
-            final Locale                    locale        = getLocale(property);
+            final Locale                    locale        = GUIUtilities.getLocale(property);
             final UnitFormat                unitFormat    = new UnitFormat(locale);
             final CheckMenuItem[]           menuItems     = new CheckMenuItem[numBands];
             for (int b=0; b<numBands; b++) {
@@ -472,6 +460,16 @@ public abstract class ValuesUnderCursor {
                 onBandSelectionChanged();
             });
             return item;
+        }
+
+        /**
+         * Tells to the evaluator in which slice to evaluate coordinates.
+         * This method is invoked when {@link CoverageCanvas#sliceExtentProperty} changed its value.
+         */
+        final void setSlice(final GridExtent extent) {
+            if (evaluator != null) {
+                evaluator.setDefaultSlice(extent != null ? extent.getSliceCoordinates() : null);
+            }
         }
 
         /**
