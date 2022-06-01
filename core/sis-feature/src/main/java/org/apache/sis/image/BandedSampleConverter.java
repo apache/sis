@@ -16,6 +16,8 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -64,7 +66,7 @@ import static java.util.logging.Logger.getLogger;
  * In such case, writing converted values will cause the corresponding source values to be updated too.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -487,5 +489,45 @@ class BandedSampleConverter extends ComputedImage {
                 markDirtyTiles(executor.getTileIndices());
             }
         }
+
+        /**
+         * Restores the identity behavior for writable image,
+         * because it may have listeners attached to this specific instance.
+         */
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        /**
+         * Restores the identity behavior for writable image,
+         * because it may have listeners attached to this specific instance.
+         */
+        @Override
+        public boolean equals(final Object object) {
+            return object == this;
+        }
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return hashCodeBase() + 37 * Arrays.hashCode(converters) + Objects.hashCode(colorModel);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (equalsBase(object)) {
+            final BandedSampleConverter other = (BandedSampleConverter) object;
+            return Arrays .equals(converters, other.converters) &&
+                   Objects.equals(colorModel, other.colorModel) &&
+                   Arrays .equals(sampleResolutions, other.sampleResolutions);
+        }
+        return false;
     }
 }

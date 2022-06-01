@@ -109,7 +109,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      * @param  accumulator  where to accumulate the statistics results.
      * @return the accumulator optionally filtered.
      */
-    private final DoubleConsumer[] filtered(final Statistics[] accumulator) {
+    private DoubleConsumer[] filtered(final Statistics[] accumulator) {
         if (sampleFilters == null) {
             return accumulator;
         }

@@ -332,6 +332,8 @@ final class ConvertedGridCoverage extends GridCoverage {
         RenderedImage image = source.render(sliceExtent);
         /*
          * That image should never be null. But if an implementation wants to do so, respect that.
+         * We do not cache the image because caching is already handled by `ImageProcessor`,
+         * assuming that `source` returned an image from its own cache.
          */
         if (image != null) {
             image = convert(image, bandType, converters, processor);

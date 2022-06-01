@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Objects;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.MathTransform;
@@ -34,7 +35,7 @@ import static java.util.logging.Logger.getLogger;
  * This is the implementation of {@value ResampledImage#MASK_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see ResampledImage#getProperty(String)
  * @see ResampledImage#MASK_KEY
@@ -47,7 +48,7 @@ final class MaskImage extends SourceAlignedImage {
      * Convert integer values to floating point values, or {@code null} if none.
      * This is needed since we use {@link Float#isNaN(float)} for identifying values to mask.
      */
-    private MathTransform converter;
+    private final MathTransform converter;
 
     /**
      * Creates a new instance for the given image.
@@ -55,12 +56,15 @@ final class MaskImage extends SourceAlignedImage {
     MaskImage(final ResampledImage image) {
         super(image, ColorModelFactory.createIndexColorModel(
                 1, ImageUtilities.getVisibleBand(image), new int[] {0, -1}, true, 0));
+
+        MathTransform converter = null;
         if (image.interpolation instanceof Visualization.InterpConvert) try {
             converter = ((Visualization.InterpConvert) image.interpolation).converter.inverse();
         } catch (NoninvertibleTransformException e) {
             // ResampledImage.getProperty("org.apache.sis.Mask") is the public caller of this constructor.
             Logging.unexpectedException(getLogger(Modules.RASTER), ResampledImage.class, "getProperty", e);
         }
+        this.converter = converter;
     }
 
     /**
@@ -119,5 +123,25 @@ final class MaskImage extends SourceAlignedImage {
             }
         }
         return tile;
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 97 * Objects.hashCode(converter);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (super.equals(object)) {
+            final MaskImage other = (MaskImage) object;
+            return Objects.equals(converter, other.converter);
+        }
+        return false;
     }
 }

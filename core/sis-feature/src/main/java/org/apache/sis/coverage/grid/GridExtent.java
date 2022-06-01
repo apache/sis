@@ -841,6 +841,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @return grid coordinates for all dimensions where the grid has a size of 1.
      *
+     * @see GridEvaluator#setDefaultSlice(Map)
+     *
      * @since 1.3
      */
     public SortedMap<Integer,Long> getSliceCoordinates() {

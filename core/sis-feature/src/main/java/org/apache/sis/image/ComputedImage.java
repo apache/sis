@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.Objects;
 import java.lang.ref.Reference;
 import java.awt.Insets;
 import java.awt.Point;
@@ -780,5 +781,31 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     @Override
     public void dispose() {
         reference.dispose();
+    }
+
+    /**
+     * Returns a hash code value based on the fields known to this base class.
+     * This is a helper method for {@link #hashCode()} implementation in subclasses.
+     * It should <strong>not</strong> be used by {@link WritableRenderedImage} implementations,
+     * because those images have listeners that are attached to a specific instance.
+     */
+    final int hashCodeBase() {
+        return Arrays.hashCode(sources) + 31*sampleModel.hashCode() + 37*Objects.hash(destination);
+    }
+
+    /**
+     * Compares the given object with this image for equality using the fields known to this base class.
+     * This is a helper method for {@link #equals(Object)} implementation in subclasses.
+     * It should <strong>not</strong> be used by {@link WritableRenderedImage} implementations,
+     * because those images have listeners that are attached to a specific instance.
+     */
+    final boolean equalsBase(final Object object) {
+        if (object != null && getClass().equals(object.getClass())) {
+            final ComputedImage other = (ComputedImage) object;
+            return Arrays .equals(sources,     other.sources) &&
+                   Objects.equals(destination, other.destination) &&
+                   sampleModel.equals(other.sampleModel);
+        }
+        return false;
     }
 }

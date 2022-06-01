@@ -75,7 +75,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @see #getGridGeometry()
      */
-    final GridGeometry gridGeometry;
+    protected final GridGeometry gridGeometry;
 
     /**
      * List of sample dimension (band) information for the grid coverage. Information include such things

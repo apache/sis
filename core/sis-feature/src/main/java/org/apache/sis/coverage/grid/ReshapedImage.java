@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Vector;
+import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -42,7 +43,7 @@ import static java.lang.Math.toIntExact;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -304,5 +305,33 @@ final class ReshapedImage extends PlanarImage {
         if (getTileGridXOffset() != super.getTileGridXOffset()) return "tileGridXOffset";
         if (getTileGridYOffset() != super.getTileGridYOffset()) return "tileGridYOffset";
         return super.verify();      // "width" and "height" properties should be checked last.
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(source, minX, minY, width, height);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof ReshapedImage) {
+            final ReshapedImage other = (ReshapedImage) object;
+            return source.equals(other.source) &&
+                    minX     == other.minX     &&
+                    minY     == other.minY     &&
+                    width    == other.width    &&
+                    height   == other.height   &&
+                    offsetX  == other.offsetX  &&
+                    offsetY  == other.offsetY  &&
+                    minTileX == other.minTileX &&
+                    minTileY == other.minTileY;
+        }
+        return false;
     }
 }

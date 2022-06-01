@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
+import java.util.function.Function;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferDouble;
@@ -28,11 +29,13 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
 
 // Branch-specific imports
@@ -75,7 +78,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -89,6 +92,41 @@ public class BufferedGridCoverage extends GridCoverage {
      * <p>Sample values in this buffer shall not be {@linkplain java.awt.image.SinglePixelPackedSampleModel packed}.</p>
      */
     protected final DataBuffer data;
+
+    /**
+     * Cache of rendered images produced by calls to {@link #render(GridExtent)}.
+     * Those images are cached because, even if they are cheap to create,
+     * they may become the source of a chain of operations for statistics,
+     * {@linkplain org.apache.sis.image.ResampledImage image resampling}, <i>etc.</i>
+     * Caching the source image preserves not only the {@link RenderedImage} instance created by the
+     * {@link #render(GridExtent)} method, but also the chain of operations potentially derived from that image.
+     *
+     * <h4>Usage</h4>
+     * Implementation of {@link #render(GridExtent)} method can be like below:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     public RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException {
+     *         if (sliceExtent == null) {
+     *             sliceExtent = gridGeometry.getExtent();
+     *         }
+     *         // Do some other verification if needed…
+     *         // … then get or compute the image.
+     *         try {
+     *             return cachedRenderings.computeIfAbsent(sliceExtent, (slice) -> {
+     *                 val renderer = new ImageRenderer(this, slice);
+     *                 renderer.setData(data);
+     *                 return renderer.createImage();
+     *             });
+     *         } catch (IllegalGridGeometryException | MismatchedDimensionException e) {
+    *              throw e;
+     *         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
+     *             throw new CannotEvaluateException(e.getMessage(), e);
+     *         }
+     *     }
+     * }
+     */
+    private final Cache<GridExtent,RenderedImage> cachedRenderings;
 
     /**
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data buffer.
@@ -139,6 +177,7 @@ public class BufferedGridCoverage extends GridCoverage {
             throw new IllegalGridGeometryException(Resources.format(
                     Resources.Keys.InsufficientBufferCapacity_3, b, numBands, expectedSize - bufferSize));
         }
+        cachedRenderings = new Cache<>();
     }
 
     /**
@@ -163,6 +202,7 @@ public class BufferedGridCoverage extends GridCoverage {
             case DataBuffer.TYPE_DOUBLE: data = new DataBufferDouble(n); break;
             default: throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, dataType));
         }
+        cachedRenderings = new Cache<>();
     }
 
     /**
@@ -204,17 +244,46 @@ public class BufferedGridCoverage extends GridCoverage {
      * Returns a two-dimensional slice of grid data as a rendered image.
      * This method returns a view; sample values are not copied.
      *
+     * <p>The default implementation prepares an {@link ImageRenderer},
+     * then invokes {@link #configure(ImageRenderer)} for allowing subclasses
+     * to complete the renderer configuration before to create the image.</p>
+     *
      * @return the grid slice as a rendered image.
      */
     @Override
-    public RenderedImage render(final GridExtent sliceExtent) {
-        final ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
+    public RenderedImage render(GridExtent sliceExtent) {
+        if (sliceExtent == null) {
+            sliceExtent = gridGeometry.extent;
+        }
         try {
-            renderer.setData(data);
-            return renderer.createImage();
+            return cachedRenderings.computeIfAbsent(sliceExtent, (slice) -> {
+                ImageRenderer renderer = new ImageRenderer(this, slice);
+                renderer.setData(data);
+                return renderer.createImage();
+            });
+        } catch (IllegalGridGeometryException | MismatchedDimensionException e) {
+            throw e;
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Invoked by the default implementation of {@link #render(GridExtent)}
+     * for completing the renderer configuration before to create an image.
+     * The default implementation does nothing.
+     *
+     * <p>Some example of methods that subclasses may want to use are:</p>
+     * <ul>
+     *   <li>{@link ImageRenderer#setCategoryColors(Function)}</li>
+     *   <li>{@link ImageRenderer#setVisibleBand(int)}</li>
+     * </ul>
+     *
+     * @param  renderer  the renderer to configure before to create an image.
+     *
+     * @since 1.3
+     */
+    protected void configure(final ImageRenderer renderer) {
     }
 
     /**

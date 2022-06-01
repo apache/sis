@@ -208,6 +208,8 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * @param  slice  the default slice where to perform evaluation, or an empty map if none.
      * @throws IllegalArgumentException if the map contains an illegal dimension or grid coordinate value.
      *
+     * @see GridExtent#getSliceCoordinates()
+     *
      * @since 1.3
      */
     public void setDefaultSlice(Map<Integer,Long> slice) {

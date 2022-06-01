@@ -907,7 +907,7 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass().equals(getClass())) {
+        if (equalsBase(object)) {
             final ResampledImage other = (ResampledImage) object;
             return minX     == other.minX &&
                    minY     == other.minY &&
@@ -917,8 +917,7 @@ public class ResampledImage extends ComputedImage {
                    minTileY == other.minTileY &&
                    interpolation.equals(other.interpolation) &&
                    Objects.deepEquals(fillValues, other.fillValues) &&
-                   toSource.equals(other.toSource) &&
-                   getSources().equals(other.getSources());
+                   toSource.equals(other.toSource);
         }
         return false;
     }
@@ -930,7 +929,7 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public int hashCode() {
-        return minX + 31*(minY + 31*(width + 31*height)) + interpolation.hashCode()
-                + toSource.hashCode() + getSources().hashCode();
+        return hashCodeBase() + minX + 31*(minY + 31*(width + 31*height))
+                + interpolation.hashCode() + toSource.hashCode();
     }
 }

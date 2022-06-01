@@ -21,12 +21,9 @@ import java.util.function.Function;
 import java.awt.Color;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
-import java.awt.image.RasterFormatException;
-import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.coverage.grid.BufferedGridCoverage;
 
@@ -43,7 +40,7 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
  * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -103,24 +100,16 @@ final class Raster extends BufferedGridCoverage {
     }
 
     /**
-     * Returns a two-dimensional slice of grid data as a rendered image.
-     * This returns a view as much as possible; sample values are not copied.
+     * Configures a two-dimensional slice of grid data as a rendered image.
      */
     @Override
-    public RenderedImage render(final GridExtent target) {
-        final ImageRenderer renderer = new ImageRenderer(this, target);
-        try {
-            renderer.setData(data);
-            if (bandOffsets != null) {
-                renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
-            }
-            if (colors != null) {
-                renderer.setCategoryColors(colors);
-            }
-            renderer.setVisibleBand(visibleBand);
-            return renderer.createImage();
-        } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
-            throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
+    protected void configure(final ImageRenderer renderer) {
+        if (bandOffsets != null) {
+            renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
         }
+        if (colors != null) {
+            renderer.setCategoryColors(colors);
+        }
+        renderer.setVisibleBand(visibleBand);
     }
 }
