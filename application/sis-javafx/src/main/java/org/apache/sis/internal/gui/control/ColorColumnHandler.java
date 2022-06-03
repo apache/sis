@@ -36,7 +36,7 @@ import org.apache.sis.internal.gui.ImmutableObjectProperty;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @param  <S>  the type of row data as declared in the {@link TableView} generic type.
  *
@@ -143,6 +143,5 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
         });
         table.getColumns().add(colors);
         table.setEditable(true);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 }

@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -38,8 +39,11 @@ import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.gui.dataset.WindowHandler;
+import org.apache.sis.gui.dataset.WindowManager;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.internal.gui.PrivateAccess;
 
 
 /**
@@ -208,6 +212,14 @@ public class CoverageExplorer extends Widget {
     private SplitPane content;
 
     /**
+     * Handler of the window showing this coverage view. This is used for creating new windows.
+     * Created when first needed for giving to subclasses a chance to complete initialization.
+     *
+     * @see #window()
+     */
+    private WindowHandler window;
+
+    /**
      * Creates an initially empty explorer with default view type.
      * By default {@code CoverageExplorer} will show a coverage as a table of values,
      * i.e. the default view type is {@link View#TABLE}.
@@ -216,7 +228,10 @@ public class CoverageExplorer extends Widget {
      * the reason for setting default value to tabular data is because it requires loading much less data with
      * {@link java.awt.image.RenderedImage}s supporting deferred tile loading. By contrast {@link View#IMAGE}
      * may require loading the full image.</div>
+     *
+     * @deprecated Use {@link #CoverageExplorer(View)}.
      */
+    @Deprecated
     public CoverageExplorer() {
         this(View.TABLE);
     }
@@ -250,10 +265,58 @@ public class CoverageExplorer extends Widget {
      * @param  source  the source explorer from which to take the initial coverage or resource.
      *
      * @since 1.2
+     *
+     * @deprecated Replaced by {@code source.getImageRequest().ifPresent(newExplorer::setCoverage);}.
      */
+    @Deprecated
     public CoverageExplorer(final CoverageExplorer source) {
         this(source.getViewType());
-        setCoverage(new ImageRequest(source.getResource(), source.getCoverage()));
+        source.getImageRequest().ifPresent(this::setCoverage);
+    }
+
+    /*
+     * Hack for giving access outside this package to a field that we do not want to make public.
+     * This is a way to simulate the "friend" keyword in C++.
+     */
+    static {
+        PrivateAccess.initWindowHandler = CoverageExplorer::initWindowHandler;
+    }
+
+    /**
+     * Initializes {@link #window} to the given value. This method should be invoked soon after
+     * construction and can be invoked only once.
+     */
+    private void initWindowHandler(final WindowHandler handler) {
+        assert Platform.isFxApplicationThread() && window == null : window;
+        window = handler;
+    }
+
+    /**
+     * Returns the handler of the window showing this coverage view. Created when first needed
+     * for giving to subclass constructors a chance to complete their initialization before the
+     * {@code this} reference is passed to {@link WindowHandler} constructor.
+     */
+    private WindowHandler window() {
+        assert Platform.isFxApplicationThread();
+        if (window == null) {
+            window = WindowHandler.create(this);
+        }
+        return window;
+    }
+
+    /**
+     * Returns a manager of windows showing different view of the coverage.
+     * Those windows are created when the user click on the "New window" button.
+     * Each window provides the area where data are shown and where the user interacts.
+     * The window can be a JavaFX top-level window ({@link Stage}), but not necessarily.
+     * It may also be a tile in a mosaic of windows.
+     *
+     * @return the manager of windows created by the "New window" button.
+     *
+     * @since 1.3
+     */
+    public final WindowManager getWindowManager() {
+        return window().manager;
     }
 
     /**
@@ -280,7 +343,7 @@ public class CoverageExplorer extends Widget {
         if (c == null) {
             switch (type) {
                 case TABLE: c = new GridControls(this); break;
-                case IMAGE: c = new CoverageControls(this); break;
+                case IMAGE: c = new CoverageControls(this, window()); break;
                 default: throw new AssertionError(type);
             }
             views.put(type, c);
@@ -292,11 +355,7 @@ public class CoverageExplorer extends Widget {
          * and became selected (visible).
          */
         if (load) {
-            final GridCoverageResource resource = getResource();
-            final GridCoverage coverage = getCoverage();
-            if (resource != null || coverage != null) {
-                c.load(new ImageRequest(resource, coverage));
-            }
+            getImageRequest().ifPresent(c::load);
         }
         return c;
     }
@@ -321,8 +380,8 @@ public class CoverageExplorer extends Widget {
         if (content == null) {
             /*
              * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
-             * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
-             * text and action for each button.
+             * they are managed by org.apache.sis.gui.dataset.WindowHandler. We only declare here
+             * the text and action for each button.
              */
             final ToggleGroup group   = new ToggleGroup();
             final Control[]   buttons = new Control[View.COUNT + 1];
@@ -521,6 +580,7 @@ public class CoverageExplorer extends Widget {
      *
      * @param  source  the coverage or resource to load, or {@code null} if none.
      *
+     * @see #getImageRequest()
      * @see GridView#setImage(ImageRequest)
      */
     public final void setCoverage(final ImageRequest source) {
@@ -589,6 +649,27 @@ public class CoverageExplorer extends Widget {
             setCoverage(coverage);
         } finally {
             isCoverageAdjusting = false;
+        }
+    }
+
+    /**
+     * Returns a request which represent the coverage or resource currently shown in this explorer.
+     * This request can be used for showing the same data in another {@code CoverageExplorer} instance
+     * by invoking the {@link #setCoverage(ImageRequest)} method.
+     *
+     * @return the request to give to another explorer for showing the same coverage.
+     *
+     * @see #setCoverage(ImageRequest)
+     *
+     * @since 1.3
+     */
+    public final Optional<ImageRequest> getImageRequest() {
+        final GridCoverageResource resource = getResource();
+        final GridCoverage coverage = getCoverage();
+        if (resource != null || coverage != null) {
+            return Optional.of(new ImageRequest(resource, coverage));
+        } else {
+            return Optional.empty();
         }
     }
 }

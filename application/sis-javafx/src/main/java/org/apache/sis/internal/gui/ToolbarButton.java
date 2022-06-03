@@ -27,9 +27,9 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Builder for a button to add in a the {@link org.apache.sis.gui.dataset.DataWindow} toolbar.
- * This class is used only for content-specific buttons; it is not used for buttons managed directly by
- * {@code DataWindow} itself. A {@code ToolbarButton} can create and configure a button with its icon,
+ * Builder for a button to add in a the toolbar of a {@link org.apache.sis.gui.dataset} window.
+ * This class is used only for content-specific buttons; it is not used for all buttons created
+ * by the {@code dataset} package. A {@code ToolbarButton} can create and configure a button with its icon,
  * tooltip text and action to execute when the button is pushed.
  *
  * <p>This class is defined in this internal package for allowing interactions between classes
@@ -50,7 +50,7 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
     /**
      * Gets and removes the toolbar buttons associated to the given content pane. Those buttons
      * should have been specified by a previous call to {@link #insert(Node, Control...)}.
-     * They will be requested by {@link org.apache.sis.gui.dataset.DataWindow} only once,
+     * They will be requested by {@link org.apache.sis.gui.dataset.WindowHandler} only once,
      * which is why we remove them afterward.
      *
      * @param  content  the pane for which to get the toolbar buttons.

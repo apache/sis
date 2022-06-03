@@ -1230,6 +1230,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Timezone = 197;
 
         /**
+         * Title
+         */
+        public static final short Title = 270;
+
+        /**
          * Topic category
          */
         public static final short TopicCategory = 198;

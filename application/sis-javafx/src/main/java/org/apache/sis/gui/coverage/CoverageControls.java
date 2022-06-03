@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
+import java.util.Collections;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -30,10 +31,12 @@ import javafx.scene.paint.Color;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.internal.gui.control.ValueColorMapper;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.control.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -68,9 +71,10 @@ final class CoverageControls extends ViewAndControls {
     /**
      * Creates a new set of coverage controls.
      *
-     * @param  owner  the widget which creates this view. Can not be null.
+     * @param  owner   the widget which creates this view. Can not be null.
+     * @param  window  the handler of the window which will show the coverage explorer.
      */
-    CoverageControls(final CoverageExplorer owner) {
+    CoverageControls(final CoverageExplorer owner, final WindowHandler window) {
         super(owner);
         final Locale     locale     = owner.getLocale();
         final Resources  resources  = Resources.forLocale(locale);
@@ -125,11 +129,17 @@ final class CoverageControls extends ViewAndControls {
         {   // Block for making variables locale to this scope.
             final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
             isolines = new IsolineRenderer(view);
-            isolines.setIsolineTables(java.util.Collections.singletonList(mapper.getSteps()));
+            isolines.setIsolineTables(Collections.singletonList(mapper.getSteps()));
             final Region view = mapper.getView();
             VBox.setVgrow(view, Priority.ALWAYS);
             isolinesPane = new VBox(view);                          // TODO: add band selector
         }
+        /*
+         * Synchronized windows. A synchronized windows is a window which can reproduce the same gestures
+         * (zoom, pan, rotation) than the window containing this view. The maps displayed in different
+         * windows do not need to use the same map projection; translations will be adjusted as needed.
+         */
+        final SyncWindowList windows = new SyncWindowList(window, resources, vocabulary);
         /*
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
@@ -138,6 +148,7 @@ final class CoverageControls extends ViewAndControls {
         controlPanes = new TitledPane[] {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
+            new TitledPane(resources.getString(Resources.Keys.Windows), windows.getView()),
             deferred = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
         };
         /*

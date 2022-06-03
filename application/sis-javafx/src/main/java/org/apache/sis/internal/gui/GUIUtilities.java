@@ -103,6 +103,22 @@ public final class GUIUtilities extends Static {
     }
 
     /**
+     * Returns the window where is located the given JavaFX control.
+     *
+     * @param  control  the JavaFX control for which to get the window, or {@code null} if none.
+     * @return window containing the given control, or {@code null} if none.
+     */
+    public static Window getWindow(final Node control) {
+        if (control != null) {
+            final Scene scene = control.getScene();
+            if (scene != null) {
+                return scene.getWindow();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Sets on the given pane a clip defined to the pane bounds. This method is invoked for pane having content
      * that may be drawn outside the pane bounds (typically images). We use this method as a workaround for the
      * fact that JavaFX pane does not apply clip by itself.

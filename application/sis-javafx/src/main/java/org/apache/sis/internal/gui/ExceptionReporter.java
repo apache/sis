@@ -26,7 +26,6 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.stage.Window;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.text.Text;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
@@ -152,22 +151,6 @@ public final class ExceptionReporter extends Widget {
     }
 
     /**
-     * Returns the window where is located the given JavaFX control.
-     *
-     * @param  control  the JavaFX control for which to get the window.
-     * @return window containing the given control, or {@code null} if none.
-     */
-    private static Window getWindow(final Node control) {
-        if (control != null) {
-            final Scene scene = control.getScene();
-            if (scene != null) {
-                return scene.getWindow();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Shows the reporter for the exception that occurred during a task.
      *
      * @param  owner  control in the window which will own the dialog, or {@code null} if unknown.
@@ -179,7 +162,7 @@ public final class ExceptionReporter extends Widget {
         if (worker instanceof DataStoreOpener) {
             canNotReadFile(owner, ((DataStoreOpener) worker).getFileName(), exception);
         } else {
-            show(getWindow(owner), (short) 0, (short) 0, null, exception);
+            show(GUIUtilities.getWindow(owner), (short) 0, (short) 0, null, exception);
         }
     }
 
@@ -213,7 +196,8 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotReadFile(final Node owner, final String file, final Throwable exception) {
-        show(getWindow(owner), Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1, new Object[] {file}, exception);
+        show(GUIUtilities.getWindow(owner), Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1,
+                new Object[] {file}, exception);
     }
 
     /**
@@ -225,7 +209,8 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotCloseFile(final Node owner, final String file, final Throwable exception) {
-        show(getWindow(owner), Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1, new Object[] {file}, exception);
+        show(GUIUtilities.getWindow(owner), Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1,
+                new Object[] {file}, exception);
     }
 
     /**
@@ -237,7 +222,8 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotCreateCRS(final Window owner, final String code, final Throwable exception) {
-        show(owner, Resources.Keys.ErrorCreatingCRS, Resources.Keys.CanNotCreateCRS_1, new Object[] {code}, exception);
+        show(owner, Resources.Keys.ErrorCreatingCRS, Resources.Keys.CanNotCreateCRS_1,
+                new Object[] {code}, exception);
     }
 
     /**
@@ -248,7 +234,8 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotUseResource(final Node owner, final Throwable exception) {
-        show(getWindow(owner), Resources.Keys.ErrorDataAccess, Resources.Keys.ErrorDataAccess, new Object[0], exception);
+        show(GUIUtilities.getWindow(owner), Resources.Keys.ErrorDataAccess, Resources.Keys.ErrorDataAccess,
+                new Object[0], exception);
     }
 
     /**
@@ -285,7 +272,7 @@ public final class ExceptionReporter extends Widget {
      * @param exception  the exception to report.
      */
     public static void show(final Node owner, final String title, final String text, final Throwable exception) {
-        show(getWindow(owner), title, text, exception);
+        show(GUIUtilities.getWindow(owner), title, text, exception);
     }
 
     /**

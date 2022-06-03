@@ -44,7 +44,7 @@ import static java.util.logging.Logger.getLogger;
  * <p>This class also opportunistically provides a few utility methods related to appearance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -60,11 +60,6 @@ public final class Styles extends Static {
      * Approximate size of vertical scroll bar.
      */
     public static final int SCROLLBAR_WIDTH = 20;
-
-    /**
-     * Width of a checkbox or radio item in a table cell.
-     */
-    public static final int CHECKBOX_WIDTH = 40;
 
     /**
      * "Standard" height of table rows. Can be approximate.
