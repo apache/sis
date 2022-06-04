@@ -22,6 +22,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.TextFieldTableCell;
 import org.apache.sis.gui.Widget;
 
 
@@ -54,6 +55,7 @@ abstract class TabularWidget extends Widget {
     static <S> TableView<S> newTable() {
         TableView<S> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setEditable(true);
         return table;
     }
 
@@ -75,6 +77,23 @@ abstract class TabularWidget extends Widget {
         c.setResizable(false);
         c.setMinWidth(CHECKBOX_WIDTH);
         c.setMaxWidth(CHECKBOX_WIDTH);
+        return c;
+    }
+
+    /**
+     * Creates a new column for a string value in a text field.
+     *
+     * @param  <S>      the type of objects contained within the {@link TableView} items list.
+     * @param  header   column header.
+     * @param  factory  link to the string property.
+     * @return a column for text field.
+     */
+    static <S> TableColumn<S,String> newStringColumn(final String header,
+            final Callback<CellDataFeatures<S,String>, ObservableValue<String>> factory)
+    {
+        final TableColumn<S,String> c = new TableColumn<>(header);
+        c.setCellFactory(TextFieldTableCell.forTableColumn());
+        c.setCellValueFactory(factory);
         return c;
     }
 }

@@ -105,7 +105,6 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
 
     /**
      * Adds a colors column to the specified table.
-     * This method also modifies the table configuration.
      *
      * @param  table   the table where to add a colors column.
      * @param  header  column title to show in header row. This is typically "Color" or "Colors".
@@ -142,6 +141,5 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
             }
         });
         table.getColumns().add(colors);
-        table.setEditable(true);
     }
 }

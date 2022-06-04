@@ -207,6 +207,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         final MenuItem reset = new MenuItem(resources.getString(Resources.Keys.ClearAll));
         reset.setOnAction((e) -> clear(table.getItems()));
         table.setContextMenu(new ContextMenu(reset));
+        table.setEditable(true);
         return table;
     }
 

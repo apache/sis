@@ -22,8 +22,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -123,13 +124,12 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
         newWindow.setMaxWidth(Double.MAX_VALUE);
         /*
          * The first column contains a checkbox for choosing whether the window should be followed or not.
-         * Header text is 🔗 (link symbol).
          */
-        final TableColumn<Link,Boolean> linked = newBooleanColumn("\uD83D\uDD17", (cell) -> cell.getValue().linked);
-        final TableColumn<Link,String> name = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Title));
-        name.setCellValueFactory((cell) -> cell.getValue().view.title);
-        table.getColumns().setAll(linked, name);
+        table.getColumns().setAll(
+                newBooleanColumn(/* 🔗 (link symbol) */  "\uD83D\uDD17",      (cell) -> cell.getValue().linked),
+                newStringColumn (vocabulary.getString(Vocabulary.Keys.Title), (cell) -> cell.getValue().view.title));
         table.getItems().setAll(Link.wrap(owner.manager.windows, owner));
+        table.setRowFactory(SyncWindowList::newRow);
         /*
          * Build all other widget controls.
          */
@@ -142,6 +142,40 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
          * (because the `this` reference escapes).
          */
         owner.manager.windows.addListener(this);
+    }
+
+    /**
+     * Invoked when `TableView` needs to create a new row for rendering purpose.
+     * This is the place where to configure each {@code TableRow} instances.
+     *
+     * @param  table  the table which needs a new row.
+     * @return the new row.
+     */
+    private static TableRow<Link> newRow(final TableView<Link> table) {
+        TableRow<Link> row = new TableRow<>();
+        row.addEventFilter(MouseEvent.MOUSE_CLICKED, SyncWindowList::onMouseClicked);
+        return row;
+    }
+
+    /**
+     * Invoked when the user clicked on a cell of the row. We register this listener as a filter,
+     * e.g. this is invoked before the table row see the event, so we can prevent the event to be
+     * forwarded to the cell if desired.
+     */
+    private static void onMouseClicked(final MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            final TableRow<?> row = (TableRow<?>) event.getSource();
+            final Link item = (Link) row.getItem();
+            item.view.show();
+            event.consume();
+            /*
+             * If the cell was already selected, the first click caused the cell to enter in editing mode
+             * before the second click is detected. We want to cancel the edition since we moved focus to
+             * another window. The javadoc for the following method said: "Note: This method will cancel
+             * editing if the given row value is less than zero and the given column is null."
+             */
+            row.getTableView().edit(-1, null);
+        }
     }
 
     /**
