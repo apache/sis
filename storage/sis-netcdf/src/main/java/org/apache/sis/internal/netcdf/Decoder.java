@@ -36,6 +36,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Utilities;
@@ -56,7 +57,7 @@ import ucar.nc2.constants.CF;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -393,7 +394,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
+    public DiscreteSampling[] getDiscreteSampling(final DataStore lock) throws IOException, DataStoreException {
         final String type = stringValue(CF.FEATURE_TYPE);
         if (type == null || type.equalsIgnoreCase(FeatureSet.TRAJECTORY)) try {
             return FeatureSet.create(this, lock);

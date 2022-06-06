@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.Arrays;
+import java.nio.file.Path;
 import java.io.IOException;
 import org.opengis.util.NameSpace;
 import org.opengis.util.FactoryException;
@@ -31,9 +32,12 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.GridResourceWrapper;
+import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.CRS;
@@ -44,11 +48,11 @@ import org.apache.sis.referencing.CRS;
  * and following entries are images at finer resolutions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
-final class MultiResolutionImage extends GridResourceWrapper {
+final class MultiResolutionImage extends GridResourceWrapper implements ResourceOnFileSystem, StoreResource {
     /**
      * Name of the image at finest resolution.
      * This is used as the namespace for overviews.
@@ -57,6 +61,7 @@ final class MultiResolutionImage extends GridResourceWrapper {
 
     /**
      * Descriptions of each <cite>Image File Directory</cite> (IFD) in the GeoTIFF file.
+     * Should have at least 2 elements. The full-resolution image shall be at index 0.
      */
     private final ImageFileDirectory[] levels;
 
@@ -82,6 +87,22 @@ final class MultiResolutionImage extends GridResourceWrapper {
     MultiResolutionImage(final List<ImageFileDirectory> overviews) {
         levels = overviews.toArray(new ImageFileDirectory[overviews.size()]);
         resolutions = new double[levels.length][];
+    }
+
+    /**
+     * Returns the data store that produced this resource.
+     */
+    @Override
+    public final DataStore getOriginator() {
+        return levels[0].getOriginator();
+    }
+
+    /**
+     * Gets the paths to files used by this resource, or an empty array if unknown.
+     */
+    @Override
+    public Path[] getComponentFiles() {
+        return levels[0].getComponentFiles();
     }
 
     /**

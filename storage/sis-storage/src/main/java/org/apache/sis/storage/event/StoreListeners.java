@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.logging.Level;
@@ -79,14 +80,14 @@ import org.apache.sis.storage.Resource;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
 public class StoreListeners implements Localized {
     /**
-     * Parent manager to notify in addition to this manager.
-     * This is used when a data store is created for reading components of a larger data store.
+     * Parent set of listeners to notify in addition to this set of listeners, or {@code null} if none.
+     * This is used when a resource is created for reading components of a larger data store.
      */
     private final StoreListeners parent;
 
@@ -263,6 +264,18 @@ public class StoreListeners implements Localized {
         if (parent != null) {
             permittedEventTypes = parent.permittedEventTypes;
         }
+    }
+
+    /**
+     * Returns the parent set of listeners that are notified in addition to this set of listeners.
+     * This is the value of the {@code parent} argument given to the constructor.
+     *
+     * @return parent set of listeners that are notified in addition to this set of listeners.
+     *
+     * @since 1.3
+     */
+    public Optional<StoreListeners> getParent() {
+        return Optional.ofNullable(parent);
     }
 
     /**

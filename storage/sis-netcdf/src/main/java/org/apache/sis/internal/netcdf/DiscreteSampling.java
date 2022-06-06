@@ -18,6 +18,8 @@ package org.apache.sis.internal.netcdf;
 
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
@@ -30,11 +32,11 @@ import org.apache.sis.util.resources.Errors;
  * and profiles.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
-public abstract class DiscreteSampling extends AbstractFeatureSet {
+public abstract class DiscreteSampling extends AbstractFeatureSet implements StoreResource {
     /**
      * The factory to use for creating geometries.
      */
@@ -43,11 +45,13 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
     /**
      * The object to use for synchronization. For now we use a {@code synchronized} statement,
      * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
+     * Current lock is the whole netCDF data store (so this field is opportunistically used
+     * by {@link #getOriginator()}), but it may change in future version.
      *
      * @see RasterResource#lock
      * @see #getSynchronizationLock()
      */
-    private final Object lock;
+    private final DataStore lock;
 
     /**
      * Creates a new discrete sampling parser.
@@ -57,10 +61,22 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
      * @param  lock       the lock to use in {@code synchronized(lock)} statements.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners, final Object lock) {
+    protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners, final DataStore lock) {
         super(listeners, false);
         factory = Geometries.implementation(library);
         this.lock = lock;
+    }
+
+    /**
+     * Returns the data store that produced this resource.
+     */
+    @Override
+    public final DataStore getOriginator() {
+        /*
+         * Could be replaced by `(DataStore) listeners.getParent().get().getSource()`
+         * if a future version decides to use a different kind of lock.
+         */
+        return lock;
     }
 
     /**

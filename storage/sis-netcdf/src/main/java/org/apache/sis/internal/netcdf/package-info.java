@@ -38,7 +38,7 @@
  * consistent vocabulary (more similar to the rest of Apache SIS).</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
