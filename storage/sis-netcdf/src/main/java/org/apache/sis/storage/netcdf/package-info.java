@@ -40,7 +40,7 @@
  * Care must be taken for avoiding confusion when using SIS and UCAR libraries together.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */

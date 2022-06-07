@@ -26,7 +26,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * A dummy data store
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -70,10 +70,11 @@ public final strictfp class DataStoreMock extends DataStore {
     }
 
     /**
-     * Do nothing.
+     * Notifies listeners if any. Otherwise does nothing.
      */
     @Override
     public void close() {
+        listeners.close();
     }
 
     /**
@@ -94,5 +95,15 @@ public final strictfp class DataStoreMock extends DataStore {
      */
     public void simulateWarning(String message) {
         listeners.warning(message);
+    }
+
+    /**
+     * Returns a new dummy child having this data store as a parent.
+     *
+     * @return a dummy child.
+     */
+    public Resource newChild() {
+        return new AbstractResource(listeners, false) {
+        };
     }
 }

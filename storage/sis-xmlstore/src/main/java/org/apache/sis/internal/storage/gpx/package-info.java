@@ -56,7 +56,7 @@
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPS Exchange Format on Wikipedia</a>
  * @see <a href="http://www.topografix.com/GPX/1/1/">GPX 1.1 Schema Documentation</a>

@@ -215,6 +215,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DuplicatedSampleDimensionIndex_1 = 53;
 
         /**
+         * Exception occurred in a listener for events of type ‘{0}’.
+         */
+        public static final short ExceptionInListener_1 = 74;
+
+        /**
          * Header in the “{0}” file is too large.
          */
         public static final short ExcessiveHeaderSize_1 = 67;

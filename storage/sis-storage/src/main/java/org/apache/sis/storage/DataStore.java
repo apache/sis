@@ -35,6 +35,7 @@ import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.storage.event.CloseEvent;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
@@ -526,18 +527,25 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * A {@link CloseEvent} is sent to listeners before the data store is closed.
      *
      * <h4>Note for implementers</h4>
-     * Data stores having resources to release should <em>not</em> override the {@link Object#equals(Object)}
-     * and {@link #hashCode()} methods, since comparisons other than identity comparisons may confuse some
-     * cache mechanisms (e.g. they may think that a data store has already been closed).
-     * Conversely data stores for which {@code addListener(…)}, {@code removeListener(…)} and {@code close()}
-     * methods perform no operation can override {@code equals(…)} and {@code hashCode()} if desired.
+     * Implementations should invoke {@code listeners.close()} on their first line
+     * for sending notification to all listeners before the data store is actually
+     * closed.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
+     *
+     * @see StoreListeners#close()
      */
     @Override
     public abstract void close() throws DataStoreException;
+
+    /*
+     * Data stores should not override `Object.equals(Object)` and `hashCode()` methods,
+     * because comparisons other than identity comparisons may confuse cache mechanisms
+     * (e.g. caches may think that a data store has already been closed).
+     */
 
     /**
      * Returns a string representation of this data store for debugging purpose.

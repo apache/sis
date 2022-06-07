@@ -74,7 +74,7 @@ import org.apache.sis.setup.OptionKey;
  * known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -494,6 +494,7 @@ writeCoeffs:    for (int i=0;; i++) {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         try {
             final ImageWriter codec = writer;
             writer = null;

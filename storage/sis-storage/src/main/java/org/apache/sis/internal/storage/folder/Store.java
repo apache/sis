@@ -78,7 +78,7 @@ import org.apache.sis.storage.event.WarningEvent;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -178,7 +178,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         children   = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -431,6 +431,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                                          // Should never fail.
         final Collection<Resource> resources = components;
         if (resources != null) {
             components = null;                                      // Clear first in case of failure.

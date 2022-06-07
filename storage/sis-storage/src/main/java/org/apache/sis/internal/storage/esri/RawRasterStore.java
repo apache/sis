@@ -60,7 +60,7 @@ import static org.apache.sis.internal.util.Numerics.wholeDiv;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -531,6 +531,7 @@ final class RawRasterStore extends RasterStore {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final ChannelDataInput in = input;
         input  = null;                      // Cleared first in case of failure.
         reader = null;

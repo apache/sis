@@ -110,7 +110,7 @@ import org.apache.sis.setup.OptionKey;
  * is known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -239,7 +239,7 @@ public class WorldFileStore extends PRJDataStore {
      */
     WorldFileStore(final FormatFinder format, final boolean readOnly) throws DataStoreException, IOException {
         super(format.provider, format.connector);
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
         identifiers = new HashMap<>();
         suffix = format.suffix;
         if (readOnly || !format.openAsWriter) {
@@ -782,6 +782,7 @@ loop:   for (int convention=0;; convention++) {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final ImageReader codec = reader;
         reader       = null;
         metadata     = null;

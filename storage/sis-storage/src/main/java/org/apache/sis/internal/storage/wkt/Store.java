@@ -47,7 +47,7 @@ import org.apache.sis.util.CharSequences;
  * the file containing WKT definition is the main file, not an auxiliary file.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -106,7 +106,7 @@ final class Store extends URIDataStore {
         timezone = connector.getOption(OptionKey.TIMEZONE);
         library  = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         source   = connector.commit(Reader.class, StoreProvider.NAME);
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -199,6 +199,7 @@ final class Store extends URIDataStore {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();              // Should never fail.
         final Reader s = source;
         source = null;                  // Cleared first in case of failure.
         objects.clear();

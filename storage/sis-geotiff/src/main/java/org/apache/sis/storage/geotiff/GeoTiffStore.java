@@ -209,7 +209,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             throw new DataStoreException(e);
         }
         if (getClass() == GeoTiffStore.class) {
-            listeners.useWarningEventsOnly();
+            listeners.useReadOnlyEvents();
         }
     }
 
@@ -511,6 +511,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final Reader r = reader;
         reader = null;
         components = null;

@@ -56,7 +56,7 @@ import org.apache.sis.util.Exceptions;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -163,7 +163,7 @@ public class SQLStore extends DataStore implements Aggregate {
         this.tableNames = ArraysExt.resize(tableNames, tableCount);
         this.queries    = ArraysExt.resize(queries,    queryCount);
         if (getClass() == SQLStore.class) {
-            listeners.useWarningEventsOnly();
+            listeners.useReadOnlyEvents();
         }
     }
 
@@ -332,6 +332,7 @@ public class SQLStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();      // Should never fail.
         // There is no JDBC connection to close here.
         model = null;
     }
