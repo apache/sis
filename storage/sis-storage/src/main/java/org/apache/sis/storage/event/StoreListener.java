@@ -35,7 +35,7 @@ import org.apache.sis.storage.Resource;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  *
- * @param  <T>  the type of events of interest to this listener.
+ * @param  <E>  the type of events of interest to this listener.
  *
  * @see StoreEvent
  * @see Resource#addListener(Class, StoreListener)
@@ -43,7 +43,7 @@ import org.apache.sis.storage.Resource;
  * @since 1.0
  * @module
  */
-public interface StoreListener<T extends StoreEvent> extends EventListener {
+public interface StoreListener<E extends StoreEvent> extends EventListener {
     /**
      * Invoked <em>after</em> a warning or a change occurred in a resource.
      * The {@link StoreEvent#getSource()} method gives the resource where the event occurred.
@@ -52,5 +52,5 @@ public interface StoreListener<T extends StoreEvent> extends EventListener {
      *
      * @param  event  description of the change or warning that occurred in a resource. Shall not be {@code null}.
      */
-    void eventOccured(T event);
+    void eventOccured(E event);
 }

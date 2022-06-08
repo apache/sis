@@ -123,30 +123,30 @@ public class StoreListeners implements Localized {
                          JDK9.setOf(WarningEvent.class, CloseEvent.class);
 
     /**
-     * The {@link CloseEvent.ParentListener} registered on {@link #parent}, or {@code null} if not yet created.
-     * This is created the first time that a {@link CloseEvent} listener is registered on a resource which is
-     * not the root resource. Those listeners are handled in a special way, because a close event on the root
-     * should propagate to all children.
+     * The {@link CascadedStoreEvent.ParentListener}s registered on {@link #parent}.
+     * This is created the first time that a {@link CascadedStoreEvent} listener is registered on a resource
+     * which is not the root resource. Those listeners are handled in a special way, because a closing event
+     * on the root resource should cause all children to also fire their own {@link CloseEvent}.
      */
-    private StoreListener<CloseEvent> closeListener;
+    private Map<Class<?>, StoreListener<?>> cascadedListeners;
 
     /**
      * All listeners for a given even type.
      *
-     * @param  <T>  the type of events of interest to the listeners.
+     * @param  <E>  the type of events of interest to the listeners.
      */
-    private static final class ForType<T extends StoreEvent> {
+    private static final class ForType<E extends StoreEvent> {
         /**
          * The types for which listeners have been registered.
          */
-        final Class<T> type;
+        final Class<E> type;
 
         /**
          * The listeners for the {@linkplain #type event type}, or {@code null} if none.
          * This is a <cite>copy on write</cite> array: no elements are modified after an array has been created.
          */
         @SuppressWarnings("VolatileArrayField")
-        private volatile StoreListener<? super T>[] listeners;
+        private volatile StoreListener<? super E>[] listeners;
 
         /**
          * Next element in the chain of listeners. Intentionally final; if we want to remove an element
@@ -161,7 +161,7 @@ public class StoreListeners implements Localized {
          * @param type  type of events of interest for listeners in this element.
          * @param next  the next element in the chained list, or {@code null} if none.
          */
-        ForType(final Class<T> type, final ForType<?> next) {
+        ForType(final Class<E> type, final ForType<?> next) {
             this.type = type;
             this.next = next;
         }
@@ -173,11 +173,11 @@ public class StoreListeners implements Localized {
          *
          * <p>It is caller responsibility to perform synchronization and to verify that the listener is non-null.</p>
          */
-        final void add(final StoreListener<? super T> listener) {
-            final StoreListener<? super T>[] list = listeners;
+        final void add(final StoreListener<? super E> listener) {
+            final StoreListener<? super E>[] list = listeners;
             final int length = (list != null) ? list.length : 0;
             @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation.
-            final StoreListener<? super T>[] copy = new StoreListener[length + 1];
+            final StoreListener<? super E>[] copy = new StoreListener[length + 1];
             if (list != null) {
                 System.arraycopy(list, 0, copy, 0, length);
             }
@@ -194,8 +194,8 @@ public class StoreListeners implements Localized {
          * @param  listener  the listener to remove.
          * @return {@code true} if the list of listeners is empty after this method call.
          */
-        final boolean remove(final StoreListener<? super T> listener) {
-            StoreListener<? super T>[] list = listeners;
+        final boolean remove(final StoreListener<? super E> listener) {
+            StoreListener<? super E>[] list = listeners;
             if (list != null) {
                 for (int i=list.length; --i >= 0;) {
                     if (list[i] == listener) {
@@ -243,16 +243,16 @@ public class StoreListeners implements Localized {
          * @return the {@code done} map, created when first needed.
          * @throws ExecutionException if at least one listener failed to execute.
          */
-        final Map<StoreListener<?>,Boolean> eventOccured(final T event, Map<StoreListener<?>,Boolean> done)
+        final Map<StoreListener<?>,Boolean> eventOccured(final E event, Map<StoreListener<?>,Boolean> done)
                 throws ExecutionException
         {
             RuntimeException error = null;
-            final StoreListener<? super T>[] list = listeners;
+            final StoreListener<? super E>[] list = listeners;
             if (list != null) {
                 if (done == null) {
                     done = new IdentityHashMap<>(list.length);
                 }
-                for (final StoreListener<? super T> listener : list) {
+                for (final StoreListener<? super E> listener : list) {
                     if (event.isConsumed()) break;
                     if (done.put(listener, Boolean.TRUE) == null) try {
                         listener.eventOccured(event);
@@ -576,7 +576,7 @@ public class StoreListeners implements Localized {
      */
     @SuppressWarnings("unchecked")
     public void warning(final LogRecord description, final Filter onUnhandled) {
-        if (!fire(new WarningEvent(source, description), WarningEvent.class) &&
+        if (!fire(WarningEvent.class, new WarningEvent(source, description)) &&
                 (onUnhandled == null || onUnhandled.isLoggable(description)))
         {
             final String name = description.getLoggerName();
@@ -604,8 +604,17 @@ public class StoreListeners implements Localized {
      * @param  method  name of the method invoking this method.
      * @param  error   the exception that occurred.
      */
-    private static void canNotNotify(final String method, final ExecutionException error) {
+    static void canNotNotify(final String method, final ExecutionException error) {
         Logging.unexpectedException(Logger.getLogger(Modules.STORAGE), StoreListeners.class, method, error);
+    }
+
+    /**
+     * @deprecated Replaced by {@link #fire(Class, StoreEvent)} for consistency with the argument order
+     *             in all other methods of this class.
+     */
+    @Deprecated
+    public <E extends StoreEvent> boolean fire(final E event, final Class<E> eventType) {
+        return fire(eventType, event);
     }
 
     /**
@@ -619,16 +628,18 @@ public class StoreListeners implements Localized {
      * {@linkplain Logging#unexpectedException(Logger, Class, String, Throwable) log record}.
      * Runtime exceptions in listeners do not cause this method to fail.</p>
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  event      the event to fire.
+     * @param  <E>        compile-time value of the {@code eventType} argument.
      * @param  eventType  the type of the event to be fired.
+     * @param  event      the event to fire.
      * @return {@code true} if the event has been sent to at least one listener.
      * @throws IllegalArgumentException if the given event type is not one of the types of events
      *         that this {@code StoreListeners} can fire.
      *
      * @see #close()
+     *
+     * @since 1.3
      */
-    public <T extends StoreEvent> boolean fire(final T event, final Class<T> eventType) {
+    public <E extends StoreEvent> boolean fire(final Class<E> eventType, final E event) {
         ArgumentChecks.ensureNonNull("event", event);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         final Set<Class<? extends StoreEvent>> permittedEventTypes = this.permittedEventTypes;
@@ -636,7 +647,7 @@ public class StoreListeners implements Localized {
             throw illegalEventType(eventType);
         }
         try {
-            return fire(this, event, eventType);
+            return fire(this, eventType, event);
         } catch (ExecutionException ex) {
             canNotNotify("fire", ex);
             return true;
@@ -649,15 +660,16 @@ public class StoreListeners implements Localized {
      *
      * <p>This method does not need (and should not) be synchronized.</p>
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  <E>        compile-time value of the {@code eventType} argument.
      * @param  m          the set of listeners that may be interested in the event.
-     * @param  event      the event to fire.
      * @param  eventType  the type of the event to be fired.
+     * @param  event      the event to fire.
      * @return {@code true} if the event has been sent to at least one listener.
-     * @throws ExecutionException
+     * @throws ExecutionException if an exception is thrown inside {@link StoreListener#eventOccured(StoreEvent)}.
+     *         All other listeners continue to receive the event before {@code ExecutionException} is thrown.
      */
     @SuppressWarnings("unchecked")
-    private static <T extends StoreEvent> boolean fire(StoreListeners m, final T event, final Class<T> eventType)
+    static <E extends StoreEvent> boolean fire(StoreListeners m, final Class<E> eventType, final E event)
             throws ExecutionException
     {
         Map<StoreListener<?>,Boolean> done = null;
@@ -665,13 +677,13 @@ public class StoreListeners implements Localized {
         do {
             for (ForType<?> e = m.listeners; e != null; e = e.next) {
                 if (e.type.isAssignableFrom(eventType)) try {
-                    done = ((ForType<? super T>) e).eventOccured(event, done);
+                    done = ((ForType<? super E>) e).eventOccured(event, done);
                 } catch (ExecutionException ex) {
                     if (error == null) error = ex;
                     else error.getCause().addSuppressed(ex.getCause());
                 }
-                if (event.isConsumedForParent()) break;
             }
+            if (event.isConsumedForParent()) break;
             m = m.parent;
         } while (m != null);
         if (error != null) {
@@ -722,21 +734,21 @@ public class StoreListeners implements Localized {
      * This side-effect is applied on the assumption that the registered listener will handle
      * warnings in its own way, for example by showing warnings in a widget.
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  <E>        compile-time value of the {@code eventType} argument.
      * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
      * @param  listener   listener to notify about events.
      *
      * @see Resource#addListener(Class, StoreListener)
      */
-    @SuppressWarnings("unchecked")
-    public synchronized <T extends StoreEvent> void addListener(final Class<T> eventType, final StoreListener<? super T> listener) {
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public synchronized <E extends StoreEvent> void addListener(final Class<E> eventType, final StoreListener<? super E> listener) {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         if (isPossibleEvent(permittedEventTypes, eventType)) {
-            ForType<T> ce = null;
+            ForType<E> ce = null;
             for (ForType<?> e = listeners; e != null; e = e.next) {
                 if (e.type.equals(eventType)) {
-                    ce = (ForType<T>) e;
+                    ce = (ForType<E>) e;
                     break;
                 }
             }
@@ -746,13 +758,18 @@ public class StoreListeners implements Localized {
             }
             ce.add(listener);
             /*
-             * If we are adding a listener for `CloseEvent`, we may need (as a special case)
-             * to register a listener to the parent for propagating the close events.
+             * If we are adding a listener for `CascadedStoreEvent`, we may need
+             * to register a listener in the parent for cascading the events.
              */
-            if (parent != null) {
-                if (closeListener == null && CloseEvent.class.isAssignableFrom(eventType)) {
-                    closeListener = new CloseEvent.ParentListener(parent.source, this);
-                    parent.addListener(CloseEvent.class, closeListener);
+            if (parent != null && CascadedStoreEvent.class.isAssignableFrom(eventType)) {
+                if (cascadedListeners == null) {
+                    cascadedListeners = new IdentityHashMap<>(4);
+                }
+                StoreListener cascade = cascadedListeners.get(eventType);
+                if (cascade == null) {
+                    cascade = new CascadedStoreEvent.ParentListener(eventType, parent, this);
+                    cascadedListeners.put(eventType, cascade);
+                    parent.addListener(eventType, cascade);
                 }
             }
         }
@@ -774,27 +791,22 @@ public class StoreListeners implements Localized {
      * there are no remaining listeners for warning events, then this {@code StoreListeners} will send future
      * warnings to the loggers.
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  <E>        compile-time value of the {@code eventType} argument.
      * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
      * @param  listener   listener to stop notifying about events.
      *
      * @see Resource#removeListener(Class, StoreListener)
      */
-    @SuppressWarnings("unchecked")
-    public synchronized <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public synchronized <E extends StoreEvent> void removeListener(Class<E> eventType, StoreListener<? super E> listener) {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
             if (e.type.equals(eventType)) {
-                if (((ForType<T>) e).remove(listener) && parent != null) {
-                    /*
-                     * If the list of listeners become empty and if the event type was `CloseEvent`,
-                     * cleanup the parent list of listeners too. We do a special case for close events
-                     * because closing a parent data store implicitly closes the child resources.
-                     */
-                    if (closeListener != null && CloseEvent.class.isAssignableFrom(eventType)) {
-                        parent.removeListener(CloseEvent.class, closeListener);
-                        closeListener = null;
+                if (((ForType<E>) e).remove(listener) && cascadedListeners != null) {
+                    final StoreListener cascade = cascadedListeners.remove(eventType);
+                    if (cascade != null) {
+                        parent.removeListener(eventType, cascade);
                     }
                 }
                 break;
@@ -902,26 +914,36 @@ public class StoreListeners implements Localized {
      * Sends a {@link CloseEvent} to all listeners registered for that kind of event,
      * then discards listeners in this instance (but not in parents).
      * Because listeners are discarded, invoking this method many times
-     * on the same instance have no effect after the first invocation.
+     * on the same instance has no effect after the first invocation.
      *
      * <p>If one or many {@link StoreListener#eventOccured(StoreEvent)} implementations throw
      * a {@link RuntimeException}, those exceptions will be collected and reported in a single
      * {@linkplain Logging#unexpectedException(Logger, Class, String, Throwable) log record}.
      * Runtime exceptions in listeners do not cause this method to fail.</p>
      *
-     * @see #fire(StoreEvent, Class)
+     * @see #fire(Class, StoreEvent)
      * @see DataStore#close()
+     * @see CloseEvent
      *
      * @since 1.3
      */
+    @SuppressWarnings({"rawtypes","unchecked"})
     public void close() {
         try {
-            fire(this, new CloseEvent(source), CloseEvent.class);
+            /*
+             * We use the private static method instead of `fire(Class, StoreEvent)` public method
+             * because calls to `close()` should never fail (except with `java.lang.Error` because
+             * we do not want to hide serious errors), so we bypass argument validation and method
+             * overriding as a safety.
+             */
+            fire(this, CloseEvent.class, new CloseEvent(source));
         } catch (ExecutionException ex) {
             canNotNotify("close", ex);
         }
-        closeListener = null;
-        listeners     = null;       // Volatile field should be last.
-        // Do not remove parent listeners; maybe parent will be closed next.
+        listeners = null;
+        /*
+         * No need to cleanup `cascadedListeners`. It does not hurt (those listeners practically
+         * become no-op) and the objects are probably going to be garbage collected soon anyway.
+         */
     }
 }

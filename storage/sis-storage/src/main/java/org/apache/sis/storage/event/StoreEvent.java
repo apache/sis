@@ -123,14 +123,14 @@ public abstract class StoreEvent extends EventObject implements Localized {
     /**
      * Marks this event as consumed. This stops its further propagation to other listeners.
      *
-     * @param  later  {@code true} for consuming now, or {@code false} for consuming after all listeners
+     * @param  later  {@code false} for consuming now, or {@code true} for consuming after all listeners
      *         registered on the {@linkplain #getSource() source} resource but before listeners registered
      *         on the parent resource or data store.
      *
      * @since 1.3
      */
     public void consume(final boolean later) {
-        if (later) consumed = true;
-        else consumeLater = true;
+        if (later) consumeLater = true;
+        else consumed = true;
     }
 }

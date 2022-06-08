@@ -21,14 +21,19 @@ import org.apache.sis.storage.Resource;
 
 /**
  * Notifies listeners that a resource or a data store is being closed and should no longer be used.
- * Resources are automatically considered closed when a parent resource or data store is closed.
+ * Firing a {@code CloseEvent} on a parent resource (typically a data store)
+ * automatically fires a {@code CloseEvent} in all children resources.
+ * See {@link CascadedStoreEvent} javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.3
+ * @since 1.3
+ *
+ * @see StoreListeners#close()
+ *
  * @version 1.3
  * @module
  */
-public class CloseEvent extends StoreEvent {
+public class CloseEvent extends CascadedStoreEvent<CloseEvent> {
     /**
      * For cross-version compatibility.
      */
@@ -44,44 +49,14 @@ public class CloseEvent extends StoreEvent {
         super(source);
     }
 
-
-
-
     /**
-     * A listener to register on the parent of a resource for closing the resource
-     * automatically if the parent is closed.
+     * Creates a new event of the same type than this event but with a different source.
      *
-     * @see StoreListeners#closeListener
+     * @param  child  the child resource for which to create the event to cascade.
+     * @return an event of the same type than this event but with the given resource.
      */
-    static final class ParentListener implements StoreListener<CloseEvent> {
-        /**
-         * The parent resource to listen to.
-         */
-        private final Resource parent;
-
-        /**
-         * The listeners to notify.
-         */
-        private final StoreListeners listeners;
-
-        /**
-         * Creates a new listener to be registered on the parent of the given set of listeners.
-         *
-         * @param  parent     the parent resource to listen to.
-         * @param  listeners  the child set of listeners.
-         */
-        ParentListener(final Resource parent, final StoreListeners listeners) {
-            this.parent    = parent;
-            this.listeners = listeners;
-        }
-
-        /**
-         * Invoked when a parent resource or data store is closed.
-         */
-        @Override public void eventOccured(final CloseEvent event) {
-            if (event.getSource() == parent) {      // Necessary check for avoiding never-ending loop.
-                listeners.close();
-            }
-        }
+    @Override
+    protected CloseEvent forSource(final Resource child) {
+        return new CloseEvent(child);
     }
 }

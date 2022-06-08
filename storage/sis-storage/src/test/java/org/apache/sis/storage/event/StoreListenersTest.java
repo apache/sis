@@ -143,6 +143,7 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
 
             @Override public void eventOccured(CloseEvent event) {
                 assertSame(resource, event.getSource());
+                assertFalse(isClosed);
                 isClosed = true;
             }
         }
