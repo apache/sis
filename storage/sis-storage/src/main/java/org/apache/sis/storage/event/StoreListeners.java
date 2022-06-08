@@ -229,6 +229,13 @@ public class StoreListeners implements Localized {
         }
 
         /**
+         * Returns {@code true} if this element contains the given listener.
+         */
+        final boolean hasListener(final StoreListener<?> listener) {
+            return ArraysExt.containsIdentity(listeners, listener);
+        }
+
+        /**
          * Returns {@code true} if this element has at least one listener.
          */
         final boolean hasListeners() {
@@ -741,7 +748,9 @@ public class StoreListeners implements Localized {
      * @see Resource#addListener(Class, StoreListener)
      */
     @SuppressWarnings({"rawtypes","unchecked"})
-    public synchronized <E extends StoreEvent> void addListener(final Class<E> eventType, final StoreListener<? super E> listener) {
+    public synchronized <E extends StoreEvent> void addListener(
+            final Class<E> eventType, final StoreListener<? super E> listener)
+    {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         if (isPossibleEvent(permittedEventTypes, eventType)) {
@@ -798,7 +807,9 @@ public class StoreListeners implements Localized {
      * @see Resource#removeListener(Class, StoreListener)
      */
     @SuppressWarnings({"rawtypes","unchecked"})
-    public synchronized <E extends StoreEvent> void removeListener(Class<E> eventType, StoreListener<? super E> listener) {
+    public synchronized <E extends StoreEvent> void removeListener(
+            final Class<E> eventType, final StoreListener<? super E> listener)
+    {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
@@ -812,6 +823,31 @@ public class StoreListeners implements Localized {
                 break;
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given listener is registered for the given type or a super-type.
+     * This method may unconditionally return {@code false} if the given type of event is never fired
+     * by this {@code StoreListeners}, because calls to {@code addListener(eventType, …)} are free to
+     * ignore the listeners for those types.
+     *
+     * @param  <E>        compile-time value of the {@code eventType} argument.
+     * @param  eventType  type of {@link StoreEvent} to check (can not be {@code null}).
+     * @param  listener   listener to check for registration.
+     * @return {@code true} if this object contains the specified listener for given event type, {@code false} otherwise.
+     *
+     * @since 1.3
+     */
+    public <E extends StoreEvent> boolean hasListener(final Class<E> eventType, final StoreListener<? super E> listener) {
+        // No need to synchronize this method.
+        ArgumentChecks.ensureNonNull("listener",  listener);
+        ArgumentChecks.ensureNonNull("eventType", eventType);
+        for (ForType<?> e = listeners; e != null; e = e.next) {
+            if (e.type.equals(eventType) && e.hasListener(listener)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

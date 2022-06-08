@@ -18,16 +18,23 @@ package org.apache.sis.gui.dataset;
 
 import java.util.Locale;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import javafx.event.EventHandler;
 import javafx.scene.layout.Region;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.CloseEvent;
+import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.gui.coverage.CoverageExplorer;
+import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.PrivateAccess;
 import org.apache.sis.internal.gui.Resources;
@@ -151,6 +158,14 @@ public abstract class WindowHandler {
     public abstract WindowHandler duplicate();
 
     /**
+     * The resource shown in the {@linkplain #window}, or {@code null} if unspecified.
+     * This is used for identifying which handlers to remove when a resource is closed.
+     * This method is not yet public because a future version may need to return a full
+     * map context instead of a single resource.
+     */
+    abstract Resource getResource();
+
+    /**
      * Returns the JavaFX region where the resource is shown. This value shall be stable.
      */
     abstract Region getView();
@@ -182,11 +197,14 @@ public abstract class WindowHandler {
                     return;
                 }
             } else {
-                if (getResource() == null) {
+                final Resource resource = getResource();
+                if (resource == null) {
                     throw new IllegalStateException(Errors.format(Errors.Keys.DisposedInstanceOf_1, getClass()));
                 }
+                final OnClose listener = new OnClose();
+                resource.addListener(CloseEvent.class, listener);
                 window = manager.newWindow(getView());
-                window.setOnHidden((e) -> dispose());
+                window.setOnHidden(listener);
                 title.addListener(TITLE_CHANGED);
                 TITLE_CHANGED.changed(title, null, title.get());
             }
@@ -196,20 +214,79 @@ public abstract class WindowHandler {
     }
 
     /**
-     * The resource shown in the {@linkplain #window}, or {@code null} if unspecified.
-     * This is used for identifying which handlers to remove when a resource is closed.
-     * This method is not yet public because a future version may need to return a full
-     * map context instead of a single resource.
+     * The action to execute when a window is closed or when the resource shown in windows is closed.
+     * When the event is a window closing, it impacts only that window. When the event is a resource
+     * closing, it impacts all windows showing that resource.
      */
-    abstract Resource getResource();
+    private final class OnClose implements StoreListener<CloseEvent>, EventHandler<WindowEvent> {
+        /**
+         * Creates a new listener to be notified when a window or a resource is closed.
+         */
+        OnClose() {
+        }
+
+        /**
+         * Invoked in JavaFX thread when the window is closing.
+         */
+        @Override public void handle(final WindowEvent event) {
+            manager.modifiableWindowList.remove(WindowHandler.this);
+            final Resource resource = getResource();
+            if (resource != null) {
+                resource.removeListener(CloseEvent.class, this);
+            }
+            dispose();
+        }
+
+        /**
+         * Invoked when a resource is closing. This method can be invoked from any thread, but the actual work
+         * will done in the JavaFX thread. If the {@link CloseEvent} is fired from a background thread, then
+         * this method will block until the JavaFX thread finished to close all windows, for avoiding that
+         * the background thread closes the resource before we removed all usages in JavaFX thread.
+         */
+        @Override public void eventOccured(final CloseEvent event) {
+            final Resource resource = event.getSource();
+            if (resource != null) {
+                resource.removeListener(CloseEvent.class, this);
+            }
+            if (Platform.isFxApplicationThread()) {
+                close(resource, WindowHandler.this);
+            } else BackgroundThreads.runAndWaitDialog(() -> {
+                close(resource, WindowHandler.this);
+                return null;
+            });
+        }
+    }
 
     /**
-     * Invoked when the window is hidden. After removing this handler from the windows list,
-     * this method makes a "best effort" for helping the garbage-collector to release memory.
+     * Closes all windows (except the main window) which are showing the given resource.
+     * This is invoked when the resource has been closed in the {@link ResourceTree}.
+     *
+     * @param  resource  the resource which has been closed.
+     * @param  force     the handler to close unconditionally regardless its resource.
+     */
+    private static void close(final Resource resource, final WindowHandler force) {
+        final WindowHandler ignore = force.manager.main;
+        final ObservableList<WindowHandler> windows = force.manager.modifiableWindowList;
+        for (int i = windows.size(); --i >= 0;) {
+            final WindowHandler handler = windows.get(i);
+            if (handler != ignore && (handler == force || handler.getResource() == resource)) {
+                windows.remove(i);
+                if (handler.window != null) {
+                    handler.window.setOnHidden(null);       // Because we will invoke `dispose()` ourselves.
+                    handler.window.close();
+                }
+                handler.dispose();
+            }
+        }
+    }
+
+    /**
+     * Makes a "best effort" for helping the garbage-collector to release memory.
+     * This method is for internal usage by {@code WindowHandler} and subclasses only.
+     * Caller shall remove this handler from the windows list before to invoke this method.
      */
     void dispose() {
         assert manager.main != this;                // Because listener is not registered for main window.
-        manager.modifiableWindowList.remove(this);
         title.removeListener(TITLE_CHANGED);
         if (window != null) {
             window.setScene(null);

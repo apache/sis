@@ -74,10 +74,13 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
     public void testAddAndRemoveStoreListener() {
         final StoreListeners listeners = store.listeners();
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
+        assertFalse("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
         listeners.addListener(WarningEvent.class, this);
         assertTrue("hasListeners()", listeners.hasListeners(WarningEvent.class));
+        assertTrue("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
         listeners.removeListener(WarningEvent.class, this);
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
+        assertFalse("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
         listeners.removeListener(WarningEvent.class, this);         // Should be no-op.
     }
 

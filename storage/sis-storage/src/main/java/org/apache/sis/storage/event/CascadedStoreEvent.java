@@ -62,7 +62,6 @@ public abstract class CascadedStoreEvent<E extends CascadedStoreEvent<E>> extend
      */
     protected CascadedStoreEvent(Resource source) {
         super(source);
-        super.consume(true);        // Necessary for avoiding never-ending loop.
     }
 
     /**
@@ -121,7 +120,9 @@ public abstract class CascadedStoreEvent<E extends CascadedStoreEvent<E>> extend
             if (r == null) {
                 parent.removeListener(eventType, this);
             } else try {
-                StoreListeners.fire(r, eventType, event.forSource(r.getSource()));
+                final E cascade = event.forSource(r.getSource());
+                cascade.consume(true);          // For avoiding never-ending loop.
+                StoreListeners.fire(r, eventType, cascade);
             } catch (ExecutionException e) {
                 StoreListeners.canNotNotify("fire (cascade)", e);
             }

@@ -64,7 +64,7 @@ public class ResourceEvent extends Event {
      * Creates a new event.
      *
      * @param  source  the source of this event.
-     * @param  path    path to the file being loaded.
+     * @param  path    path to the file being opened or closed.
      * @param  type    the type of event.
      */
     ResourceEvent(final ResourceTree source, final Path path, final EventType<ResourceEvent> type) {
