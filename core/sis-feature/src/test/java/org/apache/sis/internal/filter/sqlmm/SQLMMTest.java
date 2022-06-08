@@ -16,6 +16,10 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
+import java.util.function.BiFunction;
+import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.locationtech.jts.geom.Point;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
@@ -24,6 +28,9 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.opengis.filter.Literal;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 
 import static org.opengis.test.Assert.*;
 
@@ -76,5 +83,33 @@ public final strictfp class SQLMMTest extends TestCase {
         final Polygon polygon = (Polygon) value;
         assertEquals(wkt, polygon.toText());
         assertEquals(CommonCRS.WGS84.geographic(), polygon.getUserData());
+    }
+
+    @Test
+    public void testOptionalCrsInSTPoint() throws Exception {
+        // Ensure that when argument array is of size 2, the FunctionWithSRID constructor will not fail with an ArrayIndexOutOfBoundsException.
+        // This is important. This case has already happen, making it a regression test.
+        assertPoint(null, (x, y) -> new Expression[] { x, y });
+        // Ensure point function will correctly interpret a literal with a null value as "no crs available"
+        assertPoint(null, (x, y) -> new Expression[] { x, y, factory.literal(null) });
+        // Ensure CRS is fetched properly
+        assertPoint(HardCodedCRS.WGS84, (x, y) -> new Expression[]{ x, y, factory.literal(HardCodedCRS.WGS84) });
+    }
+
+    /**
+     * Verify that a point function properly build a point with expected CRS and coordinate.
+     */
+    private void assertPoint(CoordinateReferenceSystem expectedCrs, BiFunction<Expression<Feature, Double>, Expression<Feature, Double>, Expression[]> argumentBundler) throws FactoryException {
+        final Literal<Feature, Double> x = factory.literal(1.0);
+        final Literal<Feature, Double> y = factory.literal(2.0);
+        Expression<Feature, ?> fn = factory.function("ST_Point", argumentBundler.apply(x, y));
+        Object rawPoint = fn.apply(null);
+        assertInstanceOf("ST_Point should create a Point geometry", Point.class, rawPoint);
+        Point point = (Point) rawPoint;
+        final CoordinateReferenceSystem pointCrs = JTS.getCoordinateReferenceSystem(point);
+        if (expectedCrs == null) assertNull("Point CRS", pointCrs);
+        else assertEquals("Point CRS", expectedCrs, pointCrs);
+        assertEquals(point.getX(), x.getValue(), 1e-1);
+        assertEquals(point.getY(), y.getValue(), 1e-1);
     }
 }

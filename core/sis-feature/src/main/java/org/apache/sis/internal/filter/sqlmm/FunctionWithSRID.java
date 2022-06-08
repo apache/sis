@@ -97,8 +97,11 @@ abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
      * @todo The {@code MAYBE} flag could be removed if we know the type of value evaluated by the expression.
      *       For now it exists mostly because the last parameter given to {@code ST_Point} can be of various types.
      */
-    FunctionWithSRID(final SQLMM operation, final Expression<? super R, ?>[] parameters, final int hasSRID) {
+    FunctionWithSRID(final SQLMM operation, final Expression<? super R, ?>[] parameters, int hasSRID) {
         super(operation, parameters);
+        if (hasSRID == MAYBE && parameters.length < operation.maxParamCount) {
+            hasSRID = ABSENT;
+        }
         if (hasSRID == ABSENT) {
             literalCRS = true;
             srid = null;
