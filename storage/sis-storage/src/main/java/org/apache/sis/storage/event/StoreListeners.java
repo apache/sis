@@ -337,8 +337,8 @@ public class StoreListeners implements Localized {
      * Returns a short name or label for the source. It may be the name of the file opened by a data store.
      * The returned name can be useful in warning messages for identifying the problematic source.
      *
-     * <p>The default implementation {@linkplain DataStore#getDisplayName() fetches that name from the data store},
-     * or returns an arbitrary name if it can get it otherwise.</p>
+     * <p>The default implementation {@linkplain DataStore#getDisplayName() fetches a name from the data store},
+     * or returns an arbitrary name if no better name is found.</p>
      *
      * @return a short name of label for the source (never {@code null}).
      *

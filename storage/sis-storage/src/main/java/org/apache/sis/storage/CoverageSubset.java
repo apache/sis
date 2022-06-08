@@ -27,7 +27,6 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -38,7 +37,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * arguments of {@link GridCoverageResource#read(GridGeometry, int...)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -61,7 +60,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * @param query   the domain and range to read from the {@code source} coverage.
      */
     CoverageSubset(final GridCoverageResource source, final CoverageQuery query) {
-        super(source instanceof StoreListeners ? (StoreListeners) source : null, false);
+        super(source instanceof AbstractResource ? ((AbstractResource) source).listeners : null, false);
         this.source = source;
         this.query  = query;
     }

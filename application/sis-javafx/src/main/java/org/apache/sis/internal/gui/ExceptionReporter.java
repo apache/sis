@@ -42,7 +42,7 @@ import org.apache.sis.gui.Widget;
 import org.apache.sis.util.Classes;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.internal.storage.StoreResource;
 
 
 /**
@@ -174,13 +174,16 @@ public final class ExceptionReporter extends Widget {
      * @param  resource   the resource that can not be read.
      * @param  exception  the error that occurred.
      */
-    public static void canNotReadFile(final Node owner, final Resource resource, final Throwable exception) {
-        final String name;
-        if (resource instanceof DataStore) {
+    public static void canNotReadFile(final Node owner, Resource resource, final Throwable exception) {
+        String name = null;
+        if (resource instanceof StoreResource) {
+            final DataStore ds = ((StoreResource) resource).getOriginator();
+            if (ds != null) name = ds.getDisplayName();
+        }
+        if (name == null && resource instanceof DataStore) {
             name = ((DataStore) resource).getDisplayName();
-        } else if (resource instanceof StoreListeners) {
-            name = ((StoreListeners) resource).getSourceName();
-        } else {
+        }
+        if (name == null) {
             canNotUseResource(owner, exception);
             return;
         }
