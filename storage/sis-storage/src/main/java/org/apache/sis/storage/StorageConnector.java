@@ -1036,6 +1036,10 @@ public class StorageConnector implements Serializable {
              * FileCacheImageInputStream and related classes, but we don't do that for now because this
              * code should never be executed for InputStream storage. Instead getChannelDataInput(true)
              * should have created a ChannelImageInputStream or ChannelDataInput.
+             *
+             * In Apache SIS, ImageInputStream is used only by WorldFileStore. That store has its own
+             * mechanism for closing the stream used by ImageInputStream. It gives an extra safety in
+             * case the above paragraph does not hold.
              */
         }
         return asDataInput;
@@ -1350,6 +1354,16 @@ public class StorageConnector implements Serializable {
             reset();
             asDataOutput = ImageIO.createImageOutputStream(storage);
             addView(DataOutput.class, asDataOutput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
+            /*
+             * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
+             * This is a complication for us. We could mitigate the problem by subclassing the standard
+             * FileCacheImageOutputStream and related classes, but we don't do that for now. A possible
+             * future evolution would be to complete ChannelImageOutputStream implementation instead.
+             *
+             * In Apache SIS, ImageOutputStream is used only by WorldFileStore. That store has its own
+             * mechanism for closing the stream used by ImageOutputStream. So the problem described in
+             * above paragraph would hopefully not occur in practice.
+             */
         }
         return asDataOutput;
     }

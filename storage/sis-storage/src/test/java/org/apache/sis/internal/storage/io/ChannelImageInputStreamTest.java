@@ -69,6 +69,7 @@ public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestC
                 Channels.newChannel(new ByteArrayInputStream(data)), buffer, false);
         testedStream.setByteOrder(byteOrder);
         transferRandomData(testedStream, data.length - ARRAY_MAX_LENGTH, 24);
+        testedStream.close();
     }
 
     /**
