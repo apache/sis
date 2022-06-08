@@ -43,7 +43,8 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.3
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
