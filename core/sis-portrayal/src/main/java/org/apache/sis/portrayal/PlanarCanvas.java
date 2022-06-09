@@ -41,7 +41,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -168,7 +168,10 @@ public abstract class PlanarCanvas extends Canvas {
         if (!before.isIdentity()) {
             final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.concatenate(before);
-            invalidateObjectiveToDisplay(old);
+            invalidateObjectiveToDisplay();
+            if (old != null) {
+                fireTransformChange(old, null);
+            }
         }
     }
 
@@ -183,7 +186,12 @@ public abstract class PlanarCanvas extends Canvas {
         if (!after.isIdentity()) {
             final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.preConcatenate(after);
-            invalidateObjectiveToDisplay(old);
+            invalidateObjectiveToDisplay();
+            if (old != null) {
+                final TransformChangeEvent event = new TransformChangeEvent(this, old, null);
+                event.change = AffineTransforms2D.toMathTransform(after);
+                firePropertyChange(event);
+            }
         }
     }
 }
