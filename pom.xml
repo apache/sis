@@ -1000,7 +1000,7 @@
     <repository>
       <id>geotoolkit</id>
       <name>Geotoolkit.org repository</name>
-      <url>http://maven.geotoolkit.org</url>
+      <url>https://maven.geotoolkit.org</url>
     </repository>
   </repositories>
 
