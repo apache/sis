@@ -16,16 +16,28 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Optional;
+import java.util.logging.Logger;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
- * A change in the zoom, pan or translation applied for viewing a map. All events fired by
- * {@link Canvas} for the {@value Canvas#OBJECTIVE_TO_DISPLAY_PROPERTY} property are of this kind.
- * This specialization provides a method for computing the difference between the old and new state.
+ * A change in the "objective to display" transform that {@code Canvas} uses for rendering data.
+ * That transform is updated frequently following gestures events such as zoom, translation or rotation.
+ * All events fired by {@link Canvas} for the {@value Canvas#OBJECTIVE_TO_DISPLAY_PROPERTY} property
+ * are instances of this class.
+ * This specialization provides methods for computing the difference between the old and new state.
+ *
+ * <h2>Multi-threading</h2>
+ * This class is <strong>not</strong> thread-safe.
+ * All listeners should process this event in the same thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -39,15 +51,26 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4065626270969827867L;
+    private static final long serialVersionUID = 4444752056666264066L;
 
     /**
-     * The change in display coordinates, computed when first needed.
-     * This field may be precomputed by the code that fired this event.
+     * The change from old coordinates to new coordinates, computed when first needed.
      *
-     * @see #getChangeInDisplayCoordinates()
+     * @see #getDisplayChange()
+     * @see #getObjectiveChange()
      */
-    LinearTransform change;
+    private transient LinearTransform displayChange, objectiveChange;
+
+    /**
+     * Value of {@link #displayChange} or {@link #objectiveChange} precomputed by the code that fired this event.
+     */
+    AffineTransform displayChange2D, objectiveChange2D;
+
+    /**
+     * Non-null if {@link #canNotCompute(String, NoninvertibleTransformException)} already reported an error.
+     * This is used for avoiding to report many times the same error.
+     */
+    private transient Exception error;
 
     /**
      * Creates a new event for a change of the "objective to display" property.
@@ -91,32 +114,132 @@ public class TransformChangeEvent extends PropertyChangeEvent {
      */
     @Override
     public LinearTransform getNewValue() {
-        LinearTransform transform = (LinearTransform) super.getNewValue();
-        if (transform == null) {
-            transform = getSource().getObjectiveToDisplay();
+        LinearTransform value = (LinearTransform) super.getNewValue();
+        if (value == null) {
+            value = getSource().getObjectiveToDisplay();
         }
-        return transform;
+        return value;
     }
 
     /**
-     * Returns the change in display coordinates from the old state to the new state.
-     * If the "objective to display" transform changed because the users did a zoom,
-     * pan or translation, this is the transform representing that change in display
-     * coordinates.
+     * Returns the change from old objective coordinates to new objective coordinates.
+     * When the "objective to display" transform changed (e.g. because the user did a zoom, translation or rotation),
+     * this method expresses how the "real world" coordinates (typically in metres) of any point on the screen changed.
      *
-     * @return the change in display coordinates, or {@code null} if the old or new transform is missing.
-     * @throws NoninvertibleTransformException if a singular matrix prevent the change to be computed.
+     * <div class="note"><b>Example:</b>
+     * if the map is shifted 10 metres toward the right side of the canvas, then (assuming no rotation or axis flip)
+     * the <var>x</var> translation coefficient of the change is +10 (same sign than {@link #getDisplayChange()}).
+     * Note that it may correspond to any amount of pixels, depending on the zoom factor.</div>
+     *
+     * The {@link #getObjectiveChange2D()} method gives the same transform as a Java2D object.
+     * That change can be replicated on another canvas by giving the transform to
+     * {@link PlanarCanvas#transformObjectiveCoordinates(AffineTransform)}.
+     *
+     * @return the change in objective coordinates. Usually not {@code null},
+     *         unless one of the canvas is initializing or has a non-invertible transform.
      */
-    public LinearTransform getChangeInDisplayCoordinates() throws NoninvertibleTransformException {
-        if (change == null) {
-            final LinearTransform oldValue = getOldValue();
-            if (oldValue != null) {
-                final LinearTransform newValue = getNewValue();
-                if (newValue != null) {
-                    change = (LinearTransform) MathTransforms.concatenate(oldValue.inverse(), newValue);
+    public LinearTransform getObjectiveChange() {
+        if (objectiveChange == null) {
+            if (objectiveChange2D != null) {
+                objectiveChange = AffineTransforms2D.toMathTransform(objectiveChange2D);
+            } else {
+                final LinearTransform oldValue = getOldValue();
+                if (oldValue != null) {
+                    final LinearTransform newValue = getNewValue();
+                    if (newValue != null) try {
+                        objectiveChange = (LinearTransform) MathTransforms.concatenate(newValue, oldValue.inverse());
+                    } catch (NoninvertibleTransformException e) {
+                        canNotCompute("getObjectiveChange", e);
+                    }
                 }
             }
         }
-        return change;
+        return objectiveChange;
+    }
+
+    /**
+     * Returns the change from old display coordinates to new display coordinates.
+     * When the "objective to display" transform changed (e.g. because the user did a zoom, translation or rotation),
+     * this method expresses how the display coordinates (typically pixels) of any given point on the map changed.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the map is shifted 10 pixels toward the right side of the canvas, then (assuming no rotation or axis flip)
+     * the <var>x</var> translation coefficient of the change is +10: the points on the map which were located at
+     * <var>x</var>=0 pixel before the change are now located at <var>x</var>=10 pixels after the change.</div>
+     *
+     * The {@link #getDisplayChange2D()} method gives the same transform as a Java2D object.
+     * That change can be replicated on another canvas by giving the transform to
+     * {@link PlanarCanvas#transformDisplayCoordinates(AffineTransform)}.
+     *
+     * @return the change in display coordinates. Usually not {@code null},
+     *         unless one of the canvas is initializing or has a non-invertible transform.
+     */
+    public LinearTransform getDisplayChange() {
+        if (displayChange == null) {
+            if (displayChange2D != null) {
+                displayChange = AffineTransforms2D.toMathTransform(displayChange2D);
+            } else {
+                final LinearTransform oldValue = getOldValue();
+                if (oldValue != null) {
+                    final LinearTransform newValue = getNewValue();
+                    if (newValue != null) try {
+                        displayChange = (LinearTransform) MathTransforms.concatenate(oldValue.inverse(), newValue);
+                    } catch (NoninvertibleTransformException e) {
+                        canNotCompute("getDisplayChange", e);
+                    }
+                }
+            }
+        }
+        return displayChange;
+    }
+
+    /**
+     * Returns the change in objective coordinates as a Java2D affine transform.
+     * This method is suitable for two-dimensional canvas only.
+     * For performance reason, it does not clone the returned transform.
+     *
+     * @return the change in objective coordinates. <strong>Do not modify.</strong>
+     *
+     * @see #getObjectiveChange()
+     */
+    public Optional<AffineTransform> getObjectiveChange2D() {
+        if (objectiveChange2D == null) try {
+            objectiveChange2D = AffineTransforms2D.castOrCopy(getObjectiveChange());
+        } catch (IllegalArgumentException e) {
+            canNotCompute("getObjectiveChange2D", e);
+        }
+        return Optional.ofNullable(objectiveChange2D);
+    }
+
+    /**
+     * Returns the change in display coordinates as a Java2D affine transform.
+     * This method is suitable for two-dimensional canvas only.
+     * For performance reason, it does not clone the returned transform.
+     *
+     * @return the change in display coordinates. <strong>Do not modify.</strong>
+     *
+     * @see #getDisplayChange()
+     */
+    public Optional<AffineTransform> getDisplayChange2D() {
+        if (displayChange2D == null) try {
+            displayChange2D = AffineTransforms2D.castOrCopy(getDisplayChange());
+        } catch (IllegalArgumentException e) {
+            canNotCompute("getDisplayChange2D", e);
+        }
+        return Optional.ofNullable(displayChange2D);
+    }
+
+    /**
+     * Invoked when a change can not be computed. It should never happen because "objective to display"
+     * transforms should always be invertible. If this error nevertheless happens, consider the change
+     * as a missing optional information.
+     */
+    private void canNotCompute(final String method, final Exception e) {
+        if (error == null) {
+            error = e;
+            Logging.recoverableException(Logger.getLogger(Modules.PORTRAYAL), TransformChangeEvent.class, method, e);
+        } else {
+            error.addSuppressed(e);
+        }
     }
 }

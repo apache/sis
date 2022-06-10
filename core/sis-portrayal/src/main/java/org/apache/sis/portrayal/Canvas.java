@@ -575,7 +575,7 @@ public class Canvas extends Observable implements Localized {
                      * normally it should just return the `result` as-is.
                      */
                     newObjectiveToDisplay = MathTransforms.tangent(result, poiInNew);
-                    updateObjectiveToDisplay(newObjectiveToDisplay);
+                    setObjectiveToDisplayImpl(newObjectiveToDisplay);
                     objectivePOI          = poiInNew;               // Set only after everything else succeeded.
                     multidimToObjective   = poiToNew;
                     augmentedObjectiveCRS = null;                   // Will be recomputed when first needed.
@@ -680,22 +680,23 @@ public class Canvas extends Observable implements Localized {
      */
     public LinearTransform getObjectiveToDisplay() {
         if (objectiveToDisplay == null) {
-            objectiveToDisplay = updateObjectiveToDisplay();
+            objectiveToDisplay = createObjectiveToDisplay();
         }
         return objectiveToDisplay;
     }
 
     /**
-     * Takes a snapshot of the <cite>objective to display</cite> conversion. This method needs
-     * to be overridden only by subclasses that use their own specialized class instead of
-     * {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
+     * Returns the current <cite>objective to display</cite> conversion managed by the subclass.
+     * This method is invoked only if {@link #objectiveToDisplay} is {@code null}, which may
+     * happen either at initialization time or if the subclass uses its own specialized field
+     * instead of {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
+     * This method needs to be overridden only by subclasses using such specialization.
      *
-     * @return snapshot of objective to display conversion, never null.
+     * @return objective to display conversion created from current value managed by subclass.
      *
-     * @see #updateObjectiveToDisplay(LinearTransform)
-     * @see #invalidateObjectiveToDisplay()
+     * @see #setObjectiveToDisplayImpl(LinearTransform)
      */
-    LinearTransform updateObjectiveToDisplay() {
+    LinearTransform createObjectiveToDisplay() {
         return MathTransforms.identity(getDisplayDimensions());
     }
 
@@ -712,7 +713,7 @@ public class Canvas extends Observable implements Localized {
      * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
      * @throws RenderException if the <cite>objective to display</cite> transform can not be set to the given value for another reason.
      */
-    public void setObjectiveToDisplay(LinearTransform newValue) throws RenderException {
+    public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(OBJECTIVE_TO_DISPLAY_PROPERTY, newValue);
         final int expected = getDisplayDimensions();
         int actual = newValue.getSourceDimensions();
@@ -721,11 +722,11 @@ public class Canvas extends Observable implements Localized {
             if (actual == expected) {
                 LinearTransform oldValue = objectiveToDisplay;      // Do not invoke user-overridable method.
                 if (oldValue == null) {
-                    oldValue = updateObjectiveToDisplay();
+                    oldValue = createObjectiveToDisplay();
                 }
                 if (!oldValue.equals(newValue)) {
-                    updateObjectiveToDisplay(newValue);
-                    fireTransformChange(oldValue, newValue);
+                    setObjectiveToDisplayImpl(newValue);
+                    firePropertyChange(new TransformChangeEvent(this, oldValue, newValue));
                 }
                 return;
             }
@@ -735,28 +736,23 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Sets the conversion from objective CRS to display coordinate system.
+     * Actually sets the conversion from objective CRS to display coordinate system.
      * Contrarily to other setter methods, this method does not notify listeners about that change;
-     * it is caller responsibility to send a {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} change event.
+     * it is caller responsibility to fire a {@link TransformChangeEvent} after all fields are updated.
      * This design choice is because this method is usually invoked as part of a larger set of changes.
      *
-     * @see #updateObjectiveToDisplay()
-     */
-    void updateObjectiveToDisplay(final LinearTransform newValue) {
-        objectiveToDisplay = newValue;
-        gridGeometry       = null;
-        operationContext.clear();
-    }
-
-    /**
-     * Declares that the {@link #objectiveToDisplay} transform became invalid and will need to be recomputed.
-     * It is subclasses responsibility to recompute the transform in their {@link #updateObjectiveToDisplay()}
-     * method and to invoke {@link #fireTransformChange(LinearTransform, LinearTransform)} (or equivalent).
+     * <p>If the new value is {@code null}, then this method only declares that the {@link #objectiveToDisplay}
+     * transform became invalid and will need to be recomputed. It is subclasses responsibility to recompute the
+     * transform in their {@link #createObjectiveToDisplay()}.</p>
      *
-     * @see #updateObjectiveToDisplay()
+     * @param  newValue  the new "objective to display" transform, or {@code null} if it will be computed later
+     *          by {@link #createObjectiveToDisplay()}. A null value is okay only when invoked by subclasses that
+     *          overrode {@link #createObjectiveToDisplay()}.
+     *
+     * @see #createObjectiveToDisplay()
      */
-    final void invalidateObjectiveToDisplay() {
-        objectiveToDisplay = null;
+    void setObjectiveToDisplayImpl(final LinearTransform newValue) {
+        objectiveToDisplay = newValue;
         gridGeometry       = null;
         operationContext.clear();
     }
@@ -991,7 +987,7 @@ public class Canvas extends Observable implements Localized {
              * translation terms of the `gridToCRS` matrix.
              */
             if (objectiveToDisplay == null) {
-                objectiveToDisplay = updateObjectiveToDisplay();
+                objectiveToDisplay = createObjectiveToDisplay();
             }
             LinearTransform gridToCRS = objectiveToDisplay.inverse();
             if (supplementalDimensions != 0) {
@@ -1096,11 +1092,11 @@ public class Canvas extends Observable implements Localized {
             final LinearTransform           oldObjectiveToDisplay = objectiveToDisplay;
             final CoordinateReferenceSystem oldObjectiveCRS       = objectiveCRS;
             /*
-             * Set internal fields only after we successfully computed everything, in order to have a
-             * "all or nothing" behavior.
+             * Set internal fields only after we successfully computed everything,
+             * in order to have a "all or nothing" behavior.
              */
             displayBounds.setEnvelope(newBounds);
-            updateObjectiveToDisplay(newObjectiveToDisplay);
+            setObjectiveToDisplayImpl(newObjectiveToDisplay);
             pointOfInterest       = newPOI;
             objectivePOI          = newPOI;
             objectiveCRS          = newObjectiveCRS;
@@ -1143,19 +1139,8 @@ public class Canvas extends Observable implements Localized {
      */
     private void fireIfChanged(final LinearTransform oldValue, final LinearTransform newValue) {
         if (!Objects.equals(oldValue, newValue)) {
-            fireTransformChange(oldValue, newValue);
+            firePropertyChange(new TransformChangeEvent(this, oldValue, newValue));
         }
-    }
-
-    /**
-     * Fires a {@link TransformChangeEvent}.
-     * It is caller responsibility to verify that the old and new values are different.
-     *
-     * @param  oldValue  the old "objective to display" transform.
-     * @param  newValue  the new transform, or {@code null} for lazy computation.
-     */
-    final void fireTransformChange(final LinearTransform oldValue, final LinearTransform newValue) {
-        firePropertyChange(new TransformChangeEvent(this, oldValue, newValue));
     }
 
     /**

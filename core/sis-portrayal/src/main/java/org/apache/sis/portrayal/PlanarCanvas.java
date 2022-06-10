@@ -137,7 +137,7 @@ public abstract class PlanarCanvas extends Canvas {
      * @see Canvas#objectiveToDisplay
      */
     @Override
-    final LinearTransform updateObjectiveToDisplay() {
+    final LinearTransform createObjectiveToDisplay() {
         return new AffineTransform2D(objectiveToDisplay);
     }
 
@@ -152,9 +152,9 @@ public abstract class PlanarCanvas extends Canvas {
      * @throws IllegalArgumentException if the given transform is not two-dimensional or is not affine.
      */
     @Override
-    final void updateObjectiveToDisplay(final LinearTransform newValue) {
+    final void setObjectiveToDisplayImpl(final LinearTransform newValue) {
         objectiveToDisplay.setTransform(AffineTransforms2D.castOrCopy(newValue.getMatrix()));
-        super.updateObjectiveToDisplay(newValue);
+        super.setObjectiveToDisplayImpl(newValue);
     }
 
     /**
@@ -163,14 +163,18 @@ public abstract class PlanarCanvas extends Canvas {
      * vector is in units of the {@linkplain #getObjectiveCRS() objective CRS} (typically metres on the map).
      *
      * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
+     *
+     * @see TransformChangeEvent#getObjectiveChange()
      */
     public void transformObjectiveCoordinates(final AffineTransform before) {
         if (!before.isIdentity()) {
             final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.concatenate(before);
-            invalidateObjectiveToDisplay();
+            super.setObjectiveToDisplayImpl(null);
             if (old != null) {
-                fireTransformChange(old, null);
+                final TransformChangeEvent event = new TransformChangeEvent(this, old, null);
+                event.objectiveChange2D = before;
+                firePropertyChange(event);
             }
         }
     }
@@ -181,15 +185,17 @@ public abstract class PlanarCanvas extends Canvas {
      * vector is in pixel units.
      *
      * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
+     *
+     * @see TransformChangeEvent#getDisplayChange()
      */
     public void transformDisplayCoordinates(final AffineTransform after) {
         if (!after.isIdentity()) {
             final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.preConcatenate(after);
-            invalidateObjectiveToDisplay();
+            super.setObjectiveToDisplayImpl(null);
             if (old != null) {
                 final TransformChangeEvent event = new TransformChangeEvent(this, old, null);
-                event.change = AffineTransforms2D.toMathTransform(after);
+                event.displayChange2D = after;
                 firePropertyChange(event);
             }
         }

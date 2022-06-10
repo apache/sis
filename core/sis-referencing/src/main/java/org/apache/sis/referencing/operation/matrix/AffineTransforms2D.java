@@ -59,7 +59,7 @@ public final class AffineTransforms2D extends Static {
      *
      * @param  transform  the transform to convert, or {@code null}.
      * @return the transform argument if it can be safely casted (including {@code null} argument) or converted.
-     * @throws IllegalArgumentException if the given transform can not be caster or converted.
+     * @throws IllegalArgumentException if the given transform can not be casted or converted.
      *
      * @see #toMathTransform(AffineTransform)
      */

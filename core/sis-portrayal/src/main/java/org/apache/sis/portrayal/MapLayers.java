@@ -177,7 +177,6 @@ public class MapLayers extends MapItem {
         for (MapItem i : components) {
             i.getEnvelope().ifPresent(envelopes::add);
         }
-
         switch (envelopes.size()) {
             case 0 : return Optional.empty();
             case 1 : return Optional.of(envelopes.get(0));
@@ -190,5 +189,4 @@ public class MapLayers extends MapItem {
             }
         }
     }
-
 }

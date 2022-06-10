@@ -260,5 +260,4 @@ public class MapLayer extends MapItem {
         }
         return Optional.empty();
     }
-
 }
