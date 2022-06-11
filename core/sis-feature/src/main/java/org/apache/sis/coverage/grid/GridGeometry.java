@@ -51,6 +51,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
@@ -838,6 +839,30 @@ public class GridGeometry implements LenientComparable, Serializable {
             return mt;
         }
         throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
+    }
+
+    /**
+     * Returns a linear approximation of the conversion from grid coordinates to "real world" coordinates.
+     * If the value returned by {@link #getGridToCRS(PixelInCell)} is already an instance of {@link LinearTransform},
+     * then it is returned as is. Otherwise this method computes the tangent of the transform at the grid extent
+     * {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest} (usually the center of the grid).
+     *
+     * @param  anchor  the cell part to map (center or corner).
+     * @return linear approximation of the conversion from grid coordinates to "real world" coordinates.
+     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
+     * @throws IncompleteGridGeometryException if this grid geometry has no transform,
+     *          of if the transform is non-linear but this grid geometry has no extent.
+     * @throws TransformException if an error occurred while computing the tangent.
+     *
+     * @since 1.3
+     */
+    public LinearTransform getLinearGridToCRS(final PixelInCell anchor) throws TransformException {
+        final MathTransform tr = getGridToCRS(anchor);
+        if (tr instanceof LinearTransform) {
+            return (LinearTransform) tr;
+        }
+        return MathTransforms.linear(MathTransforms.getMatrix(tr,
+                new DirectPositionView.Double(getExtent().getPointOfInterest(anchor))));
     }
 
     /*

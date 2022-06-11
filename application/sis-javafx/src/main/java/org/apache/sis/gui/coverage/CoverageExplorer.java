@@ -33,7 +33,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
@@ -632,11 +631,7 @@ public class CoverageExplorer extends Widget {
      */
     final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         if (coverage != null) {
-            final GridGeometry gg = coverage.getGridGeometry();
-            referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
-            if (gg.isDefined(GridGeometry.CRS)) {
-                referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
-            }
+            referenceSystems.configure(coverage.getGridGeometry());
         }
         /*
          * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`

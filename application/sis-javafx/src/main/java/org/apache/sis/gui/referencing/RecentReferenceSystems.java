@@ -42,6 +42,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -73,7 +74,7 @@ import static java.util.logging.Logger.getLogger;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -246,6 +247,26 @@ public class RecentReferenceSystems {
             geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
             listModified();
         });
+    }
+
+    /**
+     * Configures this instance for a grid coverage having the given geometry.
+     * This convenience method sets the {@link #areaOfInterest} and the
+     * {@linkplain #setPreferred(boolean, ReferenceSystem) preferred CRS}
+     * with the information found in the given grid geometry.
+     * The properties for which {@code gg} contains no information are left unchanged.
+     *
+     * @param  gg  the grid geometry, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    public void configure(final GridGeometry gg) {
+        if (gg != null) {
+            areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
+            if (gg.isDefined(GridGeometry.CRS)) {
+                setPreferred(true, gg.getCoordinateReferenceSystem());
+            }
+        }
     }
 
     /**
