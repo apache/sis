@@ -17,6 +17,7 @@
 package org.apache.sis.gui.dataset;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -34,6 +35,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.CloseEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.gui.coverage.CoverageExplorer;
+import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.PrivateAccess;
@@ -162,11 +164,28 @@ public abstract class WindowHandler {
      * This is used for identifying which handlers to remove when a resource is closed.
      * This method is not yet public because a future version may need to return a full
      * map context instead of a single resource.
+     *
+     * @return the resource shown in the window.
+     *
+     * @see CoverageExplorer#getResource()
+     * @see FeatureTable#getFeatures()
      */
     abstract Resource getResource();
 
     /**
-     * Returns the JavaFX region where the resource is shown. This value shall be stable.
+     * Returns the canvas (if any) where the resource is shown.
+     * Canvas exists for some kinds of view such as {@link CoverageExplorer}, but not for every kinds.
+     * For example tabular data such as {@link FeatureTable} have no canvas.
+     *
+     * @return the canvas where the resource is shown.
+     *
+     * @see CoverageExplorer#getCanvas()
+     */
+    public abstract Optional<MapCanvas> getCanvas();
+
+    /**
+     * Returns the JavaFX region where the resource is shown.
+     * This value shall be stable.
      */
     abstract Region getView();
 
@@ -245,15 +264,13 @@ public abstract class WindowHandler {
          */
         @Override public void eventOccured(final CloseEvent event) {
             final Resource resource = event.getSource();
-            if (resource != null) {
-                resource.removeListener(CloseEvent.class, this);
-            }
             if (Platform.isFxApplicationThread()) {
                 close(resource, WindowHandler.this);
             } else BackgroundThreads.runAndWaitDialog(() -> {
                 close(resource, WindowHandler.this);
                 return null;
             });
+            // No need to invoke `resource.removeListener(…)`, that work is done by `StoreListeners.close()`.
         }
     }
 
@@ -320,6 +337,22 @@ public abstract class WindowHandler {
         }
 
         /**
+         * The resource shown in the {@linkplain #window window}, or {@code null} if unspecified.
+         */
+        @Override
+        Resource getResource() {
+            return widget.getResource();
+        }
+
+        /**
+         * Returns the canvas where the map is shown.
+         */
+        @Override
+        public Optional<MapCanvas> getCanvas() {
+            return Optional.of(widget.getCanvas());
+        }
+
+        /**
          * Returns the JavaFX region where the resource is shown.
          */
         @Override
@@ -347,14 +380,6 @@ public abstract class WindowHandler {
             PrivateAccess.initWindowHandler.accept(explorer, handler);
             widget.getImageRequest().ifPresent(explorer::setCoverage);
             return handler.finish();
-        }
-
-        /**
-         * The resource shown in the {@linkplain #window window}, or {@code null} if unspecified.
-         */
-        @Override
-        Resource getResource() {
-            return widget.getResource();
         }
 
         /**
@@ -394,6 +419,22 @@ public abstract class WindowHandler {
         }
 
         /**
+         * The resource shown in the {@linkplain #window window}, or {@code null} if unspecified.
+         */
+        @Override
+        Resource getResource() {
+            return widget.getFeatures();
+        }
+
+        /**
+         * Returns an empty value since this window does not show map.
+         */
+        @Override
+        public Optional<MapCanvas> getCanvas() {
+            return Optional.empty();
+        }
+
+        /**
          * Returns the JavaFX region where the resource is shown.
          */
         @Override
@@ -407,14 +448,6 @@ public abstract class WindowHandler {
         @Override
         public WindowHandler duplicate() {
             return new ForFeatures(this, null, new FeatureTable(widget)).finish();
-        }
-
-        /**
-         * The resource shown in the {@linkplain #window window}, or {@code null} if unspecified.
-         */
-        @Override
-        Resource getResource() {
-            return widget.getFeatures();
         }
 
         /**

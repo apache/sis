@@ -19,6 +19,8 @@ package org.apache.sis.internal.gui.control;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -28,9 +30,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.application.Platform;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapCanvas;
+import org.apache.sis.portrayal.CanvasFollower;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -49,7 +53,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * Window containing a {@link MapCanvas} to follow on gesture events.
      * Gestures are followed only if {@link #linked} is {@code true}.
      */
-    private static final class Link {
+    private static final class Link extends CanvasFollower implements ChangeListener<Boolean> {
         /**
          * Whether the "foreigner" {@linkplain #view} should be followed.
          */
@@ -63,28 +67,55 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
         /**
          * Creates a new row for a window to follow.
          *
-         * @param  view  the "foreigner" view for which to follow the gesture.
+         * @param  view    the "foreigner" view for which to follow the gesture.
+         * @param  source  the canvas which is the source of zoom, pan or rotation events.
+         * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
          */
-        private Link(final WindowHandler view) {
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
+        private Link(final WindowHandler view, final MapCanvas source, final MapCanvas target) {
+            super(source, target);
             this.view = view;
             linked = new SimpleBooleanProperty(this, "linked");
+            linked.addListener(this);
+            source.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
+            target.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
         }
 
         /**
          * Converts the given list of handled to a list of table rows.
          *
-         * @param  added    list of new items to put in the table.
-         * @param  exclude  item to exclude (because the referenced window is itself).
+         * @param  added   list of new items to put in the table.
+         * @param  owner   item to exclude (because the referenced window is itself).
+         * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
          */
-        static List<Link> wrap(final List<? extends WindowHandler> added, final WindowHandler exclude) {
+        static List<Link> wrap(final List<? extends WindowHandler> added, final WindowHandler owner, final MapCanvas target) {
             final Link[] items = new Link[added.size()];
             int count = 0;
             for (final WindowHandler view : added) {
-                if (view != exclude) {
-                    items[count++] = new Link(view);
+                if (view != owner) {
+                    final MapCanvas source = view.getCanvas().orElse(null);
+                    if (source != null) {
+                        items[count++] = new Link(view, source, target);
+                    }
                 }
             }
             return UnmodifiableArrayList.wrap(items, 0, count);
+        }
+
+        /**
+         * Invoked when the {@link #linked} property value changed.
+         *
+         * @param  property  equivalent to {@link #link}.
+         * @param  oldValue  equivalent to {@code !newValue}.
+         * @param  newValue  the new checkbox value.
+         */
+        @Override
+        public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+            if (newValue) {
+                source.addPropertyChangeListener(MapCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+            } else {
+                source.removePropertyChangeListener(MapCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+            }
         }
     }
 
@@ -102,6 +133,13 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * The view for which to create a list of synchronized windows.
      */
     private final WindowHandler owner;
+
+    /**
+     * The canvas on which to apply the change of zoom, pan or rotation.
+     * Needs to be fetched only when first needed (not at construction time)
+     * for avoiding a stack overflow.
+     */
+    private MapCanvas target;
 
     /**
      * The component to be returned by {@link #getView()}.
@@ -128,7 +166,6 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
         table.getColumns().setAll(
                 newBooleanColumn(/* 🔗 (link symbol) */  "\uD83D\uDD17",      (cell) -> cell.getValue().linked),
                 newStringColumn (vocabulary.getString(Vocabulary.Keys.Title), (cell) -> cell.getValue().view.title));
-        table.getItems().setAll(Link.wrap(owner.manager.windows, owner));
         table.setRowFactory(SyncWindowList::newRow);
         /*
          * Build all other widget controls.
@@ -138,9 +175,11 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
         VBox.setVgrow(newWindow, Priority.NEVER);
         content = new VBox(9, table, newWindow);
         /*
-         * Add listener last when the everything else is successful
-         * (because the `this` reference escapes).
+         * Add listener last when the everything else is successful (because the `this` reference escapes).
+         * The creation of table item list needs to be done after the caller finished its initialization,
+         * not now, because invoking`owner.getCanvas()` here create an infinite loop.
          */
+        Platform.runLater(() -> addAll(owner.manager.windows));
         owner.manager.windows.addListener(this);
     }
 
@@ -196,23 +235,35 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      */
     @Override
     public void onChanged(final Change<? extends WindowHandler> change) {
-        final ObservableList<Link> items = table.getItems();
         while (change.next()) {
             // Ignore permutations; each table can have its own order.
             if (change.wasRemoved()) {
                 // List of removed items usually has a single element.
-                for (final WindowHandler item : change.getRemoved()) {
+                final ObservableList<Link> items = table.getItems();
+                for (final WindowHandler view : change.getRemoved()) {
                     for (int i = items.size(); --i >= 0;) {
-                        if (items.get(i).view == item) {
+                        final Link item = items.get(i);
+                        if (item.view == view) {
                             items.remove(i);
+                            item.dispose();
                             break;
                         }
                     }
                 }
             }
             if (change.wasAdded()) {
-                items.addAll(Link.wrap(change.getAddedSubList(), owner));
+                addAll(change.getAddedSubList());
             }
         }
+    }
+
+    /**
+     * Adds the given window handlers and items in {@link #table}.
+     */
+    private void addAll(final List<? extends WindowHandler> windows) {
+        if (target == null) {
+            target = owner.getCanvas().get();
+        }
+        table.getItems().addAll(Link.wrap(windows, owner, target));
     }
 }

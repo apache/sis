@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Arrays;
 import java.util.Objects;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javafx.application.Platform;
@@ -124,7 +125,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -813,6 +814,57 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Updates the <cite>objective to display</cite> transform with the given transform in objective coordinates.
+     * This method must be invoked in the JavaFX thread. The visual is updated immediately by transforming
+     * the current image, then a more accurate image is prepared in a background thread.
+     *
+     * <p>Contrarily to the method defined in the {@link PlanarCanvas} parent class,
+     * this method does not guarantee that an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event is fired immediately.
+     * The event may be fired at an undetermined amount of time after this method call.
+     * However the event will always be fired in the JavaFX thread.</p>
+     *
+     * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
+     *
+     * @since 1.3
+     */
+    @Override
+    public void transformObjectiveCoordinates(final AffineTransform before) {
+        if (!before.isIdentity()) try {
+            AffineTransform t = objectiveToDisplay.createInverse();
+            t.preConcatenate(before);
+            t.preConcatenate(objectiveToDisplay);
+            transform.prepend(t.getScaleX(), t.getShearX(), t.getTranslateX(),
+                              t.getShearY(), t.getScaleY(), t.getTranslateY());
+            requestRepaint();
+        } catch (NoninvertibleTransformException e) {
+            errorOccurred(e);
+        }
+    }
+
+    /**
+     * Updates the <cite>objective to display</cite> transform with the given transform in pixel coordinates.
+     * This method must be invoked in the JavaFX thread. The visual is updated immediately by transforming
+     * the current image, then a more accurate image is prepared in a background thread.
+     *
+     * <p>Contrarily to the method defined in the {@link PlanarCanvas} parent class,
+     * this method does not guarantee that an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event is fired immediately.
+     * The event may be fired at an undetermined amount of time after this method call.
+     * However the event will always be fired in the JavaFX thread.</p>
+     *
+     * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
+     *
+     * @since 1.3
+     */
+    @Override
+    public void transformDisplayCoordinates(final AffineTransform after) {
+        if (!after.isIdentity()) {
+            transform.append(after.getScaleX(), after.getShearX(), after.getTranslateX(),
+                             after.getShearY(), after.getScaleY(), after.getTranslateY());
+            requestRepaint();
+        }
+    }
+
+    /**
      * Invoked in JavaFX thread for creating a renderer to be executed in a background thread.
      * Subclasses shall copy in this method all {@code MapCanvas} properties that the background thread
      * will need for performing the rendering process.
@@ -1032,7 +1084,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         changeInProgress.setToTransform(transform);
         if (!transform.isIdentity()) {
-            transformDisplayCoordinates(new AffineTransform(
+            super.transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
                     transform.getMxy(), transform.getMyy(),
                     transform.getTx(),  transform.getTy()));
