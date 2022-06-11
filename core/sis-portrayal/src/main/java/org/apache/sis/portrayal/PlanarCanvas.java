@@ -162,6 +162,12 @@ public abstract class PlanarCanvas extends Canvas {
      * the current transform. For example if the given {@code before} transform is a translation, then the translation
      * vector is in units of the {@linkplain #getObjectiveCRS() objective CRS} (typically metres on the map).
      *
+     * <p>This method does nothing if the given transform is identity.
+     * Otherwise an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event will be sent with the
+     * {@link TransformChangeEvent.Reason#OBJECTIVE_NAVIGATION} reason after the change became effective.
+     * Depending on the implementation, the change may not take effect immediately.
+     * For example subclasses may do the rendering in a background thread.</p>
+     *
      * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
      *
      * @see TransformChangeEvent#getObjectiveChange()
@@ -172,7 +178,8 @@ public abstract class PlanarCanvas extends Canvas {
             objectiveToDisplay.concatenate(before);
             super.setObjectiveToDisplayImpl(null);
             if (old != null) {
-                final TransformChangeEvent event = new TransformChangeEvent(this, old, null);
+                final TransformChangeEvent event = new TransformChangeEvent(this, old, null,
+                        TransformChangeEvent.Reason.OBJECTIVE_NAVIGATION);
                 event.objectiveChange2D = before;
                 firePropertyChange(event);
             }
@@ -184,6 +191,12 @@ public abstract class PlanarCanvas extends Canvas {
      * the current transform. For example if the given {@code after} transform is a translation, then the translation
      * vector is in pixel units.
      *
+     * <p>This method does nothing if the given transform is identity.
+     * Otherwise an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event will be sent with the
+     * {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION} reason after the change became effective.
+     * Depending on the implementation, the change may not take effect immediately.
+     * For example subclasses may do the rendering in a background thread.</p>
+     *
      * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
      *
      * @see TransformChangeEvent#getDisplayChange()
@@ -194,7 +207,8 @@ public abstract class PlanarCanvas extends Canvas {
             objectiveToDisplay.preConcatenate(after);
             super.setObjectiveToDisplayImpl(null);
             if (old != null) {
-                final TransformChangeEvent event = new TransformChangeEvent(this, old, null);
+                final TransformChangeEvent event = new TransformChangeEvent(this, old, null,
+                        TransformChangeEvent.Reason.DISPLAY_NAVIGATION);
                 event.displayChange2D = after;
                 firePropertyChange(event);
             }

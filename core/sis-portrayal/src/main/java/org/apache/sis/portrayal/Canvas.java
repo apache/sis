@@ -501,7 +501,8 @@ public class Canvas extends Observable implements Localized {
      * <cite>objective to display</cite> conversion in a way preserving the display coordinates of the given anchor,
      * together with the scales and orientations of features in close neighborhood of that point.
      * This calculation may cause {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event
-     * to be sent to listeners, in addition of above-cited {@value #OBJECTIVE_CRS_PROPERTY}
+     * with the {@link TransformChangeEvent.Reason#CRS_CHANGE} reason to be sent to listeners.
+     * That event is sent after the above-cited {@value #OBJECTIVE_CRS_PROPERTY} event
      * (note that {@value #POINT_OF_INTEREST_PROPERTY} stay unchanged).
      * All those change events are sent only after all property values have been updated to their new values.</p>
      *
@@ -586,7 +587,7 @@ public class Canvas extends Observable implements Localized {
             objectiveCRS = newValue;                                // Set only after everything else succeeded.
             operationContext.setObjectiveToGeographic(newToGeo);
             firePropertyChange(OBJECTIVE_CRS_PROPERTY, oldValue, newValue);
-            fireIfChanged(oldObjectiveToDisplay, newObjectiveToDisplay);
+            fireIfChanged(oldObjectiveToDisplay, newObjectiveToDisplay, false);     // Shall be after CRS change event.
         } catch (FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, OBJECTIVE_CRS_PROPERTY), e);
         }
@@ -704,6 +705,7 @@ public class Canvas extends Observable implements Localized {
      * Sets the conversion from objective CRS to display coordinate system.
      * If the given value is different than the previous value, then a change event is sent
      * to all listeners registered for the {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property.
+     * The event reason is {@link TransformChangeEvent.Reason#ASSIGNMENT}.
      *
      * <p>Invoking this method has the effect of changing the viewed area, the zoom level or the rotation of the map.
      * It does not update the {@value #POINT_OF_INTEREST_PROPERTY} property however. The point of interest may move
@@ -726,7 +728,8 @@ public class Canvas extends Observable implements Localized {
                 }
                 if (!oldValue.equals(newValue)) {
                     setObjectiveToDisplayImpl(newValue);
-                    firePropertyChange(new TransformChangeEvent(this, oldValue, newValue));
+                    firePropertyChange(new TransformChangeEvent(this, oldValue, newValue,
+                                           TransformChangeEvent.Reason.ASSIGNMENT));
                 }
                 return;
             }
@@ -1019,9 +1022,10 @@ public class Canvas extends Observable implements Localized {
      * Sets canvas properties from the given grid geometry. This convenience method converts the
      * coordinate reference system, "grid to CRS" transform and extent of the given grid geometry
      * to {@code Canvas} properties. If the given value is different than the previous value, then
-     * change events are sent to all listeners registered for the {@value #OBJECTIVE_CRS_PROPERTY},
-     * {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}, {@value #DISPLAY_BOUNDS_PROPERTY} and/or
-     * {@value #POINT_OF_INTEREST_PROPERTY} properties.
+     * change events are sent to all listeners registered for the {@value #DISPLAY_BOUNDS_PROPERTY},
+     * {@value #OBJECTIVE_CRS_PROPERTY}, {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}
+     * (with {@link TransformChangeEvent.Reason#GRID_GEOMETRY_CHANGE} reason),
+     * and/or {@value #POINT_OF_INTEREST_PROPERTY} properties, in that order.
      *
      * <p>The value given to this method will be returned by {@link #getGridGeometry()} as long as
      * none of above cited properties is changed. If one of those properties changes (for example
@@ -1107,11 +1111,11 @@ public class Canvas extends Observable implements Localized {
             /*
              * Notify listeners only after all properties have been updated. If a listener throws an exception,
              * other listeners will not be notified but this Canvas will not be corrupted since all the work to
-             * do in this class is already completed.
+             * do in this class is already completed. Order matter, it is documented in this method javadoc.
              */
             fireIfChanged(DISPLAY_BOUNDS_PROPERTY,    oldBounds,             newBounds);
             fireIfChanged(OBJECTIVE_CRS_PROPERTY,     oldObjectiveCRS,       newObjectiveCRS);
-            fireIfChanged(/* OBJECTIVE_TO_DISPLAY */  oldObjectiveToDisplay, newObjectiveToDisplay);
+            fireIfChanged(/* OBJECTIVE_TO_DISPLAY */  oldObjectiveToDisplay, newObjectiveToDisplay, true);
             fireIfChanged(POINT_OF_INTEREST_PROPERTY, oldPOI,                newPOI);
         } catch (IncompleteGridGeometryException | CannotEvaluateException | FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, GRID_GEOMETRY_PROPERTY), e);
@@ -1136,10 +1140,13 @@ public class Canvas extends Observable implements Localized {
      *
      * @param  oldValue  the old "objective to display" transform.
      * @param  newValue  the new transform, or {@code null} for lazy computation.
+     * @param  grid      {@code true} if the reason is a grid geometry change, or {@code false} if only a CRS change.
      */
-    private void fireIfChanged(final LinearTransform oldValue, final LinearTransform newValue) {
+    private void fireIfChanged(final LinearTransform oldValue, final LinearTransform newValue, final boolean grid) {
         if (!Objects.equals(oldValue, newValue)) {
-            firePropertyChange(new TransformChangeEvent(this, oldValue, newValue));
+            firePropertyChange(new TransformChangeEvent(this, oldValue, newValue,
+                    grid ? TransformChangeEvent.Reason.GRID_GEOMETRY_CHANGE
+                         : TransformChangeEvent.Reason.CRS_CHANGE));
         }
     }
 

@@ -20,12 +20,16 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -54,6 +58,68 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     private static final long serialVersionUID = 4444752056666264066L;
 
     /**
+     * The reason why the "objective to display" transform changed.
+     * It may be because of canvas initialization, or an adjustment for a change of CRS
+     * without change in the viewing area, or a navigation for viewing a different area.
+     *
+     * @see #getReason()
+     */
+    public enum Reason {
+        /**
+         * A new value has been assigned as part of a wider set of changes.
+         * It typically happens when the canvas is initialized.
+         *
+         * @see Canvas#setGridGeometry(GridGeometry)
+         */
+        GRID_GEOMETRY_CHANGE,
+
+        /**
+         * A new value has been automatically computed for preserving the viewing area after a change of CRS.
+         * It typically happens when the user changes the map projection without moving to a different region.
+         *
+         * @see Canvas#setObjectiveCRS(CoordinateReferenceSystem, DirectPosition)
+         */
+        CRS_CHANGE,
+
+        /**
+         * A new value has been assigned, overwriting the previous values. The objective CRS has not changed.
+         * It can be considered as a kind of navigation, moving to absolute coordinates and zoom levels.
+         *
+         * @see Canvas#setObjectiveToDisplay(LinearTransform)
+         */
+        ASSIGNMENT,
+
+        /**
+         * A relative change has been applied in units of the objective CRS (for example in metres).
+         *
+         * @see PlanarCanvas#transformObjectiveCoordinates(AffineTransform)
+         */
+        OBJECTIVE_NAVIGATION,
+
+        /**
+         * A relative change has been applied in units of display device (typically pixel units).
+         *
+         * @see PlanarCanvas#transformDisplayCoordinates(AffineTransform)
+         */
+        DISPLAY_NAVIGATION;
+
+        /**
+         * Returns {@code true} if the "objective to display" transform changed because of a change
+         * in viewing area, without change in the data themselves or in the map projection.
+         */
+        final boolean isNavigation() {
+            return ordinal() >= ASSIGNMENT.ordinal();
+        }
+    }
+
+    /**
+     * The reason why the "objective to display" transform changed.
+     *
+     * @see #getReason()
+     */
+    private final Reason reason;
+
+    /**
      * The change from old coordinates to new coordinates, computed when first needed.
      *
      * @see #getDisplayChange()
@@ -80,10 +146,15 @@ public class TransformChangeEvent extends PropertyChangeEvent {
      * @param  source    the canvas that fired the event.
      * @param  oldValue  the old "objective to display" transform.
      * @param  newValue  the new transform, or {@code null} for lazy computation.
+     * @param  reason    the reason why the "objective to display" transform changed..
      * @throws IllegalArgumentException if {@code source} is {@code null}.
      */
-    public TransformChangeEvent(final Canvas source, final LinearTransform oldValue, final LinearTransform newValue) {
+    public TransformChangeEvent(final Canvas source, final LinearTransform oldValue, final LinearTransform newValue,
+                                final Reason reason)
+    {
         super(source, Canvas.OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, newValue);
+        ArgumentChecks.ensureNonNull("reason", reason);
+        this.reason = reason;
     }
 
     /**
@@ -94,6 +165,17 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     @Override
     public Canvas getSource() {
         return (Canvas) source;
+    }
+
+    /**
+     * Returns the reason why the "objective to display" transform changed.
+     * It may be because of canvas initialization, or an adjustment for a change of CRS
+     * without change in the viewing area, or a navigation for viewing a different area.
+     *
+     * @return the reason why the "objective to display" transform changed.
+     */
+    public Reason getReason() {
+        return reason;
     }
 
     /**
@@ -204,8 +286,16 @@ public class TransformChangeEvent extends PropertyChangeEvent {
      */
     public Optional<AffineTransform> getObjectiveChange2D() {
         if (objectiveChange2D == null) try {
-            objectiveChange2D = AffineTransforms2D.castOrCopy(getObjectiveChange());
-        } catch (IllegalArgumentException e) {
+            final Object oldValue = super.getOldValue();
+            final Object newValue = super.getNewValue();
+            if (oldValue instanceof AffineTransform && newValue instanceof AffineTransform) {
+                // Equivalent to the `else` branch, but more efficient.
+                objectiveChange2D = ((AffineTransform) oldValue).createInverse();
+                objectiveChange2D.concatenate((AffineTransform) newValue);
+            } else {
+                objectiveChange2D = AffineTransforms2D.castOrCopy(getObjectiveChange());
+            }
+        } catch (java.awt.geom.NoninvertibleTransformException | IllegalArgumentException e) {
             canNotCompute("getObjectiveChange2D", e);
         }
         return Optional.ofNullable(objectiveChange2D);
@@ -222,8 +312,16 @@ public class TransformChangeEvent extends PropertyChangeEvent {
      */
     public Optional<AffineTransform> getDisplayChange2D() {
         if (displayChange2D == null) try {
-            displayChange2D = AffineTransforms2D.castOrCopy(getDisplayChange());
-        } catch (IllegalArgumentException e) {
+            final Object oldValue = super.getOldValue();
+            final Object newValue = super.getNewValue();
+            if (oldValue instanceof AffineTransform && newValue instanceof AffineTransform) {
+                // Equivalent to the `else` branch, but more efficient.
+                displayChange2D = ((AffineTransform) oldValue).createInverse();
+                displayChange2D.preConcatenate((AffineTransform) newValue);
+            } else {
+                displayChange2D = AffineTransforms2D.castOrCopy(getDisplayChange());
+            }
+        } catch (java.awt.geom.NoninvertibleTransformException | IllegalArgumentException e) {
             canNotCompute("getDisplayChange2D", e);
         }
         return Optional.ofNullable(displayChange2D);
