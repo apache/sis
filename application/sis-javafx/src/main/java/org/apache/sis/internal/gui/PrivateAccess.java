@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.gui.dataset.WindowHandler;
 
@@ -40,7 +41,14 @@ public final class PrivateAccess {
     }
 
     /**
-     * A setter method for {@link CoverageExplorer#window}. Shall be invoked in JavaFX thread.
+     * Accessor for {@link org.apache.sis.gui.dataset.WindowHandler.ForCoverage} constructor.
+     * Used for assigning {@link CoverageExplorer#window} when duplicating an existing window.
+     * Shall be invoked in JavaFX thread.
      */
-    public static volatile BiConsumer<CoverageExplorer, WindowHandler> initWindowHandler;
+    public static volatile BiFunction<WindowHandler, CoverageExplorer, WindowHandler> newWindowHandler;
+
+    /**
+     * Accessor for {@link WindowHandler#finish()} method. Shall be invoked in JavaFX thread.
+     */
+    public static volatile Consumer<WindowHandler> finishWindowHandler;
 }

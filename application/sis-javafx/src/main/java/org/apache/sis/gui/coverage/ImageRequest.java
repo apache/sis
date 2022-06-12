@@ -17,12 +17,12 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Optional;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -77,6 +77,13 @@ public class ImageRequest {
      * @see #getSliceExtent()
      */
     final GridExtent slice;
+
+    /**
+     * The initial objective CRS and zoom to use in a new {@link CoverageCanvas}, or {@code null} if none.
+     * This is used only if we want to create a new canvas initialized to the same viewing region and zoom
+     * level than an existing canvas.
+     */
+    GridGeometry zoom;
 
     /**
      * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.
@@ -135,11 +142,11 @@ public class ImageRequest {
      */
     public ImageRequest(final GridCoverage source, final GridExtent slice) {
         ArgumentChecks.ensureNonNull("source", source);
+        this.coverage = source;
+        this.slice    = slice;
         this.resource = null;
         this.domain   = null;
         this.range    = null;
-        this.coverage = source;
-        this.slice    = slice;
     }
 
     /**

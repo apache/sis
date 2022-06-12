@@ -50,20 +50,20 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.coverage.Category;
-import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
@@ -158,7 +158,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * This is used for preventing never-ending loop when a change of resource causes a change of coverage
      * or conversely.
      *
-     * @see #onPropertySpecified(ObjectProperty)
+     * @see #onPropertySpecified(GridCoverageResource, GridCoverage, ObjectProperty, GridGeometry)
      */
     private boolean isCoverageAdjusting;
 
@@ -265,9 +265,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.processor.getInterpolation());
-        resourceProperty     .addListener((p,o,n) -> onPropertySpecified(n, null, coverageProperty));
-        coverageProperty     .addListener((p,o,n) -> onPropertySpecified(null, n, resourceProperty));
-        sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getCoverage(), null));
+        resourceProperty     .addListener((p,o,n) -> onPropertySpecified(n, null, coverageProperty, null));
+        coverageProperty     .addListener((p,o,n) -> onPropertySpecified(null, n, resourceProperty, null));
+        sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getCoverage(), null, null));
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
     }
 
@@ -459,6 +459,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     public void setObjectiveCRS(final CoordinateReferenceSystem newValue, DirectPosition anchor) throws RenderException {
         final Long id = LogHandler.loadingStart(getResource());
         try {
+            // With `LogHandler` because this call may cause searches in EPSG database.
             super.setObjectiveCRS(newValue, anchor);
         } finally {
             LogHandler.loadingStop(id);
@@ -478,6 +479,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     public void setGridGeometry(final GridGeometry newValue) throws RenderException {
         final Long id = LogHandler.loadingStart(getResource());
         try {
+            // With `LogHandler` because this call may cause searches in EPSG database.
             super.setGridGeometry(newValue);
         } finally {
             LogHandler.loadingStop(id);
@@ -495,14 +497,17 @@ public class CoverageCanvas extends MapCanvasAWT {
         final GridCoverageResource resource;
         final GridCoverage coverage;
         final GridExtent sliceExtent;
+        final GridGeometry zoom;
         if (request != null) {
             resource    = request.resource;
             coverage    = request.coverage;
             sliceExtent = request.slice;
+            zoom        = request.zoom;
         } else {
             resource    = null;
             coverage    = null;
             sliceExtent = null;
+            zoom        = null;
         }
         if (getResource() != resource || getCoverage() != coverage || getSliceExtent() != sliceExtent) {
             final boolean p = isCoverageAdjusting;
@@ -514,7 +519,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             } finally {
                 isCoverageAdjusting = p;
             }
-            onPropertySpecified(resource, coverage, null);
+            onPropertySpecified(resource, coverage, null, zoom);
         }
     }
 
@@ -527,9 +532,10 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  resource  the new resource, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      * @param  toClear   the property which is an alternative to the property that has been set.
+     * @param  zoom      initial "objective to display" transform to use, or {@code null} for automatic.
      */
     private void onPropertySpecified(final GridCoverageResource resource, final GridCoverage coverage,
-                                     final ObjectProperty<?> toClear)
+                                     final ObjectProperty<?> toClear, final GridGeometry zoom)
     {
         hasCoverageOrResource = (resource != null || coverage != null);
         if (isCoverageAdjusting) {
@@ -593,7 +599,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                  */
                 @Override protected void succeeded() {
                     runAfterRendering(() -> {
-                        setNewSource(getValue(), ranges);
+                        setNewSource(getValue(), ranges, zoom);
                         requestRepaint();                   // Cause `Worker` class to be executed.
                     });
                 }
@@ -637,8 +643,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @param  domain  the multi-dimensional grid geometry, or {@code null} if there is no data.
      * @param  ranges  descriptions of bands, or {@code null} if there is no data.
+     * @param  zoom    initial "objective to display" transform to use, or {@code null} for automatic.
      */
-    private void setNewSource(GridGeometry domain, final List<SampleDimension> ranges) {
+    private void setNewSource(GridGeometry domain, final List<SampleDimension> ranges, final GridGeometry zoom) {
         if (TRACE) {
             trace("setNewSource(…): the new domain of data is:%n\t%s", domain);
         }
@@ -679,6 +686,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             }
         }
         data.setImageSpace(domain, ranges, xyDimensions);
+        initialize(zoom);
         setObjectiveBounds(bounds);
     }
 
@@ -1134,7 +1142,14 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
      */
     private static void unexpectedException(final Exception e) {
-        Logging.unexpectedException(getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
+        unexpectedException("render", e);
+    }
+
+    /**
+     * Invoked when an exception occurred. The declared source method should be a public or protected method.
+     */
+    static void unexpectedException(final String method, final Exception e) {
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), CoverageCanvas.class, method, e);
     }
 
     /**
@@ -1156,7 +1171,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (TRACE) {
             trace("clear()");
         }
-        setNewSource(null, null);
+        setNewSource(null, null, null);
         super.clear();
     }
 

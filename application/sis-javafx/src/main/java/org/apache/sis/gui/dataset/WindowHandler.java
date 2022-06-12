@@ -337,6 +337,21 @@ public abstract class WindowHandler {
         }
 
         /**
+         * Creates a new handler for duplicating an existing window.
+         * For indirect usage by {@link #duplicate()}.
+         *
+         * @param creator  the handler which is duplicated.
+         * @param widget   the widget providing the new view of the resource.
+         */
+        private ForCoverage(final WindowHandler creator, final CoverageExplorer widget) {
+            this(creator, null, widget);
+        }
+        static {
+            PrivateAccess.newWindowHandler = ForCoverage::new;
+            PrivateAccess.finishWindowHandler = WindowHandler::finish;
+        }
+
+        /**
          * The resource shown in the {@linkplain #window window}, or {@code null} if unspecified.
          */
         @Override
@@ -375,11 +390,7 @@ public abstract class WindowHandler {
          */
         @Override
         public WindowHandler duplicate() {
-            final CoverageExplorer explorer = new CoverageExplorer(widget.getViewType());
-            final ForCoverage handler = new ForCoverage(this, null, explorer);
-            PrivateAccess.initWindowHandler.accept(explorer, handler);
-            widget.getImageRequest().ifPresent(explorer::setCoverage);
-            return handler.finish();
+            return new CoverageExplorer(widget).getWindowHandler();
         }
 
         /**

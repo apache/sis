@@ -64,9 +64,9 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.gui.referencing.PositionableProjection;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
@@ -193,11 +193,20 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * The data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
+     * We differ this recomputation until all parameters are known.
+     *
+     * @see #setObjectiveBounds(Envelope)
+     * @see #invalidObjectiveToDisplay
+     */
+    private Envelope objectiveBounds;
+
+    /**
+     * The data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
      * Optionally contains the initial "objective to display" CRS to use if a predetermined
      * value is desired instead of an automatically computed one. The grid extent is ignored,
      * except for fetching the grid center if a non-linear transform needs to be linearized.
      *
-     * @see #setInitialState(GridGeometry)
+     * @see #initialize(GridGeometry)
      * @see #invalidObjectiveToDisplay
      */
     private GridGeometry initialState;
@@ -247,7 +256,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Whether {@link #objectiveToDisplay} needs to be recomputed.
      * We differ this recomputation until all parameters are known.
      *
-     * @see #initialState
+     * @see #objectiveBounds
+     * @see #objectiveToDisplay
      */
     private boolean invalidObjectiveToDisplay;
 
@@ -367,6 +377,46 @@ public abstract class MapCanvas extends PlanarCanvas {
         GUIUtilities.setClipToBounds(fixedPane);
         isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
         error = new ReadOnlyObjectWrapper<>(this, "error");
+    }
+
+    /**
+     * Sets the objective bounds and/or the zoom level and objective CRS to use for the initial view of data.
+     * The {@code visibleArea} {@linkplain GridGeometry#getCoordinateReferenceSystem() CRS} defines the initial
+     * {@linkplain #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition) objective CRS} of this canvas.
+     * The {@code visibleArea} {@linkplain GridGeometry#getEnvelope() envelope} defines the (usually constant)
+     * {@linkplain #setObjectiveBounds(Envelope) objective bounds} of this canvas.
+     * In addition if {@code visibleArea} contains a {@linkplain GridGeometry#getGridToCRS grid to CRS} transform,
+     * its inverse will define the initial {@linkplain #setObjectiveToDisplay objective to display} transform
+     * (which in turn defines the initial viewed area and zoom level).
+     *
+     * <p>This method should be invoked only when new data have been loaded, or when the caller wants
+     * to discard any zoom or translation and reset the view to the given bounds. This method does not
+     * cause new repaint event; {@link #requestRepaint()} must be invoked by the caller if desired.</p>
+     *
+     * @param  visibleArea  bounding box, objective CRS and or initial zoom level,
+     *         or {@code null} if unknown (in which case an identity transform will be set).
+     * @throws MismatchedDimensionException if the given grid geometry is not two-dimensional.
+     *
+     * @see #setObjectiveBounds(Envelope)
+     * @see #getGridGeometry()
+     *
+     * @since 1.3
+     */
+    protected void initialize(final GridGeometry visibleArea) {
+        Envelope bounds = null;
+        if (visibleArea != null) {
+            if (visibleArea.isDefined(GridGeometry.ENVELOPE)) {
+                bounds = visibleArea.getEnvelope();
+                ArgumentChecks.ensureDimensionMatches("visibleArea", BIDIMENSIONAL, bounds);
+            }
+            if (visibleArea.isDefined(GridGeometry.GRID_TO_CRS)) {
+                ArgumentChecks.ensureDimensionsMatch("visibleArea", BIDIMENSIONAL, BIDIMENSIONAL,
+                        visibleArea.getGridToCRS(PixelInCell.CELL_CENTER));
+            }
+        }
+        objectiveBounds = bounds;
+        initialState = visibleArea;
+        invalidObjectiveToDisplay = true;
     }
 
     /**
@@ -773,9 +823,24 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Returns the data bounds to use for computing the initial "objective to display" transform.
+     * This is the value specified by the last call to {@link #setObjectiveBounds(Envelope)}.
+     * The coordinate reference system of the returned envelope defines also the CRS which
+     * is restored when the {@link #reset()} method is invoked.
+     *
+     * @return the data bounds to use for computing the initial "objective to display" transform,
+     *         or {@code null} if unspecified.
+     *
+     * @since 1.3
+     */
+    public Envelope getObjectiveBounds() {
+        return objectiveBounds;
+    }
+
+    /**
      * Sets the data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
-     * Invoking this method also sets the {@link #getObjectiveCRS() objective CRS} of this canvas
-     * to the CRS of given envelope.
+     * Invoking this method also sets the initial {@linkplain #getObjectiveCRS() objective CRS}
+     * of this canvas to the CRS of given envelope.
      *
      * <p>This method should be invoked only when new data have been loaded, or when the caller wants
      * to discard any zoom or translation and reset the view to the given bounds. This method does not
@@ -787,39 +852,25 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @see #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition)
      */
-    protected void setObjectiveBounds(final Envelope visibleArea) {
+    public void setObjectiveBounds(final Envelope visibleArea) {
         ArgumentChecks.ensureDimensionMatches("visibleArea", BIDIMENSIONAL, visibleArea);
-        if (visibleArea == null) {
-            initialState = null;
-        } else {
-            setInitialState(new GridGeometry(null, visibleArea, GridOrientation.HOMOTHETY));
-        }
+        objectiveBounds = ImmutableEnvelope.castOrCopy(visibleArea);
+        invalidObjectiveToDisplay = true;
     }
 
     /**
-     * Sets the data bounds and initial "objective to display" transform to use. This method sets the same
-     * information than {@link #setObjectiveBounds(Envelope)} using the envelope of the given grid geometry.
-     * But if in addition a "grid to CRS" transform is specified, it will be used for defining the initial
-     * value of the "objective to display" transform.
+     * Sets the conversion from objective CRS to display coordinate system.
+     * Invoking this method has the effect of changing the viewed area, the zoom level or the rotation of the map.
+     * Caller needs to invoke {@link #requestRepaint()} after this method call (this is not done automatically).
      *
-     * <p>Note that the objective bounds (defined by grid geometry envelope) are usually constant as long
-     * as the data do not change, while the other properties may change under user interactions.
-     * This is the reason why the given argument is an <em>initial</em> state.</p>
-     *
-     * <p>A typical use case for this method is to give in argument the {@link #getGridGeometry()} value
-     * of another canvas for initializing this canvas to the same geographic region and zoom level,
-     * assuming that the two canvas and rendering the same data.</p>
-     *
-     * @param  visibleArea  bounding box and initial zoom level to use for the canvas.
-     *
-     * @see #setGridGeometry(GridGeometry)
-     *
-     * @since 1.3
+     * @param  newValue  the new <cite>objective to display</cite> conversion.
+     * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
+     * @throws RenderException if the <cite>objective to display</cite> transform can not be set to the given value for another reason.
      */
-    protected void setInitialState(final GridGeometry visibleArea) {
-        ArgumentChecks.ensureNonNull("visibleArea", visibleArea);
-        initialState = visibleArea;
-        invalidObjectiveToDisplay = true;
+    @Override
+    public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
+        super.setObjectiveToDisplay(newValue);
+        invalidObjectiveToDisplay = false;
     }
 
     /**
@@ -1068,28 +1119,28 @@ public abstract class MapCanvas extends PlanarCanvas {
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
                         new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
                 /*
-                 * If `setObjectiveBounds(…)` has been invoked (as it should be), initialize the affine
-                 * transform to values which will allow this canvas to contain fully the objective bounds.
-                 * Otherwise the transform is initialized to an identity transform (should not happen often).
-                 * If a CRS is present, it is used for deciding if we need to swap or flip axes.
+                 * The main purpose of this block is to find the initial value of the `objectiveToDisplay` transform
+                 * (named `crsToDisplay` here). If that value was explicitly specified by a call to `initialize(…)`,
+                 * use it as-is. Otherwise we will compute it from the bounds of data.
                  */
-                Envelope objectiveBounds = null;
-                CoordinateReferenceSystem objectiveCRS = null;
+                CoordinateReferenceSystem objectiveCRS;
                 LinearTransform crsToDisplay = null;
-                if (initialState != null) {
-                    if (initialState.isDefined(GridGeometry.GRID_TO_CRS)) {
-                        crsToDisplay = initialState.getLinearGridToCRS(PixelInCell.CELL_CORNER).inverse();
-                    }
-                    if (initialState.isDefined(GridGeometry.ENVELOPE)) {
-                        objectiveBounds = initialState.getEnvelope();
-                    }
-                    if (initialState.isDefined(GridGeometry.CRS)) {
-                        objectiveCRS = initialState.getCoordinateReferenceSystem();
-                    }
-                }
-                if (crsToDisplay == null) {
+                final GridGeometry init = initialState;
+                initialState = null;                                    // For using `objectiveBounds` next times.
+                if (init != null && init.isDefined(GridGeometry.GRID_TO_CRS)) {
+                    crsToDisplay = init.getLinearGridToCRS(PixelInCell.CELL_CORNER).inverse();
+                    objectiveCRS = null;    // Value will be fetched after the `else` block.
+                } else {
+                    /*
+                     * If `setObjectiveBounds(…)` has been invoked (as it should be), initialize the affine
+                     * transform to values which will allow this canvas to contain fully the objective bounds.
+                     * Otherwise the transform is initialized to an identity transform (should not happen often).
+                     * If a CRS is present, it is used for deciding if we need to swap or flip axes.
+                     */
+                    final Envelope objectiveBounds = getObjectiveBounds();
                     if (objectiveBounds != null) {
                         final MatrixSIS m;
+                        objectiveCRS = objectiveBounds.getCoordinateReferenceSystem();
                         if (objectiveCRS != null) {
                             AxisDirection[] srcAxes = CoordinateSystems.getAxisDirections(objectiveCRS.getCoordinateSystem());
                             m = Matrices.createTransform(objectiveBounds, srcAxes, target, toDisplayDirections(srcAxes));
@@ -1104,7 +1155,11 @@ public abstract class MapCanvas extends PlanarCanvas {
                     }
                 }
                 if (objectiveCRS == null) {
-                    objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
+                    if (init.isDefined(GridGeometry.CRS)) {
+                        objectiveCRS = init.getCoordinateReferenceSystem();
+                    } else {
+                        objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
+                    }
                     /*
                      * Above code tried to provide a non-null CRS on a "best effort" basis. The objective CRS
                      * may still be null, there is no obvious answer against that. It is not the display CRS
