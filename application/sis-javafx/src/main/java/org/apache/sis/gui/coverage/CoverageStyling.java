@@ -86,6 +86,14 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     }
 
     /**
+     * Copy styling information from the given source.
+     * This is used when the user clicks on "New window" button.
+     */
+    final void copyStyling(final CoverageStyling source) {
+        customizedColors.putAll(source.customizedColors);
+    }
+
+    /**
      * Resets all colors to their default values.
      *
      * @param items  list of items of the table to clear.

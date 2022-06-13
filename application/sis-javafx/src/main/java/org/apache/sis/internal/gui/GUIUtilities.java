@@ -25,6 +25,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
@@ -209,6 +210,17 @@ walk:   for (final T search : path) {
         final T value = item.getValue();
         item.setValue(null);
         item.setValue(value);
+    }
+
+    /**
+     * Sets the selected value or {@code target} to the same item than the selected item of {@code source}.
+     *
+     * @param <T>     type of items.
+     * @param source  the control from which to copy the selected item.
+     * @param target  the control where to set the selected item.
+     */
+    public static <T> void copySelection(final ChoiceBox<T> source, final ChoiceBox<T> target) {
+        target.getSelectionModel().select(source.getSelectionModel().getSelectedItem());
     }
 
     /**

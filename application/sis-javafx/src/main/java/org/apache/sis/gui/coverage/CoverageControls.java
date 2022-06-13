@@ -24,6 +24,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
@@ -33,6 +34,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
+import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.control.ValueColorMapper;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
@@ -62,6 +65,21 @@ final class CoverageControls extends ViewAndControls {
      * The control showing categories and their colors for the current coverage.
      */
     private final TableView<Category> categoryTable;
+
+    /**
+     * The control used for selecting a color ramp for a given category.
+     */
+    private final CoverageStyling styling;
+
+    /**
+     * The control used for selecting a color stretching mode.
+     */
+    private final ChoiceBox<Stretching> stretching;
+
+    /**
+     * The control used for selecting the interpolation method.
+     */
+    private final ChoiceBox<Interpolation> interpolation;
 
     /**
      * The renderer of isolines.
@@ -104,13 +122,15 @@ final class CoverageControls extends ViewAndControls {
              *   - Interpolation
              *   - Color stretching
              */
+            interpolation = InterpolationConverter.button(view);
+            stretching = Stretching.createButton((p,o,n) -> view.setStyling(n));
             final GridPane valuesControl = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Interpolation, InterpolationConverter.button(view)),
-                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
+                label(vocabulary, Vocabulary.Keys.Interpolation, interpolation),
+                label(vocabulary, Vocabulary.Keys.Stretching, stretching));
             /*
              * Creates a "Categories" section with the category table.
              */
-            final CoverageStyling styling = new CoverageStyling(view);
+            styling = new CoverageStyling(view);
             categoryTable = styling.createCategoryTable(resources, vocabulary);
             VBox.setVgrow(categoryTable, Priority.ALWAYS);
             /*
@@ -194,5 +214,16 @@ final class CoverageControls extends ViewAndControls {
     @Override
     final void load(final ImageRequest request) {
         view.setImage(request);
+    }
+
+    /**
+     * Copies the styling configuration from the given controls.
+     * This is invoked when the user click on "New window" button.
+     */
+    final void copyStyling(final CoverageControls c) {
+        styling.copyStyling(c.styling);
+        view.setCategoryColors(c.view.getCategoryColors() == null ? null : styling);
+        GUIUtilities.copySelection(c.stretching, stretching);
+        GUIUtilities.copySelection(c.interpolation, interpolation);
     }
 }

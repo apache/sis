@@ -270,6 +270,9 @@ public class CoverageExplorer extends Widget {
         window = PrivateAccess.newWindowHandler.apply(source.window, this);
         source.getImageRequest().ifPresent(this::setCoverage);
         PrivateAccess.finishWindowHandler.accept(window);
+        if (getViewType() == View.IMAGE) {
+            getCoverageControls().copyStyling(source.getCoverageControls());
+        }
     }
 
     /**
@@ -303,7 +306,14 @@ public class CoverageExplorer extends Widget {
      * @since 1.2
      */
     public final CoverageCanvas getCanvas() {
-        return ((CoverageControls) getViewAndControls(View.IMAGE, false)).view;
+        return getCoverageControls().view;
+    }
+
+    /**
+     * Returns the controls on the canvas where the image is shown.
+     */
+    private CoverageControls getCoverageControls() {
+        return (CoverageControls) getViewAndControls(View.IMAGE, false);
     }
 
     /**
