@@ -294,7 +294,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Whether a {@link CursorChange} is already scheduled, in which case there is no need to schedule more.
      */
-    private boolean isMouseChangeScheduled;
+    private boolean isCursorChangeScheduled;
 
     /**
      * {@code true} if navigation should be disabled.
@@ -1203,9 +1203,9 @@ public abstract class MapCanvas extends PlanarCanvas {
             assert renderingInProgress == null;
             BackgroundThreads.execute(worker);
             renderingInProgress = worker;       // Set after we know that the task has been scheduled.
-            if (!isMouseChangeScheduled) {
+            if (!isCursorChangeScheduled) {
                 DelayedExecutor.schedule(new CursorChange());
-                isMouseChangeScheduled = true;
+                isCursorChangeScheduled = true;
             }
         } else {
             if (!hasError) {
@@ -1370,13 +1370,13 @@ public abstract class MapCanvas extends PlanarCanvas {
      * but schedule a new {@link CursorChange} in case the next rendering is slow.
      */
     private void setWaitCursor(final long startTime) {
-        isMouseChangeScheduled = false;
+        isCursorChangeScheduled = false;
         if (renderingInProgress != null) {
             if (startTime == renderingStartTime) {
                 floatingPane.setCursor(Cursor.WAIT);
             }
             DelayedExecutor.schedule(new CursorChange());
-            isMouseChangeScheduled = true;
+            isCursorChangeScheduled = true;
         }
     }
 

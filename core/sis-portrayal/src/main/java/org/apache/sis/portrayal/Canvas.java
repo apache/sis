@@ -185,9 +185,9 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * The {@value} property name, used for notifications about changes in point of interest.
-     * The point of interest defines the location to show typically (but not necessarily) in
-     * the center of the display device. But it defines also the slice coordinate values
-     * in all dimensions beyond the ones shown by the device.
+     * The point of interest defines the location of a representative point,
+     * typically (but not necessarily) in the center of the data bounding box.
+     * It defines also the slice coordinate values in all dimensions beyond the ones shown by the device.
      * Associated values are instances of {@link DirectPosition}.
      *
      * @see #getPointOfInterest(boolean)
@@ -267,7 +267,8 @@ public class Canvas extends Observable implements Localized {
     final GeneralEnvelope displayBounds;
 
     /**
-     * The point to show in the center of display area when no zoom or translation is applied.
+     * A point (in display coordinates) considered representative of the data.
+     * This is the default location where Jacobian matrices are computed when needed.
      * This is typically (but not necessarily) the center of data bounding box.
      * May become outside the viewing area after zooms or translations have been applied.
      *
@@ -811,8 +812,10 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Returns the coordinates of the point to show in the center of display area in absence of zoom
-     * or translation events. This is typically (but not necessarily) the center of data bounding box.
+     * Returns the coordinates of a point considered representative of the data.
+     * This is typically (but not necessarily) the center of data bounding box.
+     * This point is used for example as the default location where to compute resolution
+     * (the resolution may vary at each pixel because of map projection deformations).
      * This position may become outside the viewing area after zooms or translations have been applied.
      *
      * <p>The coordinates can be given in their original CRS or in the {@linkplain #getObjectiveCRS() objective CRS}.
@@ -823,11 +826,11 @@ public class Canvas extends Observable implements Localized {
      * See {@linkplain Canvas class javadoc} for more discussion.)
      * If {@code objective} is {@code true}, then the position is transformed to the objective CRS.</p>
      *
-     * <p>This value may be {@code null} on newly created {@code Canvas}, before data are added and canvas
-     * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.</p>
+     * <p>This value is initially {@code null}. A value should be specified either by invoking
+     * {@link #setPointOfInterest(DirectPosition)} or {@link #setGridGeometry(GridGeometry)}.</p>
      *
      * @param  objective  whether to return a position transformed to {@linkplain #getObjectiveCRS() objective CRS}.
-     * @return coordinates of the point to show typically (but not necessarily) in the center of display area.
+     * @return coordinates of a representative point, or {@code null} if unspecified.
      *
      * @see #POINT_OF_INTEREST_PROPERTY
      */
@@ -837,11 +840,11 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Sets the coordinates of the point center of display area when there are no zoom or translations events.
+     * Sets the coordinates of a representative point inside the data bounding box.
      * If the given value is different than the previous value, then a change event is sent to all listeners
      * registered for the {@value #POINT_OF_INTEREST_PROPERTY} property.
      *
-     * @param  newValue  the new coordinates of the point to show typically in the center of display area.
+     * @param  newValue  the new coordinates of a representative point.
      * @throws NullPointerException if the given position is null.
      * @throws IllegalArgumentException if the given position does not have a CRS.
      * @throws RenderException if the point of interest can not be set to the given value.
