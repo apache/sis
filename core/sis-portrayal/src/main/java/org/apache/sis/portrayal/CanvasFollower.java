@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -25,13 +26,16 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
@@ -43,18 +47,13 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * account the differences in zoom levels and map projections. For example a translation of 10 pixels in one
  * canvas may map to a translation of 20 pixels in the other canvas for reproducing the same "real world" translation.
  *
+ * <p>This class implements an unidirectional binding: changes in source are applied on target, but not the converse.
+ * It is recommended to avoid bidirectional binding in current implementation
+ * (this limitation may be fixed in a future version).</p>
+ *
  * <h2>Listeners</h2>
- * This class implements an unidirectional binding: changes in source are applied on target, but not the converse.
- * {@code CanvasFollower} listener needs to be registered explicitly as below. This is not done automatically for
- * allowing users to control when to listen to changes:
- *
- * {@preformat java
- *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
- *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
- *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
- * }
- *
- * The {@link #dispose()} convenience method is provided for unregistering all the above.
+ * {@code CanvasFollower} listeners need to be registered explicitly by a call to the {@link #initialize()} method.
+ * The {@link #dispose()} convenience method is provided for unregistering all those listeners.
  *
  * <h2>Multi-threading</h2>
  * This class is <strong>not</strong> thread-safe.
@@ -77,33 +76,60 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     protected final PlanarCanvas target;
 
     /**
+     * Whether listeners have been registered.
+     */
+    private boolean initialized;
+
+    /**
+     * Whether to disable the following of source canvas. Other events such as changes
+     * of objective CRS are still listened in order to update the fields of this class.
+     */
+    private boolean disabled;
+
+    /**
      * Whether to follow the source canvas in "real world" coordinates.
      * If {@code false}, displacements will be followed in pixel coordinates instead.
      */
     private boolean followRealWorld;
 
     /**
-     * The effective value of {@link #followRealWorld}.
-     * May be temporarily set to {@code false} if {@link #sourceToTarget} can not be computed.
+     * Conversions from source display coordinates to target display coordinates.
+     * Computed when first needed, and recomputed when the objective CRS or the
+     * "display to objective" transform change.
+     *
+     * @see #getDisplayTransform()
      */
-    private boolean effectiveRealWorld;
+    private MathTransform2D displayTransform;
 
     /**
-     * The transform from a change in source canvas to a change in target canvas.
+     * Conversions from source objective coordinates to target objective coordinates.
      * Computed when first needed, and recomputed when the objective CRS changes.
      * A {@code null} value means that no change is needed or can not be done.
      *
-     * @see #findSourceToTarget()
+     * @see #findObjectiveTransform(String)
      */
-    private MathTransform sourceToTarget;
+    private MathTransform objectiveTransform;
 
     /**
-     * Whether {@link #sourceToTarget} field is up to date.
-     * Note that the field can be up-to-date and {@code null}.
-     *
-     * @see #findSourceToTarget()
+     * Whether an attempt to compute {@link #displayTransform} has already been done.
+     * The {@code displayTransform} field may still be null if the attempt failed.
+     * Value can be {@link #VALID}, {@link #OUTDATED}, {@link #UNKNOWN} or {@link #ERROR}.
      */
-    private boolean isTransformUpdated;
+    private byte displayTransformStatus;
+
+    /**
+     * Whether an attempt to compute {@link #objectiveTransform} has already been done.
+     * Note that the {@link #objectiveTransform} field can be up-to-date and {@code null}.
+     * Value can be {@link #VALID}, {@link #OUTDATED}, {@link #UNKNOWN} or {@link #ERROR}.
+     *
+     * @see #findObjectiveTransform(String)
+     */
+    private byte objectiveTransformStatus;
+
+    /**
+     * Enumeration values for {@link #displayTransformStatus} and {@link #objectiveTransformStatus}.
+     */
+    private static final byte VALID = 0, OUTDATED = 1, UNKNOWN = 2, ERROR = 3;
 
     /**
      * Whether a change is in progress. This is for avoiding never-ending loop
@@ -116,14 +142,9 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * between the specified canvas. This is a unidirectional binding: changes in source
      * are applied on target, but not the converse.
      *
-     * <p>Caller needs to register this listener explicitly as below
-     * (this is not done automatically by this constructor):</p>
-     *
-     * {@preformat java
-     *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
-     *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
-     *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
-     * }
+     * <p>Caller needs to register listeners by a call to the {@link #initialize()} method.
+     * This is not done automatically by this constructor for allowing users to control
+     * when to start listening to changes.</p>
      *
      * @param  source  the canvas which is the source of zoom, pan or rotation events.
      * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
@@ -133,7 +154,59 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
         ArgumentChecks.ensureNonNull("target", target);
         this.source = source;
         this.target = target;
-        effectiveRealWorld = followRealWorld = true;
+        followRealWorld = true;
+        displayTransformStatus   = OUTDATED;
+        objectiveTransformStatus = OUTDATED;
+    }
+
+    /**
+     * Registers all listeners needed by this object. This method must be invoked at least
+     * once after {@linkplain #CanvasFollower(PlanarCanvas, PlanarCanvas) construction},
+     * but not necessarily immediately after (it is okay to defer until first needed).
+     * The default implementation registers the following listeners:
+     *
+     * {@preformat java
+     *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
+     *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
+     *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+     *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+     * }
+     *
+     * This method is idempotent (it is okay to invoke it twice).
+     *
+     * @see #dispose()
+     */
+    public void initialize() {
+        if (!initialized) {
+            initialized = true;     // Set first in case an exception is thrown below.
+            source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
+            target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
+            source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+            target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+        }
+    }
+
+    /**
+     * Returns {@code true} if this object stopped to replicate changes from source canvas to target canvas.
+     * If {@code true}, this object continues to listen to changes in order to keep its state consistent,
+     * but does not replicate those changes on the target canvas.
+     *
+     * <p>A non-{@linkplain #initialize() initialized} object is considered disabled.</p>
+     *
+     * @return whether this object stopped to replicate changes from source canvas to target canvas.
+     */
+    public boolean isDisabled() {
+        return disabled | !initialized;
+    }
+
+    /**
+     * Sets whether to stop to replicate changes from source canvas to target canvas.
+     * It does not stop this object to listen to events, because it is necessary for keeping its state consistent.
+     *
+     * @param  stop  {@code true} for stopping to replicate changes from source canvas to target canvas.
+     */
+    public void setDisabled(final boolean stop) {
+        disabled = stop;
     }
 
     /**
@@ -159,10 +232,55 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      */
     public void setFollowRealWorld(final boolean real) {
         if (real != followRealWorld) {
-            effectiveRealWorld = followRealWorld = real;
-            isTransformUpdated = false;
-            sourceToTarget     = null;
+            followRealWorld          = real;
+            displayTransform         = null;
+            objectiveTransform       = null;
+            displayTransformStatus   = OUTDATED;
+            objectiveTransformStatus = OUTDATED;
         }
+    }
+
+    /**
+     * Returns the transform from source display coordinates to target display coordinates.
+     * This transform may change every time that a zoom; translation or rotation is applied
+     * on at least one canvas. The transform may be absent if an error prevent to compute it,
+     * for example is no coordinate operation has been found between the objective CRS of the
+     * source and target canvases.
+     *
+     * @return transform from source display coordinates to target display coordinates.
+     */
+    public Optional<MathTransform2D> getDisplayTransform() {
+        if (displayTransformStatus != VALID) {
+            if (displayTransformStatus != OUTDATED) {
+                return Optional.empty();
+            }
+            displayTransformStatus = ERROR;             // Set now in case an exception is thrown below.
+            if (objectiveTransformStatus == VALID || findObjectiveTransform("getDisplayTransform")) try {
+                /*
+                 * Compute (source display to objective) → (map projection) → (target objective to display).
+                 * If we can work directly on `AffineTransform` instances, it should be more efficient than
+                 * the generic code. But the two `if … else` branches below compute the same thing
+                 * (ignoring rounding errors).
+                 */
+                final MathTransform objectiveTransform = this.objectiveTransform;
+                if (objectiveTransform == null || objectiveTransform instanceof AffineTransform) {
+                    AffineTransform tr = source.objectiveToDisplay.createInverse();
+                    if (objectiveTransform != null) {
+                        tr.preConcatenate((AffineTransform) objectiveTransform);
+                    }
+                    tr.preConcatenate(target.objectiveToDisplay);
+                    displayTransform = new AffineTransform2D(tr);
+                } else {
+                    displayTransform = MathTransforms.bidimensional(MathTransforms.concatenate(
+                            source.getObjectiveToDisplay().inverse(), objectiveTransform,
+                            target.getObjectiveToDisplay()));
+                }
+                displayTransformStatus = VALID;
+            } catch (NoninvertibleTransformException | org.opengis.referencing.operation.NoninvertibleTransformException e) {
+                canNotCompute("getDisplayTransform", e);
+            }
+        }
+        return Optional.ofNullable(displayTransform);
     }
 
     /**
@@ -176,16 +294,29 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     public void propertyChange(final PropertyChangeEvent event) {
         if (event instanceof TransformChangeEvent) {
             final TransformChangeEvent te = (TransformChangeEvent) event;
-            if (!changing && te.getReason().isNavigation()) try {
+            displayTransformStatus = OUTDATED;
+            if (!disabled && !changing && te.isSameSource(source) && te.getReason().isNavigation()) try {
                 changing = true;
-                if (!isTransformUpdated) {
-                    findSourceToTarget();               // May update the `effectiveRealWorld` field.
-                }
-                if (effectiveRealWorld) {
-                    AffineTransform before = convertObjectiveChange(te.getObjectiveChange2D().orElse(null));
-                    if (before != null) {
+                if (followRealWorld && (objectiveTransformStatus == VALID || findObjectiveTransform("propertyChange"))) {
+                    AffineTransform before = te.getObjectiveChange2D().orElse(null);
+                    if (before != null) try {
+                        /*
+                         * Converts a change from units of the source CRS to units of the target CRS.
+                         * If that change can not be computed, fallback on a change in display units.
+                         * The POI may be null, but this is okay if the transform is linear.
+                         */
+                        if (objectiveTransform != null) {
+                            DirectPosition poi = target.getPointOfInterest(true);
+                            AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.linear(objectiveTransform, poi));
+                            AffineTransform c = t.createInverse();
+                            c.preConcatenate(before);
+                            c.preConcatenate(t);
+                            before = c;
+                        }
                         target.transformObjectiveCoordinates(before);
                         return;
+                    } catch (NullArgumentException | TransformException | NoninvertibleTransformException e) {
+                        canNotCompute("propertyChange", e);
                     }
                 }
                 te.getDisplayChange2D().ifPresent(target::transformDisplayCoordinates);
@@ -193,21 +324,27 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                 changing = false;
             }
         } else if (PlanarCanvas.OBJECTIVE_CRS_PROPERTY.equals(event.getPropertyName())) {
-            isTransformUpdated = false;
-            sourceToTarget = null;
+            displayTransform         = null;
+            objectiveTransform       = null;
+            displayTransformStatus   = OUTDATED;
+            objectiveTransformStatus = OUTDATED;
         }
     }
 
     /**
      * Finds the transform to use for converting changes from {@linkplain #source} canvas to {@linkplain #target} canvas.
-     * This method should be invoked only if {@link #isTransformUpdated} is {@code false}. After this method returned,
-     * {@link #sourceToTarget} contains the transform to use, which may be {@code null} if none.
+     * This method should be invoked only if {@link #objectiveTransformStatus} is not {@link #VALID}. After this method
+     * returned, {@link #objectiveTransform} contains the transform to use, which may be {@code null} if none.
+     *
+     * @param  caller  the public method which is invoked this private method. Used only for logging purposes.
+     * @return whether a transform has been computed.
      */
-    private void findSourceToTarget() {
-        sourceToTarget     = null;
-        effectiveRealWorld = false;
-        isTransformUpdated = true;      // If an exception occurs, use above setting.
-        if (followRealWorld) {
+    private boolean findObjectiveTransform(final String caller) {
+        if (objectiveTransformStatus == OUTDATED) {
+            displayTransform         = null;
+            objectiveTransform       = null;
+            displayTransformStatus   = OUTDATED;
+            objectiveTransformStatus = ERROR;      // If an exception occurs, use above setting.
             final CoordinateReferenceSystem sourceCRS = source.getObjectiveCRS();
             final CoordinateReferenceSystem targetCRS = target.getObjectiveCRS();
             if (sourceCRS != null && targetCRS != null) try {
@@ -215,68 +352,50 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                 try {
                     aoi = target.getGeographicArea().orElse(null);
                 } catch (RenderException e) {
-                    canNotCompute(e);
+                    canNotCompute(caller, e);
                     aoi = null;
                 }
-                sourceToTarget = CRS.findOperation(sourceCRS, targetCRS, aoi).getMathTransform();
-                if (sourceToTarget.isIdentity()) {
-                    sourceToTarget = null;
+                objectiveTransform = CRS.findOperation(sourceCRS, targetCRS, aoi).getMathTransform();
+                if (objectiveTransform.isIdentity()) {
+                    objectiveTransform = null;
                 }
-                effectiveRealWorld = true;
+                objectiveTransformStatus = VALID;
+                return true;
             } catch (FactoryException e) {
-                canNotCompute(e);
+                canNotCompute(caller, e);
                 // Stay with "changes in display units" mode.
+            } else {
+                objectiveTransformStatus = UNKNOWN;
             }
         }
+        return false;
     }
 
     /**
-     * Converts a change from units of the source CRS to units of the target CRS.
-     * If that change can not be computed, the caller will fallback on a change
-     * in display units (typically pixels).
-     *
-     * @param  before  the change in units of the {@linkplain #source} objective CRS.
-     * @return  the same change but in units of the {@linkplain #target} objective CRS,
-     *          or {@code null} if it can not be computed.
-     */
-    private AffineTransform convertObjectiveChange(final AffineTransform before) {
-        if (sourceToTarget == null) {
-            return before;
-        }
-        if (before != null) {
-            final DirectPosition poi = target.getPointOfInterest(true);
-            if (poi != null) try {
-                AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.linear(sourceToTarget, poi));
-                AffineTransform c = t.createInverse();
-                c.preConcatenate(before);
-                c.preConcatenate(t);
-                return c;
-            } catch (TransformException | NoninvertibleTransformException e) {
-                canNotCompute(e);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Invoked when the {@link #sourceToTarget} transform can not be computed,
+     * Invoked when the {@link #objectiveTransform} transform can not be computed,
      * or when an optional information required for that transform is missing.
      * This method assumes that the public caller (possibly indirectly) is
      * {@link #propertyChange(PropertyChangeEvent)}.
+     *
+     * @param  caller  the public method which is invoked this private method. Used only for logging purposes.
+     * @param  e  the exception that occurred.
      */
-    private static void canNotCompute(final Exception e) {
-        Logging.recoverableException(Logger.getLogger(Modules.PORTRAYAL), CanvasFollower.class, "propertyChange", e);
+    private static void canNotCompute(final String caller, final Exception e) {
+        Logging.recoverableException(Logger.getLogger(Modules.PORTRAYAL), CanvasFollower.class, caller, e);
     }
 
     /**
-     * Removes all listeners documented in {@linkplain CanvasFollower class javadoc}.
-     * This method should be invoked when {@code CanvasFollower} is no longer needed
-     * for avoiding memory leak.
+     * Removes all listeners documented in the {@link #initialize()} method.
+     * This method should be invoked when {@code CanvasFollower} is no longer needed, in order to avoid memory leak.
+     *
+     * @see #initialize()
      */
     @Override
     public void dispose() {
         source.removePropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+        target.removePropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
         source.removePropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
         target.removePropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
+        initialized = false;
     }
 }

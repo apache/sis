@@ -158,6 +158,13 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     }
 
     /**
+     * Quick and non-overrideable check about whether the specified source is the source of this event.
+     */
+    final boolean isSameSource(final Canvas source) {
+        return super.getSource() == source;
+    }
+
+    /**
      * Returns the canvas on which this event initially occurred.
      *
      * @return the canvas on which this event initially occurred.

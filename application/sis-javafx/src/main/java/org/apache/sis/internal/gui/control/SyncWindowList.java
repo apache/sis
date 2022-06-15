@@ -17,10 +17,6 @@
 package org.apache.sis.internal.gui.control;
 
 import java.util.List;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -34,7 +30,7 @@ import javafx.application.Platform;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapCanvas;
-import org.apache.sis.portrayal.CanvasFollower;
+import org.apache.sis.gui.map.GestureFollower;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -53,12 +49,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * Window containing a {@link MapCanvas} to follow on gesture events.
      * Gestures are followed only if {@link #linked} is {@code true}.
      */
-    private static final class Link extends CanvasFollower implements ChangeListener<Boolean> {
-        /**
-         * Whether the "foreigner" {@linkplain #view} should be followed.
-         */
-        public final BooleanProperty linked;
-
+    private static final class Link extends GestureFollower {
         /**
          * The "foreigner" view for which to follow the gesture.
          */
@@ -71,50 +62,42 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
          * @param  source  the canvas which is the source of zoom, pan or rotation events.
          * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         private Link(final WindowHandler view, final MapCanvas source, final MapCanvas target) {
             super(source, target);
             this.view = view;
-            linked = new SimpleBooleanProperty(this, "linked");
-            linked.addListener(this);
-            source.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
-            target.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
         }
 
         /**
          * Converts the given list of handled to a list of table rows.
          *
          * @param  added   list of new items to put in the table.
+         * @param  addTo   where to add the converted items.
          * @param  owner   item to exclude (because the referenced window is itself).
          * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
          */
-        static List<Link> wrap(final List<? extends WindowHandler> added, final WindowHandler owner, final MapCanvas target) {
+        static void wrap(final List<? extends WindowHandler> added, final List<Link> addTo,
+                         final WindowHandler owner, final MapCanvas target)
+        {
             final Link[] items = new Link[added.size()];
             int count = 0;
-            for (final WindowHandler view : added) {
-                if (view != owner) {
-                    final MapCanvas source = view.getCanvas().orElse(null);
-                    if (source != null) {
-                        items[count++] = new Link(view, source, target);
+            try {
+                for (final WindowHandler view : added) {
+                    if (view != owner) {
+                        final MapCanvas source = view.getCanvas().orElse(null);
+                        if (source != null) {
+                            final Link item = new Link(view, source, target);;
+                            items[count++] = item;          // Add now for disposing if an exception is thrown.
+                            item.initialize();              // Invoked outside constructor for allowing disposal.
+                            item.cursorEnabled.set(true);
+                        }
                     }
                 }
-            }
-            return UnmodifiableArrayList.wrap(items, 0, count);
-        }
-
-        /**
-         * Invoked when the {@link #linked} property value changed.
-         *
-         * @param  property  equivalent to {@link #link}.
-         * @param  oldValue  equivalent to {@code !newValue}.
-         * @param  newValue  the new checkbox value.
-         */
-        @Override
-        public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
-            if (newValue) {
-                source.addPropertyChangeListener(MapCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
-            } else {
-                source.removePropertyChangeListener(MapCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
+                addTo.addAll(UnmodifiableArrayList.wrap(items, 0, count));
+            } catch (Throwable e) {
+                while (--count >= 0) {
+                    items[--count].dispose();               // Remove listeners for avoiding memory leak.
+                }
+                throw e;
             }
         }
     }
@@ -164,7 +147,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
          * The first column contains a checkbox for choosing whether the window should be followed or not.
          */
         table.getColumns().setAll(
-                newBooleanColumn(/* 🔗 (link symbol) */  "\uD83D\uDD17",      (cell) -> cell.getValue().linked),
+                newBooleanColumn(/* 🔗 (link symbol) */  "\uD83D\uDD17",      (cell) -> cell.getValue().transformEnabled),
                 newStringColumn (vocabulary.getString(Vocabulary.Keys.Title), (cell) -> cell.getValue().view.title));
         table.setRowFactory(SyncWindowList::newRow);
         /*
@@ -264,6 +247,6 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
         if (target == null) {
             target = owner.getCanvas().get();
         }
-        table.getItems().addAll(Link.wrap(windows, owner, target));
+        Link.wrap(windows, table.getItems(), owner, target);
     }
 }
