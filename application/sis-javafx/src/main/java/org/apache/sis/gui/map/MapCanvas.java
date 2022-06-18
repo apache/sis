@@ -19,6 +19,7 @@ package org.apache.sis.gui.map;
 import java.util.Locale;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Formatter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.beans.PropertyChangeEvent;
@@ -154,10 +155,13 @@ public abstract class MapCanvas extends PlanarCanvas {
      * It does not apply to the immediate feedback that the user gets from JavaFX affine transforms
      * (an image with lower quality used until the higher quality image become ready).
      *
+     * <p>This value should not be too small for reducing flickering effects that are sometime visible
+     * at the moment when image data are replaced.</p>
+     *
      * @see #requestRepaint()
      * @see Delayed
      */
-    private static final long REPAINT_DELAY = 100;
+    private static final long REPAINT_DELAY = 500;
 
     /**
      * Number of nanoseconds to wait before to set mouse cursor shape to {@link Cursor#WAIT} during rendering.
@@ -165,7 +169,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @see #renderingStartTime
      */
-    private static final long WAIT_CURSOR_DELAY = (500 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
+    private static final long WAIT_CURSOR_DELAY = (1000 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
 
     /**
      * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.
@@ -1124,7 +1128,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                  * use it as-is. Otherwise we will compute it from the bounds of data.
                  */
                 CoordinateReferenceSystem objectiveCRS;
-                LinearTransform crsToDisplay = null;
+                LinearTransform crsToDisplay;
                 final GridGeometry init = initialState;
                 initialState = null;                                    // For using `objectiveBounds` next times.
                 if (init != null && init.isDefined(GridGeometry.GRID_TO_CRS)) {
@@ -1200,7 +1204,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         final Renderer context = createRenderer();
         if (context != null && context.initialize(floatingPane)) {
             final Task<?> worker = createWorker(context);
-            assert renderingInProgress == null;
+            assert renderingInProgress == null : renderingInProgress;
             BackgroundThreads.execute(worker);
             renderingInProgress = worker;       // Set after we know that the task has been scheduled.
             if (!isCursorChangeScheduled) {
@@ -1257,6 +1261,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     final void renderingCompleted(final Task<?> task) {
         assert Platform.isFxApplicationThread();
+        assert renderingInProgress == task : "Expected " + renderingInProgress + " but was " + task;
         // Keep cursor unchanged if contents changed, because caller will invoke `repaint()` again.
         if (!contentsChanged() || task.getState() != Task.State.SUCCEEDED) {
             restoreCursorAfterPaint();
@@ -1512,5 +1517,30 @@ public abstract class MapCanvas extends PlanarCanvas {
         isNavigationDisabled = false;
         isRendering.set(false);
         requestRepaint();
+    }
+
+    /**
+     * Returns a string representation of this canvas for debugging purposes.
+     * This string spans multiple lines.
+     *
+     * @return debug string (may change in any future version).
+     *
+     * @since 1.3
+     */
+    @Override
+    public String toString() {
+        final Formatter buffer = new Formatter();
+        final double tx = transform.getTx();
+        final double ty = transform.getTy();
+        try {
+            final AffineTransform displayToObjective = objectiveToDisplay.createInverse();
+            java.awt.geom.Point2D p = new java.awt.geom.Point2D.Double(-tx, -ty);
+            p = displayToObjective.transform(p, p);
+            buffer.format("Upper-left corner:   %+7.2f %+7.2f%n", p.getX(), p.getY());
+        } catch (NoninvertibleTransformException e) {
+            buffer.format("%s%n", e);
+        }
+        buffer.format("Pending translation: %+7.2f %+7.2f px%n", tx, ty);
+        return buffer.toString();
     }
 }

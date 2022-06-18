@@ -527,7 +527,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
                 } while (invalid && !isCancelled());
             } finally {
                 if (invalid) {
-                    drawTo.flush();         // Release native resources.
+                    drawTo.flush();         // Release native resources on cancellation or exception thrown.
                 }
             }
             return drawTo;
@@ -578,11 +578,12 @@ public abstract class MapCanvasAWT extends MapCanvas {
             }
         }
 
-        /** Clears the image in the same way than failure. */
+        /** Clears the image in the same way than failure. Defined for safety but should not happen. */
         @Override protected void cancelled() {failed();}
 
         /**
          * Invoked in JavaFX thread on failure. No result is available. The JavaFX image is set to an empty image.
+         * {@link VolatileImage#flush()} has already been invoked by the finally block in {@link #call()}.
          */
         @Override
         protected void failed() {

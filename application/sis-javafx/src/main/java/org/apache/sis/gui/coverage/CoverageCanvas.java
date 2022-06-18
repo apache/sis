@@ -1218,7 +1218,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             final Rectangle2D aoi = getAreaOfInterest();
             final DirectPosition poi = getPointOfInterest(true);
             if (aoi != null && poi != null) {
-                table.append(String.format("A/P of interest in objective CRS (x,y):%n"
+                table.append(String.format("Area of interest in objective CRS (x,y):%n"
                              + "Max: %, 16.4f  %, 16.4f%n"
                              + "POI: %, 16.4f  %, 16.4f%n"
                              + "Min: %, 16.4f  %, 16.4f%n",
@@ -1231,8 +1231,9 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (source != null) {
                 table.append("Extent in source coverage:").append(lineSeparator)
                      .append(String.valueOf(new GridExtent(source))).append(lineSeparator)
-                     .nextLine();
+                     .appendHorizontalSeparator();
             }
+            table.append(super.toString()).nextLine();
             table.nextLine('═');
             table.flush();
         } catch (RenderException | TransformException | IOException e) {
