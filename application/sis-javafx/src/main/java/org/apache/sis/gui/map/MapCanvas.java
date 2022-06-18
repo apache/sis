@@ -83,8 +83,10 @@ import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.MouseDrags;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.portrayal.TransformChangeEvent;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static java.util.logging.Logger.getLogger;
@@ -271,6 +273,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      * and the completion of latest {@link #repaint()} event. This is used for giving immediate feedback to user
      * while waiting for the new rendering to be ready. Since this transform is a member of {@link #floatingPane}
      * {@linkplain Pane#getTransforms() transform list}, changes in this transform are immediately visible to user.
+     *
+     * @see #getInterimTransform(boolean)
      */
     private final Affine transform;
 
@@ -506,7 +510,11 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     private void applyTranslation(final double tx, final double ty, final boolean isFinal) {
         if (tx != 0 || ty != 0) {
+            final AffineTransform2D interim = getInterimTransformForListeners();
             transform.appendTranslation(tx, ty);
+            if (interim != null) {
+                fireInterimTransform(interim, AffineTransform.getTranslateInstance(tx, ty));
+            }
             if (!isFinal) {
                 requestRepaint();
                 return;
@@ -575,11 +583,15 @@ public abstract class MapCanvas extends PlanarCanvas {
                     unexpectedException("onKeyTyped", e);
                 }
             }
+            final AffineTransform2D interim = getInterimTransformForListeners();
             if (zoom != 1) {
                 transform.appendScale(zoom, zoom, x, y);
             }
             if (angle != 0) {
                 transform.appendRotation(angle, x, y);
+            }
+            if (interim != null) {
+                fireInterimTransform(interim, null);
             }
             requestRepaint();
         }
@@ -906,10 +918,13 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This method must be invoked in the JavaFX thread. The visual is updated immediately by transforming
      * the current image, then a more accurate image is prepared in a background thread.
      *
-     * <p>Contrarily to the method defined in the {@link PlanarCanvas} parent class,
-     * this method does not guarantee that an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event is fired immediately.
-     * The event may be fired at an undetermined amount of time after this method call.
-     * However the event will always be fired in the JavaFX thread.</p>
+     * <h4>Transform events</h4>
+     * This method fires immediately an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event with
+     * {@link TransformChangeEvent.Reason#INTERIM}. This event does not yet reflect the state of the
+     * {@linkplain #getObjectiveToDisplay() objective to display} transform. At some arbitrary time in the future,
+     * another {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event will occur (still in JavaFX thread)
+     * with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION} (really display, not objective).
+     * That event will consolidate all {@code INTERIM} events that happened since the last non-interim event.
      *
      * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
      *
@@ -918,11 +933,15 @@ public abstract class MapCanvas extends PlanarCanvas {
     @Override
     public void transformObjectiveCoordinates(final AffineTransform before) {
         if (!before.isIdentity()) try {
+            final AffineTransform2D interim = getInterimTransformForListeners();
             AffineTransform t = objectiveToDisplay.createInverse();
             t.preConcatenate(before);
             t.preConcatenate(objectiveToDisplay);
             transform.prepend(t.getScaleX(), t.getShearX(), t.getTranslateX(),
                               t.getShearY(), t.getScaleY(), t.getTranslateY());
+            if (interim != null) {
+                fireInterimTransform(interim, null);
+            }
             requestRepaint();
         } catch (NoninvertibleTransformException e) {
             errorOccurred(e);
@@ -934,10 +953,13 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This method must be invoked in the JavaFX thread. The visual is updated immediately by transforming
      * the current image, then a more accurate image is prepared in a background thread.
      *
-     * <p>Contrarily to the method defined in the {@link PlanarCanvas} parent class,
-     * this method does not guarantee that an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event is fired immediately.
-     * The event may be fired at an undetermined amount of time after this method call.
-     * However the event will always be fired in the JavaFX thread.</p>
+     * <h4>Transform events</h4>
+     * This method fires immediately an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event with
+     * {@link TransformChangeEvent.Reason#INTERIM}. This event does not yet reflect the state of the
+     * {@linkplain #getObjectiveToDisplay() objective to display} transform. At some arbitrary time in the future,
+     * another {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event will occur (still in JavaFX thread)
+     * with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION}. That event will consolidate
+     * all {@code INTERIM} events that happened since the last non-interim event.
      *
      * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
      *
@@ -946,10 +968,62 @@ public abstract class MapCanvas extends PlanarCanvas {
     @Override
     public void transformDisplayCoordinates(final AffineTransform after) {
         if (!after.isIdentity()) {
+            final AffineTransform2D interim = getInterimTransformForListeners();
             transform.append(after.getScaleX(), after.getShearX(), after.getTranslateX(),
                              after.getShearY(), after.getScaleY(), after.getTranslateY());
+            if (interim != null) {
+                fireInterimTransform(interim, after);
+            }
             requestRepaint();
         }
+    }
+
+    /**
+     * Fires a {@link TransformChangeEvent} for a change in the {@link #transform}.
+     * This method needs a modifiable {@code before} instance; it will be modified.
+     *
+     * @param before  value of {@link #getInterimTransform(boolean)} before the change.
+     * @param change  change in pixel coordinates, or {@code null} for lazy computation.
+     */
+    private void fireInterimTransform(final AffineTransform2D before, final AffineTransform change) {
+        final AffineTransform2D after = getInterimTransform(true);
+        after .concatenate(objectiveToDisplay); after .freeze();
+        before.concatenate(objectiveToDisplay); before.freeze();
+        firePropertyChange(new TransformChangeEvent(this, before, after, null, change,
+                               TransformChangeEvent.Reason.INTERIM));
+    }
+
+    /**
+     * Returns the {@linkplain #getInterimTransform(boolean) interim transform} if at least one listener
+     * is registered, or {@code null} otherwise. This method should be used with the following pattern:
+     *
+     * {@preformat java
+     *     AffineTransform2D interim = getInterimTransformForListeners();
+     *     transform.something(…);
+     *     if (interim != null) {
+     *         fireInterimTransform(interim, change);
+     *     }
+     * }
+     *
+     * @return a copy of {@link #transform} as a modifiable Java2D object, or {@code null} if not needed.
+     */
+    private AffineTransform2D getInterimTransformForListeners() {
+        return hasPropertyChangeListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getInterimTransform(true) : null;
+    }
+
+    /**
+     * Returns {@link #transform} as a Java2D affine transform. This is the change to append to
+     * {@link #objectiveToDisplay} for getting the transform that user currently see on screen.
+     * This is a temporary transform, for immediate feedback to user before the map is re-rendered.
+     *
+     * @param modifiable  whether the returned transform should be modifiable.
+     *         If true, then it is caller's responsibility to invoke {@link AffineTransform2D#freeze()}.
+     * @return a copy of {@link #transform} as a (potentially immutable) Java2D object.
+     */
+    private AffineTransform2D getInterimTransform(final boolean modifiable) {
+        return new AffineTransform2D(transform.getMxx(), transform.getMyx(),
+                                     transform.getMxy(), transform.getMyy(),
+                                     transform.getTx(),  transform.getTy(), modifiable);
     }
 
     /**
@@ -1189,10 +1263,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         changeInProgress.setToTransform(transform);
         if (!transform.isIdentity()) {
-            super.transformDisplayCoordinates(new AffineTransform(
-                    transform.getMxx(), transform.getMyx(),
-                    transform.getMxy(), transform.getMyy(),
-                    transform.getTx(),  transform.getTy()));
+            super.transformDisplayCoordinates(getInterimTransform(false));
         }
         /*
          * Invoke `createWorker(…)` only after we finished above configuration, because that method

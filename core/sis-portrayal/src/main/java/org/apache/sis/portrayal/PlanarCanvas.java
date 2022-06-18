@@ -174,14 +174,12 @@ public abstract class PlanarCanvas extends Canvas {
      */
     public void transformObjectiveCoordinates(final AffineTransform before) {
         if (!before.isIdentity()) {
-            final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
+            final LinearTransform old = hasPropertyChangeListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.concatenate(before);
             super.setObjectiveToDisplayImpl(null);
             if (old != null) {
-                final TransformChangeEvent event = new TransformChangeEvent(this, old, null,
-                        TransformChangeEvent.Reason.OBJECTIVE_NAVIGATION);
-                event.objectiveChange2D = before;
-                firePropertyChange(event);
+                firePropertyChange(new TransformChangeEvent(this, old, null, before, null,
+                                       TransformChangeEvent.Reason.OBJECTIVE_NAVIGATION));
             }
         }
     }
@@ -203,14 +201,12 @@ public abstract class PlanarCanvas extends Canvas {
      */
     public void transformDisplayCoordinates(final AffineTransform after) {
         if (!after.isIdentity()) {
-            final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
+            final LinearTransform old = hasPropertyChangeListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.preConcatenate(after);
             super.setObjectiveToDisplayImpl(null);
             if (old != null) {
-                final TransformChangeEvent event = new TransformChangeEvent(this, old, null,
-                        TransformChangeEvent.Reason.DISPLAY_NAVIGATION);
-                event.displayChange2D = after;
-                firePropertyChange(event);
+                firePropertyChange(new TransformChangeEvent(this, old, null, null, after,
+                                       TransformChangeEvent.Reason.DISPLAY_NAVIGATION));
             }
         }
     }

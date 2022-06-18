@@ -47,13 +47,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * account the differences in zoom levels and map projections. For example a translation of 10 pixels in one
  * canvas may map to a translation of 20 pixels in the other canvas for reproducing the same "real world" translation.
  *
- * <p>This class implements an unidirectional binding: changes in source are applied on target, but not the converse.
- * It is recommended to avoid bidirectional binding in current implementation
- * (this limitation may be fixed in a future version).</p>
- *
  * <h2>Listeners</h2>
  * {@code CanvasFollower} listeners need to be registered explicitly by a call to the {@link #initialize()} method.
  * The {@link #dispose()} convenience method is provided for unregistering all those listeners.
+ * The listeners registered by this class implement an unidirectional binding:
+ * changes in source are applied on target, but not the converse.
  *
  * <h2>Multi-threading</h2>
  * This class is <strong>not</strong> thread-safe.
@@ -241,6 +239,33 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     }
 
     /**
+     * Returns the objective coordinates of the Point Of Interest (POI) in source canvas.
+     * This information is used when the source and target canvases do not use the same CRS.
+     * Changes in "real world" coordinates on the {@linkplain #target} canvas are guaranteed
+     * to reflect the changes in "real world" coordinates of the {@linkplain #source} canvas
+     * at that location only. At all other locations, the "real world" coordinate changes
+     * may differ because of map projection deformations.
+     *
+     * <p>The default implementation is as below. Subclasses can override this method for
+     * using a different point of interest, for example at the location of mouse cursor.</p>
+     *
+     * {@preformat java
+     *     return source.getPointOfInterest(true);
+     * }
+     *
+     * The CRS associated to the position shall be {@link PlanarCanvas#getObjectiveCRS()}.
+     * For performance reason, this is not verified by this {@code CanvasFollower} class.
+     *
+     * @return objective coordinates in source canvas where displacements, zooms and rotations
+     *         applied on the source canvas should be mirrored exactly on the target canvas.
+     *
+     * @see PlanarCanvas#getPointOfInterest(boolean)
+     */
+    public DirectPosition getSourceObjectivePOI() {
+        return source.getPointOfInterest(true);
+    }
+
+    /**
      * Returns the transform from source display coordinates to target display coordinates.
      * This transform may change every time that a zoom; translation or rotation is applied
      * on at least one canvas. The transform may be absent if an error prevent to compute it,
@@ -288,47 +313,131 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * If the event is an instance of {@link TransformChangeEvent}, then this method applies the same change
      * on the {@linkplain #target} canvas.
      *
+     * <p>This method delegates part of its work to the following methods,
+     * which can be overridden for altering the changes:</p>
+     *
+     * <ul>
+     *   <li>{@link #transformObjectiveCoordinates(TransformChangeEvent, AffineTransform)}
+     *        if {@linkplain #getFollowRealWorld() following real world coordinates}.</li>
+     *   <li>{@link #transformDisplayCoordinates(TransformChangeEvent, AffineTransform)}
+     *        if following pixel coordinates instead of real world.</li>
+     *   <li>{@link #transformedSource(TransformChangeEvent)} after the change has been applied on {@linkplain #source}.</li>
+     *   <li>{@link #transformedTarget(TransformChangeEvent)} after the change has been applied on {@linkplain #target}.</li>
+     * </ul>
+     *
      * @param  event  a change in the canvas that this listener is tracking.
      */
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
-        if (event instanceof TransformChangeEvent) {
+        if (!changing && event instanceof TransformChangeEvent) try {
             final TransformChangeEvent te = (TransformChangeEvent) event;
             displayTransformStatus = OUTDATED;
-            if (!disabled && !changing && te.isSameSource(source) && te.getReason().isNavigation()) try {
-                changing = true;
-                if (followRealWorld && (objectiveTransformStatus == VALID || findObjectiveTransform("propertyChange"))) {
-                    AffineTransform before = te.getObjectiveChange2D().orElse(null);
-                    if (before != null) try {
-                        /*
-                         * Converts a change from units of the source CRS to units of the target CRS.
-                         * If that change can not be computed, fallback on a change in display units.
-                         * The POI may be null, but this is okay if the transform is linear.
-                         */
-                        if (objectiveTransform != null) {
-                            DirectPosition poi = target.getPointOfInterest(true);
-                            AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.linear(objectiveTransform, poi));
-                            AffineTransform c = t.createInverse();
-                            c.preConcatenate(before);
-                            c.preConcatenate(t);
-                            before = c;
+            changing = true;
+            if (te.isSameSource(source)) {
+                transformedSource(te);
+                if (!disabled && filter(te)) {
+                    if (followRealWorld && (objectiveTransformStatus == VALID || findObjectiveTransform("propertyChange"))) {
+                        AffineTransform before = te.getObjectiveChange2D().orElse(null);
+                        if (before != null) try {
+                            /*
+                             * Converts a change from units of the source CRS to units of the target CRS.
+                             * If that change can not be computed, fallback on a change in display units.
+                             * The POI may be null, but this is okay if the transform is linear.
+                             */
+                            if (objectiveTransform != null) {
+                                DirectPosition poi = getSourceObjectivePOI();
+                                AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.linear(objectiveTransform, poi));
+                                AffineTransform c = t.createInverse();
+                                c.preConcatenate(before);
+                                c.preConcatenate(t);
+                                before = c;
+                            }
+                            transformObjectiveCoordinates(te, before);
+                            return;
+                        } catch (NullArgumentException | TransformException | NoninvertibleTransformException e) {
+                            canNotCompute("propertyChange", e);
                         }
-                        target.transformObjectiveCoordinates(before);
-                        return;
-                    } catch (NullArgumentException | TransformException | NoninvertibleTransformException e) {
-                        canNotCompute("propertyChange", e);
                     }
+                    te.getDisplayChange2D().ifPresent((after) -> transformDisplayCoordinates(te, after));
                 }
-                te.getDisplayChange2D().ifPresent(target::transformDisplayCoordinates);
-            } finally {
-                changing = false;
+            } else if (te.isSameSource(target)) {
+                transformedTarget(te);
             }
+        } finally {
+            changing = false;
         } else if (PlanarCanvas.OBJECTIVE_CRS_PROPERTY.equals(event.getPropertyName())) {
             displayTransform         = null;
             objectiveTransform       = null;
             displayTransformStatus   = OUTDATED;
             objectiveTransformStatus = OUTDATED;
         }
+    }
+
+    /**
+     * Returns {@code true} if this listener should replicate the following changes on the target canvas.
+     * The default implementation returns {@code true} if the transform reason is
+     * {@link TransformChangeEvent.Reason#OBJECTIVE_NAVIGATION} or
+     * {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION}.
+     *
+     * @param  event  a transform change event that occurred on the {@linkplain #source} canvas.
+     * @return  whether to replicate that change on the {@linkplain #target} canvas.
+     */
+    protected boolean filter(final TransformChangeEvent event) {
+        return event.getReason().isNavigation();
+    }
+
+    /**
+     * Invoked by {@link #propertyChange(PropertyChangeEvent)} for updating the transform of the target canvas
+     * in units of the objective CRS. The {@linkplain #target} canvas is updated by this method as if the given
+     * transform was applied <em>before</em> its current <cite>objective to display</cite> transform.
+     *
+     * <p>The default implementation delegates to {@link PlanarCanvas#transformObjectiveCoordinates(AffineTransform)}.
+     * Subclasses can override if they need to transform additional data.</p>
+     *
+     * @param  event   the change in the {@linkplain #source} canvas.
+     * @param  before  the change to apply on the {@linkplain #target} canvas, in unit of objective CRS.
+     *
+     * @see PlanarCanvas#transformObjectiveCoordinates(AffineTransform)
+     */
+    protected void transformObjectiveCoordinates(final TransformChangeEvent event, final AffineTransform before) {
+        target.transformObjectiveCoordinates(before);
+    }
+
+    /**
+     * Invoked by {@link #propertyChange(PropertyChangeEvent)} for updating the transform of the target canvas
+     * in display units (typically pixels). The {@linkplain #target} canvas is updated by this method as if the
+     * given transform was applied <em>after</em> its current <cite>objective to display</cite> transform.
+     *
+     * <p>The default implementation delegates to {@link PlanarCanvas#transformDisplayCoordinates(AffineTransform)}.
+     * Subclasses can override if they need to transform additional data.</p>
+     *
+     * @param  event  the change in the {@linkplain #source} canvas.
+     * @param  after  the change to apply on the {@linkplain #target} canvas, in display units (typically pixels).
+     *
+     * @see PlanarCanvas#transformDisplayCoordinates(AffineTransform)
+     */
+    protected void transformDisplayCoordinates(final TransformChangeEvent event, final AffineTransform after) {
+        target.transformDisplayCoordinates(after);
+    }
+
+    /**
+     * Invoked after the source "objective to display" transform has been updated.
+     * The default implementation does nothing.
+     * Subclasses can override if they need to transform additional data.
+     *
+     * @param  event  the change which has been applied on the {@linkplain #source} canvas.
+     */
+    protected void transformedSource(TransformChangeEvent event) {
+    }
+
+    /**
+     * Invoked after the target "objective to display" transform has been updated.
+     * The default implementation does nothing.
+     * Subclasses can override if they need to transform additional data.
+     *
+     * @param  event  the change which has been applied on the {@linkplain #target} canvas.
+     */
+    protected void transformedTarget(TransformChangeEvent event) {
     }
 
     /**

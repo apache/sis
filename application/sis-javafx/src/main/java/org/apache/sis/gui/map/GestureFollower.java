@@ -34,6 +34,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.portrayal.TransformChangeEvent;
 import org.apache.sis.portrayal.CanvasFollower;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
@@ -81,7 +82,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      * The effect applied on the cursor. The intend is to make it more visible if the cursor color
      * is close to the color of features rendered on the map.
      */
-    private static final DropShadow CURSOR_EFFECT = new DropShadow(BlurType.ONE_PASS_BOX, Color.BLACK, 5, 0, 0, 0);
+    private static final DropShadow CURSOR_EFFECT = new DropShadow(BlurType.ONE_PASS_BOX, Color.DEEPPINK, 5, 0, 0, 0);
 
     /**
      * Whether changes in the "objective to display" transforms should be propagated from source to target canvas.
@@ -96,9 +97,9 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     public final BooleanProperty cursorEnabled;
 
     /**
-     * Cursor position of the mouse over source canvas, expressed in coordinates of the target canvas.
+     * Cursor position of the mouse over source canvas, expressed in coordinates of the source and target canvas.
      */
-    private final Point2D.Double cursorPosition;
+    private final Point2D.Double cursorSourcePosition, cursorTargetPosition;
 
     /**
      * The shape used for drawing a cursor on the target canvas. Constructed when first requested.
@@ -122,7 +123,8 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     public GestureFollower(final MapCanvas source, final MapCanvas target) {
         super(source, target);
         super.setDisabled(true);
-        cursorPosition   = new Point2D.Double();
+        cursorSourcePosition = new Point2D.Double(Double.NaN, Double.NaN);
+        cursorTargetPosition = new Point2D.Double(Double.NaN, Double.NaN);
         transformEnabled = new SimpleBooleanProperty(this, "transformEnabled");
         cursorEnabled    = new SimpleBooleanProperty(this, "cursorEnabled");
         transformEnabled.addListener((p,o,n) -> setDisabled(!n));
@@ -139,6 +141,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
         if (enabled) {
             if (cursor == null) {
                 cursor = new Path(CURSOR_SHAPE);
+                cursor.setStrokeWidth(3);
                 cursor.setStroke(Color.LIGHTPINK);
                 cursor.setEffect(CURSOR_EFFECT);
                 cursor.setMouseTransparent(true);
@@ -150,10 +153,12 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
             pane.addEventHandler(MouseEvent.MOUSE_ENTERED, this);
             pane.addEventHandler(MouseEvent.MOUSE_EXITED,  this);
             pane.addEventHandler(MouseEvent.MOUSE_MOVED,   this);
+            pane.addEventHandler(MouseEvent.MOUSE_DRAGGED, this);
         } else {
             pane.removeEventHandler(MouseEvent.MOUSE_ENTERED, this);
             pane.removeEventHandler(MouseEvent.MOUSE_EXITED,  this);
             pane.removeEventHandler(MouseEvent.MOUSE_MOVED,   this);
+            pane.removeEventHandler(MouseEvent.MOUSE_DRAGGED, this);
             if (cursor != null) {
                 (((MapCanvas) target).floatingPane).getChildren().remove(cursor);
             }
@@ -168,27 +173,77 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      */
     @Override
     public void handle(final MouseEvent event) {
+        cursorSourcePosition.x = event.getX();
+        cursorSourcePosition.y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
-        if (type == MouseEvent.MOUSE_MOVED || type == MouseEvent.MOUSE_ENTERED) {
+        if (type == MouseEvent.MOUSE_MOVED) {
+            updateCursorPosition();
+        } else if (type == MouseEvent.MOUSE_ENTERED) {
+            cursor.setVisible(true);
+            updateCursorPosition();
+        } else if (type == MouseEvent.MOUSE_EXITED) {
+            cursor.setVisible(false);
+        }
+    }
+
+    /**
+     * Sets the cursor location in the target canvas to a position computed from current value
+     * of {@link #cursorSourcePosition}.
+     */
+    private void updateCursorPosition() {
+        if (cursor.isVisible()) {
             final MathTransform2D tr = getDisplayTransform().orElse(null);
             if (tr != null) try {
-                cursorPosition.x = event.getX();
-                cursorPosition.y = event.getY();
-                final Point2D  p = tr.transform(cursorPosition, cursorPosition);
+                final Point2D  p = tr.transform(cursorSourcePosition, cursorTargetPosition);
                 cursor.setTranslateX(p.getX());
                 cursor.setTranslateY(p.getY());
-                if (type == MouseEvent.MOUSE_ENTERED) {
-                    cursor.setVisible(true);
-                }
-                return;
             } catch (TransformException e) {
                 Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), GestureFollower.class, "handle", e);
-                // Handle as a mouse exit.
+                cursor.setVisible(false);
             }
-        } else if (type != MouseEvent.MOUSE_EXITED) {
-            return;
         }
-        cursor.setVisible(false);
+    }
+
+    /**
+     * Returns {@code true} if this listener should replicate the following changes on the target canvas.
+     * This implementation returns {@code true} if the transform reason is {@link TransformChangeEvent.Reason#INTERM}.
+     * It allows immediate feedback to users without waiting for the background thread to complete rendering.
+     *
+     * @param  event  a transform change event that occurred on the source canvas.
+     * @return  whether to replicate that change on the target canvas.
+     */
+    @Override
+    protected boolean filter(final TransformChangeEvent event) {
+        return event.getReason() == TransformChangeEvent.Reason.INTERIM;
+    }
+
+    /**
+     * Invoked after the source "objective to display" transform has been updated.
+     *
+     * @hidden
+     */
+    @Override
+    protected void transformedSource(final TransformChangeEvent event) {
+        super.transformedSource(event);
+        if (event.getReason() != TransformChangeEvent.Reason.INTERIM) {
+            event.getDisplayChange2D().ifPresent((change) -> {
+                change.transform(cursorSourcePosition, cursorSourcePosition);
+            });
+        }
+    }
+
+    /**
+     * Invoked after the target "objective to display" transform has been updated.
+     * This method recomputes the cursor position.
+     *
+     * @hidden
+     */
+    @Override
+    protected void transformedTarget(final TransformChangeEvent event) {
+        super.transformedTarget(event);
+        if (event.getReason() != TransformChangeEvent.Reason.INTERIM) {
+            updateCursorPosition();
+        }
     }
 
     /**

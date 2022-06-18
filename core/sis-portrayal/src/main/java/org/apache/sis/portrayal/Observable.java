@@ -36,7 +36,7 @@ import org.apache.sis.util.ArraysExt;
  *       like the index of the element modified in a list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -105,6 +105,18 @@ abstract class Observable {
     }
 
     /**
+     * Returns {@code true} if the given property has at least one listener.
+     *
+     * @param  propertyName  name of the property to test.
+     * @return {@code true} if the given property has at least one listener.
+     *
+     * @since 1.3
+     */
+    protected final boolean hasPropertyChangeListener(final String propertyName) {
+        return (listeners != null) && listeners.containsKey(propertyName);
+    }
+
+    /**
      * Notifies all registered listeners that a property of the given name changed its value.
      * The {@linkplain PropertyChangeEvent#getSource() change event source} will be {@code this}.
      * It is caller responsibility to verify that the old and new values are different
@@ -148,15 +160,5 @@ abstract class Observable {
                 }
             }
         }
-    }
-
-    /**
-     * Returns {@code true} if the given property has at least one listener.
-     *
-     * @param  propertyName  name of the property.
-     * @return {@code true} if the given property has at least one listener.
-     */
-    final boolean hasListener(final String propertyName) {
-        return (listeners != null) && listeners.containsKey(propertyName);
     }
 }

@@ -101,7 +101,15 @@ public class TransformChangeEvent extends PropertyChangeEvent {
          *
          * @see PlanarCanvas#transformDisplayCoordinates(AffineTransform)
          */
-        DISPLAY_NAVIGATION;
+        DISPLAY_NAVIGATION,
+
+        /**
+         * A relative interim change has been applied but is not yet reflected in the "objective to display" transform.
+         * This kind of change is not fired by {@link PlanarCanvas} but may be fired by subclasses such as
+         * {@link org.apache.sis.gui.map.MapCanvas}. That class provides immediate feedback to users
+         * with a temporary visual change before to perform more expansive rendering in background.
+         */
+        INTERIM;
 
         /**
          * Returns {@code true} if the "objective to display" transform changed because of a change
@@ -129,8 +137,9 @@ public class TransformChangeEvent extends PropertyChangeEvent {
 
     /**
      * Value of {@link #displayChange} or {@link #objectiveChange} precomputed by the code that fired this event.
+     * If not precomputed, will be computed when first needed.
      */
-    AffineTransform displayChange2D, objectiveChange2D;
+    private AffineTransform displayChange2D, objectiveChange2D;
 
     /**
      * Non-null if {@link #canNotCompute(String, NoninvertibleTransformException)} already reported an error.
@@ -140,11 +149,11 @@ public class TransformChangeEvent extends PropertyChangeEvent {
 
     /**
      * Creates a new event for a change of the "objective to display" property.
-     * The old and new transforms should not be null, except for lazy computation:
+     * The old and new transforms should not be null, except on initialization or for lazy computation:
      * a null {@code newValue} means to take the value from {@link Canvas#getObjectiveToDisplay()} when needed.
      *
      * @param  source    the canvas that fired the event.
-     * @param  oldValue  the old "objective to display" transform.
+     * @param  oldValue  the old "objective to display" transform, or {@code null} if none.
      * @param  newValue  the new transform, or {@code null} for lazy computation.
      * @param  reason    the reason why the "objective to display" transform changed..
      * @throws IllegalArgumentException if {@code source} is {@code null}.
@@ -155,6 +164,27 @@ public class TransformChangeEvent extends PropertyChangeEvent {
         super(source, Canvas.OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, newValue);
         ArgumentChecks.ensureNonNull("reason", reason);
         this.reason = reason;
+    }
+
+    /**
+     * Creates a new event for an incremental change of the "objective to display" property.
+     * The incremental change can be specified by the {@code objective} and/or the {@code display} argument.
+     * Usually only one of those two arguments is non-null.
+     *
+     * @param  source     the canvas that fired the event.
+     * @param  oldValue   the old "objective to display" transform, or {@code null} if none.
+     * @param  newValue   the new transform, or {@code null} for lazy computation.
+     * @param  objective  the incremental change in objective coordinates, or {@code null} for lazy computation.
+     * @param  display    the incremental change in display coordinates, or {@code null} for lazy computation.
+     * @param  reason     the reason why the "objective to display" transform changed..
+     * @throws IllegalArgumentException if {@code source} is {@code null}.
+     */
+    public TransformChangeEvent(final Canvas source, final LinearTransform oldValue, final LinearTransform newValue,
+                                final AffineTransform objective, final AffineTransform display, final Reason reason)
+    {
+        this(source, oldValue, newValue, reason);
+        objectiveChange2D = objective;
+        displayChange2D   = display;
     }
 
     /**
@@ -188,7 +218,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     /**
      * Gets the old "objective to display" transform.
      *
-     * @return the old "objective to display" transform.
+     * @return the old "objective to display" transform, or {@code null} if none.
      */
     @Override
     public LinearTransform getOldValue() {
