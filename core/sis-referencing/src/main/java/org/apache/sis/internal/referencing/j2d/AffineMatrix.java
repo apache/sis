@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
  * used in double-double arithmetic.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -74,29 +74,37 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     private final double[] errors;
 
     /**
+     * Creates a new matrix wrapping the given transform without error terms.
+     *
+     * @param transform  the transform to wrap.
+     */
+    AffineMatrix(final AffineTransform transform) {
+        this.transform = transform;
+        errors = null;
+    }
+
+    /**
      * Creates a new matrix wrapping the given transform.
      *
      * @param transform  the transform to wrap.
-     * @param elements   the elements used for creating the matrix (optionally with error terms), or {@code null}.
+     * @param elements   the elements used for creating the matrix (optionally with error terms).
      */
     AffineMatrix(final AffineTransform transform, final double[] elements) {
         this.transform = transform;
-        if (elements != null) {
-            assert elements.length == LENGTH || elements.length == LENGTH_EXTENDED;
-            if (elements.length == LENGTH_EXTENDED) {
-                errors = Arrays.copyOfRange(elements, LENGTH, LENGTH + LENGTH_STORED);
-                /*
-                 * At this point we could check:
-                 *
-                 *   assert Arrays.equals(elements, getExtendedElements());
-                 *
-                 * but we do not, because the terms in the last row may not be exactly 0 or 1
-                 * because of rounding errors.
-                 */
-                return;
-            }
+        if (elements.length == LENGTH_EXTENDED) {
+            errors = Arrays.copyOfRange(elements, LENGTH, LENGTH + LENGTH_STORED);
+            /*
+             * At this point we could check:
+             *
+             *   assert Arrays.equals(elements, getExtendedElements());
+             *
+             * but we do not, because the terms in the last row may not be exactly 0 or 1
+             * because of rounding errors.
+             */
+        } else {
+            assert elements.length == LENGTH;
+            errors = null;
         }
-        errors = null;
     }
 
     /**
