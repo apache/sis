@@ -27,7 +27,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * Implementation of a {@link Predictor} to be executed after decompression.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -61,7 +61,7 @@ abstract class PredictorChannel extends PixelChannel {
     }
 
     /**
-     * Prepares this predictor for reading a new tile or a new band of a tile.
+     * Prepares this predictor for reading a new tile or a new band of a planar image.
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
@@ -82,10 +82,10 @@ abstract class PredictorChannel extends PixelChannel {
      * @return position after the last sample value processed. Should be {@link ByteBuffer#position()},
      *         unless the predictor needs more data for processing the last bytes.
      */
-    protected abstract int uncompress(ByteBuffer buffer, int start);
+    protected abstract int apply(ByteBuffer buffer, int start);
 
     /**
-     * Decompresses some bytes from the {@linkplain #input input} into the given destination buffer.
+     * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
      *
      * @param  target  the buffer into which bytes are to be transferred.
      * @return the number of bytes read, or -1 if end-of-stream.
@@ -95,19 +95,31 @@ abstract class PredictorChannel extends PixelChannel {
     public int read(final ByteBuffer target) throws IOException {
         final int start = target.position();
         if (deferredCount != 0) {
+            /*
+             * If we had some bytes from the previous invocation that `apply(…)` could not use,
+             * append those bytes in the target buffer before to read new bytes from the channel.
+             * We may not be able to append all bytes.
+             */
             final int n = Math.min(deferredCount, target.remaining());
             target.put(deferred, 0, n);
-            deferredCount -= n;
+            System.arraycopy(deferred, n, deferred, 0, deferredCount -= n);
         }
         input.read(target);
-        final int end = uncompress(target, start);
-        deferredCount = target.position() - end;
-        if (deferredCount != 0) {
-            if (deferredCount > deferred.length) {
-                deferred = new byte[deferredCount];
+        final int end = apply(target, start);
+        final int remaining = target.position() - end;
+        if (remaining != 0) {
+            /*
+             * If there is some bytes that `apply(…)` could not use, save those bytes for next
+             * invocation of this `read(…)` method. Those bytes may need to be appended after
+             * bytes that previous code block has not been able to put in the target buffer.
+             */
+            final int length = deferredCount + remaining;
+            if (length > deferred.length) {
+                deferred = new byte[length];
             }
-            JDK9.get(target, end, deferred, 0, deferredCount);
+            JDK9.get(target, end, deferred, deferredCount, remaining);
             target.position(end);
+            deferredCount = length;
         }
         return end - start;
     }
