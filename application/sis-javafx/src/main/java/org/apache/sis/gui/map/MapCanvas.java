@@ -138,7 +138,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Size in pixels of a scroll or translation event. This value should be close to the
      * {@linkplain ScrollEvent#getDeltaY() delta of a scroll event done with mouse wheel}.
      */
-    private static final double SCROLL_EVENT_SIZE = 40;
+    static final double SCROLL_EVENT_SIZE = 40;
 
     /**
      * The zoom factor to apply on scroll event. A value of 0.1 means that a zoom of 10%
