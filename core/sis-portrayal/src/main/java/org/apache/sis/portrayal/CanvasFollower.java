@@ -18,6 +18,7 @@ package org.apache.sis.portrayal;
 
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.beans.PropertyChangeEvent;
@@ -34,6 +35,7 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -246,15 +248,12 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * at that location only. At all other locations, the "real world" coordinate changes
      * may differ because of map projection deformations.
      *
-     * <p>The default implementation is as below. Subclasses can override this method for
-     * using a different point of interest, for example at the location of mouse cursor.</p>
+     * <p>The default implementation computes the value from {@link #getSourceDisplayPOI()}
+     * if present, or fallback on {@code source.getPointOfInterest(true)} otherwise.
+     * Subclasses can override this method for using a different point of interest.</p>
      *
-     * {@preformat java
-     *     return source.getPointOfInterest(true);
-     * }
-     *
-     * The CRS associated to the position shall be {@link PlanarCanvas#getObjectiveCRS()}.
-     * For performance reason, this is not verified by this {@code CanvasFollower} class.
+     * <p>The CRS associated to the position shall be {@link PlanarCanvas#getObjectiveCRS()}.
+     * For performance reason, this is not verified by this {@code CanvasFollower} class.</p>
      *
      * @return objective coordinates in source canvas where displacements, zooms and rotations
      *         applied on the source canvas should be mirrored exactly on the target canvas.
@@ -262,7 +261,30 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * @see PlanarCanvas#getPointOfInterest(boolean)
      */
     public DirectPosition getSourceObjectivePOI() {
+        final Point2D p = getSourceDisplayPOI().orElse(null);
+        if (p != null) try {
+            final DirectPosition2D poi = new DirectPosition2D(p);
+            source.objectiveToDisplay.inverseTransform(poi, poi);
+            return poi;
+        } catch (NoninvertibleTransformException e) {
+            canNotCompute("getSourceObjectivePOI", e);
+        }
         return source.getPointOfInterest(true);
+    }
+
+    /**
+     * Returns the display coordinates of the Point Of Interest (POI) in source canvas.
+     * This method provides the same information than {@link #getSourceObjectivePOI()},
+     * but in units that are more convenient for expressing the location of mouse cursor
+     * for example.
+     *
+     * <p>The default implementation returns an empty value.</p>
+     *
+     * @return display coordinates in source canvas where displacements, zooms and rotations
+     *         applied on the source canvas should be mirrored exactly on the target canvas.
+     */
+    public Optional<Point2D> getSourceDisplayPOI() {
+        return Optional.empty();
     }
 
     /**

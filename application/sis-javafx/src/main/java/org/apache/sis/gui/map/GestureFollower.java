@@ -19,6 +19,7 @@ package org.apache.sis.gui.map;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -99,6 +100,12 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     public final BooleanProperty cursorEnabled;
 
     /**
+     * Whether the {@link #cursorSourcePosition} is valid.
+     * If {@code true}, then {@link #cursor} shall be non-null and should be visible.
+     */
+    private boolean cursorSourceValid;
+
+    /**
      * Cursor position of the mouse over source canvas, expressed in coordinates of the source and target canvas.
      */
     private final Point2D.Double cursorSourcePosition, cursorTargetPosition;
@@ -125,8 +132,8 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     public GestureFollower(final MapCanvas source, final MapCanvas target) {
         super(source, target);
         super.setDisabled(true);
-        cursorSourcePosition = new Point2D.Double(Double.NaN, Double.NaN);
-        cursorTargetPosition = new Point2D.Double(Double.NaN, Double.NaN);
+        cursorSourcePosition = new Point2D.Double();
+        cursorTargetPosition = new Point2D.Double();
         transformEnabled = new SimpleBooleanProperty(this, "transformEnabled");
         cursorEnabled    = new SimpleBooleanProperty(this, "cursorEnabled");
         transformEnabled.addListener((p,o,n) -> setDisabled(!n));
@@ -156,7 +163,9 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
             pane.addEventHandler(MouseEvent.MOUSE_EXITED,  this);
             pane.addEventHandler(MouseEvent.MOUSE_MOVED,   this);
             pane.addEventHandler(MouseEvent.MOUSE_DRAGGED, this);
+            cursorSourceValid = true;
         } else {
+            cursorSourceValid = false;
             pane.removeEventHandler(MouseEvent.MOUSE_ENTERED, this);
             pane.removeEventHandler(MouseEvent.MOUSE_EXITED,  this);
             pane.removeEventHandler(MouseEvent.MOUSE_MOVED,   this);
@@ -165,6 +174,26 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
                 (((MapCanvas) target).floatingPane).getChildren().remove(cursor);
             }
         }
+    }
+
+    /**
+     * Returns the position for the mouse cursor in the source canvas if that position is known.
+     * This information is used when the source and target canvases do not use the same CRS.
+     * {@code GestureFollower} tries to transform the canvas views in such a way that the
+     * "real world" change is the same for both canvas at that location.
+     *
+     * <p>The returned value is "live"; it may change with mouse and gesture events.
+     * Callers should not modify that value, and copy it if they need to keep it.</p>
+     *
+     * @return mouse position in source canvas where displacements, zooms and rotations
+     *         applied on the source canvas should be mirrored exactly on the target canvas.
+     */
+    @Override
+    public Optional<Point2D> getSourceDisplayPOI() {
+        if (cursorSourceValid) {
+            return Optional.of(cursorSourcePosition);
+        }
+        return super.getSourceDisplayPOI();
     }
 
     /**
@@ -177,6 +206,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     public void handle(final MouseEvent event) {
         cursorSourcePosition.x = event.getX();
         cursorSourcePosition.y = event.getY();
+        cursorSourceValid = true;
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_MOVED) {
             updateCursorPosition();
@@ -199,8 +229,9 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
             cursor.setTranslateX(p.getX());
             cursor.setTranslateY(p.getY());
         } catch (TransformException e) {
-            Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), GestureFollower.class, "handle", e);
+            cursorSourceValid = false;
             cursor.setVisible(false);
+            Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), GestureFollower.class, "handle", e);
         }
     }
 
@@ -231,9 +262,10 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     @Override
     protected void transformedSource(final TransformChangeEvent event) {
         super.transformedSource(event);
-        if (cursor != null) {
+        if (cursorSourceValid) {
             final AffineTransform change = event.getDisplayChange2D().orElse(null);
             if (change == null) {
+                cursorSourceValid = false;
                 cursor.setVisible(false);
             } else if (event.getReason() != TransformChangeEvent.Reason.INTERIM) {
                 change.transform(cursorSourcePosition, cursorSourcePosition);
@@ -242,6 +274,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
                 change.inverseTransform(cursorSourcePosition, cursorSourcePosition);
                 updateCursorPosition();
             } catch (NoninvertibleTransformException e) {
+                cursorSourceValid = false;
                 cursor.setVisible(false);
             }
         }
