@@ -17,6 +17,8 @@
 package org.apache.sis.gui.map;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.util.logging.Logger;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -191,16 +193,14 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      * of {@link #cursorSourcePosition}.
      */
     private void updateCursorPosition() {
-        if (cursor.isVisible()) {
-            final MathTransform2D tr = getDisplayTransform().orElse(null);
-            if (tr != null) try {
-                final Point2D  p = tr.transform(cursorSourcePosition, cursorTargetPosition);
-                cursor.setTranslateX(p.getX());
-                cursor.setTranslateY(p.getY());
-            } catch (TransformException e) {
-                Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), GestureFollower.class, "handle", e);
-                cursor.setVisible(false);
-            }
+        final MathTransform2D tr = getDisplayTransform().orElse(null);
+        if (tr != null) try {
+            final Point2D  p = tr.transform(cursorSourcePosition, cursorTargetPosition);
+            cursor.setTranslateX(p.getX());
+            cursor.setTranslateY(p.getY());
+        } catch (TransformException e) {
+            Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), GestureFollower.class, "handle", e);
+            cursor.setVisible(false);
         }
     }
 
@@ -219,30 +219,31 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
 
     /**
      * Invoked after the source "objective to display" transform has been updated.
+     * This implementation adjusts the cursor position for compensating the relative change in mouse position.
      *
-     * @hidden
+     * <div class="note"><b>Details:</b>
+     * If the map moved in the {@linkplain #source source} canvas without a change of mouse cursor position
+     * (for example if the user navigates using the keyboard), then the mouse position changed relatively to
+     * the map, so the cursor position on the {@linkplain #target target} canvas needs to be updated accordingly.
+     * This is a temporary change applied until the next {@link MouseEvent} gives us new mouse coordinates relative
+     * to the map.</div>
      */
     @Override
     protected void transformedSource(final TransformChangeEvent event) {
         super.transformedSource(event);
-        if (event.getReason() != TransformChangeEvent.Reason.INTERIM) {
-            event.getDisplayChange2D().ifPresent((change) -> {
+        if (cursor != null) {
+            final AffineTransform change = event.getDisplayChange2D().orElse(null);
+            if (change == null) {
+                cursor.setVisible(false);
+            } else if (event.getReason() != TransformChangeEvent.Reason.INTERIM) {
                 change.transform(cursorSourcePosition, cursorSourcePosition);
-            });
-        }
-    }
-
-    /**
-     * Invoked after the target "objective to display" transform has been updated.
-     * This method recomputes the cursor position.
-     *
-     * @hidden
-     */
-    @Override
-    protected void transformedTarget(final TransformChangeEvent event) {
-        super.transformedTarget(event);
-        if (event.getReason() != TransformChangeEvent.Reason.INTERIM) {
-            updateCursorPosition();
+                updateCursorPosition();
+            } else try {
+                change.inverseTransform(cursorSourcePosition, cursorSourcePosition);
+                updateCursorPosition();
+            } catch (NoninvertibleTransformException e) {
+                cursor.setVisible(false);
+            }
         }
     }
 

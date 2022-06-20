@@ -116,7 +116,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
          * in viewing area, without change in the data themselves or in the map projection.
          */
         final boolean isNavigation() {
-            return ordinal() >= ASSIGNMENT.ordinal();
+            return ordinal() >= ASSIGNMENT.ordinal() && ordinal() < INTERIM.ordinal();
         }
     }
 

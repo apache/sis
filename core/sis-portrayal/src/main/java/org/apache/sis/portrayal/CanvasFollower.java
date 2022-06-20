@@ -422,6 +422,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
 
     /**
      * Invoked after the source "objective to display" transform has been updated.
+     * This method is invoked automatically by {@link #propertyChange(PropertyChangeEvent)}.
      * The default implementation does nothing.
      * Subclasses can override if they need to transform additional data.
      *
@@ -432,6 +433,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
 
     /**
      * Invoked after the target "objective to display" transform has been updated.
+     * This method is invoked automatically by {@link #propertyChange(PropertyChangeEvent)}.
      * The default implementation does nothing.
      * Subclasses can override if they need to transform additional data.
      *
