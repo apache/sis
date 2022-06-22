@@ -33,7 +33,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -183,6 +183,21 @@ public final class Formulas extends Static {
         final double a = ellipsoid.getSemiMajorAxis();
         final double r = ellipsoid.getSemiMinorAxis() / a;
         return a * (r / (1 - (1 - r*r) * (sinφ*sinφ)));
+    }
+
+    /**
+     * Returns the radius at the given latitude.
+     *
+     * @param  ellipsoid  the ellipsoid for which to compute the radius.
+     * @param  φ          the latitude in radians where to compute the radius.
+     * @return radius at latitude φ.
+     */
+    public static double getRadius(final Ellipsoid ellipsoid, final double φ) {
+        final double a  = ellipsoid.getSemiMajorAxis();
+        final double b  = ellipsoid.getSemiMinorAxis();
+        double at = a * Math.cos(φ); at *= at;
+        double bt = b * Math.sin(φ); bt *= bt;
+        return Math.sqrt((a*a*at + b*b*bt) / (at + bt));
     }
 
     /**
