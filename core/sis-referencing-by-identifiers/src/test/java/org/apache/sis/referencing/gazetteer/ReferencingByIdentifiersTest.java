@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link ReferencingByIdentifiers}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -50,7 +50,11 @@ public final strictfp class ReferencingByIdentifiersTest extends TestCase {
         assertNull(properties.put(ReferencingByIdentifiers.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("UK", null, null, null)));
         assertNull(properties.put(ReferencingByIdentifiers.THEME_KEY, "property"));
         assertNull(properties.put(ReferencingByIdentifiers.OVERALL_OWNER_KEY, new DefaultOrganisation("Office for National Statistics", null, null, null)));
-        return new ReferencingByIdentifiers(properties, LocationTypeTest.create(inherit));
+        return new ReferencingByIdentifiers(properties, LocationTypeTest.create(inherit)) {
+            @Override public ReferencingByIdentifiers.Coder createCoder() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     /**

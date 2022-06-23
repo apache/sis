@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.Iterator;
 import java.util.Collections;
 import java.lang.reflect.Field;
+import javax.measure.IncommensurableException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -34,6 +35,7 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -41,6 +43,8 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
+import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.measure.Units.ARC_MINUTE;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
@@ -52,7 +56,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * Tests {@link MilitaryGridReferenceSystem}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -508,6 +512,32 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         coder.setPrecision(1000000);
         assertEquals("precision", 1000000, coder.getPrecision(), STRICT);
         assertEquals("48P", coder.encode(position));
+    }
+
+    /**
+     * Tests encoding of the same coordinate at various precision specified as an angular value.
+     * The encoder is expected to transform the angular value into a linear value.
+     *
+     * @throws IncommensurableException if the quantity type is not accepted.
+     * @throws TransformException if an error occurred while computing the MGRS label.
+     */
+    @Test
+    @DependsOnMethod("testPrecision")
+    public void testAngularPrecision() throws IncommensurableException, TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.universal(13, 103));
+        position.x =  377299;
+        position.y = 1483035;
+        coder.setPrecision(Quantities.create(1010 / NAUTICAL_MILE, ARC_MINUTE), null);
+        assertEquals(1000, coder.getPrecision(), STRICT);
+        assertEquals("48PUV7783", coder.encode(position));
+        /*
+         * Same value closer to a pole. It forces the encoder to use a finer precision,
+         * because a degree of longitude represent a smaller distance.
+         */
+        coder.setPrecision(Quantities.create(1010 / NAUTICAL_MILE, ARC_MINUTE), position);
+        assertEquals(100, coder.getPrecision(), STRICT);
+        assertEquals("48PUV772830", coder.encode(position));
     }
 
     /**
