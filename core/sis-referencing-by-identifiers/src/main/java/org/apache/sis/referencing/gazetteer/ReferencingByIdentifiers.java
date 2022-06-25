@@ -28,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
@@ -37,8 +38,10 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -180,11 +183,13 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * The returned properties have the domain of validity set to the whole word and the theme to "mapping".
      *
      * @param name   the reference system name as an {@link org.opengis.metadata.Identifier} or a {@link String}.
+     * @param id     an identifier for the reference system. Use SIS namespace until we find an authority for them.
      * @param party  the overall owner, or {@code null} if none.
      */
-    static Map<String,Object> properties(final Object name, final Party party) {
-        final Map<String,Object> properties = new HashMap<>(6);
+    static Map<String,Object> properties(final Object name, final String id, final Party party) {
+        final Map<String,Object> properties = new HashMap<>(8);
         properties.put(NAME_KEY, name);
+        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.SIS, Constants.SIS, id));
         properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
         properties.put(OVERALL_OWNER_KEY, party);

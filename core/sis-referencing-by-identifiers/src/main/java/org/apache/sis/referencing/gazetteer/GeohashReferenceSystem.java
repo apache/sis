@@ -75,6 +75,11 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     private static final long serialVersionUID = 9162259764027168776L;
 
     /**
+     * Identifier for this reference system.
+     */
+    static final String IDENTIFIER = "Geohash";
+
+    /**
      * The encoding format used by {@link GeohashReferenceSystem.Coder}.
      */
     public enum Format {
@@ -154,6 +159,21 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     final CoordinateOperation denormalize;
 
     /**
+     * The unique instance, created when first requested.
+     */
+    private static GeohashReferenceSystem INSTANCE;
+
+    /**
+     * Returns the unique instance.
+     */
+    static synchronized GeohashReferenceSystem getInstance() throws GazetteerException {
+        if (INSTANCE == null) {
+            INSTANCE = new GeohashReferenceSystem(Format.BASE32, CommonCRS.WGS84.geographic());
+        }
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new geohash reference system for the given format and coordinate reference system.
      *
      * @param  format  the format used by the {@code GeohashReferenceSystem.Coder}.
@@ -161,7 +181,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * @throws GazetteerException if the reference system can not be created.
      */
     public GeohashReferenceSystem(final Format format, final GeographicCRS crs) throws GazetteerException {
-        super(properties("Geohash", null), types());
+        super(properties(IDENTIFIER, IDENTIFIER, null), types());
         ArgumentChecks.ensureNonNull("format", format);
         ArgumentChecks.ensureNonNull("crs", crs);
         ArgumentChecks.ensureDimensionMatches("crs", 2, crs);
@@ -180,7 +200,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      */
     @Workaround(library="JDK", version="1.8")
     private static LocationType[] types() {
-        final ModifiableLocationType gzd = new ModifiableLocationType("Geohash");
+        final ModifiableLocationType gzd = new ModifiableLocationType(IDENTIFIER);
         gzd.addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Code));
         return new LocationType[] {gzd};
     }

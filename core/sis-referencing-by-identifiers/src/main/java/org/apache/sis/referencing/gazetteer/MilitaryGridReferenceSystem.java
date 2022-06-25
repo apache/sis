@@ -161,6 +161,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     private static final long serialVersionUID = 8337394374656125471L;
 
     /**
+     * Identifier for this reference system.
+     */
+    static final String IDENTIFIER = "MGRS";
+
+    /**
      * Height of latitude bands, in degrees.
      * Those bands are labeled from {@code 'C'} to {@code 'X'} inclusive, excluding {@code 'I'} and {@code 'O'}.
      */
@@ -252,6 +257,21 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     private transient short northOffset;
 
     /**
+     * The unique instance, created when first requested.
+     */
+    private static MilitaryGridReferenceSystem INSTANCE;
+
+    /**
+     * Returns the unique instance.
+     */
+    static synchronized MilitaryGridReferenceSystem getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new MilitaryGridReferenceSystem();
+        }
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new Military Grid Reference System (MGRS) using the default datum.
      * The current Apache SIS version uses the {@linkplain CommonCRS#WGS84 WGS84} datum,
      * but this choice may change in the future if there is a need to adapt to new MGRS specifications.
@@ -290,7 +310,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             Logging.unexpectedException(getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
                     MilitaryGridReferenceSystem.class, "<init>", e);
         }
-        return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), party);
+        NamedIdentifier name = new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null);
+        return properties(name, IDENTIFIER, party);
     }
 
     /**

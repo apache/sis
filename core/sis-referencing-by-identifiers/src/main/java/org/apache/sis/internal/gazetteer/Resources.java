@@ -131,6 +131,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ParentAlreadyExists_1 = 9;
 
         /**
+         * No Reference System named “{0}” has been found.
+         */
+        public static final short ReferenceSystemNotFound_1 = 16;
+
+        /**
          * 100 km square identifier
          */
         public static final short SquareIdentifier100 = 14;
