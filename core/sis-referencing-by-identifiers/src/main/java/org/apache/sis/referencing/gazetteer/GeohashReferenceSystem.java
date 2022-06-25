@@ -251,6 +251,18 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
+         * Returns the reference system for which GeoHash identifiers will be encoded or decoded.
+         *
+         * @return the enclosing reference system.
+         *
+         * @since 1.3
+         */
+        @Override
+        public final GeohashReferenceSystem getReferenceSystem() {
+            return GeohashReferenceSystem.this;
+        }
+
+        /**
          * Returns the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
          * The default value for {@link Format#BASE32} is 12.
          *

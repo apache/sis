@@ -440,8 +440,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Returns the reference system for which MGRS references will be encoded or decoded.
          *
          * @return the enclosing reference system.
+         *
+         * @since 1.3
          */
-        final MilitaryGridReferenceSystem getReferenceSystem() {
+        @Override
+        public final MilitaryGridReferenceSystem getReferenceSystem() {
             return MilitaryGridReferenceSystem.this;
         }
 

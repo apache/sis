@@ -282,6 +282,13 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
         }
 
         /**
+         * Returns the reference system for which this coder is reading or writing identifiers.
+         *
+         * @return the enclosing reference system.
+         */
+        public abstract ReferencingByIdentifiers getReferenceSystem();
+
+        /**
          * Returns approximate precision of the identifiers formatted by this coder at the given location.
          * The returned value is typically a length in linear unit (e.g. metres).
          * Precisions in angular units should be converted to linear units at the specified location.
