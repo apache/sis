@@ -410,7 +410,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             final byte[] encoding   = format.encoding;
             final int highestOneBit = format.highestOneBit;
             char[] geohash = buffer;
-            if (geohash == null) {
+            if (geohash == null || geohash.length != length) {
                 buffer = geohash = new char[length];
             }
             /*
