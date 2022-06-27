@@ -42,6 +42,8 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.gazetteer.GazetteerException;
+import org.apache.sis.referencing.gazetteer.GazetteerFactory;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -166,11 +168,22 @@ public class RecentReferenceSystems {
      */
     private static final class Unverified {
         /** The reference system to verify. */
-        final ReferenceSystem system;
+        private final ReferenceSystem system;
 
         /** Flags the given reference system as unverified. */
         Unverified(final ReferenceSystem system) {
             this.system = system;
+        }
+
+        /** Returns the verified (if possible) reference system. */
+        ReferenceSystem find(final IdentifiedObjectFinder finder) throws FactoryException {
+            if (finder != null) {
+                final IdentifiedObject replacement = finder.findSingleton(system);
+                if (replacement instanceof ReferenceSystem) {
+                    return (ReferenceSystem) replacement;
+                }
+            }
+            return system;
         }
     }
 
@@ -194,16 +207,39 @@ public class RecentReferenceSystems {
      * instances and duplicated values removed. This is the list given to JavaFX controls that we build.
      * This list includes {@link #OTHER} as its last item.
      *
-     * @see #updateItems()
+     * <p>This list is initially null and created only when first needed. After the list has been created,
+     * this reference is never modified. As long as the reference is null, we can skip the synchronization
+     * of this list content with the {@link #systemsOrCodes} content when the latter changed. Because that
+     * synchronization may involve accesses to the EPSG database, it is potentially costly.</p>
+     *
+     * @see #getReferenceSystems(boolean)
      */
     private ObservableList<ReferenceSystem> referenceSystems;
 
     /**
+     * A view of {@link #referenceSystems} with only items that are instances of {@link CoordinateReferenceSystem}.
+     * This list includes also {@link #OTHER} as its last item. This list is used for menus shown in contexts where
+     * identifiers can not be used, for example for selecting the CRS to use for displaying a map.
+     *
+     * <p>This list is lazily created when first needed,
+     * because it depends on {@link #referenceSystems} which is itself lazily created.</p>
+     *
+     * @see #getReferenceSystems(boolean)
+     */
+    private ObservableList<ReferenceSystem> coordinateReferenceSystems;
+
+    /**
      * A filtered view of {@link #referenceSystems} without the {@link #OTHER} item.
+     * This is the list returned to users by public API, but otherwise it is not used by this class.
+     * Instead, the lists used internally by this class contains the {@link #OTHER} item because
+     * those lists are used directly by controls like {@code ChoiceBox<ReferenceSystem>}.
+     *
+     * <p>This list is lazily created when first needed,
+     * because it depends on {@link #referenceSystems} which is itself lazily created.</p>
      *
      * @see #getItems()
      */
-    private ObservableList<ReferenceSystem> filteredSystems;
+    private ObservableList<ReferenceSystem> publicItemList;
 
     /**
      * {@code true} if the {@link #referenceSystems} list needs to be rebuilt from {@link #systemsOrCodes} content.
@@ -215,7 +251,8 @@ public class RecentReferenceSystems {
 
     /**
      * {@code true} if {@code RecentReferenceSystems} is in the process of modifying {@link #referenceSystems} list.
-     * In such case we want to temporarily disable the {@link Listener}. This field is read and updated in JavaFX thread.
+     * In such case we want to temporarily disable the {@link SelectionListener}.
+     * This field is read and updated in JavaFX thread.
      */
     private boolean isAdjusting;
 
@@ -261,12 +298,16 @@ public class RecentReferenceSystems {
      * @since 1.3
      */
     public void configure(final GridGeometry gg) {
+        Envelope aoi = null;
         if (gg != null) {
-            areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
+            if (gg.isDefined(GridGeometry.ENVELOPE)) {
+                aoi = gg.getEnvelope();
+            }
             if (gg.isDefined(GridGeometry.CRS)) {
                 setPreferred(true, gg.getCoordinateReferenceSystem());
             }
         }
+        areaOfInterest.set(aoi);
     }
 
     /**
@@ -382,7 +423,7 @@ public class RecentReferenceSystems {
 
     /**
      * Adds the coordinate reference systems saved in user preferences. The user preferences are determined
-     * from the reference systems observed during current execution or previous execution of JavaFX application.
+     * from the reference systems observed during current execution or previous executions of JavaFX application.
      * If an {@linkplain #areaOfInterest area of interest} (AOI) is specified,
      * then reference systems that do not intersect the AOI will be ignored.
      */
@@ -402,6 +443,8 @@ public class RecentReferenceSystems {
      * Filters the {@link #systemsOrCodes} list by making sure that it contains only {@link ReferenceSystem} instances.
      * Authority codes are resolved if possible or removed if they can not be resolved. Unverified CRSs are compared
      * with authoritative definitions and replaced when a match is found. Duplications are removed.
+     * Finally reference systems with a domain of validity outside the {@link #geographicAOI} are omitted
+     * from the returned list (but not removed from the original {@link #systemsOrCodes} list).
      *
      * <p>This method can be invoked from any thread. In practice, it is invoked from a background thread.</p>
      *
@@ -411,6 +454,7 @@ public class RecentReferenceSystems {
      */
     private List<ReferenceSystem> filterReferenceSystems(final ImmutableEnvelope domain, final ComparisonMode mode) {
         final List<ReferenceSystem> systems;
+        final GazetteerFactory gf = new GazetteerFactory();     // Cheap to construct.
         synchronized (systemsOrCodes) {
             CRSAuthorityFactory factory = this.factory;         // Hide volatile field by local field.
             if (!isModified) {
@@ -419,54 +463,57 @@ public class RecentReferenceSystems {
             boolean noFactoryFound = false;
             boolean searchedFinder = false;
             IdentifiedObjectFinder finder = null;
-            for (int i=systemsOrCodes.size(); --i >= 0;) try {
+            for (int i=systemsOrCodes.size(); --i >= 0;) {
                 final Object item = systemsOrCodes.get(i);
-                if (item == OTHER) {
-                    systemsOrCodes.remove(i);
-                } else if (item instanceof String) {
-                    /*
-                     * The current list element is an authority code such as "EPSG::4326".
-                     * Replace that code by the full `CoordinateReferenceSystem` instance.
-                     * Note that authority factories are optional, so it is okay if we can
-                     * not resolve the code. In such case the item will be removed.
-                     */
-                    if (!noFactoryFound) {
-                        if (factory == null) {
-                            factory = Utils.getDefaultFactory();
-                        }
-                        systemsOrCodes.set(i, factory.createCoordinateReferenceSystem((String) item));
-                    } else {
-                        systemsOrCodes.remove(i);
-                    }
-                } else if (item instanceof Unverified) {
-                    /*
-                     * The current list element is a `ReferenceSystem` instance but maybe not
-                     * conform to authoritative definition, for example regarding axis order.
-                     * If we can find an authoritative definition, do the replacement.
-                     * If this operation can not be done, accept the reference system as-is.
-                     */
-                    if (!searchedFinder) {
-                        searchedFinder = true;                              // Set now in case an exception is thrown.
-                        if (factory instanceof GeodeticAuthorityFactory) {
-                            finder = ((GeodeticAuthorityFactory) factory).newIdentifiedObjectFinder();
-                        } else {
-                            finder = IdentifiedObjects.newFinder(null);
-                        }
-                        finder.setIgnoringAxes(true);
-                    }
-                    ReferenceSystem system = ((Unverified) item).system;
-                    if (finder != null) {
-                        final IdentifiedObject replacement = finder.findSingleton(system);
-                        if (replacement instanceof ReferenceSystem) {
-                            system = (ReferenceSystem) replacement;
-                        }
-                    }
-                    systemsOrCodes.set(i, system);
+                if (item instanceof ReferenceSystem) {
+                    continue;
                 }
-            } catch (FactoryException e) {
-                errorOccurred(e);
-                systemsOrCodes.remove(i);
-                noFactoryFound = (factory == null);
+                ReferenceSystem system = null;
+                if (item != OTHER) try {
+                    if (item instanceof String) {
+                        /*
+                         * The current list element is an authority code such as "EPSG::4326".
+                         * Replace that code by the full `CoordinateReferenceSystem` instance.
+                         * Note that authority factories are optional, so it is okay if we can
+                         * not resolve the code. In such case the item will be removed.
+                         */
+                        system = gf.forNameIfKnown((String) item).orElse(null);
+                        if (system == null && !noFactoryFound) {
+                            if (factory == null) {
+                                factory = Utils.getDefaultFactory();
+                            }
+                            system = factory.createCoordinateReferenceSystem((String) item);
+                        }
+                    } else if (item instanceof Unverified) {
+                        /*
+                         * The current list element is a `ReferenceSystem` instance but maybe not
+                         * conform to authoritative definition, for example regarding axis order.
+                         * If we can find an authoritative definition, do the replacement.
+                         * If this operation can not be done, accept the reference system as-is.
+                         */
+                        if (!searchedFinder) {
+                            searchedFinder = true;          // Set now in case an exception is thrown.
+                            if (factory instanceof GeodeticAuthorityFactory) {
+                                finder = ((GeodeticAuthorityFactory) factory).newIdentifiedObjectFinder();
+                            } else {
+                                finder = IdentifiedObjects.newFinder(null);
+                            }
+                            finder.setIgnoringAxes(true);
+                        }
+                        system = ((Unverified) item).find(finder);
+                    }
+                } catch (FactoryException e) {
+                    errorOccurred(e);
+                    noFactoryFound = (factory == null);
+                } catch (GazetteerException e) {
+                    errorOccurred("getReferenceSystems", e);
+                    // Note: `getReferenceSystems(…)` is indirectly the caller of this method.
+                }
+                if (system != null) {
+                    systemsOrCodes.set(i, system);
+                } else {
+                    systemsOrCodes.remove(i);
+                }
             }
             /*
              * Search for duplicated values after we finished filtering. This block is inefficient
@@ -499,7 +546,7 @@ public class RecentReferenceSystems {
              * in a separated list as a protection against changes in `systemsOrCodes` list that
              * could happen after this method returned, and also for retaining only the reference
              * systems that are valid in the area of interest. We do not remove "invalid" CRS
-             * because they would become valid later if the area of interest changes.
+             * because they may become valid later if the area of interest changes.
              */
             final int n = systemsOrCodes.size();
             systems = new ArrayList<>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
@@ -531,7 +578,7 @@ public class RecentReferenceSystems {
             isModified = true;
             if (referenceSystems != null) {
                 // ChoiceBox or Menu already created. They will observe the changes in item list.
-                updateItems();
+                getReferenceSystems(false);
             }
         }
     }
@@ -541,10 +588,11 @@ public class RecentReferenceSystems {
      * The new items may not be added immediately; instead the CRS will be processed in background thread
      * and copied to the {@link #referenceSystems} list when ready.
      *
+     * @param  filtered  whether to filter the list for retaining only {@link CoordinateReferenceSystem} instances.
      * @return the list of items. May be empty on return and filled later.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private ObservableList<ReferenceSystem> updateItems() {
+    private ObservableList<ReferenceSystem> getReferenceSystems(final boolean filtered) {
         if (referenceSystems == null) {
             referenceSystems = FXCollections.observableArrayList();
         }
@@ -589,7 +637,21 @@ public class RecentReferenceSystems {
                 }
             });
         }
+        if (filtered) {
+            if (coordinateReferenceSystems == null) {
+                coordinateReferenceSystems = new FilteredList<>(referenceSystems, RecentReferenceSystems::isCRS);
+            }
+            return coordinateReferenceSystems;
+        }
         return referenceSystems;
+    }
+
+    /**
+     * Returns {@code true} if the given reference system can be included
+     * in the {@link #coordinateReferenceSystems} list.
+     */
+    private static boolean isCRS(final ReferenceSystem system) {
+        return (system == OTHER) || (system instanceof CoordinateReferenceSystem);
     }
 
     /**
@@ -648,12 +710,12 @@ public class RecentReferenceSystems {
      * and the selected reference system is added to the list of choices. If the selected CRS is different than
      * the previous one, then {@link RecentChoices} is notified and the user-specified listener is notified.
      */
-    final class Listener implements ChangeListener<ReferenceSystem> {
+    final class SelectionListener implements ChangeListener<ReferenceSystem> {
         /** The user-specified action to execute when a reference system is selected. */
         private final ChangeListener<ReferenceSystem> action;
 
         /** Creates a new listener of reference system selection. */
-        private Listener(final ChangeListener<ReferenceSystem> action) {
+        private SelectionListener(final ChangeListener<ReferenceSystem> action) {
             this.action = action;
         }
 
@@ -771,7 +833,7 @@ public class RecentReferenceSystems {
     private void notifyChanges() {
         for (final WritableValue<ReferenceSystem> value : controlValues) {
             if (value instanceof MenuSync) {
-                ((MenuSync) value).notifyChanges(referenceSystems);
+                ((MenuSync) value).notifyChanges();
             }
         }
     }
@@ -785,10 +847,10 @@ public class RecentReferenceSystems {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public ObservableList<ReferenceSystem> getItems() {
-        if (filteredSystems == null) {
-            filteredSystems = new FilteredList<>(updateItems(), Objects::nonNull);
+        if (publicItemList == null) {
+            publicItemList = new FilteredList<>(getReferenceSystems(false), Objects::nonNull);
         }
-        return filteredSystems;
+        return publicItemList;
     }
 
     /**
@@ -854,15 +916,27 @@ next:       for (int i=0; i<count; i++) {
      * The returned control may be initially empty, in which case its content will be automatically set at
      * a later time (after a background thread finished to process the {@link CoordinateReferenceSystem}s).
      *
-     * @param  action  the action to execute when a reference system is selected.
+     * <p>If the {@code filtered} argument is {@code true}, then the choice box will contain only reference systems
+     * that can be used for rendering purposes. That filtered list can contain {@link CoordinateReferenceSystem}
+     * instances but not reference systems by identifiers such as {@linkplain MilitaryGridReferenceSystem MGRS}.
+     * The latter are usable only for the purposes of formatting coordinate values as texts.</p>
+     *
+     * <h4>Limitations</h4>
+     * There is currently no mechanism for disposing the returned control. For garbage collecting the
+     * returned {@code ChoiceBox}, this {@code RecentReferenceSystems} must be garbage-collected as well.
+     *
+     * @param  filtered  whether the choice box should contain only {@link CoordinateReferenceSystem} instances.
+     * @param  action    the action to execute when a reference system is selected.
      * @return a choice box with reference systems specified by {@code setPreferred(…)}
      *         and {@code addAlternatives(…)} methods.
+     *
+     * @since 1.3
      */
-    public ChoiceBox<ReferenceSystem> createChoiceBox(final ChangeListener<ReferenceSystem> action) {
+    public ChoiceBox<ReferenceSystem> createChoiceBox(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
-        final ChoiceBox<ReferenceSystem> choices = new ChoiceBox<>(updateItems());
+        final ChoiceBox<ReferenceSystem> choices = new ChoiceBox<>(getReferenceSystems(filtered));
         choices.setConverter(new ObjectStringConverter<>(choices.getItems(), locale));
-        choices.valueProperty().addListener(new Listener(action));
+        choices.valueProperty().addListener(new SelectionListener(action));
         controlValues.add(choices.valueProperty());
         return choices;
     }
@@ -872,16 +946,47 @@ next:       for (int i=0; i<count; i++) {
      * The items will be inserted in the {@linkplain Menu#getItems() menu list}. The content of that list will
      * change at any time after this method returned: items will be added or removed as a result of user actions.
      *
-     * @param  action  the action to execute when a reference system is selected.
+     * <p>If the {@code filtered} argument is {@code true}, then the menu items will contain only reference systems
+     * that can be used for rendering purposes. That filtered list can contain {@link CoordinateReferenceSystem}
+     * instances but not reference systems by identifiers such as {@linkplain MilitaryGridReferenceSystem MGRS}.
+     * The latter are usable only for the purposes of formatting coordinate values as texts.</p>
+     *
+     * <h4>Limitations</h4>
+     * There is currently no mechanism for disposing the returned control. For garbage collecting the
+     * returned {@code Menu}, this {@code RecentReferenceSystems} must be garbage-collected as well.
+     *
+     * @param  filtered  whether the menu should contain only {@link CoordinateReferenceSystem} instances.
+     * @param  action    the action to execute when a reference system is selected.
      * @return the menu containing items for reference systems.
+     *
+     * @since 1.3
      */
-    public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
+    public Menu createMenuItems(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
         final Menu menu = new Menu(Vocabulary.getResources(locale).getString(Vocabulary.Keys.ReferenceSystem));
-        final MenuSync property = new MenuSync(updateItems(), menu, new Listener(action));
+        final MenuSync property = new MenuSync(getReferenceSystems(filtered), menu, new SelectionListener(action));
+        if (!filtered) {
+            property.addReferencingByIdentifiers();
+        }
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);
         return menu;
+    }
+
+    /**
+     * @deprecated Replaced by {@link #createChoiceBox(boolean, ChangeListener)}.
+     */
+    @Deprecated
+    public ChoiceBox<ReferenceSystem> createChoiceBox(final ChangeListener<ReferenceSystem> action) {
+        return createChoiceBox(true, action);
+    }
+
+    /**
+     * @deprecated Replaced by {@link #createMenuItems(boolean, ChangeListener)}.
+     */
+    @Deprecated
+    public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
+        return createMenuItems(true, action);
     }
 
     /**
@@ -917,6 +1022,17 @@ next:       for (int i=0; i<count; i++) {
      */
     protected void errorOccurred(final FactoryException e) {
         OptionalDataDownloader.reportIfInstalling(e);
-        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "updateItems", e);
+        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "getReferenceSystems", e);
+    }
+
+    /**
+     * Invoked when an error occurred while fetching a reference system be identifier.
+     * This is the complement of {@link #errorOccurred(FactoryException)} but for referencing by identifiers.
+     *
+     * @param  caller  the method to report as the source the in log record.
+     * @param  e  the error that occurred.
+     */
+    static void errorOccurred(final String caller, final GazetteerException e) {
+        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, caller, e);
     }
 }

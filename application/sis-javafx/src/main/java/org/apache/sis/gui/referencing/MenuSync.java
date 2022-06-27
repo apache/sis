@@ -17,6 +17,7 @@
 package org.apache.sis.gui.referencing;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -33,8 +34,10 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.gui.GUIUtilities;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.referencing.gazetteer.GazetteerFactory;
+import org.apache.sis.referencing.gazetteer.GazetteerException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -46,13 +49,18 @@ import org.apache.sis.util.Utilities;
  * the selected reference system directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
 final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements EventHandler<ActionEvent> {
     /**
-     * Keys where to store the reference system in {@link MenuItem}.
+     * The {@value} value, for identifying code that assume two-dimensional objects.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
+    /**
+     * Keys where to store the reference system in {@link MenuItem} properties.
      */
     private static final String REFERENCE_SYSTEM_KEY = "ReferenceSystem";
 
@@ -60,6 +68,11 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * Sentinel value associated to {@link #REFERENCE_SYSTEM_KEY} for requesting the {@link CRSChooser}.
      */
     private static final String CHOOSER = "CHOOSER";
+
+    /**
+     * The list of reference systems to show as menu items.
+     */
+    private final ObservableList<? extends ReferenceSystem> systems;
 
     /**
      * The list of menu items to keep up-to-date with an {@code ObservableList<ReferenceSystem>}.
@@ -72,12 +85,12 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private final ToggleGroup group;
 
     /**
-     * The action to execute when a reference system is selected. This is not directly the user-specified action, but
-     * rather an {@link org.apache.sis.gui.referencing.RecentReferenceSystems.Listener} instance wrapping that action.
-     * This listener is invoked explicitly instead of using {@link SimpleObjectProperty} listeners because we do not
-     * invoke it in all cases.
+     * The action to execute when a reference system is selected. This is not directly the user-specified action,
+     * but rather a {@link org.apache.sis.gui.referencing.RecentReferenceSystems.SelectionListener} instance wrapping
+     * that action. This listener is invoked explicitly instead of using {@link SimpleObjectProperty} listeners because
+     * we do not invoke it in all cases.
      */
-    private final RecentReferenceSystems.Listener action;
+    private final RecentReferenceSystems.SelectionListener action;
 
     /**
      * Creates a new synchronization for the given list of menu items.
@@ -86,33 +99,35 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * @param  bean     the menu to keep synchronized with the list of reference systems.
      * @param  action   the user-specified action to execute when a reference system is selected.
      */
-    MenuSync(final ObservableList<ReferenceSystem> systems, final Menu bean, final RecentReferenceSystems.Listener action) {
+    MenuSync(final ObservableList<ReferenceSystem> systems, final Menu bean, final RecentReferenceSystems.SelectionListener action) {
         super(bean, "value");
-        this.menus  = bean.getItems();
-        this.group  = new ToggleGroup();
-        this.action = action;
+        this.systems = systems;
+        this.menus   = bean.getItems();
+        this.group   = new ToggleGroup();
+        this.action  = action;
         /*
          * We do not register listener for `systems` list.
-         * Instead `notifyChanges(…)` will be invoked directly by RecentReferenceSystems.
+         * Instead `notifyChanges()` will be invoked directly by RecentReferenceSystems.
          */
         final MenuItem[] items = new MenuItem[systems.size()];
+        final Locale locale = action.owner().locale;
         for (int i=0; i<items.length; i++) {
-            items[i] = createItem(systems.get(i));
+            items[i] = createItem(systems.get(i), locale);
         }
         menus.setAll(items);
-        initialize(systems);
+        initialize();
     }
 
     /**
-     * Sets the initial value to the first two-dimensional item in the {@code systems} list, if any.
+     * Sets the initial value to the first two-dimensional item in the {@link #systems} list, if any.
      * This method is invoked in JavaFX thread at construction time or, if it didn't work,
      * at some later time when the systems list may contain an element.
      * This method should not be invoked anymore after initialization succeeded.
      */
-    private void initialize(final ObservableList<? extends ReferenceSystem> systems) {
+    private void initialize() {
         for (final ReferenceSystem system : systems) {
             if (system instanceof CoordinateReferenceSystem) {
-                if (ReferencingUtilities.getDimension((CoordinateReferenceSystem) system) == 2) {
+                if (ReferencingUtilities.getDimension((CoordinateReferenceSystem) system) == BIDIMENSIONAL) {
                     set(system);
                     break;
                 }
@@ -123,20 +138,40 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     /**
      * Creates a new menu item for the given reference system.
      */
-    private MenuItem createItem(final ReferenceSystem system) {
-        final Locale locale = action.owner().locale;
-        if (system != RecentReferenceSystems.OTHER) {
+    private MenuItem createItem(final ReferenceSystem system, final Locale locale) {
+        if (system == RecentReferenceSystems.OTHER) {
+            final MenuItem item = new MenuItem(ObjectStringConverter.other(locale));
+            item.getProperties().put(REFERENCE_SYSTEM_KEY, CHOOSER);
+            item.setOnAction(this);
+            return item;
+        } else {
             final RadioMenuItem item = new RadioMenuItem(IdentifiedObjects.getDisplayName(system, locale));
             item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
             item.setToggleGroup(group);
             item.setOnAction(this);
             return item;
-        } else {
-            final MenuItem item = new MenuItem(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Others) + '…');
-            item.getProperties().put(REFERENCE_SYSTEM_KEY, CHOOSER);
-            item.setOnAction(this);
-            return item;
         }
+    }
+
+    /**
+     * Creates new menu items for references system by identifiers, offered in a separated sub-menu.
+     * This list of reference system is fixed; items are not added or removed following user's selection.
+     */
+    final void addReferencingByIdentifiers() {
+        final Locale locale = action.owner().locale;
+        final GazetteerFactory factory = new GazetteerFactory();
+        final Resources resources = Resources.forLocale(locale);
+        final Menu menu = new Menu(resources.getString(Resources.Keys.ReferenceByIdentifiers));
+        for (final String name : factory.getSupportedNames()) try {
+            final ReferenceSystem system = factory.forName(name);
+            final MenuItem item = new MenuItem(IdentifiedObjects.getDisplayName(system, locale));
+            item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
+            item.setOnAction(this);
+            menu.getItems().add(item);
+        } catch (GazetteerException e) {
+            RecentReferenceSystems.errorOccurred("createMenuItems", e);
+        }
+        menus.add(menu);
     }
 
     /**
@@ -153,15 +188,20 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * Invoked when the list of reference systems changed. While it would be possible to trace the permutations,
      * additions, removals and replacements done on the list, it is easier to recreate the menu items list from
      * scratch (with recycling of existing items) and inspect the differences.
+     *
+     * @see RecentReferenceSystems#notifyChanges()
      */
-    final void notifyChanges(final ObservableList<? extends ReferenceSystem> systems) {
+    final void notifyChanges() {
         /*
          * Build a map of current menu items. Key are CRS objects.
          */
+        final var subMenus = new ArrayList<Menu>();
         final Map<Object,MenuItem> mapping = new IdentityHashMap<>();
         for (final Iterator<MenuItem> it = menus.iterator(); it.hasNext();) {
             final MenuItem item = it.next();
-            if (mapping.putIfAbsent(item.getProperties().get(REFERENCE_SYSTEM_KEY), item) != null) {
+            if (item instanceof Menu) {
+                subMenus.add((Menu) item);
+            } else if (mapping.putIfAbsent(item.getProperties().get(REFERENCE_SYSTEM_KEY), item) != null) {
                 it.remove();    // Remove duplicated item. Should never happen, but we are paranoiac.
                 dispose(item);
             }
@@ -171,8 +211,9 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
          * Other menu items are left to null for now; those null values may appear anywhere in the array. After this
          * loop, the map will contain only menu items for CRS that are no longer in the list of CRS to offer.
          */
-        final MenuItem[] items = new MenuItem[systems.size()];
-        for (int i=0; i<items.length; i++) {
+        final int newCount = systems.size();
+        final MenuItem[] items = new MenuItem[newCount + subMenus.size()];
+        for (int i=0; i<newCount; i++) {
             Object key = systems.get(i);
             if (key == RecentReferenceSystems.OTHER) key = CHOOSER;
             items[i] = mapping.remove(key);
@@ -184,21 +225,21 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
          */
         ReferenceSystem selected = get();
         final Iterator<MenuItem> recycle = mapping.values().iterator();
-        for (int i=0; i<items.length; i++) {
+        final Locale locale = action.owner().locale;
+        for (int i=0; i<newCount; i++) {
             if (items[i] == null) {
-                MenuItem item;
+                MenuItem item = null;
                 final ReferenceSystem system = systems.get(i);
                 if (system != RecentReferenceSystems.OTHER && recycle.hasNext()) {
                     item = recycle.next();
                     recycle.remove();
                     if (item instanceof RadioMenuItem) {
-                        item.setText(IdentifiedObjects.getDisplayName(system, action.owner().locale));
+                        item.setText(IdentifiedObjects.getDisplayName(system, locale));
                         item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
-                    } else {
-                        item = createItem(system);
                     }
-                } else {
-                    item = createItem(system);
+                }
+                if (item == null) {
+                    item = createItem(system, locale);
                 }
                 if (selected != null && system == selected) {
                     ((RadioMenuItem) item).setSelected(true);       // ClassCastException should never occur here.
@@ -209,26 +250,30 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         }
         /*
          * If there is any item left, we must remove them from the ToggleGroup for avoiding memory leak.
+         * The sub-menus (if any) are appended last with no change.
          */
         while (recycle.hasNext()) {
             dispose(recycle.next());
+        }
+        for (int i=newCount; i<items.length; i++) {
+            items[i] = subMenus.get(i - newCount);
         }
         GUIUtilities.copyAsDiff(Arrays.asList(items), menus);
         /*
          * If we had no previously selected item, selects it now.
          */
         if (get() == null) {
-            initialize(systems);
+            initialize();
         }
     }
 
     /**
-     * Invoked when user selects a menu item. This method gets the old and new values and sends them
-     * to {@link org.apache.sis.gui.referencing.RecentReferenceSystems.Listener} as a change event.
-     * That {@code Listener} will update the list of reference systems, which may result in a callback
-     * to {@link #notifyChanges(ObservableList)}. If the selected menu item is the "Other…" choice,
-     * then {@code Listener} will popup {@link CRSChooser} and callback {@link #set(ReferenceSystem)}
-     * for storing the result. Otherwise we need to invoke  {@link #set(ReferenceSystem)} ourselves.
+     * Invoked when user selects a menu item. This method gets the old and new values and sends them to
+     * {@link org.apache.sis.gui.referencing.RecentReferenceSystems.SelectionListener} as a change event.
+     * That {@code SelectionListener} will update the list of reference systems, which may result
+     * in a callback to {@link #notifyChanges()}. If the selected menu item is the "Other…" choice,
+     * then {@code SelectionListener} will popup {@link CRSChooser} and callback {@link #set(ReferenceSystem)}
+     * for storing the result. Otherwise we need to invoke {@link #set(ReferenceSystem)} ourselves.
      */
     @Override
     public void handle(final ActionEvent event) {

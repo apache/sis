@@ -252,7 +252,7 @@ public class CoverageExplorer extends Widget {
         coverageProperty = new SimpleObjectProperty<> (this, "coverage");
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
-        referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395");         // WGS 84 / World Mercator
+        referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395", "MGRS");     // WGS 84 / World Mercator
         viewTypeProperty.addListener((p,o,n) -> onViewTypeSet(n));
         resourceProperty.addListener((p,o,n) -> onPropertySet(n, null, coverageProperty));
         coverageProperty.addListener((p,o,n) -> onPropertySet(null, n, resourceProperty));

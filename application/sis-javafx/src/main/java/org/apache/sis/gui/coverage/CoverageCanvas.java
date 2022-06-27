@@ -1062,7 +1062,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                     }
                 }
             }
-            controls.status.setLowestAccuracy(accuracy);
+            controls.status.lowestAccuracy.set(accuracy);
         }
         /*
          * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.

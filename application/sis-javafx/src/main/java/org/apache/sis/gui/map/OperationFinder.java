@@ -157,7 +157,7 @@ abstract class OperationFinder extends Task<MathTransform> {
     /**
      * If the given CRS is a grid CRS, replaces it by a geospatial CRS if possible.
      * If the given CRS is not geospatial, then this method tries to replace it by
-     * by the CRS of the coverage shown by the canvas (this is not necessarily the
+     * the CRS of the coverage shown by the canvas (this is not necessarily the
      * {@linkplain MapCanvas#getObjectiveCRS() objective CRS}).
      *
      * @param  crs     the CRS to eventually replace by a geospatial CRS.
@@ -191,7 +191,7 @@ abstract class OperationFinder extends Task<MathTransform> {
     }
 
     /**
-     * Returns the target CRS, giving precedence to {@link CoordinateOperation#getTargetCRS()} is suitable.
+     * Returns the target CRS, giving precedence to {@link CoordinateOperation#getTargetCRS()} if suitable.
      * That precedence is because the {@link CoordinateOperation} may provide a more complete CRS from EPSG
      * database.
      */

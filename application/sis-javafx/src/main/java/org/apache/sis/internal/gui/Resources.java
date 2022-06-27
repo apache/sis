@@ -333,6 +333,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Orthographic = 52;
 
         /**
+         * Other coordinate reference system…
+         */
+        public static final short OtherCRS = 72;
+
+        /**
          * Property value
          */
         public static final short PropertyValue = 68;
@@ -341,6 +346,11 @@ public final class Resources extends IndexedResourceBundle {
          * Range of values…
          */
         public static final short RangeOfValues = 56;
+
+        /**
+         * Reference system by identifiers
+         */
+        public static final short ReferenceByIdentifiers = 73;
 
         /**
          * Select a coordinate reference system
