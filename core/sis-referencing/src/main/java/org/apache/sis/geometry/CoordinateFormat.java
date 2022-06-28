@@ -252,11 +252,11 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Constants for the {@link #types} array.
      */
-    private static final byte LONGITUDE=1, LATITUDE=2, ANGLE=3, DATE=4, TIME=5;
+    private static final byte LONGITUDE=1, LATITUDE=2, ANGLE=3, DATE=4, TIME=5, INDEX=6;
 
     /**
      * The type for each value in the {@code formats} array, or {@code null} if not yet computed.
-     * Types are: 0=number, 1=longitude, 2=latitude, 3=other angle, 4=date, 5=elapsed time.
+     * Types are: 0=number, 1=longitude, 2=latitude, 3=other angle, 4=date, 5=elapsed time, 6=index.
      *
      * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
      * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
@@ -520,7 +520,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          *    - case 0: no axis         — use default NumberFormat
          *    - case 1: angular unit    — use AngleFormat
          *    - case 2: temporal unit   — use DateFormat unless no TemporalCRS is found
-         *    - case 3: all other unit  — use NumberFormat + UnitFormat + [axis direction]
+         *    - case 3: grid direction  — use NumberFormat configured for integers.
+         *    - case 4: all other unit  — use NumberFormat + UnitFormat + [axis direction]
          */
         final int      dimension = cs.getDimension();
         final byte[]   types     = new byte  [dimension];
@@ -533,11 +534,11 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             }
             final AxisDirection direction = axis.getDirection();
             final Unit<?> unit = axis.getUnit();
-            /*
-             * CASE 1: Formatter for angular units. Target unit is DEGREE_ANGLE.
-             * Type is LONGITUDE, LATITUDE or ANGLE depending on axis direction.
-             */
             if (Units.isAngular(unit)) {
+                /*
+                 * CASE 1: Formatter for angular units. Target unit is DEGREE_ANGLE.
+                 * Type is LONGITUDE, LATITUDE or ANGLE depending on axis direction.
+                 */
                 byte type = ANGLE;
                 if      (AxisDirection.NORTH.equals(direction)) {type = LATITUDE;}
                 else if (AxisDirection.EAST .equals(direction)) {type = LONGITUDE;}
@@ -547,12 +548,11 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 formats[i] = getFormat(Angle.class);
                 setConverter(dimension, i, unit.asType(javax.measure.quantity.Angle.class).getConverterTo(Units.DEGREE));
                 continue;
-            }
-            /*
-             * CASE 2: Formatter for temporal units. Target unit is MILLISECONDS.
-             * Type is DATE.
-             */
-            if (Units.isTemporal(unit)) {
+            } else if (Units.isTemporal(unit)) {
+                /*
+                 * CASE 2: Formatter for temporal units. Target unit is MILLISECONDS.
+                 * Type is DATE.
+                 */
                 final CoordinateReferenceSystem t = CRS.getComponentAt(crs, i, i+1);
                 if (t instanceof TemporalCRS) {
                     if (epochs == null) {
@@ -569,12 +569,18 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 }
                 types[i] = TIME;
                 // Fallthrough: format as number (can not compute epoch because no TemporalCRS found).
+            } else if (AxisDirections.isGrid(direction) && (unit == null || Units.PIXEL.isCompatible(unit))) {
+                /*
+                 * CASE 3: Formatter for grid cell indices. Target unit is unity of pixels.
+                 * Type is INDEX, a flag meaning to not set minimum/maximum fraction digits.
+                 */
+                types[i] = INDEX;
             }
             /*
-             * CASE 3: Formatter for all other units. Do NOT set types[i] since it may have been set to
+             * CASE 4: Formatter for all other units. Do NOT set types[i] since it may have been set to
              * a non-zero value by previous case. If not, the default value (zero) is the one we want.
              */
-            formats[i] = getFormat(Number.class);
+            formats[i] = getFormat(types[i] == INDEX ? Long.class : Number.class);
             if (unit != null) {
                 if (units == null) {
                     units = new Unit<?>[dimension];
@@ -812,7 +818,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
              * because the calculation below assumes base 10 and assumes that fraction digits are for
              * fractions of 1 (by contrast, CompactNumberFormat may apply fraction to larger values).
              */
-            if (format instanceof DecimalFormat) {
+            if (format instanceof DecimalFormat && (types == null || types[dim] != INDEX)) {
                 final int c = Math.max(DecimalFunctions.fractionDigitsForDelta(precision, false), 0);
                 final DecimalFormat nf = (DecimalFormat) getFormatClone(dim);
                 nf.setMinimumFractionDigits(c);
@@ -1459,6 +1465,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
                 }
                 switch (types[i]) {
                     default:        valueObject = Double.valueOf(value); break;
+                    case INDEX:     valueObject = Math.round    (value); break;
                     case LONGITUDE: valueObject = new Longitude (value); break;
                     case LATITUDE:  valueObject = new Latitude  (value); break;
                     case ANGLE:     valueObject = new Angle     (value); break;
@@ -1627,6 +1634,7 @@ skipSep:    if (i != 0) {
                         case LATITUDE:  type = Latitude.class;  break;
                         case ANGLE:     type = Angle.class;     break;
                         case DATE:      type = Date.class;      break;
+                        case INDEX:     type = Long.class;      break;
                     }
                 }
                 pos.setIndex(start);
