@@ -150,6 +150,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CharacteristicsNotFound_2 = 17;
 
         /**
+         * Conversions from coverage CRS to grid cell indices.
+         */
+        public static final short CrsToGridConversion = 79;
+
+        /**
          * Operation “{0}” requires a “{1}” property, but no such property has been found in “{2}”.
          */
         public static final short DependencyNotFound_3 = 18;

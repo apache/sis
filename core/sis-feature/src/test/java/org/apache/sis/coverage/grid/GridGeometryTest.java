@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -61,7 +62,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * Verifies the shift between the two {@code gridToCRS} transforms.
      * This method should be invoked when the transforms are linear.
      *
-     * @param  grid  the grid geoemtry to validate.
+     * @param  grid  the grid geometry to validate.
      */
     private static void verifyGridToCRS(final GridGeometry grid) {
         final Matrix tr1 = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER));
@@ -600,6 +601,31 @@ public final strictfp class GridGeometryTest extends TestCase {
         reduced = grid.reduce(2);
         tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
         assertMatrixEquals("gridToCRS", new Matrix2(0, 3, 0, 1), MathTransforms.getMatrix(tr), STRICT);
+    }
+
+    /**
+     * Tests {@link GridGeometry#createImageCRS(String, PixelInCell)}.
+     */
+    @Test
+    public void testCreateImageCRS() {
+        final GridGeometry gg = new GridGeometry(
+                new GridExtent(null, null, new long[] {17, 10, 4}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix4(
+                    1,   0,  0, -7,
+                    0,  -1,  0, 50,
+                    0,   0,  8, 20,
+                    0,   0,  0,  1)),
+                HardCodedCRS.WGS84_WITH_TIME);
+
+        final DerivedCRS crs = gg.createImageCRS("Horizontal part", PixelInCell.CELL_CENTER);
+        assertEquals("Horizontal part", crs.getName().getCode());
+        final Matrix mt = MathTransforms.getMatrix(crs.getConversionFromBase().getMathTransform());
+        assertSame(HardCodedCRS.WGS84, crs.getBaseCRS());
+        assertMatrixEquals("CRS to grid",
+                new Matrix3(1,  0,  7,      // Opposite sign because this is the inverse transform.
+                            0, -1, 50,      // Opposite sign cancelled by -1 scale factor.
+                            0,  0,  1), mt, STRICT);
     }
 
     /**

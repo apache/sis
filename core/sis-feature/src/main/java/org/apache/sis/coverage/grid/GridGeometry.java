@@ -35,7 +35,9 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.math.MathFunctions;
@@ -1466,6 +1468,43 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
+    }
+
+    /**
+     * Creates a one-, two- or three-dimensional coordinate reference system for cell indices in the grid.
+     * This method returns a CRS which is derived from the "real world" CRS or a subset of it.
+     * If the "real world" CRS is an instance of {@link org.opengis.referencing.crs.SingleCRS},
+     * then the derived CRS has the following properties:
+     *
+     * <ul>
+     *   <li>{@link DerivedCRS#getBaseCRS()} is {@link #getCoordinateReferenceSystem()}.</li>
+     *   <li>{@link DerivedCRS#getConversionFromBase()} is the inverse of {@link #getGridToCRS(PixelInCell)}.</li>
+     * </ul>
+     *
+     * Otherwise if the "real world" CRS is an instance of {@link org.opengis.referencing.crs.CompoundCRS},
+     * then only the first {@link org.opengis.referencing.crs.SingleCRS} (the head) is used.
+     * This is usually (but not necessarily) the horizontal component of the spatial CRS.
+     * The result is usually two-dimensional, but 1 and 3 dimensions are also possible.
+     *
+     * <p>Because of above relationship, it is possible to use the derived CRS in a chain of operations
+     * with (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.</p>
+     *
+     * @param  name    name of the CRS to create.
+     * @param  anchor  the cell part to map (center or corner).
+     * @return a derived CRS for coordinates (cell indices) associated to the grid extent.
+     * @throws IncompleteGridGeometryException if the CRS, grid extent or "grid to CRS" transform is missing.
+     *
+     * @since 1.3
+     */
+    public DerivedCRS createImageCRS(final String name, final PixelInCell anchor) {
+        ArgumentChecks.ensureNonEmpty("name", name);
+        try {
+            return GridExtentCRS.forCoverage(name, this, anchor, null);
+        } catch (FactoryException e) {
+            throw new BackingStoreException(e);
+        } catch (NoninvertibleTransformException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**

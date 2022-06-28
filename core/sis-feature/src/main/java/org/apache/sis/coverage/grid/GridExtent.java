@@ -962,6 +962,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns the {@link #types} array or a default array of arbitrary length if {@link #types} is null.
+     * This method returns directly the arrays without cloning; do not modify.
+     */
+    final DimensionNameType[] getAxisTypes() {
+        return (types != null) ? types : DEFAULT_TYPES;
+    }
+
+    /**
      * Returns the axis number followed by the localized axis type if available.
      * This is used for error messages only.
      *
@@ -1028,7 +1036,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final GeneralEnvelope envelope = toEnvelope(cornerToCRS, cornerToCRS, null);
         final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
         if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
-            envelope.setCoordinateReferenceSystem(GridExtentCRS.build(gridToCRS, (types != null) ? types : DEFAULT_TYPES, null));
+            envelope.setCoordinateReferenceSystem(GridExtentCRS.forExtentAlone(gridToCRS, getAxisTypes()));
         } catch (FactoryException e) {
             throw new TransformException(e);
         }
