@@ -29,6 +29,7 @@ import javax.measure.Unit;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.HBox;
@@ -41,6 +42,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Separator;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
 import javafx.event.EventHandler;
@@ -147,6 +149,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The container of controls making the status bar.
+     * Contains {@link #message}, {@link #position} and {@link #sampleValues}.
      *
      * @see #getView()
      */
@@ -494,7 +497,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         position.setAlignment(Pos.CENTER_RIGHT);
         position.setTextAlignment(TextAlignment.RIGHT);
 
-        view = new HBox(18, message, position);
+        view = new HBox(6, message, position);
         view.setPadding(PADDING);
         view.setAlignment(Pos.CENTER_RIGHT);
         /*
@@ -1545,11 +1548,19 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 sampleValues.setMaxWidth(Label.USE_PREF_SIZE);
             }
             if (c.lastIndexOf(sampleValues) < 0) {
-                c.add(sampleValues);
+                final Separator separator = new Separator(Orientation.VERTICAL);
+                c.addAll(separator, sampleValues);
             }
         } else if (sampleValues != null) {
             sampleValues.setText(null);
-            c.remove(sampleValues);
+            int i = c.lastIndexOf(sampleValues);
+            if (i >= 0) {
+                c.remove(i);
+                if (--i >= 0) {
+                    final Node last = c.remove(i);
+                    assert last instanceof Separator : last;
+                }
+            }
         }
         isSampleValuesVisible = visible;
     }

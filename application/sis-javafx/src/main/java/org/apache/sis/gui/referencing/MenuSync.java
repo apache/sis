@@ -17,12 +17,10 @@
 package org.apache.sis.gui.referencing;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -30,6 +28,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleGroup;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
@@ -134,10 +133,13 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         /*
          * Root menu. The list of recent reference system is dynamic and will change according user actions.
          */
-        final MenuItem[] items = new MenuItem[systems.size()];
+        final List<MenuItem> items = new ArrayList<>(systems.size() + 1);
         final Locale locale = action.owner().locale;
-        for (int i=0; i<items.length; i++) {
-            items[i] = createItem(systems.get(i), locale);
+        for (final ReferenceSystem system : systems) {
+            if (system == RecentReferenceSystems.OTHER) {
+                items.add(new SeparatorMenuItem());
+            }
+            items.add(createItem(system, locale));
         }
         rootMenus.addAll(items);
         initialize();
@@ -248,9 +250,11 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * Must be invoked after removing a menu item for avoiding memory leak.
      */
     private static void dispose(final MenuItem item) {
-        item.setOnAction(null);
-        if (item instanceof RadioMenuItem) {
-            ((RadioMenuItem) item).setToggleGroup(null);
+        if (item != null) {
+            item.setOnAction(null);
+            if (item instanceof RadioMenuItem) {
+                ((RadioMenuItem) item).setToggleGroup(null);
+            }
         }
     }
 
@@ -265,12 +269,15 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         /*
          * Build a map of current menu items. Key are CRS objects.
          */
-        final var subMenus = new ArrayList<Menu>();
-        final Map<Object,MenuItem> mapping = new IdentityHashMap<>();
+        SeparatorMenuItem separator = null;
+        final var subMenus = new ArrayList<Menu>(2);
+        final var mapping  = new IdentityHashMap<Object,MenuItem>(10);
         for (final Iterator<MenuItem> it = rootMenus.iterator(); it.hasNext();) {
             final MenuItem item = it.next();
             if (item instanceof Menu) {
                 subMenus.add((Menu) item);
+            } else if (item instanceof SeparatorMenuItem) {
+                separator = (SeparatorMenuItem) item;           // Should have only one.
             } else if (mapping.putIfAbsent(item.getProperties().get(REFERENCE_SYSTEM_KEY), item) != null) {
                 it.remove();    // Remove duplicated item. Should never happen, but we are paranoiac.
                 dispose(item);
@@ -282,12 +289,12 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
          * loop, the map will contain only menu items for CRS that are no longer in the list of CRS to offer.
          */
         final int newCount = recentSystems.size();
-        final MenuItem[] items = new MenuItem[newCount + subMenus.size()];
-        for (int i=0; i<newCount; i++) {
-            Object key = recentSystems.get(i);
+        final var items = new ArrayList<MenuItem>(newCount + 4);
+        for (Object key : recentSystems) {
             if (key == RecentReferenceSystems.OTHER) key = CHOOSER;
-            items[i] = mapping.remove(key);
+            items.add(mapping.remove(key));         // May be null.
         }
+        dispose(mapping.remove(CHOOSER));           // Safety for avoiding AssertionError in block below.
         /*
          * Previous loop took all items that could be reused as-is. Now search for all items that are new.
          * For each new item to create, recycle an arbitrary `mapping` element (in any order) if some exist.
@@ -297,38 +304,42 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         final Iterator<MenuItem> recycle = mapping.values().iterator();
         final Locale locale = action.owner().locale;
         for (int i=0; i<newCount; i++) {
-            if (items[i] == null) {
-                MenuItem item = null;
+            if (items.get(i) == null) {
+                final MenuItem item;
                 final ReferenceSystem system = recentSystems.get(i);
                 if (system != RecentReferenceSystems.OTHER && recycle.hasNext()) {
                     item = recycle.next();
-                    recycle.remove();
-                    if (item instanceof RadioMenuItem) {
-                        item.setText(IdentifiedObjects.getDisplayName(system, locale));
-                        item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
-                    }
-                }
-                if (item == null) {
+                    assert item instanceof RadioMenuItem : item;
+                    item.setText(IdentifiedObjects.getDisplayName(system, locale));
+                    item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
+                } else {
                     item = createItem(system, locale);
                 }
                 if (selected != null && system == selected) {
                     ((RadioMenuItem) item).setSelected(true);       // ClassCastException should never occur here.
                     selected = null;
                 }
-                items[i] = item;
+                items.set(i, item);
             }
         }
         /*
          * If there is any item left, we must remove them from the ToggleGroup for avoiding memory leak.
-         * The sub-menus (if any) are appended last with no change.
+         * Add separator before "Other…" item. The sub-menus (if any) are appended last with no change.
          */
         while (recycle.hasNext()) {
             dispose(recycle.next());
         }
-        for (int i=newCount; i<items.length; i++) {
-            items[i] = subMenus.get(i - newCount);
+        for (int i = items.size(); --i >= 0;) {
+            if (items.get(i).getClass() == MenuItem.class) {
+                if (separator == null) {
+                    separator = new SeparatorMenuItem();
+                }
+                items.add(i, separator);
+                break;
+            }
         }
-        GUIUtilities.copyAsDiff(Arrays.asList(items), rootMenus);
+        items.addAll(subMenus);
+        GUIUtilities.copyAsDiff(items, rootMenus);
         /*
          * If we had no previously selected item, selects it now.
          */
