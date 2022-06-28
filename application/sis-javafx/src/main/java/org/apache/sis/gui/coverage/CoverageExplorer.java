@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.EnumMap;
 import java.util.Optional;
+import java.util.Collections;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -31,8 +32,10 @@ import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
@@ -617,7 +620,17 @@ public class CoverageExplorer extends Widget {
      */
     final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         if (coverage != null) {
-            referenceSystems.configure(coverage.getGridGeometry());
+            String name;
+            try {
+                name = DataStoreOpener.findLabel(resource, getLocale(), true);
+            } catch (DataStoreException e) {
+                name = e.getLocalizedMessage();
+                if (name == null) {
+                    name = e.getClass().getSimpleName();
+                }
+            }
+            referenceSystems.setGridReferencing(true,
+                    Collections.singletonMap(name, coverage.getGridGeometry()));
         }
         /*
          * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.referencing;
 
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -36,8 +37,12 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
@@ -58,6 +63,7 @@ import org.apache.sis.internal.gui.OptionalDataDownloader;
 import org.apache.sis.internal.gui.RecentChoices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static java.util.logging.Logger.getLogger;
 
@@ -231,8 +237,12 @@ public class RecentReferenceSystems {
     /**
      * A filtered view of {@link #referenceSystems} without the {@link #OTHER} item.
      * This is the list returned to users by public API, but otherwise it is not used by this class.
-     * Instead, the lists used internally by this class contains the {@link #OTHER} item because
-     * those lists are used directly by controls like {@code ChoiceBox<ReferenceSystem>}.
+     *
+     * <div class="note"><b>Design note:</b>
+     * the {@link #OTHER} item needs to exist in the list used internally by this class because those lists
+     * are used directly by controls like {@code ChoiceBox<ReferenceSystem>}, with the {@link #OTHER} value
+     * handled in a special way by {@link ObjectStringConverter} for making the "Other…" item present in the
+     * list of choices. But since {@link #OTHER} is not a real CRS, we want to hide that trick to users.</div>
      *
      * <p>This list is lazily created when first needed,
      * because it depends on {@link #referenceSystems} which is itself lazily created.</p>
@@ -240,6 +250,15 @@ public class RecentReferenceSystems {
      * @see #getItems()
      */
     private ObservableList<ReferenceSystem> publicItemList;
+
+    /**
+     * Coordinate reference systems used for computing cell indices of grid coverages.
+     * Those reference systems are offered in a sub-menu and are not included in {@link #publicItemList}.
+     * The content of this list depends on the grid coverages shown in the widget.
+     *
+     * @see #setGridReferencing(boolean, Map)
+     */
+    private final List<DerivedCRS> cellIndiceSystems;
 
     /**
      * {@code true} if the {@link #referenceSystems} list needs to be rebuilt from {@link #systemsOrCodes} content.
@@ -276,6 +295,7 @@ public class RecentReferenceSystems {
         this.factory         = factory;
         this.locale          = locale;
         systemsOrCodes       = new ArrayList<>();
+        cellIndiceSystems    = new ArrayList<>();
         areaOfInterest       = new SimpleObjectProperty<>(this, "areaOfInterest");
         duplicationCriterion = new NonNullObjectProperty<>(this, "duplicationCriterion", ComparisonMode.ALLOW_VARIANT);
         controlValues        = new ArrayList<>();
@@ -287,27 +307,77 @@ public class RecentReferenceSystems {
     }
 
     /**
-     * Configures this instance for a grid coverage having the given geometry.
-     * This convenience method sets the {@link #areaOfInterest} and the
-     * {@linkplain #setPreferred(boolean, ReferenceSystem) preferred CRS}
-     * with the information found in the given grid geometry.
-     * The properties for which {@code gg} contains no information are left unchanged.
+     * Sets the reference systems, area of interest and "referencing by grid indices" systems.
+     * This method performs all the following work:
      *
-     * @param  gg  the grid geometry, or {@code null} if none.
+     * <ul>
+     *   <li>Invokes {@link #setPreferred(boolean, ReferenceSystem)} with the first CRS in iteration order.</li>
+     *   <li>Invokes {@link #addAlternatives(boolean, ReferenceSystem...)} for all other CRS (single call).</li>
+     *   <li>Sets the {@link #areaOfInterest} to the union of all envelopes.</li>
+     *   <li>Sets the content of "Referencing by cell indices" sub-menu.</li>
+     * </ul>
+     *
+     * @param  replaceByAuthoritativeDefinition  whether the reference systems should be replaced by authoritative definition.
+     * @param  geometries  grid coverage names together with their grid geometry. May be empty.
      *
      * @since 1.3
      */
-    public void configure(final GridGeometry gg) {
-        Envelope aoi = null;
-        if (gg != null) {
+    public void setGridReferencing(final boolean replaceByAuthoritativeDefinition,
+            final Map<String,GridGeometry> geometries)
+    {
+        /*
+         * Fetch or compute information needed, but without modifying the state of this object yet.
+         * All assignments to `this` should be done inside the `try … finally` block.
+         */
+        int countEnv = 0;
+        int countCRS = 0;
+        int countCIR = 0;
+        final Envelope[] envelopes = new Envelope[geometries.size()];
+        final DerivedCRS[] derived = new DerivedCRS[geometries.size()];
+        final CoordinateReferenceSystem[] alt = new CoordinateReferenceSystem[Math.max(derived.length - 1, 0)];
+        CoordinateReferenceSystem preferred = null;
+        for (final Map.Entry<String,GridGeometry> entry : geometries.entrySet()) {
+            final GridGeometry gg = entry.getValue();
             if (gg.isDefined(GridGeometry.ENVELOPE)) {
-                aoi = gg.getEnvelope();
+                envelopes[countEnv++] = gg.getEnvelope();
             }
             if (gg.isDefined(GridGeometry.CRS)) {
-                setPreferred(true, gg.getCoordinateReferenceSystem());
+                final CoordinateReferenceSystem crs = gg.getCoordinateReferenceSystem();
+                if (preferred == null) {
+                    preferred = crs;
+                } else {
+                    alt[countCRS++] = crs;
+                }
+                if (gg.isDefined(GridGeometry.GRID_TO_CRS | GridGeometry.EXTENT)) {
+                    derived[countCIR++] = gg.createImageCRS(entry.getKey(), PixelInCell.CELL_CENTER);
+                }
             }
         }
-        areaOfInterest.set(aoi);
+        Envelope aoi = null;
+        try {
+            aoi = Envelopes.union(envelopes);       // No need to trim null elements.
+        } catch (TransformException e) {
+            errorOccurred("setGridReferencing", e);
+        }
+        /*
+         * Modify now the state of `this` object but with `listModified()` made almost no-op.
+         * The intent is to have only one effective call to `listModified()` at the end,
+         * in order to have only one call to `filterReferenceSystems(…)`.
+         */
+        final ObservableList<ReferenceSystem> savedReferenceSystemList = referenceSystems;
+        try {
+            referenceSystems = null;
+            if (preferred != null) {
+                setPreferred(replaceByAuthoritativeDefinition, preferred);
+                addAlternatives(replaceByAuthoritativeDefinition, alt);         // No need to trim null elements.
+                cellIndiceSystems.clear();
+                cellIndiceSystems.addAll(UnmodifiableArrayList.wrap(derived, 0, countCIR));
+            }
+            areaOfInterest.set(aoi);
+        } finally {
+            referenceSystems = savedReferenceSystemList;
+        }
+        listModified();
     }
 
     /**
@@ -323,7 +393,8 @@ public class RecentReferenceSystems {
      * @param  replaceByAuthoritativeDefinition  whether the given system should be replaced by authoritative definition.
      * @param  system  the native or preferred reference system to show as the first choice.
      */
-    public void setPreferred(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem system) {
+    public final void setPreferred(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem system) {
+        // Final because `setGridReferencing(…)` needs to be sure that `referenceSystems` is not rebuilt.
         ArgumentChecks.ensureNonNull("system", system);
         synchronized (systemsOrCodes) {
             systemsOrCodes.add(0, replaceByAuthoritativeDefinition ? new Unverified(system) : system);
@@ -379,7 +450,8 @@ public class RecentReferenceSystems {
      * @param  replaceByAuthoritativeDefinition  whether the given systems should be replaced by authoritative definitions.
      * @param  systems  the reference systems to add as alternative choices. Null elements are ignored.
      */
-    public void addAlternatives(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem... systems) {
+    public final void addAlternatives(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem... systems) {
+        // Final because `setGridReferencing(…)` needs to be sure that `referenceSystems` is not rebuilt.
         ArgumentChecks.ensureNonNull("systems", systems);
         synchronized (systemsOrCodes) {
             for (final ReferenceSystem system : systems) {
@@ -432,7 +504,7 @@ public class RecentReferenceSystems {
     }
 
     /**
-     * Returns whether the given object is accepted for inclusion in the list of CRS choice.
+     * Returns whether the given object is accepted for inclusion in the list of CRS choices.
      * In current implementation we accept a CRS if it has an authority code (typically an EPSG code).
      */
     private static boolean isAccepted(final IdentifiedObject object) {
@@ -613,29 +685,30 @@ public class RecentReferenceSystems {
              * is added. The first occurrence of duplicated values is kept, which will result in above-cited
              * order as the priority order where to insert the CRS.
              */
-            isModified = true;
-            final int insertAt = Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS);
-            final List<ReferenceSystem> selected = getSelectedItems();
-            systemsOrCodes.addAll(insertAt, selected);
-            systemsOrCodes.addAll(insertAt + selected.size(), referenceSystems);
-            final ImmutableEnvelope domain = geographicAOI;
-            final ComparisonMode mode = duplicationCriterion.get();
-            BackgroundThreads.execute(new Task<List<ReferenceSystem>>() {
-                /** Filters the {@link ReferenceSystem}s in a background thread. */
-                @Override protected List<ReferenceSystem> call() {
-                    return filterReferenceSystems(domain, mode);
-                }
+            if (isModified) {
+                final int insertAt = Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS);
+                final List<ReferenceSystem> selected = getSelectedItems();
+                systemsOrCodes.addAll(insertAt, selected);
+                systemsOrCodes.addAll(insertAt + selected.size(), referenceSystems);
+                final ImmutableEnvelope domain = geographicAOI;
+                final ComparisonMode mode = duplicationCriterion.get();
+                BackgroundThreads.execute(new Task<List<ReferenceSystem>>() {
+                    /** Filters the {@link ReferenceSystem}s in a background thread. */
+                    @Override protected List<ReferenceSystem> call() {
+                        return filterReferenceSystems(domain, mode);
+                    }
 
-                /** Should never happen. */
-                @Override protected void failed() {
-                    ExceptionReporter.show(null, this);
-                }
+                    /** Should never happen. */
+                    @Override protected void failed() {
+                        ExceptionReporter.show(null, this);
+                    }
 
-                /** Sets the {@link ChoiceBox} content to the list computed in background thread. */
-                @Override protected void succeeded() {
-                    setReferenceSystems(getValue(), mode);
-                }
-            });
+                    /** Sets the {@link ChoiceBox} content to the list computed in background thread. */
+                    @Override protected void succeeded() {
+                        setReferenceSystems(getValue(), mode);
+                    }
+                });
+            }
         }
         if (filtered) {
             if (coordinateReferenceSystems == null) {
@@ -712,7 +785,7 @@ public class RecentReferenceSystems {
      */
     final class SelectionListener implements ChangeListener<ReferenceSystem> {
         /** The user-specified action to execute when a reference system is selected. */
-        private final ChangeListener<ReferenceSystem> action;
+        final ChangeListener<ReferenceSystem> action;
 
         /** Creates a new listener of reference system selection. */
         private SelectionListener(final ChangeListener<ReferenceSystem> action) {
@@ -963,11 +1036,10 @@ next:       for (int i=0; i<count; i++) {
      */
     public Menu createMenuItems(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
+        final List<ReferenceSystem> main = getReferenceSystems(filtered);
+        final List<DerivedCRS> derived = (filtered) ? null : cellIndiceSystems;
         final Menu menu = new Menu(Vocabulary.getResources(locale).getString(Vocabulary.Keys.ReferenceSystem));
-        final MenuSync property = new MenuSync(getReferenceSystems(filtered), menu, new SelectionListener(action));
-        if (!filtered) {
-            property.addReferencingByIdentifiers();
-        }
+        final MenuSync property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);
         return menu;
@@ -1026,13 +1098,13 @@ next:       for (int i=0; i<count; i++) {
     }
 
     /**
-     * Invoked when an error occurred while fetching a reference system be identifier.
-     * This is the complement of {@link #errorOccurred(FactoryException)} but for referencing by identifiers.
+     * Invoked when an error other than {@link FactoryException} occurred.
+     * The error shall be recoverable, e.g. by ignoring a menu item.
      *
      * @param  caller  the method to report as the source the in log record.
      * @param  e  the error that occurred.
      */
-    static void errorOccurred(final String caller, final GazetteerException e) {
+    static void errorOccurred(final String caller, final Exception e) {
         Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, caller, e);
     }
 }

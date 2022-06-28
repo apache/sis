@@ -37,6 +37,7 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.PrivateAccess;
 import org.apache.sis.internal.gui.Resources;
@@ -110,7 +111,7 @@ public abstract class WindowHandler {
         if (manager.main == this) {
             text = Resources.forLocale(manager.locale).getString(Resources.Keys.MainWindow);
         } else try {
-            text = ResourceTree.findLabel(getResource(), manager.locale, true);
+            text = DataStoreOpener.findLabel(getResource(), manager.locale, true);
         } catch (DataStoreException | RuntimeException e) {
             text = Vocabulary.getResources(manager.locale).getString(Vocabulary.Keys.Unknown);
             Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), WindowHandler.class, "<init>", e);

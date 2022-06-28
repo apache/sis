@@ -348,6 +348,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short RangeOfValues = 56;
 
         /**
+         * Reference by cell indices
+         */
+        public static final short ReferenceByCellIndices = 74;
+
+        /**
          * Reference system by identifiers
          */
         public static final short ReferenceByIdentifiers = 73;
