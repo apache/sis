@@ -36,7 +36,7 @@ import org.apache.sis.swing.internal.Resources;
  * window providing information about the selected CRS.
  *
  * <p>By default the new windows are instances of either {@link JDialog}, {@link JFrame} or
- * {@link JInternalFrame} - the later case occurs if and only if this {@code WindowCreator}
+ * {@link JInternalFrame} - the latter case occurs if and only if this {@code WindowCreator}
  * has a {@link JDesktopPane} ancestor. However this class provides a
  * {@link #setWindowHandler(Handler)} method allowing users to plugin their own mechanism,
  * for example in order to integrate the widget in the NetBeans platform.</p>

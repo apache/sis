@@ -20,7 +20,7 @@
  * In the future, we could move this package to a {@code sis-swing} module if there is a use for it.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  */
 package org.apache.sis.swing;

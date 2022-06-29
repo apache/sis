@@ -20,7 +20,12 @@ import java.awt.BasicStroke;
 import java.awt.Paint;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.Raster;
+import java.awt.image.ColorModel;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JFrame;
@@ -36,7 +41,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  * Shows a {@link RenderedImage}, optionally with marks such as pixel grid or tile grid.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -115,6 +120,28 @@ public class ImagePane extends ZoomPane {
         frame.pack();
         frame.setVisible(true);
         return pane;
+    }
+
+    /**
+     * Show the given raster in a panel.
+     * The "grid to CRS" transform will be modified in-place.
+     *
+     * @param  raster     the raster to show.
+     * @param  colors     the color model to use.
+     * @param  gridToCRS  the transform from pixel coordinates to "real world" coordinates (modified by this method).
+     * @param  title      window title.
+     * @return the image pane which has been shown.
+     */
+    public static ImagePane show(final Raster raster, final ColorModel colors, final AffineTransform gridToCRS, final String title) {
+        final Rectangle b = raster.getBounds();
+        final WritableRaster wr;
+        if (raster instanceof WritableRaster) {
+            wr = ((WritableRaster) raster).createWritableChild(b.x, b.y, b.width, b.height, 0, 0, null);
+        } else {
+            wr = Raster.createWritableRaster(raster.getSampleModel(), raster.getDataBuffer(), null);
+        }
+        gridToCRS.translate(b.x, b.y);
+        return show(new BufferedImage(colors, wr, false, null), gridToCRS, title);
     }
 
     /**
