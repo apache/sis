@@ -16,8 +16,11 @@
  */
 package org.apache.sis.internal.storage.inflater;
 
+import java.util.Arrays;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
@@ -29,15 +32,16 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * <p>The {@link #close()} method shall be invoked when this channel is no longer used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
 abstract class CompressionChannel extends PixelChannel {
     /**
-     * Size of the buffer where to temporarily copy decompressed data.
+     * Desired size of the buffer where to temporarily copy decompressed data.
+     * The actual buffer size may be larger, but should not be smaller.
      */
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = 8192;
 
     /**
      * The source of data to decompress.
@@ -86,13 +90,25 @@ abstract class CompressionChannel extends PixelChannel {
      * Creates the data input stream to use for getting uncompressed data.
      * The {@linkplain #input} stream must be on the start position before to invoke this method.
      *
-     * @param  channel  the channel to wrap. This is {@code this} unless a {@link Predictor} is applied.
+     * <p>This method tries to create a buffer of the size of scanline stride, or a multiple of that size,
+     * for performance reasons. A well adjusted buffer size reduces calls to {@link ByteBuffer#compact()},
+     * which in turn reduces the amount of copy operations between different regions of the buffer.</p>
+     *
+     * @param  channel         the channel to wrap. This is {@code this} unless a {@link Predictor} is applied.
+     * @param  scanlineStride  the scanline stride of the image to read. Used for choosing a buffer size.
      * @throws IOException if an error occurred while filling the buffer with initial data.
      * @return the data input for uncompressed data.
      */
-    final ChannelDataInput createDataInput(final PixelChannel channel) throws IOException {
+    final ChannelDataInput createDataInput(final PixelChannel channel, int scanlineStride) throws IOException {
+        if (scanlineStride > BUFFER_SIZE) {
+            final int[] divisors = MathFunctions.divisors(scanlineStride);
+            int i = Arrays.binarySearch(divisors, BUFFER_SIZE);
+            if (i < 0) i = ~i;      // Really tild, not minus.
+            scanlineStride = divisors[i];
+        }
+        final int capacity = Numerics.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;
         // TODO: remove cast with JDK9.
-        final ByteBuffer buffer = (ByteBuffer) ByteBuffer.allocate(BUFFER_SIZE).order(input.buffer.order()).limit(0);
+        final ByteBuffer buffer = (ByteBuffer) ByteBuffer.allocate(capacity).order(input.buffer.order()).limit(0);
         return new ChannelDataInput(input.filename, channel, buffer, true);
     }
 

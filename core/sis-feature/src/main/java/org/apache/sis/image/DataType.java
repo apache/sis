@@ -34,7 +34,7 @@ import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_F
  * This is a type-safe version of the {@code TYPE_*} constants defined in {@link DataBuffer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -255,6 +255,18 @@ public enum DataType {
      */
     public final int size() {
         return DataBuffer.getDataTypeSize(ordinal());
+    }
+
+    /**
+     * Returns the size in bytes of this data type.
+     * If the {@linkplain #size() number of bits} is smaller than {@value Byte#SIZE}, then this method returns 1.
+     *
+     * @return size in bytes of this data type, not smaller than 1.
+     *
+     * @since 1.3
+     */
+    public final int bytes() {
+        return Math.max(size() >>> 3, 1);
     }
 
     /**
