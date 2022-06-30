@@ -717,7 +717,7 @@ apply:          if (forwardChangeOfCRS == null) {
     /**
      * Configures the accuracy hints on the given processor.
      *
-     * <h4>Pre-requite</h4>
+     * <h4>Prerequisite</h4>
      * This method assumes that {@link #gridToCRS()} or {@link #inverse()}
      * has already been invoked before this method.
      */

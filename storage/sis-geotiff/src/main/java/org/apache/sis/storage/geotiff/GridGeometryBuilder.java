@@ -333,7 +333,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     /**
      * Completes ISO 19115 metadata with some GeoTIFF values inferred from the geotags.
      *
-     * <h4>Pre-requite</h4>
+     * <h4>Prerequisite</h4>
      * <ul>
      *   <li>{@link #build(Reader, long, long)} must have been invoked successfully before this method.</li>
      *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>

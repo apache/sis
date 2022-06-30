@@ -628,7 +628,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * Tests the annotations in the {@code package-info} files of Apache SIS implementations of the
-     * interfaces enumerated in the {@code #types} array. More specifically this method tests that:
+     * interfaces enumerated in the {@link #types} array. More specifically this method tests that:
      *
      * <ul>
      *   <li>The prefixes declared in the {@link XmlNs} annotations match the

@@ -105,7 +105,7 @@ final class FeatureSet extends DiscreteSampling {
     /**
      * The time-varying properties (for which there is many values per feature instance), or an empty array if none.
      * The length of all {@code dynamicProperties} variables shall be the sum of all {@link #counts} values.
-     * If {@code #count} is {@code null}, then this array is empty.
+     * If {@link #counts} is {@code null}, then this array is empty.
      */
     private final Variable[] dynamicProperties;
 

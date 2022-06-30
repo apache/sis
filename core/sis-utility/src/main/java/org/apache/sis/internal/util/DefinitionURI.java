@@ -44,7 +44,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * This class does not attempt to decode URL characters. For example a URL for "m/s" may be encoded as below,
- * in which case the value in the {@code #code} field will be {@code "m%2Fs"} instead of {@code "m/s"}.
+ * in which case the value in the {@link #code} field will be {@code "m%2Fs"} instead of {@code "m/s"}.
  * <ul>
  *   <li>{@code http://www.opengis.net/def/uom/SI/0/m%2Fs}</li>
  * </ul>

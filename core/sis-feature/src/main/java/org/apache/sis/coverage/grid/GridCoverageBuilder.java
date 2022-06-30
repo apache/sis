@@ -141,7 +141,7 @@ public class GridCoverageBuilder {
 
     /**
      * The data buffer containing the coverage values.
-     * Exactly one of {@link #image}, {@link #raster} and {@code #buffer} shall be non-null.
+     * Exactly one of {@link #image}, {@link #raster} and {@code buffer} shall be non-null.
      *
      * @see #setValues(DataBuffer, Dimension)
      */
