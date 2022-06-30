@@ -765,7 +765,7 @@ public class TransverseMercator extends NormalizedProjection {
             final double tanφ = sinφ / cosφ;
             final double B    = cosφ * sinλ;
             /*
-             * Using Snyder's equation for calculating y, instead of the one used in Proj.4.
+             * Using Snyder's equation for calculating y, instead of the one used in PROJ.
              * Potential problems when y and x = 90 degrees, but behaves ok in tests.
              */
             if (dstPts != null) {

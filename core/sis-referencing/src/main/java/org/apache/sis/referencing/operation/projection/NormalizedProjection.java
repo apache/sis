@@ -711,7 +711,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * concatenated transform that include the <cite>normalization</cite> and <cite>denormalization</cite>
      * matrices documented in this class javadoc.</div>
      *
-     * <div class="note"><b>Note 2:</b> in <a href="https://proj4.org/">Proj.4</a>, the same standardization,
+     * <div class="note"><b>Note 2:</b> in the <a href="https://proj.org/">PROJ</a> library, the same standardization,
      * described above, is handled by {@code pj_fwd.c}, except for the projection-specific additional factors.</div>
      *
      * <h4>Argument checks</h4>
@@ -749,7 +749,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * or ellipse having a semi-major axis of 1.
      * Additional projection-specific factors may also need to be applied (see class javadoc).
      *
-     * <div class="note"><b>Note:</b> in <a href="https://proj4.org/">Proj.4</a>, the same standardization,
+     * <div class="note"><b>Note:</b> in the <a href="https://proj.org/">PROJ</a> library, the same standardization,
      * described above, is handled by {@code pj_inv.c}, except for the projection-specific additional factors.</div>
      *
      * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.

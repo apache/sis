@@ -143,7 +143,8 @@
  * above-cited normalization and denormalization affine transforms.</p>
  *
  * <div class="note"><b>Note:</b>
- * In <a href="http://proj4.org/">Proj.4</a>, the same standardization is handled by {@code pj_fwd.c} and {@code pj_inv.c}.
+ * In the <a href="https://proj.org/">PROJ</a> library,
+ * the same standardization is handled by {@code pj_fwd.c} and {@code pj_inv.c}.
  * This normalization makes the equations closer to the ones published in Snyder's book, where the
  * <cite>false easting</cite>, <cite>false northing</cite> and <cite>scale factor</cite> are usually not given.</div>
  *
