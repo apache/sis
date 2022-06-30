@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -37,6 +38,8 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -70,7 +73,10 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
+ *
+ * @since 1.1
  * @module
  */
 public class WraparoundTransform extends AbstractMathTransform implements Serializable {
@@ -525,7 +531,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                 }
             } catch (NoninvertibleTransformException e) {
                 // Should not happen. But if it is the case, just abandon the optimization effort.
-                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
+                Logging.recoverableException(getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
             }
         }
         return null;

@@ -118,6 +118,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
@@ -496,8 +497,7 @@ addURIs:    for (int i=0; ; i++) {
                     r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
                     // May happen if there is spaces in the URI.
-                    Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY),
-                                                 EPSGDataAccess.class, "getAuthority", exception);
+                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, "getAuthority", exception);
                 }
                 r.setFunction(function);
                 r.setDescription(description);
@@ -3337,7 +3337,7 @@ next:                   while (r.next()) {
      * @param exception  the exception to log.
      */
     private static void unexpectedException(final String method, final Exception exception) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, method, exception);
+        Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, method, exception);
     }
 
     /**

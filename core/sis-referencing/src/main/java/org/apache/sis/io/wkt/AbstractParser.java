@@ -38,7 +38,6 @@ import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -216,7 +215,7 @@ abstract class AbstractParser implements Parser {
      * or when the information is not worth to report as a warning.
      */
     final void log(final LogRecord record) {
-        Logger logger = Logging.getLogger(Loggers.WKT);
+        Logger logger = Logger.getLogger(Loggers.WKT);
         record.setSourceClassName (getPublicFacade());
         record.setSourceMethodName(getFacadeMethod());
         record.setLoggerName(logger.getName());

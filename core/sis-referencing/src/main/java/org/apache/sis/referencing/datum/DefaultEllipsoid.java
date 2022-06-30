@@ -104,7 +104,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
@@ -378,6 +378,25 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     public double getAuthalicRadius() {
         return Formulas.getAuthalicRadius(getSemiMajorAxis(), getSemiMinorAxis());
+    }
+
+    /**
+     * Returns the radius at the given latitude.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If φ =   0°, then this is the same value as {@link #getSemiMajorAxis()}.</li>
+     *   <li>If φ = ±90°, then this is the same value as {@link #getSemiMinorAxis()}.</li>
+     *   <li>If φ is NaN, then this method returns NaN.</li>
+     * </ul>
+     *
+     * @param  φ  latitude in degrees, from -90° to +90° inclusive.
+     * @return radius at the given latitude.
+     *
+     * @since 1.3
+     */
+    public double getRadius(final double φ) {
+        return Formulas.getRadius(this, Math.toRadians(φ));
     }
 
     /**

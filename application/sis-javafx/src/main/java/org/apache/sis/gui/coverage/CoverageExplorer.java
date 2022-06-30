@@ -17,6 +17,8 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.EnumMap;
+import java.util.Optional;
+import java.util.Collections;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -30,14 +32,18 @@ import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
+import org.apache.sis.internal.gui.PrivateAccess;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.Widget;
 
@@ -65,7 +71,7 @@ import org.apache.sis.gui.Widget;
  * implementation may generalize to {@code org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see CoverageCanvas
  * @see GridView
@@ -208,6 +214,14 @@ public class CoverageExplorer extends Widget {
     private SplitPane content;
 
     /**
+     * Handler of the window showing this coverage view. This is used for creating new windows.
+     * Created when first needed for giving to subclasses a chance to complete initialization.
+     *
+     * @see #getWindowHandler()
+     */
+    private WindowHandler window;
+
+    /**
      * Creates an initially empty explorer with default view type.
      * By default {@code CoverageExplorer} will show a coverage as a table of values,
      * i.e. the default view type is {@link View#TABLE}.
@@ -216,7 +230,10 @@ public class CoverageExplorer extends Widget {
      * the reason for setting default value to tabular data is because it requires loading much less data with
      * {@link java.awt.image.RenderedImage}s supporting deferred tile loading. By contrast {@link View#IMAGE}
      * may require loading the full image.</div>
+     *
+     * @deprecated Use {@link #CoverageExplorer(View)}.
      */
+    @Deprecated
     public CoverageExplorer() {
         this(View.TABLE);
     }
@@ -238,7 +255,7 @@ public class CoverageExplorer extends Widget {
         coverageProperty = new SimpleObjectProperty<> (this, "coverage");
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
-        referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395");         // WGS 84 / World Mercator
+        referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395", "MGRS");     // WGS 84 / World Mercator
         viewTypeProperty.addListener((p,o,n) -> onViewTypeSet(n));
         resourceProperty.addListener((p,o,n) -> onPropertySet(n, null, coverageProperty));
         coverageProperty.addListener((p,o,n) -> onPropertySet(null, n, resourceProperty));
@@ -253,7 +270,35 @@ public class CoverageExplorer extends Widget {
      */
     public CoverageExplorer(final CoverageExplorer source) {
         this(source.getViewType());
-        setCoverage(new ImageRequest(source.getResource(), source.getCoverage()));
+        window = PrivateAccess.newWindowHandler.apply(source.window, this);
+        source.getImageRequest().ifPresent(this::setCoverage);
+        PrivateAccess.finishWindowHandler.accept(window);
+        if (getViewType() == View.IMAGE) {
+            getCoverageControls().copyStyling(source.getCoverageControls());
+        }
+    }
+
+    /**
+     * Returns the handler of the window showing this coverage view.
+     * Those windows are created when the user clicks on the "New window" button.
+     * Each window provides the area where data are shown and where the user interacts.
+     * The window can be a JavaFX top-level window ({@link Stage}), but not necessarily.
+     * It may also be a tile in a mosaic of windows.
+     *
+     * @return the handler of the window showing this coverage view.
+     *
+     * @since 1.3
+     */
+    public final WindowHandler getWindowHandler() {
+        assert Platform.isFxApplicationThread();
+        /*
+         * Created when first needed for giving to subclass constructors a chance to complete
+         * their initialization before `this` reference is passed to `WindowHandler` constructor.
+         */
+        if (window == null) {
+            window = WindowHandler.create(this);
+        }
+        return window;
     }
 
     /**
@@ -264,7 +309,14 @@ public class CoverageExplorer extends Widget {
      * @since 1.2
      */
     public final CoverageCanvas getCanvas() {
-        return ((CoverageControls) getViewAndControls(View.IMAGE, false)).view;
+        return getCoverageControls().view;
+    }
+
+    /**
+     * Returns the controls on the canvas where the image is shown.
+     */
+    private CoverageControls getCoverageControls() {
+        return (CoverageControls) getViewAndControls(View.IMAGE, false);
     }
 
     /**
@@ -280,10 +332,9 @@ public class CoverageExplorer extends Widget {
         if (c == null) {
             switch (type) {
                 case TABLE: c = new GridControls(this); break;
-                case IMAGE: c = new CoverageControls(this); break;
+                case IMAGE: c = new CoverageControls(this, getWindowHandler()); break;
                 default: throw new AssertionError(type);
             }
-            SplitPane.setResizableWithParent(c.view(), Boolean.TRUE);
             views.put(type, c);
             load = true;
         }
@@ -293,11 +344,7 @@ public class CoverageExplorer extends Widget {
          * and became selected (visible).
          */
         if (load) {
-            final GridCoverageResource resource = getResource();
-            final GridCoverage coverage = getCoverage();
-            if (resource != null || coverage != null) {
-                c.load(new ImageRequest(resource, coverage));
-            }
+            getImageRequest().ifPresent(c::load);
         }
         return c;
     }
@@ -322,8 +369,8 @@ public class CoverageExplorer extends Widget {
         if (content == null) {
             /*
              * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
-             * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
-             * text and action for each button.
+             * they are managed by org.apache.sis.gui.dataset.WindowHandler. We only declare here
+             * the text and action for each button.
              */
             final ToggleGroup group   = new ToggleGroup();
             final Control[]   buttons = new Control[View.COUNT + 1];
@@ -335,7 +382,7 @@ public class CoverageExplorer extends Widget {
             final View type = getViewType();
             final ViewAndControls c = getViewAndControls(type, false);
             group.selectToggle(group.getToggles().get(type.ordinal()));
-            content = new SplitPane(c.controls(), c.view());
+            content = new SplitPane(c.controls(), c.viewAndNavigation);
             ToolbarButton.insert(content, buttons);
             /*
              * The divider position is supposed to be a fraction between 0 and 1. A value of 1 would mean
@@ -350,8 +397,9 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * Returns the region containing only the data visualization component, without controls.
-     * This is a {@link GridView} or {@link CoverageCanvas} together with their {@link StatusBar}.
+     * Returns the region containing the data visualization component, without controls other than navigation.
+     * This is a {@link GridView} or {@link CoverageCanvas} together with their {@link StatusBar}
+     * and navigation controls for selecting the slice in a <var>n</var>-dimensional data cube.
      * The {@link Region} subclass returned by this method is implementation dependent and may change
      * in any future version.
      *
@@ -361,7 +409,7 @@ public class CoverageExplorer extends Widget {
     public final Region getDataView(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).view();
+        return getViewAndControls(type, false).viewAndNavigation;
     }
 
     /**
@@ -374,7 +422,7 @@ public class CoverageExplorer extends Widget {
     public final TitledPane[] getControls(final View type) {
         assert Platform.isFxApplicationThread();
         ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).controlPanes().clone();
+        return getViewAndControls(type, false).controlPanes.clone();
     }
 
     /**
@@ -433,7 +481,7 @@ public class CoverageExplorer extends Widget {
     private void onViewTypeSet(final View type) {
         final ViewAndControls c = getViewAndControls(type, true);
         if (content != null) {
-            content.getItems().setAll(c.controls(), c.view());
+            content.getItems().setAll(c.controls(), c.viewAndNavigation);
             final Toggle selector = c.selector;
             if (selector != null) {
                 selector.setSelected(true);
@@ -572,11 +620,17 @@ public class CoverageExplorer extends Widget {
      */
     final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         if (coverage != null) {
-            final GridGeometry gg = coverage.getGridGeometry();
-            referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
-            if (gg.isDefined(GridGeometry.CRS)) {
-                referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
+            String name;
+            try {
+                name = DataStoreOpener.findLabel(resource, getLocale(), true);
+            } catch (DataStoreException e) {
+                name = e.getLocalizedMessage();
+                if (name == null) {
+                    name = e.getClass().getSimpleName();
+                }
             }
+            referenceSystems.setGridReferencing(true,
+                    Collections.singletonMap(name, coverage.getGridGeometry()));
         }
         /*
          * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`
@@ -589,6 +643,32 @@ public class CoverageExplorer extends Widget {
             setCoverage(coverage);
         } finally {
             isCoverageAdjusting = false;
+        }
+    }
+
+    /**
+     * Returns a request which represent the coverage or resource currently shown in this explorer.
+     * This request can be used for showing the same data in another {@code CoverageExplorer} instance
+     * by invoking the {@link #setCoverage(ImageRequest)} method.
+     *
+     * @return the request to give to another explorer for showing the same coverage.
+     *
+     * @see #setCoverage(ImageRequest)
+     */
+    private Optional<ImageRequest> getImageRequest() {
+        final GridCoverageResource resource = getResource();
+        final GridCoverage coverage = getCoverage();
+        if (resource != null || coverage != null) {
+            final ImageRequest request = new ImageRequest(resource, coverage);
+            final CoverageControls c = (CoverageControls) views.get(View.IMAGE);
+            if (c != null) try {
+                request.zoom = c.view.getGridGeometry();
+            } catch (RenderException e) {
+                CoverageCanvas.unexpectedException("getGridGeometry", e);
+            }
+            return Optional.of(request);
+        } else {
+            return Optional.empty();
         }
     }
 }

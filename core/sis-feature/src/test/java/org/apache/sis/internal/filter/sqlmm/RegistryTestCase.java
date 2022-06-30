@@ -29,8 +29,9 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.Vector;
+
+import static java.util.logging.Logger.getLogger;
 
 // Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -110,7 +111,7 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
      * @see #assertNoUnexpectedLog()
      */
     @Rule
-    public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Loggers.FILTER));
+    public final LoggingWatcher loggings = new LoggingWatcher(getLogger(Loggers.FILTER));
 
     /**
      * Creates a new test case.

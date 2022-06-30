@@ -51,6 +51,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Formats {@linkplain AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
@@ -570,7 +572,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 final int bits = Float.floatToRawIntBits(f);
                                                 if (bits != illegalNaN) {
                                                     illegalNaN = bits;
-                                                    Logging.recoverableException(Logging.getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                    Logging.recoverableException(getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
                                                 }
                                             }
                                         }

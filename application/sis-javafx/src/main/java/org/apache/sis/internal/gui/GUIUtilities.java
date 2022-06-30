@@ -19,11 +19,13 @@ package org.apache.sis.internal.gui;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import javafx.beans.property.ObjectProperty;
+import java.util.Locale;
+import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
@@ -38,6 +40,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Workaround;
 
 
@@ -45,7 +48,7 @@ import org.apache.sis.util.Workaround;
  * Miscellaneous utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -57,14 +60,30 @@ public final class GUIUtilities extends Static {
     }
 
     /**
+     * Returns the locale of the JavaBean containing the given property, or {@code null} if unknown.
+     *
+     * @param  property  the property for which to get the locale, or {@code null}.
+     * @return the locale for the container of the given property, or {@code null}.
+     */
+    public static Locale getLocale(final ObservableValue<?> property) {
+        if (property instanceof ReadOnlyProperty<?>) {
+            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
+            if (bean instanceof Localized) {
+                return ((Localized) bean).getLocale();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the window of the bean associated to the given property.
      *
      * @param  property  the property for which to get the window of the control, or {@code null}.
      * @return the window, or {@code null} if unknown.
      */
     public static Window getWindow(final ObservableValue<?> property) {
-        if (property instanceof ObjectProperty<?>) {
-            final Object bean = ((ObjectProperty<?>) property).getBean();
+        if (property instanceof ReadOnlyProperty<?>) {
+            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
             if (bean instanceof Node) {
                 final Scene scene = ((Node) bean).getScene();
                 if (scene != null) {
@@ -79,6 +98,22 @@ public final class GUIUtilities extends Static {
                         parent = (ContextMenu) owner;
                     }
                 }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the window where is located the given JavaFX control.
+     *
+     * @param  control  the JavaFX control for which to get the window, or {@code null} if none.
+     * @return window containing the given control, or {@code null} if none.
+     */
+    public static Window getWindow(final Node control) {
+        if (control != null) {
+            final Scene scene = control.getScene();
+            if (scene != null) {
+                return scene.getWindow();
             }
         }
         return null;
@@ -175,6 +210,17 @@ walk:   for (final T search : path) {
         final T value = item.getValue();
         item.setValue(null);
         item.setValue(value);
+    }
+
+    /**
+     * Sets the selected value or {@code target} to the same item than the selected item of {@code source}.
+     *
+     * @param <T>     type of items.
+     * @param source  the control from which to copy the selected item.
+     * @param target  the control where to set the selected item.
+     */
+    public static <T> void copySelection(final ChoiceBox<T> source, final ChoiceBox<T> target) {
+        target.getSelectionModel().select(source.getSelectionModel().getSelectedItem());
     }
 
     /**

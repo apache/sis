@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -137,12 +138,13 @@ public final strictfp class GridExtentTest extends TestCase {
      * with {@code offset} set to {@link GridExtent#getDimension()}.
      */
     @Test
-    public void testAppend() {
+    public void testAppendDimension() {
         appendOrInsert(2, 1);
     }
 
     /**
-     * Tests {@link GridExtent#insertDimension(int, DimensionNameType, long, long, boolean)}.
+     * Tests {@link GridExtent#insertDimension(int, DimensionNameType, long, long, boolean)}
+     * with {@code offset} somewhere in the middle of the extent.
      */
     @Test
     public void testInsertDimension() {
@@ -163,6 +165,38 @@ public final strictfp class GridExtentTest extends TestCase {
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    extent.getAxisType(rowIndex).get());
         assertEquals(DimensionNameType.TIME,   extent.getAxisType(offset).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#reduceDimension(int[])}.
+     */
+    @Test
+    public void testReduceDimension() {
+        final GridExtent extent = create3D();
+        GridExtent reduced = extent.reduceDimension(0, 1);
+        assertEquals("dimension", 2, reduced.getDimension());
+        assertExtentEquals(reduced, 0, 100, 499);
+        assertExtentEquals(reduced, 1, 200, 799);
+        assertEquals(DimensionNameType.COLUMN, reduced.getAxisType(0).get());
+        assertEquals(DimensionNameType.ROW,    reduced.getAxisType(1).get());
+
+        reduced = extent.reduceDimension(2);
+        assertEquals("dimension", 1, reduced.getDimension());
+        assertExtentEquals(reduced, 0, 40, 49);
+        assertEquals(DimensionNameType.TIME, reduced.getAxisType(0).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#withRange(int, long, long)}.
+     */
+    @Test
+    public void testWithRange() {
+        GridExtent extent = create3D();
+        assertSame(extent, extent.withRange(1, 200, 799));
+        extent = extent.withRange(2, 30, 60);
+        assertExtentEquals(extent, 0, 100, 499);
+        assertExtentEquals(extent, 1, 200, 799);
+        assertExtentEquals(extent, 2,  30,  60);
     }
 
     /**
@@ -213,15 +247,21 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
+     * Creates another arbitrary extent for tests of union and intersection.
+     */
+    private static GridExtent createOther() {
+        return new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {150, 220, 35}, new long[] {400, 820, 47}, false);
+    }
+
+    /**
      * Tests {@link GridExtent#intersect(GridExtent)}.
      */
     @Test
     public void testIntersect() {
-        final GridExtent domain = new GridExtent(
-                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
-                new long[] {150, 220, 35}, new long[] {400, 820, 47}, false);
-        GridExtent extent = create3D();
-        extent = extent.intersect(domain);
+        final GridExtent domain = createOther();
+        final GridExtent extent = create3D().intersect(domain);
         assertExtentEquals(extent, 0, 150, 399);
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
@@ -229,22 +269,16 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#reduceDimension(int[])}.
+     * Tests {@link GridExtent#union(GridExtent)}.
      */
     @Test
-    public void testReduceDimension() {
-        final GridExtent extent = create3D();
-        GridExtent reduced = extent.reduceDimension(0, 1);
-        assertEquals("dimension", 2, reduced.getDimension());
-        assertExtentEquals(reduced, 0, 100, 499);
-        assertExtentEquals(reduced, 1, 200, 799);
-        assertEquals(DimensionNameType.COLUMN, reduced.getAxisType(0).get());
-        assertEquals(DimensionNameType.ROW,    reduced.getAxisType(1).get());
-
-        reduced = extent.reduceDimension(2);
-        assertEquals("dimension", 1, reduced.getDimension());
-        assertExtentEquals(reduced, 0, 40, 49);
-        assertEquals(DimensionNameType.TIME, reduced.getAxisType(0).get());
+    public void testUnion() {
+        final GridExtent domain = createOther();
+        final GridExtent extent = create3D().union(domain);
+        assertExtentEquals(extent, 0, 100, 499);
+        assertExtentEquals(extent, 1, 200, 819);
+        assertExtentEquals(extent, 2, 35,  49);
+        assertSame(extent.union(domain), extent);
     }
 
     /**
@@ -277,10 +311,12 @@ public final strictfp class GridExtentTest extends TestCase {
 
     /**
      * Tests {@link GridExtent#getSubspaceDimensions(int)}.
+     * Opportunistically tests {@link GridExtent#getSliceCoordinates()} since the two methods closely related.
      */
     @Test
     public void testGetSubspaceDimensions() {
         final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
+        assertMapEquals(JDK9.mapOf(1, 5L, 3, 40L), extent.getSliceCoordinates());
         assertArrayEquals(new int[] {0,  2  }, extent.getSubspaceDimensions(2));
         assertArrayEquals(new int[] {0,1,2  }, extent.getSubspaceDimensions(3));
         assertArrayEquals(new int[] {0,1,2,3}, extent.getSubspaceDimensions(4));

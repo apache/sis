@@ -19,15 +19,19 @@ package org.apache.sis.coverage.grid;
 import java.util.Collections;
 import java.awt.image.DataBuffer;
 import org.opengis.referencing.datum.PixelInCell;
-import org.apache.sis.coverage.SampleDimension;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.FeatureAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -35,17 +39,16 @@ import static org.apache.sis.test.FeatureAssert.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
 public final strictfp class ConvertedGridCoverageTest extends TestCase {
     /**
-     * Tests forward conversion from packed values to "geophysics" values.
-     * Test includes a conversion of an integer value to {@link Float#NaN}.
+     * Creates a test coverage backed by an image of 2 pixels
+     * on a single row with sample values (-1, 3).
      */
-    @Test
-    public void testForward() {
+    private static BufferedGridCoverage coverage() {
         /*
          * A sample dimension with an identity transfer function
          * except for value -1 which will be mapped to NaN.
@@ -56,7 +59,6 @@ public final strictfp class ConvertedGridCoverageTest extends TestCase {
                 .setName("data")
                 .build();
         /*
-         * Creates an image of 2 pixels on a single row with sample values (-1, 3).
          * The "grid to CRS" transform does not matter for this test.
          */
         final GridGeometry grid = new GridGeometry(new GridExtent(2, 1), PixelInCell.CELL_CENTER,
@@ -67,6 +69,16 @@ public final strictfp class ConvertedGridCoverageTest extends TestCase {
 
         coverage.data.setElem(0, -1);
         coverage.data.setElem(1,  3);
+        return coverage;
+    }
+
+    /**
+     * Tests forward conversion from packed values to "geophysics" values.
+     * Test includes a conversion of an integer value to {@link Float#NaN}.
+     */
+    @Test
+    public void testForward() {
+        final BufferedGridCoverage coverage = coverage();
         /*
          * Verify values before and after conversion.
          */
@@ -78,5 +90,26 @@ public final strictfp class ConvertedGridCoverageTest extends TestCase {
         assertValuesEqual(coverage.forConvertedValues(true).render(null), 0, new double[][] {
             {nan, 3}
         });
+    }
+
+    /**
+     * Tests the creation of a converted grid coverage through {@link GridCoverageProcessor}.
+     */
+    @Test
+    public void testProcessor() {
+        final GridCoverageProcessor processor = new GridCoverageProcessor();
+        final GridCoverage source = coverage();
+        final GridCoverage target = processor.convert(source, new MathTransform1D[] {
+            (MathTransform1D) MathTransforms.linear(10, 100)
+        }, null);
+        assertSame(target, target.forConvertedValues(true));
+        assertSame(source, target.forConvertedValues(false));
+        assertValuesEqual(target.render(null), 0, new double[][] {
+            {90, 130}      // {-1, 3} × 10 + 100
+        });
+        final SampleDimension band = getSingleton(target.getSampleDimensions());
+        final NumberRange<?> range = band.getSampleRange().get();
+        assertEquals(100, range.getMinDouble(), STRICT);
+        assertEquals(200, range.getMaxDouble(), STRICT);
     }
 }

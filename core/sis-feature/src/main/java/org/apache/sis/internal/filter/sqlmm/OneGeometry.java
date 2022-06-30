@@ -33,7 +33,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -133,7 +133,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
          */
         @Override
         public List<Expression<? super R, ?>> getParameters() {
-            return Arrays.asList(geometry, argument);               // TODO: use List.of(…) with JDK9.
+            return Arrays.asList(unwrap(geometry), argument);       // TODO: use List.of(…) with JDK9.
         }
 
         /**

@@ -16,19 +16,23 @@
  */
 package org.apache.sis.measure;
 
+import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.math.MathFunctions;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
  * Tests the {@link NumberRange} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -154,5 +158,42 @@ public final strictfp class NumberRangeTest extends TestCase {
         assertNotNull("Annotation not found.", values);
         final NumberRange<Short> range = new NumberRange<>(Short.class, values);
         assertEquals(NumberRange.create((short) 4, true, (short) 8, false), range);
+    }
+
+    /**
+     * Tests {@link NumberRange#transform(MathTransform1D)}.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testTransform() throws TransformException {
+        final NumberRange<Integer> range = new NumberRange<>(Integer.class, -5, true, 18, false);
+        assertSame(range, range.transform(scale(1)));
+        assertEquals(new NumberRange<>(Double.class, -10d, true, 36d, false), range.transform(scale(2)));
+        assertEquals(new NumberRange<>(Double.class, -36d, false, 10d, true), range.transform(scale(-2)));
+    }
+
+    /**
+     * Returns a mock transform which applies the given multiplication factor.
+     *
+     * @param  factor  the scale factor.
+     * @return a transform applying the given scale factor.
+     */
+    private static MathTransform1D scale(final double factor) {
+        return new MathTransform1D() {
+            @Override public int     getSourceDimensions()    {return 1;}
+            @Override public int     getTargetDimensions()    {return 1;}
+            @Override public boolean isIdentity()             {return factor == 1;}
+            @Override public double  transform (double value) {return factor * value;}
+            @Override public double  derivative(double value) {throw new UnsupportedOperationException();}
+            @Override public MathTransform1D inverse()        {throw new UnsupportedOperationException();}
+            @Override public DirectPosition transform(DirectPosition ptSrc, DirectPosition ptDst) {throw new UnsupportedOperationException();}
+            @Override public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {throw new UnsupportedOperationException();}
+            @Override public void transform(float [] srcPts, int srcOff, float [] dstPts, int dstOff, int numPts) {throw new UnsupportedOperationException();}
+            @Override public void transform(float [] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {throw new UnsupportedOperationException();}
+            @Override public void transform(double[] srcPts, int srcOff, float [] dstPts, int dstOff, int numPts) {throw new UnsupportedOperationException();}
+            @Override public Matrix derivative(DirectPosition point) {throw new UnsupportedOperationException();}
+            @Override public String toWKT() {throw new UnsupportedOperationException();}
+        };
     }
 }

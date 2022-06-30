@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Set;
+import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -43,9 +44,10 @@ import org.apache.sis.internal.jdk9.JDK9;
  * That method is invoked when a requested tile is not in the cache or needs to be updated.
  * All methods related to pixel and tile coordinates ({@link #getMinX()}, {@link #getMinTileX()},
  * <i>etc.</i>) are final and delegate to the source image.
+ * The {@link #equals(Object)} and {@link #hashCode()} methods should also be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -59,7 +61,7 @@ abstract class SourceAlignedImage extends ComputedImage {
             POSITIONAL_ACCURACY_KEY, ResampledImage.POSITIONAL_CONSISTENCY_KEY);
 
     /**
-     * The color model for this image.
+     * The color model for this image. May be {@code null}.
      */
     private final ColorModel colorModel;
 
@@ -204,5 +206,27 @@ abstract class SourceAlignedImage extends ComputedImage {
         } else {
             return super.prefetch(tiles);
         }
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     * Subclasses should override this method.
+     */
+    @Override
+    public int hashCode() {
+        return hashCodeBase() + 37 * Objects.hashCode(colorModel);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     * Subclasses should override this method.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (equalsBase(object)) {
+            final SourceAlignedImage other = (SourceAlignedImage) object;
+            return Objects.equals(colorModel, other.colorModel);
+        }
+        return false;
     }
 }

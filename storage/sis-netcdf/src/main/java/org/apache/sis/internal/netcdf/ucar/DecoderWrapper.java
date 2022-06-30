@@ -51,6 +51,7 @@ import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 
@@ -59,7 +60,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -455,7 +456,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     @SuppressWarnings("null")
-    public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
+    public DiscreteSampling[] getDiscreteSampling(final DataStore lock) throws IOException, DataStoreException {
         final FeatureDataset features = getFeatureDataSet();
         if (features instanceof FeatureDatasetPoint) {
             final List<DsgFeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();

@@ -17,8 +17,13 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.function.Function;
+import java.util.function.BiFunction;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
@@ -26,13 +31,18 @@ import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
 
+// Branch-dependent imports
+import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.filter.Expression;
+
 
 /**
  * Apply some validation on the {@link SQLMM} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -75,5 +85,56 @@ public final strictfp class SQLMMTest extends TestCase {
         final Polygon polygon = (Polygon) value;
         assertEquals(wkt, polygon.toText());
         assertEquals(CommonCRS.WGS84.geographic(), polygon.getUserData());
+    }
+
+    /**
+     * Tests {@link FilterFactory#function(String, Expression...)} where the last argument
+     * is an optional CRS. The {@code ST_Point} function is used for this test.
+     *
+     * @throws FactoryException if an error occurred while fetching the CRS from a JTS geometry.
+     */
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})        // Because of generic array creation.
+    public void testOptionalCrsInSTPoint() throws FactoryException {
+        /*
+         * Ensure that when argument array is of size 2, the `FunctionWithSRID`
+         * constructor will not fail with an `ArrayIndexOutOfBoundsException`.
+         * This bug happened in SIS 1.2.
+         */
+        verifyPoint(null, (x, y) -> new Expression[] { x, y });
+        /*
+         * Ensure that point function will correctly interpret
+         * a literal with a null value as "no CRS available".
+         */
+        verifyPoint(null, (x, y) -> new Expression[] { x, y, factory.literal(null) });
+        /*
+         * Ensure that CRS is fetched properly.
+         */
+        verifyPoint(HardCodedCRS.WGS84, (x, y) -> new Expression[] { x, y, factory.literal(HardCodedCRS.WGS84) });
+    }
+
+    /**
+     * Verifies that a point function properly build a point with expected CRS and coordinate.
+     *
+     * @param  expectedCRS      the CRS that should be found in the point created with {@code argumentBundler}.
+     * @param  argumentBundler  given (x,y) coordinates, provides the list of arguments for {@code ST_Point(…)}.
+     * @throws FactoryException if an error occurred while fetching the CRS from a JTS geometry.
+     */
+    private void verifyPoint(final CoordinateReferenceSystem expectedCRS,
+                             final BiFunction<Expression<AbstractFeature, Double>,
+                                              Expression<AbstractFeature, Double>,
+                                              Expression<AbstractFeature, ?>[]> argumentBundler)
+            throws FactoryException
+    {
+        final Expression<AbstractFeature, Double> x = factory.literal(1.0);
+        final Expression<AbstractFeature, Double> y = factory.literal(2.0);
+        Expression<AbstractFeature, ?> fn = factory.function("ST_Point", argumentBundler.apply(x, y));
+        Object rawPoint = fn.apply(null);
+        assertInstanceOf("ST_Point should create a Point geometry", Point.class, rawPoint);
+        Point point = (Point) rawPoint;
+        CoordinateReferenceSystem pointCRS = JTS.getCoordinateReferenceSystem(point);
+        assertEquals("Point CRS", expectedCRS, pointCRS);
+        assertEquals(point.getX(), x.apply(null), STRICT);
+        assertEquals(point.getY(), y.apply(null), STRICT);
     }
 }

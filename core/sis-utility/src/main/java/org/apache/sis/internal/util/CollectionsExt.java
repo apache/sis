@@ -427,7 +427,7 @@ public final class CollectionsExt extends Static {
      *
      * @see #compact(Map)
      *
-     * @todo Replace by {@code Map.copyOf(Map)} on JDK10.
+     * @todo Replace by {@code Map.copyOf(Map)} on JDK10, except when order matter ({@link LinkedHashMap}).
      */
     public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
         if (map != null) {

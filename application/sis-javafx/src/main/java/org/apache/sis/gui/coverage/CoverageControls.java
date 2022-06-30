@@ -17,13 +17,14 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
+import java.util.Collections;
 import javafx.scene.control.TitledPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
@@ -31,11 +32,14 @@ import javafx.scene.paint.Color;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
-import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.control.ValueColorMapper;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.control.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -45,7 +49,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * The controls are updated when the coverage shown in {@link CoverageCanvas} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -63,39 +67,43 @@ final class CoverageControls extends ViewAndControls {
     private final TableView<Category> categoryTable;
 
     /**
+     * The control used for selecting a color ramp for a given category.
+     */
+    private final CoverageStyling styling;
+
+    /**
+     * The control used for selecting a color stretching mode.
+     */
+    private final ChoiceBox<Stretching> stretching;
+
+    /**
+     * The control used for selecting the interpolation method.
+     */
+    private final ChoiceBox<Interpolation> interpolation;
+
+    /**
      * The renderer of isolines.
      */
     private final IsolineRenderer isolines;
 
     /**
-     * The controls for changing {@link #view}.
-     */
-    private final TitledPane[] controls;
-
-    /**
-     * The image together with the status bar.
-     */
-    private final BorderPane imageAndStatus;
-
-    /**
      * Creates a new set of coverage controls.
      *
-     * @param  owner  the widget which create this view. Can not be null.
+     * @param  owner   the widget which creates this view. Can not be null.
+     * @param  window  the handler of the window which will show the coverage explorer.
      */
-    CoverageControls(final CoverageExplorer owner) {
+    CoverageControls(final CoverageExplorer owner, final WindowHandler window) {
         super(owner);
         final Locale     locale     = owner.getLocale();
         final Resources  resources  = Resources.forLocale(locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
 
-        view = new CoverageCanvas(locale);
+        view = new CoverageCanvas(this, locale);
         view.setBackground(Color.BLACK);
-        view.statusBar = new StatusBar(owner.referenceSystems, view);
-        imageAndStatus = new BorderPane(view.getView());
-        imageAndStatus.setBottom(view.statusBar.getView());
+        status.track(view);
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);
-        menu.addCopyOptions(view.statusBar);
+        menu.addCopyOptions(status);
         /*
          * "Display" section with the following controls:
          *    - Current CRS
@@ -114,13 +122,15 @@ final class CoverageControls extends ViewAndControls {
              *   - Interpolation
              *   - Color stretching
              */
+            interpolation = InterpolationConverter.button(view);
+            stretching = Stretching.createButton((p,o,n) -> view.setStyling(n));
             final GridPane valuesControl = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Interpolation, InterpolationConverter.button(view)),
-                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
+                label(vocabulary, Vocabulary.Keys.Interpolation, interpolation),
+                label(vocabulary, Vocabulary.Keys.Stretching, stretching));
             /*
              * Creates a "Categories" section with the category table.
              */
-            final CoverageStyling styling = new CoverageStyling(view);
+            styling = new CoverageStyling(view);
             categoryTable = styling.createCategoryTable(resources, vocabulary);
             VBox.setVgrow(categoryTable, Priority.ALWAYS);
             /*
@@ -139,29 +149,37 @@ final class CoverageControls extends ViewAndControls {
         {   // Block for making variables locale to this scope.
             final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
             isolines = new IsolineRenderer(view);
-            isolines.setIsolineTables(java.util.Collections.singletonList(mapper.getSteps()));
+            isolines.setIsolineTables(Collections.singletonList(mapper.getSteps()));
             final Region view = mapper.getView();
             VBox.setVgrow(view, Priority.ALWAYS);
             isolinesPane = new VBox(view);                          // TODO: add band selector
         }
         /*
+         * Synchronized windows. A synchronized windows is a window which can reproduce the same gestures
+         * (zoom, pan, rotation) than the window containing this view. The maps displayed in different
+         * windows do not need to use the same map projection; translations will be adjusted as needed.
+         */
+        final SyncWindowList windows = new SyncWindowList(window, resources, vocabulary);
+        /*
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
-        controls = new TitledPane[] {
+        final TitledPane deferred;                  // Control to be built only if requested.
+        controlPanes = new TitledPane[] {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
+            new TitledPane(resources.getString(Resources.Keys.Windows), windows.getView()),
+            deferred = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
         };
-        final TitledPane delayed = controls[2];     // Control to be built only if requested.
         /*
          * Set listeners: changes on `CoverageCanvas` properties are propagated to the corresponding
          * `CoverageExplorer` properties. This constructor does not install listeners in the opposite
          * direction; instead `CoverageExplorer` will invoke `load(ImageRequest)`.
          */
-        view.resourceProperty.addListener((p,o,n) -> onPropertySet(n, null));
-        view.coverageProperty.addListener((p,o,n) -> onPropertySet(view.getResourceIfAdjusting(), n));
-        delayed.expandedProperty().addListener(new PropertyPaneCreator(view, delayed));
+        view.resourceProperty.addListener((p,o,n) -> notifyDataChanged(n, null));
+        view.coverageProperty.addListener((p,o,n) -> notifyDataChanged(view.getResourceIfAdjusting(), n));
+        deferred.expandedProperty().addListener(new PropertyPaneCreator(view, deferred));
+        setView(view.getView());
     }
 
     /**
@@ -172,7 +190,10 @@ final class CoverageControls extends ViewAndControls {
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    private void onPropertySet(final GridCoverageResource resource, final GridCoverage coverage) {
+    private void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+        if (isAdjustingSlice) {
+            return;
+        }
         final ObservableList<Category> items = categoryTable.getItems();
         if (coverage == null) {
             items.clear();
@@ -192,33 +213,17 @@ final class CoverageControls extends ViewAndControls {
      */
     @Override
     final void load(final ImageRequest request) {
-        final GridCoverageResource resource;
-        final GridCoverage coverage;
-        if (request != null) {
-            resource = request.resource;
-            coverage = request.getCoverage().orElse(null);
-        } else {
-            resource = null;
-            coverage = null;
-        }
-        view.setCoverage(resource, coverage);
+        view.setImage(request);
     }
 
     /**
-     * Returns the main component, which is showing coverage tabular data.
+     * Copies the styling configuration from the given controls.
+     * This is invoked when the user click on "New window" button.
      */
-    @Override
-    final Region view() {
-        return imageAndStatus;
-    }
-
-    /**
-     * Returns the controls for controlling the view of tabular data.
-     * This method does not clone the returned array; do not modify!
-     */
-    @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final TitledPane[] controlPanes() {
-        return controls;
+    final void copyStyling(final CoverageControls c) {
+        styling.copyStyling(c.styling);
+        view.setCategoryColors(c.view.getCategoryColors() == null ? null : styling);
+        GUIUtilities.copySelection(c.stretching, stretching);
+        GUIUtilities.copySelection(c.interpolation, interpolation);
     }
 }

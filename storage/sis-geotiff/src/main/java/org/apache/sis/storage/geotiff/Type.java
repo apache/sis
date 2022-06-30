@@ -388,8 +388,11 @@ enum Type {
         }
 
         @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            final String text = readString(input, count, false);
-            return (text != null) ? Double.parseDouble(text) : Double.NaN;
+            String text = readString(input, count, false);
+            if (text == null || (text = text.trim()).isEmpty() || text.equalsIgnoreCase("NaN")) {
+                return Double.NaN;
+            }
+            return Double.parseDouble(text);
         }
 
         @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {

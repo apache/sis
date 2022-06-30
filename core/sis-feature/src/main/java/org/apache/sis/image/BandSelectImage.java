@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Set;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.lang.reflect.Array;
 import java.awt.Image;
@@ -37,7 +38,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * it works by modifying the sample model and color model.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -173,5 +174,25 @@ final class BandSelectImage extends SourceAlignedImage {
          * But we don't because that method is overridden in various Java2D `SunWritableRaster` classes.
          */
         return parent.createChild(x, y, parent.getWidth(), parent.getHeight(), x, y, bands);
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 97 * Arrays.hashCode(bands);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (super.equals(object)) {
+            final BandSelectImage other = (BandSelectImage) object;
+            return Arrays.equals(bands, other.bands);
+        }
+        return false;
     }
 }

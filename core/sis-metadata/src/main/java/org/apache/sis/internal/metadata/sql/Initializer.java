@@ -45,6 +45,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Configuration;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
 
 
@@ -192,7 +193,7 @@ public abstract class Initializer {
                  * automatically by other kinds of JNDI events. Even if the listener is not unregistered,
                  * it will not hurt too badly: the DataSource would only be fetched more often than necessary.
                  */
-                Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), Listener.class, "objectChanged", e);
+                Logging.recoverableException(getLogger(Loggers.SYSTEM), Listener.class, "objectChanged", e);
             }
             for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
                 init.dataSourceChanged();
@@ -206,7 +207,7 @@ public abstract class Initializer {
          */
         @Override
         public void namingExceptionThrown(NamingExceptionEvent event) {
-            Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM),
+            Logging.unexpectedException(getLogger(Loggers.SYSTEM),
                     Listener.class, "namingExceptionThrown", event.getException());
             objectChanged(null);
         }
@@ -388,7 +389,7 @@ public abstract class Initializer {
                     }
                 }
             } catch (IOException e) {
-                Logging.unexpectedException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+                Logging.unexpectedException(getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
                 // Continue - the system will fallback on the hard-coded subset of EPSG definitions.
             }
         }

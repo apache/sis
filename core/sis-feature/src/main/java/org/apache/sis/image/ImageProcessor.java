@@ -56,6 +56,12 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
+// For javadoc
+import org.apache.sis.coverage.RegionOfInterest;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
+
 
 /**
  * A predefined set of operations on images as convenience methods.
@@ -822,6 +828,8 @@ public class ImageProcessor implements Cloneable {
      * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
      * @return an image with mask applied.
      *
+     * @see GridCoverageProcessor#mask(GridCoverage, RegionOfInterest, boolean)
+     *
      * @since 1.2
      */
     public RenderedImage mask(final RenderedImage source, final Shape mask, final boolean maskInside) {
@@ -863,15 +871,17 @@ public class ImageProcessor implements Cloneable {
      * </ul>
      *
      * <h4>Result relationship with source</h4>
-     * Changes in the source image are reflected in the returned images
+     * Changes in the source image are reflected in the returned image
      * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
      *
      * @param  source        the image for which to convert sample values.
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
-     * @param  targetType    the type of image resulting from conversions.
+     * @param  targetType    the type of data in the image resulting from conversions.
      * @param  colorModel    color model of resulting image, or {@code null}.
-     * @return the image which compute converted values from the given source.
+     * @return the image which computes converted values from the given source.
+     *
+     * @see GridCoverageProcessor#convert(GridCoverage, MathTransform1D[], Function)
      */
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
                 MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
@@ -935,6 +945,8 @@ public class ImageProcessor implements Cloneable {
      *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
      * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
+     *
+     * @see GridCoverageProcessor#resample(GridCoverage, GridGeometry)
      */
     public RenderedImage resample(RenderedImage source, final Rectangle bounds, MathTransform toSource) {
         ArgumentChecks.ensureNonNull("source",   source);

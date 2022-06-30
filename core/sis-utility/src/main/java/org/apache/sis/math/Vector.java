@@ -33,6 +33,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
 
@@ -1478,7 +1479,7 @@ search:     for (;;) {
      * Logs a warning about an exception that can be safely ignored.
      */
     final void warning(final String method, final RuntimeException e) {
-        Logging.recoverableException(Logging.getLogger(Loggers.MATH), Vector.class, method, e);
+        Logging.recoverableException(getLogger(Loggers.MATH), Vector.class, method, e);
     }
 
     /**

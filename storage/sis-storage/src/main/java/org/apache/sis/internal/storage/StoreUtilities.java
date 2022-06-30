@@ -51,7 +51,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
@@ -73,7 +72,7 @@ public final class StoreUtilities extends Static {
      * Logger for the {@value Modules#STORAGE} module. This is used when no more specific logger is available,
      * or if the more specific logger is not appropriate (e.g. because the log message come from base class).
      */
-    public static final Logger LOGGER = Logging.getLogger(Modules.STORAGE);
+    public static final Logger LOGGER = Logger.getLogger(Modules.STORAGE);
 
     /**
      * Names of encoding where bytes less than 128 can be interpreted as ASCII.

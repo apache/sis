@@ -38,7 +38,6 @@ import org.apache.sis.internal.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureEx
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.feature.AbstractFeature;
 
 /**
@@ -54,7 +53,7 @@ import org.apache.sis.feature.AbstractFeature;
  */
 public class InputFeatureStream extends InputStream {
     /** Logger. */
-    private static final Logger LOGGER = Logging.getLogger(Modules.SHAPEFILE);
+    private static final Logger LOGGER = Logger.getLogger(Modules.SHAPEFILE);
 
     /** Resource bundle. */
     private ResourceBundle rsc = ResourceBundle.getBundle(InputFeatureStream.class.getName());

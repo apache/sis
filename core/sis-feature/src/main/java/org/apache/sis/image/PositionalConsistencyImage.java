@@ -31,7 +31,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * This is the implementation of {@link ResampledImage#POSITIONAL_CONSISTENCY_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -140,5 +140,26 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
             tile.setSamples(tileMinX, y, scanline, 1, 0, buffer);
         }
         return tile;
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 67 * toSource.hashCode()
+                                + 97 * toTarget.hashCode();
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (super.equals(object)) {
+            final PositionalConsistencyImage other = (PositionalConsistencyImage) object;
+            return toSource.equals(other.toSource) && toTarget.equals(other.toTarget);
+        }
+        return false;
     }
 }

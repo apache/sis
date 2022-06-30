@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing-by-identifiers} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -34,7 +34,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.gazetteer.LocationTypeTest.class,
     org.apache.sis.referencing.gazetteer.ReferencingByIdentifiersTest.class,
     org.apache.sis.referencing.gazetteer.GeohashReferenceSystemTest.class,
-    org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class
+    org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class,
+    org.apache.sis.referencing.gazetteer.GazetteerFactoryTest.class
 })
 public final strictfp class ReferencingByIdentifiersTestSuite extends TestSuite {
     /**

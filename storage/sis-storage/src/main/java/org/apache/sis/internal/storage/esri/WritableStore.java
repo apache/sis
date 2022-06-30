@@ -49,7 +49,7 @@ import org.apache.sis.image.SequenceType;
  * An ASCII Grid store with writing capabilities.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -295,6 +295,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                      // Should never fail.
         final ChannelDataOutput out = output;
         output = null;
         if (out != null) try {

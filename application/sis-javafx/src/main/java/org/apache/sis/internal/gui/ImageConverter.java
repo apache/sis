@@ -44,6 +44,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Converts a Java2D image to a JavaFX image, then writes the result in a given {@link ImageView}.
@@ -211,7 +213,7 @@ final class ImageConverter extends Task<Statistics[]> {
             return processor.visualize((RenderedImage) mask, MASK_TRANSPARENCY);
         } catch (IllegalArgumentException e) {
             // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
-            Logging.recoverableException(Logging.getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);
+            Logging.recoverableException(getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);
         }
         return null;
     }

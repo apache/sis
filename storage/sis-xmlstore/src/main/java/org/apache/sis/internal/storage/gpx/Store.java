@@ -55,7 +55,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -102,7 +102,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
         } catch (FactoryException e) {
             throw new DataStoreException(e);
         }
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -284,6 +284,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final Reader r = reader;
         reader = null;
         if (r != null) try {

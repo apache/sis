@@ -114,7 +114,7 @@ final class Initializer {
         ensureNonNull("method",     method);
         ensureNonNull("parameters", parameters);
         ensureNonNull("roles",      roles);
-        this.context    = new ContextualParameters(method);
+        this.context    = new ContextualParameters(method.getParameters(), 2, 2);
         this.parameters = parameters;
         this.variant    = variant;
         /*

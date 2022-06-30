@@ -646,4 +646,14 @@ colors: if (cm != null) {
         }
         return buffer.toString();
     }
+
+    /*
+     * Note on `equals(Object)` and `hashCode()` methods:
+     *
+     * Do not provide base implementation for those methods, because they can only be incomplete and it is too easy
+     * to forget to override those methods in subclasses. Furthermore we should override those methods only in final
+     * classes that are read-only images. Base classes of potentially writable images should continue to use identity
+     * comparisons, especially when some tiles have been acquired for writing and not yet released at the time the
+     * `equals(Object)` method is invoked.
+     */
 }

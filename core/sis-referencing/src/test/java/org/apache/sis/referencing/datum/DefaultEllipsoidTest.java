@@ -31,7 +31,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultEllipsoid} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -121,6 +121,18 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
         assertFalse ("GRS80",  GRS80 .isSphere());
         assertEquals("SPHERE", 6371007, sphere.getAuthalicRadius(), 0.0);
         assertEquals("GRS80",  6371007, GRS80 .getAuthalicRadius(), 0.2);
+    }
+
+    /**
+     * Tests {@link DefaultEllipsoid#getRadius(double)}.
+     */
+    @Test
+    public void testRadius() {
+        final DefaultEllipsoid e = DefaultEllipsoid.castOrCopy(GeodeticDatumMock.WGS84.getEllipsoid());
+        assertEquals(6378137, e.getRadius( 0),  0.5);
+        assertEquals(6372824, e.getRadius( 30), 0.5);
+        assertEquals(6356752, e.getRadius(+90), 0.5);
+        assertEquals(6356752, e.getRadius(-90), 0.5);
     }
 
     /**

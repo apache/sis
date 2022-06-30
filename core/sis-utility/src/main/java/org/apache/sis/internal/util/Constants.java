@@ -90,7 +90,7 @@ public final class Constants extends Static {
 
     /**
      * The {@value} code space. The project name is {@code "Proj.4"}, but this constant omits
-     * the dot because this name is used as a codes pace and we want to avoid risk of confusion.
+     * the dot because this name is used as a code space and we want to avoid risk of confusion.
      */
     public static final String PROJ4 = "Proj4";
 

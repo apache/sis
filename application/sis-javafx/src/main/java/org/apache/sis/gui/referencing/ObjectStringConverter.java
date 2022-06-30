@@ -20,14 +20,14 @@ import java.util.Locale;
 import javafx.util.StringConverter;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.Resources;
 
 
 /**
  * Converts an {@link IdentifiedObject} to {@link String} representation to show in JavaFX control.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -70,10 +70,18 @@ final class ObjectStringConverter<T extends IdentifiedObject> extends StringConv
             return IdentifiedObjects.getDisplayName(object, locale);
         } else {
             if (other == null) {
-                other = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Others) + '…';
+                other = other(locale);
             }
             return other;
         }
+    }
+
+    /**
+     * Returns the localized "Other…" text to use for selecting a CRS
+     * which is not in the short list of proposed CRS.
+     */
+    static String other(final Locale locale) {
+        return Resources.forLocale(locale).getString(Resources.Keys.OtherCRS) + '…';
     }
 
     /**

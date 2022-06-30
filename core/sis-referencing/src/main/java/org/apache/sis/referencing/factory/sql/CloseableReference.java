@@ -24,6 +24,8 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Closes JDBC statements when {@link AuthorityCodes} is garbage collected.
@@ -104,7 +106,7 @@ final class CloseableReference extends WeakReference<AuthorityCodes> implements 
              * Pretend that the logging come from AuthorityCodes because it is closer to a public API (or at
              * least, easier to guess that it is related to the EPSGDataAccess.getAuthorityCodes() method).
              */
-            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), AuthorityCodes.class, "close", exception);
+            Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY), AuthorityCodes.class, "close", exception);
         }
     }
 }

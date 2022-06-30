@@ -334,7 +334,7 @@ public final class Equirectangular extends AbstractProvider {
             throws FactoryException
     {
         final Parameters p = Parameters.castOrWrap(parameters);
-        final ContextualParameters context = new ContextualParameters(this);
+        final ContextualParameters context = new ContextualParameters(PARAMETERS, 2, 2);
         double a  = getAndStore(p, context, MapProjection.SEMI_MAJOR);
         double b  = getAndStore(p, context, MapProjection.SEMI_MINOR);
         double λ0 = getAndStore(p, context, LONGITUDE_OF_ORIGIN);

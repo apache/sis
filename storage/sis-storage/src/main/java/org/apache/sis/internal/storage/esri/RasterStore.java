@@ -133,7 +133,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     RasterStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         nodataValue = Double.NaN;
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -515,6 +515,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      */
     @Override
     public void close() throws DataStoreException {
+        // `listeners.close()` should be invoked by sub-classes.
         metadata = null;
     }
 }

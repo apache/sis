@@ -16,19 +16,28 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
+import javax.measure.IncommensurableException;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
@@ -47,7 +56,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see <a href="https://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
  *
@@ -60,6 +69,11 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 9162259764027168776L;
+
+    /**
+     * Identifier for this reference system.
+     */
+    static final String IDENTIFIER = "Geohash";
 
     /**
      * The encoding format used by {@link GeohashReferenceSystem.Coder}.
@@ -141,6 +155,21 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     final CoordinateOperation denormalize;
 
     /**
+     * The unique instance, created when first requested.
+     */
+    private static GeohashReferenceSystem INSTANCE;
+
+    /**
+     * Returns the unique instance.
+     */
+    static synchronized GeohashReferenceSystem getInstance() throws GazetteerException {
+        if (INSTANCE == null) {
+            INSTANCE = new GeohashReferenceSystem(Format.BASE32, CommonCRS.WGS84.geographic());
+        }
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new geohash reference system for the given format and coordinate reference system.
      *
      * @param  format  the format used by the {@code GeohashReferenceSystem.Coder}.
@@ -148,7 +177,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * @throws GazetteerException if the reference system can not be created.
      */
     public GeohashReferenceSystem(final Format format, final GeographicCRS crs) throws GazetteerException {
-        super(properties("Geohash", null), types());
+        super(properties(IDENTIFIER, IDENTIFIER, null), types());
         ArgumentChecks.ensureNonNull("format", format);
         ArgumentChecks.ensureNonNull("crs", crs);
         ArgumentChecks.ensureDimensionMatches("crs", 2, crs);
@@ -167,7 +196,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      */
     @Workaround(library="JDK", version="1.8")
     private static ModifiableLocationType[] types() {
-        final ModifiableLocationType gzd = new ModifiableLocationType("Geohash");
+        final ModifiableLocationType gzd = new ModifiableLocationType(IDENTIFIER);
         gzd.addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Code));
         return new ModifiableLocationType[] {gzd};
     }
@@ -188,13 +217,14 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      *
      * @return a new object performing conversions between {@link DirectPosition} and geohashes.
      */
+    @Override
     public Coder createCoder() {
         return new Coder();
     }
 
     /**
      * Conversions between direct positions and geohashes. Each {@code Coder} instance can read codes
-     * at arbitrary precision, but formats at the {@linkplain #setHashLength specified precision}.
+     * at arbitrary precision, but formats at the {@linkplain #setHashLength(int) specified precision}.
      * The same {@code Coder} instance can be reused for reading or writing many geohashes.
      *
      * <h2>Immutability and thread safety</h2>
@@ -203,17 +233,15 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      *
      * @author  Chris Mattmann (JPL)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.3
      * @since   0.8
      * @module
      */
-    public class Coder {
+    public class Coder extends ReferencingByIdentifiers.Coder {
         /**
          * Amount of letters or digits to format in the geohash.
-         * Stored as a {@code byte} on the assumption that attempts to create
-         * geohashes of more then 255 characters is likely to be an error anyway.
          */
-        private byte length;
+        private int length;
 
         /**
          * A buffer of length {@link #length}, created when first needed.
@@ -239,6 +267,18 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
+         * Returns the reference system for which GeoHash identifiers will be encoded or decoded.
+         *
+         * @return the enclosing reference system.
+         *
+         * @since 1.3
+         */
+        @Override
+        public final GeohashReferenceSystem getReferenceSystem() {
+            return GeohashReferenceSystem.this;
+        }
+
+        /**
          * Returns the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
          * The default value for {@link Format#BASE32} is 12.
          *
@@ -255,8 +295,98 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          */
         public void setHashLength(final int length) {
             ArgumentChecks.ensureBetween("length", 1, 255, length);
-            this.length = (byte) length;
+            this.length = length;
             buffer = null;                                  // Will recreate a new buffer when first needed.
+        }
+
+        /**
+         * Returns an approximate precision of the geohashes formatted by this coder.
+         * Values are in units of ellipsoid axis length (typically metres). If the location is unspecified,
+         * then this method returns a value for the "worst case" scenario, which is at equator.
+         * The actual precision is sometime (but not always) better for coordinates closer to a pole.
+         *
+         * @param  position  where to evaluate the precision, or {@code null} for equator.
+         * @return approximate precision of formatted geohashes.
+         *
+         * @since 1.3
+         */
+        @Override
+        public Quantity<Length> getPrecision(DirectPosition position) {
+            final Ellipsoid ellipsoid = normalizedCRS.getDatum().getEllipsoid();
+            final Unit<Length> unit = ellipsoid.getAxisUnit();
+            final int latNumBits = (5*length) >>> 1;            // Number of bits for latitude value.
+            final int lonNumBits = latNumBits + (length & 1);   // Longitude has 1 more bit when length is odd.
+            if (position != null) try {
+                position = toGeographic(position);
+                double φ = Math.toRadians(position.getOrdinate(1));
+                double a = Math.PI/2 * Formulas.getRadius(ellipsoid, φ);   // Arc length of 90° using radius at φ.
+                double b = Math.cos(φ) * (2*a) / (1 << lonNumBits);        // Precision along longitude axis.
+                a /= (1 << latNumBits);                                    // Precision along latitude axis.
+                return Quantities.create(Math.max(a, b), unit);
+            } catch (FactoryException | TransformException e) {
+                recoverableException(Coder.class, "getPrecision", e);
+            }
+            double a = Math.PI * ellipsoid.getSemiMajorAxis() / (1 << lonNumBits);      // Worst case scenario.
+            return Quantities.create(a, unit);
+        }
+
+        /**
+         * Sets the desired precision of the identifiers formatted by this coder.
+         * The given value is converted to a string length.
+         *
+         * @param  precision  the desired precision in a linear or angular unit.
+         * @param  position   location where the specified precision is desired, or {@code null} for the equator.
+         * @throws IncommensurableException if the given precision does not use linear or angular units.
+         *
+         * @since 1.3
+         */
+        @Override
+        public void setPrecision(final Quantity<?> precision, DirectPosition position) throws IncommensurableException {
+            ArgumentChecks.ensureNonNull("precision", precision);
+            double p = precision.getValue().doubleValue();
+            final Unit<?> unit = precision.getUnit();
+            double numLat=0, numLon=0;                        // Number of distinct latitude and longitude values.
+            if (Units.isAngular(unit)) {
+                p = unit.getConverterToAny(Units.DEGREE).convert(p);            // Requested precision in degrees.
+                numLat = Latitude .MAX_VALUE / p;
+                numLon = Longitude.MAX_VALUE / p;
+            } else {
+                final Ellipsoid ellipsoid = normalizedCRS.getDatum().getEllipsoid();
+                p = unit.getConverterToAny(ellipsoid.getAxisUnit()).convert(p);
+                if (position != null) try {
+                    position = toGeographic(position);
+                    double φ = Math.toRadians(position.getOrdinate(1));
+                    numLat   = Math.PI/2 * Formulas.getRadius(ellipsoid, φ) / p;
+                    numLon   = Math.cos(φ) * (2*numLat);
+                } catch (FactoryException | TransformException e) {
+                    recoverableException(Coder.class, "setPrecision", e);
+                    position = null;
+                }
+                if (position == null) {
+                    numLat = Math.PI/2 * ellipsoid.getSemiMajorAxis() / p;             // Worst case scenario.
+                    numLon = 2*numLat;
+                }
+            }
+            int latNumBits=0, lonNumBits;
+            if (numLat > 0) {
+                final long b = Math.round(numLat);
+                latNumBits = (Long.SIZE-1) - Long.numberOfLeadingZeros(b);
+                if ((1L << latNumBits) != b) latNumBits++;
+                length = Math.max(Numerics.ceilDiv(latNumBits << 1, 5), 1);
+            }
+            if (numLon > numLat) {
+                final long b = Math.round(numLon);
+                lonNumBits = (Long.SIZE-1) - Long.numberOfLeadingZeros(b);
+                if ((1L << lonNumBits) != b) lonNumBits++;
+                if (lonNumBits == latNumBits+1 && (length & 1) != 0) {
+                    /*
+                     * If length is odd, longitude has one more bit than latitude.
+                     * If the latitude had enough bits, then length is sufficient.
+                     */
+                } else {
+                    length = Math.max(Numerics.ceilDiv(lonNumBits << 1, 5), 1);
+                }
+            }
         }
 
         /**
@@ -276,8 +406,8 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             final byte[] encoding   = format.encoding;
             final int highestOneBit = format.highestOneBit;
             char[] geohash = buffer;
-            if (geohash == null) {
-                buffer = geohash = new char[Byte.toUnsignedInt(length)];
+            if (geohash == null || geohash.length != length) {
+                buffer = geohash = new char[length];
             }
             /*
              * The current implementation assumes a two-dimensional coordinates. The 'isEven' boolean takes
@@ -332,18 +462,61 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          * @return geohash encoding of the given position.
          * @throws TransformException if an error occurred while transforming the given coordinate to a geohash reference.
          */
+        @Override
         public String encode(DirectPosition position) throws TransformException {
             ArgumentChecks.ensureNonNull("position", position);
-            final CoordinateReferenceSystem ps = position.getCoordinateReferenceSystem();
-            if (ps != null && !normalizedCRS.equals(ps, ComparisonMode.IGNORE_METADATA)) {
-                if (lastOp == null || !Utilities.equalsIgnoreMetadata(lastOp.getSourceCRS(), ps)) try {
-                    lastOp = CRS.findOperation(ps, normalizedCRS, null);
-                } catch (FactoryException e) {
-                    throw new GazetteerException(e.getLocalizedMessage(), e);
-                }
-                position = lastOp.getMathTransform().transform(position, null);
+            try {
+                position = toGeographic(position);
+            } catch (FactoryException e) {
+                throw new GazetteerException(e.getLocalizedMessage(), e);
             }
             return encode(position.getOrdinate(1), position.getOrdinate(0));
+        }
+
+        /**
+         * Encodes the given position into a geohash with the given precision.
+         * This is equivalent to invoking {@link #setPrecision(Quantity, DirectPosition)}
+         * before {@link #encode(DirectPosition)}, except that it is potentially more efficient.
+         *
+         * @param  position   the coordinate to encode.
+         * @param  precision  the desired precision in a linear or angular unit.
+         * @return geohash encoding of the given position.
+         * @throws IncommensurableException if the given precision does not use linear or angular units.
+         * @throws TransformException if an error occurred while transforming the given coordinate to a geohash reference.
+         *
+         * @since 1.3
+         */
+        @Override
+        public String encode(DirectPosition position, final Quantity<?> precision)
+                throws IncommensurableException, TransformException
+        {
+            ArgumentChecks.ensureNonNull("position",  position);
+            ArgumentChecks.ensureNonNull("precision", precision);
+            try {
+                position = toGeographic(position);
+            } catch (FactoryException e) {
+                throw new GazetteerException(e.getLocalizedMessage(), e);
+            }
+            setPrecision(precision, position);
+            return encode(position.getOrdinate(1), position.getOrdinate(0));
+        }
+
+        /**
+         * Transforms the given position to the {@link #normalizedCRS}.
+         * If the position does not specify a CRS, then it is assumed already normalized.
+         *
+         * @param  position  the position to transform.
+         * @return the transformed position.
+         */
+        private DirectPosition toGeographic(final DirectPosition position) throws FactoryException, TransformException {
+            final CoordinateReferenceSystem ps = position.getCoordinateReferenceSystem();
+            if (ps == null || normalizedCRS.equals(ps, ComparisonMode.IGNORE_METADATA)) {
+                return position;
+            }
+            if (lastOp == null || !Utilities.equalsIgnoreMetadata(lastOp.getSourceCRS(), ps)) {
+                lastOp = CRS.findOperation(ps, normalizedCRS, null);
+            }
+            return lastOp.getMathTransform().transform(position, null);
         }
 
         /**
@@ -359,6 +532,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          * @return a new geographic coordinate for the given geohash.
          * @throws TransformException if an error occurred while parsing the given string.
          */
+        @Override
         public AbstractLocation decode(final CharSequence geohash) throws TransformException {
             ArgumentChecks.ensureNonEmpty("geohash", geohash);
             return new Decoder(geohash, coordinates);

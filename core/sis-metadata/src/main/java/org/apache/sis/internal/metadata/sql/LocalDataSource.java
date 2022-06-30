@@ -37,6 +37,8 @@ import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Strings;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A data source for a database stored locally in the {@code $SIS_DATA} directory.
@@ -128,7 +130,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                     path = Paths.get(home).relativize(path);
                 } catch (IllegalArgumentException | SecurityException e) {
                     // The path can not be relativized. This is okay.
-                    Logging.recoverableException(Logging.getLogger(Loggers.SQL), LocalDataSource.class, "<init>", e);
+                    Logging.recoverableException(getLogger(Loggers.SQL), LocalDataSource.class, "<init>", e);
                 }
                 path   = path.normalize();
                 dbFile = path.toString().replace(path.getFileSystem().getSeparator(), "/");

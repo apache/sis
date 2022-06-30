@@ -20,10 +20,17 @@ import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 import java.util.HashMap;
+import java.util.logging.Logger;
+import javax.measure.Quantity;
+import javax.measure.IncommensurableException;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
@@ -31,7 +38,10 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -50,7 +60,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see ModifiableLocationType
  * @see AbstractLocation
@@ -59,7 +69,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @module
  */
 @XmlTransient
-public class ReferencingByIdentifiers extends AbstractReferenceSystem {
+public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
     /**
      * Key for the <code>{@value}</code> property to be given to the
      * object factory {@code createFoo(…)} methods.
@@ -193,11 +203,13 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      * The returned properties have the domain of validity set to the whole word and the theme to "mapping".
      *
      * @param name   the reference system name as an {@link org.opengis.metadata.Identifier} or a {@link String}.
+     * @param id     an identifier for the reference system. Use SIS namespace until we find an authority for them.
      * @param party  the overall owner, or {@code null} if none.
      */
-    static Map<String,Object> properties(final Object name, final AbstractParty party) {
-        final Map<String,Object> properties = new HashMap<>(6);
+    static Map<String,Object> properties(final Object name, final String id, final AbstractParty party) {
+        final Map<String,Object> properties = new HashMap<>(8);
         properties.put(NAME_KEY, name);
+        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.SIS, Constants.SIS, id));
         properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
         properties.put(OVERALL_OWNER_KEY, party);
@@ -254,6 +266,130 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      */
     final AbstractLocationType rootType() {
         return locationTypes.get(0);
+    }
+
+    /**
+     * Returns a new object performing conversions between {@code DirectPosition} and identifiers.
+     * The returned object is <strong>not</strong> thread-safe; a new instance must be created
+     * for each thread, or synchronization must be applied by the caller.
+     *
+     * @return a new object performing conversions between {@link DirectPosition} and identifiers.
+     *
+     * @since 1.3
+     */
+    public abstract Coder createCoder();
+
+    /**
+     * Conversions between direct positions and identifiers.
+     * Each {@code Coder} instance can read references at arbitrary precision,
+     * but formats at the {@linkplain #setPrecision specified approximate precision}.
+     * The same {@code Coder} instance can be reused for reading or writing many identifiers.
+     *
+     * <h2>Immutability and thread safety</h2>
+     * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
+     * or synchronization must be applied by the caller.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.3
+     * @since   1.3
+     * @module
+     */
+    public abstract static class Coder {
+        /**
+         * Creates a new instance.
+         */
+        protected Coder() {
+        }
+
+        /**
+         * Returns the reference system for which this coder is reading or writing identifiers.
+         *
+         * @return the enclosing reference system.
+         */
+        public abstract ReferencingByIdentifiers getReferenceSystem();
+
+        /**
+         * Returns approximate precision of the identifiers formatted by this coder at the given location.
+         * The returned value is typically a length in linear unit (e.g. metres).
+         * Precisions in angular units should be converted to linear units at the specified location.
+         * If the location is {@code null}, then this method should return a precision for the worst case scenario.
+         *
+         * @param  position  where to evaluate the precision, or {@code null} for the worst case scenario.
+         * @return approximate precision in metres of formatted identifiers.
+         */
+        public abstract Quantity<?> getPrecision(DirectPosition position);
+
+        /**
+         * Sets the desired precision of the identifiers formatted by this coder.
+         * The given value is converted to coder-specific representation (e.g. number of digits).
+         * The value returned by {@link #getPrecision(DirectPosition)} may be different than the
+         * value specified to this method.
+         *
+         * @param  precision  the desired precision.
+         * @param  position   location where the specified precision is desired, or {@code null} for the worst case scenario.
+         * @throws IncommensurableException if the given precision uses incompatible units of measurement.
+         */
+        public abstract void setPrecision(Quantity<?> precision, DirectPosition position) throws IncommensurableException;
+
+        /**
+         * A combined method which sets the encoder precision to the given value, then formats the given position.
+         * The default implementation is equivalent to the following code:
+         *
+         * {@preformat java
+         *     setPrecision(precision, position);
+         *     return encode(position);
+         * }
+         *
+         * Subclasses should override with more efficient implementation,
+         * for example by transforming the given position only once.
+         *
+         * @param  position   the coordinate to encode.
+         * @param  precision  the desired precision.
+         * @return identifier of the given position.
+         * @throws IncommensurableException if the given precision uses incompatible units of measurement.
+         * @throws TransformException if an error occurred while transforming the given coordinate to an identifier.
+         */
+        public String encode(DirectPosition position, Quantity<?> precision) throws IncommensurableException, TransformException {
+            setPrecision(precision, position);
+            return encode(position);
+        }
+
+        /**
+         * Encodes the given position into an identifier.
+         * The given position must have a Coordinate Reference System (CRS) associated to it.
+         *
+         * @param  position  the coordinate to encode.
+         * @return identifier of the given position.
+         * @throws TransformException if an error occurred while transforming the given coordinate to an identifier.
+         */
+        public abstract String encode(DirectPosition position) throws TransformException;
+
+        /**
+         * Decodes the given identifier into a latitude and a longitude.
+         * The axis order depends on the coordinate reference system of the enclosing {@link ReferencingByIdentifiers}.
+         *
+         * <div class="warning"><b>Upcoming API change — generalization</b><br>
+         * in a future SIS version, the type of returned element may be generalized
+         * to the {@code org.opengis.referencing.gazetteer.Location} interface.
+         * This change is pending GeoAPI revision.</div>
+         *
+         * @param  identifier  identifier string to decode.
+         * @return a new geographic coordinate for the given identifier.
+         * @throws TransformException if an error occurred while parsing the given string.
+         */
+        public abstract AbstractLocation decode(CharSequence identifier) throws TransformException;
+
+        /**
+         * Logs a warning for a recoverable error while transforming a position. This is used for implementations
+         * of method such as {@link #getPrecision(DirectPosition)}, which can fallback on "worst case" scenario.
+         *
+         * @param caller  the class that wanted to transform a position.
+         * @param method  the method that wanted to transform a position.
+         * @param e       the transformation error.
+         */
+        static void recoverableException(final Class<?> caller, final String method, final Exception e) {
+            Logging.recoverableException(Logger.getLogger(Modules.REFERENCING_BY_IDENTIFIERS), caller, method, e);
+        }
     }
 
     /**

@@ -32,7 +32,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -56,6 +55,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -123,7 +124,7 @@ import org.apache.sis.util.ArraysExt;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
@@ -230,7 +231,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     private boolean isFrozen;
 
     /**
-     * Creates a new group of parameters for the given non-linear coordinate operation method.
+     * Creates a new group of parameters with the given descriptor.
      * The {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters() method parameters}
      * shall describe the <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> sequence
      * as a whole. After construction, callers shall:
@@ -245,23 +246,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * </ul>
      *
      * See class javadoc for more information.
-     *
-     * @param  method  the non-linear operation method for which to define the parameter values.
-     *
-     * @deprecated Use the constructor with explicit number of dimensions instead.
-     */
-    @Deprecated
-    public ContextualParameters(final OperationMethod method) {
-        ArgumentChecks.ensureNonNull("method", method);
-        descriptor  = method.getParameters();
-        normalize   = linear("sourceDimensions", method.getSourceDimensions());
-        denormalize = linear("targetDimensions", method.getTargetDimensions());
-        values      = new ParameterValue<?>[descriptor.descriptors().size()];
-    }
-
-    /**
-     * Creates a new group of parameters with the given descriptor. This constructor performs the same construction than
-     * {@link #ContextualParameters(OperationMethod)} but without the need to specify an {@code OperationMethod} instance.
      *
      * @param  descriptor  the parameter descriptor.
      * @param  srcDim      number of source dimensions.
@@ -405,9 +389,9 @@ public class ContextualParameters extends Parameters implements Serializable {
 
     /**
      * Returns the affine transforms to be applied before or after the non-linear kernel operation.
-     * Immediately after {@linkplain #ContextualParameters(OperationMethod) construction}, those matrices
-     * are modifiable identity matrices. Callers can modify the matrix element values, typically by calls to
-     * the {@link MatrixSIS#convertBefore(int, Number, Number) MatrixSIS.convertBefore(…)} method.
+     * Immediately after {@linkplain #ContextualParameters(ParameterDescriptorGroup, int, int) construction},
+     * those matrices are modifiable identity matrices. Callers can modify the matrix element values, typically
+     * by calls to the {@link MatrixSIS#convertBefore(int, Number, Number) MatrixSIS.convertBefore(…)} method.
      * Alternatively, the following methods can be invoked for applying some frequently used configurations:
      *
      * <ul>
@@ -1012,6 +996,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * transform.</p>
      */
     private static void unexpectedException(final IllegalStateException e) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
+        Logging.unexpectedException(getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
     }
 }

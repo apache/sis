@@ -36,6 +36,8 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Creates and configures {@link Marshaller} or {@link Unmarshaller} objects for use with SIS.
@@ -211,7 +213,7 @@ public class MarshallerPool {
              * Not expected to happen because we are supposed
              * to reset the properties to their initial values.
              */
-            Logging.unexpectedException(Logging.getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
+            Logging.unexpectedException(getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
             return;
         }
         queue.push(marshaller);

@@ -20,7 +20,6 @@ import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.event.StoreListeners;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
@@ -38,7 +37,7 @@ import org.apache.sis.internal.geoapi.filter.SortBy;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -64,7 +63,7 @@ final class FeatureSubset extends AbstractFeatureSet {
      * This given query is stored as-is (it is not cloned neither optimized).
      */
     FeatureSubset(final FeatureSet source, final FeatureQuery query) {
-        super(source instanceof StoreListeners ? (StoreListeners) source : null, false);
+        super(source instanceof AbstractResource ? ((AbstractResource) source).listeners : null, false);
         this.source = source;
         this.query = query;
     }

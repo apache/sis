@@ -34,6 +34,8 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Implements the metadata services needed by the {@code "sis-utility"} module.
@@ -108,8 +110,7 @@ public final class ServicesForUtility extends MetadataServices {
                         server   = type.getMethod("getServerName", (Class[]) null).invoke(ds, (Object[]) null);
                     }
                 } catch (NoSuchMethodException e) {
-                    Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),
-                            MetadataServices.class, "getInformation", e);
+                    Logging.recoverableException(getLogger(Loggers.SYSTEM), MetadataServices.class, "getInformation", e);
                 } catch (Exception e) {
                     // Leave the message unchanged if it contains at least 2 words.
                     String message = Exceptions.getLocalizedMessage(e, locale);

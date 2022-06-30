@@ -369,7 +369,13 @@ final class RecoloredImage extends ImageAdapter {
      */
     @Override
     public boolean equals(final Object object) {
-        return super.equals(object) && colors.equals(((RecoloredImage) object).colors);
+        if (super.equals(object)) {
+            final RecoloredImage other = (RecoloredImage) object;
+            return Numerics.equals(minimum, other.minimum) &&
+                   Numerics.equals(maximum, other.maximum) &&
+                   colors.equals(other.colors);
+        }
+        return false;
     }
 
     /**

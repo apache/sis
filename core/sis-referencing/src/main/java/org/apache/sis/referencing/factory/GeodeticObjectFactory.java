@@ -58,7 +58,6 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.util.Exceptions;
@@ -199,7 +198,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * The logger to use for reporting object creations.
      */
-    private static final Logger LOGGER = Logging.getLogger(Loggers.CRS_FACTORY);
+    private static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
 
     /**
      * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the

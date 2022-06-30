@@ -51,6 +51,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 
@@ -570,7 +571,7 @@ public final class IdentifiedObjects extends Static {
      * Logs a warning for a non-critical error. The callers should have a fallback.
      */
     private static void warning(final String method, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), IdentifiedObjects.class, method, e);
+        Logging.recoverableException(getLogger(Modules.REFERENCING), IdentifiedObjects.class, method, e);
     }
 
     /**

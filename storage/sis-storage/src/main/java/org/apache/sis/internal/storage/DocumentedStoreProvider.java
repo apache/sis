@@ -18,11 +18,11 @@ package org.apache.sis.internal.storage;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -101,7 +101,7 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
                 if (listeners != null) {
                     listeners.warning(record);
                 } else {
-                    Logging.getLogger(Modules.STORAGE).log(record);
+                    Logger.getLogger(Modules.STORAGE).log(record);
                 }
             }
             format = super.getFormat();

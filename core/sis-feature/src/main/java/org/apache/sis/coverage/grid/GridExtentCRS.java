@@ -17,40 +17,104 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Collections;
 import java.util.Locale;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.crs.CRSFactory;
-import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Characters;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Characters;
 
 
 /**
- * Builds the engineering coordinate reference system of a {@link GridExtent}.
- * This is used only in the rare cases where we need to represent an extent as an envelope.
- * This class converts {@link DimensionNameType} codes into axis names, abbreviations and directions.
- * It is the converse of {@link GridExtent#typeFromAxes(CoordinateReferenceSystem, int)}.
+ * Builder for coordinate reference system which is derived from the coverage CRS by the inverse
+ * of the "grid to CRS" transform. Those CRS describe coordinates associated to the grid extent.
+ * This class provides two factory methods:
+ *
+ * <ul>
+ *   <li>{@link #forCoverage(String, GridGeometry)}</li>
+ *   <li>{@link #forExtentAlone(Matrix, DimensionNameType[])}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
 final class GridExtentCRS {
+    /**
+     * Name of the parameter where to store the grid coverage name.
+     */
+    private static final String NAME_PARAM = "Target grid name";
+
+    /**
+     * Name of the parameter specifying the way image indices are
+     * associated with the coverage data attributes.
+     */
+    private static final String ANCHOR_PARAM = "Pixel in cell";
+
+    /**
+     * Description of "CRS to grid indices" operation method.
+     */
+    private static final OperationMethod METHOD;
+    static {
+        final ParameterBuilder b = new ParameterBuilder().setRequired(true);
+        final ParameterDescriptor<?>   name   = b.addName(NAME_PARAM).create(String.class, null);
+        final ParameterDescriptor<?>   anchor = b.addName(ANCHOR_PARAM).create(PixelInCell.class, PixelInCell.CELL_CENTER);
+        final ParameterDescriptorGroup params = b.addName("CRS to grid indices").createGroup(name, anchor);
+        METHOD = new DefaultOperationMethod(properties(params.getName()), params);
+    }
+
+    /**
+     * Scope of usage of the CRS.
+     * This is a localized text saying "Conversions from coverage CRS to grid cell indices."
+     */
+    private static final InternationalString SCOPE = Resources.formatInternational(Resources.Keys.CrsToGridConversion);
+
+    /**
+     * Name of the coordinate systems created by this class.
+     */
+    private static final NamedIdentifier CS_NAME = new NamedIdentifier(
+            Citations.SIS, Vocabulary.formatInternational(Vocabulary.Keys.GridExtent));
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -58,10 +122,95 @@ final class GridExtentCRS {
     }
 
     /**
+     * Creates a derived CRS for the grid extent of a grid coverage.
+     *
+     * <h4>Limitation</h4>
+     * If the CRS is compound, then this method takes only the first single CRS element.
+     * This is a restriction imposed by {@link DerivedCRS} API.
+     * As a result, the returned CRS may cover only the 2 or 3 first grid dimensions.
+     *
+     * @param  name    name of the CRS to create.
+     * @param  gg      grid geometry of the coverage.
+     * @param  anchor  the cell part to map (center or corner).
+     * @param  locale  locale to use for axis names, or {@code null} for default.
+     * @return a derived CRS for coordinates (cell indices) associated to the grid extent.
+     * @throws FactoryException if an error occurred during the use of {@link CSFactory} or {@link CRSFactory}.
+     */
+    static DerivedCRS forCoverage(final String name, final GridGeometry gg, final PixelInCell anchor, final Locale locale)
+            throws FactoryException, NoninvertibleTransformException
+    {
+        /*
+         * Get the first `SingleCRS` instance (see "limitations" in method javadoc).
+         */
+        CoordinateReferenceSystem crs = gg.getCoordinateReferenceSystem();
+        boolean reduce = false;
+        while (!(crs instanceof SingleCRS)) {
+            if (!(crs instanceof CompoundCRS)) {
+                throw unsupported(locale, crs);
+            }
+            crs = ((CompoundCRS) crs).getComponents().get(0);
+            reduce = true;
+        }
+        /*
+         * If we took only a subset of CRS dimensions, take the same subset
+         * of "grid to CRS" dimensions and list of grid axes.
+         */
+        MathTransform gridToCRS = gg.getGridToCRS(anchor);
+        DimensionNameType[] types = gg.getExtent().getAxisTypes();
+        if (reduce) {
+            final TransformSeparator s = new TransformSeparator(gridToCRS);
+            s.addTargetDimensionRange(0, crs.getCoordinateSystem().getDimension());
+            gridToCRS = s.separate();
+            final int[] src = s.getSourceDimensions();
+            final DimensionNameType[] allTypes = types;
+            types = new DimensionNameType[src.length];
+            for (int i=0; i<src.length; i++) {
+                final int j = src[i];
+                if (j < allTypes.length) {
+                    types[i] = allTypes[j];
+                }
+            }
+        }
+        /*
+         * Build the coordinate system assuming a null (identity) "grid to CRS" matrix
+         * because we are building the CS for the grid, not for the transformed envelope.
+         */
+        final CoordinateSystem cs = createCS(gridToCRS.getSourceDimensions(), null, types, locale);
+        if (cs == null) {
+            throw unsupported(locale, crs);
+        }
+        /*
+         * Put everything together: parameters, conversion and finally the derived CRS.
+         */
+        final HashMap<String,Object> properties = new HashMap<>(8);
+        properties.put(IdentifiedObject.NAME_KEY, METHOD.getName());
+        properties.put(DefaultConversion.LOCALE_KEY, locale);
+        properties.put(Conversion.SCOPE_KEY, SCOPE);
+        gg.getGeographicExtent().ifPresent((domain) -> {
+            properties.put(Conversion.DOMAIN_OF_VALIDITY_KEY,
+                    new DefaultExtent(null, domain, null, null));
+        });
+        final ParameterValueGroup params = METHOD.getParameters().createValue();
+        params.parameter(NAME_PARAM).setValue(name);
+        params.parameter(ANCHOR_PARAM).setValue(anchor);
+        final Conversion conversion = new DefaultConversion(properties, METHOD, gridToCRS.inverse(), params);
+        properties.put(IdentifiedObject.NAME_KEY, name);
+        return DefaultDerivedCRS.create(properties, (SingleCRS) crs, conversion, cs);
+    }
+
+    /**
+     * Returns the exception to throw for an unsupported CRS.
+     */
+    private static FactoryException unsupported(final Locale locale, final CoordinateReferenceSystem crs) {
+        return new FactoryException(Errors.getResources(locale)
+                .getString(Errors.Keys.UnsupportedType_1, Classes.getShortClassName(crs)));
+    }
+
+    /**
      * Creates a properties map to give to CS, CRS or datum constructors.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(CoordinateSystemAxis.NAME_KEY, name);
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
     }
 
     /**
@@ -85,22 +234,24 @@ final class GridExtentCRS {
     }
 
     /**
-     * Builds a coordinate reference system for the given axis types. The CRS type is always engineering.
-     * We can not create temporal CRS because we do not know the temporal datum origin.
+     * Creates the coordinate system for engineering CRS.
      *
+     * @param  tgtDim     number of dimensions of the coordinate system to create.
      * @param  gridToCRS  matrix of the transform used for converting grid cell indices to envelope coordinates.
      *         It does not matter whether it maps pixel center or corner (translation coefficients are ignored).
+     *         A {@code null} means to handle as an identity transform.
      * @param  types   the value of {@link GridExtent#types} or a default value (shall not be {@code null}).
      * @param  locale  locale to use for axis names, or {@code null} for default.
-     * @return CRS for the grid, or {@code null}.
-     *
-     * @see GridExtent#typeFromAxes(CoordinateReferenceSystem, int)
+     * @return coordinate system for the grid extent, or {@code null} if it can not be inferred.
+     * @throws FactoryException if an error occurred during the use of {@link CSFactory}.
      */
-    static EngineeringCRS build(final Matrix gridToCRS, final DimensionNameType[] types, final Locale locale)
-            throws FactoryException
+    private static CoordinateSystem createCS(final int tgtDim, final Matrix gridToCRS,
+            final DimensionNameType[] types, final Locale locale) throws FactoryException
     {
-        final int tgtDim = gridToCRS.getNumRow() - 1;
-        final int srcDim = Math.min(gridToCRS.getNumCol() - 1, types.length);
+        int srcDim = types.length;      // Used only for inspecting names. No need to be accurate.
+        if (gridToCRS != null) {
+            srcDim = Math.min(gridToCRS.getNumCol() - 1, srcDim);
+        }
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[tgtDim];
         final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
         boolean hasVertical = false;
@@ -115,20 +266,23 @@ final class GridExtentCRS {
                  * Current version does not accept scale factors, but we could revisit
                  * in a future version if there is a need for it.
                  */
-                int target = -1;
+                int target = i;
                 double scale = 0;
-                for (int j=0; j<tgtDim; j++) {
-                    final double m = gridToCRS.getElement(j, i);
-                    if (m != 0) {
-                        if (target >= 0 || axes[j] != null || Math.abs(m) != 1) {
-                            return null;
+                if (gridToCRS != null) {
+                    target = -1;
+                    for (int j=0; j<tgtDim; j++) {
+                        final double m = gridToCRS.getElement(j, i);
+                        if (m != 0) {
+                            if (target >= 0 || axes[j] != null || Math.abs(m) != 1) {
+                                return null;
+                            }
+                            target = j;
+                            scale  = m;
                         }
-                        target = j;
-                        scale  = m;
                     }
-                }
-                if (target < 0) {
-                    return null;
+                    if (target < 0) {
+                        return null;
+                    }
                 }
                 /*
                  * This hard-coded set of axis directions is the converse of
@@ -189,7 +343,7 @@ final class GridExtentCRS {
          * If no specialized type seems to fit, use an unspecified ("abstract")
          * coordinate system type in last resort.
          */
-        final Map<String,?> properties = properties("Grid extent");
+        final Map<String,?> properties = properties(CS_NAME);
         final CoordinateSystem cs;
         if (hasOther || (tgtDim > (hasTime ? 1 : 3))) {
             cs = new AbstractCS(properties, axes);
@@ -205,9 +359,55 @@ final class GridExtentCRS {
                 }
                 break;
             }
-            case 2:  cs = csFactory.createAffineCS(properties, axes[0], axes[1]); break;
-            case 3:  cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
-            default: return null;
+            case 2: {
+                /*
+                 * A null `gridToCRS` means that we are creating a CS for the grid, which is assumed a
+                 * Cartesian space. A non-null value means that we are creating a CRS for a transformed
+                 * envelope, in which case the CS type is not really known.
+                 */
+                cs = (gridToCRS == null)
+                        ? csFactory.createCartesianCS(properties, axes[0], axes[1])
+                        : csFactory.createAffineCS   (properties, axes[0], axes[1]);
+                break;
+            }
+            case 3: {
+                cs = (gridToCRS == null)
+                        ? csFactory.createCartesianCS(properties, axes[0], axes[1], axes[2])
+                        : csFactory.createAffineCS   (properties, axes[0], axes[1], axes[2]);
+                break;
+            }
+            default: {
+                cs = null;
+                break;
+            }
+        }
+        return cs;
+    }
+
+    /**
+     * Builds the engineering coordinate reference system of a {@link GridExtent}.
+     * This is used only in the rare cases where we need to represent an extent as an envelope.
+     * This class converts {@link DimensionNameType} codes into axis names, abbreviations and directions.
+     * It is the converse of {@link GridExtent#typeFromAxes(CoordinateReferenceSystem, int)}.
+     *
+     * <p>The CRS type is always engineering.
+     * We can not create temporal CRS because we do not know the temporal datum origin.</p>
+     *
+     * @param  gridToCRS  matrix of the transform used for converting grid cell indices to envelope coordinates.
+     *         It does not matter whether it maps pixel center or corner (translation coefficients are ignored).
+     * @param  types   the value of {@link GridExtent#types} or a default value (shall not be {@code null}).
+     * @param  locale  locale to use for axis names, or {@code null} for default.
+     * @return CRS for the grid, or {@code null}.
+     * @throws FactoryException if an error occurred during the use of {@link CSFactory} or {@link CRSFactory}.
+     *
+     * @see GridExtent#typeFromAxes(CoordinateReferenceSystem, int)
+     */
+    static EngineeringCRS forExtentAlone(final Matrix gridToCRS, final DimensionNameType[] types)
+            throws FactoryException
+    {
+        final CoordinateSystem cs = createCS(gridToCRS.getNumRow() - 1, gridToCRS, types, null);
+        if (cs == null) {
+            return null;
         }
         return DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(
                 properties(cs.getName()), CommonCRS.Engineering.GRID.datum(), cs);

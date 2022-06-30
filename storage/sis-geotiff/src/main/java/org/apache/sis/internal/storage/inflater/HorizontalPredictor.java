@@ -28,7 +28,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * Values packed on 4, 2 or 1 bits are not yet supported.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -76,7 +76,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
     private final int truncationMask;
 
     /**
-     * Creates a new predictor which will read compressed data from the given channel.
+     * Creates a new predictor which will read uncompressed data from the given channel.
      * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
@@ -141,7 +141,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
      *         unless the predictor needs more data for processing the last bytes.
      */
     @Override
-    protected final int uncompress(final ByteBuffer buffer, final int start) {
+    protected final int apply(final ByteBuffer buffer, final int start) {
         final int limit   = buffer.position();
         final int limitMS = limit - sampleSizeM1;       // Limit with enough space for last sample value.
         /*
@@ -159,7 +159,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
          * at the end of the last invocation of this method. Note that this will perform no operation
          * if the block above skipped fully the pixel in the first column.
          */
-        position = applyOnFirst(buffer, position, Math.min(start + pixelStride, limitMS), position - start);
+        final int endOfFirstPixel = Math.min(Math.min(start + pixelStride, scanlineStride), limitMS);
+        position = applyOnFirst(buffer, position, endOfFirstPixel, position - start);
         if ((column += position - start) >= scanlineStride) {
             column = 0;
         }
@@ -202,7 +203,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
     /**
      * Applies the predictor on the specified region of the given buffer, but using {@code savedValues}
      * array as the source of previous values. This is used only for the first pixel in a new invocation
-     * of {@link #uncompress(ByteBuffer, int)}.
+     * of {@link #apply(ByteBuffer, int)}.
      *
      * @param  buffer    the buffer on which to apply the predictor.
      * @param  position  position of the first value to modify in the given buffer.
@@ -242,8 +243,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Bytes extends HorizontalPredictor {
         /**
-         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
-         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * The trailing values of previous invocation of {@link #apply(ByteBuffer, int)}.
+         * After each call to {@code apply(…)}, the last values in the buffer are saved
          * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
         private final byte[] savedValues;
@@ -268,7 +269,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
         /**
          * Applies the predictor, using {@link #savedValues} as the source of previous values.
-         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         * Used only for the first pixel in a new invocation of {@link #apply(ByteBuffer, int)}.
          */
         @Override
         int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
@@ -299,8 +300,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Shorts extends HorizontalPredictor {
         /**
-         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
-         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * The trailing values of previous invocation of {@link #apply(ByteBuffer, int)}.
+         * After each call to {@code apply(…)}, the last values in the buffer are saved
          * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
         private final short[] savedValues;
@@ -319,6 +320,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
          */
         @Override
         void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            assert (offset % Short.BYTES) == 0 : offset;
             offset /= Short.BYTES;
             System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
             while (offset < savedValues.length) {
@@ -329,10 +331,11 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
         /**
          * Applies the predictor, using {@link #savedValues} as the source of previous values.
-         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         * Used only for the first pixel in a new invocation of {@link #apply(ByteBuffer, int)}.
          */
         @Override
         int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            assert (offset % Short.BYTES) == 0 : offset;
             offset /= Short.BYTES;
             while (position < end) {
                 buffer.putShort(position, (short) (buffer.getShort(position) + savedValues[offset++]));
@@ -361,8 +364,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Integers extends HorizontalPredictor {
         /**
-         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
-         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * The trailing values of previous invocation of {@link #apply(ByteBuffer, int)}.
+         * After each call to {@code apply(…)}, the last values in the buffer are saved
          * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
         private final int[] savedValues;
@@ -381,6 +384,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
          */
         @Override
         void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            assert (offset % Integer.BYTES) == 0 : offset;
             offset /= Integer.BYTES;
             System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
             while (offset < savedValues.length) {
@@ -391,10 +395,11 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
         /**
          * Applies the predictor, using {@link #savedValues} as the source of previous values.
-         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         * Used only for the first pixel in a new invocation of {@link #apply(ByteBuffer, int)}.
          */
         @Override
         int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            assert (offset % Integer.BYTES) == 0 : offset;
             offset /= Integer.BYTES;
             while (position < end) {
                 buffer.putInt(position, buffer.getInt(position) + savedValues[offset++]);
@@ -423,8 +428,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Floats extends HorizontalPredictor {
         /**
-         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
-         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * The trailing values of previous invocation of {@link #apply(ByteBuffer, int)}.
+         * After each call to {@code apply(…)}, the last values in the buffer are saved
          * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
         private final float[] savedValues;
@@ -443,6 +448,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
          */
         @Override
         void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            assert (offset % Float.BYTES) == 0 : offset;
             offset /= Float.BYTES;
             System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
             while (offset < savedValues.length) {
@@ -453,10 +459,11 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
         /**
          * Applies the predictor, using {@link #savedValues} as the source of previous values.
-         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         * Used only for the first pixel in a new invocation of {@link #apply(ByteBuffer, int)}.
          */
         @Override
         int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            assert (offset % Float.BYTES) == 0 : offset;
             offset /= Float.BYTES;
             while (position < end) {
                 buffer.putFloat(position, buffer.getFloat(position) + savedValues[offset++]);
@@ -485,8 +492,8 @@ abstract class HorizontalPredictor extends PredictorChannel {
      */
     private static final class Doubles extends HorizontalPredictor {
         /**
-         * The trailing values of previous invocation of {@link #uncompress(ByteBuffer, int)}.
-         * After each call to {@code uncompress(…)}, the last values in the buffer are saved
+         * The trailing values of previous invocation of {@link #apply(ByteBuffer, int)}.
+         * After each call to {@code apply(…)}, the last values in the buffer are saved
          * for use by the next invocation. The buffer capacity is exactly one pixel.
          */
         private final double[] savedValues;
@@ -505,6 +512,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
          */
         @Override
         void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
+            assert (offset % Double.BYTES) == 0 : offset;
             offset /= Double.BYTES;
             System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
             while (offset < savedValues.length) {
@@ -515,10 +523,11 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
         /**
          * Applies the predictor, using {@link #savedValues} as the source of previous values.
-         * Used only for the first pixel in a new invocation of {@link #uncompress(ByteBuffer, int)}.
+         * Used only for the first pixel in a new invocation of {@link #apply(ByteBuffer, int)}.
          */
         @Override
         int applyOnFirst(final ByteBuffer buffer, int position, final int end, int offset) {
+            assert (offset % Double.BYTES) == 0 : offset;
             offset /= Double.BYTES;
             while (position < end) {
                 buffer.putDouble(position, buffer.getDouble(position) + savedValues[offset++]);

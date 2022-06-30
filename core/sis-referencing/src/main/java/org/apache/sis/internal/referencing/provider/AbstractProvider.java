@@ -41,6 +41,8 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Base class for all providers defined in this package.
@@ -279,6 +281,6 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * @param  e       the error that occurred.
      */
     static void recoverableException(final Class<? extends AbstractProvider> caller, Exception e) {
-        Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), caller, "createMathTransform", e);
+        Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION), caller, "createMathTransform", e);
     }
 }

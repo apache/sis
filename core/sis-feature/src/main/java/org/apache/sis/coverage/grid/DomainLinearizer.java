@@ -168,7 +168,7 @@ public class DomainLinearizer {
         ArgumentChecks.ensureNonNull("gg", gg);
         if (gg.nonLinears != 0) try {
             MathTransform   gridToCRS   = gg.requireGridToCRS(true);
-            GeneralEnvelope domain      = gg.extent.toCRS(null, null, null);
+            GeneralEnvelope domain      = gg.extent.toEnvelope();
             MathTransform   approximate = modify(LinearTransformBuilder.approximate(gridToCRS, domain));
             MathTransform   gridToGrid  = MathTransforms.concatenate(gridToCRS, approximate.inverse());
             domain = Envelopes.transform(gridToGrid, domain);

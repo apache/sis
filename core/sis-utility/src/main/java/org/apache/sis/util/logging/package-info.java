@@ -20,9 +20,7 @@
  * This package provides:
  *
  * <ul>
- *   <li>A {@link org.apache.sis.util.logging.Logging} utility class with static methods for
- *       fetching a logger (see <cite>Choosing a logging framework</cite> below) or logging an
- *       exception.</li>
+ *   <li>A {@link org.apache.sis.util.logging.Logging} utility class with static utility methods.</li>
  *   <li>A {@link org.apache.sis.util.logging.PerformanceLevel} with configurable levels for
  *       logging the duration of lengthly processes.</li>
  *   <li>A {@link org.apache.sis.util.logging.MonolineFormatter} for formatting the log
@@ -30,29 +28,16 @@
  * </ul>
  *
  * <h2>Choosing a logging framework</h2>
- * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging,
- * but this package allows redirection of logging messages to some other frameworks like
- * <a href="http://logging.apache.org/log4j/">Log4J</a>.
- * We recommend to stick to standard JDK logging when possible. However if inter-operability
- * with an other logging framework is required, then the only action needed is to include
- * <strong>one</strong> of the following JAR on the classpath:
- *
- * <ul>
- *   <li>{@code sis-logging-commons.jar} for Apache logging</li>
- *   <li>{@code sis-logging-log4j.jar} for Log4J logging</li>
- *   <li>Any other JAR registering a {@link org.apache.sis.util.logging.LoggerFactory} implementation.</li>
- * </ul>
- *
- * <h2>Note for SIS developers</h2>
- * All SIS code should fetch their logger through a call to our custom
- * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead of
- * the standard {@link java.util.logging.Logger#getLogger(String)} method. This is necessary in
- * order to give SIS a chance to redirect log events to an other logging framework.
+ * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging.
+ * It does not mean that users of the SIS library are forced to use that logging framework.
+ * Java logging can be used as an API more powerful than {@link java.lang.System.Logger}
+ * and other frameworks can redirect Java logging to themselves. For example adding the
+ * {@code jul-to-slf4j.jar} dependency to a project is sufficient for redirecting Java logging to SLF4J.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
- * @see <a href="http://download.oracle.com/javase/6/docs/technotes/guides/logging/overview.html">Java Logging Overview</a>
+ * @see <a href="https://docs.oracle.com/en/java/javase/18/core/java-logging-overview.html">Java Logging Overview</a>
  *
  * @since 0.3
  * @module

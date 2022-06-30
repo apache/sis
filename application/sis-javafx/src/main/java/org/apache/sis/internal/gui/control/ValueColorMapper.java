@@ -43,12 +43,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.CheckBoxTableCell;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.gui.Widget;
 
 
 /**
@@ -56,11 +54,11 @@ import org.apache.sis.gui.Widget;
  * It can be used as a table of isolines or as a {@link ColorRamp} editor.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
-public final class ValueColorMapper extends Widget {
+public final class ValueColorMapper extends TabularWidget {
     /**
      * Colors to associate to a given value.
      *
@@ -189,8 +187,9 @@ public final class ValueColorMapper extends Widget {
      *                     (those arguments would be removed if this constructor was public API).
      */
     public ValueColorMapper(final Resources resources, final Vocabulary vocabulary) {
+        table = newTable();
         textConverter = FormatApplicator.createNumberFormat();
-        table = createIsolineTable(vocabulary);
+        createIsolineTable(vocabulary);
         final MenuItem rangeMenu = new MenuItem(resources.getString(Resources.Keys.RangeOfValues));
         final MenuItem clearAll  = new MenuItem(resources.getString(Resources.Keys.ClearAll));
         rangeMenu.setOnAction((e) -> insertRangeOfValues());
@@ -362,20 +361,13 @@ public final class ValueColorMapper extends Widget {
      *
      * @param  vocabulary  localized resources, given because already known by the caller
      *                     (this argument would be removed if this method was public API).
-     * @return table of isolines.
      */
-    private TableView<Step> createIsolineTable(final Vocabulary vocabulary) {
+    private void createIsolineTable(final Vocabulary vocabulary) {
         /*
          * First column containing a checkbox for choosing whether the isoline should be drawn or not.
          * Header text is 🖉 (lower left pencil).
          */
-        final TableColumn<Step,Boolean> visible = new TableColumn<>("\uD83D\uDD89");
-        visible.setCellFactory(CheckBoxTableCell.forTableColumn(visible));
-        visible.setCellValueFactory((cell) -> cell.getValue().visible);
-        visible.setSortable(false);
-        visible.setResizable(false);
-        visible.setMinWidth(Styles.CHECKBOX_WIDTH);
-        visible.setMaxWidth(Styles.CHECKBOX_WIDTH);
+        final TableColumn<Step,Boolean> visible = newBooleanColumn("\uD83D\uDD89", (cell) -> cell.getValue().visible);
         /*
          * Second column containing the level value.
          * The number can be edited using a `NumberFormat` in current locale.
@@ -388,10 +380,9 @@ public final class ValueColorMapper extends Widget {
         level.setSortable(false);                               // We will do our own sorting.
         level.setId("level");
         /*
-         * Create the table with above "category name" column (read-only),
+         * Create the table with above "levels" column (read-only),
          * and add an editable column for color(s).
          */
-        final TableView<Step> table = new TableView<>();
         table.getColumns().setAll(visible, level);
         final ColumnHandler handler = new ColumnHandler();
         handler.addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Color));
@@ -400,10 +391,9 @@ public final class ValueColorMapper extends Widget {
          * when a digit is typed (this is the purpose of `trigger`). For making easier to edit the cell in current row,
          * a listener on F2 key (same as Excel and OpenOffice) is also registered.
          */
-        table.getItems().add(new Step());
+        getSteps().add(new Step());
         trigger.registerTo(table);
         table.setOnKeyPressed(ValueColorMapper::deleteRow);
-        return table;
     }
 
     /**

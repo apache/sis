@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -49,6 +50,8 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Utility methods working on {@link CoordinateSystem} objects and their axes.
@@ -57,7 +60,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -567,6 +570,23 @@ next:   for (final CoordinateSystem cs : targets) {
     }
 
     /**
+     * Returns a short (if possible) localized name for the given axis. This method replaces
+     * names such as "Geodetic latitude" or "Geocentric latitude" by a simple "Latitude" word.
+     * This method can be used for example in column or row headers when the context is known
+     * and the space is rare.
+     *
+     * @param  axis    the axis for which to get a short label.
+     * @param  locale  desired locale for the label.
+     * @return a relatively short axis label, in the desired locale if possible.
+     *
+     * @since 1.3
+     */
+    public static String getShortName(final CoordinateSystemAxis axis, final Locale locale) {
+        ArgumentChecks.ensureNonNull("axis", axis);
+        return AxisName.find(axis, locale);
+    }
+
+    /**
      * Returns the EPSG code of a coordinate system using the units and directions of given axes.
      * This method ignores axis metadata (names, abbreviation, identifiers, remarks, <i>etc.</i>).
      * The axis minimum and maximum values are checked only if the
@@ -651,7 +671,7 @@ forDim: switch (axes.length) {
                                     break forDim;
                                 }
                             } catch (IncommensurableException e) {      // Should never happen since we checked that units are angular.
-                                Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
+                                Logging.unexpectedException(getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
                                 break forDim;
                             }
                         }

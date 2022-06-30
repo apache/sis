@@ -26,6 +26,8 @@ import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
@@ -156,7 +158,7 @@ public enum DataDirectory {
         if (rootDirectory == null) try {
             return getenv() == null;
         } catch (SecurityException e) {
-            Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), DataDirectory.class, "isUndefined", e);
+            Logging.recoverableException(getLogger(Loggers.SYSTEM), DataDirectory.class, "isUndefined", e);
         }
         return false;
     }

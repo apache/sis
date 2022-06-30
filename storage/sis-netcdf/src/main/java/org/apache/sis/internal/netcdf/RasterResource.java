@@ -43,6 +43,7 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
 import org.apache.sis.storage.AbstractGridCoverageResource;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.Resource;
@@ -56,6 +57,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.storage.StoreResource;
 
 
 /**
@@ -66,11 +68,11 @@ import org.apache.sis.internal.storage.RangeArgument;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
-public final class RasterResource extends AbstractGridCoverageResource implements ResourceOnFileSystem {
+public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
     /**
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
      * that the variable is a component of a vector. Those words are used in heuristic rules
@@ -168,11 +170,13 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     /**
      * The object to use for synchronization. For now we use a {@code synchronized} statement,
      * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
+     * Current lock is the whole netCDF data store (so this field is opportunistically used
+     * by {@link #getOriginator()}), but it may change in future version.
      *
      * @see DiscreteSampling#lock
      * @see #getSynchronizationLock()
      */
-    private final Object lock;
+    private final DataStore lock;
 
     /**
      * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
@@ -186,7 +190,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * @param  lock      the lock to use in {@code synchronized(lock)} statements.
      */
     private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands,
-            final int numBands, final int bandDim, final Object lock)
+            final int numBands, final int bandDim, final DataStore lock)
     {
         super(decoder.listeners, false);
         this.lock     = lock;
@@ -210,7 +214,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * @throws IOException if an I/O operation was required and failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public static List<Resource> create(final Decoder decoder, final Object lock) throws IOException, DataStoreException {
+    public static List<Resource> create(final Decoder decoder, final DataStore lock) throws IOException, DataStoreException {
         assert Thread.holdsLock(lock);
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
         final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometime 2.
@@ -750,12 +754,24 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     }
 
     /**
+     * Returns the data store that produced this resource.
+     */
+    @Override
+    public final DataStore getOriginator() {
+        return lock;
+    }
+
+    /**
      * Returns the object on which to perform synchronizations for thread-safety.
      *
      * @return the synchronization lock.
      */
     @Override
     protected final Object getSynchronizationLock() {
+        /*
+         * Could be replaced by `(DataStore) listeners.getParent().get().getSource()`
+         * if a future version decides to use a different kind of lock.
+         */
         return lock;
     }
 }

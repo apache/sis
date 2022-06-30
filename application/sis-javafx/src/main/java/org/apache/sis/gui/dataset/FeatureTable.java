@@ -46,6 +46,9 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.ExceptionReporter;
 
+import static java.util.logging.Logger.getLogger;
+
+// Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.AbstractIdentifiedType;
@@ -482,13 +485,13 @@ public class FeatureTable extends TableView<AbstractFeature> {
      * public API (if possible) invoking the method where the exception is caught.
      */
     static void unexpectedException(final String method, final Throwable exception) {
-        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
     }
 
     /**
      * Reports an exception that we choose to ignore.
      */
     static void recoverableException(final String method, final Exception exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
+        Logging.recoverableException(getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
     }
 }

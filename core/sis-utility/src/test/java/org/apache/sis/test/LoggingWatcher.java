@@ -38,7 +38,7 @@ import org.junit.runners.model.FrameworkMethod;
  *
  * {@preformat java
  *     &#64;Rule
- *     public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Loggers.XML));
+ *     public final LoggingWatcher loggings = new LoggingWatcher(Logger.getLogger(Loggers.XML));
  * }
  *
  * Recommended but not mandatory, ensure that there is no unexpected logging in any tests:

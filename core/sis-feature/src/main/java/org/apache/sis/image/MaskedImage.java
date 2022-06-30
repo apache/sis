@@ -16,7 +16,6 @@
  */
 package org.apache.sis.image;
 
-import java.util.Objects;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.awt.Rectangle;
@@ -470,11 +469,9 @@ complete:   for (int border = 0; ; border++) {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass().equals(getClass())) {
+        if (super.equals(object)) {
             final MaskedImage other = (MaskedImage) object;
-            return clip.equals(other.clip) &&
-                   Objects.deepEquals(fillValues, other.fillValues) &&
-                   getSources().equals(other.getSources());
+            return clip.equals(other.clip) && fillValues.equals(other.fillValues);
         }
         return false;
     }
@@ -486,6 +483,6 @@ complete:   for (int border = 0; ; border++) {
      */
     @Override
     public int hashCode() {
-        return clip.hashCode() + Objects.hashCode(fillValues) + getSources().hashCode();
+        return super.hashCode() + clip.hashCode() + fillValues.hashCode();
     }
 }

@@ -50,6 +50,8 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * An image which is the result of resampling the pixel values of another image.
@@ -461,7 +463,7 @@ public class ResampledImage extends ComputedImage {
      * @param  error   the ignore which can be ignored.
      */
     private static void recoverableException(final String method, final Exception error) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), ResampledImage.class, method, error);
+        Logging.recoverableException(getLogger(Modules.RASTER), ResampledImage.class, method, error);
     }
 
     /**
@@ -905,7 +907,7 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass().equals(getClass())) {
+        if (equalsBase(object)) {
             final ResampledImage other = (ResampledImage) object;
             return minX     == other.minX &&
                    minY     == other.minY &&
@@ -915,8 +917,7 @@ public class ResampledImage extends ComputedImage {
                    minTileY == other.minTileY &&
                    interpolation.equals(other.interpolation) &&
                    Objects.deepEquals(fillValues, other.fillValues) &&
-                   toSource.equals(other.toSource) &&
-                   getSources().equals(other.getSources());
+                   toSource.equals(other.toSource);
         }
         return false;
     }
@@ -928,7 +929,7 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public int hashCode() {
-        return minX + 31*(minY + 31*(width + 31*height)) + interpolation.hashCode()
-                + toSource.hashCode() + getSources().hashCode();
+        return hashCodeBase() + minX + 31*(minY + 31*(width + 31*height))
+                + interpolation.hashCode() + toSource.hashCode();
     }
 }

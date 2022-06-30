@@ -33,13 +33,16 @@ import org.apache.sis.util.Disposable;
  * All {@link RenderedImage} methods related to coordinate systems (pixel coordinates or tile
  * indices), and all methods fetching tiles, delegate to the wrapped image.
  *
- * <div class="note"><b>Design note:</b>
+ * <h2>Design note</h2>
  * most non-abstract methods are final because {@link PixelIterator} (among others) relies
- * on the fact that it can unwrap this image and still get the same pixel values.</div>
+ * on the fact that it can unwrap this image and still get the same pixel values.
  *
- * <div class="note"><b>Relationship with other classes</b><br>
+ * <h2>Relationship with other classes</h2>
  * This class is similar to {@link SourceAlignedImage} except that it does not extend {@link ComputedImage}
- * and forward {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.</div>
+ * and forward {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.
+ *
+ * <h2>Requirements for subclasses</h2>
+ * All subclasses shall override {@link #equals(Object)} and {@link #hashCode()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

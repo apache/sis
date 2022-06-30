@@ -210,7 +210,7 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Constructs the color model from the {@code #codes} and {@link #ARGB} data.
+     * Constructs the color model from the {@code codes} and {@link #ARGB} data.
      * This method is invoked the first time the color model is created, or when
      * the value in the cache has been discarded.
      */

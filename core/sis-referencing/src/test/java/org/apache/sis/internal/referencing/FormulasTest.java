@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collections;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
  * Tests {@link Formulas}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -121,5 +122,17 @@ public final strictfp class FormulasTest extends TestCase {
         final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createFlattenedSphere(
                 Collections.singletonMap(DefaultEllipsoid.NAME_KEY, "Bessel 1841"), 6377397.155, 299.1528128, Units.METRE);
         assertEquals(6382644.571, Formulas.radiusOfConformalSphere(ellipsoid, StrictMath.toRadians(52.156160556)), 0.001);
+    }
+
+    /**
+     * Tests {@link Formulas#getRadius(Ellipsoid, double)}.
+     */
+    @Test
+    public void testGetRadius() {
+        final Ellipsoid e = HardCodedDatum.WGS84.getEllipsoid();
+        assertEquals(e.getSemiMajorAxis(), Formulas.getRadius(e,  0),         0.01);
+        assertEquals(e.getSemiMinorAxis(), Formulas.getRadius(e, +Math.PI/2), 0.01);
+        assertEquals(e.getSemiMinorAxis(), Formulas.getRadius(e, -Math.PI/2), 0.01);
+        assertEquals(6372824, Formulas.getRadius(e, Math.toRadians(30)), 0.5);
     }
 }

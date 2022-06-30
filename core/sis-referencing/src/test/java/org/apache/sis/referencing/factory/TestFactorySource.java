@@ -21,13 +21,13 @@ import java.util.HashMap;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
+import static java.util.logging.Logger.getLogger;
 import static org.junit.Assume.*;
 import static org.opengis.test.Assert.*;
 
@@ -116,7 +116,7 @@ public final strictfp class TestFactorySource {
             assertNotNull(factory.createGeographicCRS("4326"));
         } catch (UnavailableFactoryException e) {
             isUnavailable = true;
-            Logging.getLogger(Loggers.CRS_FACTORY).warning(e.toString());
+            getLogger(Loggers.CRS_FACTORY).warning(e.toString());
             assumeNoException("No connection to EPSG dataset.", e);
         }
         return (EPSGFactory) factory;
@@ -151,7 +151,7 @@ public final strictfp class TestFactorySource {
                     factory = af;                                                           // Must be last.
                 } catch (UnavailableFactoryException e) {
                     isUnavailable = true;
-                    Logging.getLogger(Loggers.CRS_FACTORY).warning(e.toString());
+                    getLogger(Loggers.CRS_FACTORY).warning(e.toString());
                 } finally {
                     if (factory != af) {
                         af.close();

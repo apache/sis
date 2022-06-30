@@ -65,7 +65,7 @@ import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
  * be outside the bounds of destination coverage.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see ImageCombiner
  *
@@ -233,7 +233,7 @@ next:   for (int j=0; j<sources.length; j++) {
          */
         final long[] minSliceIndices = minIndices.clone();
         final long[] maxSliceIndices = maxIndices.clone();
-        final double[] centerIndices = targetEx.getPointOfInterest();
+        final double[] centerIndices = targetEx.getPointOfInterest(PixelInCell.CELL_CENTER);
         final Dimension margin = processor.getInterpolation().getSupportSize();
         margin.width  = ((margin.width  + 1) >> 1) + 1;
         margin.height = ((margin.height + 1) >> 1) + 1;

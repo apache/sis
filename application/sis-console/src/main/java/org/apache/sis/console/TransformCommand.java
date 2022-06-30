@@ -74,6 +74,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * The "transform" subcommand.
@@ -650,6 +652,6 @@ final class TransformCommand extends FormattedOutputCommand {
      * considered as an indication that the point is outside the domain of validity.
      */
     private static void warning(final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Modules.CONSOLE), TransformCommand.class, "run", e);
+        Logging.recoverableException(getLogger(Modules.CONSOLE), TransformCommand.class, "run", e);
     }
 }

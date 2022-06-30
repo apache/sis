@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
@@ -110,7 +111,7 @@ import org.apache.sis.setup.OptionKey;
  * is known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -167,6 +168,25 @@ public class WorldFileStore extends PRJDataStore {
      * @see #reader()
      */
     private ImageReader reader;
+
+    /**
+     * The object to close when {@code WorldFileStore} is closed. It may be a different object than
+     * reader input or writer output, because some {@link ImageInputStream#close()} implementations
+     * in the standard Java {@link javax.imageio.stream} package do not close the underlying stream.
+     *
+     * <p>The type is {@link Closeable} instead of {@link AutoCloseable} because the former is idempotent:
+     * invoking {@link Closeable#close()} many times has no effect. By contrast {@link AutoCloseable} does
+     * not offer this guarantee. Because it is hard to know what {@link ImageInputStream#close()} will do,
+     * we need idempotent {@code toClose} for safety. Note that {@link ImageInputStream#close()} violates
+     * the idempotent contract of {@link Closeable#close()}, so an additional check will be necessary in
+     * our {@link #close()} implementation.</p>
+     *
+     * @see javax.imageio.stream.FileCacheImageInputStream#close()
+     * @see javax.imageio.stream.FileCacheImageOutputStream#close()
+     * @see javax.imageio.stream.MemoryCacheImageInputStream#close()
+     * @see javax.imageio.stream.MemoryCacheImageOutputStream#close()
+     */
+    private Closeable toClose;
 
     /**
      * Width and height of the main image.
@@ -239,9 +259,12 @@ public class WorldFileStore extends PRJDataStore {
      */
     WorldFileStore(final FormatFinder format, final boolean readOnly) throws DataStoreException, IOException {
         super(format.provider, format.connector);
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
         identifiers = new HashMap<>();
         suffix = format.suffix;
+        if (format.storage instanceof Closeable) {
+            toClose = (Closeable) format.storage;
+        }
         if (readOnly || !format.openAsWriter) {
             reader = format.getOrCreateReader();
             if (reader == null) {
@@ -782,17 +805,26 @@ loop:   for (int convention=0;; convention++) {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final ImageReader codec = reader;
+        final Closeable  stream = toClose;
         reader       = null;
+        toClose      = null;
         metadata     = null;
         components   = null;
         gridGeometry = null;
-        if (codec != null) try {
-            final Object input = codec.getInput();
-            codec.setInput(null);
-            codec.dispose();
-            if (input instanceof AutoCloseable) {
-                ((AutoCloseable) input).close();
+        try {
+            Object input = null;
+            if (codec != null) {
+                input = codec.getInput();
+                codec.setInput(null);
+                codec.dispose();
+                if (input instanceof AutoCloseable) {
+                    ((AutoCloseable) input).close();
+                }
+            }
+            if (stream != null && stream != input) {
+                stream.close();
             }
         } catch (Exception e) {
             throw new DataStoreException(e);

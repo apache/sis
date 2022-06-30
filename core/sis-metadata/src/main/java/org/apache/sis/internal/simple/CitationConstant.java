@@ -36,6 +36,8 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Base class for the {@code public static final Citation} constants defined in some SIS classes.
@@ -181,7 +183,7 @@ public class CitationConstant extends SimpleCitation {
                          * the MetadataFallback class. So if we get this exception, a more serious error occurred.
                          * It is still not fatal however, since most of Citation content is informative.
                          */
-                        Logging.unexpectedException(Logging.getLogger(Loggers.SQL), CitationConstant.class, "delegate", e);
+                        Logging.unexpectedException(getLogger(Loggers.SQL), CitationConstant.class, "delegate", e);
                         c = new SimpleCitation(title);
                     }
                     delegate = c;

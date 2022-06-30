@@ -61,7 +61,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.5
  * @module
  */

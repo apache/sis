@@ -23,6 +23,8 @@ import org.apache.sis.internal.system.Modules;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Temporary methods used until a new major GeoAPI release provides the missing functionalities.
@@ -61,7 +63,7 @@ public final class Interim extends Static {
         try {
             return (Envelope) geometry.getClass().getMethod("getEnvelope").invoke(geometry);
         } catch (ReflectiveOperationException | ClassCastException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.METADATA), Interim.class, "getEnvelope", e);
+            Logging.recoverableException(getLogger(Modules.METADATA), Interim.class, "getEnvelope", e);
             return null;
         }
     }

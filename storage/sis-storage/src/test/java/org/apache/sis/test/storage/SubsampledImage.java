@@ -19,6 +19,7 @@ package org.apache.sis.test.storage;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.Objects;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -45,7 +46,7 @@ import static org.junit.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -351,5 +352,29 @@ final class SubsampledImage extends PlanarImage {
             }
         }
         return target;
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(source, subX, subY, offX, offY);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof SubsampledImage) {
+            final SubsampledImage other = (SubsampledImage) object;
+            return source.equals(other.source) &&
+                   subX == other.subX &&
+                   subY == other.subY &&
+                   offX == other.offX &&
+                   offY == other.offY;
+        }
+        return false;
     }
 }

@@ -54,18 +54,18 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
-     * The processor to use for {@link #convert(RenderedImage, DataType, MathTransform1D[])} operations.
+     * The processor to use in calls to {@link #convert(RenderedImage, DataType, MathTransform1D[], ImageProcessor)}.
      * Wrapped in a class for lazy instantiation.
      */
-    private static final class Lazy {
+    static final class Lazy {
         private Lazy() {}
-        private static final ImageProcessor PROCESSOR = new ImageProcessor();
+        static final ImageProcessor PROCESSOR = new ImageProcessor();
     }
 
     /**
@@ -73,7 +73,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @see #getGridGeometry()
      */
-    final GridGeometry gridGeometry;
+    protected final GridGeometry gridGeometry;
 
     /**
      * List of sample dimension (band) information for the grid coverage. Information include such things
@@ -274,9 +274,12 @@ public abstract class GridCoverage extends BandedCoverage {
      * @param  source      the image for which to convert sample values.
      * @param  bandType    the type of data in the bands resulting from conversion of given image.
      * @param  converters  the transfer functions to apply on each band of the source image.
+     * @param  processor   the processor to use for creating the tiles of converted values.
      * @return the image which compute converted values from the given source.
      */
-    final RenderedImage convert(final RenderedImage source, final DataType bandType, final MathTransform1D[] converters) {
+    final RenderedImage convert(final RenderedImage source, final DataType bandType,
+            final MathTransform1D[] converters, final ImageProcessor processor)
+    {
         final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         final ColorModel colors;
@@ -287,7 +290,7 @@ public abstract class GridCoverage extends BandedCoverage {
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;
         }
-        return Lazy.PROCESSOR.convert(source, getRanges(), converters, bandType, colors);
+        return processor.convert(source, getRanges(), converters, bandType, colors);
     }
 
     /**

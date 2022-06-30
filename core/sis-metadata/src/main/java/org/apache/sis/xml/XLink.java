@@ -31,6 +31,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * The XML attributes defined by OGC in the
@@ -867,7 +869,7 @@ public class XLink implements Serializable {
                 }
             } catch (NoSuchFieldException e) {
                 // Should never happen with Enums. But if it happen anyway, this is not a fatal error.
-                Logging.unexpectedException(Logging.getLogger(Loggers.XML), XLink.class, "toString", e);
+                Logging.unexpectedException(getLogger(Loggers.XML), XLink.class, "toString", e);
             }
             buffer.append(label).append("=\"").append(value).append('"');
         }

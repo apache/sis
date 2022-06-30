@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 
 import org.apache.sis.storage.shapefile.ShapeFileTest;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.logging.Logging;
 import org.junit.Before;
 
 /**
@@ -39,7 +38,7 @@ import org.junit.Before;
  */
 public abstract class AbstractTestBaseForInternalJDBC extends TestCase {
     /** Logger. */
-    protected Logger log = Logging.getLogger(getClass());
+    protected Logger log = Logger.getLogger("org.apache.sis.internal.shapefile.jdbc");
 
     /** The database file to use for testing purpose.  */
     protected File dbfFile;

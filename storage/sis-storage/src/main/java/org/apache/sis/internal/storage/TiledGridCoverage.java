@@ -382,7 +382,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      */
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
-        final GridExtent available = getGridGeometry().getExtent();
+        final GridExtent available = gridGeometry.getExtent();
         final int dimension = available.getDimension();
         if (sliceExtent == null) {
             sliceExtent = available;
@@ -433,7 +433,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
              */
             final AOI iterator = new AOI(tileLower, tileUpper, offsetAOI, dimension);
-            final Map<String,Object> properties = DeferredProperty.forGridGeometry(getGridGeometry(), selectedDimensions);
+            final Map<String,Object> properties = DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions);
             if (deferredTileReading) {
                 image = new TiledDeferredImage(imageSize, tileLower, properties, iterator);
             } else {

@@ -18,6 +18,7 @@ package org.apache.sis.portrayal;
 
 import java.util.List;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -40,7 +41,7 @@ import org.apache.sis.internal.util.Numerics;
  * This class contains also static help functions for the construction of {@link GridGeometry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -54,7 +55,7 @@ final class CanvasExtent extends GridExtent {
      * The grid coordinates of a representative point. The {@code CanvasExtent} point of interest
      * is the {@code Canvas} point of interest converted to (typically) pixel coordinates.
      *
-     * @see #getPointOfInterest()
+     * @see #getPointOfInterest(PixelInCell)
      */
     private final double[] pointOfInterest;
 
@@ -75,10 +76,13 @@ final class CanvasExtent extends GridExtent {
      * Returns the grid coordinates of a representative point.
      * This is the canvas point of interest converted to (typically) pixel coordinates.
      *
+     * @param  anchor  the convention to be used for conversion to "real world" coordinates.
+     * @return the grid coordinates of a representative point.
+     *
      * @see Canvas#getPointOfInterest(boolean)
      */
     @Override
-    public double[] getPointOfInterest() {
+    public double[] getPointOfInterest(final PixelInCell anchor) {
         return pointOfInterest.clone();
     }
 

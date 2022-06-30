@@ -45,7 +45,7 @@ abstract class PixelChannel implements ReadableByteChannel {
     }
 
     /**
-     * Prepares this channel for reading a new tile or a new band of a tile.
+     * Prepares this channel for reading a new tile or a new band of a planar image.
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.

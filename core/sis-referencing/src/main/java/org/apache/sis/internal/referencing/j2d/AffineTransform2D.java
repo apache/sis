@@ -34,21 +34,20 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-
-import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 
 /**
  * Transforms two-dimensional coordinate points using an affine transform. This class both extends
  * {@link AffineTransform} and implements {@link MathTransform2D}, so it can be used as a bridge
- * between Java2D and the referencing module. Note that this bridge role involve a tricky issue with
+ * between Java2D and the referencing module. Note that this bridge role involves a tricky issue with
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -68,40 +67,41 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * this affine transform is still under construction. This field <strong>must</strong> be
      * set to a non-null value before an {@link AffineTransform2D} instance is published.</p>
      *
+     * @see #freeze()
      * @see #getMatrix()
      */
-    private final AffineMatrix matrix;
+    private AffineMatrix matrix;
 
     /**
      * The inverse transform. This field will be computed only when needed.
+     *
+     * @see #inverse()
      */
     private transient volatile AffineTransform2D inverse;
 
     /**
-     * Constructs a new affine transform with the same coefficients than the specified transform.
+     * Creates a new affine transform with the same coefficients than the specified transform.
      *
      * @param transform  the affine transform to copy.
      */
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
-        forcePositiveZeros();   // Must be invoked before to set the `matrix` value.
-        matrix = new AffineMatrix(this, null);
+        freeze();
     }
 
     /**
-     * Constructs a new transform from an array of values representing either the 4 non-translation
+     * Creates a new transform from an array of values representing either the 4 non-translation
      * entries or the 6 specifiable entries of the 3×3 matrix.
      *
      * @param elements  the matrix elements in an array of length 4 or 6.
      */
     public AffineTransform2D(final double[] elements) {
         super(elements);
-        forcePositiveZeros();
-        matrix = new AffineMatrix(this, null);
+        freeze();
     }
 
     /**
-     * Constructs a new {@code AffineTransform2D} from the 9 or 18 values of the given matrix.
+     * Creates a new {@code AffineTransform2D} from the 9 or 18 values of the given matrix.
      *
      * @param matrix  the matrix from which to get the (potentially extended) elements.
      */
@@ -122,7 +122,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     }
 
     /**
-     * Constructs a new {@code AffineTransform2D} from 6 values representing the 6 specifiable
+     * Creates a new {@code AffineTransform2D} from 6 values representing the 6 specifiable
      * entries of the 3×3 transformation matrix. Those values are given unchanged to the
      * {@link AffineTransform#AffineTransform(double,double,double,double,double,double) super
      * class constructor}, except for negative zeros that are replaced by positive zeros.
@@ -136,7 +136,26 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12) {
         super(pz(m00), pz(m10), pz(m01), pz(m11), pz(m02), pz(m12));
-        matrix = new AffineMatrix(this, null);
+        matrix = new AffineMatrix(this);
+    }
+
+    /**
+     * Creates a potentially modifiable transform initialized to the 6 specifiable entries.
+     * Caller shall invoke {@link #freeze()} before to publish this transform.
+     *
+     * @param m00 the X coordinate scaling.
+     * @param m10 the Y coordinate shearing.
+     * @param m01 the X coordinate shearing.
+     * @param m11 the Y coordinate scaling.
+     * @param m02 the X coordinate translation.
+     * @param m12 the Y coordinate translation.
+     * @param modifiable  whether the transform should be modifiable.
+     */
+    public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12, final boolean modifiable) {
+        super(m00, m10, m01, m11, m02, m12);
+        if (!modifiable) {
+            freeze();
+        }
     }
 
     /**
@@ -153,12 +172,13 @@ public class AffineTransform2D extends ImmutableAffineTransform
     }
 
     /**
-     * Ensures that this transform contains only positive zeros.
+     * Ensures that this transform contains only positive zeros, then marks this transform as unmodifiable.
      */
-    public final void forcePositiveZeros() {
+    public final void freeze() {
         super.setTransform(pz(super.getScaleX()),     pz(super.getShearY()),
                            pz(super.getShearX()),     pz(super.getScaleY()),
                            pz(super.getTranslateX()), pz(super.getTranslateY()));
+        matrix = new AffineMatrix(this);
     }
 
     /**
@@ -221,7 +241,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) {
-        ensureDimensionMatches("ptSrc", 2, ptSrc);
+        ArgumentChecks.ensureDimensionMatches("ptSrc", 2, ptSrc);
         /*
          * Try to write directly in the destination point if possible. Following
          * code avoid the creation of temporary objects (except if ptDst is null).
@@ -238,7 +258,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
                 super.transform(point, point);
                 return point;
             }
-            ensureDimensionMatches("ptDst", 2, ptDst);
+            ArgumentChecks.ensureDimensionMatches("ptDst", 2, ptDst);
             if (ptDst instanceof Point2D) {
                 final Point2D point = (Point2D) ptDst;
                 point.setLocation(ptSrc.getOrdinate(0), ptSrc.getOrdinate(1));
@@ -319,7 +339,6 @@ public class AffineTransform2D extends ImmutableAffineTransform
                      *
                      *     AffineTransform2D work = new AffineTransform2D(this, true);
                      *     work.invert();
-                     *     work.forcePositiveZeros();
                      *     work.freeze();
                      *
                      * Current version now uses the SIS code instead in order to get the double-double precision.

@@ -47,6 +47,8 @@ import org.apache.sis.internal.util.CodeLists;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Static methods working on GeoAPI types and {@link CodeList} values.
@@ -392,7 +394,7 @@ public final class Types extends Static {
             try {
                 return super.toString(locale);
             } catch (MissingResourceException e) {
-                Logging.ignorableException(Logging.getLogger(Loggers.LOCALIZATION), ResourceInternationalString.class, "toString", e);
+                Logging.ignorableException(getLogger(Loggers.LOCALIZATION), ResourceInternationalString.class, "toString", e);
                 return fallback();
             }
         }

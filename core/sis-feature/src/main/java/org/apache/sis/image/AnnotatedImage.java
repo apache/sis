@@ -540,7 +540,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * @return a hash code value based on a description of the operation performed by this image.
      */
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return super.hashCode() + Objects.hashCode(areaOfInterest) + Boolean.hashCode(failOnException);
     }
 
@@ -548,11 +548,16 @@ abstract class AnnotatedImage extends ImageAdapter {
      * Compares the given object with this image for equality. This method should be quick and compare
      * how images compute their values from their sources; it should not compare the actual pixel values.
      *
+     * <h4>Requirements for subclasses</h4>
+     * Subclasses should override {@link #getExtraParameter()} instead of this method.
+     *
      * @param  object  the object to compare with this image.
      * @return {@code true} if the given object is an image performing the same calculation than this image.
+     *
+     * @see #getExtraParameter()
      */
     @Override
-    public boolean equals(final Object object) {
+    public final boolean equals(final Object object) {
         return super.equals(object) && equalParameters((AnnotatedImage) object);
     }
 

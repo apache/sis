@@ -64,7 +64,7 @@ public final class OptionalDataDownloader extends OptionalInstallations {
     @Override
     protected boolean askUserAgreement(final String authority, final String license) {
         if (!Platform.isFxApplicationThread()) {
-            return BackgroundThreads.runAndWait(() -> {
+            return BackgroundThreads.runAndWaitDialog(() -> {
                 return askUserAgreement(authority, license);
             });
         }

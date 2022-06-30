@@ -22,6 +22,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -54,6 +56,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  * <ul>
  *   <li>Convenience {@code create(…)} static methods for every numeric primitive types.</li>
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ *   <li>{@link #transform(MathTransform1D)} for applying an arbitrary conversion.</li>
  * </ul>
  *
  * <h2>Relationship with standards</h2>
@@ -80,7 +83,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.2
+ * @version 1.3
  *
  * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
@@ -847,5 +850,36 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public NumberRange<?>[] subtractAny(final NumberRange<?> range) throws IllegalArgumentException {
         final Class type = Numbers.widestClass(elementType, range.elementType);
         return (NumberRange[]) castTo(type).subtract(convertAndCast(range, type));
+    }
+
+    /**
+     * Returns this range converted using the given converter.
+     *
+     * @param  converter  the converter to apply.
+     * @return the converted range, or {@code this} if the result is the same as this range.
+     * @throws TransformException if an error occurred during the conversion.
+     *
+     * @since 1.3
+     */
+    public NumberRange<?> transform(final MathTransform1D converter) throws TransformException {
+        final double lower = getMinDouble();
+        final double upper = getMaxDouble();
+        final double min   = converter.transform(lower);
+        final double max   = converter.transform(upper);
+        /*
+         * Use `doubleToLongBits` instead of `doubleToLongRawBits` for preserving the NaN values
+         * used by the original range. Different NaN values may be used for different types of
+         * "no data" values we usually want to keep them unchanged by the converter.
+         */
+        if (Double.doubleToLongBits(min) != Double.doubleToLongBits(lower) ||
+            Double.doubleToLongBits(max) != Double.doubleToLongBits(upper))
+        {
+            if (min > max) {
+                return create(max, isMaxIncluded, min, isMinIncluded);
+            } else {
+                return create(min, isMinIncluded, max, isMaxIncluded);
+            }
+        }
+        return this;
     }
 }

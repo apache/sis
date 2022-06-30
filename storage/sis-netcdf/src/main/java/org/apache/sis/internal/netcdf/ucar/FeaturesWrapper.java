@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.DataStore;
 import ucar.nc2.ft.DsgFeatureCollection;
 
 // Branch-dependent imports
@@ -32,7 +33,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * Created by {@link DecoderWrapper#getDiscreteSampling(Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.8
  * @module
  *
@@ -54,7 +55,7 @@ final class FeaturesWrapper extends DiscreteSampling {
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     FeaturesWrapper(final DsgFeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners,
-                    final Object lock)
+                    final DataStore lock)
     {
         super(factory, listeners, lock);
         this.features = features;

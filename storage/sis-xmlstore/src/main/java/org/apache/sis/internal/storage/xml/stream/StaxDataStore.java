@@ -587,6 +587,10 @@ public abstract class StaxDataStore extends URIDataStore {
      * Closes the input or output stream and releases any resources used by this XML data store.
      * This data store can not be used anymore after this method has been invoked.
      *
+     * <h4>Note for implementers</h4>
+     * Implementations should invoke {@code listeners.close()} on their first line
+     * before to clear their resources and to invoke {@code super.close()}.
+     *
      * @throws DataStoreException if an error occurred while closing the input or output stream.
      */
     @Override

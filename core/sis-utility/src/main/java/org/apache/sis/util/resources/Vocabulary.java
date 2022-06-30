@@ -115,6 +115,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short AxisChanges = 12;
 
         /**
+         * Axis {0}
+         */
+        public static final short Axis_1 = 269;
+
+        /**
          * Azimuth
          */
         public static final short Azimuth = 13;
@@ -1125,14 +1130,14 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short SlashSeparatedList_2 = 181;
 
         /**
-         * Slow
-         */
-        public static final short Slow = 267;
-
-        /**
          * Slower
          */
         public static final short Slower = 268;
+
+        /**
+         * Slowness
+         */
+        public static final short Slowness = 267;
 
         /**
          * Source
@@ -1223,6 +1228,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Timezone
          */
         public static final short Timezone = 197;
+
+        /**
+         * Title
+         */
+        public static final short Title = 270;
 
         /**
          * Topic category

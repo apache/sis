@@ -79,7 +79,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -153,7 +153,7 @@ public class LandsatStore extends DataStore implements Aggregate {
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         if (getClass() == LandsatStore.class) {
-            listeners.useWarningEventsOnly();
+            listeners.useReadOnlyEvents();
         }
     }
 
@@ -294,6 +294,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         metadata = null;
         DataStoreException error = null;
         for (final Band band : BandGroup.bands(components)) {

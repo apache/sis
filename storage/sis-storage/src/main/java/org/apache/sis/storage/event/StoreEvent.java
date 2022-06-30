@@ -30,7 +30,7 @@ import org.apache.sis.internal.storage.StoreResource;
  * Those events are created by {@link Resource} implementations and sent to all registered listeners.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see StoreListener
  *
@@ -42,6 +42,18 @@ public abstract class StoreEvent extends EventObject implements Localized {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1725093072445990248L;
+
+    /**
+     * Whether this event has been consumed.
+     * A consumed event is not propagated to other listeners.
+     */
+    private boolean consumed;
+
+    /**
+     * Whether to consume this event after all listeners registered on the {@linkplain #getSource() source}
+     * resource but before listeners registered on the parent resource or data store.
+     */
+    private boolean consumeLater;
 
     /**
      * Constructs an event that occurred in the given resource.
@@ -87,5 +99,38 @@ public abstract class StoreEvent extends EventObject implements Localized {
             }
         }
         return null;
+    }
+
+    /**
+     * Indicates whether this event has been consumed by any listener.
+     * A consumed event is not propagated further to other listeners.
+     *
+     * @return {@code true} if this event has been consumed, {@code false} otherwise.
+     *
+     * @since 1.3
+     */
+    public final boolean isConsumed() {
+        return consumed;
+    }
+
+    /**
+     * Returns {@code true} if the event propagation can continue with parent listeners.
+     */
+    final boolean isConsumedForParent() {
+        return consumed |= consumeLater;
+    }
+
+    /**
+     * Marks this event as consumed. This stops its further propagation to other listeners.
+     *
+     * @param  later  {@code false} for consuming now, or {@code true} for consuming after all listeners
+     *         registered on the {@linkplain #getSource() source} resource but before listeners registered
+     *         on the parent resource or data store.
+     *
+     * @since 1.3
+     */
+    public void consume(final boolean later) {
+        if (later) consumeLater = true;
+        else consumed = true;
     }
 }

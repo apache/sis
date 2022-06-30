@@ -19,8 +19,9 @@ package org.apache.sis.image;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.awt.image.ImagingOpException;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -65,7 +66,7 @@ enum ErrorAction implements ErrorHandler {
                         logger = Modules.RASTER;
                         record.setLoggerName(logger);
                     }
-                    Logging.getLogger(logger).log(record);
+                    getLogger(logger).log(record);
                 } else {
                     final Throwable ex = record.getThrown();
                     if (ex instanceof Error) {

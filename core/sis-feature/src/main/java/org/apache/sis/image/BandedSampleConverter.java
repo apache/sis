@@ -16,6 +16,8 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -41,6 +43,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * An image where each sample value is computed independently of other sample values and independently
@@ -62,7 +66,7 @@ import org.apache.sis.measure.NumberRange;
  * In such case, writing converted values will cause the corresponding source values to be updated too.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -214,7 +218,7 @@ class BandedSampleConverter extends ComputedImage {
             }
             return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses);
         } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.RASTER), ImageProcessor.class, "convert", e);
+            Logging.recoverableException(getLogger(Modules.RASTER), ImageProcessor.class, "convert", e);
         }
         return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters);
     }
@@ -225,14 +229,12 @@ class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public Object getProperty(final String key) {
-        if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
-            if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
-                if (sampleResolutions != null) {
-                    return sampleResolutions.clone();
-                }
-            } else {
-                return getSource().getProperty(key);
+        if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
+            if (sampleResolutions != null) {
+                return sampleResolutions.clone();
             }
+        } else if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
+            return getSource().getProperty(key);
         }
         return super.getProperty(key);
     }
@@ -487,5 +489,45 @@ class BandedSampleConverter extends ComputedImage {
                 markDirtyTiles(executor.getTileIndices());
             }
         }
+
+        /**
+         * Restores the identity behavior for writable image,
+         * because it may have listeners attached to this specific instance.
+         */
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        /**
+         * Restores the identity behavior for writable image,
+         * because it may have listeners attached to this specific instance.
+         */
+        @Override
+        public boolean equals(final Object object) {
+            return object == this;
+        }
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return hashCodeBase() + 37 * Arrays.hashCode(converters) + Objects.hashCode(colorModel);
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (equalsBase(object)) {
+            final BandedSampleConverter other = (BandedSampleConverter) object;
+            return Arrays .equals(converters, other.converters) &&
+                   Objects.equals(colorModel, other.colorModel) &&
+                   Arrays .equals(sampleResolutions, other.sampleResolutions);
+        }
+        return false;
     }
 }

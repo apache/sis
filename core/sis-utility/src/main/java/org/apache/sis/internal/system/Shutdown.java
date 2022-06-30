@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A central place where to manage SIS shutdown process.
@@ -199,7 +201,7 @@ public final class Shutdown extends Thread {
             Threads.shutdown(System.nanoTime() + 4000);
         } catch (InterruptedException e) {
             if (caller != null) {
-                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), caller, "stop", e);
+                Logging.unexpectedException(getLogger(Loggers.SYSTEM), caller, "stop", e);
             }
         }
         if (exception != null) {

@@ -1684,6 +1684,7 @@ public final class Units extends Static {
      *
      * @param  converter  the converter for which we want the derivative at a given point, or {@code null}.
      * @param  value      the point at which to compute the derivative.
+     *                    Ignored (can be {@link Double#NaN}) if the conversion is linear.
      * @return the derivative at the given point, or {@code NaN} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#derivative(DirectPosition)

@@ -25,6 +25,8 @@ import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Invoked when a new database is created or when the data source changed.
@@ -67,7 +69,7 @@ public final class DatabaseListener extends Initializer {
             ((MultiAuthoritiesFactory) CRS.getAuthorityFactory(null)).reload();
         } catch (FactoryException e) {
             // Should never happen for a null argument given to CRS.getAuthorityFactory(…).
-            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), CRS.class, "getAuthorityFactory", e);
+            Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY), CRS.class, "getAuthorityFactory", e);
         }
     }
 }

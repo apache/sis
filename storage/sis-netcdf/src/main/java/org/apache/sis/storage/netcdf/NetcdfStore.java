@@ -58,7 +58,7 @@ import ucar.nc2.constants.CDM;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see NetcdfStoreProvider
  *
@@ -129,7 +129,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
             decoder.namespace = f.createNameSpace(f.createLocalName(null, id), null);
         }
         if (getClass() == NetcdfStore.class) {
-            listeners.useWarningEventsOnly();
+            listeners.useReadOnlyEvents();
         }
     }
 
@@ -267,6 +267,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final Decoder reader = decoder;
         decoder    = null;
         metadata   = null;

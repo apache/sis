@@ -88,6 +88,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Static methods working on {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}.
@@ -134,7 +136,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -419,7 +421,7 @@ public final class CRS extends Static {
                         record.setSourceClassName(CRS.class.getName());
                         record.setSourceMethodName("fromAuthority");
                         if (warningFilter.isLoggable(record)) {
-                            Logging.getLogger(Modules.REFERENCING).log(record);
+                            getLogger(Modules.REFERENCING).log(record);
                         }
                     }
                 }
@@ -1302,6 +1304,7 @@ public final class CRS extends Static {
      * @since 0.5
      */
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
+        if (crs == null) return null;     // Skip bounds check.
         int dimension = ReferencingUtilities.getDimension(crs);
         ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
 check:  while (lower != 0 || upper != dimension) {
@@ -1388,6 +1391,6 @@ check:  while (lower != 0 || upper != dimension) {
      * <strong>must</strong> have a reasonable fallback (otherwise it should propagate the exception).
      */
     private static void unexpectedException(final String methodName, final Exception exception) {
-        Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CRS.class, methodName, exception);
+        Logging.unexpectedException(getLogger(Modules.REFERENCING), CRS.class, methodName, exception);
     }
 }

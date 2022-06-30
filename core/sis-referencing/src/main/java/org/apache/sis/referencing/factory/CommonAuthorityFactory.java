@@ -53,6 +53,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.SimpleInternationalString;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Creates coordinate reference systems in the "{@code OGC}", "{@code CRS}" or {@code "AUTO(2)"} namespaces.
@@ -279,7 +281,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         try {
             return format(Integer.parseInt(code.substring(skipNamespace(code) & ~LEGACY_MASK)));
         } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
-            Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
+            Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
             return null;
         }
     }

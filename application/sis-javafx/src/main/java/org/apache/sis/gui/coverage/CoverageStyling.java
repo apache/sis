@@ -47,7 +47,7 @@ import org.opengis.util.InternationalString;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -83,6 +83,14 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
             }
         }
         fallback = Colorizer.GRAYSCALE;
+    }
+
+    /**
+     * Copy styling information from the given source.
+     * This is used when the user clicks on "New window" button.
+     */
+    final void copyStyling(final CoverageStyling source) {
+        customizedColors.putAll(source.customizedColors);
     }
 
     /**
@@ -199,6 +207,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
          */
         final TableView<Category> table = new TableView<>();
         table.getColumns().add(name);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Colors));
         /*
          * Add contextual menu items.
@@ -206,6 +215,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         final MenuItem reset = new MenuItem(resources.getString(Resources.Keys.ClearAll));
         reset.setOnAction((e) -> clear(table.getItems()));
         table.setContextMenu(new ContextMenu(reset));
+        table.setEditable(true);
         return table;
     }
 

@@ -92,7 +92,7 @@ public final strictfp class ShapeFileTest extends TestCase {
       */
      @Test
      public void testDescriptors() throws URISyntaxException, DataStoreException {
-         Logger log = org.apache.sis.util.logging.Logging.getLogger(ShapeFileTest.class);
+         Logger log = Logger.getLogger("org.apache.sis.storage.shapefile");
 
          ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
          shp.loadDescriptors();
@@ -120,7 +120,7 @@ public final strictfp class ShapeFileTest extends TestCase {
          ShapeFile shp = new ShapeFile(path("DEPARTEMENT.SHP"));
          AbstractFeature first = null, last = null;
 
-         Logger log = org.apache.sis.util.logging.Logging.getLogger(ShapeFileTest.class);
+         Logger log = Logger.getLogger("org.apache.sis.storage.shapefile");
 
          try(InputFeatureStream is = shp.findAll()) {
              AbstractFeature feature = is.readFeature();

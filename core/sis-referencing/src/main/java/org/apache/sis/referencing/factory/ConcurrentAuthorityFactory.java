@@ -63,6 +63,8 @@ import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A concurrent authority factory that caches all objects created by another factory.
@@ -659,7 +661,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @param  exception  the exception that occurred while closing a Data Access Object.
      */
     static void unexpectedException(final String method, final Exception exception) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
+        Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY),
                 ConcurrentAuthorityFactory.class, method, exception);
     }
 

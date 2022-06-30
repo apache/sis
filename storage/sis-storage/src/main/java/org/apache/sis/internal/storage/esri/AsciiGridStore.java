@@ -140,7 +140,7 @@ import org.apache.sis.util.resources.Errors;
  * which is usually the case given how inefficient this format is.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -544,6 +544,7 @@ cellsize:       if (value != null) {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final CharactersView view = input;
         input        = null;                // Cleared first in case of failure.
         coverage     = null;

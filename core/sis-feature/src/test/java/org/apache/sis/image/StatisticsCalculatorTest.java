@@ -16,9 +16,9 @@
  */
 package org.apache.sis.image;
 
+import java.util.Random;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
-import java.util.Random;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
@@ -27,11 +27,11 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.TestCase;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static java.util.logging.Logger.getLogger;
 import static org.junit.Assert.*;
 
 
@@ -56,7 +56,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      * Intercepts log records for verifying them.
      */
     @Rule
-    public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Modules.RASTER));
+    public final LoggingWatcher loggings = new LoggingWatcher(getLogger(Modules.RASTER));
 
     /**
      * The area of interest, or {@code null} if none.

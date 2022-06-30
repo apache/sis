@@ -19,18 +19,18 @@ package org.apache.sis.gui.dataset;
 import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.concurrent.Task;
 import javafx.scene.layout.Region;
 import javafx.scene.control.Accordion;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -44,6 +44,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
@@ -51,7 +52,6 @@ import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.LogHandler;
@@ -59,14 +59,16 @@ import org.apache.sis.internal.gui.LogHandler;
 
 /**
  * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata and data views.
+ * This panel contains also a "new window" button for creating new windows showing the same data but potentially
+ * a different locations and times. {@code ResourceExplorer} contains a list of windows created by this widget.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
-public class ResourceExplorer extends WindowManager {
+public class ResourceExplorer extends Widget {
     /**
      * The tree of resources.
      */
@@ -169,68 +171,54 @@ public class ResourceExplorer extends WindowManager {
      */
     public ResourceExplorer() {
         /*
-         * Build the resource explorer. Must be first because `localized()` depends on it.
-         * Then build the controls on the left side, which will initially contain only the
-         * resource explorer. The various tabs will be next (on the right side).
+         * Build the controls on the left side, which will initially contain only the resource explorer.
+         * The various tabs will be next (on the right side).
          */
-        resources = new ResourceTree();
+        resources  = new ResourceTree();
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
-        selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         final Vocabulary vocabulary = Vocabulary.getResources(resources.locale);
         final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
         controls = new Accordion(resourcesPane);
         controls.setExpandedPane(resourcesPane);
         expandedPane = new EnumMap<>(CoverageExplorer.View.class);
         /*
-         * "Summary" tab showing a summary of resource metadata.
-         */
-        metadata = new MetadataSummary();
-        final Tab summaryTab = new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView());
-        /*
-         * "Visual" tab showing the raster data as an image.
-         */
-        viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
-        viewTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
-        /*
-         * "Data" tab showing raster data as a table.
-         */
-        tableTab = new Tab(vocabulary.getString(Vocabulary.Keys.Data));
-        tableTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
-        /*
-         * "Metadata" tab showing ISO 19115 metadata as a tree.
-         */
-        final Tab metadataTab = new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata));
-        /*
-         * "Native metadata" tab showing metadata in their "raw" form (specific to the format).
-         */
-        nativeMetadata = new MetadataTree(metadata);
-        defaultNativeTabLabel = vocabulary.getString(Vocabulary.Keys.Format);
-        nativeMetadataTab = new Tab(defaultNativeTabLabel, nativeMetadata);
-        nativeMetadataTab.setDisable(true);
-        /*
-         * "Logging" tab showing log records specific to the selected resource
+         * Prepare content of tab panes.
+         * "Native metadata" tab will show metadata in their "raw" form (specific to the format).
+         * "Logging" tab will show log records specific to the selected resource
          * (as opposed to the application menu showing all loggings regardless their source).
          */
+        metadata = new MetadataSummary();
+        nativeMetadata = new MetadataTree(metadata);
         final LogViewer logging = new LogViewer(vocabulary);
+        selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         logging.source.bind(selectedResource);
-        final Tab loggingTab = new Tab(vocabulary.getString(Vocabulary.Keys.Logs), logging.getView());
-        loggingTab.disableProperty().bind(logging.isEmptyProperty());
+        final Tab summaryTab, metadataTab, loggingTab;
+        final TabPane tabs = new TabPane(
+            summaryTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()),
+            viewTab           = new Tab(vocabulary.getString(Vocabulary.Keys.Visual)),
+            tableTab          = new Tab(vocabulary.getString(Vocabulary.Keys.Data)),
+            metadataTab       = new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
+            nativeMetadataTab = new Tab(vocabulary.getString(Vocabulary.Keys.Format),   nativeMetadata),
+            loggingTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Logs),     logging.getView()));
+
+        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
+        defaultNativeTabLabel = nativeMetadataTab.getText();
+        nativeMetadataTab.setDisable(true);
         /*
          * Build the main pane which put everything together.
          */
-        final TabPane tabs = new TabPane(summaryTab, viewTab, tableTab, metadataTab, nativeMetadataTab, loggingTab);
-        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         content = new SplitPane(controls, tabs);
-        content.setDividerPosition(0, 0.2);
-        SplitPane.setResizableWithParent(resources, Boolean.FALSE);
-        SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
+        content.setDividerPosition(0, 1./3);
+        SplitPane.setResizableWithParent(controls, Boolean.FALSE);
+        SplitPane.setResizableWithParent(tabs,     Boolean.TRUE);
         /*
          * Register listeners last, for making sure we do not have undesired events.
          * Those listeners trig loading of various objects (data, standard metadata,
          * native metadata) when the corresponding tab become visible.
          */
+        loggingTab.disableProperty().bind(logging.isEmptyProperty());
         dataShown = viewTab.selectedProperty().or(tableTab.selectedProperty());
         dataShown.addListener((p,o,n) -> {
             if (Boolean.FALSE.equals(o) && Boolean.TRUE.equals(n)) {
@@ -253,11 +241,11 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
-     * Returns resources for current locale.
+     * Returns the locale for controls and messages.
      */
     @Override
-    final Resources localized() {
-        return resources.localized();
+    public final Locale getLocale() {
+        return resources.locale;
     }
 
     /**
@@ -277,6 +265,8 @@ public class ResourceExplorer extends WindowManager {
      * This is an accessor for the {@link ResourceTree#onResourceLoaded} property value.
      *
      * @return current function to be called after a resource has been loaded, or {@code null} if none.
+     *
+     * @see ResourceTree#onResourceLoaded
      */
     public EventHandler<ResourceEvent> getOnResourceLoaded() {
         return resources.onResourceLoaded.get();
@@ -288,6 +278,8 @@ public class ResourceExplorer extends WindowManager {
      * If this method is never invoked, then the default value is {@code null}.
      *
      * @param  handler  new function to be called after a resource has been loaded, or {@code null} if none.
+     *
+     * @see ResourceTree#onResourceLoaded
      */
     public void setOnResourceLoaded(final EventHandler<ResourceEvent> handler) {
         resources.onResourceLoaded.set(handler);
@@ -298,6 +290,8 @@ public class ResourceExplorer extends WindowManager {
      * This is an accessor for the {@link ResourceTree#onResourceClosed} property value.
      *
      * @return current function to be called when a resource is closed, or {@code null} if none.
+     *
+     * @see ResourceTree#onResourceClosed
      *
      * @since 1.2
      */
@@ -311,6 +305,8 @@ public class ResourceExplorer extends WindowManager {
      * If this method is never invoked, then the default value is {@code null}.
      *
      * @param  handler  new function to be called when a resource is closed, or {@code null} if none.
+     *
+     * @see ResourceTree#onResourceClosed
      *
      * @since 1.2
      */
@@ -347,6 +343,24 @@ public class ResourceExplorer extends WindowManager {
      */
     public void removeAndClose(final Resource resource) {
         resources.removeAndClose(resource);
+    }
+
+    /**
+     * Returns the currently selected resource.
+     *
+     * @return the currently selected resource, or {@code null} if none.
+     */
+    public final Resource getSelectedResource() {
+        return selectedResource.get();
+    }
+
+    /**
+     * Returns the property for currently selected resource.
+     *
+     * @return property for currently selected resource.
+     */
+    public final ReadOnlyProperty<Resource> selectedResourceProperty() {
+        return selectedResource.getReadOnlyProperty();
     }
 
     /**
@@ -489,7 +503,6 @@ public class ResourceExplorer extends WindowManager {
         if (image    != null) viewTab .setContent(image);
         if (table    != null) tableTab.setContent(table);
         final boolean isEmpty = (image == null & table == null);
-        setNewWindowDisabled(isEmpty);
         /*
          * Add or remove controls for the selected view.
          * Information about the expanded pane needs to be saved before to remove controls,
@@ -513,67 +526,6 @@ public class ResourceExplorer extends WindowManager {
         }
         coverageView = type;
         return !isEmpty | (resource == null);
-    }
-
-    /**
-     * Returns the set of currently selected data, or {@code null} if none.
-     * This is invoked when the user selects the "New window" menu item.
-     */
-    @Override
-    final SelectedData getSelectedData() {
-        final Resource resource = getSelectedResource();
-        if (resource == null) {
-            return null;
-        }
-        FeatureTable     table = null;
-        CoverageExplorer grid  = null;
-        if (resource instanceof GridCoverageResource) {
-            /*
-             * Want the full coverage in all bands (sample dimensions).
-             */
-            if (coverage == null) {
-                updateDataTab(resource);                // For forcing creation of CoverageExplorer.
-            }
-            grid = coverage;
-        } else if (resource instanceof FeatureSet) {
-            /*
-             * We will not set features in an initially empty `FeatureTable` (to be newly created),
-             * but instead share the `FeatureLoader` created by the feature table of this explorer.
-             * We do that even if the feature table is not currently visible. This will not cause
-             * useless data loading since they share the same `FeatureLoader`.
-             */
-            if (features == null) {
-                updateDataTab(resource);                // For forcing creation of FeatureTable.
-            }
-            table = features;
-        } else {
-            return null;
-        }
-        String text;
-        try {
-            text = ResourceTree.findLabel(resource, resources.locale, true);
-        } catch (DataStoreException | RuntimeException e) {
-            text = Vocabulary.getResources(resources.locale).getString(Vocabulary.Keys.Unnamed);
-        }
-        return new SelectedData(text, table, grid, localized());
-    }
-
-    /**
-     * Returns the currently selected resource.
-     *
-     * @return the currently selected resource, or {@code null} if none.
-     */
-    public final Resource getSelectedResource() {
-        return selectedResource.get();
-    }
-
-    /**
-     * Returns the property for currently selected resource.
-     *
-     * @return property for currently selected resource.
-     */
-    public final ReadOnlyProperty<Resource> selectedResourceProperty() {
-        return selectedResource.getReadOnlyProperty();
     }
 
     /**
