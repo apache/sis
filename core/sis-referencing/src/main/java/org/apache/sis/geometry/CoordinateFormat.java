@@ -25,6 +25,7 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -51,6 +52,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -127,6 +129,13 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * To avoid this limitation, users are encouraged to specify a default CRS.
      */
     private static final int DEFAULT_DIMENSION = 4;
+
+    /**
+     * Units of measurement which are allowed to be automatically scaled to a larger unit.
+     * For example if the unit of measurement of an axis is meter but the precision is 1000 metres,
+     * then {@code CoordinateFormat} will automatically uses kilometres units instead of metres.
+     */
+    private static final Set<Unit<?>> SCALABLES = JDK9.setOf(Units.METRE, Units.PASCAL);
 
     /**
      * The separator between each coordinate values to be formatted.
@@ -819,10 +828,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
              * fractions of 1 (by contrast, CompactNumberFormat may apply fraction to larger values).
              */
             if (format instanceof DecimalFormat && (types == null || types[dim] != INDEX)) {
-                final int c = Math.max(DecimalFunctions.fractionDigitsForDelta(precision, false), 0);
-                final DecimalFormat nf = (DecimalFormat) getFormatClone(dim);
-                nf.setMinimumFractionDigits(c);
-                nf.setMaximumFractionDigits(c);
+                int digits = DecimalFunctions.fractionDigitsForDelta(precision, false);
                 if (unitSymbols != null) {
                     /*
                      * The `units` array can not be null if `unitSymbols` is non-null since unit symbols
@@ -830,8 +836,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                      * but more general scaling may be added in a future version.
                      */
                     final Unit<?> unit = units[dim];
-                    if (Units.METRE.equals(unit) || Units.PASCAL.equals(unit)) {
-                        if (precision >= 1000) {
+                    if (SCALABLES.contains(unit)) {
+                        if (precision >= 10) {          // If precision < 1000, we will use 1 or 2 fraction digits.
+                            digits += 3;                // Because `scaleUnit(…)` scales by a factor 1000.
                             scaleUnit(dim, unit);
                         } else if (toFormatUnit != null) {
                             toFormatUnit[dim] = null;
@@ -839,6 +846,10 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                         }
                     }
                 }
+                digits = Math.max(digits, 0);
+                final DecimalFormat nf = (DecimalFormat) getFormatClone(dim);
+                nf.setMinimumFractionDigits(digits);
+                nf.setMaximumFractionDigits(digits);
             } else if (format instanceof AngleFormat) {
                 ((AngleFormat) getFormatClone(dim)).setPrecision(precision, true);
             }
