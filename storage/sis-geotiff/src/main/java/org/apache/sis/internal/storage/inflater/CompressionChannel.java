@@ -41,7 +41,7 @@ abstract class CompressionChannel extends PixelChannel {
      * Desired size of the buffer where to temporarily copy decompressed data.
      * The actual buffer size may be larger, but should not be smaller.
      */
-    private static final int BUFFER_SIZE = 8192;
+    private static final int BUFFER_SIZE = 4096;
 
     /**
      * The source of data to decompress.
@@ -99,14 +99,16 @@ abstract class CompressionChannel extends PixelChannel {
      * @throws IOException if an error occurred while filling the buffer with initial data.
      * @return the data input for uncompressed data.
      */
-    final ChannelDataInput createDataInput(final PixelChannel channel, int scanlineStride) throws IOException {
+    final ChannelDataInput createDataInput(final PixelChannel channel, final int scanlineStride) throws IOException {
+        final int capacity;
         if (scanlineStride > BUFFER_SIZE) {
             final int[] divisors = MathFunctions.divisors(scanlineStride);
             int i = Arrays.binarySearch(divisors, BUFFER_SIZE);
-            if (i < 0) i = ~i;      // Really tild, not minus.
-            scanlineStride = divisors[i];
+            if (i < 0) i = ~i;              // Really tild, not minus.
+            capacity = divisors[i];         // Smallest divisor ≥ BUFFER_SIZE
+        } else {
+            capacity = Numerics.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;      // ≥ BUFFER_SIZE
         }
-        final int capacity = Numerics.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;
         // TODO: remove cast with JDK9.
         final ByteBuffer buffer = (ByteBuffer) ByteBuffer.allocate(capacity).order(input.buffer.order()).limit(0);
         return new ChannelDataInput(input.filename, channel, buffer, true);
