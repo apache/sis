@@ -791,7 +791,7 @@ public final class CRS extends Static {
 
     /**
      * Returns the domain of validity of the specified coordinate reference system, or {@code null} if unknown.
-     * If non-null, then the returned envelope will use the same coordinate reference system them the given CRS
+     * If non-null, then the returned envelope will use the same coordinate reference system than the given CRS
      * argument.
      *
      * <p>This method looks in two places:</p>
@@ -801,7 +801,7 @@ public final class CRS extends Static {
      *       {@link BoundingPolygon} associated to the given CRS are taken in account for this first step.</li>
      *   <li>If the above step did not found found any bounding polygon, then the
      *       {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem) geographic bounding boxes}
-     *       are used as a fallback and tranformed to the given CRS.</li>
+     *       are used as a fallback and transformed to the given CRS.</li>
      * </ol>
      *
      * @param  crs  the coordinate reference system, or {@code null}.
