@@ -89,7 +89,7 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {
         return super.derivative(point instanceof DirectPosition ?
-                (DirectPosition) point : new DirectPosition2D(point.getX(), point.getY()));
+                (DirectPosition) point : new DirectPosition2D(point));
     }
 
     /**

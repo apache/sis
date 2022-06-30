@@ -86,6 +86,7 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 
+import static java.util.logging.Logger.getLogger;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -529,7 +530,7 @@ public enum CommonCRS {
             if (code != null) try {
                 epsg = Integer.parseInt(code);
             } catch (NumberFormatException e) {
-                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), CommonCRS.class, "forDatum", e);
+                Logging.recoverableException(getLogger(Modules.REFERENCING), CommonCRS.class, "forDatum", e);
             }
         }
         for (final CommonCRS c : values()) {

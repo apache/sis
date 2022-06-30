@@ -143,7 +143,7 @@ import org.apache.sis.coverage.grid.GridExtent;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -164,6 +164,7 @@ public class Canvas extends Observable implements Localized {
      * The {@value} property name, used for notifications about changes in <cite>objective to display</cite> conversion.
      * This conversion maps coordinates in the {@linkplain #getObjectiveCRS() objective CRS} to coordinates in the
      * {@linkplain #getDisplayCRS() display CRS}. Associated values are instances of {@link LinearTransform}.
+     * The event class is the {@link TransformChangeEvent} specialization.
      *
      * @see #getObjectiveToDisplay()
      * @see #setObjectiveToDisplay(LinearTransform)
@@ -184,9 +185,9 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * The {@value} property name, used for notifications about changes in point of interest.
-     * The point of interest defines the location to show typically (but not necessarily) in
-     * the center of the display device. But it defines also the slice coordinate values
-     * in all dimensions beyond the ones shown by the device.
+     * The point of interest defines the location of a representative point,
+     * typically (but not necessarily) in the center of the data bounding box.
+     * It defines also the slice coordinate values in all dimensions beyond the ones shown by the device.
      * Associated values are instances of {@link DirectPosition}.
      *
      * @see #getPointOfInterest(boolean)
@@ -266,7 +267,8 @@ public class Canvas extends Observable implements Localized {
     final GeneralEnvelope displayBounds;
 
     /**
-     * The point to show in the center of display area when no zoom or translation is applied.
+     * A point (in display coordinates) considered representative of the data.
+     * This is the default location where Jacobian matrices are computed when needed.
      * This is typically (but not necessarily) the center of data bounding box.
      * May become outside the viewing area after zooms or translations have been applied.
      *
@@ -500,7 +502,8 @@ public class Canvas extends Observable implements Localized {
      * <cite>objective to display</cite> conversion in a way preserving the display coordinates of the given anchor,
      * together with the scales and orientations of features in close neighborhood of that point.
      * This calculation may cause {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event
-     * to be sent to listeners, in addition of above-cited {@value #OBJECTIVE_CRS_PROPERTY}
+     * with the {@link TransformChangeEvent.Reason#CRS_CHANGE} reason to be sent to listeners.
+     * That event is sent after the above-cited {@value #OBJECTIVE_CRS_PROPERTY} event
      * (note that {@value #POINT_OF_INTEREST_PROPERTY} stay unchanged).
      * All those change events are sent only after all property values have been updated to their new values.</p>
      *
@@ -574,7 +577,7 @@ public class Canvas extends Observable implements Localized {
                      * normally it should just return the `result` as-is.
                      */
                     newObjectiveToDisplay = MathTransforms.tangent(result, poiInNew);
-                    updateObjectiveToDisplay(newObjectiveToDisplay);
+                    setObjectiveToDisplayImpl(newObjectiveToDisplay);
                     objectivePOI          = poiInNew;               // Set only after everything else succeeded.
                     multidimToObjective   = poiToNew;
                     augmentedObjectiveCRS = null;                   // Will be recomputed when first needed.
@@ -585,9 +588,7 @@ public class Canvas extends Observable implements Localized {
             objectiveCRS = newValue;                                // Set only after everything else succeeded.
             operationContext.setObjectiveToGeographic(newToGeo);
             firePropertyChange(OBJECTIVE_CRS_PROPERTY, oldValue, newValue);
-            if (!Objects.equals(oldObjectiveToDisplay, newObjectiveToDisplay)) {
-                firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldObjectiveToDisplay, newObjectiveToDisplay);
-            }
+            fireIfChanged(oldObjectiveToDisplay, newObjectiveToDisplay, false);     // Shall be after CRS change event.
         } catch (FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, OBJECTIVE_CRS_PROPERTY), e);
         }
@@ -681,22 +682,23 @@ public class Canvas extends Observable implements Localized {
      */
     public LinearTransform getObjectiveToDisplay() {
         if (objectiveToDisplay == null) {
-            objectiveToDisplay = updateObjectiveToDisplay();
+            objectiveToDisplay = createObjectiveToDisplay();
         }
         return objectiveToDisplay;
     }
 
     /**
-     * Takes a snapshot of the <cite>objective to display</cite> conversion. This method needs
-     * to be overridden only by subclasses that use their own specialized class instead of
-     * {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
+     * Returns the current <cite>objective to display</cite> conversion managed by the subclass.
+     * This method is invoked only if {@link #objectiveToDisplay} is {@code null}, which may
+     * happen either at initialization time or if the subclass uses its own specialized field
+     * instead of {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
+     * This method needs to be overridden only by subclasses using such specialization.
      *
-     * @return snapshot of objective to display conversion, never null.
+     * @return objective to display conversion created from current value managed by subclass.
      *
-     * @see #updateObjectiveToDisplay(LinearTransform)
-     * @see #invalidateObjectiveToDisplay(LinearTransform)
+     * @see #setObjectiveToDisplayImpl(LinearTransform)
      */
-    LinearTransform updateObjectiveToDisplay() {
+    LinearTransform createObjectiveToDisplay() {
         return MathTransforms.identity(getDisplayDimensions());
     }
 
@@ -704,6 +706,7 @@ public class Canvas extends Observable implements Localized {
      * Sets the conversion from objective CRS to display coordinate system.
      * If the given value is different than the previous value, then a change event is sent
      * to all listeners registered for the {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property.
+     * The event reason is {@link TransformChangeEvent.Reason#ASSIGNMENT}.
      *
      * <p>Invoking this method has the effect of changing the viewed area, the zoom level or the rotation of the map.
      * It does not update the {@value #POINT_OF_INTEREST_PROPERTY} property however. The point of interest may move
@@ -713,7 +716,7 @@ public class Canvas extends Observable implements Localized {
      * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
      * @throws RenderException if the <cite>objective to display</cite> transform can not be set to the given value for another reason.
      */
-    public void setObjectiveToDisplay(LinearTransform newValue) throws RenderException {
+    public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(OBJECTIVE_TO_DISPLAY_PROPERTY, newValue);
         final int expected = getDisplayDimensions();
         int actual = newValue.getSourceDimensions();
@@ -722,11 +725,12 @@ public class Canvas extends Observable implements Localized {
             if (actual == expected) {
                 LinearTransform oldValue = objectiveToDisplay;      // Do not invoke user-overridable method.
                 if (oldValue == null) {
-                    oldValue = updateObjectiveToDisplay();
+                    oldValue = createObjectiveToDisplay();
                 }
                 if (!oldValue.equals(newValue)) {
-                    updateObjectiveToDisplay(newValue);
-                    firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, newValue);
+                    setObjectiveToDisplayImpl(newValue);
+                    firePropertyChange(new TransformChangeEvent(this, oldValue, newValue,
+                                           TransformChangeEvent.Reason.ASSIGNMENT));
                 }
                 return;
             }
@@ -736,35 +740,25 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Sets the conversion from objective CRS to display coordinate system.
+     * Actually sets the conversion from objective CRS to display coordinate system.
      * Contrarily to other setter methods, this method does not notify listeners about that change;
-     * it is caller responsibility to send a {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} change event.
+     * it is caller responsibility to fire a {@link TransformChangeEvent} after all fields are updated.
      * This design choice is because this method is usually invoked as part of a larger set of changes.
      *
-     * @see #updateObjectiveToDisplay()
+     * <p>If the new value is {@code null}, then this method only declares that the {@link #objectiveToDisplay}
+     * transform became invalid and will need to be recomputed. It is subclasses responsibility to recompute the
+     * transform in their {@link #createObjectiveToDisplay()}.</p>
+     *
+     * @param  newValue  the new "objective to display" transform, or {@code null} if it will be computed later
+     *          by {@link #createObjectiveToDisplay()}. A null value is okay only when invoked by subclasses that
+     *          overrode {@link #createObjectiveToDisplay()}.
+     *
+     * @see #createObjectiveToDisplay()
      */
-    void updateObjectiveToDisplay(final LinearTransform newValue) {
+    void setObjectiveToDisplayImpl(final LinearTransform newValue) {
         objectiveToDisplay = newValue;
         gridGeometry       = null;
         operationContext.clear();
-    }
-
-    /**
-     * Declares that the {@link #objectiveToDisplay} transform became invalid and will need to be recomputed.
-     * It is subclasses responsibility to recompute the transform in their {@link #updateObjectiveToDisplay()}
-     * method.
-     *
-     * @param  oldValue  the old value, or {@code null} for not firing change event.
-     *
-     * @see #updateObjectiveToDisplay()
-     */
-    final void invalidateObjectiveToDisplay(final LinearTransform oldValue) {
-        objectiveToDisplay = null;
-        gridGeometry       = null;
-        operationContext.clear();
-        if (oldValue != null) {
-            firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, getObjectiveToDisplay());
-        }
     }
 
     /**
@@ -818,8 +812,10 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Returns the coordinates of the point to show in the center of display area in absence of zoom
-     * or translation events. This is typically (but not necessarily) the center of data bounding box.
+     * Returns the coordinates of a point considered representative of the data.
+     * This is typically (but not necessarily) the center of data bounding box.
+     * This point is used for example as the default location where to compute resolution
+     * (the resolution may vary at each pixel because of map projection deformations).
      * This position may become outside the viewing area after zooms or translations have been applied.
      *
      * <p>The coordinates can be given in their original CRS or in the {@linkplain #getObjectiveCRS() objective CRS}.
@@ -830,11 +826,11 @@ public class Canvas extends Observable implements Localized {
      * See {@linkplain Canvas class javadoc} for more discussion.)
      * If {@code objective} is {@code true}, then the position is transformed to the objective CRS.</p>
      *
-     * <p>This value may be {@code null} on newly created {@code Canvas}, before data are added and canvas
-     * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.</p>
+     * <p>This value is initially {@code null}. A value should be specified either by invoking
+     * {@link #setPointOfInterest(DirectPosition)} or {@link #setGridGeometry(GridGeometry)}.</p>
      *
      * @param  objective  whether to return a position transformed to {@linkplain #getObjectiveCRS() objective CRS}.
-     * @return coordinates of the point to show typically (but not necessarily) in the center of display area.
+     * @return coordinates of a representative point, or {@code null} if unspecified.
      *
      * @see #POINT_OF_INTEREST_PROPERTY
      */
@@ -844,11 +840,11 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Sets the coordinates of the point center of display area when there are no zoom or translations events.
+     * Sets the coordinates of a representative point inside the data bounding box.
      * If the given value is different than the previous value, then a change event is sent to all listeners
      * registered for the {@value #POINT_OF_INTEREST_PROPERTY} property.
      *
-     * @param  newValue  the new coordinates of the point to show typically in the center of display area.
+     * @param  newValue  the new coordinates of a representative point.
      * @throws NullPointerException if the given position is null.
      * @throws IllegalArgumentException if the given position does not have a CRS.
      * @throws RenderException if the point of interest can not be set to the given value.
@@ -997,7 +993,7 @@ public class Canvas extends Observable implements Localized {
              * translation terms of the `gridToCRS` matrix.
              */
             if (objectiveToDisplay == null) {
-                objectiveToDisplay = updateObjectiveToDisplay();
+                objectiveToDisplay = createObjectiveToDisplay();
             }
             LinearTransform gridToCRS = objectiveToDisplay.inverse();
             if (supplementalDimensions != 0) {
@@ -1029,9 +1025,10 @@ public class Canvas extends Observable implements Localized {
      * Sets canvas properties from the given grid geometry. This convenience method converts the
      * coordinate reference system, "grid to CRS" transform and extent of the given grid geometry
      * to {@code Canvas} properties. If the given value is different than the previous value, then
-     * change events are sent to all listeners registered for the {@value #OBJECTIVE_CRS_PROPERTY},
-     * {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}, {@value #DISPLAY_BOUNDS_PROPERTY} and/or
-     * {@value #POINT_OF_INTEREST_PROPERTY} properties.
+     * change events are sent to all listeners registered for the {@value #DISPLAY_BOUNDS_PROPERTY},
+     * {@value #OBJECTIVE_CRS_PROPERTY}, {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}
+     * (with {@link TransformChangeEvent.Reason#GRID_GEOMETRY_CHANGE} reason),
+     * and/or {@value #POINT_OF_INTEREST_PROPERTY} properties, in that order.
      *
      * <p>The value given to this method will be returned by {@link #getGridGeometry()} as long as
      * none of above cited properties is changed. If one of those properties changes (for example
@@ -1079,7 +1076,7 @@ public class Canvas extends Observable implements Localized {
                 crs = null;
                 newPOI = new GeneralDirectPosition(gridToCRS.getTargetDimensions());
             }
-            gridToCRS.transform(extent.getPointOfInterest(), 0, newPOI.coordinates, 0, 1);
+            gridToCRS.transform(extent.getPointOfInterest(PixelInCell.CELL_CORNER), 0, newPOI.coordinates, 0, 1);
             /*
              * Get the CRS component in the dimensions shown by this canvas.
              *
@@ -1102,11 +1099,11 @@ public class Canvas extends Observable implements Localized {
             final LinearTransform           oldObjectiveToDisplay = objectiveToDisplay;
             final CoordinateReferenceSystem oldObjectiveCRS       = objectiveCRS;
             /*
-             * Set internal fields only after we successfully computed everything, in order to have a
-             * "all or nothing" behavior.
+             * Set internal fields only after we successfully computed everything,
+             * in order to have a "all or nothing" behavior.
              */
             displayBounds.setEnvelope(newBounds);
-            updateObjectiveToDisplay(newObjectiveToDisplay);
+            setObjectiveToDisplayImpl(newObjectiveToDisplay);
             pointOfInterest       = newPOI;
             objectivePOI          = newPOI;
             objectiveCRS          = newObjectiveCRS;
@@ -1117,12 +1114,12 @@ public class Canvas extends Observable implements Localized {
             /*
              * Notify listeners only after all properties have been updated. If a listener throws an exception,
              * other listeners will not be notified but this Canvas will not be corrupted since all the work to
-             * do in this class is already completed.
+             * do in this class is already completed. Order matter, it is documented in this method javadoc.
              */
-            fireIfChanged(DISPLAY_BOUNDS_PROPERTY,       oldBounds,             newBounds);
-            fireIfChanged(OBJECTIVE_CRS_PROPERTY,        oldObjectiveCRS,       newObjectiveCRS);
-            fireIfChanged(OBJECTIVE_TO_DISPLAY_PROPERTY, oldObjectiveToDisplay, newObjectiveToDisplay);
-            fireIfChanged(POINT_OF_INTEREST_PROPERTY,    oldPOI,                newPOI);
+            fireIfChanged(DISPLAY_BOUNDS_PROPERTY,    oldBounds,             newBounds);
+            fireIfChanged(OBJECTIVE_CRS_PROPERTY,     oldObjectiveCRS,       newObjectiveCRS);
+            fireIfChanged(/* OBJECTIVE_TO_DISPLAY */  oldObjectiveToDisplay, newObjectiveToDisplay, true);
+            fireIfChanged(POINT_OF_INTEREST_PROPERTY, oldPOI,                newPOI);
         } catch (IncompleteGridGeometryException | CannotEvaluateException | FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, GRID_GEOMETRY_PROPERTY), e);
         }
@@ -1130,7 +1127,6 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * Fires a property change event if the old and new values are not equal.
-     * This method assumes that the new value is never null (but the old value can be null).
      *
      * @param  propertyName  name of the property that changed its value.
      * @param  oldValue      the old property value (may be {@code null}).
@@ -1139,6 +1135,21 @@ public class Canvas extends Observable implements Localized {
     private void fireIfChanged(final String propertyName, final Object oldValue, final Object newValue) {
         if (!Objects.equals(oldValue, newValue)) {
             firePropertyChange(propertyName, oldValue, newValue);
+        }
+    }
+
+    /**
+     * Fires a property change event if the old and new transforms are not equal.
+     *
+     * @param  oldValue  the old "objective to display" transform.
+     * @param  newValue  the new transform, or {@code null} for lazy computation.
+     * @param  grid      {@code true} if the reason is a grid geometry change, or {@code false} if only a CRS change.
+     */
+    private void fireIfChanged(final LinearTransform oldValue, final LinearTransform newValue, final boolean grid) {
+        if (!Objects.equals(oldValue, newValue)) {
+            firePropertyChange(new TransformChangeEvent(this, oldValue, newValue,
+                    grid ? TransformChangeEvent.Reason.GRID_GEOMETRY_CHANGE
+                         : TransformChangeEvent.Reason.CRS_CHANGE));
         }
     }
 

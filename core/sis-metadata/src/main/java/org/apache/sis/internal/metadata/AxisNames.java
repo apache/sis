@@ -22,6 +22,8 @@ import java.lang.reflect.Field;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Constants for axis names specified by ISO 19111 and ISO 19162.
@@ -177,7 +179,7 @@ public final class AxisNames {
              * We will take the values that we have been able to map so far. The other values will
              * just not have their case fixed.
              */
-            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), AxisNames.class, "<cinit>", e);
+            Logging.unexpectedException(getLogger(Modules.REFERENCING), AxisNames.class, "<cinit>", e);
         }
         VALUES = values;
     }

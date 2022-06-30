@@ -84,6 +84,9 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
 
     /**
      * Returns the derivative of the conversion function at the given value, or {@code NaN} if unknown.
+     *
+     * @param  value  the point at which to compute the derivative.
+     *                Ignored (can be {@link Double#NaN}) if the conversion is linear.
      */
     public abstract double derivative(double value);
 

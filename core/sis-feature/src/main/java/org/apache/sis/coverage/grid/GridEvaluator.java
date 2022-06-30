@@ -16,27 +16,40 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.Arrays;
+import java.util.TreeMap;
+import java.util.Objects;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.WraparoundAxesFinder;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -52,7 +65,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see GridCoverage#evaluator()
  *
@@ -66,20 +79,22 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     private final GridCoverage coverage;
 
     /**
-     * The source coordinate reference system of the converter,
+     * The coordinate reference system of input points given to this converter,
      * or {@code null} if assumed the same than the coverage CRS.
+     * This is used by {@link #toGridPosition(DirectPosition)} for checking if {@link #inputToGrid} needs
+     * to be recomputed. As long at the evaluated points have the same CRS, the same transform is reused.
      */
-    private CoordinateReferenceSystem sourceCRS;
+    private CoordinateReferenceSystem inputCRS;
 
     /**
-     * The transform from {@link #sourceCRS} to grid coordinates.
+     * The transform from {@link #inputCRS} to grid coordinates.
      * This is cached for avoiding the costly process of fetching a coordinate operation
      * in the common case where the coordinate reference systems did not changed.
      */
-    private MathTransform sourceToGrid;
+    private MathTransform inputToGrid;
 
     /**
-     * Grid coordinates after {@link #sourceToGrid} conversion.
+     * Grid coordinates after {@link #inputToGrid} conversion.
      *
      * @see #toGridPosition(DirectPosition)
      */
@@ -129,6 +144,17 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     private double[] periods;
 
     /**
+     * The slice where to perform evaluation, or {@code null} if not yet computed.
+     * This information allows to specify for example two-dimensional points for
+     * evaluating in a three-dimensional data cube. This is used for completing
+     * the missing coordinate values.
+     *
+     * @see #getDefaultSlice()
+     * @see #setDefaultSlice(Map)
+     */
+    private Map<Integer,Long> slice;
+
+    /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
      * {@link GridCoverage} subclasses to provide their own {@code GridEvaluator} implementations.
      * For using an evaluator, invoke {@link GridCoverage#evaluator()} instead.
@@ -150,6 +176,59 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     @Override
     public GridCoverage getCoverage() {
         return coverage;
+    }
+
+    /**
+     * Returns the default slice where to perform evaluation, or an empty map if unspecified.
+     * Keys are dimensions from 0 inclusive to {@link GridGeometry#getDimension()} exclusive,
+     * and values are the grid coordinate of the slice in that dimension.
+     *
+     * <p>This information allows to invoke {@link #apply(DirectPosition)} with for example two-dimensional points
+     * even if the underlying coverage is three-dimensional. The missing coordinate values are replaced by the
+     * values provided in the map.</p>
+     *
+     * @return the default slice where to perform evaluation, or an empty map if unspecified.
+     *
+     * @since 1.3
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
+    public Map<Integer,Long> getDefaultSlice() {
+        if (slice == null) {
+            final GridExtent extent = coverage.getGridGeometry().getExtent();
+            slice = CollectionsExt.unmodifiableOrCopy(extent.getSliceCoordinates());
+        }
+        return slice;
+    }
+
+    /**
+     * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
+     * A {@code null} argument restore the default value, which is to infer the slice from the coverage
+     * grid geometry.
+     *
+     * @param  slice  the default slice where to perform evaluation, or an empty map if none.
+     * @throws IllegalArgumentException if the map contains an illegal dimension or grid coordinate value.
+     *
+     * @see GridExtent#getSliceCoordinates()
+     *
+     * @since 1.3
+     */
+    public void setDefaultSlice(Map<Integer,Long> slice) {
+        if (!Objects.equals(this.slice, slice)) {
+            if (slice != null) {
+                slice = CollectionsExt.unmodifiableOrCopy(new TreeMap<>(slice));
+                final GridExtent extent = coverage.getGridGeometry().getExtent();
+                final int max = extent.getDimension() - 1;
+                for (final Map.Entry<Integer,Long> entry : slice.entrySet()) {
+                    final int dim = entry.getKey();
+                    ArgumentChecks.ensureBetween("slice.key", 0, max, dim);
+                    ArgumentChecks.ensureBetween(extent.getAxisIdentification(dim, dim).toString(),
+                                        extent.getLow(dim), extent.getHigh(dim), entry.getValue());
+                }
+            }
+            this.slice  = slice;
+            inputCRS    = null;
+            inputToGrid = null;
+        }
     }
 
     /**
@@ -185,7 +264,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
                 final GridExtent extent = gridGeometry.getExtent();
                 MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
                 gridToWraparound = MathTransforms.concatenate(gridToCRS, f.preferredToSpecified.inverse());
-                final Matrix m = gridToWraparound.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+                final Matrix m = gridToWraparound.derivative(new DirectPositionView.Double(extent.getPointOfInterest(PixelInCell.CELL_CENTER)));
                 /*
                  * `gridToWraparound` is the transform from grid coordinates to a CRS where wraparound axes exist.
                  * It may be the coverage CRS or its base CRS. The wraparound axes are identified by `periods`.
@@ -303,7 +382,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
         } catch (PointOutsideCoverageException ex) {
             ex.setOffendingLocation(point);
             throw ex;
-        } catch (RuntimeException | TransformException ex) {
+        } catch (RuntimeException | FactoryException | TransformException ex) {
             throw new CannotEvaluateException(ex.getMessage(), ex);
         }
         return null;        // May reach this point only if `nullIfOutside` is true.
@@ -348,7 +427,11 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      */
     public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
         ArgumentChecks.ensureNonNull("point", point);
-        return new FractionalGridCoordinates(toGridPosition(point));
+        try {
+            return new FractionalGridCoordinates(toGridPosition(point));
+        } catch (FactoryException e) {
+            throw new TransformException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -358,30 +441,25 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @param  point  the geospatial position.
      * @return the given position converted to grid coordinates (possibly out of grid bounds).
+     * @throws FactoryException if no operation is found form given point CRS to coverage CRS.
      * @throws TransformException if the given position can not be converted.
      */
-    final FractionalGridCoordinates.Position toGridPosition(final DirectPosition point) throws TransformException {
+    final FractionalGridCoordinates.Position toGridPosition(final DirectPosition point)
+            throws FactoryException, TransformException
+    {
+        /*
+         * If the `inputToGrid` transform has not yet been computed or is outdated, compute now.
+         * The result will be cached and reused as long as the `inputCRS` is the same.
+         */
         final CoordinateReferenceSystem crs = point.getCoordinateReferenceSystem();
-        if (crs != sourceCRS || sourceToGrid == null) {
-            final GridGeometry gridGeometry = coverage.getGridGeometry();
-            MathTransform tr = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER).inverse();
-            if (crs != null) try {
-                CoordinateOperation op = CRS.findOperation(crs,
-                        coverage.getCoordinateReferenceSystem(),
-                        gridGeometry.geographicBBox());
-                tr = MathTransforms.concatenate(op.getMathTransform(), tr);
-            } catch (FactoryException e) {
-                throw new TransformException(e.getMessage(), e);
-            }
-            position     = new FractionalGridCoordinates.Position(tr.getTargetDimensions());
-            sourceCRS    = crs;
-            sourceToGrid = tr;
+        if (crs != inputCRS || inputToGrid == null) {
+            setInputCRS(crs);
         }
         /*
          * Transform geospatial coordinates to grid coordinates. Result is unconditionally stored
          * in the `position` object, which will be copied by the caller if needed for public API.
          */
-        final DirectPosition result = sourceToGrid.transform(point, position);
+        final DirectPosition result = inputToGrid.transform(point, position);
         if (result != position) {
             // Should not happen, but be paranoiac.
             final double[] coordinates = position.coordinates;
@@ -459,6 +537,83 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     }
 
     /**
+     * Recomputes the {@link #inputToGrid} field. This method should be invoked when the transform
+     * has not yet been computed or became outdated because {@link #inputCRS} needs to be changed.
+     *
+     * @param  crs  the new value to assign to {@link #inputCRS}.
+     */
+    private void setInputCRS(final CoordinateReferenceSystem crs)
+            throws FactoryException, NoninvertibleTransformException
+    {
+        final GridGeometry gridGeometry = coverage.getGridGeometry();
+        MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
+        MathTransform crsToGrid = gridToCRS.inverse();
+        if (crs != null) {
+            final CoordinateReferenceSystem stepCRS = coverage.getCoordinateReferenceSystem();
+            final GeographicBoundingBox areaOfInterest = gridGeometry.geographicBBox();
+            try {
+                CoordinateOperation op = CRS.findOperation(crs, stepCRS, areaOfInterest);
+                crsToGrid = MathTransforms.concatenate(op.getMathTransform(), crsToGrid);
+            } catch (FactoryException main) {
+                /*
+                 * Above block tried to compute a "CRS to grid" transform in the most direct way.
+                 * It covers the usual case where the point has the required number of dimensions,
+                 * and works better if the point has more dimensions (extra dimensions are ignored).
+                 * The following block covers the opposite case, where the point does not have enough
+                 * dimensions. We try to fill missing dimensions with the help of the `slice` map.
+                 */
+                final Map<Integer,Long> slice = getDefaultSlice();
+                try {
+                    CoordinateOperation op = CRS.findOperation(stepCRS, crs, areaOfInterest);
+                    gridToCRS = MathTransforms.concatenate(gridToCRS, op.getMathTransform());
+                    final TransformSeparator ts = new TransformSeparator(gridToCRS);
+                    final int  crsDim = gridToCRS.getTargetDimensions();
+                    final int gridDim = gridToCRS.getSourceDimensions();
+                    int[] mandatory = new int[gridDim];
+                    int n = 0;
+                    for (int i=0; i<gridDim; i++) {
+                        if (!slice.containsKey(i)) {
+                            mandatory[n++] = i;
+                        }
+                    }
+                    mandatory = ArraysExt.resize(mandatory, n);
+                    ts.addSourceDimensions(mandatory);          // Retain grid dimensions having no default value.
+                    ts.setSourceExpandable(true);               // Retain more grid dimensions if they are required.
+                    ts.addTargetDimensionRange(0, crsDim);      // Force retention of all CRS dimensions.
+                    gridToCRS = ts.separate();
+                    crsToGrid = gridToCRS.inverse();            // With less source dimensions, may be invertible now.
+                    mandatory = ts.getSourceDimensions();       // Output grid dimensions computed by `crsToGrid`.
+                    final int valueColumn = mandatory.length;   // Matrix column where to write default values.
+                    final MatrixSIS m = Matrices.createZero(gridDim+1, valueColumn+1);
+                    m.setElement(gridDim, valueColumn, 1);
+                    n = 0;
+                    for (int j=0; j<gridDim; j++) {
+                        if (Arrays.binarySearch(mandatory, j) >= 0) {
+                            m.setElement(j, n++, 1);            // Computed value to pass through.
+                        } else {
+                            final Long value = slice.get(j);
+                            if (value == null) {
+                                final GridExtent extent = gridGeometry.extent;
+                                throw new FactoryException(Resources.format(Resources.Keys.NoNDimensionalSlice_3,
+                                                crsDim, extent.getAxisIdentification(j, j), extent.getSize(j)));
+                            }
+                            m.setElement(j, valueColumn, value);
+                        }
+                    }
+                    crsToGrid = MathTransforms.concatenate(crsToGrid, MathTransforms.linear(m));
+                } catch (RuntimeException | FactoryException | NoninvertibleTransformException ex) {
+                    main.addSuppressed(ex);
+                    throw main;
+                }
+            }
+        }
+        // Modify fields only after everything else succeeded.
+        position     = new FractionalGridCoordinates.Position(crsToGrid.getTargetDimensions());
+        inputCRS    = crs;
+        inputToGrid = crsToGrid;
+    }
+
+    /**
      * Invoked when a recoverable exception occurred.
      * Those exceptions must be minor enough that they can be silently ignored in most cases.
      *
@@ -466,6 +621,6 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * @param  exception  the exception that occurred.
      */
     private static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
+        Logging.recoverableException(getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
     }
 }

@@ -286,7 +286,7 @@ public class LogViewer extends Widget {
             final ChoiceBox<Level> levels = new ChoiceBox<>();
             levelLabel.setLabelFor(levels);
             levels.getItems().setAll(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG,
-                                     PerformanceLevel.SLOW, Level.FINE, Level.FINER, Level.ALL);
+                                     PerformanceLevel.SLOWNESS, Level.FINE, Level.FINER, Level.ALL);
             levels.setConverter(Converter.INSTANCE);
             levels.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> setFilter(n, filteredLogger));
             levels.getSelectionModel().select(filteredLevel);

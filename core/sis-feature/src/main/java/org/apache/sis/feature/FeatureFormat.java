@@ -51,6 +51,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
+import static java.util.logging.Logger.getLogger;
+
 // Branch-dependent imports
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;
@@ -586,7 +588,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 final int bits = Float.floatToRawIntBits(f);
                                                 if (bits != illegalNaN) {
                                                     illegalNaN = bits;
-                                                    Logging.recoverableException(Logging.getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                    Logging.recoverableException(getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
                                                 }
                                             }
                                         }

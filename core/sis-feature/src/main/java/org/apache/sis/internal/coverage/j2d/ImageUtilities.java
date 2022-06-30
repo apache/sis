@@ -35,7 +35,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static java.lang.Math.abs;
@@ -43,6 +42,7 @@ import static java.lang.Math.rint;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.addExact;
 import static java.lang.Math.toIntExact;
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
 
@@ -370,7 +370,7 @@ public final class ImageUtilities extends Static {
                 }
                 if (!Arrays.equals(m1, m2)) {
                     // If this logging happen, we should revisit this method and improve it.
-                    Logging.getLogger(Modules.RASTER).warning("Band names may be in wrong order.");
+                    getLogger(Modules.RASTER).warning("Band names may be in wrong order.");
                 }
             }
         }

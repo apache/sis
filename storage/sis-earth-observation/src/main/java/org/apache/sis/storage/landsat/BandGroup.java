@@ -28,8 +28,10 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -42,11 +44,11 @@ import org.apache.sis.util.ArraysExt;
  *       a sample dimension.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
-final class BandGroup extends AbstractResource implements Aggregate {
+final class BandGroup extends AbstractResource implements Aggregate, StoreResource {
     /**
      * The group of bands that this aggregate represents.
      */
@@ -97,6 +99,14 @@ final class BandGroup extends AbstractResource implements Aggregate {
             }
         }
         return ArraysExt.resize(aggregates, n);
+    }
+
+    /**
+     * Returns the data store that created this resource.
+     */
+    @Override
+    public DataStore getOriginator() {
+        return (DataStore) listeners.getParent().get().getSource();
     }
 
     /**

@@ -19,9 +19,9 @@ package org.apache.sis.internal.metadata;
 import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.Supplier;
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.function.Supplier;
 import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.MetadataServices;
@@ -34,6 +34,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -109,8 +110,7 @@ public final class ServicesForUtility extends MetadataServices {
                         server   = type.getMethod("getServerName", (Class[]) null).invoke(ds, (Object[]) null);
                     }
                 } catch (NoSuchMethodException e) {
-                    Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),
-                            MetadataServices.class, "getInformation", e);
+                    Logging.recoverableException(getLogger(Loggers.SYSTEM), MetadataServices.class, "getInformation", e);
                 } catch (Exception e) {
                     // Leave the message unchanged if it contains at least 2 words.
                     String message = Exceptions.getLocalizedMessage(e, locale);

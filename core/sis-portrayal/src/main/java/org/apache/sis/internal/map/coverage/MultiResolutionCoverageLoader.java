@@ -33,7 +33,6 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.math.DecimalFunctions;
@@ -41,8 +40,8 @@ import org.apache.sis.io.TableAppender;
 
 
 /**
- * A helper class for reading {@link GridCoverage} instances at various resolution.
- * The resolution are inferred from {@link GridCoverageResource#getResolutions()},
+ * A helper class for reading {@link GridCoverage} instances at various resolutions.
+ * The resolutions are inferred from {@link GridCoverageResource#getResolutions()},
  * using default values if necessary. The objective CRS does not need to be the same
  * than the coverage CRS, in which case transformations are applied at the point in
  * the center of the display bounds.
@@ -294,7 +293,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
             final MathTransform gridToCRS = MathTransforms.scale(resolutions);
             domain = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, areaOfInterest, GridRoundingMode.ENCLOSING);
         }
-        final GridCoverage coverage = resource.read(getReadDomain(domain), readRanges);
+        final GridCoverage coverage = resource.read(domain, readRanges);
         /*
          * Cache and return the coverage. The returned coverage may be a different instance
          * if another coverage has been cached concurrently for the same level.
@@ -313,7 +312,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
     /**
      * If the a grid coverage for the given domain and range is in the cache, returns that coverage.
      * Otherwise loads the coverage and eventually caches it. The caching happens only if the given
-     * domain and range and managed by this loader.
+     * domain and range are managed by this loader.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
      * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
@@ -331,24 +330,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
         if (domain == null) {
             domain = resource.getGridGeometry();
         }
-        return resource.read(getReadDomain(domain), readRanges);
-    }
-
-    /**
-     * Given a {@code GridGeometry} configured with the resolution to read, returns an amended domain.
-     * The default implementation returns {@code domain} unchanged.
-     * Subclasses can override typically for selecting a two-dimensional slice.
-     *
-     * <p>This method is invoked by {@link #getOrLoad(int)} default implementation before to read a coverage.</p>
-     *
-     * @param  domain  a grid geometry with the desired resolution.
-     * @return the domain to read from the {@linkplain #resource}.
-     *
-     * @see GridDerivation#slice(DirectPosition)
-     * @see GridDerivation#sliceByRatio(double, int...)
-     */
-    protected GridGeometry getReadDomain(final GridGeometry domain) {
-        return domain;
+        return resource.read(domain, readRanges);
     }
 
     /**

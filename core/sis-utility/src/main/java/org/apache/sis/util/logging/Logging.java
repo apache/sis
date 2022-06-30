@@ -16,13 +16,11 @@
  */
 package org.apache.sis.util.logging;
 
-import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
@@ -31,14 +29,8 @@ import org.apache.sis.internal.system.Modules;
 
 
 /**
- * A set of utilities method for configuring loggings in SIS. Library implementers should fetch
- * their loggers using the {@link #getLogger(String)} static method defined in this {@code Logging}
- * class rather than the one defined in the standard {@link Logger} class, in order to give SIS a
- * chance to redirect the logs to an other framework like
- * <a href="http://commons.apache.org/logging/">Commons-logging</a> or
- * <a href="http://logging.apache.org/log4j">Log4J</a>.
- *
- * <p>This class provides also some convenience static methods, including:</p>
+ * A set of utilities method for configuring loggings in SIS.
+ * This class provides also some convenience static methods, including:
  * <ul>
  *   <li>{@link #log(Class, String, LogRecord)} for {@linkplain LogRecord#setLoggerName(String) setting
  *       the logger name}, {@linkplain LogRecord#setSourceClassName(String) source class name} and
@@ -49,7 +41,7 @@ import org.apache.sis.internal.system.Modules;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -67,111 +59,14 @@ public final class Logging extends Static {
     private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;
 
     /**
-     * The factory for obtaining {@link Logger} instances, or {@code null} if none.
-     * If {@code null} (the default), then the standard JDK logging framework will be used.
-     * {@code Logging} scans the classpath for logger factories on class initialization.
-     * The fully qualified factory classname shall be declared in the following file:
-     *
-     * {@preformat text
-     *     META-INF/services/org.apache.sis.util.logging.LoggerFactory
-     * }
-     *
-     * The factory found on the classpath is assigned to the {@link #factory} field. If more than one factory
-     * is found, then the log messages will be sent to the logging frameworks managed by all those factories.
-     *
-     * <div class="note"><b>API note:</b>
-     * A previous version was providing a {@code scanForPlugins()} method allowing developers to refresh the
-     * object state when new {@link LoggerFactory} instances become available on the classpath of a running JVM.
-     * However it usually doesn't work since loggers are typically stored in static final fields.</div>
-     *
-     * @see #setLoggerFactory(LoggerFactory)
-     */
-    private static volatile LoggerFactory<?> factory;
-    static {
-        /*
-         * Use ServiceLoader.load(…), not DefaultFactories.createServiceLoader(…), for avoiding a never-ending
-         * loop if a warning occurs in DefaultFactories. This risk exists because DefaultFactories may use the
-         * logging services. Anyway, Apache SIS does not define any custom logger factory, so DefaultFactories
-         * is not needed in this case.
-         */
-        LoggerFactory<?> factory = null;
-        for (final LoggerFactory<?> found : ServiceLoader.load(LoggerFactory.class)) {
-            if (factory == null) {
-                factory = found;
-            } else {
-                factory = new DualLoggerFactory(factory, found);
-            }
-        }
-        Logging.factory = factory;
-    }
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Logging() {
     }
 
     /**
-     * Sets a new factory to use for obtaining {@link Logger} instances.
-     * If the given {@code factory} argument is {@code null} (the default),
-     * then the standard Logging framework will be used.
-     *
-     * <h4>Limitation</h4>
-     * SIS classes typically declare a logger constant like below:
-     *
-     * {@preformat java
-     *     public static final Logger LOGGER = Logging.getLogger("the.logger.name");
-     * }
-     *
-     * Factory changes will take effect only if this method is invoked before the initialization
-     * of such classes.
-     *
-     * @param  factory  the new logger factory, or {@code null} if none.
-     */
-    @Configuration
-    public static void setLoggerFactory(final LoggerFactory<?> factory) {
-        Logging.factory = factory;
-    }
-
-    /**
-     * Returns the factory used for obtaining {@link Logger} instances, or {@code null} if none.
-     *
-     * @return the current logger factory, or {@code null} if none.
-     */
-    public static LoggerFactory<?> getLoggerFactory() {
-        return factory;
-    }
-
-    /**
-     * Returns a logger for the specified name. If a {@linkplain LoggerFactory logger factory} has been set,
-     * then this method first {@linkplain LoggerFactory#getLogger(String) asks to the factory}.
-     * This rule gives SIS a chance to redirect logging events to
-     * <a href="http://commons.apache.org/logging/">commons-logging</a> or some equivalent framework.
-     * Only if no factory was found or if the factory choose to not redirect the loggings, then this
-     * method delegate to <code>{@linkplain Logger#getLogger(String) Logger.getLogger}(name)</code>.
-     *
-     * @param  name  the logger name.
-     * @return a logger for the specified name.
-     *
-     * @deprecated Use the standard {@link Logger#getLogger(String)} method instead.
-     *             See <a href="https://issues.apache.org/jira/browse/SIS-531">SIS-531</a>.
-     */
-    @Deprecated
-    public static Logger getLogger(final String name) {
-        ArgumentChecks.ensureNonNull("name", name);
-        final LoggerFactory<?> factory = Logging.factory;
-        if (factory != null) {
-            final Logger logger = factory.getLogger(name);
-            if (logger != null) {
-                return logger;
-            }
-        }
-        return Logger.getLogger(name);
-    }
-
-    /**
      * Returns a logger for the package of the specified class. This convenience method invokes
-     * {@link #getLogger(String)} with the package name of the given class taken as the logger name.
+     * {@link Logger#getLogger(String)} with the package name of the given class taken as the logger name.
      *
      * @param  source  the class which will emit a logging message.
      * @return a logger for the specified class.
@@ -185,7 +80,7 @@ public final class Logging extends Static {
             // Remove the "internal" part from Apache SIS package names.
             name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
         }
-        return getLogger(name);
+        return Logger.getLogger(name);
     }
 
     /**
@@ -216,7 +111,7 @@ public final class Logging extends Static {
             logger = getLogger(classe);
             record.setLoggerName(logger.getName());
         } else {
-            logger = getLogger(loggerName);
+            logger = Logger.getLogger(loggerName);
         }
         if (classe != null && method != null) {
             record.setSourceClassName(classe.getCanonicalName());
@@ -276,7 +171,7 @@ public final class Logging extends Static {
              */
             if (logger == null) {
                 final int separator = classname.lastIndexOf('.');
-                logger = getLogger((separator >= 1) ? classname.substring(0, separator-1) : "");
+                logger = Logger.getLogger((separator >= 1) ? classname.substring(0, separator-1) : "");
             }
             if (classe == null) {
                 classe = classname;
@@ -291,7 +186,7 @@ public final class Logging extends Static {
          * Fallback on the global logger.
          */
         if (logger == null) {
-            logger = getLogger(Logger.GLOBAL_LOGGER_NAME);
+            logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
         }
         if (classe != null) {
             record.setSourceClassName(classe);
@@ -392,7 +287,7 @@ public final class Logging extends Static {
         if (logger == null && classe != null) {
             final int separator = classe.lastIndexOf('.');
             final String paquet = (separator >= 1) ? classe.substring(0, separator-1) : "";
-            logger = getLogger(paquet);
+            logger = Logger.getLogger(paquet);
         }
         if (logger != null && !logger.isLoggable(level)) {
             return false;

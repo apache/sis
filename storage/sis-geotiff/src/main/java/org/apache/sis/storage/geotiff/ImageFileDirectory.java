@@ -72,7 +72,7 @@ import org.apache.sis.image.DataType;
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  *
@@ -83,8 +83,9 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Possible value for the {@link #tileTagFamily} field. That field tells whether image tiling
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
+     * JPEG was also used to have its own set of tags.
      */
-    private static final byte TILE = 1, STRIP = 2;
+    private static final byte TILE = 1, STRIP = 2, JPEG=3;
 
     /**
      * Possible value for {@link #sampleFormat} specifying how to interpret each data sample in a pixel.
@@ -390,6 +391,8 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Returns {@link #referencing}, created when first needed. We delay its creation since
      * this object is not needed for ordinary TIFF files (i.e. without the GeoTIFF extension).
+     * This method is invoked only during the parsing of TIFF tags. If no GeoTIFF information
+     * is found, then this field keeps the {@code null} value.
      */
     private GridGeometryBuilder referencing() {
         if (referencing == null) {
@@ -606,6 +609,19 @@ final class ImageFileDirectory extends DataCube {
              */
             case Tags.StripByteCounts: {
                 setTileTagFamily(STRIP);
+                tileByteCounts = type.readVector(input(), count);
+                break;
+            }
+            /*
+             * Legacy tags for JPEG formats, to be also interpreted as a tile.
+             */
+            case Tags.JPEGInterchangeFormat: {
+                setTileTagFamily(JPEG);
+                tileOffsets = type.readVector(input(), count);
+                break;
+            }
+            case Tags.JPEGInterchangeFormatLength: {
+                setTileTagFamily(JPEG);
                 tileByteCounts = type.readVector(input(), count);
                 break;
             }
@@ -1195,6 +1211,7 @@ final class ImageFileDirectory extends DataCube {
         if (imageHeight < 0) throw missingTag(Tags.ImageLength);
         final short offsetsTag, byteCountsTag;
         switch (tileTagFamily) {
+            case JPEG:                      // Handled as strips.
             case STRIP: {
                 if (tileWidth  < 0) tileWidth  = Math.toIntExact(imageWidth);
                 if (tileHeight < 0) tileHeight = Math.toIntExact(imageHeight);
@@ -1492,6 +1509,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected SampleModel getSampleModel() throws DataStoreContentException {
+        assert Thread.holdsLock(getSynchronizationLock());
         if (sampleModel == null) try {
             sampleModel = new SampleModelFactory(getDataType(), tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
         } catch (IllegalArgumentException | RasterFormatException e) {
@@ -1579,6 +1597,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected ColorModel getColorModel() throws DataStoreContentException {
+        assert Thread.holdsLock(getSynchronizationLock());
         if (colorModel == null) {
             final SampleModel sm  = getSampleModel();
             final int dataType    = sm.getDataType();

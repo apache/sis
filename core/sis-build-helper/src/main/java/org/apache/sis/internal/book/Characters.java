@@ -16,34 +16,35 @@
  */
 package org.apache.sis.internal.book;
 
-import java.util.ListResourceBundle;
-
 
 /**
- * Localized resources, for internal usage only.
+ * Utilities related to the handling of characters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
+ * @version 1.3
+ * @since   1.3
+ * @module
  */
-public class Resources extends ListResourceBundle {
+public final class Characters {
     /**
-     * Invoked by resource bundle reflection mechanism.
+     * Hyphen character to be visible only if there is a line break to insert after it
+     * (Unicode {@code 00AD}, HTML {@code &shy;}). Otherwise this character is invisible.
+     * When visible, the graphical symbol is similar to the hyphen character.
+     *
+     * <p>Note: {@link Character#isIdentifierIgnorable(int)} returns {@code true} for this character.</p>
      */
-    public Resources() {
-    }
+    public static final char SOFT_HYPHEN = '\u00AD';
 
     /**
-     * Returns resources as pair of key-value.
+     * Invisible space. Used for allowing line break in an identifier.
      *
-     * @return an array of key-value pairs.
+     * <p>Note: {@link Character#isIdentifierIgnorable(int)} returns {@code true} for this character.</p>
      */
-    @Override
-    protected Object[][] getContents() {
-        return new Object[][] {
-            new Object[] {"previous-chapter", "Previous chapter"},
-            new Object[] {"next-chapter",     "Next chapter"},
-            new Object[] {"this-chapter",     "In this chapter:"}
-        };
+    public static final char ZERO_WIDTH_SPACE = '\u200B';
+
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private Characters() {
     }
 }

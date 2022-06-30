@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 /**
  * Base class for iterators that prepare the next element in advance.
  * The {@link #next} field is initially {@code null} and is reset to {@code null} after each call to {@link #next()}.
- * The {@link #hasNext()} method shall set the {@code #next} field to a non-null value if there is more elements to
+ * The {@link #hasNext()} method shall set the {@link #next} field to a non-null value if there is more elements to
  * return.
  *
  * @author  Martin Desruisseaux (Geomatys)

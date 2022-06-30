@@ -25,8 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.sis.internal.system.Modules;
 
-import org.apache.sis.util.logging.Logging;
-
 
 /**
  * Base class for objets having auto-checking abilities
@@ -35,7 +33,7 @@ import org.apache.sis.util.logging.Logging;
  */
 public abstract class AutoChecker {
     /** Logger. */
-    static Logger LOGGER = Logging.getLogger(Modules.SHAPEFILE);
+    static Logger LOGGER = Logger.getLogger(Modules.SHAPEFILE);
 
     /**
      * Format a resource bundle message.

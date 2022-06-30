@@ -20,12 +20,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Collections;
+import java.util.Optional;
 import java.util.IdentityHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.Filter;
+import java.util.concurrent.ExecutionException;
 import java.lang.reflect.Method;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Localized;
@@ -34,6 +35,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.StoreUtilities;
@@ -79,14 +82,14 @@ import org.apache.sis.storage.Resource;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
 public class StoreListeners implements Localized {
     /**
-     * Parent manager to notify in addition to this manager.
-     * This is used when a data store is created for reading components of a larger data store.
+     * Parent set of listeners to notify in addition to this set of listeners, or {@code null} if none.
+     * This is used when a resource is created for reading components of a larger data store.
      */
     private final StoreListeners parent;
 
@@ -113,26 +116,37 @@ public class StoreListeners implements Localized {
 
     /**
      * Frequently used value for {@link #permittedEventTypes}.
+     *
+     * @see #useReadOnlyEvents()
      */
-    private static final Set<Class<? extends StoreEvent>> WARNING_EVENT_TYPE = Collections.singleton(WarningEvent.class);
+    private static final Set<Class<? extends StoreEvent>> READ_EVENT_TYPES =
+                         JDK9.setOf(WarningEvent.class, CloseEvent.class);
+
+    /**
+     * The {@link CascadedStoreEvent.ParentListener}s registered on {@link #parent}.
+     * This is created the first time that a {@link CascadedStoreEvent} listener is registered on a resource
+     * which is not the root resource. Those listeners are handled in a special way, because a closing event
+     * on the root resource should cause all children to also fire their own {@link CloseEvent}.
+     */
+    private Map<Class<?>, StoreListener<?>> cascadedListeners;
 
     /**
      * All listeners for a given even type.
      *
-     * @param  <T>  the type of events of interest to the listeners.
+     * @param  <E>  the type of events of interest to the listeners.
      */
-    private static final class ForType<T extends StoreEvent> {
+    private static final class ForType<E extends StoreEvent> {
         /**
          * The types for which listeners have been registered.
          */
-        final Class<T> type;
+        final Class<E> type;
 
         /**
          * The listeners for the {@linkplain #type event type}, or {@code null} if none.
          * This is a <cite>copy on write</cite> array: no elements are modified after an array has been created.
          */
         @SuppressWarnings("VolatileArrayField")
-        private volatile StoreListener<? super T>[] listeners;
+        private volatile StoreListener<? super E>[] listeners;
 
         /**
          * Next element in the chain of listeners. Intentionally final; if we want to remove an element
@@ -147,7 +161,7 @@ public class StoreListeners implements Localized {
          * @param type  type of events of interest for listeners in this element.
          * @param next  the next element in the chained list, or {@code null} if none.
          */
-        ForType(final Class<T> type, final ForType<?> next) {
+        ForType(final Class<E> type, final ForType<?> next) {
             this.type = type;
             this.next = next;
         }
@@ -159,11 +173,11 @@ public class StoreListeners implements Localized {
          *
          * <p>It is caller responsibility to perform synchronization and to verify that the listener is non-null.</p>
          */
-        final void add(final StoreListener<? super T> listener) {
-            final StoreListener<? super T>[] list = listeners;
+        final void add(final StoreListener<? super E> listener) {
+            final StoreListener<? super E>[] list = listeners;
             final int length = (list != null) ? list.length : 0;
             @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation.
-            final StoreListener<? super T>[] copy = new StoreListener[length + 1];
+            final StoreListener<? super E>[] copy = new StoreListener[length + 1];
             if (list != null) {
                 System.arraycopy(list, 0, copy, 0, length);
             }
@@ -176,9 +190,12 @@ public class StoreListeners implements Localized {
          * It the listener has been registered twice, only the most recent registration is removed.
          *
          * <p>It is caller responsibility to perform synchronization.</p>
+         *
+         * @param  listener  the listener to remove.
+         * @return {@code true} if the list of listeners is empty after this method call.
          */
-        final void remove(final StoreListener<? super T> listener) {
-            StoreListener<? super T>[] list = listeners;
+        final boolean remove(final StoreListener<? super E> listener) {
+            StoreListener<? super E>[] list = listeners;
             if (list != null) {
                 for (int i=list.length; --i >= 0;) {
                     if (list[i] == listener) {
@@ -192,6 +209,7 @@ public class StoreListeners implements Localized {
                     }
                 }
             }
+            return list == null;
         }
 
         /**
@@ -211,6 +229,13 @@ public class StoreListeners implements Localized {
         }
 
         /**
+         * Returns {@code true} if this element contains the given listener.
+         */
+        final boolean hasListener(final StoreListener<?> listener) {
+            return ArraysExt.containsIdentity(listeners, listener);
+        }
+
+        /**
          * Returns {@code true} if this element has at least one listener.
          */
         final boolean hasListeners() {
@@ -223,18 +248,29 @@ public class StoreListeners implements Localized {
          * @param  event  the event to send to listeners.
          * @param  done   listeners who were already notified, for avoiding to notify them twice.
          * @return the {@code done} map, created when first needed.
+         * @throws ExecutionException if at least one listener failed to execute.
          */
-        final Map<StoreListener<?>,Boolean> eventOccured(final T event, Map<StoreListener<?>,Boolean> done) {
-            final StoreListener<? super T>[] list = listeners;
+        final Map<StoreListener<?>,Boolean> eventOccured(final E event, Map<StoreListener<?>,Boolean> done)
+                throws ExecutionException
+        {
+            RuntimeException error = null;
+            final StoreListener<? super E>[] list = listeners;
             if (list != null) {
                 if (done == null) {
                     done = new IdentityHashMap<>(list.length);
                 }
-                for (final StoreListener<? super T> listener : list) {
-                    if (done.put(listener, Boolean.TRUE) == null) {
+                for (final StoreListener<? super E> listener : list) {
+                    if (event.isConsumed()) break;
+                    if (done.put(listener, Boolean.TRUE) == null) try {
                         listener.eventOccured(event);
+                    } catch (RuntimeException ex) {
+                        if (error == null) error = ex;
+                        else error.addSuppressed(ex);
                     }
                 }
+            }
+            if (error != null) {
+                throw new ExecutionException(Resources.format(Resources.Keys.ExceptionInListener_1, type), error);
             }
             return done;
         }
@@ -266,6 +302,18 @@ public class StoreListeners implements Localized {
     }
 
     /**
+     * Returns the parent set of listeners that are notified in addition to this set of listeners.
+     * This is the value of the {@code parent} argument given to the constructor.
+     *
+     * @return parent set of listeners that are notified in addition to this set of listeners.
+     *
+     * @since 1.3
+     */
+    public Optional<StoreListeners> getParent() {
+        return Optional.ofNullable(parent);
+    }
+
+    /**
      * Returns the source of events. This value is specified at construction time.
      *
      * @return the source of events (never {@code null}).
@@ -280,12 +328,12 @@ public class StoreListeners implements Localized {
     private static DataStore getDataStore(StoreListeners m) {
         do {
             final Resource source = m.source;
-            if (source instanceof DataStore) {
-                return (DataStore) source;
-            }
             if (source instanceof StoreResource) {
                 final DataStore ds = ((StoreResource) source).getOriginator();
                 if (ds != null) return ds;
+            }
+            if (source instanceof DataStore) {      // Fallback if not explicitly specified.
+                return (DataStore) source;
             }
             m = m.parent;
         } while (m != null);
@@ -296,8 +344,8 @@ public class StoreListeners implements Localized {
      * Returns a short name or label for the source. It may be the name of the file opened by a data store.
      * The returned name can be useful in warning messages for identifying the problematic source.
      *
-     * <p>The default implementation {@linkplain DataStore#getDisplayName() fetches that name from the data store},
-     * or returns an arbitrary name if it can get it otherwise.</p>
+     * <p>The default implementation {@linkplain DataStore#getDisplayName() fetches a name from the data store},
+     * or returns an arbitrary name if no better name is found.</p>
      *
      * @return a short name of label for the source (never {@code null}).
      *
@@ -371,23 +419,13 @@ public class StoreListeners implements Localized {
     }
 
     /**
-     * Notifies this {@code StoreListeners} that it will fire only {@link WarningEvent}s. This method is a
-     * shortcut for <code>{@linkplain setUsableEventTypes setUsableEventTypes}(WarningEvent.class)}</code>,
-     * provided because frequently used by read-only data store implementations.
-     *
-     * @see #setUsableEventTypes(Class...)
-     * @see WarningEvent
+     * @deprecated Renamed {@link #useReadOnlyEvents()}.
      *
      * @since 1.2
      */
-    public synchronized void useWarningEventsOnly() {
-        final Set<Class<? extends StoreEvent>> current = permittedEventTypes;
-        if (current == null) {
-            permittedEventTypes = WARNING_EVENT_TYPE;
-        } else if (!WARNING_EVENT_TYPE.equals(current)) {
-            throw illegalEventType(WarningEvent.class);
-        }
-        ForType.removeUnreachables(listeners, WARNING_EVENT_TYPE);
+    @Deprecated
+    public void useWarningEventsOnly() {
+        useReadOnlyEvents();
     }
 
     /**
@@ -545,13 +583,13 @@ public class StoreListeners implements Localized {
      */
     @SuppressWarnings("unchecked")
     public void warning(final LogRecord description, final Filter onUnhandled) {
-        if (!fire(new WarningEvent(source, description), WarningEvent.class) &&
+        if (!fire(WarningEvent.class, new WarningEvent(source, description)) &&
                 (onUnhandled == null || onUnhandled.isLoggable(description)))
         {
             final String name = description.getLoggerName();
             final Logger logger;
             if (name != null) {
-                logger = Logging.getLogger(name);
+                logger = Logger.getLogger(name);
             } else {
                 logger = getLogger();
                 description.setLoggerName(logger.getName());
@@ -561,36 +599,103 @@ public class StoreListeners implements Localized {
     }
 
     /**
+     * Invoked if an error occurred in a least one listener during the propagation of an event.
+     * The {@linkplain ExecutionException#getCause() cause} of the exception is a {@link RuntimeException}.
+     * If exceptions occurred in more than one listener, all exceptions after the first one are specified
+     * as {@linkplain ExecutionException#getSuppressed() suppressed exceptions} of the cause.
+     *
+     * <p>This method should not delegate to {@link #warning(Exception)} because the error is not with the
+     * data store itself. Furthermore the exception may have occurred during {@code warning(…)} execution,
+     * in which case the exception is a kind of "warning about warning report".</p>
+     *
+     * @param  method  name of the method invoking this method.
+     * @param  error   the exception that occurred.
+     */
+    static void canNotNotify(final String method, final ExecutionException error) {
+        Logging.unexpectedException(Logger.getLogger(Modules.STORAGE), StoreListeners.class, method, error);
+    }
+
+    /**
+     * @deprecated Replaced by {@link #fire(Class, StoreEvent)} for consistency with the argument order
+     *             in all other methods of this class.
+     */
+    @Deprecated
+    public <E extends StoreEvent> boolean fire(final E event, final Class<E> eventType) {
+        return fire(eventType, event);
+    }
+
+    /**
      * Sends the given event to all listeners registered for the given type or for a super-type.
      * This method first notifies the listeners registered in this {@code StoreListeners}, then
      * notifies listeners registered in parent {@code StoreListeners}s. Each listener will be
      * notified only once even if it has been registered many times.
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * <p>If one or many {@link StoreListener#eventOccured(StoreEvent)} implemetations throw a
+     * {@link RuntimeException}, those exceptions will be collected and reported in a single
+     * {@linkplain Logging#unexpectedException(Logger, Class, String, Throwable) log record}.
+     * Runtime exceptions in listeners do not cause this method to fail.</p>
+     *
+     * @param  <E>        compile-time value of the {@code eventType} argument.
+     * @param  eventType  the type of the event to be fired.
      * @param  event      the event to fire.
-     * @param  eventType  the type of events to be fired.
      * @return {@code true} if the event has been sent to at least one listener.
      * @throws IllegalArgumentException if the given event type is not one of the types of events
      *         that this {@code StoreListeners} can fire.
+     *
+     * @see #close()
+     *
+     * @since 1.3
      */
-    @SuppressWarnings("unchecked")
-    public <T extends StoreEvent> boolean fire(final T event, final Class<T> eventType) {
+    public <E extends StoreEvent> boolean fire(final Class<E> eventType, final E event) {
         ArgumentChecks.ensureNonNull("event", event);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         final Set<Class<? extends StoreEvent>> permittedEventTypes = this.permittedEventTypes;
         if (permittedEventTypes != null && !permittedEventTypes.contains(eventType)) {
             throw illegalEventType(eventType);
         }
+        try {
+            return fire(this, eventType, event);
+        } catch (ExecutionException ex) {
+            canNotNotify("fire", ex);
+            return true;
+        }
+    }
+
+    /**
+     * Sends the given event to all listeners registered in the given set of listeners and its parent.
+     * This method does not perform any argument validation; they must be done by the caller.
+     *
+     * <p>This method does not need (and should not) be synchronized.</p>
+     *
+     * @param  <E>        compile-time value of the {@code eventType} argument.
+     * @param  m          the set of listeners that may be interested in the event.
+     * @param  eventType  the type of the event to be fired.
+     * @param  event      the event to fire.
+     * @return {@code true} if the event has been sent to at least one listener.
+     * @throws ExecutionException if an exception is thrown inside {@link StoreListener#eventOccured(StoreEvent)}.
+     *         All other listeners continue to receive the event before {@code ExecutionException} is thrown.
+     */
+    @SuppressWarnings("unchecked")
+    static <E extends StoreEvent> boolean fire(StoreListeners m, final Class<E> eventType, final E event)
+            throws ExecutionException
+    {
         Map<StoreListener<?>,Boolean> done = null;
-        StoreListeners m = this;
+        ExecutionException error = null;
         do {
             for (ForType<?> e = m.listeners; e != null; e = e.next) {
-                if (e.type.isAssignableFrom(eventType)) {
-                    done = ((ForType<? super T>) e).eventOccured(event, done);
+                if (e.type.isAssignableFrom(eventType)) try {
+                    done = ((ForType<? super E>) e).eventOccured(event, done);
+                } catch (ExecutionException ex) {
+                    if (error == null) error = ex;
+                    else error.getCause().addSuppressed(ex.getCause());
                 }
             }
+            if (event.isConsumedForParent()) break;
             m = m.parent;
         } while (m != null);
+        if (error != null) {
+            throw error;
+        }
         return (done != null) && !done.isEmpty();
     }
 
@@ -636,21 +741,23 @@ public class StoreListeners implements Localized {
      * This side-effect is applied on the assumption that the registered listener will handle
      * warnings in its own way, for example by showing warnings in a widget.
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  <E>        compile-time value of the {@code eventType} argument.
      * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
      * @param  listener   listener to notify about events.
      *
      * @see Resource#addListener(Class, StoreListener)
      */
-    @SuppressWarnings("unchecked")
-    public synchronized <T extends StoreEvent> void addListener(final Class<T> eventType, final StoreListener<? super T> listener) {
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public synchronized <E extends StoreEvent> void addListener(
+            final Class<E> eventType, final StoreListener<? super E> listener)
+    {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         if (isPossibleEvent(permittedEventTypes, eventType)) {
-            ForType<T> ce = null;
+            ForType<E> ce = null;
             for (ForType<?> e = listeners; e != null; e = e.next) {
                 if (e.type.equals(eventType)) {
-                    ce = (ForType<T>) e;
+                    ce = (ForType<E>) e;
                     break;
                 }
             }
@@ -659,6 +766,21 @@ public class StoreListeners implements Localized {
                 listeners = ce;
             }
             ce.add(listener);
+            /*
+             * If we are adding a listener for `CascadedStoreEvent`, we may need
+             * to register a listener in the parent for cascading the events.
+             */
+            if (parent != null && CascadedStoreEvent.class.isAssignableFrom(eventType)) {
+                if (cascadedListeners == null) {
+                    cascadedListeners = new IdentityHashMap<>(4);
+                }
+                StoreListener cascade = cascadedListeners.get(eventType);
+                if (cascade == null) {
+                    cascade = new CascadedStoreEvent.ParentListener(eventType, parent, this);
+                    cascadedListeners.put(eventType, cascade);
+                    parent.addListener(eventType, cascade);
+                }
+            }
         }
     }
 
@@ -678,22 +800,54 @@ public class StoreListeners implements Localized {
      * there are no remaining listeners for warning events, then this {@code StoreListeners} will send future
      * warnings to the loggers.
      *
-     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  <E>        compile-time value of the {@code eventType} argument.
      * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
      * @param  listener   listener to stop notifying about events.
      *
      * @see Resource#removeListener(Class, StoreListener)
      */
-    @SuppressWarnings("unchecked")
-    public synchronized <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public synchronized <E extends StoreEvent> void removeListener(
+            final Class<E> eventType, final StoreListener<? super E> listener)
+    {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
             if (e.type.equals(eventType)) {
-                ((ForType<T>) e).remove(listener);
+                if (((ForType<E>) e).remove(listener) && cascadedListeners != null) {
+                    final StoreListener cascade = cascadedListeners.remove(eventType);
+                    if (cascade != null) {
+                        parent.removeListener(eventType, cascade);
+                    }
+                }
                 break;
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given listener is registered for the given type or a super-type.
+     * This method may unconditionally return {@code false} if the given type of event is never fired
+     * by this {@code StoreListeners}, because calls to {@code addListener(eventType, …)} are free to
+     * ignore the listeners for those types.
+     *
+     * @param  <E>        compile-time value of the {@code eventType} argument.
+     * @param  eventType  type of {@link StoreEvent} to check (can not be {@code null}).
+     * @param  listener   listener to check for registration.
+     * @return {@code true} if this object contains the specified listener for given event type, {@code false} otherwise.
+     *
+     * @since 1.3
+     */
+    public <E extends StoreEvent> boolean hasListener(final Class<E> eventType, final StoreListener<? super E> listener) {
+        // No need to synchronize this method.
+        ArgumentChecks.ensureNonNull("listener",  listener);
+        ArgumentChecks.ensureNonNull("eventType", eventType);
+        for (ForType<?> e = listeners; e != null; e = e.next) {
+            if (e.type.equals(eventType) && e.hasListener(listener)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -747,7 +901,7 @@ public class StoreListeners implements Localized {
      * @param  permitted  type of events that are permitted. Permitted sub-types shall be explicitly enumerated as well.
      * @throws IllegalArgumentException if one of the given types was not permitted before invocation of this method.
      *
-     * @see #useWarningEventsOnly()
+     * @see #useReadOnlyEvents()
      *
      * @since 1.2
      */
@@ -763,7 +917,69 @@ public class StoreListeners implements Localized {
                 throw illegalEventType(type);
             }
         }
-        permittedEventTypes = WARNING_EVENT_TYPE.equals(types) ? WARNING_EVENT_TYPE : CollectionsExt.compact(types);
+        permittedEventTypes = READ_EVENT_TYPES.equals(types) ? READ_EVENT_TYPES : CollectionsExt.compact(types);
         ForType.removeUnreachables(listeners, types);
+    }
+
+    /**
+     * Notifies this {@code StoreListeners} that it will fire only {@link WarningEvent}s and {@link CloseEvent}.
+     * This method is a shortcut for <code>{@linkplain setUsableEventTypes setUsableEventTypes}(WarningEvent.class,
+     * CloseEvent.class)}</code>, provided because frequently used by read-only data store implementations.
+     *
+     * <p>Declaring a root resource (typically a {@link DataStore}) as read-only implies that all children
+     * (e.g. {@linkplain org.apache.sis.storage.Aggregate#components() components of an aggregate})
+     * are also read-only.</p>
+     *
+     * @see #setUsableEventTypes(Class...)
+     * @see WarningEvent
+     * @see CloseEvent
+     *
+     * @since 1.3
+     */
+    public synchronized void useReadOnlyEvents() {
+        final Set<Class<? extends StoreEvent>> current = permittedEventTypes;
+        if (current == null) {
+            permittedEventTypes = READ_EVENT_TYPES;
+        } else if (!READ_EVENT_TYPES.equals(current)) {
+            throw illegalEventType(WarningEvent.class);
+        }
+        ForType.removeUnreachables(listeners, READ_EVENT_TYPES);
+    }
+
+    /**
+     * Sends a {@link CloseEvent} to all listeners registered for that kind of event,
+     * then discards listeners in this instance (but not in parents).
+     * Because listeners are discarded, invoking this method many times
+     * on the same instance has no effect after the first invocation.
+     *
+     * <p>If one or many {@link StoreListener#eventOccured(StoreEvent)} implementations throw
+     * a {@link RuntimeException}, those exceptions will be collected and reported in a single
+     * {@linkplain Logging#unexpectedException(Logger, Class, String, Throwable) log record}.
+     * Runtime exceptions in listeners do not cause this method to fail.</p>
+     *
+     * @see #fire(Class, StoreEvent)
+     * @see DataStore#close()
+     * @see CloseEvent
+     *
+     * @since 1.3
+     */
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public void close() {
+        try {
+            /*
+             * We use the private static method instead of `fire(Class, StoreEvent)` public method
+             * because calls to `close()` should never fail (except with `java.lang.Error` because
+             * we do not want to hide serious errors), so we bypass argument validation and method
+             * overriding as a safety.
+             */
+            fire(this, CloseEvent.class, new CloseEvent(source));
+        } catch (ExecutionException ex) {
+            canNotNotify("close", ex);
+        }
+        listeners = null;
+        /*
+         * No need to cleanup `cascadedListeners`. It does not hurt (those listeners practically
+         * become no-op) and the objects are probably going to be garbage collected soon anyway.
+         */
     }
 }

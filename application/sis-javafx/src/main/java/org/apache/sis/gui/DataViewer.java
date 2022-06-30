@@ -66,7 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -126,7 +126,7 @@ public class DataViewer extends Application {
     /**
      * The window showing system logs. Created when first requested.
      *
-     * @see #showSystemLogsWindow()
+     * @see #showSystemMonitorWindow()
      */
     private Stage systemLogsWindow;
 
@@ -174,10 +174,9 @@ public class DataViewer extends Application {
         final Menu windows = new Menu(localized.getString(Resources.Keys.Windows));
         {
             final ObservableList<MenuItem> items = windows.getItems();
-            content.setWindowsItems(items);
-            final MenuItem logging = new MenuItem(localized.getString(Resources.Keys.SystemMonitor));
-            logging.setOnAction((e) -> showSystemLogsWindow());
-            items.addAll(content.createNewWindowMenu(), logging);
+            final MenuItem monitor = new MenuItem(localized.getString(Resources.Keys.SystemMonitor));
+            monitor.setOnAction((e) -> showSystemMonitorWindow());
+            items.addAll(monitor);
         }
         final Menu help = new Menu(localized.getString(Resources.Keys.Help));
         {   // For keeping variables locale.
@@ -340,7 +339,7 @@ public class DataViewer extends Application {
     /**
      * Shows system logs in a separated window.
      */
-    private void showSystemLogsWindow() {
+    private void showSystemMonitorWindow() {
         if (systemLogsWindow == null) {
             systemLogsWindow = SystemMonitor.create(window, null);
         }

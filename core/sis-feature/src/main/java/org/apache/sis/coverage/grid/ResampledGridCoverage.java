@@ -52,7 +52,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -134,7 +134,7 @@ final class ResampledGridCoverage extends GridCoverage {
      * For a source dimension <var>i</var>, {@code dependentDimensions[i]} is a bitmask with bits set to 1
      * for each target dimension which require the source dimension <var>i</var> for its calculation.
      *
-     * @param  mt      the transform for which to determine dimension dependencies.
+     * @param  mt      the transform (mapping pixel centers) for which to determine dimension dependencies.
      * @param  domain  domain of this {@code}.
      * @return for each source dimension, a bitmask of target dependent dimensions.
      *         May be {@code null} if the mapping can not be computed or if it is not needed.
@@ -144,7 +144,8 @@ final class ResampledGridCoverage extends GridCoverage {
         if (srcDim <= BIDIMENSIONAL) return null;                           // Dimension mapping not needed.
         Matrix derivative = MathTransforms.getMatrix(mt);
         if (derivative == null) try {
-            derivative = mt.derivative(new DirectPositionView.Double(domain.getExtent().getPointOfInterest()));
+            derivative = mt.derivative(new DirectPositionView.Double(
+                    domain.getExtent().getPointOfInterest(PixelInCell.CELL_CENTER)));
         } catch (TransformException e) {
             GridCoverageProcessor.recoverableException("resample", e);      // Public caller of this method.
             return null;
@@ -306,7 +307,7 @@ final class ResampledGridCoverage extends GridCoverage {
              * `originToPOI` vector (the integer digits do not matter; they will be cancelled later).
              */
             final GridExtent sourceExtent = sourceGG.getExtent();
-            final double[]   sourcePOI    = sourceExtent.getPointOfInterest();
+            final double[]   sourcePOI    = sourceExtent.getPointOfInterest(PixelInCell.CELL_CENTER);
             final double[]   targetPOI    = new double[sourceCenterToCRS.getTargetDimensions()];
             final MatrixSIS  vectors      = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(
                                                         sourceCenterToCRS, sourcePOI, 0, targetPOI, 0));
@@ -474,7 +475,7 @@ final class ResampledGridCoverage extends GridCoverage {
             final MathTransform crsToGrid, final boolean center) throws TransformException
     {
         final MathTransform sourceToTarget = MathTransforms.concatenate(cornerToCRS, crsToGrid);
-        final GeneralEnvelope bounds = source.toCRS(sourceToTarget, sourceToTarget, null);
+        final GeneralEnvelope bounds = source.toEnvelope(sourceToTarget, sourceToTarget, null);
         if (center) {
             final double[] vector = new double[bounds.getDimension()];
             Arrays.fill(vector, 0.5);
@@ -506,7 +507,7 @@ final class ResampledGridCoverage extends GridCoverage {
              * If a dimension can not be converted (e.g. because a `gridToCRS` transform has a NaN
              * factor in that dimension), the corresponding source grid coordinates will be copied.
              */
-            final GeneralEnvelope sourceBounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+            final GeneralEnvelope sourceBounds = sliceExtent.toEnvelope(toSourceCorner, toSourceCenter, null);
             final int dimension = sourceBounds.getDimension();
             if (sourceBounds.isEmpty()) {
                 final GridExtent se = source.gridGeometry.getExtent();

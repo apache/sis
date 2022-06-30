@@ -50,6 +50,8 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Parses and formats units of measurement as SI symbols, URI in OGC namespace or other symbols.
@@ -648,7 +650,7 @@ appPow: if (unit == null) {
                     try {
                         label = names.getString(label);
                     } catch (MissingResourceException e) {
-                        Logging.ignorableException(Logging.getLogger(Loggers.MEASURE), UnitFormat.class, "format", e);
+                        Logging.ignorableException(getLogger(Loggers.MEASURE), UnitFormat.class, "format", e);
                         // Name not found; use the symbol as a fallback.
                     }
                     return toAppendTo.append(label);

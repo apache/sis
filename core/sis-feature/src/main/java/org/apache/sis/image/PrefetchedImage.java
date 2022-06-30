@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Vector;
+import java.util.Objects;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
@@ -38,7 +39,7 @@ import org.apache.sis.util.Disposable;
  * This image has the same coordinate systems than the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see ImageProcessor#prefetch(RenderedImage, Rectangle)
  *
@@ -302,5 +303,32 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
         }
         return p.create(new Point(ImageUtilities.tileToPixelX(source, tileX),
                                   ImageUtilities.tileToPixelY(source, tileY)));
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     * Defined for consistency with {@link #equals(Object)}.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(source, minTileX, minTileY, numXTiles, numYTiles);
+    }
+
+    /**
+     * Compares the given object with this image for equality. This is defined as a matter of principle,
+     * but is a little bit useless for {@link PrefetchedImage} because tiles have already been computed
+     * in the constructor. So it is too late for caching for example.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof PrefetchedImage) {
+            final PrefetchedImage other = (PrefetchedImage) object;
+            return source.equals(other.source)  &&
+                   minTileX  == other.minTileX  &&
+                   minTileY  == other.minTileY  &&
+                   numXTiles == other.numXTiles &&
+                   numYTiles == other.numYTiles;
+        }
+        return false;
     }
 }

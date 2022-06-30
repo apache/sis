@@ -239,8 +239,9 @@ public abstract class Inflater implements Closeable {
                 throw unsupportedEncoding(caller, Resources.Keys.UnsupportedPredictor_1, predictor);
             }
         }
-        return CopyFromBytes.create(inflater.createDataInput(channel), dataType,
-                chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+        final int scanlineStride = Math.multiplyExact(sourceWidth, sourcePixelStride * dataType.bytes());
+        return CopyFromBytes.create(inflater.createDataInput(channel, scanlineStride),
+                dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
     }
 
     /**

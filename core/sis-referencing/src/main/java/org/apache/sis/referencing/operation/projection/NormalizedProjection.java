@@ -62,6 +62,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 import static java.lang.Math.*;
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -948,7 +949,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                     }
                 }
             } catch (NoninvertibleTransformException e) {
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                         (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
                         "tryConcatenate", e);
             }

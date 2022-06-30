@@ -39,6 +39,8 @@ import javax.measure.Unit;
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -48,6 +50,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -106,7 +109,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -693,7 +696,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                 table.setCellAlignment(alignment);
                 final int length = row.values.size();
                 for (int i=0; i<length; i++) {
-                    Object value = row.values.get(i);
+                    final Object value = row.values.get(i);
                     if (value != null) {
                         if (i != 0) {
                             /*
@@ -716,13 +719,20 @@ public class ParameterFormat extends TabularFormat<Object> {
                          * + unit tuple.
                          */
                         final Format format = getFormat(value.getClass());
+                        final CharSequence text;
                         if (format != null) {
                             if (format instanceof NumberFormat && value instanceof Number) {
                                 configure((NumberFormat) format, Math.abs(((Number) value).doubleValue()));
                             }
-                            value = format.format(value, buffer, dummyFP);
+                            text = format.format(value, buffer, dummyFP);
+                        } else if (value instanceof ControlledVocabulary) {
+                            text = Types.getCodeTitle((ControlledVocabulary) value).toString(getLocale());
+                        } else if (value instanceof InternationalString) {
+                            text = ((InternationalString) value).toString(getLocale());
+                        } else {
+                            text = value.toString();
                         }
-                        table.append(value.toString());
+                        table.append(text);
                         buffer.setLength(0);
                         int pad = unitWidth;
                         final String unit = (String) row.units.get(i);

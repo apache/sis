@@ -70,8 +70,8 @@ public class CoverageCanvasApp extends Application {
     @Override
     public void start(final Stage window) {
         final CoverageCanvas canvas = new CoverageCanvas();
-        final StatusBar statusBar = new StatusBar(null, canvas);
-        canvas.statusBar = statusBar;
+        final StatusBar statusBar = new StatusBar(null);
+        statusBar.track(canvas);
         canvas.setCoverage(createImage());
         final BorderPane pane = new BorderPane(canvas.getView());
         pane.setBottom(statusBar.getView());

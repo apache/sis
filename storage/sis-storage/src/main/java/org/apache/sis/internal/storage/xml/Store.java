@@ -57,7 +57,7 @@ import org.apache.sis.setup.OptionKey;
  * The above list may be extended in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -102,7 +102,7 @@ final class Store extends URIDataStore implements Filter {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -224,6 +224,7 @@ final class Store extends URIDataStore implements Filter {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                      // Should never fail.
         object = null;
         final Closeable in = input(source);
         source = null;                          // Cleared first in case of failure.

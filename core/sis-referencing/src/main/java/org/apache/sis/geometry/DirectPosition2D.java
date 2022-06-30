@@ -59,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.3
  *
  * @see DirectPosition1D
  * @see GeneralDirectPosition
@@ -94,6 +94,18 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     public DirectPosition2D(final CoordinateReferenceSystem crs) {
         ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
+    }
+
+    /**
+     * Constructs a 2D position from the coordinates of the specified point.
+     * The CRS is initialized to {@code null}.
+     *
+     * @param p  the point from which to copy the coordinate values.
+     *
+     * @since 1.3
+     */
+    public DirectPosition2D(final Point2D p) {
+        super(p.getX(), p.getY());
     }
 
     /**

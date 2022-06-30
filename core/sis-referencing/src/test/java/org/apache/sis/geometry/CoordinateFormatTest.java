@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Michael Hausegger
  *
- * @version 1.1
+ * @version 1.3
  *
  * @see org.apache.sis.measure.AngleFormatTest
  *
@@ -364,9 +364,16 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         assertPositionEquals(pos, format.parseObject("400 km E 600 km S"));
         assertPositionEquals(pos, format.parseObject("400,000 m E 600,000 m S"));
         /*
-         * Test reverting back to unscaled units.
+         * Scaled units but with a fraction digit.
          */
         format.setPrecisions(100, 200);
+        assertEquals("400.0 km E 600.0 km S", format.format(pos));
+        assertPositionEquals(pos, format.parseObject("400,000 m E 600,000 m S"));
+        assertPositionEquals(pos, format.parseObject("400 km E 600 km S"));
+        /*
+         * Test reverting back to unscaled units.
+         */
+        format.setPrecisions(1, 2);
         assertEquals("400,000 m E 600,000 m S", format.format(pos));
         assertPositionEquals(pos, format.parseObject("400,000 m E 600,000 m S"));
         assertPositionEquals(pos, format.parseObject("400 km E 600 km S"));

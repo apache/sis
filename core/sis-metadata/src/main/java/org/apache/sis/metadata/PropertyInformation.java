@@ -36,6 +36,8 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Description of a metadata property inferred from Java reflection.
@@ -272,8 +274,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
                      * to have an IllegalArgumentException while he didn't provided any argument.
                      * Returning null as a fallback is compliant with the method contract.
                      */
-                    Logging.unexpectedException(Logging.getLogger(Modules.METADATA),
-                            PropertyInformation.class, "getDomainValue", e);
+                    Logging.unexpectedException(getLogger(Modules.METADATA), PropertyInformation.class, "getDomainValue", e);
                     domain = null;
                 }
                 domainValue = domain;

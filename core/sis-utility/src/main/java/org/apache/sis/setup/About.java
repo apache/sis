@@ -31,6 +31,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Handler;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -44,7 +45,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.LoggerFactory;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
@@ -56,8 +56,10 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.internal.jdk9.JDK9;
 
 import static java.lang.System.getProperty;
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
@@ -336,7 +338,7 @@ fill:   for (int i=0; ; i++) {
                         value = resources.getString(Vocabulary.Keys.EntryCount_1, children.length / 2);
                     } catch (ClassNotFoundException e) {
                         // sis-storage module not in the classpath.
-                        Logging.recoverableException(Logging.getLogger(Modules.STORAGE), About.class, "configuration", e);
+                        Logging.recoverableException(getLogger(Modules.STORAGE), About.class, "configuration", e);
                     } catch (ReflectiveOperationException e) {
                         value = Exceptions.unwrap(e).toString();
                     }
@@ -347,15 +349,21 @@ fill:   for (int i=0; ; i++) {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
-                        final LoggerFactory<?> factory = Logging.getLoggerFactory();
-                        value = (factory != null) ? factory.getName() : "java.util.logging";
+                        value = "java.util.logging";
+                        for (final Handler handler : getLogger("").getHandlers()) {
+                            final String c = JDK9.getPackageName(handler.getClass());
+                            if (!value.equals(c)) {
+                                value = c;
+                                break;
+                            }
+                        }
                     }
                     break;
                 }
                 case 12: {
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Level;
-                        final Level level = Logging.getLogger("").getLevel();   // Root logger level.
+                        final Level level = getLogger("").getLevel();   // Root logger level.
                         if (level == null) {
                             // May happen when some code outside Apache SIS define their own loggers.
                             value = resources.getString(Vocabulary.Keys.Unknown);
@@ -643,7 +651,7 @@ pathTree:   for (int j=0; ; j++) {
             }
         }
         if (error != null) {
-            Logging.unexpectedException(Logging.getLogger(Modules.UTILITIES), About.class, "configuration", error);
+            Logging.unexpectedException(getLogger(Modules.UTILITIES), About.class, "configuration", error);
         }
         return true;
     }
@@ -752,7 +760,7 @@ pathTree:   for (int j=0; ; j++) {
         try {
             return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
-            Logging.ignorableException(Logging.getLogger(Loggers.LOCALIZATION), About.class, "configuration", e);
+            Logging.ignorableException(getLogger(Loggers.LOCALIZATION), About.class, "configuration", e);
             return null;
         }
     }

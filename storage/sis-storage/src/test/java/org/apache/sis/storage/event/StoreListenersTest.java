@@ -18,6 +18,7 @@ package org.apache.sis.storage.event;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
  * Tests the {@link StoreListeners} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -73,10 +74,13 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
     public void testAddAndRemoveStoreListener() {
         final StoreListeners listeners = store.listeners();
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
+        assertFalse("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
         listeners.addListener(WarningEvent.class, this);
         assertTrue("hasListeners()", listeners.hasListeners(WarningEvent.class));
+        assertTrue("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
         listeners.removeListener(WarningEvent.class, this);
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
+        assertFalse("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
         listeners.removeListener(WarningEvent.class, this);         // Should be no-op.
     }
 
@@ -127,5 +131,38 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
         assertEquals(DataStoreMock.class.getName(), warning.getSourceClassName());
         assertEquals("simulateWarning", warning.getSourceMethodName());
         assertEquals("The message", warning.getMessage());
+    }
+
+    /**
+     * Tests {@link StoreListeners#close()}. This event is handled in a special way:
+     * close event on the parent resource causes the same event to be fired for all
+     * children.
+     */
+    @Test
+    public void testClose() {
+        final Resource resource = store.newChild();
+        class Listener implements StoreListener<CloseEvent> {
+            /** Whether the resource has been closed. */boolean isClosed;
+
+            @Override public void eventOccured(CloseEvent event) {
+                assertSame(resource, event.getSource());
+                assertFalse(isClosed);
+                isClosed = true;
+            }
+        }
+        final Listener listener = new Listener();
+        /*
+         * First, register and unregister. No event should be received.
+         */
+        resource.addListener(CloseEvent.class, listener);
+        resource.removeListener(CloseEvent.class, listener);
+        store.close();
+        assertFalse(listener.isClosed);
+        /*
+         * Register and close. Now the event should be received.
+         */
+        resource.addListener(CloseEvent.class, listener);
+        store.close();
+        assertTrue(listener.isClosed);
     }
 }

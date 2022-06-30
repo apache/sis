@@ -51,6 +51,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.io.wkt.Formatter;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -440,7 +441,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
                  * returning 'null' is allowed by this method's contract.
                  */
-                Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                Logging.unexpectedException(getLogger(Loggers.COORDINATE_OPERATION),
                         DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
             /*
@@ -474,7 +475,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                                     Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
                                     return AnnotatedMatrix.indirect(m, useAOI);
                                 } catch (NoninvertibleMatrixException e) {
-                                    Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                                    Logging.unexpectedException(getLogger(Loggers.COORDINATE_OPERATION),
                                             DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
                                 }
                             }

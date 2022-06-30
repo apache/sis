@@ -33,6 +33,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Static;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * A central place where to store some appearance choices such as colors used by SIS application.
@@ -42,7 +44,7 @@ import org.apache.sis.util.Static;
  * <p>This class also opportunistically provides a few utility methods related to appearance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -58,11 +60,6 @@ public final class Styles extends Static {
      * Approximate size of vertical scroll bar.
      */
     public static final int SCROLLBAR_WIDTH = 20;
-
-    /**
-     * Width of a checkbox or radio item in a table cell.
-     */
-    public static final int CHECKBOX_WIDTH = 40;
 
     /**
      * "Standard" height of table rows. Can be approximate.
@@ -82,7 +79,7 @@ public final class Styles extends Static {
     /**
      * Color of the text saying that data are in process of being loaded.
      */
-    public static final Color LOADING_TEXT = Color.BLUE;
+    public static final Color LOADING_TEXT = Color.STEELBLUE;
 
     /**
      * Color of text for authority codes.
@@ -158,7 +155,7 @@ public final class Styles extends Static {
             error = e;
         }
         if (error != null) {
-            Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), caller, method, error);
+            Logging.unexpectedException(getLogger(Modules.APPLICATION), caller, method, error);
         }
         return image;
     }

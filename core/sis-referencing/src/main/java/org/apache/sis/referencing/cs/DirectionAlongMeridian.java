@@ -32,6 +32,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Parses {@linkplain AxisDirection axis direction} of the kind <cite>"South along 90 deg East"</cite>.
@@ -123,7 +125,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
         try {
             candidate = parse(direction.name());
         } catch (IllegalArgumentException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), DirectionAlongMeridian.class, "parse", e);
+            Logging.recoverableException(getLogger(Modules.REFERENCING), DirectionAlongMeridian.class, "parse", e);
             return null;
         }
         if (candidate != null) {

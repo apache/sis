@@ -48,6 +48,8 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
@@ -75,7 +77,7 @@ import org.apache.sis.measure.Range;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -373,7 +375,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 keyID = getKeyConstants().getKeyValue(key);
             } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
-                Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
+                Logging.recoverableException(getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
                 return null;                // This is okay as of 'handleGetObject' contract.
             }
         }
@@ -490,6 +492,16 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
         } else {
             toAppendTo.append(':');
         }
+    }
+
+    /**
+     * Returns the given string followed by a colon.
+     *
+     * @param  text  the text to follow be a colon.
+     * @return the given text followed by a colon.
+     */
+    public final String toLabel(final String text) {
+        return text.concat(colon());
     }
 
     /**

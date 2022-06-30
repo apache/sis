@@ -52,7 +52,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * controls by the user.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -77,9 +77,14 @@ public abstract class MapCanvasAWT extends MapCanvas {
     private static final String WARNING_TEXT = "\u26A0";
 
     /**
+     * Default value of {@link #imageMargin}.
+     */
+    private static final Insets DEFAULT_MARGIN = new Insets(SCROLL_EVENT_SIZE);
+
+    /**
      * Number of additional pixels to paint on each sides of the image, outside the viewing area.
      * Computing a larger image reduces the black borders that user sees during translations or
-     * during zoom out before the new image is repainted. The default value is {@code null}.
+     * during zoom out before the new image is repainted.
      */
     public final ObjectProperty<Insets> imageMargin;
 
@@ -148,7 +153,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      */
     public MapCanvasAWT(final Locale locale) {
         super(locale);
-        imageMargin = new SimpleObjectProperty<>(this, "imageMargin");
+        imageMargin = new SimpleObjectProperty<>(this, "imageMargin", DEFAULT_MARGIN);
         image = new ImageView();
         image.setPreserveRatio(true);
         floatingPane.getChildren().add(image);
@@ -527,7 +532,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
                 } while (invalid && !isCancelled());
             } finally {
                 if (invalid) {
-                    drawTo.flush();         // Release native resources.
+                    drawTo.flush();         // Release native resources on cancellation or exception thrown.
                 }
             }
             return drawTo;
@@ -578,11 +583,12 @@ public abstract class MapCanvasAWT extends MapCanvas {
             }
         }
 
-        /** Clears the image in the same way than failure. */
+        /** Clears the image in the same way than failure. Defined for safety but should not happen. */
         @Override protected void cancelled() {failed();}
 
         /**
          * Invoked in JavaFX thread on failure. No result is available. The JavaFX image is set to an empty image.
+         * {@link VolatileImage#flush()} has already been invoked by the finally block in {@link #call()}.
          */
         @Override
         protected void failed() {

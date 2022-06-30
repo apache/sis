@@ -48,6 +48,8 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Base class for concatenated transforms. Instances can be created by calls to the
@@ -272,7 +274,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                  * Ignore. The `concatenated.inverse()` method will try to compute the inverse itself,
                  * possible at the cost of more NaN values than what above code would have produced.
                  */
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                         ConcatenatedTransform.class, "create", e);
             }
         }

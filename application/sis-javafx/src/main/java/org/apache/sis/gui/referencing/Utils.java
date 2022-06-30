@@ -33,6 +33,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Utility methods shared by classes in this package only.
@@ -73,7 +75,7 @@ final class Utils {
             bbox.setBounds(areaOfInterest);
             return new ImmutableEnvelope(bbox);
         } catch (TransformException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), caller, method, e);
+            Logging.recoverableException(getLogger(Modules.APPLICATION), caller, method, e);
         }
         return null;
     }

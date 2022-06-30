@@ -281,7 +281,7 @@ public abstract class Node implements Serializable {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
     protected final void warning(final Exception e, final boolean recoverable) {
-        final Logger logger = Logging.getLogger(Loggers.FILTER);
+        final Logger logger = Logger.getLogger(Loggers.FILTER);
         final String method = (this instanceof Predicate) ? "test" : "apply";
         if (recoverable) {
             Logging.recoverableException(logger, getClass(), method, e);

@@ -23,6 +23,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -43,7 +44,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * This class does not attempt to decode URL characters. For example a URL for "m/s" may be encoded as below,
- * in which case the value in the {@code #code} field will be {@code "m%2Fs"} instead of {@code "m/s"}.
+ * in which case the value in the {@link #code} field will be {@code "m%2Fs"} instead of {@code "m/s"}.
  * <ul>
  *   <li>{@code http://www.opengis.net/def/uom/SI/0/m%2Fs}</li>
  * </ul>
@@ -419,7 +420,7 @@ public final class DefinitionURI {
                                 splitAt = s;                      // Set only on success.
                             } catch (NumberFormatException e) {
                                 // Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
-                                Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
+                                Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
                             }
                             orderedComponents.put(sequenceNumber, parse(uri, isURN, splitAt, next));
                             splitAt = next;

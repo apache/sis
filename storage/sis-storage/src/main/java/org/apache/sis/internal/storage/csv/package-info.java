@@ -53,7 +53,7 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */

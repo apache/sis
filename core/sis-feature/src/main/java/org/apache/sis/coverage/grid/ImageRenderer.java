@@ -100,7 +100,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see GridCoverage#render(GridExtent)
  *
@@ -123,6 +123,9 @@ public class ImageRenderer {
     /**
      * The dimensions to select in the grid coverage for producing an image. This is an array of length
      * {@value GridCoverage2D#BIDIMENSIONAL} obtained by {@link GridExtent#getSubspaceDimensions(int)}.
+     * The array content is almost always {0,1}, but this class should work with other dimensions too.
+     *
+     * @see #getXYDimensions()
      */
     private final int[] gridDimensions;
 
@@ -403,6 +406,19 @@ public class ImageRenderer {
      */
     public final Rectangle getBounds() {
         return new Rectangle(imageX, imageY, width, height);
+    }
+
+    /**
+     * The dimensions to select in the grid coverage for producing an image. This is the array obtained
+     * by <code>{@link GridExtent#getSubspaceDimensions(int) GridExtent.getSubspaceDimensions(2)}</code>.
+     * The array content is almost always {0,1}, i.e. the 2 first dimensions in a coordinate tuple.
+     *
+     * @return indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
+     *
+     * @since 1.3
+     */
+    public final int[] getXYDimensions() {
+        return gridDimensions.clone();
     }
 
     /**

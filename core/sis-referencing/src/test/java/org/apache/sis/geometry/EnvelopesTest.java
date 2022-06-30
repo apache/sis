@@ -27,6 +27,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
@@ -34,6 +35,7 @@ import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -47,7 +49,7 @@ import static org.opengis.test.Validators.validate;
  * This class inherits the test methods defined in {@link TransformTestCase}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -301,5 +303,23 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         final Range<Instant> range = Envelopes.toTimeRange(envelope).get();
         assertEquals(Instant.parse("2019-12-23T00:00:00Z"), range.getMinValue());
         assertEquals(Instant.parse("2020-05-31T18:00:00Z"), range.getMaxValue());
+    }
+
+    /**
+     * Tests {@link Envelopes#wraparound(MathTransform, Envelope)}.
+     *
+     * @throws TransformException if a coordinate transformation failed.
+     */
+    @Test
+    public void testWraparound() throws TransformException {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, -200, -100);
+        envelope.setRange(1, 5, 9);
+        final MathTransform tr = WraparoundTransform.create(2, 0, 360, -180, 0);
+        assertTrue(tr instanceof WraparoundTransform);
+        final GeneralEnvelope[] results = Envelopes.wraparound(tr, envelope);
+        assertEquals(2, results.length);
+        assertEnvelopeEquals(new GeneralEnvelope(new double[] {-200, 5}, new double[] {-100, 9}), results[0]);
+        assertEnvelopeEquals(new GeneralEnvelope(new double[] { 160, 5}, new double[] { 260, 9}), results[1]);
     }
 }

@@ -28,6 +28,9 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-specific dependencies
+import org.opengis.coverage.grid.GridEnvelope;
+
 
 /**
  * Static methods for performing argument checks.
@@ -84,7 +87,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -862,6 +865,30 @@ public final class ArgumentChecks extends Static {
      *         not have the expected number of dimensions.
      */
     public static void ensureDimensionMatches(final String name, final int expected, final Envelope envelope)
+            throws MismatchedDimensionException
+    {
+        if (envelope != null) {
+            final int dimension = envelope.getDimension();
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given grid envelope, if non-null, has the expected number of dimensions.
+     * This method does nothing if the given grid envelope is null.
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  envelope  the grid envelope to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException if the given envelope is non-null and does
+     *         not have the expected number of dimensions.
+     *
+     * @since 1.3
+     */
+    public static void ensureDimensionMatches(final String name, final int expected, final GridEnvelope envelope)
             throws MismatchedDimensionException
     {
         if (envelope != null) {

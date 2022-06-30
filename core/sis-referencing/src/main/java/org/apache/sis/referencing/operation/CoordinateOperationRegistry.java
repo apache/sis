@@ -81,6 +81,8 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * Base class of code that search for coordinate operation, either by looking in a registry maintained by an authority
@@ -1346,7 +1348,7 @@ class CoordinateOperationRegistry {
      * @param  exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
      */
     static void recoverableException(final String method, final Exception exception) {
-        Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+        Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                 CoordinateOperationFinder.class, method, exception);
     }
 }

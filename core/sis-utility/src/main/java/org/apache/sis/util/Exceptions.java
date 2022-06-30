@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * Static methods working with {@link Exception} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -87,52 +87,6 @@ public final class Exceptions extends Static {
             }
         }
         return exception.getLocalizedMessage();
-    }
-
-    /**
-     * Returns an exception of the same kind and with the same stack trace than the given
-     * exception, but with a different message. This method simulates the functionality
-     * that we would have if {@link Throwable} defined a {@code setMessage(String)} method.
-     * We use this method when an external library throws an exception of the right type,
-     * but with too few details.
-     *
-     * <p>This method tries to create a new exception using reflection. The exception class needs
-     * to provide a public constructor expecting a single {@link String} argument. If the
-     * exception class does not provide such constructor, then the given exception is returned
-     * unchanged.</p>
-     *
-     * @param <T>        the type of the exception.
-     * @param exception  the exception to copy with a different message.
-     * @param message    the message to set in the exception to be returned.
-     * @param append     if {@code true}, the existing message in the original exception (if any)
-     *                   will be happened after the provided message.
-     * @return a new exception with the given message, or the given exception if the exception
-     *         class does not provide public {@code Exception(String)} constructor.
-     *
-     * @deprecated To be removed with no replacement.
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static <T extends Throwable> T setMessage(final T exception, String message, final boolean append) {
-        if (append) {
-            final String em = CharSequences.trimWhitespaces(exception.getLocalizedMessage());
-            if (em != null && !em.isEmpty()) {
-                final StringBuilder buffer = new StringBuilder(CharSequences.trimWhitespaces(message));
-                final int length = buffer.length();
-                if (length != 0 && Character.isLetterOrDigit(buffer.charAt(length-1))) {
-                    buffer.append(". ");
-                }
-                message = buffer.append(em).toString();
-            }
-        }
-        final Throwable ne;
-        try {
-            ne = exception.getClass().getConstructor(String.class).newInstance(message);
-        } catch (ReflectiveOperationException e) {
-            return exception;
-        }
-        ne.setStackTrace(exception.getStackTrace());
-        return (T) ne;
     }
 
     /**

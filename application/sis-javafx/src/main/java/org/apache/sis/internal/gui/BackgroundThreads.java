@@ -31,6 +31,9 @@ import org.apache.sis.gui.DataViewer;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Threads;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.Exceptions;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -46,7 +49,7 @@ import org.apache.sis.util.logging.Logging;
  * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -133,7 +136,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * @param  task  the task to execute in JavaFX thread.
      * @return the task result, or {@code null} if an error occurred.
      */
-    public static <V> V runAndWait(final Callable<V> task) {
+    public static <V> V runAndWaitDialog(final Callable<V> task) {
         final FutureTask<V> f = new FutureTask<>(task);
         Platform.runLater(f);
         try {
@@ -144,6 +147,25 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
             interrupted("runAndWait", e);
         }
         return null;
+    }
+
+    /**
+     * Runs the given task in JavaFX thread and wait for completion before to return.
+     * This method should <em>not</em> be invoked from JavaFX application thread.
+     *
+     * @param  <V>   type of result that will be returned.
+     * @param  task  the task to execute in JavaFX thread.
+     * @return the task result.
+     * @throws Exception if the task threw an exception.
+     */
+    public static <V> V runAndWait(final Callable<V> task) throws Exception {
+        final FutureTask<V> f = new FutureTask<>(task);
+        Platform.runLater(f);
+        try {
+            return f.get();
+        } catch (ExecutionException e) {
+            throw Exceptions.unwrap(e);
+        }
     }
 
     /**
@@ -177,6 +199,6 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * @param  e       the exception that interrupted the waiting process.
      */
     private static void interrupted(final String method, final InterruptedException e) {
-        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), BackgroundThreads.class, method, e);
+        Logging.unexpectedException(getLogger(Modules.APPLICATION), BackgroundThreads.class, method, e);
     }
 }

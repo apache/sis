@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
+import org.apache.sis.image.ImageProcessor;
 
 
 /**
@@ -47,7 +49,7 @@ import org.apache.sis.image.DataType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -79,26 +81,35 @@ final class ConvertedGridCoverage extends GridCoverage {
     private final DataType bandType;
 
     /**
+     * The image processor to use for creating the tiles of converted values.
+     */
+    private final ImageProcessor processor;
+
+    /**
      * Creates a new coverage with the same grid geometry than the given coverage but converted sample dimensions.
      *
      * @param  source       the coverage containing source values.
      * @param  range        the sample dimensions to assign to the converted grid coverage.
      * @param  converters   conversion from source to converted coverage, one transform per band.
      * @param  isConverted  whether this grid coverage is for converted or packed values.
+     * @param  processor    the image processor to use for creating the tiles of converted values.
      */
-    private ConvertedGridCoverage(final GridCoverage source, final List<SampleDimension> range,
-                                  final MathTransform1D[] converters, final boolean isConverted)
+    ConvertedGridCoverage(final GridCoverage source, final List<SampleDimension> range,
+                          final MathTransform1D[] converters, final boolean isConverted,
+                          final ImageProcessor processor)
     {
         super(source.getGridGeometry(), range);
         this.source      = source;
         this.converters  = converters;
         this.isConverted = isConverted;
         this.bandType    = getBandType(range, isConverted, source);
+        this.processor   = processor;
     }
 
     /**
      * Returns a coverage of converted values computed from a coverage of packed values, or conversely.
      * If the given coverage is already converted, then this method returns {@code coverage} unchanged.
+     * This method is used for {@link GridCoverage#forConvertedValues(boolean)} default implementation.
      *
      * @param  source     the coverage containing values to convert.
      * @param  converted  {@code true} for a coverage containing converted values,
@@ -110,7 +121,10 @@ final class ConvertedGridCoverage extends GridCoverage {
         final List<SampleDimension> sources = source.getSampleDimensions();
         final List<SampleDimension> targets = new ArrayList<>(sources.size());
         final MathTransform1D[]  converters = converters(sources, targets, converted);
-        return (converters != null) ? new ConvertedGridCoverage(source, targets, converters, converted) : source;
+        if (converters == null) {
+            return source;
+        }
+        return new ConvertedGridCoverage(source, targets, converters, converted, Lazy.PROCESSOR);
     }
 
     /**
@@ -236,6 +250,38 @@ final class ConvertedGridCoverage extends GridCoverage {
         }
 
         /**
+         * Returns the default slice where to perform evaluation, or an empty map if unspecified.
+         */
+        @Override
+        public Map<Integer,Long> getDefaultSlice() {
+            return evaluator.getDefaultSlice();
+        }
+
+        /**
+         * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
+         */
+        @Override
+        public void setDefaultSlice(Map<Integer,Long> slice) {
+            evaluator.setDefaultSlice(slice);
+        }
+
+        /**
+         * Returns {@code true} if this evaluator is allowed to wraparound coordinates that are outside the grid.
+         */
+        @Override
+        public boolean isWraparoundEnabled() {
+            return evaluator.isWraparoundEnabled();
+        }
+
+        /**
+         * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the grid.
+         */
+        @Override
+        public void setWraparoundEnabled(final boolean allow) {
+            evaluator.setWraparoundEnabled(allow);
+        }
+
+        /**
          * Forwards configuration to the wrapped evaluator.
          */
         @Override
@@ -263,6 +309,14 @@ final class ConvertedGridCoverage extends GridCoverage {
             }
             return values;
         }
+
+        /**
+         * Converts the specified geospatial position to grid coordinates.
+         */
+        @Override
+        public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
+            return evaluator.toGridCoordinates(point);
+        }
     }
 
     /**
@@ -278,9 +332,11 @@ final class ConvertedGridCoverage extends GridCoverage {
         RenderedImage image = source.render(sliceExtent);
         /*
          * That image should never be null. But if an implementation wants to do so, respect that.
+         * We do not cache the image because caching is already handled by `ImageProcessor`,
+         * assuming that `source` returned an image from its own cache.
          */
         if (image != null) {
-            image = convert(image, bandType, converters);
+            image = convert(image, bandType, converters, processor);
         }
         return image;
     }

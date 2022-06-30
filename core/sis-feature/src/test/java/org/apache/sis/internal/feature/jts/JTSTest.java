@@ -228,4 +228,20 @@ public final strictfp class JTSTest extends TestCase {
         assertEquals(CommonCRS.WGS84.geographic(), out.getUserData());
         assertEquals(Factory.BIDIMENSIONAL, out.getCoordinateSequence().getDimension());
     }
+
+    /**
+     * Test {@code transform} method on an empty geometry.
+     *
+     * @throws FactoryException if an EPSG code can not be resolved.
+     * @throws TransformException if a coordinate can not be transformed.
+     */
+    @Test
+    public void testTransformEmpty() throws FactoryException, TransformException {
+        final GeometryFactory factory = Factory.INSTANCE.factory(false);
+        final Point in = factory.createPoint();
+        in.setUserData(CommonCRS.WGS84.geographic());
+        final Geometry out = JTS.transform(in, CommonCRS.WGS84.normalizedGeographic());
+        assertEquals(CommonCRS.WGS84.normalizedGeographic(), out.getUserData());
+        assertTrue(out.isEmpty());
+    }
 }

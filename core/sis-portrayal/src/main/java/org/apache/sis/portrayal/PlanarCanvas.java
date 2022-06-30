@@ -41,7 +41,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -137,7 +137,7 @@ public abstract class PlanarCanvas extends Canvas {
      * @see Canvas#objectiveToDisplay
      */
     @Override
-    final LinearTransform updateObjectiveToDisplay() {
+    final LinearTransform createObjectiveToDisplay() {
         return new AffineTransform2D(objectiveToDisplay);
     }
 
@@ -152,9 +152,9 @@ public abstract class PlanarCanvas extends Canvas {
      * @throws IllegalArgumentException if the given transform is not two-dimensional or is not affine.
      */
     @Override
-    final void updateObjectiveToDisplay(final LinearTransform newValue) {
+    final void setObjectiveToDisplayImpl(final LinearTransform newValue) {
         objectiveToDisplay.setTransform(AffineTransforms2D.castOrCopy(newValue.getMatrix()));
-        super.updateObjectiveToDisplay(newValue);
+        super.setObjectiveToDisplayImpl(newValue);
     }
 
     /**
@@ -162,13 +162,25 @@ public abstract class PlanarCanvas extends Canvas {
      * the current transform. For example if the given {@code before} transform is a translation, then the translation
      * vector is in units of the {@linkplain #getObjectiveCRS() objective CRS} (typically metres on the map).
      *
+     * <p>This method does nothing if the given transform is identity.
+     * Otherwise an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event will be sent with the
+     * {@link TransformChangeEvent.Reason#OBJECTIVE_NAVIGATION} reason after the change became effective.
+     * Depending on the implementation, the change may not take effect immediately.
+     * For example subclasses may do the rendering in a background thread.</p>
+     *
      * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
+     *
+     * @see TransformChangeEvent#getObjectiveChange()
      */
     public void transformObjectiveCoordinates(final AffineTransform before) {
         if (!before.isIdentity()) {
-            final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
+            final LinearTransform old = hasPropertyChangeListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.concatenate(before);
-            invalidateObjectiveToDisplay(old);
+            super.setObjectiveToDisplayImpl(null);
+            if (old != null) {
+                firePropertyChange(new TransformChangeEvent(this, old, null, before, null,
+                                       TransformChangeEvent.Reason.OBJECTIVE_NAVIGATION));
+            }
         }
     }
 
@@ -177,13 +189,25 @@ public abstract class PlanarCanvas extends Canvas {
      * the current transform. For example if the given {@code after} transform is a translation, then the translation
      * vector is in pixel units.
      *
+     * <p>This method does nothing if the given transform is identity.
+     * Otherwise an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event will be sent with the
+     * {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION} reason after the change became effective.
+     * Depending on the implementation, the change may not take effect immediately.
+     * For example subclasses may do the rendering in a background thread.</p>
+     *
      * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
+     *
+     * @see TransformChangeEvent#getDisplayChange()
      */
     public void transformDisplayCoordinates(final AffineTransform after) {
         if (!after.isIdentity()) {
-            final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
+            final LinearTransform old = hasPropertyChangeListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.preConcatenate(after);
-            invalidateObjectiveToDisplay(old);
+            super.setObjectiveToDisplayImpl(null);
+            if (old != null) {
+                firePropertyChange(new TransformChangeEvent(this, old, null, null, after,
+                                       TransformChangeEvent.Reason.DISPLAY_NAVIGATION));
+            }
         }
     }
 }

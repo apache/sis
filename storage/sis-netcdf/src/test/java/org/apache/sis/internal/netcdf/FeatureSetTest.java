@@ -23,8 +23,10 @@ import java.util.Collection;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -37,6 +39,8 @@ import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.test.dataset.TestData;
 
 
@@ -75,6 +79,17 @@ public strictfp class FeatureSetTest extends TestCase {
     }
 
     /**
+     * Returns a dummy data store implementation for the sole purpose of providing a non-null lock.
+     */
+    private static DataStore lock() {
+        return new DataStore() {
+            @Override public Optional<ParameterValueGroup> getOpenParameters() {return Optional.empty();}
+            @Override public Metadata getMetadata() {return null;}
+            @Override public void close() {}
+        };
+    }
+
+    /**
      * Tests {@link FeatureSet} with a moving features file.
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -82,7 +97,7 @@ public strictfp class FeatureSetTest extends TestCase {
      */
     @Test
     public void testMovingFeatures() throws IOException, DataStoreException {
-        final Object lock = new Object();
+        final DataStore lock = lock();
         final FeatureSet[] features;
         synchronized (lock) {
             features = FeatureSet.create(selectDataset(TestData.MOVING_FEATURES), lock);

@@ -53,7 +53,6 @@ import org.junit.BeforeClass;
     org.apache.sis.util.ArgumentChecksTest.class,                       // Uses resources.
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
-    org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.FractionTest.class,
     org.apache.sis.math.VectorTest.class,
     org.apache.sis.math.RepeatedVectorTest.class,

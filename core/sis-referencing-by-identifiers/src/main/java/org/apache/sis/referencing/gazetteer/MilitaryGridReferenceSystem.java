@@ -27,10 +27,15 @@ import java.util.stream.Stream;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 import java.awt.geom.Rectangle2D;
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
+import javax.measure.IncommensurableException;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -66,11 +71,16 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+
+import static java.util.logging.Logger.getLogger;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk9.JDK9;
@@ -135,7 +145,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
@@ -149,6 +159,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 8337394374656125471L;
+
+    /**
+     * Identifier for this reference system.
+     */
+    static final String IDENTIFIER = "MGRS";
 
     /**
      * Height of latitude bands, in degrees.
@@ -242,6 +257,21 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     private transient short northOffset;
 
     /**
+     * The unique instance, created when first requested.
+     */
+    private static MilitaryGridReferenceSystem INSTANCE;
+
+    /**
+     * Returns the unique instance.
+     */
+    static synchronized MilitaryGridReferenceSystem getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new MilitaryGridReferenceSystem();
+        }
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new Military Grid Reference System (MGRS) using the default datum.
      * The current Apache SIS version uses the {@linkplain CommonCRS#WGS84 WGS84} datum,
      * but this choice may change in the future if there is a need to adapt to new MGRS specifications.
@@ -277,10 +307,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             party = MetadataSource.getProvided().lookup(Party.class, "{org}NATO");
         } catch (MetadataStoreException e) {
             party = null;
-            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
+            Logging.unexpectedException(getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
                     MilitaryGridReferenceSystem.class, "<init>", e);
         }
-        return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), party);
+        NamedIdentifier name = new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null);
+        return properties(name, IDENTIFIER, party);
     }
 
     /**
@@ -339,6 +370,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      *
      * @return a new object performing conversions between {@link DirectPosition} and MGRS references.
      */
+    @Override
     public Coder createCoder() {
         return new Coder();
     }
@@ -346,7 +378,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     /**
      * Conversions between direct positions and references in the Military Grid Reference System (MGRS).
      * Each {@code Coder} instance can read references at arbitrary precision, but formats at the
-     * {@linkplain #setPrecision specified precision}.
+     * {@linkplain #setPrecision(double) specified precision}.
      * The same {@code Coder} instance can be reused for reading or writing many MGRS references.
      *
      * <p>See the {@link MilitaryGridReferenceSystem} enclosing class for usage example.</p>
@@ -356,11 +388,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.3
      * @since   0.8
      * @module
      */
-    public class Coder {
+    public class Coder extends ReferencingByIdentifiers.Coder {
         /**
          * Number of digits to use for formatting the numerical part of a MGRS reference.
          *
@@ -429,8 +461,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Returns the reference system for which MGRS references will be encoded or decoded.
          *
          * @return the enclosing reference system.
+         *
+         * @since 1.3
          */
-        final MilitaryGridReferenceSystem getReferenceSystem() {
+        @Override
+        public final MilitaryGridReferenceSystem getReferenceSystem() {
             return MilitaryGridReferenceSystem.this;
         }
 
@@ -466,6 +501,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * documented in the {@link #getPrecision()} method.
          *
          * @param  precision  the desired precision in metres.
+         * @throws ArithmeticException if the given precision is zero, negative, infinity or NaN.
          */
         public void setPrecision(final double precision) {
             final int p;
@@ -484,6 +520,73 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         final int digits() {
             return digits;
+        }
+
+        /**
+         * Returns the precision of the references formatted by this coder.
+         * This method returns the same value as {@link #getPrecision()} but as a quantity.
+         *
+         * @param  position  ignored (can be null).
+         * @return precision of formatted references in metres.
+         *
+         * @since 1.3
+         */
+        @Override
+        public Quantity<Length> getPrecision(DirectPosition position) {
+            return Quantities.create(getPrecision(), Units.METRE);
+        }
+
+        /**
+         * Sets the desired precision of the references formatted by this coder.
+         * If the given quantity uses angular units, it is converted to an approximate precision in metres
+         * at the latitude of given position. Then this method delegates to {@link #setPrecision(double)}.
+         *
+         * @param  precision  the desired precision in a linear or angular unit.
+         * @param  position   location where the specified precision is desired, or {@code null} for the equator.
+         * @throws IncommensurableException if the given precision does not use linear or angular units.
+         * @throws ArithmeticException if the precision is zero, negative, infinity or NaN.
+         *
+         * @since 1.3
+         */
+        @Override
+        public void setPrecision(final Quantity<?> precision, DirectPosition position) throws IncommensurableException {
+            ArgumentChecks.ensureNonNull("precision", precision);
+            double p = precision.getValue().doubleValue();
+            final Unit<?> unit = precision.getUnit();
+            if (Units.isAngular(unit)) {
+                final Ellipsoid ellipsoid = getEllipsoid();
+                double radius = 0;
+                if (position != null) {
+                    final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
+                    if (crs != null) try {
+                        final double φ  = encoder(crs).getLatitude(this, position);
+                        final double φr = Math.toRadians(φ);
+                        radius = Formulas.getRadius(ellipsoid, φr);
+                        if (φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
+                            φ <  TransverseMercator.Zoner.NORTH_BOUNDS)
+                        {
+                            radius *= Math.cos(φr);
+                        }
+
+                    } catch (IllegalArgumentException | FactoryException | TransformException e) {
+                        recoverableException(Coder.class, "setPrecision", e);
+                    }
+                }
+                if (!(radius > 0)) {
+                    radius = ellipsoid.getSemiMajorAxis();                  // Worst case scenario.
+                }
+                p = unit.getConverterToAny(Units.RADIAN).convert(p) * radius;
+            } else {
+                p = unit.getConverterToAny(Units.METRE).convert(p);
+            }
+            setPrecision(p);
+        }
+
+        /**
+         * Returns the ellipsoid of the geodetic datum of MGRS identifiers.
+         */
+        final Ellipsoid getEllipsoid() {
+            return datum.geographic().getDatum().getEllipsoid();
         }
 
         /**
@@ -550,7 +653,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Returns the encoder for the given coordinate reference system.
          * All calls to this method must be done in the same thread.
          *
-         * @throws IllegalArgumentException if the given CRS do not use one of the supported datums.
+         * @throws IllegalArgumentException if the given CRS does not use one of the supported datums.
          * @throws FactoryException if the creation of a coordinate operation failed.
          * @throws TransformException if the creation of an inverse operation failed.
          */
@@ -577,10 +680,48 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @return MGRS encoding of the given position.
          * @throws TransformException if an error occurred while transforming the given coordinate to a MGRS reference.
          */
+        @Override
         public String encode(final DirectPosition position) throws TransformException {
             ArgumentChecks.ensureNonNull("position", position);
             try {
-                return encoder(position.getCoordinateReferenceSystem()).encode(this, position, true, getSeparator(), digits());
+                return encoder(position.getCoordinateReferenceSystem())
+                        .encode(this, position, true, getSeparator(), digits(), 0);
+            } catch (IllegalArgumentException | FactoryException e) {
+                throw new GazetteerException(e.getLocalizedMessage(), e);
+            }
+        }
+
+        /**
+         * Encodes the given position into a MGRS reference with the given precision.
+         * This is equivalent to invoking {@link #setPrecision(Quantity, DirectPosition)}
+         * before {@link #encode(DirectPosition)}, except that it is potentially more efficient.
+         *
+         * @param  position   the coordinate to encode.
+         * @param  precision  the desired precision in a linear or angular unit.
+         * @return MGRS encoding of the given position.
+         * @throws ArithmeticException if the precision is zero, negative, infinity or NaN.
+         * @throws IncommensurableException if the given precision does not use linear or angular units.
+         * @throws TransformException if an error occurred while transforming the given coordinate to a MGRS reference.
+         *
+         * @since 1.3
+         */
+        @Override
+        public String encode(final DirectPosition position, final Quantity<?> precision)
+                throws IncommensurableException, TransformException
+        {
+            ArgumentChecks.ensureNonNull("position",  position);
+            ArgumentChecks.ensureNonNull("precision", precision);
+            double p = precision.getValue().doubleValue();
+            final Unit<?> unit = precision.getUnit();
+            if (Units.isAngular(unit)) {
+                p = unit.getConverterToAny(Units.RADIAN).convert(p);
+            } else {
+                setPrecision(unit.getConverterToAny(Units.METRE).convert(p));
+                p = 0;
+            }
+            try {
+                return encoder(position.getCoordinateReferenceSystem())
+                        .encode(this, position, true, getSeparator(), digits(), p);
             } catch (IllegalArgumentException | FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
@@ -647,6 +788,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @return a new position with the longitude at coordinate 0 and latitude at coordinate 1.
          * @throws TransformException if an error occurred while parsing the given string.
          */
+        @Override
         public Location decode(final CharSequence reference) throws TransformException {
             ArgumentChecks.ensureNonEmpty("reference", reference);
             return new Decoder(this, reference);
@@ -1226,7 +1368,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                         if (downward)    y += step - 1;
                         normalized.setOrdinate(0, x);
                         normalized.setOrdinate(1, y);
-                        String ref = encoder.encode(this, normalized, false, separator, digits);
+                        String ref = encoder.encode(this, normalized, false, separator, digits, 0);
                         if (ref != null) {
                             /*
                              * If there is a change of latitude band, we may have missed a cell before this one.
@@ -1238,7 +1380,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                             if (latitudeBand != previous && previous != 0) {
                                 pending = ref;
                                 normalized.setOrdinate(1, y + (downward ? +1 : -1));
-                                ref = encoder.encode(this, normalized, false, separator, digits);
+                                ref = encoder.encode(this, normalized, false, separator, digits, 0);
                                 if (ref == null || encoder.latitudeBand == previous) {
                                     ref = pending;  // No result or same result than previous iteration - cancel.
                                     pending = null;
@@ -1310,7 +1452,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.3
      *
      * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
      *
@@ -1325,7 +1467,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private static final int POLE = 100;
 
         /**
-         * The datum to which to transform the coordinate before formatting the MGRS reference.
+         * The datum to which to transform the coordinates before formatting the MGRS reference.
          * Only the datums enumerated in {@link CommonCRS} are currently supported.
          */
         private final CommonCRS datum;
@@ -1411,7 +1553,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 if (crsZone != 0) {
                     /*
                      * Usually, the projected CRS already has (E,N) axis orientations with metres units,
-                     * so we let 'toNormalized' to null. In the rarer cases where the CRS axes do not
+                     * so we let `toNormalized` to null. In the rarer cases where the CRS axes do not
                      * have the expected orientations and units, then we build a normalized version of
                      * that CRS and compute the transformation to that CRS.
                      */
@@ -1463,6 +1605,18 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
+         * Returns the latitude in degrees of given position.
+         * This is used only for estimating the precision.
+         */
+        final double getLatitude(final Coder owner, DirectPosition position) throws TransformException {
+            if (toNormalized != null) {
+                owner.normalized = position = toNormalized.transform(position, owner.normalized);
+            }
+            owner.geographic = position = toGeographic.transform(position, owner.geographic);
+            return position.getOrdinate(0);
+        }
+
+        /**
          * Encodes the given position into a MGRS reference. It is caller responsibility to ensure that
          * the position CRS is the same than the CRS specified at this {@code Encoder} creation time.
          *
@@ -1471,13 +1625,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @param  reproject  whether this method is allowed to reproject {@code position} when needed.
          * @param  separator  the separator to insert between each component of the MGRS identifier.
          * @param  digits     number of digits to use for formatting the numerical part of a MGRS reference.
+         * @param  precision  angular precision in radians, or 0. If non-zero, it will override {@code digits}.
          * @return the value of {@code buffer.toString()}, or {@code null} if a reprojection was necessary
          *         but {@code reproject} is {@code false}.
          */
-        String encode(final Coder owner, DirectPosition position, final boolean reproject,
-                final String separator, final int digits) throws FactoryException, TransformException
+        String encode(final Coder owner, DirectPosition position, final boolean reproject, final String separator,
+                      int digits, double precision) throws FactoryException, TransformException
         {
-            final StringBuilder buffer = owner.buffer;
             if (toNormalized != null) {
                 owner.normalized = position = toNormalized.transform(position, owner.normalized);
             }
@@ -1511,8 +1665,20 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
             }
             /*
+             * If an angular precision has been specified, override the number of digits with a value computed
+             * from that precision. We do that here for opportunistically using the latitude value computed above.
+             */
+            if (precision > 0) {
+                final double φr = Math.toRadians(φ);
+                precision *= Formulas.getRadius(owner.getEllipsoid(), φr);      // Convert precision to metres.
+                if (isUTM) precision *= Math.cos(φr);
+                owner.setPrecision(precision);
+                digits = owner.digits();
+            }
+            /*
              * Grid Zone Designator (GZD).
              */
+            final StringBuilder buffer = owner.buffer;
             buffer.setLength(0);
             if (isUTM) {
                 buffer.append(zone).append(separator);
@@ -1542,7 +1708,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     if (col < 1 || col > 8) {
                         /*
                          * UTM northing values at the equator range from 166021 to 833979 meters approximately
-                         * (WGS84 ellipsoid). Consequently 'cx' ranges from approximately 1.66 to 8.34, so 'c'
+                         * (WGS84 ellipsoid). Consequently `cx` ranges from approximately 1.66 to 8.34, so `col`
                          * should range from 1 to 8 inclusive.
                          */
                         throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
@@ -1561,7 +1727,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                         row += ('F' - 'A');
                     }
                     row %= GRID_ROW_COUNT;
-                    // Row calculation to be completed after the 'else' block.
+                    // Row calculation to be completed after the `else` block.
                 } else {
                     /*
                      * Universal Polar Stereographic (UPS) case. Row letters go from A to Z, omitting I and O.
@@ -1588,7 +1754,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                  * The specification requires us to truncate the number, not to round it.
                  */
                 if (digits > 0) {
-                    final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
+                    precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
                     append(buffer.append(separator), (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
                     append(buffer.append(separator), (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
                 }
@@ -2079,7 +2245,7 @@ parse:                  switch (part) {
             if (!isValid) {
                 final String gzd;
                 try {
-                    gzd = owner.encoder(crs).encode(owner, getDirectPosition(), true, "", 0);
+                    gzd = owner.encoder(crs).encode(owner, getDirectPosition(), true, "", 0, 0);
                 } catch (IllegalArgumentException | FactoryException e) {
                     throw new GazetteerException(e.getLocalizedMessage(), e);
                 }

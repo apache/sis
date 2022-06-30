@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -47,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * That function is invoked (indirectly) by {@link org.apache.sis.internal.coverage.j2d.TiledImage#getProperty(String)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -180,7 +181,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         }
         GeneralEnvelope subArea = null;
         if (useSubExtent && cornerToCRS != null) try {
-            subArea = extent.toCRS(cornerToCRS, gridToCRS, null);
+            subArea = extent.toEnvelope(cornerToCRS, gridToCRS, null);
         } catch (TransformException e) {
             // GridGeometry.reduce(…) is the public method invoking indirectly this method.
             GridGeometry.recoverableException("reduce", e);
@@ -221,7 +222,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
          * from the original grid geometry.
          */
         if (useSubExtent || resolution == null) {
-            resolution = GridGeometry.resolution(gridToCRS, extent);
+            resolution = GridGeometry.resolution(gridToCRS, extent, PixelInCell.CELL_CENTER);
         } else if (resolution.length != n) {
             resolution = new double[n];
             for (int i=0; i<n; i++) {
@@ -296,7 +297,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         Matrix derivative = MathTransforms.getMatrix(gridToCRS);
         if (derivative == null) {
             if (extent != null) try {
-                derivative = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+                derivative = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(PixelInCell.CELL_CENTER)));
             } catch (TransformException e) {
                 // GridGeometry.reduce(…) is the public method invoking indirectly this method.
                 GridGeometry.recoverableException("reduce", e);

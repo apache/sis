@@ -25,7 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 
@@ -55,7 +54,7 @@ final class CachedStatement implements AutoCloseable {
     /**
      * Where to log warnings.
      */
-    static final Logger LOGGER = Logging.getLogger(Loggers.SQL);
+    static final Logger LOGGER = Logger.getLogger(Loggers.SQL);
 
     /**
      * The interface for which the prepared statement has been created.

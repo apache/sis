@@ -19,6 +19,7 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.Date;
 import java.time.Instant;
+import java.time.Duration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
@@ -65,7 +66,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
@@ -358,6 +359,27 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * Converts the given value difference into a duration object.
+     * If the given value {@linkplain Double#isNaN is NaN} or infinite,
+     * or if the conversion is non-linear, then this method returns {@code null}.
+     * This method is the converse of {@link #toValue(Duration)}.
+     *
+     * @param  delta  a difference of values in this axis. Unit of measurement is given by {@link #getUnit()}.
+     * @return the value difference as a duration, or {@code null} if the duration can not be computed.
+     *
+     * @since 1.3
+     */
+    public Duration toDuration(double delta) {
+        delta *= Units.derivative(toSeconds, Double.NaN);
+        if (Double.isFinite(delta)) {
+            final long t = Math.round(delta);
+            return Duration.ofSeconds(t, Math.round((delta - t) * NANOS_PER_SECOND));
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Converts the given instant into a value in this axis unit.
      * If the given instant is {@code null}, then this method returns {@link Double#NaN}.
      * This method is the converse of {@link #toInstant(double)}.
@@ -403,11 +425,35 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * Converts the given duration into a difference of values in this axis unit.
+     * If the given duration is {@code null}, or if the conversion is non-linear,
+     * then this method returns {@link Double#NaN}.
+     * This method is the converse of {@link #toDuration(double)}.
+     *
+     * @param  delta  the difference of values as a duration, or {@code null}.
+     * @return the value difference in this axis unit, or {@link Double#NaN} if it can not be computed.
+     *         Unit of measurement is given by {@link #getUnit()}.
+     *
+     * @since 1.3
+     */
+    public double toValue(final Duration delta) {
+        if (delta != null) {
+            double t = delta.getSeconds();
+            t += delta.getNano() / (double) NANOS_PER_SECOND;
+            t *= Units.derivative(toSeconds.inverse(), Double.NaN);
+            return t;
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code TimeCRS[…]} element.
      *
      * <div class="note"><b>Compatibility note:</b>
      * {@code TimeCRS} is defined in the WKT 2 specification only.</div>
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "TimeCRS"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#88">WKT 2 specification §14</a>

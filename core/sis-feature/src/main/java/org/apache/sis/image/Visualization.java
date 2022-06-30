@@ -18,6 +18,8 @@ package org.apache.sis.image;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.DoubleUnaryOperator;
@@ -58,7 +60,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * {@link WritableRaster#setPixel(int, int, int[])} has more efficient implementations for integers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -462,5 +464,27 @@ final class Visualization extends ResampledImage {
         // Conversion only, when no resampling is needed.
         Transferer.create(getSource(), tile).compute(converters);
         return tile;
+    }
+
+    /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (super.equals(object)) {
+            final Visualization other = (Visualization) object;
+            return Arrays .equals(converters, other.converters) &&
+                   Objects.equals(colorModel, other.colorModel);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 67 *  Arrays.hashCode(converters)
+                                + 97 * Objects.hashCode(colorModel);
     }
 }

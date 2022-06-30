@@ -45,6 +45,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.logging.Logging;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * The base class of operation methods performing a translation, rotation and/or scale in geocentric coordinates.
@@ -435,7 +437,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
                          * Should not occur, except sometime on inverse transform of relatively complex datum shifts
                          * (more than just translation terms). We can fallback on formatting the full matrix.
                          */
-                        Logging.recoverableException(Logging.getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
+                        Logging.recoverableException(getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
                         continue;
                     }
                     final boolean isTranslation = parameters.isTranslation();

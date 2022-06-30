@@ -29,7 +29,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Filter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -120,7 +119,7 @@ public final class Context extends MarshalContext {
     /**
      * The logger to use for warnings that are specific to XML.
      */
-    public static final Logger LOGGER = Logging.getLogger(Loggers.XML);
+    public static final Logger LOGGER = Logger.getLogger(Loggers.XML);
 
     /**
      * Various boolean attributes determines by the above static constants.

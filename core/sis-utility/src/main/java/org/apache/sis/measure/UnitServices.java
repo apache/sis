@@ -35,6 +35,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 
+import static java.util.logging.Logger.getLogger;
+
 
 /**
  * The central point from which all unit services (parsing, formatting, listing, <i>etc</i>) can be obtained.
@@ -180,7 +182,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
             style = org.apache.sis.measure.UnitFormat.Style.valueOf(name);
         } catch (IllegalArgumentException e) {
             // JSR-363 specification mandate that we return null.
-            Logging.recoverableException(Logging.getLogger(Loggers.MEASURE), UnitServices.class, "getUnitFormat", e);
+            Logging.recoverableException(getLogger(Loggers.MEASURE), UnitServices.class, "getUnitFormat", e);
             return null;
         }
         org.apache.sis.measure.UnitFormat f = new org.apache.sis.measure.UnitFormat(locale);

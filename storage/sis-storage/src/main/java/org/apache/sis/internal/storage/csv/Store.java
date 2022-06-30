@@ -305,7 +305,7 @@ final class Store extends URIDataStore implements FeatureSet {
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
-        listeners.useWarningEventsOnly();
+        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -846,8 +846,9 @@ final class Store extends URIDataStore implements FeatureSet {
      */
     @Override
     public synchronized void close() throws DataStoreException {
+        listeners.close();                  // Should never fail.
         final BufferedReader s = source;
-        source = null;                  // Cleared first in case of failure.
+        source = null;                      // Cleared first in case of failure.
         if (s != null) try {
             s.close();
         } catch (IOException e) {

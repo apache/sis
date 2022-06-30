@@ -100,7 +100,7 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {
         return super.derivative(point instanceof DirectPosition ?
-                (DirectPosition) point : new DirectPosition2D(point.getX(), point.getY()));
+                (DirectPosition) point : new DirectPosition2D(point));
     }
 
     /**

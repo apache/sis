@@ -39,6 +39,7 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.feature.MovingFeatures;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -64,7 +65,7 @@ import org.opengis.feature.Attribute;
  * It may be inefficient unless the {@link Decoder} uses a {@code ChannelDataInput} backed by a direct buffer.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -104,7 +105,7 @@ final class FeatureSet extends DiscreteSampling {
     /**
      * The time-varying properties (for which there is many values per feature instance), or an empty array if none.
      * The length of all {@code dynamicProperties} variables shall be the sum of all {@link #counts} values.
-     * If {@code #count} is {@code null}, then this array is empty.
+     * If {@link #counts} is {@code null}, then this array is empty.
      */
     private final Variable[] dynamicProperties;
 
@@ -191,7 +192,7 @@ final class FeatureSet extends DiscreteSampling {
      */
     private FeatureSet(final Decoder decoder, String name, final Vector counts, final Variable[] properties,
                        final Variable[] dynamicProperties, final Map<AxisType,Variable> selectedAxes,
-                       final boolean isTrajectory, final boolean hasTime, final Object lock)
+                       final boolean isTrajectory, final boolean hasTime, final DataStore lock)
             throws DataStoreException, IOException
     {
         super(decoder.geomlib, decoder.listeners, lock);
@@ -299,7 +300,7 @@ final class FeatureSet extends DiscreteSampling {
      * @throws IllegalArgumentException if the geometric object library is not available.
      * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    static FeatureSet[] create(final Decoder decoder, final Object lock) throws IOException, DataStoreException {
+    static FeatureSet[] create(final Decoder decoder, final DataStore lock) throws IOException, DataStoreException {
         assert Thread.holdsLock(lock);
         final List<FeatureSet> features = new ArrayList<>(3);     // Will usually contain at most one element.
         final Map<Dimension,Boolean> done = new HashMap<>();      // Whether a dimension has already been used.
@@ -387,7 +388,7 @@ final class FeatureSet extends DiscreteSampling {
      */
     private static void addFeatureSet(final List<FeatureSet> features, final Decoder decoder,
             final Variable counts, final Dimension featureDimension, final Dimension sampleDimension,
-            final Object lock) throws IOException, DataStoreException
+            final DataStore lock) throws IOException, DataStoreException
     {
         final String featureName = featureDimension.getName();
         if (featureName == null) {

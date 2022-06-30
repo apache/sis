@@ -29,7 +29,6 @@ import com.sun.star.lib.uno.helper.WeakBase;
 
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -207,7 +206,7 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
      */
     protected final synchronized Logger getLogger() {
         if (logger == null) {
-            logger = Logging.getLogger(Registration.LOGGER);
+            logger = Logger.getLogger(Registration.LOGGER);
         }
         return logger;
     }

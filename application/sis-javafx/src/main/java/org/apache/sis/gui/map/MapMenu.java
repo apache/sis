@@ -132,7 +132,7 @@ public class MapMenu extends ContextMenu {
     public void addReferenceSystems(final RecentReferenceSystems preferences) {
         ArgumentChecks.ensureNonNull("preferences", preferences);
         final MapCanvas.MenuHandler handler = startNewMenuItems(CRS);
-        final Menu systemChoices = preferences.createMenuItems(handler);
+        final Menu systemChoices = preferences.createMenuItems(true, handler);
         handler.selectedCrsProperty = RecentReferenceSystems.getSelectedProperty(systemChoices);
         handler.positionables       = new ToggleGroup();
 
@@ -161,7 +161,7 @@ public class MapMenu extends ContextMenu {
         final Resources resources = Resources.forLocale(canvas.getLocale());
         final MenuItem coordinates = resources.menu(Resources.Keys.CopyCoordinates, (event) -> {
             try {
-                final String text = format.formatCoordinates(handler.x, handler.y);
+                final String text = format.formatTabSeparatedCoordinates(handler.x, handler.y);
                 final ClipboardContent content = new ClipboardContent();
                 content.putString(text);
                 Clipboard.getSystemClipboard().setContent(content);

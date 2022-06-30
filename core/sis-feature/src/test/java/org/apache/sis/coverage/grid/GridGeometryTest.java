@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -43,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link GridGeometry} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -61,7 +62,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * Verifies the shift between the two {@code gridToCRS} transforms.
      * This method should be invoked when the transforms are linear.
      *
-     * @param  grid  the grid geoemtry to validate.
+     * @param  grid  the grid geometry to validate.
      */
     private static void verifyGridToCRS(final GridGeometry grid) {
         final Matrix tr1 = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER));
@@ -489,6 +490,35 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridGeometry#relocate(GridExtent)}.
+     *
+     * @throws TransformException if the relocated envelope can not be computed.
+     */
+    @Test
+    public void testRelocate() throws TransformException {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(10, 10),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                    2,  0,  10,
+                    0,  3,  20,
+                    0,  0,   1)),
+                HardCodedCRS.WGS84);
+
+        assertSame(grid, grid.relocate(new GridExtent(10, 10)));
+        final GridGeometry relocated = grid.relocate(new GridExtent(20, 20));
+        assertSame(grid.gridToCRS,   relocated.gridToCRS);
+        assertSame(grid.cornerToCRS, relocated.cornerToCRS);
+        assertSame(grid.resolution,  relocated.resolution);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {10, 20},
+                new double[] {30, 50}), grid.envelope, STRICT);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {10, 20},
+                new double[] {50, 80}), relocated.envelope, STRICT);
+    }
+
+    /**
      * Tests {@link GridGeometry#reduce(int...)}.
      */
     @Test
@@ -571,6 +601,31 @@ public final strictfp class GridGeometryTest extends TestCase {
         reduced = grid.reduce(2);
         tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
         assertMatrixEquals("gridToCRS", new Matrix2(0, 3, 0, 1), MathTransforms.getMatrix(tr), STRICT);
+    }
+
+    /**
+     * Tests {@link GridGeometry#createImageCRS(String, PixelInCell)}.
+     */
+    @Test
+    public void testCreateImageCRS() {
+        final GridGeometry gg = new GridGeometry(
+                new GridExtent(null, null, new long[] {17, 10, 4}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix4(
+                    1,   0,  0, -7,
+                    0,  -1,  0, 50,
+                    0,   0,  8, 20,
+                    0,   0,  0,  1)),
+                HardCodedCRS.WGS84_WITH_TIME);
+
+        final DerivedCRS crs = gg.createImageCRS("Horizontal part", PixelInCell.CELL_CENTER);
+        assertEquals("Horizontal part", crs.getName().getCode());
+        final Matrix mt = MathTransforms.getMatrix(crs.getConversionFromBase().getMathTransform());
+        assertSame(HardCodedCRS.WGS84, crs.getBaseCRS());
+        assertMatrixEquals("CRS to grid",
+                new Matrix3(1,  0,  7,      // Opposite sign because this is the inverse transform.
+                            0, -1, 50,      // Opposite sign cancelled by -1 scale factor.
+                            0,  0,  1), mt, STRICT);
     }
 
     /**

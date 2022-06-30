@@ -16,12 +16,20 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.awt.Shape;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.awt.Shape;
+import java.awt.Rectangle;
+import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.coverage.RegionOfInterest;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.util.ArgumentChecks;
@@ -29,7 +37,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.FinalFieldSetter;
-import org.apache.sis.coverage.RegionOfInterest;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.measure.NumberRange;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -39,7 +50,7 @@ import org.apache.sis.coverage.RegionOfInterest;
  * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see org.apache.sis.image.ImageProcessor
  *
@@ -173,6 +184,8 @@ public class GridCoverageProcessor implements Cloneable {
      * @return a coverage with mask applied.
      * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
      *
+     * @see ImageProcessor#mask(RenderedImage, Shape, boolean)
+     *
      * @since 1.2
      */
     public GridCoverage mask(final GridCoverage source, final RegionOfInterest mask, final boolean maskInside)
@@ -184,6 +197,67 @@ public class GridCoverageProcessor implements Cloneable {
         RenderedImage data = source.render(null);
         data = imageProcessor.mask(data, roi, maskInside);
         return new GridCoverage2D(source, data);
+    }
+
+    /**
+     * Returns a coverage with sample values converted by the given functions.
+     * The number of sample dimensions in the returned coverage is the length of the {@code converters} array,
+     * which must be greater than 0 and not greater than the number of sample dimensions in the source coverage.
+     * If the {@code converters} array length is less than the number of source sample dimensions,
+     * then all sample dimensions at index ≥ {@code converters.length} will be ignored.
+     *
+     * <h4>Sample dimensions customization</h4>
+     * By default, this method creates new sample dimensions with the same names and categories than in the
+     * previous coverage, but with {@linkplain org.apache.sis.coverage.Category#getSampleRange() sample ranges}
+     * converted using the given converters and with {@linkplain SampleDimension#getUnits() units of measurement}
+     * omitted. This behavior can be modified by specifying a non-null {@code sampleDimensionModifier} function.
+     * If non-null, that function will be invoked with, as input, a pre-configured sample dimension builder.
+     * The {@code sampleDimensionModifier} function can {@linkplain SampleDimension.Builder#setName(CharSequence)
+     * change the sample dimension name} or {@linkplain SampleDimension.Builder#categories() rebuild the categories}.
+     *
+     * <h4>Result relationship with source</h4>
+     * If the source coverage is backed by a {@link java.awt.image.WritableRenderedImage},
+     * then changes in the source coverage are reflected in the returned coverage and conversely.
+     *
+     * @param  source      the coverage for which to convert sample values.
+     * @param  converters  the transfer functions to apply on each sample dimension of the source coverage.
+     * @param  sampleDimensionModifier  a callback for modifying the {@link SampleDimension.Builder} default
+     *         configuration for each sample dimension of the target coverage, or {@code null} if none.
+     * @return the coverage which computes converted values from the given source.
+     *
+     * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType, ColorModel)
+     *
+     * @since 1.3
+     */
+    public GridCoverage convert(final GridCoverage source, MathTransform1D[] converters,
+            Function<SampleDimension.Builder, SampleDimension> sampleDimensionModifier)
+    {
+        ArgumentChecks.ensureNonNull("source",     source);
+        ArgumentChecks.ensureNonNull("converters", converters);
+        final List<SampleDimension> sourceBands = source.getSampleDimensions();
+        ArgumentChecks.ensureSizeBetween("converters", 1, sourceBands.size(), converters.length);
+        final SampleDimension[] targetBands = new SampleDimension[converters.length];
+        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        if (sampleDimensionModifier == null) {
+            sampleDimensionModifier = SampleDimension.Builder::build;
+        }
+        for (int i=0; i < converters.length; i++) {
+            final MathTransform1D converter = converters[i];
+            ArgumentChecks.ensureNonNullElement("converters", i, converter);
+            final SampleDimension band = sourceBands.get(i);
+            band.getBackground().ifPresent(builder::setBackground);
+            band.getCategories().forEach((category) -> {
+                if (category.isQuantitative()) {
+                    // Unit is assumed different as a result of conversion.
+                    builder.addQuantitative(category.getName(), category.getSampleRange(), converter, null);
+                } else {
+                    builder.addQualitative(category.getName(), category.getSampleRange());
+                }
+            });
+            targetBands[i] = sampleDimensionModifier.apply(builder.setName(band.getName())).forConvertedValues(true);
+            builder.clear();
+        }
+        return new ConvertedGridCoverage(source, UnmodifiableArrayList.wrap(targetBands), converters, true, unique(imageProcessor));
     }
 
     /**
@@ -199,7 +273,7 @@ public class GridCoverageProcessor implements Cloneable {
      *   </tr><tr>
      *     <td>{@linkplain GridGeometry#getExtent() Grid extent}</td>
      *     <td>A default size preserving resolution at source
-     *       {@linkplain GridExtent#getPointOfInterest() point of interest}.</td>
+     *       {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest}.</td>
      *   </tr><tr>
      *     <td>{@linkplain GridGeometry#getGridToCRS Grid to CRS transform}</td>
      *     <td>Whatever it takes for fitting data inside the supplied extent.</td>
@@ -219,6 +293,8 @@ public class GridCoverageProcessor implements Cloneable {
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      *         It may be the source CRS, the source extent, <i>etc.</i> depending on context.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
+     *
+     * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
     public GridCoverage resample(GridCoverage source, final GridGeometry target) throws TransformException {
         ArgumentChecks.ensureNonNull("source", source);
@@ -272,7 +348,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  ex      the ignorable exception.
      */
     static void recoverableException(final String caller, final Exception ex) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridCoverageProcessor.class, caller, ex);
+        Logging.recoverableException(getLogger(Modules.RASTER), GridCoverageProcessor.class, caller, ex);
     }
 
     /**

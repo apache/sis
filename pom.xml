@@ -557,7 +557,7 @@
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>1.2</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
-    <javafx.version>17</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
+    <javafx.version>18.0.1</javafx.version>                         <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>3.1-SNAPSHOT</geoapi.version>
   </properties>
 
@@ -859,7 +859,6 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.4.0</version>
         <configuration>
-          <release>17</release>
           <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
@@ -1001,7 +1000,7 @@
     <repository>
       <id>geotoolkit</id>
       <name>Geotoolkit.org repository</name>
-      <url>http://maven.geotoolkit.org</url>
+      <url>https://maven.geotoolkit.org</url>
     </repository>
   </repositories>
 

@@ -24,7 +24,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.identification.BrowseGraphic;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.Namespaces;
@@ -33,8 +32,9 @@ import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static java.util.logging.Logger.getLogger;
 import static java.util.Collections.singletonMap;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -305,7 +305,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
                  * In verbose mode, log the warning for allowing the developer to
                  * check the message. In normal mode, the test will be silent.
                  */
-                Logging.getLogger(warning.getLoggerName()).log(warning);
+                getLogger(warning.getLoggerName()).log(warning);
             }
             assertArrayEquals("FileName shall have precedence over CharacterString.",
                     new Object[] {"CharacterString", "FileName"}, warning.getParameters());

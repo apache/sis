@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Collections;
@@ -34,7 +35,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * Tests {@link DefaultTemporalCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -125,5 +126,17 @@ public final strictfp class DefaultTemporalCRSTest extends TestCase {
         assertEquals("toValue",   v,            crs.toValue(Date.from(t)), ε);
         assertEquals("toInstant", t,            crs.toInstant(v));
         assertEquals("toDate",    Date.from(t), crs.toDate(v));
+    }
+
+    /**
+     * Tests {@link DefaultTemporalCRS#toDuration(double)} and its converse.
+     */
+    @Test
+    public void testDurationConversion() {
+        final DefaultTemporalCRS crs = HardCodedCRS.TIME;
+        final Duration duration = crs.toDuration(4.25);
+        assertEquals(  4, duration.toDays());
+        assertEquals(102, duration.toHours());
+        assertEquals(4.25, crs.toValue(duration), STRICT);
     }
 }

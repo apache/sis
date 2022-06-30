@@ -35,7 +35,9 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.math.MathFunctions;
@@ -51,6 +53,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
@@ -80,6 +83,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
+import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.referencing.CRS.findOperation;
 
 
@@ -128,7 +132,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * The same instance can be shared by different {@link GridCoverage} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -366,12 +370,12 @@ public class GridGeometry implements LenientComparable, Serializable {
                         MathTransforms.uniformTranslation(dimension, -0.5));
                 cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
                 gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
-                resolution  = resolution(gridToCRS, extent);
+                resolution  = resolution(gridToCRS, extent, PixelInCell.CELL_CENTER);
                 nonLinears  = findNonLinearTargets(gridToCRS);
             } else {
                 cornerToCRS = null;
                 gridToCRS   = null;
-                resolution  = resolution(toOther, extent);      // Save resolution even if `gridToCRS` is null.
+                resolution  = resolution(toOther, extent, PixelInCell.CELL_CENTER);     // Save resolution even if `gridToCRS` is null.
                 nonLinears  = findNonLinearTargets(toOther);
             }
         }
@@ -444,7 +448,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
             this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
             this.envelope    = computeEnvelope(gridToCRS, crs, null);   // `gridToCRS` specified by the user, not `this.gridToCRS`.
-            this.resolution  = resolution(gridToCRS, extent);           // `gridToCRS` or `cornerToCRS` does not matter here.
+            this.resolution  = resolution(gridToCRS, extent, anchor);   // `gridToCRS` or `cornerToCRS` does not matter here.
             this.nonLinears  = findNonLinearTargets(gridToCRS);
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "gridToCRS");
@@ -456,7 +460,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The {@link #extent}, {@link #gridToCRS} and {@link #cornerToCRS} fields must be set before this method is invoked.
      *
      * @param  specified  the transform specified by the user. This is not necessarily {@link #gridToCRS}.
-     * @param  crs        the coordinate reference system to declare in the envelope.
+     * @param  crs        the coordinate reference system to declare in the envelope. May be {@code null}.
      * @param  limits     if non-null, intersect with that envelope. The CRS must be the same than {@code crs}.
      */
     private ImmutableEnvelope computeEnvelope(final MathTransform specified, final CoordinateReferenceSystem crs,
@@ -464,7 +468,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     {
         final GeneralEnvelope env;
         if (extent != null && cornerToCRS != null) {
-            env = extent.toCRS(cornerToCRS, specified, limits);
+            env = extent.toEnvelope(cornerToCRS, specified, limits);
             env.setCoordinateReferenceSystem(crs);
             if (limits != null) {
                 env.intersect(limits);
@@ -532,7 +536,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
                 extent = new GridExtent(env, rounding, GridClippingMode.STRICT, null, null, null, null);
-                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // `gridToCRS` specified by the user, not `this.gridToCRS`.
+                env = extent.toEnvelope(cornerToCRS, gridToCRS, envelope);
+                // Use `gridToCRS` specified by the user, not `this.gridToCRS`.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
             }
@@ -540,7 +545,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
                 // `gridToCRS` can not be null if `cornerToCRS` is non-null.
-                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor)));
                 numToIgnore = 0;
             } catch (TransformException e) {
                 recoverableException("<init>", e);
@@ -578,7 +583,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  exception  the exception that occurred.
      */
     static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
+        Logging.recoverableException(getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
     }
 
     /**
@@ -838,6 +843,30 @@ public class GridGeometry implements LenientComparable, Serializable {
         throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
     }
 
+    /**
+     * Returns a linear approximation of the conversion from grid coordinates to "real world" coordinates.
+     * If the value returned by {@link #getGridToCRS(PixelInCell)} is already an instance of {@link LinearTransform},
+     * then it is returned as is. Otherwise this method computes the tangent of the transform at the grid extent
+     * {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest} (usually the center of the grid).
+     *
+     * @param  anchor  the cell part to map (center or corner).
+     * @return linear approximation of the conversion from grid coordinates to "real world" coordinates.
+     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
+     * @throws IncompleteGridGeometryException if this grid geometry has no transform,
+     *          of if the transform is non-linear but this grid geometry has no extent.
+     * @throws TransformException if an error occurred while computing the tangent.
+     *
+     * @since 1.3
+     */
+    public LinearTransform getLinearGridToCRS(final PixelInCell anchor) throws TransformException {
+        final MathTransform tr = getGridToCRS(anchor);
+        if (tr instanceof LinearTransform) {
+            return (LinearTransform) tr;
+        }
+        return MathTransforms.linear(MathTransforms.getMatrix(tr,
+                new DirectPositionView.Double(getExtent().getPointOfInterest(anchor))));
+    }
+
     /*
      * Do not provide a convenience `getGridToCRS()` method without PixelInCell or PixelOrientation argument.
      * Experience shows that 0.5 pixel offset in image localization is a recurrent problem. We really want to
@@ -933,7 +962,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 clip = null;
             }
             MathTransform tr = MathTransforms.concatenate(cornerToCRS, op.getMathTransform());
-            final GeneralEnvelope env = extent.toCRS(tr, tr, clip);
+            final GeneralEnvelope env = extent.toEnvelope(tr, tr, clip);
             env.setCoordinateReferenceSystem(op.getTargetCRS());
             env.normalize();
             if (clip != null) {
@@ -1028,7 +1057,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <ul>
      *   <li>{@link Double#NaN} if {@code allowEstimates} is {@code false}.</li>
      *   <li>An arbitrary representative resolution otherwise.
-     *       Current implementation computes the resolution at {@link GridExtent#getPointOfInterest() grid center},
+     *       Current implementation computes the resolution at {@link GridExtent#getPointOfInterest(PixelInCell) grid center},
      *       but different implementations may use alternative algorithms.</li>
      * </ul>
      *
@@ -1066,14 +1095,15 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  gridToCRS  a transform for which to compute the resolution, or {@code null} if none.
      * @param  domain     the domain for which to get a resolution, or {@code null} if none.
      *                    If non-null, must be the source of {@code gridToCRS}.
+     * @param  anchor     the pixel corner versus pixel center convention to use.
      * @return the resolutions as positive numbers. May contain NaN values.
      */
-    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) {
+    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain, final PixelInCell anchor) {
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
         if (matrix != null) {
             return resolution(matrix, 1);
         } else if (domain != null && gridToCRS != null) try {
-            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest())), 0);
+            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest(anchor))), 0);
         } catch (TransformException e) {
             recoverableException("resolution", e);
         }
@@ -1381,6 +1411,37 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Returns a grid geometry with the given grid extent, which implies a new "real world" computation.
+     * The "grid to CRS" transforms and the resolution stay the same than this {@code GridGeometry}.
+     * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.
+     *
+     * <p>The given extent is taken verbatim; this method does no clipping.
+     * The given extent does not need to intersect the extent of this grid geometry.</p>
+     *
+     * @param  extent  extent of the grid geometry to return.
+     * @return grid geometry with the given extent. May be {@code this} if there is no change.
+     * @throws TransformException if the geospatial envelope can not be recomputed with the new grid extent.
+     *
+     * @since 1.3
+     */
+    public GridGeometry relocate(final GridExtent extent) throws TransformException {
+        ArgumentChecks.ensureNonNull("size", extent);
+        if (extent.equals(this.extent)) {
+            return this;
+        }
+        ensureDimensionMatches(getDimension(), extent);
+        final ImmutableEnvelope relocated;
+        if (cornerToCRS != null) {
+            final GeneralEnvelope env = extent.toEnvelope(cornerToCRS, gridToCRS, null);
+            env.setCoordinateReferenceSystem(getCoordinateReferenceSystem(envelope));
+            relocated = new ImmutableEnvelope(env);
+        } else {
+            relocated = envelope;           // Either null or contains only the CRS.
+        }
+        return new GridGeometry(extent, gridToCRS, cornerToCRS, relocated, resolution, nonLinears);
+    }
+
+    /**
      * Returns a grid geometry that encompass only some dimensions of this grid geometry.
      * The specified dimensions will be copied into a new grid geometry if necessary.
      * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
@@ -1407,6 +1468,43 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
+    }
+
+    /**
+     * Creates a one-, two- or three-dimensional coordinate reference system for cell indices in the grid.
+     * This method returns a CRS which is derived from the "real world" CRS or a subset of it.
+     * If the "real world" CRS is an instance of {@link org.opengis.referencing.crs.SingleCRS},
+     * then the derived CRS has the following properties:
+     *
+     * <ul>
+     *   <li>{@link DerivedCRS#getBaseCRS()} is {@link #getCoordinateReferenceSystem()}.</li>
+     *   <li>{@link DerivedCRS#getConversionFromBase()} is the inverse of {@link #getGridToCRS(PixelInCell)}.</li>
+     * </ul>
+     *
+     * Otherwise if the "real world" CRS is an instance of {@link org.opengis.referencing.crs.CompoundCRS},
+     * then only the first {@link org.opengis.referencing.crs.SingleCRS} (the head) is used.
+     * This is usually (but not necessarily) the horizontal component of the spatial CRS.
+     * The result is usually two-dimensional, but 1 and 3 dimensions are also possible.
+     *
+     * <p>Because of above relationship, it is possible to use the derived CRS in a chain of operations
+     * with (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.</p>
+     *
+     * @param  name    name of the CRS to create.
+     * @param  anchor  the cell part to map (center or corner).
+     * @return a derived CRS for coordinates (cell indices) associated to the grid extent.
+     * @throws IncompleteGridGeometryException if the CRS, grid extent or "grid to CRS" transform is missing.
+     *
+     * @since 1.3
+     */
+    public DerivedCRS createImageCRS(final String name, final PixelInCell anchor) {
+        ArgumentChecks.ensureNonEmpty("name", name);
+        try {
+            return GridExtentCRS.forCoverage(name, this, anchor, null);
+        } catch (FactoryException e) {
+            throw new BackingStoreException(e);
+        } catch (NoninvertibleTransformException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**

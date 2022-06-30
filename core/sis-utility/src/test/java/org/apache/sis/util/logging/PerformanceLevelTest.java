@@ -29,7 +29,7 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  * Tests the {@link PerformanceLevel} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -39,8 +39,8 @@ public final strictfp class PerformanceLevelTest extends TestCase {
      */
     @Test
     public void testGetMinDuration() {
-        assertEquals(1,  SLOW  .getMinDuration(TimeUnit.SECONDS));
-        assertEquals(10, SLOWER.getMinDuration(TimeUnit.SECONDS));
+        assertEquals(1,  SLOWNESS.getMinDuration(TimeUnit.SECONDS));
+        assertEquals(10, SLOWER  .getMinDuration(TimeUnit.SECONDS));
     }
 
     /**
@@ -48,23 +48,23 @@ public final strictfp class PerformanceLevelTest extends TestCase {
      */
     @Test
     public void testSetMinDuration() {
-        final long t1 = SLOW  .getMinDuration(TimeUnit.SECONDS);
-        final long t2 = SLOWER.getMinDuration(TimeUnit.SECONDS);
+        final long t1 = SLOWNESS.getMinDuration(TimeUnit.SECONDS);
+        final long t2 = SLOWER  .getMinDuration(TimeUnit.SECONDS);
         try {
-            SLOW.setMinDuration(80, TimeUnit.SECONDS);
-            assertEquals(80, SLOW  .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(80, SLOWER.getMinDuration(TimeUnit.SECONDS));
+            SLOWNESS.setMinDuration(80, TimeUnit.SECONDS);
+            assertEquals(80, SLOWNESS.getMinDuration(TimeUnit.SECONDS));
+            assertEquals(80, SLOWER  .getMinDuration(TimeUnit.SECONDS));
 
             SLOWER.setMinDuration(4, TimeUnit.SECONDS);
-            assertEquals(4, SLOW  .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(4, SLOWER.getMinDuration(TimeUnit.SECONDS));
+            assertEquals(4, SLOWNESS.getMinDuration(TimeUnit.SECONDS));
+            assertEquals(4, SLOWER  .getMinDuration(TimeUnit.SECONDS));
 
-            SLOW.setMinDuration(6, TimeUnit.SECONDS);
-            assertEquals(6, SLOW  .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(6, SLOWER.getMinDuration(TimeUnit.SECONDS));
+            SLOWNESS.setMinDuration(6, TimeUnit.SECONDS);
+            assertEquals(6, SLOWNESS.getMinDuration(TimeUnit.SECONDS));
+            assertEquals(6, SLOWER  .getMinDuration(TimeUnit.SECONDS));
         } finally {
-            SLOWER .setMinDuration(t1, TimeUnit.SECONDS);
-            SLOWER .setMinDuration(t2, TimeUnit.SECONDS);
+            SLOWER.setMinDuration(t1, TimeUnit.SECONDS);
+            SLOWER.setMinDuration(t2, TimeUnit.SECONDS);
         }
     }
 
@@ -73,9 +73,9 @@ public final strictfp class PerformanceLevelTest extends TestCase {
      */
     @Test
     public void testForDuration() {
-        assertSame(SLOW,    forDuration( 2, TimeUnit.SECONDS));
-        assertSame(SLOWER,  forDuration(10, TimeUnit.SECONDS));
-        assertSame(SLOWER , forDuration(20, TimeUnit.SECONDS));
-        assertSame(FINE,    forDuration(50, TimeUnit.MILLISECONDS));
+        assertSame(SLOWNESS, forDuration( 2, TimeUnit.SECONDS));
+        assertSame(SLOWER,   forDuration(10, TimeUnit.SECONDS));
+        assertSame(SLOWER,   forDuration(20, TimeUnit.SECONDS));
+        assertSame(FINE,     forDuration(50, TimeUnit.MILLISECONDS));
     }
 }
