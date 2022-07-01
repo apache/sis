@@ -17,15 +17,19 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.referencing.Resources;
@@ -66,7 +70,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -367,6 +371,23 @@ public class TransverseMercator extends NormalizedProjection {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     * The limits defined by this method are arbitrary and may change in any future implementation.
+     * Current implementation sets a limit at 40° of longitude on each side of the central meridian
+     * (this limit is mentioned in EPSG guidance notes)
+     * and a limit at 84° of latitude (same as {@link Mercator} projection).
+     *
+     * @since 1.3
+     */
+    @Override
+    public final Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final GeneralEnvelope domain = new GeneralEnvelope(2);
+        domain.setRange(0, -PI/2 * (40d/90), +PI/2 * (40d/90));
+        domain.setRange(1, -PI/2 * (84d/90), +PI/2 * (84d/90));
+        return Optional.of(domain);
     }
 
     /**

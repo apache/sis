@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
@@ -25,6 +27,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
@@ -36,6 +39,7 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
@@ -388,6 +392,22 @@ subst:  if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.c
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
+    }
+
+    /**
+     * Returns the domain of input coordinates. For a Mercator projection other than Miller variant,
+     * the limit is arbitrarily set to 84° of latitude North and South. This is consistent with the
+     * "World Mercator" domain of validity defined by EPSG:3395, which is 80°S to 84°N.
+     *
+     * @since 1.3
+     */
+    @Override
+    public final Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final double limit = (variant == Variant.MILLER) ? PI/2 : PI/2 * (84d/90);
+        final GeneralEnvelope domain = new GeneralEnvelope(2);
+        domain.setRange(0, NEGATIVE_INFINITY, POSITIVE_INFINITY);
+        domain.setRange(1, -limit, +limit);
+        return Optional.of(domain);
     }
 
     /**

@@ -18,7 +18,9 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Optional;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -29,6 +31,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -37,6 +40,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -78,7 +82,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -131,9 +135,9 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Gets the dimension of input points.
+     * Returns the number of dimensions of input points.
      *
-     * @return the dimension of input points.
+     * @return the number of dimensions of input points.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getSourceDimensions()
      */
@@ -141,14 +145,51 @@ public abstract class AbstractMathTransform extends FormattableObject
     public abstract int getSourceDimensions();
 
     /**
-     * Gets the dimension of output points.
+     * Returns the number of dimensions of output points.
      *
-     * @return the dimension of output points.
+     * @return the number of dimensions of output points.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getTargetDimensions()
      */
     @Override
     public abstract int getTargetDimensions();
+
+    /**
+     * Returns the ranges of coordinate values which can be used as inputs.
+     * They are limits where the transform is mathematically and numerically applicable.
+     * This is <em>not</em> the domain of validity for which a coordinate reference system has been defined,
+     * because this method ignores "real world" considerations such as datum and country boundaries.
+     *
+     * <p>This method is for allowing callers to crop their data for removing areas that may cause numerical problems.
+     * For example results of Mercator projection tend to infinity when the latitude value approaches a pole.
+     * For avoiding data structures with unreasonably large values or {@link Double#NaN},
+     * we commonly crop data to some arbitrary maximal latitude value (typically 80 or 84°) before projection.
+     * Those limits are arbitrary, the transform does not become suddenly invalid after a limit.
+     * The {@link DomainDefinition} gives some controls on the criteria for choosing a limit.</p>
+     *
+     * <p>Many transforms, in particular all affine transforms, have no mathematical limits.
+     * Consequently the default implementation returns an empty value.
+     * Again it does not mean that the {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
+     * coordinate operation} has no geospatial domain of validity, but the latter is not the purpose of this method.
+     * This method is (for example) for preventing a viewer to crash when attempting to render a world-wide image.</p>
+     *
+     * <p>Callers do not need to search through {@linkplain MathTransforms#getSteps(MathTransform) transform steps}.
+     * SIS implementation of {@link MathTransforms#concatenate(MathTransform, MathTransform) concatenated transforms}
+     * do that automatically.</p>
+     *
+     * @param  criteria  controls the definition of transform domain.
+     * @return estimation of a domain where this transform is considered numerically applicable.
+     * @throws TransformException if the domain can not be estimated.
+     *
+     * @see MathTransforms#getDomain(MathTransform)
+     * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
+     *
+     * @since 1.3
+     */
+    public Optional<Envelope> getDomain(DomainDefinition criteria) throws TransformException {
+        ArgumentChecks.ensureNonNull("criteria", criteria);
+        return Optional.empty();
+    }
 
     /**
      * Returns the parameter descriptors for this math transform, or {@code null} if unknown.
@@ -1070,6 +1111,29 @@ public abstract class AbstractMathTransform extends FormattableObject
         @Override
         public int getTargetDimensions() {
             return inverse().getSourceDimensions();
+        }
+
+        /**
+         * Returns the ranges of coordinate values which can be used as inputs.
+         * The default implementation invokes {@code inverse().getDomain(criteria)}
+         * and transforms the returned envelope.
+         *
+         * @param  criteria  controls the definition of transform domain.
+         * @return estimation of a domain where this transform is considered numerically applicable.
+         * @throws TransformException if the domain can not be estimated.
+         *
+         * @since 1.3
+         */
+        @Override
+        public Optional<Envelope> getDomain(DomainDefinition criteria) throws TransformException {
+            final MathTransform inverse = inverse();
+            if (inverse instanceof AbstractMathTransform) {
+                final Optional<Envelope> domain = ((AbstractMathTransform) inverse).getDomain(criteria);
+                if (domain.isPresent()) {
+                    return Optional.of(Envelopes.transform(inverse, domain.get()));
+                }
+            }
+            return Optional.empty();
         }
 
         /**

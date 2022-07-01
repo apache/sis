@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
+import java.util.Optional;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -56,7 +57,7 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see MathTransformFactory
  *
@@ -761,5 +762,31 @@ public final class MathTransforms extends Static {
         assert tangent.getSourceDimensions() == srcDim;
         assert tangent.getTargetDimensions() == tgtDim;
         return tangent;
+    }
+
+    /**
+     * Returns source coordinate values where the transform is mathematically and numerically applicable.
+     * This is <em>not</em> the domain of validity for which a coordinate reference system has been defined,
+     * because this method ignores "real world" considerations such as datum and country boundaries.
+     * This method is for allowing callers to crop their data for removing areas that may cause numerical problems,
+     * for example latitudes too close to a pole before Mercator projection.
+     *
+     * <p>See {@link AbstractMathTransform#getDomain(DomainDefinition)} for more information.
+     * This static method delegates to above-cited method if possible, or returns an empty value otherwise.</p>
+     *
+     * @param  evaluated  transform for which to evaluate a domain, or {@code null}.
+     * @return estimation of a domain where this transform is considered numerically applicable.
+     * @throws TransformException if the domain can not be estimated.
+     *
+     * @see AbstractMathTransform#getDomain(DomainDefinition)
+     * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
+     *
+     * @since 1.3
+     */
+    public static Optional<Envelope> getDomain(final MathTransform evaluated) throws TransformException {
+        if (evaluated instanceof AbstractMathTransform) {
+            return ((AbstractMathTransform) evaluated).getDomain(new DomainDefinition());
+        }
+        return Optional.empty();
     }
 }

@@ -197,8 +197,8 @@ public class RenderingData implements Cloneable {
      * A value for {@link #domainOfValidity} meaning that there is no limits. Should not be modified.
      */
     private static final Rectangle NO_LIMITS = new Rectangle(
-            Integer.MIN_VALUE, Integer.MIN_VALUE,
-            Integer.MAX_VALUE, Integer.MAX_VALUE);
+            Integer.MIN_VALUE/2, Integer.MIN_VALUE/2,
+            Integer.MAX_VALUE,   Integer.MAX_VALUE);
 
     /**
      * Ranges of sample values in each band of {@link #data}. This is used for determining on which sample values
@@ -579,7 +579,7 @@ public class RenderingData implements Cloneable {
             return bounds;
         }
         if (domainOfValidity == null) {
-            Envelope domain = ProjectionLimits.find(changeOfCRS);
+            Envelope domain = MathTransforms.getDomain(changeOfCRS.getMathTransform().inverse()).orElse(null);
             if (domain == null) {
                 domainOfValidity = NO_LIMITS;
                 return bounds;
@@ -589,8 +589,8 @@ public class RenderingData implements Cloneable {
             double y = domain.getMinimum(1);
             double w = domain.getSpan(0);
             double h = domain.getSpan(1);
-            if (!(x >= Integer.MIN_VALUE)) x = Integer.MIN_VALUE;       // Use `!` for catching NaN.
-            if (!(y >= Integer.MIN_VALUE)) y = Integer.MIN_VALUE;
+            if (!(x >= Integer.MIN_VALUE)) x = Integer.MIN_VALUE/2;     // Use `!` for catching NaN.
+            if (!(y >= Integer.MIN_VALUE)) y = Integer.MIN_VALUE/2;
             if (!(h <= Integer.MAX_VALUE)) h = Integer.MAX_VALUE;
             if (!(w <= Integer.MAX_VALUE)) w = Integer.MAX_VALUE;
             domainOfValidity = new Rectangle(
