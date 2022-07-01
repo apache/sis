@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
@@ -383,10 +383,12 @@ public class TransverseMercator extends NormalizedProjection {
      * @since 1.3
      */
     @Override
-    public final Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final GeneralEnvelope domain = new GeneralEnvelope(2);
-        domain.setRange(0, -PI/2 * (40d/90), +PI/2 * (40d/90));
-        domain.setRange(1, -PI/2 * (84d/90), +PI/2 * (84d/90));
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final Envelope2D domain = new Envelope2D();
+        domain.x = -PI/2 * (40d/90);
+        domain.y = -PI/2 * (84d/90);
+        domain.width  = -2 * domain.x;
+        domain.height = -2 * domain.y;
         return Optional.of(domain);
     }
 

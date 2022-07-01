@@ -129,7 +129,7 @@ import static java.util.logging.Logger.getLogger;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see ContextualParameters
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>

@@ -17,12 +17,13 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Optional;
-import org.apache.sis.geometry.Envelopes;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 
 
@@ -147,7 +148,13 @@ public class DomainDefinition {
      */
     public void estimate(final MathTransform evaluated) throws TransformException {
         if (evaluated instanceof AbstractMathTransform) {
-            intersect(((AbstractMathTransform) evaluated).getDomain(this).orElse(null));
+            Envelope domain = ((AbstractMathTransform) evaluated).getDomain(this).orElse(null);
+            if (domain != null) {
+                if (stepToDomain != null) {
+                    domain = Envelopes.transform(stepToDomain.concatenation(), domain);
+                }
+                intersect(domain);
+            }
         }
     }
 
@@ -197,29 +204,53 @@ public class DomainDefinition {
 
     /**
      * Sets the domain to the intersection of current domain with the specified envelope.
-     * The envelope coordinates shall be in units of the inputs of the {@link MathTransform} given to
-     * {@link #estimate(MathTransform)}. If that method is invoked recursively in a chain of transforms,
-     * then this method will automatically transform the given envelope to the units of the inputs of the
-     * first transform in the chain. If the given domain is {@code null}, then this method does nothing.
+     * The envelope coordinates shall be in units of the inputs of the first {@link MathTransform}
+     * given to {@link #estimate(MathTransform)}. If that method is invoked recursively in a chain
+     * of transforms, callers are responsible for converting the envelope.
+     *
+     * @param  domain  the domain to intersect with.
+     */
+    public void intersect(final Envelope domain) {
+        ArgumentChecks.ensureNonNull("domain", domain);
+        if (limits == null) {
+            limits = domain;
+        } else {
+            if (intersection == null) {
+                limits = intersection = new GeneralEnvelope(limits);
+            }
+            intersection.intersect(domain);
+        }
+    }
+
+    /**
+     * Transforms the given envelope, then either returns it or delegates to {@link #intersect(Envelope)}.
+     * If {@code prefix} was the only transform applied, then the transformed envelope is returned.
+     * Otherwise the transformed envelope is intersected with current domain and {@code null} is returned.
+     *
+     * <p>This method behavior allows opportunistic implementation of
+     * {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform.Inverse#getDomain(DomainDefinition)}.
+     * When above-cited method is invoked directly by users, they should get the transformed envelope because there is
+     * no other transform queued in {@link #stepToDomain}. But if above-cited method is invoked for a transform in the
+     * middle of a transforms chain, then the transformed envelope can not be returned because it would not be in the
+     * CRS expected by method contract. But because that situation is specific to {@link ConcatenatedTransform},
+     * it should be unnoticed by users.</p>
      *
      * @param  domain  the domain to intersect with, or {@code null} if none.
-     * @throws TransformException if the envelope can not be transformed to the domain of the first step
-     *         in a chain of transforms.
+     * @param  prefix  a transform to apply on the envelope before other transforms.
+     * @return the transformed envelope if {@code prefix} was the only transform applied, or {@code null} otherwise.
+     * @throws TransformException if the envelope can not be transformed to the domain of the first transform step.
      */
-    public void intersect(Envelope domain) throws TransformException {
+    final Envelope intersectOrTransform(Envelope domain, MathTransform prefix) throws TransformException {
         if (domain != null) {
             if (stepToDomain != null) {
-                domain = Envelopes.transform(stepToDomain.concatenation(), domain);
+                prefix = MathTransforms.concatenate(prefix, stepToDomain.concatenation());
+                domain = Envelopes.transform(prefix, domain);
+                intersect(domain);
+                return null;
             }
-            if (limits == null) {
-                limits = domain;
-            } else {
-                if (intersection == null) {
-                    limits = intersection = new GeneralEnvelope(limits);
-                }
-                intersection.intersect(domain);
-            }
+            domain = Envelopes.transform(prefix, domain);
         }
+        return domain;
     }
 
     /**

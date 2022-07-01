@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
@@ -402,12 +402,9 @@ subst:  if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.c
      * @since 1.3
      */
     @Override
-    public final Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double limit = (variant == Variant.MILLER) ? PI/2 : PI/2 * (84d/90);
-        final GeneralEnvelope domain = new GeneralEnvelope(2);
-        domain.setRange(0, NEGATIVE_INFINITY, POSITIVE_INFINITY);
-        domain.setRange(1, -limit, +limit);
-        return Optional.of(domain);
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final double limit = (variant == Variant.MILLER) ? -PI/2 : -PI/2 * (84d/90);
+        return Optional.of(new Envelope2D(null, -0.5, limit, 1, -2*limit));
     }
 
     /**

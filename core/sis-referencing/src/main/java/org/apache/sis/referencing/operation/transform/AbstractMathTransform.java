@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -1125,13 +1124,11 @@ public abstract class AbstractMathTransform extends FormattableObject
          * @since 1.3
          */
         @Override
-        public Optional<Envelope> getDomain(DomainDefinition criteria) throws TransformException {
+        public Optional<Envelope> getDomain(final DomainDefinition criteria) throws TransformException {
             final MathTransform inverse = inverse();
             if (inverse instanceof AbstractMathTransform) {
                 final Optional<Envelope> domain = ((AbstractMathTransform) inverse).getDomain(criteria);
-                if (domain.isPresent()) {
-                    return Optional.of(Envelopes.transform(inverse, domain.get()));
-                }
+                return Optional.ofNullable(criteria.intersectOrTransform(domain.orElse(null), inverse));
             }
             return Optional.empty();
         }
