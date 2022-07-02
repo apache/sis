@@ -30,7 +30,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.PixelInCell;
@@ -48,7 +47,6 @@ import org.apache.sis.coverage.grid.PixelTranslation;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ErrorHandler;
@@ -186,21 +184,6 @@ public class RenderingData implements Cloneable {
     private GridGeometry dataGeometry;
 
     /**
-     * The domain of validity of the objective CRS in units of the {@link #data} image.
-     * This value needs to be recomputed when the objective CRS or the {@link #dataGeometry} changes.
-     * It is used for avoiding failure to project a part of the image too far from what the projection
-     * can handle, for example polar areas with a Mercator projection.
-     */
-    private Rectangle domainOfValidity;
-
-    /**
-     * A value for {@link #domainOfValidity} meaning that there is no limits. Should not be modified.
-     */
-    private static final Rectangle NO_LIMITS = new Rectangle(
-            Integer.MIN_VALUE/2, Integer.MIN_VALUE/2,
-            Integer.MAX_VALUE,   Integer.MAX_VALUE);
-
-    /**
      * Ranges of sample values in each band of {@link #data}. This is used for determining on which sample values
      * to apply colors when user asked to apply a color ramp. May be {@code null}.
      *
@@ -289,7 +272,6 @@ public class RenderingData implements Cloneable {
         changeOfCRS       = null;
         cornerToObjective = null;
         objectiveToCenter = null;
-        domainOfValidity  = null;
     }
 
     /**
@@ -439,7 +421,6 @@ public class RenderingData implements Cloneable {
             final MathTransform inverse = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
             cornerToObjective = MathTransforms.concatenate(forward, cornerToObjective);
             objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, inverse);
-            domainOfValidity  = null;       // Will be recomputed when needed.
         }
         return true;
     }
@@ -569,40 +550,6 @@ public class RenderingData implements Cloneable {
     }
 
     /**
-     * Returns the bounds of the given image clipped to the domain of validity of the objective CRS.
-     * The intent is to avoid a failure to reproject the image, for example if the image reaches the
-     * poles and the objective CRS is a Mercator projection.
-     */
-    private Rectangle getValidImageBounds(final RenderedImage image) throws TransformException {
-        Rectangle bounds = ImageUtilities.getBounds(image);
-        if (domainOfValidity == NO_LIMITS) {        // Identity comparison is okay here (quick check).
-            return bounds;
-        }
-        if (domainOfValidity == null) {
-            Envelope domain = MathTransforms.getDomain(changeOfCRS.getMathTransform().inverse()).orElse(null);
-            if (domain == null) {
-                domainOfValidity = NO_LIMITS;
-                return bounds;
-            }
-            domain = Envelopes.transform(cornerToObjective.inverse(), domain);
-            double x = domain.getMinimum(0);
-            double y = domain.getMinimum(1);
-            double w = domain.getSpan(0);
-            double h = domain.getSpan(1);
-            if (!(x >= Integer.MIN_VALUE)) x = Integer.MIN_VALUE/2;     // Use `!` for catching NaN.
-            if (!(y >= Integer.MIN_VALUE)) y = Integer.MIN_VALUE/2;
-            if (!(h <= Integer.MAX_VALUE)) h = Integer.MAX_VALUE;
-            if (!(w <= Integer.MAX_VALUE)) w = Integer.MAX_VALUE;
-            domainOfValidity = new Rectangle(
-                    (int) Math.min(x, Integer.MAX_VALUE),
-                    (int) Math.min(y, Integer.MAX_VALUE),
-                    (int) Math.max(w, 0),
-                    (int) Math.max(h, 0));
-        }
-        return bounds.intersection(domainOfValidity);
-    }
-
-    /**
      * Creates the resampled image, then optionally applies an index color model.
      * This method will compute the {@link MathTransform} steps from image coordinate system
      * to display coordinate system if those steps have not already been computed.
@@ -650,7 +597,7 @@ public class RenderingData implements Cloneable {
         /*
          * Create a resampled image for current zoom level. If the image is zoomed, the resampled image bounds
          * will be very large, potentially larger than 32 bit integer capacity (calculation done below clamps
-         * the result to 32 bit integer range). This is okay since only visible tiles will be created.
+         * the result to 32 bit integer range). This is okay because only visible tiles will be created.
          *
          * NOTE: if user pans image close to integer range limit, a new resampled image will need to be computed
          *       for shifting away from integer overflow risk situation. This check is done by the caller.
@@ -659,9 +606,15 @@ public class RenderingData implements Cloneable {
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
         MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
         MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
-        final Rectangle bounds = (Rectangle) Shapes2D.transform(
-                MathTransforms.bidimensional(cornerToDisplay),
-                getValidImageBounds(recoloredImage), new Rectangle());
+        /*
+         * If the source image is world-wide and if the transform involves a projection that can not represent
+         * the whole world, then we need to clip the image to a domain supported by the map projection.
+         */
+        final Rectangle bounds = ImageUtilities.getBounds(recoloredImage);
+        MathTransforms.getDomain(cornerToDisplay).ifPresent((domain) -> {
+            Shapes2D.intersect(bounds, domain, 0, 1);
+        });
+        Shapes2D.transform(MathTransforms.bidimensional(cornerToDisplay), bounds, bounds);
         /*
          * Verify if wraparound is really necessary. We do this check because the `displayToCenter` transform
          * may be used for every pixels, so it is worth to make that transform more efficient if possible.
