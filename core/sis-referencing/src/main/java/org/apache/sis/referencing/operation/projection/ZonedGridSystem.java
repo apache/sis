@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.io.Serializable;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
@@ -30,12 +32,15 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Numerics;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.floor;
 import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
 import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercator.*;
@@ -59,7 +64,7 @@ import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercat
  * EPSG:32600 (northern hemisphere) and EPSG:32700 (southern hemisphere).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -143,6 +148,20 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
     @Override
     public ParameterValueGroup getParameterValues() {
         return projection.getParameterValues();
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     * The limits defined by this method are arbitrary and may change in any future implementation.
+     * Current implementation sets a longitude range of ±180° (i.e. the world) and a latitude range
+     * from 84°S to 84°N.
+     *
+     * @since 1.3
+     */
+    @Override
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final double y = -PI/2 * (84d/90);
+        return Optional.of(new Envelope2D(null, -PI, y, 2*PI, -2*y));
     }
 
     /**
