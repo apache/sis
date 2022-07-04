@@ -183,9 +183,10 @@ final class LZW extends CompressionChannel {
                 maximumIndex       = (1 << MIN_CODE_SIZE) - OFFSET_TO_MAXIMUM;
                 /*
                  * We should not have consecutive clear codes, but it is easy to check for safety.
-                 * The first valid code after `CLEAR_CODE` shall be a byte.
+                 * The first valid code after `CLEAR_CODE` shall be a byte. If we reached the end
+                 * of strip, the EOI code should be mandatory but appears to be sometime missing.
                  */
-                do code = (int) input.readBits(MIN_CODE_SIZE);              // GetNextCode()
+                do code = finished() ? EOI_CODE : (int) input.readBits(MIN_CODE_SIZE);      // GetNextCode()
                 while (code == CLEAR_CODE);
                 if (code == EOI_CODE) break;
                 if ((code & ~0xFF) != 0) {
