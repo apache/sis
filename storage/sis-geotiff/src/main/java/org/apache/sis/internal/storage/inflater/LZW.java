@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.inflater;
 import java.util.Arrays;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
@@ -34,7 +33,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -56,14 +55,8 @@ final class LZW extends CompressionChannel {
     private static final int FIRST_ADAPTATIVE_CODE = 258;
 
     /**
-     * For computing value of {@link #nextAvailableEntry} when {@link #codeSize} needs to be incremented.
-     * TIFF specification said that the size needs to be incremented after codes 510, 1022 and 2046 are
-     * added to the {@link #sequencesForCodes} table.
-     */
-    private static final int OFFSET_TO_MAXIMUM = FIRST_ADAPTATIVE_CODE + 1;
-
-    /**
-     * Initial number of bits in a code.
+     * Initial number of bits in a code. TIFF specification said that the size needs to be
+     * incremented after codes 510, 1022 and 2046 are added to the {@link #entriesForCodes} table.
      */
     private static final int MIN_CODE_SIZE = Byte.SIZE + 1;
 
@@ -73,33 +66,61 @@ final class LZW extends CompressionChannel {
     private static final int MAX_CODE_SIZE = 12;
 
     /**
-     * Sequences of bytes associated to codes equals or greater than {@value #FIRST_ADAPTATIVE_CODE}.
-     * Codes below {@value #FIRST_ADAPTATIVE_CODE} are implicit and not stored in this table.
-     */
-    private final byte[][] sequencesForCodes;
-
-    /**
-     * The sequence of bytes associated to the code in previous iteration.
-     */
-    private byte[] previousSequence;
-
-    /**
-     * Index of the next entry available in {@link #sequencesForCodes}.
-     * This is related to the next available code by {@code code = nextAvailableEntry + FIRST_ADAPTATIVE_CODE}.
-     */
-    private int nextAvailableEntry;
-
-    /**
      * Number of bits to read for the next code. This number starts at 9 and increases until {@value #MAX_CODE_SIZE}.
      * After {@value #MAX_CODE_SIZE} bits, a {@link #CLEAR_CODE} should occur in the stream of LZW data.
      */
     private int codeSize;
 
     /**
-     * If some bytes could not be written in previous {@code read(…)} execution because the target buffer was full,
-     * those bytes. Otherwise {@code null}.
+     * Size of the offset stored in {@link #entriesForCodes} array. We take {@value #MAX_CODE_SIZE} bits for the
+     * length and use the remaining for the offset. The rational is that even in the worst case scenario where
+     * the same byte is always appended to the sequence, the maximal length can not exceeded the dictionary size
+     * because a {@link #CLEAR_CODE} will be emitted when the dictionary is full.
      */
-    private byte[] pending;
+    private static final int OFFSET_SIZE = Integer.SIZE - MAX_CODE_SIZE;
+
+    /**
+     * The mask to apply on a {@link #entriesForCodes} value for getting the offset.
+     */
+    private static final int OFFSET_MASK = (1 << OFFSET_SIZE) - 1;
+
+    /**
+     * Sequences of bytes associated to codes. For a given code <var>c</var>,
+     * the first byte is {@code entriesForCodes[entriesForCodes[c] & OFFSET_MASK]}
+     * and the length is {@code entriesForCodes[c] >>> OFFSET_SIZE}.
+     */
+    private byte[] stringsFromCode;
+
+    /**
+     * Pointers to byte sequences for a code in the {@link #entriesForCodes} array.
+     * The lowest {@value #OFFSET_SIZE} bits are offsets to first byte and the highest
+     * {@value #MAX_CODE_SIZE} bits are lengths.
+     */
+    private final int[] entriesForCodes;
+
+    /**
+     * If some bytes could not be written in previous {@code read(…)} execution because the target buffer was full,
+     * offset and length of those bytes. Otherwise 0. This is a value from {@link #entriesForCodes} array.
+     */
+    private int pendingEntry;
+
+    /**
+     * Offset and length of the sequence of bytes associated to the code in previous iteration.
+     * This is a value from {@link #entriesForCodes} array.
+     */
+    private int previousEntry;
+
+    /**
+     * Index of the next entry available in {@link #entriesForCodes}.
+     * Shall not be lower than {@value #FIRST_ADAPTATIVE_CODE}.
+     */
+    private int indexOfFreeEntry;
+
+    /**
+     * Index of the next byte available in {@link #stringsFromCode}.
+     * Shall not be lower than {@code 1 << Byte.SIZE}.
+     */
+    private int indexOfFreeString;
 
     /**
      * Whether the {@link #EOI_CODE} has been found.
@@ -115,7 +136,13 @@ final class LZW extends CompressionChannel {
      */
     public LZW(final ChannelDataInput input) {
         super(input);
-        sequencesForCodes = new byte[(1 << MAX_CODE_SIZE) - OFFSET_TO_MAXIMUM][];
+        entriesForCodes = new int [(1 << MAX_CODE_SIZE) - 1];
+        stringsFromCode = new byte[4 << MAX_CODE_SIZE];       // Dynamically expanded if needed.
+        for (int i=0; i <= (1 << Byte.SIZE); i++) {
+            entriesForCodes[i] = i | (1 << OFFSET_SIZE);
+            stringsFromCode[i] = (byte) i;
+        }
+        indexOfFreeEntry = FIRST_ADAPTATIVE_CODE;
     }
 
     /**
@@ -128,11 +155,29 @@ final class LZW extends CompressionChannel {
     @Override
     public void setInputRegion(final long start, final long byteCount) throws IOException {
         super.setInputRegion(start, byteCount);
-        previousSequence   = ArraysExt.EMPTY_BYTE;
-        codeSize           = MIN_CODE_SIZE;
-        nextAvailableEntry = 0;
-        pending            = null;
-        done               = false;
+        clearTable();
+        previousEntry = 0;
+        pendingEntry  = 0;
+        done          = false;
+    }
+
+    /**
+     * Clears the {@link #entriesForCodes} table.
+     */
+    private void clearTable() {
+        Arrays.fill(entriesForCodes, FIRST_ADAPTATIVE_CODE, indexOfFreeEntry, 0);
+        indexOfFreeEntry  = FIRST_ADAPTATIVE_CODE;
+        indexOfFreeString = 1 << Byte.SIZE;
+        codeSize          = MIN_CODE_SIZE;
+    }
+
+    /**
+     * Encodes an offset together with its length.
+     */
+    private static int offsetAndLength(final int offset, final int length) {
+        assert length >= 0 && length < (1 << MAX_CODE_SIZE) : length;
+        assert offset >= 0 && offset < (1 << OFFSET_SIZE) : offset;
+        return (length << OFFSET_SIZE) | offset;
     }
 
     /**
@@ -149,17 +194,19 @@ final class LZW extends CompressionChannel {
          * If a previous invocation of this method was unable to write some data
          * because the target buffer was full, write these remaining data first.
          */
-        if (pending != null) {
-            final int r = target.remaining();
-            final int n = pending.length;
-            if (n <= r) {
-                target.put(pending);
-                pending = null;
-                if (done) return n;
+        if (pendingEntry != 0) {
+            final int remaining    = target.remaining();
+            final int stringOffset = pendingEntry  &  OFFSET_MASK;
+            final int stringLength = pendingEntry >>> OFFSET_SIZE;
+            target.put(stringsFromCode, stringOffset, Math.min(stringLength, remaining));
+            if (stringLength <= remaining) {
+                pendingEntry = 0;
+                if (done) {
+                    return stringLength;
+                }
             } else {
-                target.put(pending, 0, r);
-                pending = Arrays.copyOfRange(pending, r, n);
-                return r;   // Can not write more than what we just wrote.
+                pendingEntry = offsetAndLength(stringOffset + remaining, stringLength - remaining);
+                return remaining;           // Can not write more than what we just wrote.
             }
         } else if (done |= finished()) {
             return -1;
@@ -168,19 +215,16 @@ final class LZW extends CompressionChannel {
          * Below is adapted from TIFF version 6 specification, section 13, LZW Decoding.
          * Comments such as "InitializeTable()" refer to methods in TIFF specification.
          * The body is a little bit more complex because codes in [0 … 255] range are
-         * handled as a special case instead of stored in the `sequencesForCodes` table.
+         * handled as a special case instead of stored in the `entriesForCodes` table.
          */
-        byte[] write     = previousSequence;
-        previousSequence = null;
-        int maximumIndex = (1 << codeSize) - OFFSET_TO_MAXIMUM;
+        int stringOffset = previousEntry  &  OFFSET_MASK;
+        int stringLength = previousEntry >>> OFFSET_SIZE;
+        int maximumIndex = (1 << codeSize) - 1;
         int code;
         while ((code = (int) input.readBits(codeSize)) != EOI_CODE) {       // GetNextCode()
             if (code == CLEAR_CODE) {
-                Arrays.fill(sequencesForCodes, null);                       // InitializeTable()
-                nextAvailableEntry = 0;
-                write              = ArraysExt.EMPTY_BYTE;
-                codeSize           = MIN_CODE_SIZE;
-                maximumIndex       = (1 << MIN_CODE_SIZE) - OFFSET_TO_MAXIMUM;
+                clearTable();       // InitializeTable()
+                maximumIndex = (1 << MIN_CODE_SIZE) - 1;
                 /*
                  * We should not have consecutive clear codes, but it is easy to check for safety.
                  * The first valid code after `CLEAR_CODE` shall be a byte. If we reached the end
@@ -194,47 +238,70 @@ final class LZW extends CompressionChannel {
                 }
                 /*
                  * The code to add to the table is a single byte in the [0 … 255] range.
-                 * Those codes are already implicitly in the table, so we need to skip
-                 * the `sequencesForCodes[nextAvailableEntry]` update. Following lines
-                 * reproduce the lines at the end of the loop for a single char.
+                 * Those codes are already in the table, so there is no entry to add yet.
+                 * Following lines reproduce the lines at the end of the enclosing loop,
+                 * but for a single byte.
                  */
-                write = new byte[] {(byte) code};       // OldCode = Code
+                stringLength = 1;
+                stringOffset = code;                    // OldCode = Code
                 if (target.hasRemaining()) {
                     target.put((byte) code);            // WriteString(StringFromCode(Code))
                 } else {
-                    pending = write;
+                    pendingEntry = offsetAndLength(code, 1);
                     break;
                 }
             } else {
                 /*
-                 * Case for all codes after the first code following `CLEAR_CODE`.
-                 * All those cases are going to add a new entry in the table.
+                 * Cases for all codes after the first code following `CLEAR_CODE`.
+                 * Those cases will add a new entry in the `stringsFromCode` table.
+                 * Pseudo-codes in TIFF specification for the 2 conditional branches:
+                 *
+                 *     AddStringToTable(StringFromCode(OldCode) + FirstChar(StringFromCode(Code)))
+                 *     AddStringToTable(StringFromCode(OldCode) + FirstChar(StringFromCode(OldCode)))
+                 *
+                 * Those two branches are identical except for the last argument (Code or OldCode).
+                 * We do the common part now before `stringOffset` and `stringLength` are modified.
+                 * The last byte will be added later, after we determined its value.
                  */
-                final int n = write.length;
-                final byte[] addToTable = Arrays.copyOf(write, n+1);
-                if ((code & ~0xFF) == 0) {                   // Codes [0 … 255] are implicitly in the table.
-                    addToTable[n] = (byte) code;             // StringFromCode(OldCode) + FirstChar(StringFromCode(Code))
-                    write = new byte[] {(byte) code};
-                } else {
-                    final byte[] sequenceForCode = sequencesForCodes[code - FIRST_ADAPTATIVE_CODE];
-                    if (sequenceForCode != null) {           // if (IsInTable(Code))
-                        addToTable[n] = sequenceForCode[0];  // StringFromCode(OldCode) + FirstChar(StringFromCode(Code))
-                        write = sequenceForCode;
-                    } else if (n != 0) {
-                        addToTable[n] = write[0];            // StringFromCode(OldCode) + FirstChar(StringFromCode(OldCode))
-                        write = addToTable;
-                    } else {
-                        throw unexpectedData();
-                    }
+                final int newOffset   = indexOfFreeString;
+                final int newLength   = stringLength + 1;
+                final int lastNewByte = newOffset + stringLength;
+                if (lastNewByte >= stringsFromCode.length) {
+                    stringsFromCode = Arrays.copyOf(stringsFromCode, stringsFromCode.length * 2);
                 }
+                System.arraycopy(stringsFromCode, stringOffset, stringsFromCode, newOffset, stringLength);
+                /*
+                 * Determine the sequence of bytes to write.
+                 * Pseudo-codes in TIFF specification for the 2 conditional branches:
+                 *
+                 *     WriteString(StringFromCode(Code))
+                 *     WriteString(<the entry to be added in the table>)
+                 */
+                final int entryForCode = entriesForCodes[code];
+                if (entryForCode != 0) {                                        // if (IsInTable(Code))
+                    stringOffset = entryForCode  &  OFFSET_MASK;                // StringFromCode(Code)
+                    stringLength = entryForCode >>> OFFSET_SIZE;
+                } else {
+                    stringOffset = newOffset;       // StringFromCode(OldCode) + FirstChar(StringFromCode(OldCode)
+                    stringLength = newLength;
+                }
+                /*
+                 * Add the missing byte in the new entry. That byte is `FirstChar(StringFromCode(Code | OldCode)))`.
+                 * In the case of the first branch, `Code` is the string that we are about to write. In the case of
+                 * the second branch, the first characters of `OldCode` is the same as in the new entry (because of
+                 * the copy done above), which is also the string that we are about to write. So at this point, the
+                 * two branches can be executed by the same code.
+                 */
+                stringsFromCode[lastNewByte] = stringsFromCode[stringOffset];     // + FirstChar(StringFromCode(…))
+                indexOfFreeString = lastNewByte + 1;
                 try {
-                    sequencesForCodes[nextAvailableEntry] = addToTable;
+                    entriesForCodes[indexOfFreeEntry] = offsetAndLength(newOffset, newLength);
                 } catch (ArrayIndexOutOfBoundsException e) {
                     throw (IOException) unexpectedData().initCause(e);
                 }
-                if (++nextAvailableEntry == maximumIndex) {
+                if (++indexOfFreeEntry == maximumIndex) {
                     if (codeSize < MAX_CODE_SIZE) {
-                        maximumIndex = (1 << ++codeSize) - OFFSET_TO_MAXIMUM;
+                        maximumIndex = (1 << ++codeSize) - 1;
                     } else {
                         /*
                          * Incrementing the size to 13 bits is an error because the TIFF specification
@@ -242,22 +309,22 @@ final class LZW extends CompressionChannel {
                          * immediately after this code. If this is not the case, we will have an index
                          * out of bounds exception in the next iteration, which is caught above.
                          */
-                        assert nextAvailableEntry == sequencesForCodes.length : nextAvailableEntry;
+                        assert indexOfFreeEntry == entriesForCodes.length : indexOfFreeEntry;
                     }
                 }
                 /*
                  * If the sequence is too long for space available in target buffer,
                  * the writing will be deferred to next invocation of this method.
                  */
-                if (write.length <= target.remaining()) {
-                    target.put(write);
+                if (stringLength <= target.remaining()) {
+                    target.put(stringsFromCode, stringOffset, stringLength);
                 } else {
-                    pending = write;
+                    pendingEntry = offsetAndLength(stringOffset, stringLength);
                     break;
                 }
             }
         }
-        previousSequence = write;
+        previousEntry = offsetAndLength(stringOffset, stringLength);
         done = (code == EOI_CODE);
         return target.position() - start;
     }
