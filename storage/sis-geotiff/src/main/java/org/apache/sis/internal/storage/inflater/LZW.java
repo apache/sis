@@ -80,16 +80,21 @@ final class LZW extends CompressionChannel {
     private int codeSize;
 
     /**
-     * Position of the lowest bit in an {@link #entriesForCodes} element where the length is stored.
-     * The length is extracted from an element by {@code element >>> LOWEST_LENGTH_BIT}.
-     * The offset is chosen for allowing {@value #MAX_CODE_SIZE} bits for storing the length.
+     * Position of the lowest bit in an {@link #entriesForCodes} element where the offset is stored.
+     * The position is chosen for leaving {@value #MAX_CODE_SIZE} bits for storing the length before
+     * the offset value.
      *
      * <div class="note"><b>Rational:</b>
      * even in the worst case scenario where the same byte is always appended to the sequence,
      * the maximal length can not exceeded the dictionary size because a {@link #CLEAR_CODE}
      * will be emitted when the dictionary is full.</div>
      */
-    private static final int LOWEST_LENGTH_BIT = Integer.SIZE - MAX_CODE_SIZE;
+    private static final int LOWEST_OFFSET_BIT = MAX_CODE_SIZE;
+
+    /**
+     * The mask to apply on an {@link #entriesForCodes} element for getting the length.
+     */
+    private static final int LENGTH_MASK = (1 << LOWEST_OFFSET_BIT) - 1;
 
     /**
      * Extracts the number of bytes of an entry stored in the {@link #stringsFromCode} array.
@@ -98,14 +103,8 @@ final class LZW extends CompressionChannel {
      * @return number of consecutive bytes to read in {@link #stringsFromCode} array.
      */
     private static int length(final int element) {
-        return element >>> LOWEST_LENGTH_BIT;
+        return element & LENGTH_MASK;
     }
-
-    /**
-     * The mask to apply on an {@link #entriesForCodes} element for getting the offset.
-     * The actual offset is {@code (element & OFFSET_MASK)}.
-     */
-    private static final int OFFSET_MASK = (1 << LOWEST_LENGTH_BIT) - 1;
 
     /**
      * Extracts the index of the first byte of an entry stored in the {@link #stringsFromCode} array.
@@ -114,18 +113,23 @@ final class LZW extends CompressionChannel {
      * @return index of the first byte to read in {@link #stringsFromCode} array.
      */
     private static int offset(final int element) {
-        return element & OFFSET_MASK;
+        return element >>> LOWEST_OFFSET_BIT;
     }
 
     /**
      * Encodes an offset together with its length.
      */
     private static int offsetAndLength(final int offset, final int length) {
-        final int element = offset | (length << LOWEST_LENGTH_BIT);
+        final int element = (offset << LOWEST_OFFSET_BIT) | length;
         assert offset(element) == offset : offset;
         assert length(element) == length : length;
         return element;
     }
+
+    /**
+     * Maximal value + 1 that the offset can take. The offset takes all the bits after the length.
+     */
+    private static final int OFFSET_LIMIT = 1 << (Integer.SIZE - LOWEST_OFFSET_BIT);
 
     /**
      * Pointers to byte sequences for a code in the {@link #entriesForCodes} array.
@@ -181,9 +185,9 @@ final class LZW extends CompressionChannel {
         super(input);
         indexOfFreeEntry = FIRST_ADAPTATIVE_CODE;
         entriesForCodes  = new int [(1 << MAX_CODE_SIZE) - OFFSET_TO_MAXIMUM];
-        stringsFromCode  = new byte[4 << MAX_CODE_SIZE];        // Dynamically expanded if needed.
+        stringsFromCode  = new byte[32 * 1024];         // Dynamically expanded if needed.
         for (int i=0; i < (1 << Byte.SIZE); i++) {
-            entriesForCodes[i] = i | (1 << LOWEST_LENGTH_BIT);
+            entriesForCodes[i] = (i << LOWEST_OFFSET_BIT) | 1;
             stringsFromCode[i] = (byte) i;
         }
     }
@@ -230,8 +234,8 @@ final class LZW extends CompressionChannel {
          */
         if (pendingEntry != 0) {
             final int remaining    = target.remaining();
-            final int stringOffset = pendingEntry  &  OFFSET_MASK;
-            final int stringLength = pendingEntry >>> LOWEST_LENGTH_BIT;
+            final int stringOffset = offset(pendingEntry);
+            final int stringLength = length(pendingEntry);
             target.put(stringsFromCode, stringOffset, Math.min(stringLength, remaining));
             if (stringLength <= remaining) {
                 pendingEntry = 0;
@@ -301,7 +305,7 @@ final class LZW extends CompressionChannel {
                 final int newLength   = stringLength + 1;
                 final int lastNewByte = newOffset + stringLength;
                 if (lastNewByte >= stringsFromCode.length) {
-                    final int capacity = Math.min(indexOfFreeString * 2, OFFSET_MASK + 1);
+                    final int capacity = Math.min(indexOfFreeString * 2, OFFSET_LIMIT);
                     if (lastNewByte >= capacity) {
                         throw new IOException("Dictionary overflow");
                     }
