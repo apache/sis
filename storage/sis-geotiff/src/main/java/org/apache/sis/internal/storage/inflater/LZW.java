@@ -55,6 +55,14 @@ final class LZW extends CompressionChannel {
     private static final int FIRST_ADAPTATIVE_CODE = 258;
 
     /**
+     * For computing value of {@link #indexOfFreeEntry} when {@link #codeSize} needs to be incremented.
+     * TIFF specification said that the size needs to be incremented after codes 510, 1022 and 2046 are
+     * added to the {@link #entriesForCodes} table. Those values are a little bit lower than what we
+     * would expect if the full integer ranges were used.
+     */
+    private static final int OFFSET_TO_MAXIMUM = 1;
+
+    /**
      * Initial number of bits in a code. TIFF specification said that the size needs to be
      * incremented after codes 510, 1022 and 2046 are added to the {@link #entriesForCodes} table.
      */
@@ -72,43 +80,71 @@ final class LZW extends CompressionChannel {
     private int codeSize;
 
     /**
-     * Size of the offset stored in {@link #entriesForCodes} array. We take {@value #MAX_CODE_SIZE} bits for the
-     * length and use the remaining for the offset. The rational is that even in the worst case scenario where
-     * the same byte is always appended to the sequence, the maximal length can not exceeded the dictionary size
-     * because a {@link #CLEAR_CODE} will be emitted when the dictionary is full.
+     * Position of the lowest bit in an {@link #entriesForCodes} element where the length is stored.
+     * The length is extracted from an element by {@code element >>> LOWEST_LENGTH_BIT}.
+     * The offset is chosen for allowing {@value #MAX_CODE_SIZE} bits for storing the length.
+     *
+     * <div class="note"><b>Rational:</b>
+     * even in the worst case scenario where the same byte is always appended to the sequence,
+     * the maximal length can not exceeded the dictionary size because a {@link #CLEAR_CODE}
+     * will be emitted when the dictionary is full.</div>
      */
-    private static final int OFFSET_SIZE = Integer.SIZE - MAX_CODE_SIZE;
+    private static final int LOWEST_LENGTH_BIT = Integer.SIZE - MAX_CODE_SIZE;
 
     /**
-     * The mask to apply on a {@link #entriesForCodes} value for getting the offset.
+     * Extracts the number of bytes of an entry stored in the {@link #stringsFromCode} array.
+     *
+     * @param  element  an element of the {@link #entriesForCodes} array.
+     * @return number of consecutive bytes to read in {@link #stringsFromCode} array.
      */
-    private static final int OFFSET_MASK = (1 << OFFSET_SIZE) - 1;
+    private static int length(final int element) {
+        return element >>> LOWEST_LENGTH_BIT;
+    }
 
     /**
-     * Sequences of bytes associated to codes. For a given code <var>c</var>,
-     * the first byte is {@code entriesForCodes[entriesForCodes[c] & OFFSET_MASK]}
-     * and the length is {@code entriesForCodes[c] >>> OFFSET_SIZE}.
+     * The mask to apply on an {@link #entriesForCodes} element for getting the offset.
+     * The actual offset is {@code (element & OFFSET_MASK)}.
      */
-    private byte[] stringsFromCode;
+    private static final int OFFSET_MASK = (1 << LOWEST_LENGTH_BIT) - 1;
+
+    /**
+     * Extracts the index of the first byte of an entry stored in the {@link #stringsFromCode} array.
+     *
+     * @param  element  an element of the {@link #entriesForCodes} array.
+     * @return index of the first byte to read in {@link #stringsFromCode} array.
+     */
+    private static int offset(final int element) {
+        return element & OFFSET_MASK;
+    }
+
+    /**
+     * Encodes an offset together with its length.
+     */
+    private static int offsetAndLength(final int offset, final int length) {
+        final int element = offset | (length << LOWEST_LENGTH_BIT);
+        assert offset(element) == offset : offset;
+        assert length(element) == length : length;
+        return element;
+    }
 
     /**
      * Pointers to byte sequences for a code in the {@link #entriesForCodes} array.
-     * The lowest {@value #OFFSET_SIZE} bits are offsets to first byte and the highest
-     * {@value #MAX_CODE_SIZE} bits are lengths.
+     * Each element is a value encoded by {@link #offsetAndLength(int, int)} method.
+     * Elements are decoded by {@link #offset(int)} {@link #length(int)} methods.
      */
     private final int[] entriesForCodes;
-
-    /**
-     * If some bytes could not be written in previous {@code read(…)} execution because the target buffer was full,
-     * offset and length of those bytes. Otherwise 0. This is a value from {@link #entriesForCodes} array.
-     */
-    private int pendingEntry;
 
     /**
      * Offset and length of the sequence of bytes associated to the code in previous iteration.
      * This is a value from {@link #entriesForCodes} array.
      */
     private int previousEntry;
+
+    /**
+     * If some bytes could not be written in previous {@code read(…)} execution because the target buffer was full,
+     * offset and length of those bytes. Otherwise 0. This is a value from {@link #entriesForCodes} array.
+     */
+    private int pendingEntry;
 
     /**
      * Index of the next entry available in {@link #entriesForCodes}.
@@ -121,6 +157,13 @@ final class LZW extends CompressionChannel {
      * Shall not be lower than {@code 1 << Byte.SIZE}.
      */
     private int indexOfFreeString;
+
+    /**
+     * Sequences of bytes associated to codes. For a given <var>c</var> code read from the stream,
+     * the first uncompressed byte is {@code stringsFromCode(offset(entriesForCodes[c]))} and the
+     * number of bytes is {@code length(entriesForCodes[c])}.
+     */
+    private byte[] stringsFromCode;
 
     /**
      * Whether the {@link #EOI_CODE} has been found.
@@ -136,13 +179,13 @@ final class LZW extends CompressionChannel {
      */
     public LZW(final ChannelDataInput input) {
         super(input);
-        entriesForCodes = new int [(1 << MAX_CODE_SIZE) - 1];
-        stringsFromCode = new byte[4 << MAX_CODE_SIZE];       // Dynamically expanded if needed.
-        for (int i=0; i <= (1 << Byte.SIZE); i++) {
-            entriesForCodes[i] = i | (1 << OFFSET_SIZE);
+        indexOfFreeEntry = FIRST_ADAPTATIVE_CODE;
+        entriesForCodes  = new int [(1 << MAX_CODE_SIZE) - OFFSET_TO_MAXIMUM];
+        stringsFromCode  = new byte[4 << MAX_CODE_SIZE];        // Dynamically expanded if needed.
+        for (int i=0; i < (1 << Byte.SIZE); i++) {
+            entriesForCodes[i] = i | (1 << LOWEST_LENGTH_BIT);
             stringsFromCode[i] = (byte) i;
         }
-        indexOfFreeEntry = FIRST_ADAPTATIVE_CODE;
     }
 
     /**
@@ -172,15 +215,6 @@ final class LZW extends CompressionChannel {
     }
 
     /**
-     * Encodes an offset together with its length.
-     */
-    private static int offsetAndLength(final int offset, final int length) {
-        assert length >= 0 && length < (1 << MAX_CODE_SIZE) : length;
-        assert offset >= 0 && offset < (1 << OFFSET_SIZE) : offset;
-        return (length << OFFSET_SIZE) | offset;
-    }
-
-    /**
      * Decompresses some bytes from the {@linkplain #input input} into the given destination buffer.
      *
      * @param  target  the buffer into which bytes are to be transferred.
@@ -197,7 +231,7 @@ final class LZW extends CompressionChannel {
         if (pendingEntry != 0) {
             final int remaining    = target.remaining();
             final int stringOffset = pendingEntry  &  OFFSET_MASK;
-            final int stringLength = pendingEntry >>> OFFSET_SIZE;
+            final int stringLength = pendingEntry >>> LOWEST_LENGTH_BIT;
             target.put(stringsFromCode, stringOffset, Math.min(stringLength, remaining));
             if (stringLength <= remaining) {
                 pendingEntry = 0;
@@ -217,14 +251,14 @@ final class LZW extends CompressionChannel {
          * The body is a little bit more complex because codes in [0 … 255] range are
          * handled as a special case instead of stored in the `entriesForCodes` table.
          */
-        int stringOffset = previousEntry  &  OFFSET_MASK;
-        int stringLength = previousEntry >>> OFFSET_SIZE;
-        int maximumIndex = (1 << codeSize) - 1;
+        int stringOffset = offset(previousEntry);
+        int stringLength = length(previousEntry);
+        int maximumIndex = (1 << codeSize) - OFFSET_TO_MAXIMUM;
         int code;
         while ((code = (int) input.readBits(codeSize)) != EOI_CODE) {       // GetNextCode()
             if (code == CLEAR_CODE) {
                 clearTable();       // InitializeTable()
-                maximumIndex = (1 << MIN_CODE_SIZE) - 1;
+                maximumIndex = (1 << MIN_CODE_SIZE) - OFFSET_TO_MAXIMUM;
                 /*
                  * We should not have consecutive clear codes, but it is easy to check for safety.
                  * The first valid code after `CLEAR_CODE` shall be a byte. If we reached the end
@@ -232,9 +266,9 @@ final class LZW extends CompressionChannel {
                  */
                 do code = finished() ? EOI_CODE : (int) input.readBits(MIN_CODE_SIZE);      // GetNextCode()
                 while (code == CLEAR_CODE);
-                if (code == EOI_CODE) break;
                 if ((code & ~0xFF) != 0) {
-                    throw unexpectedData();
+                    if (code == EOI_CODE) break;
+                    else throw unexpectedData();
                 }
                 /*
                  * The code to add to the table is a single byte in the [0 … 255] range.
@@ -267,7 +301,11 @@ final class LZW extends CompressionChannel {
                 final int newLength   = stringLength + 1;
                 final int lastNewByte = newOffset + stringLength;
                 if (lastNewByte >= stringsFromCode.length) {
-                    stringsFromCode = Arrays.copyOf(stringsFromCode, stringsFromCode.length * 2);
+                    final int capacity = Math.min(indexOfFreeString * 2, OFFSET_MASK + 1);
+                    if (lastNewByte >= capacity) {
+                        throw new IOException("Dictionary overflow");
+                    }
+                    stringsFromCode = Arrays.copyOf(stringsFromCode, capacity);
                 }
                 System.arraycopy(stringsFromCode, stringOffset, stringsFromCode, newOffset, stringLength);
                 /*
@@ -279,11 +317,19 @@ final class LZW extends CompressionChannel {
                  */
                 final int entryForCode = entriesForCodes[code];
                 if (entryForCode != 0) {                                        // if (IsInTable(Code))
-                    stringOffset = entryForCode  &  OFFSET_MASK;                // StringFromCode(Code)
-                    stringLength = entryForCode >>> OFFSET_SIZE;
+                    stringOffset = offset(entryForCode);                        // StringFromCode(Code)
+                    stringLength = length(entryForCode);
                 } else {
                     stringOffset = newOffset;       // StringFromCode(OldCode) + FirstChar(StringFromCode(OldCode)
                     stringLength = newLength;
+                    /*
+                     * In well-formed LZW stream, we should have `code == indexOfFreeEntry` here.
+                     * However some invalid values are found in practice. We need `code` to refer
+                     * to the entry that we add to the dictionary, otherwise inconsistencies will
+                     * happen during the next iteration (when using `OldCode`). This is implicitly
+                     * ensured by not using `code` directly in next iteration, but reusing instead
+                     * `stringOffset` and `stringLength`.
+                     */
                 }
                 /*
                  * Add the missing byte in the new entry. That byte is `FirstChar(StringFromCode(Code | OldCode)))`.
@@ -301,7 +347,7 @@ final class LZW extends CompressionChannel {
                 }
                 if (++indexOfFreeEntry == maximumIndex) {
                     if (codeSize < MAX_CODE_SIZE) {
-                        maximumIndex = (1 << ++codeSize) - 1;
+                        maximumIndex = (1 << ++codeSize) - OFFSET_TO_MAXIMUM;
                     } else {
                         /*
                          * Incrementing the size to 13 bits is an error because the TIFF specification
@@ -309,6 +355,7 @@ final class LZW extends CompressionChannel {
                          * immediately after this code. If this is not the case, we will have an index
                          * out of bounds exception in the next iteration, which is caught above.
                          */
+                        // Opportunistic check if the size allocated in constructor is right.
                         assert indexOfFreeEntry == entriesForCodes.length : indexOfFreeEntry;
                     }
                 }
