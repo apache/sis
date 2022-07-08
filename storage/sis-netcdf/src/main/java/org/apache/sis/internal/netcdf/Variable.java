@@ -517,6 +517,11 @@ public abstract class Variable extends Node {
      * Returns the value of {@code "_CoordinateAxisType"} or {@code "axis"} attribute, or {@code null} if none.
      * Note that a {@code null} value does not mean that this variable is not an axis.
      *
+     * <p>Possible values for {@code _CoordinateAxisType} attribute include {@code "lat"}, {@code "lon"},
+     * {@code "GeoX"} and {@code "GeoY"}. But the possible values for {@code axis} attribute include only
+     * {@code "X"} and {@code "Y"}, which is more ambiguous. Caller should try to complete the information
+     * when the returned value is X or Y.</p>
+     *
      * @return {@code "_CoordinateAxisType"} or {@code "axis"} attribute value, or {@code null} if none.
      */
     protected abstract String getAxisType();
