@@ -17,6 +17,8 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
+import java.util.Set;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.function.Function;
 import java.awt.Shape;
@@ -77,6 +79,17 @@ public class GridCoverageProcessor implements Cloneable {
      * The processor to use for operations on two-dimensional slices.
      */
     protected final ImageProcessor imageProcessor;
+
+    /**
+     * The set of optimizations that are enabled.
+     * By default, this set contains all enumeration values.
+     *
+     * @see #getOptimizations()
+     * @see #setOptimizations(Set)
+     *
+     * @since 1.3
+     */
+    protected final EnumSet<Optimization> optimizations = EnumSet.allOf(Optimization.class);
 
     /**
      * Creates a new processor with default configuration.
@@ -142,6 +155,74 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public void setPositionalAccuracyHints(final Quantity<?>... hints) {
         imageProcessor.setPositionalAccuracyHints(hints);
+    }
+
+    /**
+     * Types of changes that a coverage processor can do for executing an operation more efficiently.
+     * For example the processor may, in some cases, replace an operation by a more efficient one.
+     * Those optimizations should not change significantly the sample values at any given location,
+     * but may change other aspects (in a compatible way) such as the {@link GridCoverage} subclass
+     * returned or the size of the underlying rendered images.
+     *
+     * <p>By default all optimizations are enabled. Users may want to disable some optimizations
+     * for example in order to get more predictable results.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.3
+     *
+     * @see #getOptimizations()
+     * @see #setOptimizations(Set)
+     *
+     * @since 1.3
+     */
+    public enum Optimization {
+        /**
+         * Allows the replacement of an operation by a more efficient one.
+         *
+         * <div class="note"><b>Example:</b>
+         * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
+         * that cause the resampling to be a translation of the grid by an integer amount of cells, then by default
+         * {@link GridCoverageProcessor} will use the {@link #translateGrid(GridCoverage, long...) translateGrid(…)}
+         * algorithm instead. This option can be cleared for forcing a full resampling operation in all cases.</div>
+         */
+        REPLACE_OPERATION,
+
+        /**
+         * Allows the replacement of source parameter by a more fundamental source.
+         *
+         * <div class="note"><b>Example:</b>
+         * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with a source
+         * grid coverage which is itself the result of a previous resampling, then instead of resampling an
+         * already resampled coverage, by default {@link GridCoverageProcessor} will resample the original
+         * coverage. This option can be cleared for disabling that replacement.</div>
+         */
+        REPLACE_SOURCE
+    }
+
+    /**
+     * Returns the set of optimizations that are enabled.
+     * By default, the returned set contains all optimizations.
+     *
+     * <p>The returned set is a copy. Changes in this set will not affect the state of this processor.</p>
+     *
+     * @return copy of the set of optimizations that are enabled.
+     * @since 1.3
+     */
+    public synchronized Set<Optimization> getOptimizations() {
+        return optimizations.clone();
+    }
+
+    /**
+     * Specifies the set of optimizations to enable.
+     * All optimizations not in the given set will be disabled.
+     *
+     * @param enabled  set of optimizations to enable.
+     * @since 1.3
+     */
+    public synchronized void setOptimizations(final Set<Optimization> enabled) {
+        ArgumentChecks.ensureNonNull("enabled", enabled);
+        optimizations.clear();
+        optimizations.addAll(enabled);
     }
 
     /**
@@ -261,6 +342,47 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
+     * Returns a coverage with a grid translated by the given amount of cells compared to the source.
+     * The translated grid has the same {@linkplain GridExtent#getSize(int) size} than the source,
+     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
+     * "real world" coordinates.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code translation} array length should be equal to the number of dimensions in the source coverage.
+     * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * <h4>Optimizations</h4>
+     * The following optimizations are applied by default and can be disabled if desired:
+     * <ul>
+     *   <li>{@link Optimization#REPLACE_SOURCE} for merging many calls
+     *       of this {@code translate(…)} method into a single translation.</li>
+     * </ul>
+     *
+     * @param  source       the grid coverage to translate.
+     * @param  translation  translation to apply on each grid axis in order.
+     * @return a grid coverage whose grid coordinates (both low and high ones) and
+     *         the "grid to CRS" transforms have been translated by given amounts.
+     *         If the given translation is a no-op (no value or only 0 ones), then the source is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @see GridExtent#translate(long...)
+     * @see GridGeometry#translate(long...)
+     *
+     * @since 1.3
+     */
+    public GridCoverage translateGrid(final GridCoverage source, long... translation) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("translation", translation);
+        final boolean allowSourceReplacement;
+        synchronized (this) {
+            allowSourceReplacement = optimizations.contains(Optimization.REPLACE_SOURCE);
+        }
+        return TranslatedGridCoverage.create(source, null, translation, allowSourceReplacement);
+    }
+
+    /**
      * Creates a new coverage with a different grid extent, resolution or coordinate reference system.
      * The desired properties are specified by the {@link GridGeometry} argument, which may be incomplete.
      * The missing grid geometry components are completed as below:
@@ -287,6 +409,15 @@ public class GridCoverageProcessor implements Cloneable {
      * If the grid coverage values are themselves interpolated, this method tries to use the
      * original data. The intent is to avoid adding interpolations on top of other interpolations.
      *
+     * <h4>Optimizations</h4>
+     * The following optimizations are applied by default and can be disabled if desired:
+     * <ul>
+     *   <li>{@link Optimization#REPLACE_SOURCE} for merging many calls of {@code resample(…)}
+     *       or {@code translate(…)} method into a single resampling.</li>
+     *   <li>{@link Optimization#REPLACE_OPERATION} for replacing {@code resample(…)} operation
+     *       by {@code translate(…)} when possible.</li>
+     * </ul>
+     *
      * @param  source  the grid coverage to resample.
      * @param  target  the desired geometry of returned grid coverage. May be incomplete.
      * @return a grid coverage with the characteristics specified in the given grid geometry.
@@ -299,18 +430,21 @@ public class GridCoverageProcessor implements Cloneable {
     public GridCoverage resample(GridCoverage source, final GridGeometry target) throws TransformException {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        final boolean allowSourceReplacement, allowOperationReplacement;
+        synchronized (this) {
+            allowSourceReplacement    = optimizations.contains(Optimization.REPLACE_SOURCE);
+            allowOperationReplacement = optimizations.contains(Optimization.REPLACE_OPERATION);
+        }
         final boolean isConverted = source == source.forConvertedValues(true);
         /*
-         * If the source coverage is already the result of a previous "resample" operation,
+         * If the source coverage is already the result of a previous "resample" or "translate" operation,
          * use the original data in order to avoid interpolating values that are already interpolated.
          */
         for (;;) {
             if (ResampledGridCoverage.equivalent(source.getGridGeometry(), target)) {
                 return source;
-            } else if (source instanceof ResampledGridCoverage) {
-                source = ((ResampledGridCoverage) source).source;
-            } else if (source instanceof ConvertedGridCoverage) {
-                source = ((ConvertedGridCoverage) source).source;
+            } else if (allowSourceReplacement && source instanceof DerivedGridCoverage) {
+                source = ((DerivedGridCoverage) source).source;
             } else {
                 break;
             }
@@ -327,7 +461,7 @@ public class GridCoverageProcessor implements Cloneable {
         }
         final GridCoverage resampled;
         try {
-            resampled = ResampledGridCoverage.create(source, target, imageProcessor);
+            resampled = ResampledGridCoverage.create(source, target, imageProcessor, allowOperationReplacement);
         } catch (IllegalGridGeometryException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {

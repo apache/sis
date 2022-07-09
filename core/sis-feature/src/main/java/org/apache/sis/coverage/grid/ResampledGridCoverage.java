@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Resources;
@@ -56,16 +55,11 @@ import org.apache.sis.util.Utilities;
  * @since   1.1
  * @module
  */
-final class ResampledGridCoverage extends GridCoverage {
+final class ResampledGridCoverage extends DerivedGridCoverage {
     /**
      * The {@value} constant for identifying code specific to the two-dimensional case.
      */
     private static final int BIDIMENSIONAL = 2;
-
-    /**
-     * The coverage to resample.
-     */
-    final GridCoverage source;
 
     /**
      * The transform from cell coordinates in this coverage to cell coordinates in {@linkplain #source} coverage.
@@ -111,7 +105,6 @@ final class ResampledGridCoverage extends GridCoverage {
                                   ImageProcessor processor)
     {
         super(source, domain);
-        this.source         = source;
         this.toSourceCorner = toSourceCorner;
         this.toSourceCenter = toSourceCenter;
         toSourceDimensions  = findDependentDimensions(toSourceCenter, domain);
@@ -166,13 +159,46 @@ final class ResampledGridCoverage extends GridCoverage {
     }
 
     /**
+     * If the given transform is a translation and all translation terms are integers, returns the translation.
+     * Otherwise returns {@code null}. It does not matter if the given transform is {@link #toSourceCenter} or
+     * {@link #toSourceCorner}, because those two transforms should be identical when all scale factors are 1.
+     * We nevertheless test the two transforms in case one of them has rounding errors.
+     */
+    private static long[] getIntegerTranslation(final MathTransform toSource) {
+        final Matrix m = MathTransforms.getMatrix(toSource);
+        if (m == null || !Matrices.isTranslation(m)) {
+            return null;
+        }
+        final int tc = m.getNumCol() - 1;
+        final long[] translation = new long[m.getNumRow() - 1];
+        for (int j = translation.length; --j >= 0;) {
+            final double v = m.getElement(j, tc);
+            if ((translation[j] = Math.round(v)) != v) {
+                return null;
+            }
+        }
+        return translation;
+    }
+
+    /**
      * If this coverage can be represented as a {@link GridCoverage2D} instance,
      * returns such instance. Otherwise returns {@code this}.
      *
      * @param  isGeometryExplicit  whether grid extent or "grid to CRS" transform have been explicitly
      *         specified by user. In such case, this method will not be allowed to change those values.
      */
-    private GridCoverage specialize(final boolean isGeometryExplicit) throws TransformException {
+    private GridCoverage specialize(final boolean isGeometryExplicit, final boolean allowOperationReplacement)
+            throws TransformException
+    {
+        if (allowOperationReplacement) {
+            long[] translation;
+            if ((translation = getIntegerTranslation(toSourceCenter)) != null ||
+                (translation = getIntegerTranslation(toSourceCorner)) != null)
+            {
+                // No need to allow source replacement because it is already done by caller.
+                return TranslatedGridCoverage.create(source, gridGeometry, translation, false);
+            }
+        }
         GridExtent extent = gridGeometry.getExtent();
         if (extent.getDimension()    < GridCoverage2D.BIDIMENSIONAL ||
             extent.getSubDimension() > GridCoverage2D.BIDIMENSIONAL)
@@ -267,7 +293,8 @@ final class ResampledGridCoverage extends GridCoverage {
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
      */
-    static GridCoverage create(final GridCoverage source, final GridGeometry target, final ImageProcessor processor)
+    static GridCoverage create(final GridCoverage source, final GridGeometry target, final ImageProcessor processor,
+                               final boolean allowOperationReplacement)
             throws FactoryException, TransformException
     {
         final GridGeometry sourceGG = source.getGridGeometry();
@@ -451,7 +478,7 @@ final class ResampledGridCoverage extends GridCoverage {
         return new ResampledGridCoverage(source, resampled,
                 MathTransforms.concatenate(targetCornerToCRS, crsToSourceCorner),
                 MathTransforms.concatenate(targetCenterToCRS, crsToSourceCenter),
-                changeOfCRS, processor).specialize(isGeometryExplicit);
+                changeOfCRS, processor).specialize(isGeometryExplicit, allowOperationReplacement);
     }
 
     /**
@@ -637,21 +664,5 @@ final class ResampledGridCoverage extends GridCoverage {
          */
         final RenderedImage values = source.render(sourceExtent);
         return imageProcessor.resample(values, new Rectangle(width, height), toSource);
-    }
-
-    /**
-     * Returns the constant identifying the primitive type used for storing sample values.
-     */
-    @Override
-    final DataType getBandType() {
-        return source.getBandType();
-    }
-
-    /**
-     * Delegates to the source coverage, which should transform the point itself if needed.
-     */
-    @Override
-    public GridEvaluator evaluator() {
-        return source.evaluator();
     }
 }

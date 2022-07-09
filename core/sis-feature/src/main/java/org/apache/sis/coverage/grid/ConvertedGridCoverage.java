@@ -53,13 +53,7 @@ import org.apache.sis.image.ImageProcessor;
  * @since   1.0
  * @module
  */
-final class ConvertedGridCoverage extends GridCoverage {
-    /**
-     * The coverage containing source values.
-     * Sample values will be converted from that coverage using the {@link #converters}.
-     */
-    final GridCoverage source;
-
+final class ConvertedGridCoverage extends DerivedGridCoverage {
     /**
      * Conversions from {@link #source} values to converted values.
      * The length of this array shall be equal to the number of bands.
@@ -98,8 +92,7 @@ final class ConvertedGridCoverage extends GridCoverage {
                           final MathTransform1D[] converters, final boolean isConverted,
                           final ImageProcessor processor)
     {
-        super(source.getGridGeometry(), range);
-        this.source      = source;
+        super(source, range);
         this.converters  = converters;
         this.isConverted = isConverted;
         this.bandType    = getBandType(range, isConverted, source);
