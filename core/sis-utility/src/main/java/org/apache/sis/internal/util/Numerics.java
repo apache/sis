@@ -39,7 +39,7 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -188,6 +188,23 @@ public final class Numerics extends Static {
      */
     public static long bitmask(final int bit) {
         return (bit & ~(Long.SIZE - 1)) == 0 ? (1L << bit) : 0;
+    }
+
+    /**
+     * Returns {@code true} if the given number is an integer value.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If the given value is NaN, than this method returns {@code false}.</li>
+     *   <li>If the given value is positive or negative infinity, then this method returns {@code true}
+     *       (should be false, but this method does not check for infinities for performance reasons).</li>
+     * </ul>
+     *
+     * @param  x the value to test.
+     * @return whether the given value is an integer.
+     */
+    public static boolean isInteger(final double x) {
+        return x == Math.rint(x);       // `rint` is reported faster than `floor`.
     }
 
     /**

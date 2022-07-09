@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -95,7 +96,7 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      */
     @Override
     public boolean isInteger() {
-        if (scale == Math.floor(scale) && offset == Math.floor(offset) && base.isInteger()) {
+        if (Numerics.isInteger(scale) && Numerics.isInteger(offset) && base.isInteger()) {
             return true;
         }
         return super.isInteger();
