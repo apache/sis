@@ -244,7 +244,7 @@ loop:   while ((c = read()) >= 0) {
 
     /**
      * Skips over <var>n</var> bytes of data from the input stream.
-     * A negative value move backward in the input stream (some .
+     * A negative value move backward in the input stream.
      *
      * <h4>Design note</h4>
      * A previous version was skipping no more bytes than the buffer capacity.

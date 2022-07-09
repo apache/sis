@@ -417,7 +417,7 @@ final class LZW extends CompressionChannel {
                 try {
                     entriesForCodes[indexOfFreeEntry] = newEntry;
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    throw (IOException) unexpectedData().initCause(e);
+                    throw (IOException) unexpectedData().initCause(e);            // Overflow 12 bit codes.
                 }
                 if (++indexOfFreeEntry == maximumIndex) {
                     if (codeSize < MAX_CODE_SIZE) {
@@ -437,11 +437,11 @@ final class LZW extends CompressionChannel {
                  * If the sequence is too long for space available in target buffer,
                  * the writing will be deferred to next invocation of this method.
                  */
-                if (stringLength <= target.remaining()) {
-                    target.put(stringsFromCode, stringOffset, stringLength);
-                } else {
-                    pendingOffset = stringOffset;
-                    pendingLength = stringLength;
+                final int n = Math.min(stringLength, target.remaining());
+                target.put(stringsFromCode, stringOffset, n);
+                if (n != stringLength) {
+                    pendingOffset = stringOffset + n;
+                    pendingLength = stringLength - n;
                     break;
                 }
             }
