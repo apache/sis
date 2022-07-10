@@ -223,16 +223,21 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
          * Since we are going to apply a `-targetMedian` translation before the `WraparoundTransform`, the
          * `sourceMedian` used for computing the inverse of that transform must have the same translation.
          */
-        MathTransform tr = new WraparoundTransform(dimension, wraparoundDimension, period, sourceMedian - targetMedian);
-        if (targetMedian != 0) try {
+        final WraparoundTransform tr = new WraparoundTransform(dimension, wraparoundDimension, period, sourceMedian - targetMedian);
+        if (targetMedian == 0) {
+            return tr;
+        } else try {
             final double[] vector = new double[dimension];
             vector[wraparoundDimension] = targetMedian;
             final MathTransform denormalize = MathTransforms.translation(vector);
-            tr = MathTransforms.concatenate(denormalize.inverse(), tr, denormalize);
+            final MathTransform ct = MathTransforms.concatenate(denormalize.inverse(), tr, denormalize);
+            if (sourceMedian == 0) {
+                tr.inverse = tr;        // For preventing a stack overflow in `DomainDefinition.estimateOnInverse(…)`
+            }
+            return ct;
         } catch (NoninvertibleTransformException e) {
             throw new IllegalArgumentException(e);              // Should never happen actually.
         }
-        return tr;
     }
 
     /**

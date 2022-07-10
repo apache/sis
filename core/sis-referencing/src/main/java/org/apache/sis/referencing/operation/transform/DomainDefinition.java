@@ -179,7 +179,16 @@ public class DomainDefinition {
             estimateOnInverse(ct.transform2);
             estimateOnInverse(ct.transform1, ct.transform2);
         } else {
-            estimate(inverse.inverse());
+            final MathTransform forward = inverse.inverse();
+            if (forward instanceof ConcatenatedTransform) {
+                final ConcatenatedTransform ct = (ConcatenatedTransform) forward;
+                final MathTransform transform1 = ct.transform2.inverse();
+                final MathTransform transform2 = ct.transform1.inverse();
+                estimateOnInverse(transform2);
+                estimateOnInverse(transform1, transform2);
+            } else {
+                estimate(forward);
+            }
         }
     }
 
