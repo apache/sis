@@ -62,14 +62,14 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
     private static final int BIDIMENSIONAL = 2;
 
     /**
-     * The transform from cell coordinates in this coverage to cell coordinates in {@linkplain #source} coverage.
+     * The transform from cell coordinates in this coverage to cell coordinates in {@linkplain #source source} coverage.
      * Note that an offset may exist between cell coordinates and pixel coordinates, so some translations may need
      * to be concatenated with this transform on an image-by-image basis.
      */
     private final MathTransform toSourceCorner, toSourceCenter;
 
     /**
-     * Mapping from dimensions in this {@code ResampledGridCoverage} to dimensions in the {@link #source} coverage.
+     * Mapping from dimensions in this {@code ResampledGridCoverage} to dimensions in the {@linkplain #source source} coverage.
      * The mapping is represented by a bitmask. For a target dimension <var>i</var>, {@code toSourceDimensions[i]}
      * has a bit set to 1 for all source dimensions used in the computation of that target dimension.
      * This array may be {@code null} if the mapping can not be computed or if it is not needed.

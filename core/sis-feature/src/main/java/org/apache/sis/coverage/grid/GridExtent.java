@@ -1800,8 +1800,16 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             table.append(Long.toString(lower)).append(" … ").nextColumn();
             table.append(Long.toString(upper)).append("] ") .nextColumn();
             table.append('(').append(vocabulary.getString(Vocabulary.Keys.CellCount_1,
-                    Long.toUnsignedString(upper - lower + 1))).append(')').nextLine();
+                    toSizeString(upper - lower + 1))).append(')').nextLine();
         }
         table.flush();
+    }
+
+    /**
+     * Returns a string representation of the given size, assumed computed by {@code high - low + 1}.
+     * A value of 0 means that there is an overflow and that the true value os 2<sup>64</sup>.
+     */
+    static String toSizeString(final long size) {
+        return (size != 0) ? Long.toUnsignedString(size) : "2⁶⁴";
     }
 }

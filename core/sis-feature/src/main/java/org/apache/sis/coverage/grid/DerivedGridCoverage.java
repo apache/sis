@@ -17,8 +17,15 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
+import java.util.Locale;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -65,6 +72,15 @@ abstract class DerivedGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns {@code true} if this coverage should not be replaced by its source.
+     *
+     * @see GridCoverageProcessor.Optimization#REPLACE_SOURCE
+     */
+    boolean IsNotRepleacable() {
+        return false;
+    }
+
+    /**
      * Returns the data type identifying the primitive type used for storing sample values in each band.
      * The default implementation returns the type of the source.
      */
@@ -86,5 +102,45 @@ abstract class DerivedGridCoverage extends GridCoverage {
     @Override
     public GridEvaluator evaluator() {
         return source.evaluator();
+    }
+
+    /**
+     * Returns a tree representation of some elements of this grid coverage.
+     * This method create the tree documented in parent class,
+     * augmented with a short summary of the source.
+     *
+     * @param  locale   the locale to use for textual labels.
+     * @param  bitmask  combination of {@link GridGeometry} flags.
+     * @return a tree representation of the specified elements.
+     */
+    @Debug
+    public TreeTable toTree(final Locale locale, final int bitmask) {
+        final TreeTable tree = super.toTree(locale, bitmask);
+        final TreeTable.Node branch = tree.getRoot().newChild();
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
+        branch.setValue(column, vocabulary.getString(Vocabulary.Keys.Source));
+        branch.newChild().setValue(column, summary(source));
+        return tree;
+    }
+
+    /**
+     * Returns a short (single-line) string representation of the given coverage.
+     * This is used for listing sources.
+     */
+    private static String summary(final GridCoverage source) {
+        final StringBuilder b = new StringBuilder(Classes.getShortClassName(source));
+        final GridExtent extent = source.gridGeometry.extent;
+        if (extent != null) {
+            b.append('[');
+            final int dimension = extent.getDimension();
+            for (int i=0; i<dimension; i++) {
+                if (i != 0) b.append(" × ");
+                // Do not use `extent.getSize(i)` for avoiding potential ArithmeticException.
+                b.append(GridExtent.toSizeString(extent.getHigh(i) - extent.getLow(i) + 1));
+            }
+            b.append(']');
+        }
+        return b.toString();
     }
 }

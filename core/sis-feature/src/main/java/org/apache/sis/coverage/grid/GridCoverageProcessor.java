@@ -338,7 +338,8 @@ public class GridCoverageProcessor implements Cloneable {
             targetBands[i] = sampleDimensionModifier.apply(builder.setName(band.getName())).forConvertedValues(true);
             builder.clear();
         }
-        return new ConvertedGridCoverage(source, UnmodifiableArrayList.wrap(targetBands), converters, true, unique(imageProcessor));
+        return new ConvertedGridCoverage(source, UnmodifiableArrayList.wrap(targetBands),
+                                         converters, true, unique(imageProcessor), true);
     }
 
     /**
@@ -444,7 +445,9 @@ public class GridCoverageProcessor implements Cloneable {
             if (ResampledGridCoverage.equivalent(source.getGridGeometry(), target)) {
                 return source;
             } else if (allowSourceReplacement && source instanceof DerivedGridCoverage) {
-                source = ((DerivedGridCoverage) source).source;
+                final DerivedGridCoverage derived = (DerivedGridCoverage) source;
+                if (derived.IsNotRepleacable()) break;
+                source = derived.source;
             } else {
                 break;
             }

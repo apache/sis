@@ -55,7 +55,7 @@ import org.apache.sis.image.ImageProcessor;
  */
 final class ConvertedGridCoverage extends DerivedGridCoverage {
     /**
-     * Conversions from {@link #source} values to converted values.
+     * Conversions from {@linkplain #source source} values to converted values.
      * The length of this array shall be equal to the number of bands.
      */
     private final MathTransform1D[] converters;
@@ -80,6 +80,12 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
     private final ImageProcessor processor;
 
     /**
+     * {@code true} if the conversion was defined by user, or {@code false} if this instance
+     * has been created by {@link #forConvertedValues(boolean)} implementation.
+     */
+    private final boolean isUSerDefined;
+
+    /**
      * Creates a new coverage with the same grid geometry than the given coverage but converted sample dimensions.
      *
      * @param  source       the coverage containing source values.
@@ -90,13 +96,14 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      */
     ConvertedGridCoverage(final GridCoverage source, final List<SampleDimension> range,
                           final MathTransform1D[] converters, final boolean isConverted,
-                          final ImageProcessor processor)
+                          final ImageProcessor processor, final boolean isUSerDefined)
     {
         super(source, range);
-        this.converters  = converters;
-        this.isConverted = isConverted;
-        this.bandType    = getBandType(range, isConverted, source);
-        this.processor   = processor;
+        this.converters    = converters;
+        this.isConverted   = isConverted;
+        this.bandType      = getBandType(range, isConverted, source);
+        this.processor     = processor;
+        this.isUSerDefined = isUSerDefined;
     }
 
     /**
@@ -117,7 +124,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
         if (converters == null) {
             return source;
         }
-        return new ConvertedGridCoverage(source, targets, converters, converted, Lazy.PROCESSOR);
+        return new ConvertedGridCoverage(source, targets, converters, converted, Lazy.PROCESSOR, false);
     }
 
     /**
@@ -212,34 +219,48 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
     }
 
     /**
+     * Returns {@code true} if this coverage should not be replaced by its source.
+     *
+     * @see GridCoverageProcessor.Optimization#REPLACE_SOURCE
+     */
+    @Override
+    final boolean IsNotRepleacable() {
+        return isUSerDefined;
+    }
+
+    /**
      * Creates a new function for computing or interpolating sample values at given locations.
      *
      * <h4>Multi-threading</h4>
      * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
      * a new {@link GridEvaluator} instance should be created for each thread.
-     *
-     * @since 1.1
      */
     @Override
     public GridEvaluator evaluator() {
-        return new SampleConverter();
+        return new SampleConverter(this);
     }
 
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
      */
-    private final class SampleConverter extends GridEvaluator {
+    private static final class SampleConverter extends GridEvaluator {
         /**
          * The evaluator provided by source coverage.
          */
         private final GridEvaluator evaluator;
 
         /**
+         * Conversions from {@linkplain #source source} values to converted values.
+         */
+        private final MathTransform1D[] converters;
+
+        /**
          * Creates a new evaluator for the enclosing coverage.
          */
-        SampleConverter() {
-            super(ConvertedGridCoverage.this);
-            evaluator = source.evaluator();
+        SampleConverter(final ConvertedGridCoverage coverage) {
+            super(coverage);
+            evaluator  = coverage.source.evaluator();
+            converters = coverage.converters;
         }
 
         /**
@@ -313,7 +334,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
     }
 
     /**
-     * Creates a converted view over {@link #source} data for the given extent.
+     * Creates a converted view over {@linkplain #source source} data for the given extent.
      * Values will be converted when first requested on a tile-by-tile basis.
      * Note that if the returned image is discarded, then the cache of converted
      * tiles will be discarded too.

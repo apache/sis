@@ -34,7 +34,8 @@ import org.opengis.coverage.CannotEvaluateException;
 final class TranslatedGridCoverage extends DerivedGridCoverage {
     /**
      * The translation to apply on the argument given to {@link #render(GridExtent)}
-     * before to delegate to the source.
+     * before to delegate to the source. This is the conversion from this coverage to
+     * the source coverage.
      */
     private final long[] translation;
 
@@ -109,7 +110,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
 
     /**
      * Returns a two-dimensional slice of grid data as a rendered image.
-     * This method translates the {@code sliceExtent} argument, then delegates to the {@linkplain #source}.
+     * This method translates the {@code sliceExtent} argument, then delegates to the {@linkplain #source source}.
      * It is okay to use the source result as-is because image coordinates are relative to the request;
      * the rendered image shall not be translated.
      */
