@@ -29,6 +29,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 
@@ -38,7 +39,7 @@ import org.apache.sis.measure.Units;
  * Each {@code WraparoundTransform} instance should be used only once.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -165,8 +166,32 @@ public final class WraparoundApplicator {
             // Some `DirectPosition` implementations compute coordinates only when first needed.
             throw e.unwrapOrRethrow(TransformException.class);
         }
+        /*
+         * If the two medians are very close to each other, make them equal. It simplifies the chain of operations.
+         * This code applies an arbitrary threshold for avoiding the effect of rounding errors, because `create(…)`
+         * will use the difference between those two values.
+         */
+        final double max = Math.max(Math.abs(sm), Math.abs(m));
+        if (Math.abs(sm - m) < max * Numerics.COMPARISON_THRESHOLD) {
+            // Arbitrarily take the value closest to an integer.
+            final int n = Math.getExponent(max);
+            if (error(sm, n) <= error(m, n)) {
+                m = sm;
+            } else {
+                sm = m;
+            }
+        }
         final MathTransform wraparound = WraparoundTransform.create(tr.getTargetDimensions(), wraparoundDimension, period, sm, m);
         return MathTransforms.concatenate(tr, wraparound);
+    }
+
+    /**
+     * Returns an arbitrary measurement of the error of given value.
+     * We use this measurement for arbitrarily taking the value closest to an integer.
+     */
+    private static double error(double m, final int n) {
+        m = Math.scalb(m, 6 - n);           // 6 is an arbitrary extra accuracy to keep for comparison.
+        return Math.abs(m - Math.rint(m));
     }
 
     /**
