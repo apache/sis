@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -26,8 +28,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
@@ -62,7 +66,7 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -420,6 +424,21 @@ public class LambertConicConformal extends ConformalProjection {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     * The limits defined by this method are arbitrary and may change in any future implementation.
+     * Current implementation sets a longitude range of ±180° (i.e. the world) and a latitude range
+     * from pole to equator in the hemisphere of the projection.
+     *
+     * @since 1.3
+     */
+    @Override
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final double x = abs(θ_bound);
+        final double y = copySign(PI/2, -n);
+        return Optional.of(new Envelope2D(null, -x, Math.min(y, 0), 2*x, Math.abs(y)));
     }
 
     /**

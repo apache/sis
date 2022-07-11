@@ -17,15 +17,19 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.referencing.Resources;
@@ -66,7 +70,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -367,6 +371,25 @@ public class TransverseMercator extends NormalizedProjection {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     * The limits defined by this method are arbitrary and may change in any future implementation.
+     * Current implementation sets a limit at 40° of longitude on each side of the central meridian
+     * (this limit is mentioned in EPSG guidance notes)
+     * and a limit at 84° of latitude (same as {@link Mercator} projection).
+     *
+     * @since 1.3
+     */
+    @Override
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        final Envelope2D domain = new Envelope2D();
+        domain.x = -PI/2 * (40d/90);
+        domain.y = -PI/2 * (84d/90);
+        domain.width  = -2 * domain.x;
+        domain.height = -2 * domain.y;
+        return Optional.of(domain);
     }
 
     /**
@@ -765,7 +788,7 @@ public class TransverseMercator extends NormalizedProjection {
             final double tanφ = sinφ / cosφ;
             final double B    = cosφ * sinλ;
             /*
-             * Using Snyder's equation for calculating y, instead of the one used in Proj.4.
+             * Using Snyder's equation for calculating y, instead of the one used in PROJ.
              * Potential problems when y and x = 90 degrees, but behaves ok in tests.
              */
             if (dstPts != null) {

@@ -158,8 +158,8 @@ final class MetadataFallback extends MetadataSource {
                 presentationForm      = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
-            case "IOGP": {          // Not in public API (see Citations.IOGP javadoc)
-                title = "IOGP Surveying and Positioning Guidance Note 7";
+            case "IOGP": {       // Not in public API (see Citations.IOGP javadoc)
+                title            = "IOGP Surveying and Positioning Guidance Note 7";
                 code             = Constants.IOGP;
                 copyFrom         = Constants.EPSG;
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
@@ -190,9 +190,9 @@ final class MetadataFallback extends MetadataSource {
                 alternateTitle = key;
                 break;
             }
-            case Constants.PROJ4: {
-                title     = "Proj";
-                code      = "Proj4";
+            case "PROJ": {
+                title     = "PROJ coordinate transformation software library";
+                code      = "PROJ";
                 codeSpace = "OSGeo";
                 break;
             }

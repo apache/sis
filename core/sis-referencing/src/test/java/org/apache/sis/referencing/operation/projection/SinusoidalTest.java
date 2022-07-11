@@ -67,7 +67,7 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
             },
             new double[] {                  // Expected (x,y) results in metres.
               1077000.98,  -5585053.61,     // Values derived from Snyder page 365.
-               223368.12,    111701.07      // Values taken from PROJ.4.
+               223368.12,    111701.07      // Values taken from PROJ library.
             });
     }
 
@@ -89,7 +89,7 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
             },
             new double[] {                  // Expected (x,y) results in metres.
               1075471.54,  -5540628.03,     // Values from Snyder page 366.
-               222607.72,    110567.32      // Values taken from PROJ.4 and modified for Clarke 1866.
+               222607.72,    110567.32      // Values taken from PROJ and modified for Clarke 1866.
             });
     }
 

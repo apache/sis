@@ -28,6 +28,7 @@ import java.awt.Shape;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.feature.j2d.PathBuilder;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -923,8 +924,8 @@ final class IsolineTracer {
                         final boolean isLastPoint = (index >= 6);          // See row [6] in above table.
                         if (Double.isFinite(x) && Double.isFinite(y)) {
                             final Point p = new Point((int) x, (int) y);
-                            if (x != Math.floor(x)) p.x = ~p.x;
-                            if (y != Math.floor(y)) p.y = ~p.y;
+                            if (!Numerics.isInteger(x)) p.x = ~p.x;
+                            if (!Numerics.isInteger(y)) p.y = ~p.y;
                             if (isLastPoint) {
                                 lastPoint = p;
                                 break;                                     // Done searching both points.

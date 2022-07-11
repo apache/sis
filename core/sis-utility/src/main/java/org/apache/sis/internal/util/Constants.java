@@ -91,6 +91,8 @@ public final class Constants extends Static {
     /**
      * The {@value} code space. The project name is {@code "Proj.4"}, but this constant omits
      * the dot because this name is used as a code space and we want to avoid risk of confusion.
+     * We use "Proj4" instead of "PROJ" for historical reasons, because we use this identifier
+     * for parameters defined by old PROJ versions, before PROJ 6 introduced full support of EPSG names.
      */
     public static final String PROJ4 = "Proj4";
 

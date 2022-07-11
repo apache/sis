@@ -786,7 +786,7 @@ public final class CRS extends Static {
 
     /**
      * Returns the domain of validity of the specified coordinate reference system, or {@code null} if unknown.
-     * If non-null, then the returned envelope will use the same coordinate reference system them the given CRS
+     * If non-null, then the returned envelope will use the same coordinate reference system than the given CRS
      * argument.
      *
      * @param  crs  the coordinate reference system, or {@code null}.

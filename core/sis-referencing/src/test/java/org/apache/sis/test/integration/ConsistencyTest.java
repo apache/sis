@@ -31,11 +31,13 @@ import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.UnformattableObjectException;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
@@ -121,7 +123,7 @@ public final strictfp class ConsistencyTest extends TestCase {
         v2 .setConvention(Convention.WKT2);
         v2s.setConvention(Convention.WKT2_SIMPLIFIED);
         for (final String code : CRS.getAuthorityFactory(null).getAuthorityCodes(CoordinateReferenceSystem.class)) {
-            if (!EXCLUDES.contains(code) && !code.startsWith("Proj4:")) {
+            if (!EXCLUDES.contains(code) && !code.startsWith(Constants.PROJ4 + DefaultNameSpace.DEFAULT_SEPARATOR)) {
                 final CoordinateReferenceSystem crs;
                 try {
                     crs = CRS.forCode(code);

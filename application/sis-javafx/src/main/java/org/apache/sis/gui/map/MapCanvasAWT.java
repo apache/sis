@@ -33,6 +33,7 @@ import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
@@ -561,12 +562,33 @@ public abstract class MapCanvasAWT extends MapCanvas {
         }
 
         /**
+         * Invoked in JavaFX thread on success. The actual transfer from Java2D image to JavaFX image
+         * will happen just before the next pulse for making sure that the affine transform and the
+         * image are updated together before rendering. Doing that way avoid flickering effects.
+         */
+        @Override
+        protected void succeeded() {
+            final Scene scene = fixedPane.getScene();
+            if (scene != null) {
+                final Runnable pulseAction = new Runnable() {
+                    @Override public void run() {
+                        scene.removePreLayoutPulseListener(this);
+                        transferImage();
+                    }
+                };
+                scene.addPreLayoutPulseListener(pulseAction);
+                Platform.requestNextPulse();
+            } else {
+                transferImage();
+            }
+        }
+
+        /**
          * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then the double buffer
          * created by this task is saved in {@link MapCanvas} fields for reuse next time that an image of the
          * same size will be rendered again.
          */
-        @Override
-        protected void succeeded() {
+        private void transferImage() {
             final VolatileImage drawTo = getValue();
             doubleBuffer = drawTo;
             try {

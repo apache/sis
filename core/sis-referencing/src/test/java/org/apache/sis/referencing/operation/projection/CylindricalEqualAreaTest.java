@@ -73,7 +73,7 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
         tolerance = Formulas.LINEAR_TOLERANCE;
         final double λ = 2;
         final double φ = 1;
-        final double x = 222638.98;             // Test point from Proj.4.
+        final double x = 222638.98;             // Test point from PROJ library.
         final double y = 110568.81;
         verifyTransform(new double[] {λ, φ,  -λ, φ,  λ, -φ,  -λ, -φ},
                         new double[] {x, y,  -x, y,  x, -y,  -x, -y});

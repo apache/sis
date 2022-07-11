@@ -152,14 +152,14 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     }
 
     /**
-     * Uses Proj.4 test point has a reference.
+     * Uses test point from PROJ library as a reference.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testEllipse")
-    public void compareWithProj4() throws FactoryException, TransformException {
+    public void compareWithPROJ() throws FactoryException, TransformException {
         tolerance = Formulas.LINEAR_TOLERANCE;
 
         // Spherical case

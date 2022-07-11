@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.EnumSet;
 import java.util.stream.IntStream;
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -32,6 +33,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.TiledImageMock;
@@ -65,7 +67,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -84,7 +86,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
 
     /**
      * Creates a small grid coverage with arbitrary data. The rendered image will
-     * have only one tile since testing tiling is not the purpose of this class.
+     * have only one tile because testing tiling is not the purpose of this class.
      * This simple coverage is two-dimensional.
      */
     private GridCoverage2D createCoverage2D() {
@@ -245,9 +247,13 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Returns a resampled coverage using processor with default configuration.
      * We use processor instead of instantiating {@link ResampledGridCoverage} directly in order
      * to test {@link GridCoverageProcessor#resample(GridCoverage, GridGeometry)} method as well.
+     *
+     * <p>{@link GridCoverageProcessor.Optimization#REPLACE_OPERATION} is disabled for avoiding to
+     * test another operation than the resampling one.</p>
      */
     private static GridCoverage resample(final GridCoverage source, final GridGeometry target) throws TransformException {
         final GridCoverageProcessor processor = new GridCoverageProcessor();
+        processor.setOptimizations(EnumSet.of(GridCoverageProcessor.Optimization.REPLACE_SOURCE));
         processor.setInterpolation(Interpolation.NEAREST);
         return processor.resample(source, target);
     }
@@ -284,6 +290,31 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final GridCoverage target = resample(source, gg);
         assertSame("Identity transform should result in same coverage.", source, target);
         assertContentEquals(source, target);
+    }
+
+    /**
+     * Tests resampling with a transform which is only a translation by integer values.
+     * This test verifies that an optimized path (much cheaper than real resampling) is taken.
+     *
+     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     */
+    @Test
+    public void testIntegerTranslation() throws TransformException {
+        final GridCoverageProcessor processor = new GridCoverageProcessor();    // With all optimization enabled.
+        final GridCoverage source   = createCoverage2D();
+        final GridGeometry sourceGG = source.getGridGeometry();
+        final GridGeometry targetGG = sourceGG.translate(-10, 15);
+        final GridCoverage target   = processor.resample(source, targetGG);
+        assertInstanceOf("Expected fast path.", TranslatedGridCoverage.class, target);
+        assertSame(targetGG, target.getGridGeometry());
+        assertEnvelopeEquals(sourceGG.getEnvelope(), targetGG.getEnvelope(), STRICT);
+        /*
+         * The envelope is BOX(20 15, 80 77). Evaluate a single point inside that envelope.
+         * The result for identical "real world" coordinates should be the same for both coverages.
+         */
+        final DirectPosition2D p = new DirectPosition2D(sourceGG.getCoordinateReferenceSystem(), 50, 30);
+        assertArrayEquals(source.evaluator().apply(p),
+                          target.evaluator().apply(p), STRICT);
     }
 
     /**

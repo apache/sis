@@ -156,8 +156,8 @@ public class FractionalGridCoordinates implements Serializable {
     }
 
     /**
-     * Sets the coordinate value at the specified dimension. The given value can not be
-     * NaN or infinite and shall be convertible to {@code long} without precision lost.
+     * Sets the coordinate value at the specified dimension.
+     * The given value shall be convertible to {@code double} without precision lost.
      *
      * @param  dimension  the dimension for which to set the coordinate value.
      * @param  value      the new value.

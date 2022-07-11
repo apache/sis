@@ -597,7 +597,7 @@ public class RenderingData implements Cloneable {
         /*
          * Create a resampled image for current zoom level. If the image is zoomed, the resampled image bounds
          * will be very large, potentially larger than 32 bit integer capacity (calculation done below clamps
-         * the result to 32 bit integer range). This is okay since only visible tiles will be created.
+         * the result to 32 bit integer range). This is okay because only visible tiles will be created.
          *
          * NOTE: if user pans image close to integer range limit, a new resampled image will need to be computed
          *       for shifting away from integer overflow risk situation. This check is done by the caller.
@@ -606,9 +606,15 @@ public class RenderingData implements Cloneable {
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
         MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
         MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
-        final Rectangle bounds = (Rectangle) Shapes2D.transform(
-                MathTransforms.bidimensional(cornerToDisplay),
-                ImageUtilities.getBounds(recoloredImage), new Rectangle());
+        /*
+         * If the source image is world-wide and if the transform involves a projection that can not represent
+         * the whole world, then we need to clip the image to a domain supported by the map projection.
+         */
+        final Rectangle bounds = ImageUtilities.getBounds(recoloredImage);
+        MathTransforms.getDomain(cornerToDisplay).ifPresent((domain) -> {
+            Shapes2D.intersect(bounds, domain, 0, 1);
+        });
+        Shapes2D.transform(MathTransforms.bidimensional(cornerToDisplay), bounds, bounds);
         /*
          * Verify if wraparound is really necessary. We do this check because the `displayToCenter` transform
          * may be used for every pixels, so it is worth to make that transform more efficient if possible.

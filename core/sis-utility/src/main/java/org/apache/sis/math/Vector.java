@@ -31,6 +31,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Loggers;
 
 import static java.util.logging.Logger.getLogger;
@@ -304,8 +305,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public boolean isInteger() {
         if (!Numbers.isInteger(getElementType())) {
             for (int i=size(); --i >= 0;) {
-                final double v = doubleValue(i);
-                if (v != Math.floor(v)) {
+                if (!Numerics.isInteger(doubleValue(i))) {
                     return false;
                 }
             }

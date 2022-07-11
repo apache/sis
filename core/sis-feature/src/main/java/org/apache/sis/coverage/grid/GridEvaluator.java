@@ -170,6 +170,8 @@ public class GridEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Returns the coverage from which this evaluator is fetching sample values.
+     * This is usually the coverage on which the {@link GridCoverage#evaluator()} method has been invoked,
+     * but not necessarily. Implementations are allowed to use a different coverage for efficiency.
      *
      * @return the source of sample values for this evaluator.
      */
@@ -414,6 +416,10 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * <p>This method does not put any restriction on the grid coordinates result.
      * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}
      * if the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform allows it.</p>
+     *
+     * <p>The grid coordinates are relative to the grid of the coverage returned by {@link #getCoverage()}.
+     * This is usually the coverage on which the {@link GridCoverage#evaluator()} method has been invoked,
+     * but not necessarily. Implementations are allowed to use a different coverage for efficiency.</p>
      *
      * @param  point  geospatial coordinates (in arbitrary CRS) to transform to grid coordinates.
      * @return the grid coordinates for the given geospatial coordinates.
