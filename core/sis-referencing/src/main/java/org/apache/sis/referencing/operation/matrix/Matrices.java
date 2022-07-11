@@ -1048,8 +1048,8 @@ public final class Matrices extends Static {
         if (!isAffine(matrix)) {
             return false;
         }
-        final int numRow = matrix.getNumRow() - 1;      // Excluding translation column.
-        final int numCol = matrix.getNumCol() - 1;      // Excluding last row in affine transform.
+        final int numRow = matrix.getNumRow() - 1;      // Excluding last row in affine transform.
+        final int numCol = matrix.getNumCol() - 1;      // Excluding translation column.
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 if (matrix.getElement(j,i) != ((i == j) ? 1 : 0)) {

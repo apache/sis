@@ -18,8 +18,10 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -60,7 +62,7 @@ import static java.util.logging.Logger.getLogger;
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  *
@@ -882,6 +884,24 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             assert ((ConcatenatedTransform) tr).inverse == null;
             ((ConcatenatedTransform) tr).inverse = inverse;
         }
+    }
+
+    /**
+     * Returns the intersection of domains declared in transform steps.
+     * The result is in the units of input coordinates.
+     *
+     * <p>This method shall not be invoked recursively; the result would be in wrong units.
+     * The {@code estimateOnInverse(…)} method implementations performs {@code instanceof}
+     * checks for preventing that.</p>
+     *
+     * @param  criteria  domain builder passed to each transform steps.
+     */
+    @Override
+    public final Optional<Envelope> getDomain(final DomainDefinition criteria) throws TransformException {
+        final MathTransform head = transform1.inverse();            // == inverse().transform2
+        criteria.estimateOnInverse(transform2.inverse(), head);
+        criteria.estimateOnInverse(head);
+        return criteria.result();
     }
 
     /**

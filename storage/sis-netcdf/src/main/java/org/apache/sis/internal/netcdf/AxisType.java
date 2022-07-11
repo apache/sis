@@ -32,7 +32,7 @@ import ucar.nc2.constants.CF;
  * Enumeration order is the desired order of coordinate values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -107,11 +107,25 @@ public enum AxisType {
     }
 
     /**
+     * Returns {@code true} if the given abbreviation is null or is ambiguous.
+     * The latter happens when the {@code axis} attribute value or the variable name is "X", "Y" or "Z",
+     * which could be longitude, latitude or height as well as axes in any other coordinate system.
+     *
+     * @param  abbreviation  the axis abbreviation, or {@code null}.
+     * @return whether the given abbreviation is considered ambiguous.
+     */
+    private static boolean isNullOrAmbiguous(final Character abbreviation) {
+        return (abbreviation == null) || (abbreviation >= 'x' && abbreviation <= 'z');
+    }
+
+    /**
      * Returns the axis type (identified by its abbreviation) for the given axis, or 0 if unknown.
      * The returned code is one of the controlled vocabulary documented in {@link Axis#abbreviation}.
      *
      * @param  axis  axis for which to get an abbreviation.
      * @return abbreviation for the given axis, or 0 if none.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-552">SIS-552</a>
      */
     public static char abbreviation(final Variable axis) {
         /*
@@ -121,17 +135,20 @@ public enum AxisType {
          * are standardized to "longitude" and "latitude" among others.
          */
         Character abbreviation = abbreviation(axis.getAxisType());
-        if (abbreviation == null) {
+        if (isNullOrAmbiguous(abbreviation)) {
+            Character fallback = abbreviation;
             abbreviation = abbreviation(axis.getAttributeAsString(CF.STANDARD_NAME));    // No fallback on variable name.
+            if (fallback == null) fallback = abbreviation;
             /*
              * If the abbreviation is still unknown, look at the "long_name", "description" or "title" attribute. Those
              * attributes are not standardized, so they are less reliable than "standard_name". But they are still more
              * reliable that the variable name since the long name may be "Longitude" or "Latitude" while the variable
              * name is only "x" or "y".
              */
-            if (abbreviation == null) {
+            if (isNullOrAmbiguous(abbreviation)) {
                 abbreviation = abbreviation(axis.getDescription());
-                if (abbreviation == null) {
+                if (fallback == null) fallback = abbreviation;
+                if (isNullOrAmbiguous(abbreviation)) {
                     /*
                      * Actually the "degree_east" and "degree_north" units of measurement are the most reliable way to
                      * identify geographic system, but we nevertheless check them almost last because the direction is
@@ -150,17 +167,18 @@ public enum AxisType {
                      * We test the variable name last because that name is more at risk of being an uninformative "x" or "y" name.
                      * If even the variable name is not sufficient, we use some easy to recognize units.
                      */
-                    if (abbreviation == null) {
-                        abbreviation = abbreviation(axis.getName());
-                        if (abbreviation == null) {
-                            final Unit<?> unit = axis.getUnit();
-                            if (Units.isTemporal(unit)) {
-                                return 't';
-                            } else if (Units.isPressure(unit)) {
-                                return 'z';
-                            } else {
-                                return 0;
-                            }
+                    abbreviation = abbreviation(axis.getName());
+                    if (fallback == null) fallback = abbreviation;
+                    if (isNullOrAmbiguous(abbreviation)) {
+                        final Unit<?> unit = axis.getUnit();
+                        if (Units.isTemporal(unit)) {
+                            return 't';
+                        } else if (Units.isPressure(unit)) {
+                            return 'z';
+                        } else if (fallback != null) {
+                            return fallback;
+                        } else {
+                            return 0;
                         }
                     }
                 }

@@ -17,15 +17,19 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
@@ -57,7 +61,7 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see ObliqueStereographic
  *
@@ -297,6 +301,19 @@ public class PolarStereographic extends ConformalProjection {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     * The limits defined by this method are arbitrary and may change in any future implementation.
+     * Current implementation sets a longitude range of ±180° (i.e. the world) and a latitude range
+     * from pole to equator in the hemisphere of the projection.
+     *
+     * @since 1.3
+     */
+    @Override
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        return Optional.of(new Envelope2D(null, -PI, -PI/2, 2*PI, PI/2));
     }
 
     /**

@@ -48,7 +48,7 @@ INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('Oracle',  'https://www.oracle.com/'),
   ('OSGeo',   'https://www.osgeo.org/'),
   ('PostGIS', 'https://postgis.net/'),
-  ('Proj4',   'https://proj4.org/'),
+  ('PROJ',    'https://proj.org/'),
   ('SIS',     'https://sis.apache.org/'),
   ('WMO',     'https://www.wmo.int/'),
   ('WMS',     'https://www.ogc.org/standards/wms');
@@ -192,7 +192,7 @@ INSERT INTO metadata."Identifier" ("ID", "code", "codeSpace", "version") VALUES
   ('EPSG',        'EPSG',    'IOGP',         NULL),
   ('ArcGIS',      'ArcGIS',  'ESRI',         NULL),
   ('MapInfo',     'MapInfo', 'Pitney Bowes', NULL),
-  ('Proj4',       'Proj4',   'OSGeo',        NULL),
+  ('PROJ',        'PROJ',    'OSGeo',        NULL),
   ('SIS',         'SIS',     'Apache',       NULL);
 
 INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedResponsibleParty", "presentationForm", "alternateTitle" , "title") VALUES
@@ -206,7 +206,7 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedRespon
   ('EPSG',       'EPSG',  NULL,              'IOGP',   'tableDigital',    'EPSG Dataset', 'EPSG Geodetic Parameter Dataset'),
   ('ArcGIS',     'ESRI',  NULL,              'ESRI',    NULL,              NULL,          'ArcGIS'),
   ('MapInfo',     NULL,   NULL,              'MapInfo', NULL,             'MapInfo',      'MapInfo Pro'),
-  ('Proj4',      'Proj4', NULL,              'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
+  ('PROJ',       'PROJ',  NULL,              'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
   ('SIS',        'SIS',   NULL,              'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
 
 

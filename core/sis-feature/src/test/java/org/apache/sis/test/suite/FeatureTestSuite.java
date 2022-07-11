@@ -26,7 +26,7 @@ import org.junit.runners.Suite;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -118,6 +118,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.BufferedGridCoverageTest.class,
     org.apache.sis.coverage.grid.GridCoverageBuilderTest.class,
     org.apache.sis.coverage.grid.ConvertedGridCoverageTest.class,
+    org.apache.sis.coverage.grid.TranslatedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
 
     // Index and processing

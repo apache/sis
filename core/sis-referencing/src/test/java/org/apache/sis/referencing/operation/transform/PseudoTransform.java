@@ -16,8 +16,12 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Optional;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.GeneralEnvelope;
 
 import static java.lang.StrictMath.*;
 
@@ -38,10 +42,10 @@ import static java.lang.StrictMath.*;
  *     3003.3
  * }
  *
- * This transform is not invertible and can not compute {@linkplain #derivative derivative}.
+ * This inverse transform is not effective and this transform can not compute {@linkplain #derivative derivative}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -49,7 +53,7 @@ strictfp class PseudoTransform extends AbstractMathTransform {
     /**
      * The source and target dimensions.
      */
-    protected final int sourceDimension, targetDimension;
+    protected final int sourceDimensions, targetDimensions;
 
     /**
      * Temporary buffer for copying the coordinates of a single source point.
@@ -60,29 +64,41 @@ strictfp class PseudoTransform extends AbstractMathTransform {
     /**
      * Creates a transform for the given dimensions.
      *
-     * @param  sourceDimension  the source dimension.
-     * @param  targetDimension  the target dimension.
+     * @param  sourceDimensions  the source dimension.
+     * @param  targetDimensions  the target dimension.
      */
-    public PseudoTransform(final int sourceDimension, final int targetDimension) {
-        this.sourceDimension = sourceDimension;
-        this.targetDimension = targetDimension;
-        this.buffer = new double[sourceDimension];
+    public PseudoTransform(final int sourceDimensions, final int targetDimensions) {
+        this.sourceDimensions = sourceDimensions;
+        this.targetDimensions = targetDimensions;
+        this.buffer = new double[sourceDimensions];
     }
 
     /**
-     * Returns the source dimension.
+     * Returns the number of source dimensions.
      */
     @Override
     public int getSourceDimensions() {
-        return sourceDimension;
+        return sourceDimensions;
     }
 
     /**
-     * Returns the target dimension.
+     * Returns the number of target dimensions.
      */
     @Override
     public int getTargetDimensions() {
-        return targetDimension;
+        return targetDimensions;
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     */
+    @Override
+    public final Optional<Envelope> getDomain(DomainDefinition criteria) {
+        final GeneralEnvelope domain = new GeneralEnvelope(sourceDimensions);
+        for (int i=0; i<sourceDimensions; i++) {
+            domain.setRange(i, 0, 1);
+        }
+        return Optional.of(domain);
     }
 
     /**
@@ -96,12 +112,31 @@ strictfp class PseudoTransform extends AbstractMathTransform {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
-        System.arraycopy(srcPts, srcOff, buffer, 0, sourceDimension);
-        for (int i=0; i<targetDimension; i++) {
-            double v = buffer[i % sourceDimension];
+        System.arraycopy(srcPts, srcOff, buffer, 0, sourceDimensions);
+        for (int i=0; i<targetDimensions; i++) {
+            double v = buffer[i % sourceDimensions];
             v += (i+1)*1000 + round(v * 1000);
             dstPts[dstOff + i] = v;
         }
         return null;
+    }
+
+    /**
+     * Returns a dummy inverse transform. That transform can not apply any operation.
+     */
+    @Override
+    public MathTransform inverse() {
+        return new Inverse() {
+            @Override public MathTransform inverse() {
+                return PseudoTransform.this;
+            }
+
+            @Override public Matrix transform(double[] srcPts, int srcOff,
+                                              double[] dstPts, int dstOff, boolean derivate)
+                    throws TransformException
+            {
+                throw new TransformException("Not supported yet.");
+            }
+        };
     }
 }

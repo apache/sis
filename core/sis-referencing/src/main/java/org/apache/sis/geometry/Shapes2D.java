@@ -22,6 +22,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.RectangularShape;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -49,7 +51,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -146,6 +148,24 @@ public final class Shapes2D extends Static {
         return new Ellipse2D.Double(center.x - radius,
                                     center.y - radius,
                                     2*radius, 2*radius);
+    }
+
+    /**
+     * Sets the given shape to the intersection of that shape with the given envelope.
+     *
+     * @param  shape     the shape to intersect. Will be modified in-place.
+     * @param  envelope  the envelope to intersect with the given shape.
+     * @param  xdim      dimension of <var>x</var> coordinates in the envelope. This is usually 0.
+     * @param  ydim      dimension of <var>y</var> coordinates in the envelope. This is usually 1.
+     *
+     * @since 1.3
+     */
+    public static void intersect(final RectangularShape shape, final Envelope envelope, final int xdim, final int ydim) {
+        final double xmin = Math.max(shape.getMinX(), envelope.getMinimum(xdim));
+        final double ymin = Math.max(shape.getMinY(), envelope.getMinimum(ydim));
+        final double xmax = Math.min(shape.getMaxX(), envelope.getMaximum(xdim));
+        final double ymax = Math.min(shape.getMaxY(), envelope.getMaximum(ydim));
+        shape.setFrame(xmin, ymin, xmax - xmin, ymax - ymin);
     }
 
     /**

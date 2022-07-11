@@ -47,11 +47,13 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.report.AuthorityCodesReport;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.DeprecatedCode;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -580,7 +582,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      */
     @Override
     protected Row createRow(final String code, final FactoryException exception) {
-        if (code.startsWith("Proj4:")) {
+        if (code.startsWith(Constants.PROJ4 + DefaultNameSpace.DEFAULT_SEPARATOR)) {
             return null;
         }
         final Row row = super.createRow(code, exception);

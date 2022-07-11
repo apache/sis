@@ -351,7 +351,10 @@ public final class Citations extends Static {
     public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>(Constants.GEOTIFF);
 
     /**
-     * The authority for identifiers of objects defined by the <a href="https://proj4.org/">Proj.4</a> project.
+     * The authority for identifiers of objects defined by the <a href="https://proj.org/">PROJ</a> project.
+     * We use the {@code PROJ4} name for historical reasons, because those identifiers were defined mostly
+     * when the project was known as "Proj.4". Starting at PROJ version 6, EPSG identifiers should be used
+     * instead.
      *
      * <h4>Main usage</h4>
      * This value can be returned by:
@@ -361,7 +364,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>(Constants.PROJ4);
+    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("PROJ", Constants.PROJ4);
 
     /**
      * The authority for identifiers of objects defined by MapInfo.
