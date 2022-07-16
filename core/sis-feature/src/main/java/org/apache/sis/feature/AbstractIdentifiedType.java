@@ -354,7 +354,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * Compares this type with the given object for equality.
      *
      * @param  obj  the object to compare with this type.
-     * @return {@code true} if the given object is equals to this type.
+     * @return {@code true} if the given object is equal to this type.
      */
     @Override
     public boolean equals(final Object obj) {

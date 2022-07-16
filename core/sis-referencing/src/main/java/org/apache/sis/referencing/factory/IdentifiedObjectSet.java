@@ -476,7 +476,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * {@link FactoryException} (except the ones accepted as {@linkplain #isRecoverableFailure recoverable failures})
      * are thrown as if they were never wrapped into {@link BackingStoreException}.
      *
-     * @param  n  the number of object to resolve. If this number is equals or greater than {@link #size()}, then
+     * @param  n  the number of object to resolve. If this number is equal or greater than {@link #size()}, then
      *            this method ensures that all {@code IdentifiedObject} instances in this collection are created.
      * @throws FactoryException if an {@linkplain #createObject(String) object creation} failed.
      */

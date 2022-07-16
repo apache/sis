@@ -557,7 +557,7 @@ next:   for (int i=components.size(); --i >= 0;) {
          *   - Otherwise we have a datum change, which implies that we have a Transformation.
          *
          * In the case of Conversion, we can specialize one step more if the conversion is going from a geographic CRS
-         * to a projected CRS. It may seems that we should check if ProjectedCRS.getBaseCRS() is equals (ignoring meta
+         * to a projected CRS. It may seems that we should check if ProjectedCRS.getBaseCRS() is equal (ignoring meta
          * data) to source CRS. But we already checked the datum, which is the important part. The axis order and unit
          * could be different, which we want to allow.
          */

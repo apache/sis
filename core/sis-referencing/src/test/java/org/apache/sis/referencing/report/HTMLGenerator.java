@@ -185,7 +185,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
     }
 
     /**
-     * Closes the last HTML tag if it is equals to the given element, and opens a new tag on the same line.
+     * Closes the last HTML tag if it is equal to the given element, and opens a new tag on the same line.
      *
      * @param  tag  the HTML tag without brackets (e.g. {@code "h2"}).
      * @throws IOException if an error occurred while writing to the file.

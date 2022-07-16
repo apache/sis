@@ -275,7 +275,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return true;
         }
 
-        /** Returns whether this vector in the given range is equals to the specified vector. */
+        /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other instanceof Doubles) {
                 return JDK9.equals(array, lower, upper,
@@ -395,7 +395,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return true;
         }
 
-        /** Returns whether this vector in the given range is equals to the specified vector. */
+        /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
                 return JDK9.equals(array, lower, upper,
@@ -555,7 +555,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
-        /** Returns whether this vector in the given range is equals to the specified vector. */
+        /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
                 return JDK9.equals(array, lower, upper,
@@ -685,7 +685,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
-        /** Returns whether this vector in the given range is equals to the specified vector. */
+        /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
                 return JDK9.equals(array, lower, upper,
@@ -819,7 +819,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
-        /** Returns whether this vector in the given range is equals to the specified vector. */
+        /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
                 return JDK9.equals(array, lower, upper,
@@ -928,7 +928,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
-        /** Returns whether this vector in the given range is equals to the specified vector. */
+        /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
             if (other.getClass() == getClass()) {
                 return JDK9.equals(array, lower, upper,

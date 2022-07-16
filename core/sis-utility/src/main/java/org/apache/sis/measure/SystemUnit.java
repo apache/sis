@@ -320,7 +320,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     }
 
     /**
-     * Returns {@code true} if this unit is equals to the given unit ignoring name, symbol and EPSG code.
+     * Returns {@code true} if this unit is equal to the given unit ignoring name, symbol and EPSG code.
      * This method should always returns {@code true} if parameterized type has not been compromised with
      * raw types or unchecked casts.
      *

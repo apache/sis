@@ -122,7 +122,7 @@ public final strictfp class ReaderTest extends TestCase {
     }
 
     /**
-     * Asserts that the string value of {@code actual} is equals to the expected value.
+     * Asserts that the string value of {@code actual} is equal to the expected value.
      *
      * @param  expected  the expected value (can be {@code null}).
      * @param  actual    the actual value (can be {@code null}).

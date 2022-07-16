@@ -212,7 +212,7 @@ public final class MathFunctions extends Static {
      * the value is negative.
      *
      * @param  value  the value to truncate.
-     * @return the largest in magnitude (further from zero) integer value which is equals
+     * @return the largest in magnitude (further from zero) integer value which is equal
      *         or less in magnitude than the given value.
      */
     public static double truncate(final double value) {
@@ -385,8 +385,8 @@ public final class MathFunctions extends Static {
      *
      * Special cases:
      * <ul>
-     *   <li>If <var>x</var> is equals or lower than -324, then the result is 0.</li>
-     *   <li>If <var>x</var> is equals or greater than 309, then the result is {@linkplain Double#POSITIVE_INFINITY positive infinity}.</li>
+     *   <li>If <var>x</var> is equal or lower than -324, then the result is 0.</li>
+     *   <li>If <var>x</var> is equal or greater than 309, then the result is {@linkplain Double#POSITIVE_INFINITY positive infinity}.</li>
      *   <li>If <var>x</var> is in the [0 … 18] range inclusive, then the result is exact.</li>
      *   <li>For all other <var>x</var> values, the result is the closest IEEE 754 approximation.</li>
      * </ul>

@@ -898,7 +898,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                              getter.isAnnotationPresent(XmlElementRefs.class));
             }
             /*
-             * If the annotation is @XmlElement, ensure that XmlElement.name() is equals
+             * If the annotation is @XmlElement, ensure that XmlElement.name() is equal
              * to the UML identifier. Then verify that the namespace is the expected one.
              */
             if (element != null) {

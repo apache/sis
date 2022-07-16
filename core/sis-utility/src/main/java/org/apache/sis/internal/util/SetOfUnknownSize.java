@@ -181,7 +181,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
          * iterate over the elements of this Set. The reason is that this Set may compute the values dynamically and
          * it is sometime difficult to ensure that this Set's iterator is fully consistent with the values recognized
          * by the contains(Object) method. For example the iterator may return "EPSG:4326" while the contains(Object)
-         * method may accept both "EPSG:4326" and "EPSG:4326". For this equals(Object) method, we consider the
+         * method may accept both "EPSG:4326" and "EPSG:4326". For this equal(Object) method, we consider the
          * contains(Object) method of the other Set as more reliable.
          */
         if (object == this) {

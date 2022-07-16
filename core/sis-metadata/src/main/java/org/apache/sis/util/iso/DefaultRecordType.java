@@ -163,7 +163,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         this.container  = container;
         this.fieldTypes = computeTransientFields(fields);
         /*
-         * Ensure that the record namespace is equals to the schema name. For example if the schema
+         * Ensure that the record namespace is equal to the schema name. For example if the schema
          * name is "MyNameSpace", then the record type name can be "MyNameSpace:MyRecordType".
          */
         final LocalName   schemaName   = container.getSchemaName();

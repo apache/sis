@@ -715,7 +715,7 @@ public strictfp class DocumentComparator {
      * The first line will contain the root of the tree. Other lines will contain
      * the child down in the hierarchy until the given node, inclusive.
      *
-     * <p>This method formats only a summary if the hierarchy is equals to the expected one.</p>
+     * <p>This method formats only a summary if the hierarchy is equal to the expected one.</p>
      *
      * @param  buffer         the buffer in which to append the formatted hierarchy.
      * @param  node           the node for which to format the parents.

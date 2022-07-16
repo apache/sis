@@ -102,7 +102,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
     }
 
     /**
-     * Asserts that the given envelope is equals to the expected value.
+     * Asserts that the given envelope is equal to the expected value.
      */
     @Override
     void assertGeometryEquals(GeneralEnvelope expected, GeneralEnvelope actual, double tolx, double toly) {

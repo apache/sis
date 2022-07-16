@@ -213,7 +213,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Asserts that the textual value of the named attribute is equals to the expected value.
+     * Asserts that the textual value of the named attribute is equal to the expected value.
      * The {@link #selectDataset(TestData)} method must be invoked at least once before this method.
      *
      * @param  expected       the expected attribute value.
@@ -225,7 +225,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Asserts that the numeric value of the named attribute is equals to the expected value.
+     * Asserts that the numeric value of the named attribute is equal to the expected value.
      * The {@link #selectDataset(TestData)} method must be invoked at least once before this method.
      *
      * @param  expected       the expected attribute value.
@@ -237,7 +237,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Asserts that the temporal value of the named attribute is equals to the expected value.
+     * Asserts that the temporal value of the named attribute is equal to the expected value.
      * The {@link #selectDataset(TestData)} method must be invoked at least once before this method.
      *
      * @param  expected       the expected attribute value.

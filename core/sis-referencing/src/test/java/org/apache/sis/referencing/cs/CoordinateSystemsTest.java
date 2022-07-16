@@ -132,7 +132,7 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     }
 
     /**
-     * Asserts that the angle between the parsed directions is equals to the given value.
+     * Asserts that the angle between the parsed directions is equal to the given value.
      * This method tests also the angle by interchanging the axis directions.
      */
     private static void assertAngleEquals(final boolean isElevation, final double expected,
@@ -146,7 +146,7 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     }
 
     /**
-     * Asserts that the angle between the given directions is equals to the given value.
+     * Asserts that the angle between the given directions is equal to the given value.
      * This method tests also the angle by interchanging the given directions.
      */
     private static void assertAngleEquals(final boolean isElevation, final double expected,

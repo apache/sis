@@ -52,7 +52,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
     private static final String TO_REPLACE = "xlink:href=“";
 
     /**
-     * Asserts that the content of the given map is equals to the given content, represented as a string.
+     * Asserts that the content of the given map is equal to the given content, represented as a string.
      * This method replaces the {@code xlink:href} value by the {@link XLink#toString()} value before to
      * compare with the map content. This is needed because the "special case rules" cause the {@code "href"}
      * identifier to be replaced by {@code "xlink:href"}.

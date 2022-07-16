@@ -149,7 +149,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Verifies that the SIS matrix is equals to the JAMA one, up to the given tolerance value.
+     * Verifies that the SIS matrix is equal to the JAMA one, up to the given tolerance value.
      *
      * @param  expected   the JAMA matrix used as a reference implementation.
      * @param  actual     the SIS matrix to compare to JAMA.
@@ -177,7 +177,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Asserts that the given matrix is equals to the given expected values, up to the given tolerance threshold.
+     * Asserts that the given matrix is equal to the given expected values, up to the given tolerance threshold.
      * This method compares the elements values in two slightly redundant ways.
      */
     static void assertEqualsElements(final double[] expected, final int numRow, final int numCol,
@@ -190,7 +190,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Asserts that an element from the given matrix is equals to the expected value, using a relative threshold.
+     * Asserts that an element from the given matrix is equal to the expected value, using a relative threshold.
      */
     private static void assertEqualsRelative(final String message, final double expected,
             final MatrixSIS matrix, final int row, final int column)

@@ -69,14 +69,14 @@ public final strictfp class SpecialCasesTest extends TestCase {
 
     /**
      * Invokes {@link SpecialCases#type(int, TypeValuePolicy)}
-     * and ensures that the result is equals to the expected value.
+     * and ensures that the result is equal to the expected value.
      */
     private void assertTypeEquals(final String name, final Class<?> expected) {
         assertEquals(name, expected, accessor.type(accessor.indexOf(name, true), TypeValuePolicy.ELEMENT_TYPE));
     }
 
     /**
-     * Invokes {@link SpecialCases#get(int, Object)} and ensures that the result is equals to the expected value.
+     * Invokes {@link SpecialCases#get(int, Object)} and ensures that the result is equal to the expected value.
      */
     private void assertPropertyEquals(final String name, final Object expected) {
         assertEquals(name, expected, accessor.get(accessor.indexOf(name, true), box));
@@ -84,7 +84,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
 
     /**
      * Invokes {@link SpecialCases#set(int, Object, Object, int)} in {@code RETURN_PREVIOUS} mode with the given
-     * {@code newValue}, and ensures that the return value is equals to the given {@code oldValue}.
+     * {@code newValue}, and ensures that the return value is equal to the given {@code oldValue}.
      */
     private void assertPreviousEquals(final String name, final Object oldValue, final Object newValue) {
         final Object value = accessor.set(accessor.indexOf(name, true), box, newValue, PropertyAccessor.RETURN_PREVIOUS);
@@ -93,7 +93,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
 
     /**
      * Invokes {@link SpecialCases#set(int, Object, Object, int)} in {@code APPEND} mode with the given
-     * {@code newValue}, and ensures that the return value is equals to the given {@code changed}.
+     * {@code newValue}, and ensures that the return value is equal to the given {@code changed}.
      */
     private void assertAppendResultEquals(final String name, final Boolean changed, final Object newValue) {
         final Object value = accessor.set(accessor.indexOf(name, true), box, newValue, PropertyAccessor.APPEND);

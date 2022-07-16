@@ -85,7 +85,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Asserts that the given two-dimensional envelope is equals to the given rectangle.
+     * Asserts that the given two-dimensional envelope is equal to the given rectangle.
      * The {@code xLower} and {@code xUpper} arguments are the <var>x</var> coordinate values
      * for the lower and upper corners respectively. The actual {@code xmin} and {@code ymin}
      * values will be inferred from those corners.
@@ -129,7 +129,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Asserts that the intersection of the two following envelopes is equals to the given rectangle.
+     * Asserts that the intersection of the two following envelopes is equal to the given rectangle.
      * First, this method tests using the {@link Envelope2D} implementation. Then, it tests using the
      * {@link GeneralEnvelope} implementation.
      */
@@ -159,7 +159,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Asserts that the union of the two following envelopes is equals to the given rectangle.
+     * Asserts that the union of the two following envelopes is equal to the given rectangle.
      * First, this method tests using the {@link Envelope2D} implementation.
      * Then, it tests using the {@link GeneralEnvelope} implementation.
      *

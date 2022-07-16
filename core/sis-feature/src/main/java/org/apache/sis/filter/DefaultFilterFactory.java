@@ -800,7 +800,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     }
 
     /**
-     * Creates an operator that checks if first temporal operand is equals to the second.
+     * Creates an operator that checks if first temporal operand is equal to the second.
      *
      * @param  time1  expression fetching the first temporal value.
      * @param  time2  expression fetching the second temporal value.

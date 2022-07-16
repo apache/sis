@@ -323,7 +323,7 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
 
     /**
      * Asserts that the result of applying the {@code add} or {@code intersect} operation on {@code b1}
-     * is equals to the given values. This method tests also with horizontally flipped boxes, and tests
+     * is equal to the given values. This method tests also with horizontally flipped boxes, and tests
      * with interchanged boxes.
      *
      * @param union {@code true} for {@code b1.add(b2)}, or {@code false} for {@code b1.intersect(b2)}.

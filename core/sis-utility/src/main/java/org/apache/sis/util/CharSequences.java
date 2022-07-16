@@ -518,7 +518,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * Returns the index of the first non-white character in the given range.
      * If the given range contains only space characters, then this method returns the index of the
      * first character after the given range, which is always equals or greater than {@code toIndex}.
-     * Note that this character may not exist if {@code toIndex} is equals to the text length.
+     * Note that this character may not exist if {@code toIndex} is equal to the text length.
      *
      * <p>Special cases:</p>
      * <ul>
@@ -2165,7 +2165,7 @@ cmp:    while (ia < lga) {
      *
      * <p>This method is similar to {@link String#replace(CharSequence, CharSequence)} except that is accepts
      * arbitrary {@code CharSequence} objects. As of Java 10, another difference is that this method does not
-     * create a new {@code String} if {@code toSearch} is equals to {@code replaceBy}.</p>
+     * create a new {@code String} if {@code toSearch} is equal to {@code replaceBy}.</p>
      *
      * @param  text       the character sequence in which to perform the replacements, or {@code null}.
      * @param  toSearch   the string to replace.

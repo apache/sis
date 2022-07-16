@@ -232,7 +232,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     }
 
     /**
-     * Returns 1 if the {@linkplain #getDenominator() denominator} is equals to 1, or 0 otherwise.
+     * Returns 1 if the {@linkplain #getDenominator() denominator} is equal to 1, or 0 otherwise.
      *
      * <div class="note"><b>Rational:</b>
      * This method is defined that way because scales smaller than 1 can
@@ -246,7 +246,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     }
 
     /**
-     * Returns 1 if the {@linkplain #getDenominator() denominator} is equals to 1, or 0 otherwise.
+     * Returns 1 if the {@linkplain #getDenominator() denominator} is equal to 1, or 0 otherwise.
      *
      * <div class="note"><b>Rational:</b>
      * This method is defined that way because scales smaller than 1 can

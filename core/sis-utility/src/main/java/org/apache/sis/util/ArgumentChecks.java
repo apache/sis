@@ -173,7 +173,7 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Makes sure that an array is non-null and non-empty. If the given {@code array} is null,
-     * then a {@link NullArgumentException} is thrown. Otherwise if the array length is equals
+     * then a {@link NullArgumentException} is thrown. Otherwise if the array length is equal
      * to 0, then an {@link IllegalArgumentException} is thrown.
      *
      * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
@@ -331,7 +331,7 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given index is equals or greater than zero and lower than the given
+     * Ensures that the given index is equal or greater than zero and lower than the given
      * upper value. This method is designed for methods that expect an index value as the only
      * argument. For this reason, this method does not take the argument name.
      *

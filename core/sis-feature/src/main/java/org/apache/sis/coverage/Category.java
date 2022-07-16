@@ -504,7 +504,7 @@ public class Category implements Serializable {
      * Compares the specified object with this category for equality.
      *
      * @param  object the object to compare with.
-     * @return {@code true} if the given object is equals to this category.
+     * @return {@code true} if the given object is equal to this category.
      */
     @Override
     public boolean equals(final Object object) {

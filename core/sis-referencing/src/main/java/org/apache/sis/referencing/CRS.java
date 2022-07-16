@@ -1326,8 +1326,8 @@ public final class CRS extends Static {
      *       searches for a {@linkplain CompoundCRS#getComponents() component} where:
      *       <ul>
      *         <li>The {@linkplain org.apache.sis.referencing.cs.AbstractCS#getDimension() number of dimensions}
-     *             is equals to {@code upper - lower};</li>
-     *         <li>The sum of the number of dimensions of all previous CRS is equals to {@code lower}.</li>
+     *             is equal to {@code upper - lower};</li>
+     *         <li>The sum of the number of dimensions of all previous CRS is equal to {@code lower}.</li>
      *       </ul>
      *       If such component is found, then it is returned.</li>
      *   <li>Otherwise (i.e. no component match), this method returns {@code null}.</li>

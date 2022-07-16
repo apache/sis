@@ -682,7 +682,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
 
     /**
      * Writes fully the buffer content from its position to its limit.
-     * After this method call, the buffer position is equals to its limit.
+     * After this method call, the buffer position is equal to its limit.
      *
      * @throws IOException if an error occurred while writing to the channel.
      */

@@ -1402,7 +1402,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                 return -1;
             }
         } else if (!((index & 1) == 0 ? isMinIncluded : isMaxIncluded)) {
-            // The value is equals to an excluded endpoint.
+            // The value is equal to an excluded endpoint.
             return -1;
         }
         index /= 2;             // Round toward 0 (odd index are maximum values).

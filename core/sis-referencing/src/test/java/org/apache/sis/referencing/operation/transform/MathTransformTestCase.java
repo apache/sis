@@ -218,7 +218,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Transforms the given coordinates and verifies that the result is equals (within a positive delta)
+     * Transforms the given coordinates and verifies that the result is equal (within a positive delta)
      * to the expected ones. If the difference between an expected and actual coordinate value is greater
      * than the {@linkplain #tolerance tolerance} threshold, then the assertion fails.
      *

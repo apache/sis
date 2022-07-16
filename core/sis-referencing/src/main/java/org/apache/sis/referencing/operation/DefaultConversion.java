@@ -431,7 +431,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Ensures that the {@code actual} CRS uses a datum which is equals, ignoring metadata,
+     * Ensures that the {@code actual} CRS uses a datum which is equal, ignoring metadata,
      * to the datum of the {@code expected} CRS.
      *
      * @param  param     the parameter name, used only in case of error.
