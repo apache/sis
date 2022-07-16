@@ -68,8 +68,8 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
 
     /**
      * Returns the number of elements in this set. The default implementation counts the number of elements
-     * returned by the {@link #iterator() iterator}. Subclasses are encouraged to cache this value if they
-     * know that the underlying storage is immutable.
+     * returned by the {@linkplain #iterator() iterator}. Subclasses are encouraged to cache this value
+     * if they know that the underlying storage is immutable.
      *
      * @return the number of elements in this set.
      */

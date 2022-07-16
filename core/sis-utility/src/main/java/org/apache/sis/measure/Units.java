@@ -1709,9 +1709,6 @@ public final class Units extends Static {
      * The attributes in netCDF files often merge the axis direction with the angular unit,
      * as in {@code "degrees_east"} or {@code "degrees_north"}. This {@code valueOf} method
      * ignores those suffixes and unconditionally returns {@link #DEGREE} for all axis directions.
-     * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"}
-     * do <strong>not</strong> have opposite sign.
-     * It is caller responsibility to handle the direction of axes associated to netCDF units.
      *
      * @param  uom  the symbol to parse, or {@code null}.
      * @return the parsed symbol, or {@code null} if {@code uom} was null.

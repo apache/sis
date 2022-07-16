@@ -24,6 +24,7 @@ import java.text.ParsePosition;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.FinalFieldSetter;
 
 
 /**
@@ -130,16 +131,10 @@ public class QuantityFormat extends Format {
     public QuantityFormat clone() {
         final QuantityFormat clone = (QuantityFormat) super.clone();
         try {
-            java.lang.reflect.Field field;
-            field = QuantityFormat.class.getField("numberFormat");
-            field.setAccessible(true);
-            field.set(clone, numberFormat.clone());
-
-            field = QuantityFormat.class.getField("unitFormat");
-            field.setAccessible(true);
-            field.set(clone, unitFormat.clone());
+            FinalFieldSetter.set(QuantityFormat.class, "numberFormat", "unitFormat",
+                                 clone, numberFormat.clone(), unitFormat.clone());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw FinalFieldSetter.cloneFailure(e);
         }
         return clone;
     }

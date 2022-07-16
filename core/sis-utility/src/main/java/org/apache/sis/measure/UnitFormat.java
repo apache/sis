@@ -68,8 +68,6 @@ import static java.util.logging.Logger.getLogger;
  * The attributes in netCDF files often merge the axis direction with the angular unit,
  * as in {@code "degrees_east"}, {@code "degrees_north"} or {@code "Degrees North"}.
  * This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
- * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"} do <strong>not</strong> have
- * opposite sign. It is caller responsibility to handle the direction of axes associated to netCDF units.
  *
  * <h2>Multi-threading</h2>
  * {@code UnitFormat} is generally not thread-safe. If units need to be parsed or formatted in different threads,
