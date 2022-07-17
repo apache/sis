@@ -106,7 +106,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see org.apache.sis.internal.metadata.NameMeaning
  * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
@@ -403,7 +403,7 @@ public final class DefinitionURI {
                         do {
                             /*
                              * Find indices of URI sub-component to parse. The sub-component will
-                             * go from 'splitAt' to 'next' exclusive ('splitAt' is exclusive too).
+                             * go from `splitAt` to `next` exclusive (`splitAt` is exclusive too).
                              */
                             int next = uri.indexOf(componentSeparator, splitAt+1);
                             hasMore = next >= 0 && next < componentsEnd;
@@ -495,8 +495,8 @@ public final class DefinitionURI {
     /**
      * Returns the substring of the given URN, ignoring whitespaces and version number if present.
      * The substring is expected to contains at most one {@code ':'} character. If such separator
-     * character is present, then that character and everything before it are ignored. The ignored
-     * part should be the version number, but this is not verified.
+     * character is present, then that character and everything before it are ignored.
+     * The ignored part should be the version number, but this is not verified.
      *
      * <p>If the remaining substring is empty or contains more {@code ':'} characters, then this method
      * returns {@code null}. The presence of more {@code ':'} characters means that the code has parameters,
@@ -525,7 +525,7 @@ public final class DefinitionURI {
 
     /**
      * Returns the code part of the given URI, provided that it matches the given object type and authority.
-     * This lightweight method is useful when:
+     * This method is useful when:
      *
      * <ul>
      *   <li>the URI is expected to have a specific <cite>object type</cite> and <cite>authority</cite>;</li>
@@ -536,11 +536,11 @@ public final class DefinitionURI {
      * This method accepts the following URI representations:
      *
      * <ul>
-     *   <li>Code alone, without any {@code ':'} character (e.g. {@code "4326"}).</li>
      *   <li>The given authority followed by the code (e.g. {@code "EPSG:4326"}).</li>
      *   <li>The URN form (e.g. {@code "urn:ogc:def:crs:EPSG::4326"}), ignoring version number.
      *       This method accepts also the former {@code "x-ogc"} in place of {@code "ogc"}.</li>
-     *   <li>The HTTP form (e.g. {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}).</li>
+     *   <li>The HTTP form (e.g. {@code "http://www.opengis.net/def/crs/EPSG/0/4326"}).</li>
+     *   <li>The GML form (e.g. {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}).</li>
      * </ul>
      *
      * @param  type       the expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
@@ -552,61 +552,25 @@ public final class DefinitionURI {
     public static String codeOf(final String type, final String authority, final String uri) {
         ensureNonNull("type",      type);
         ensureNonNull("authority", authority);
-        ensureNonNull("uri",       uri);
-        /*
-         * Get the part before the first ':' character. If none, assume that the given URI is already the code.
-         * Otherwise the part may be either "http" or "urn" protocol, or the given authority (typically "EPSG").
-         * In the latter case, we return immediately the code after the authority part.
-         */
         int upper = uri.indexOf(SEPARATOR);
-        if (upper < 0) {
-            return trimWhitespaces(uri);
-        }
-        int lower  = skipLeadingWhitespaces(uri, 0, upper);
-        int length = skipTrailingWhitespaces(uri, lower, upper) - lower;
-        if (length == authority.length() && uri.regionMatches(true, lower, authority, 0, length)) {
-            return codeIgnoreVersion(uri, upper+1);
-        }
-        /*
-         * Check for supported protocols: only "urn" and "http" at this time.
-         * All other protocols are rejected as unrecognized.
-         */
-        String part;
-        switch (length) {
-            case 3:  part = "urn";  break;
-            case 4:  part = "http"; break;
-            default: return null;
-        }
-        if (!uri.regionMatches(true, lower, part, 0, length)) {
-            return null;
-        }
-        if (length == 4) {
-            return codeForGML(type, authority, uri, upper+1, null);
-        }
-        /*
-         * At this point we have determined that the protocol is URN. The next parts after "urn"
-         * shall be "ogc" or "x-ogc", then "def", then the type and authority given in arguments.
-         */
-        for (int p=0; p!=4; p++) {
-            lower = upper + 1;
-            upper = uri.indexOf(SEPARATOR, lower);
-            if (upper < 0) {
-                return null;                                                    // No more parts.
+        if (upper >= 0) {
+            int lower  = skipLeadingWhitespaces(uri, 0, upper);
+            int length = skipTrailingWhitespaces(uri, lower, upper) - lower;
+            if (length == authority.length() && uri.regionMatches(true, lower, authority, 0, length)) {
+                return codeIgnoreVersion(uri, upper+1);
             }
-            switch (p) {
-                // "ogc" is tested before "x-ogc" because more common.
-                case 0: if (regionMatches("ogc", uri, lower, upper)) continue;
-                        part = "x-ogc";   break;       // Fallback if the part is not "ogc".
-                case 1: part = "def";     break;
-                case 2: part = type;      break;
-                case 3: part = authority; break;
-                default: throw new AssertionError(p);
-            }
-            if (!regionMatches(part, uri, lower, upper)) {
-                return null;
+            final DefinitionURI def = parse(uri);
+            if (def != null && def.parameters == null) {
+                if (type.equalsIgnoreCase(def.type) && authority.equalsIgnoreCase(def.authority)) {
+                    String code = def.code;
+                    if (code == null) {
+                        code = def.version;     // May happen with for example "EPSG:4326" instead of "EPSG::4326".
+                    }
+                    return code;
+                }
             }
         }
-        return codeIgnoreVersion(uri, upper+1);
+        return null;
     }
 
     /**
@@ -632,7 +596,7 @@ public final class DefinitionURI {
                 return null;
             }
             // TODO: For now do nothing since PATHS is a singleton. However if a future SIS version
-            //       defines more PATHS entries, then we should replace here the 'paths' reference by
+            //       defines more PATHS entries, then we should replace here the `paths` reference by
             //       a new Collections.singletonMap containing only the entry of interest.
         }
         for (final Map.Entry<String,String> entry : paths.entrySet()) {

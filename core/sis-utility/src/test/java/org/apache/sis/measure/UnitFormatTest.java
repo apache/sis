@@ -428,6 +428,7 @@ public final strictfp class UnitFormatTest extends TestCase {
     @Test
     public void testParseEPSG() {
         final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRE,             f.parse("EPSG:9001"));
         assertSame(Units.METRE,             f.parse("urn:ogc:def:uom:EPSG::9001"));
         assertSame(Units.METRES_PER_SECOND, f.parse("urn:ogc:def:uom:EPSG::1026"));
         assertSame(Units.METRE, f.parse("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
