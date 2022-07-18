@@ -37,8 +37,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.FinalFieldSetter;
-import org.apache.sis.internal.util.XPointer;
-import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.MathFunctions;
@@ -60,14 +58,15 @@ import static java.util.logging.Logger.getLogger;
  * some symbols found in <cite>Well Known Text</cite> (WKT) definitions or in XML files.
  *
  * <h2>Parsing authority codes</h2>
- * As a special case, if a character sequence given to the {@link #parse(CharSequence)} method is of the
- * {@code "EPSG:####"} or {@code "urn:ogc:def:uom:EPSG::####"} form (ignoring case and whitespaces),
- * then {@code "####"} is parsed as an integer and forwarded to the {@link Units#valueOfEPSG(int)} method.
+ * If a character sequence given to the {@link #parse(CharSequence)} method is of the form {@code "EPSG:####"},
+ * {@code "urn:ogc:def:uom:EPSG::####"} or {@code "http://www.opengis.net/def/uom/EPSG/0/####"} (ignoring case
+ * and whitespaces around path separators), then {@code "####"} is parsed as an integer and forwarded to the
+ * {@link Units#valueOfEPSG(int)} method.
  *
- * <h2>NetCDF unit symbols</h2>
- * The attributes in netCDF files often merge the axis direction with the angular unit,
- * as in {@code "degrees_east"}, {@code "degrees_north"} or {@code "Degrees North"}.
- * This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
+ * <h2>Note on netCDF unit symbols</h2>
+ * In netCDF files, values of "unit" attribute are concatenations of an angular unit with an axis direction,
+ * as in {@code "degrees_east"} or {@code "degrees_north"}. This class ignores those suffixes and unconditionally
+ * returns {@link Units#DEGREE} for all axis directions.
  *
  * <h2>Multi-threading</h2>
  * {@code UnitFormat} is generally not thread-safe. If units need to be parsed or formatted in different threads,
@@ -86,6 +85,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3064428584419360693L;
+
+    /**
+     * Whether the parsing of authority codes such as {@code "EPSG:9001"} is allowed.
+     */
+    private static final boolean PARSE_AUTHORITY_CODES = true;
 
     /**
      * The unit name for degrees (not necessarily angular), to be handled in a special way.
@@ -1110,16 +1114,14 @@ appPow: if (unit == null) {
          */
         int end   = symbols.length();
         int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), end);
-        int endOfURI = XPaths.endOfURI(symbols, start);
-        if (endOfURI >= 0) {
-            final String uom = symbols.subSequence(start, endOfURI).toString();
-            String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
+        if (PARSE_AUTHORITY_CODES) {
+            final String code = DefinitionURI.codeOf("uom", Constants.EPSG, symbols);
             if (code != null) {
                 NumberFormatException failure = null;
                 try {
                     final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(code));
                     if (unit != null) {
-                        position.setIndex(endOfURI);
+                        position.setIndex(end);
                         finish(position);
                         return unit;
                     }
@@ -1127,29 +1129,8 @@ appPow: if (unit == null) {
                     failure = e;
                 }
                 throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
-                        Constants.EPSG + Constants.DEFAULT_SEPARATOR + code),
-                        symbols, start + Math.max(0, uom.lastIndexOf(code))).initCause(failure);
-            }
-            /*
-             * Not an EPSG code. Maybe it is a URI like this example:
-             * http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
-             *
-             * If we find such `uom` value, we could replace `symbols` by that `uom`. But it would cause a wrong
-             * error index to be reported in case of parsing failure. We will rather try to adjust the indices
-             * (and replace `symbols` only in last resort).
-             */
-            code = XPointer.UOM.reference(uom);
-            if (code != null) {
-                final int base = start;
-                start = endOfURI - code.length();
-                do if (--start < base) {          // Should never happen (see above comment), but we are paranoiac.
-                    symbols = code;
-                    start = 0;
-                    break;
-                } while (!CharSequences.regionMatches(symbols, start, code));
-                end = start + code.length();
-            } else {
-                endOfURI = -1;
+                        Constants.EPSG + Constants.DEFAULT_SEPARATOR + code), symbols,
+                        start + Math.max(0, symbols.toString().lastIndexOf(code))).initCause(failure);
             }
         }
         /*
@@ -1326,7 +1307,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
             finish(position);           // For preventing interpretation of "degree minute" as "degree × minute".
         }
         unit = operation.apply(unit, component, start);
-        position.setIndex(endOfURI >= 0 ? endOfURI : i);
+        position.setIndex(i);
         return unit;
     }
 

@@ -29,7 +29,6 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.XPaths;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -105,7 +104,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     @SuppressWarnings("unchecked")
     static <V> ValueReference<Feature,V> create(String xpath, final Class<V> type) {
         boolean isVirtual = false;
-        List<String> path = XPaths.split(xpath);
+        List<String> path = XPath.split(xpath);
 split:  if (path != null) {
             /*
              * If the XPath is like "/∗/property" where the root "/" is the feature instance,
@@ -114,7 +113,7 @@ split:  if (path != null) {
              */
             final String head = path.get(0);                // List and items in the list are guaranteed non-empty.
             isVirtual = head.equals("/*");
-            if (isVirtual || head.charAt(0) != XPaths.SEPARATOR) {
+            if (isVirtual || head.charAt(0) != XPath.SEPARATOR) {
                 final int offset = isVirtual ? 1 : 0;       // Skip the "/*/" component at index 0.
                 final int last = path.size() - 1;
                 if (last >= offset) {

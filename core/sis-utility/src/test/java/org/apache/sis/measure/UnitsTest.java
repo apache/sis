@@ -35,15 +35,14 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @DependsOn({
     UnitFormatTest.class,
     SexagesimalConverterTest.class,
-    org.apache.sis.internal.util.DefinitionURITest.class,
-    org.apache.sis.internal.util.XPointerTest.class
+    org.apache.sis.internal.util.DefinitionURITest.class
 })
 public final strictfp class UnitsTest extends TestCase {
     /**
@@ -365,19 +364,23 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
+     * Tests {@link Units#valueOf(String)} with a URN syntax.
+     */
+    @Test
+    public void testValueOfURN() {
+        assertSame(METRE,  valueOf("EPSG:9001"));
+        assertSame(DEGREE, valueOf(" epsg : 9102"));
+        assertSame(DEGREE, valueOf("urn:ogc:def:uom:EPSG::9102"));
+    }
+
+    /**
      * Tests {@link Units#valueOfEPSG(int)} and {@link Units#valueOf(String)} with a {@code "EPSG:####"} syntax.
      */
     @Test
     public void testValueOfEPSG() {
-        assertSame(METRE,  valueOfEPSG(9001));
-        assertSame(DEGREE, valueOfEPSG(9102));              // Used in prime meridian and operation parameters.
-        assertSame(DEGREE, valueOfEPSG(9122));              // Used in coordinate system axes.
-        assertSame(METRE,  valueOf("EPSG:9001"));
-        assertSame(DEGREE, valueOf(" epsg : 9102"));
-        assertSame(DEGREE, valueOf("urn:ogc:def:uom:EPSG::9102"));
-        assertSame(METRE,  valueOf("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertSame(METRE,  valueOf("gmxUom.xml#m"));
-
+        assertSame(METRE,          valueOfEPSG(9001));
+        assertSame(DEGREE,         valueOfEPSG(9102));      // Used in prime meridian and operation parameters.
+        assertSame(DEGREE,         valueOfEPSG(9122));      // Used in coordinate system axes.
         assertSame(TROPICAL_YEAR,  valueOfEPSG(1029));
         assertSame(SECOND,         valueOfEPSG(1040));
         assertSame(FOOT,           valueOfEPSG(9002));

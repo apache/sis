@@ -33,7 +33,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <p>For example, all the following URIs are for the same object:</p>
  * <ul>
- *   <li>{@code "4326"} (codespace inferred by the caller)</li>
  *   <li>{@code "EPSG:4326"} (older format)</li>
  *   <li>{@code "EPSG::4326"} (often seen for similarity with URN below)</li>
  *   <li>{@code "urn:ogc:def:crs:EPSG::4326"} (version number is omitted)</li>
@@ -122,7 +121,7 @@ public final class DefinitionURI {
     public static final String PREFIX = "urn:ogc:def";
 
     /**
-     * The URN separator.
+     * The path separator in URN.
      */
     public static final char SEPARATOR = ':';
 
@@ -468,7 +467,7 @@ public final class DefinitionURI {
      * @param  upper      index after the last character in {@code urn} to compare, ignoring whitespaces.
      * @return {@code true} if the given sub-region of {@code urn} match the given part.
      */
-    static boolean regionMatches(final String part, final String urn, int lower, int upper) {
+    public static boolean regionMatches(final String part, final String urn, int lower, int upper) {
         lower = skipLeadingWhitespaces (urn, lower, upper);
         upper = skipTrailingWhitespaces(urn, lower, upper);
         final int length = upper - lower;
@@ -493,37 +492,6 @@ public final class DefinitionURI {
     }
 
     /**
-     * Returns the substring of the given URN, ignoring whitespaces and version number if present.
-     * The substring is expected to contains at most one {@code ':'} character. If such separator
-     * character is present, then that character and everything before it are ignored.
-     * The ignored part should be the version number, but this is not verified.
-     *
-     * <p>If the remaining substring is empty or contains more {@code ':'} characters, then this method
-     * returns {@code null}. The presence of more {@code ':'} characters means that the code has parameters,
-     * (e.g. {@code "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"}) which are not handled by this method.</p>
-     *
-     * @param  urn        the URN from which to get the code.
-     * @param  fromIndex  index of the first character in {@code urn} to check.
-     * @return the code part of the URN, or {@code null} if empty or invalid.
-     */
-    private static String codeIgnoreVersion(final String urn, int fromIndex) {
-        final int length = urn.length();
-        fromIndex = skipLeadingWhitespaces(urn, fromIndex, length);
-        if (fromIndex >= length) {
-            return null;                            // Empty code.
-        }
-        final int s = urn.indexOf(SEPARATOR, fromIndex);
-        if (s >= 0) {
-            // Ignore the version number (actually everything up to the first ':').
-            fromIndex = skipLeadingWhitespaces(urn, s+1, length);
-            if (fromIndex >= length || urn.indexOf(SEPARATOR, fromIndex) >= 0) {
-                return null;    // Empty code, or the code is followed by parameters.
-            }
-        }
-        return urn.substring(fromIndex, skipTrailingWhitespaces(urn, fromIndex, length));
-    }
-
-    /**
      * Returns the code part of the given URI, provided that it matches the given object type and authority.
      * This method is useful when:
      *
@@ -544,22 +512,44 @@ public final class DefinitionURI {
      * </ul>
      *
      * @param  type       the expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
-     * @param  authority  the expected authority, typically {@code "epsg"}. See class javadoc for a list of authorities.
+     * @param  authority  the expected authority, typically {@code "EPSG"}. See class javadoc for a list of authorities.
      * @param  uri        the URI to parse.
      * @return the code part of the given URI, or {@code null} if the codespace does not match the given type
      *         and authority, the code is empty, or the code is followed by parameters.
      */
-    public static String codeOf(final String type, final String authority, final String uri) {
+    public static String codeOf(final String type, final String authority, final CharSequence uri) {
         ensureNonNull("type",      type);
         ensureNonNull("authority", authority);
-        int upper = uri.indexOf(SEPARATOR);
-        if (upper >= 0) {
-            int lower  = skipLeadingWhitespaces(uri, 0, upper);
-            int length = skipTrailingWhitespaces(uri, lower, upper) - lower;
-            if (length == authority.length() && uri.regionMatches(true, lower, authority, 0, length)) {
-                return codeIgnoreVersion(uri, upper+1);
+        final int length = uri.length();
+        int s = indexOf(uri, SEPARATOR, 0, length);
+        if (s >= 0) {
+            int from = skipLeadingWhitespaces(uri, 0, s);           // Start of authority part.
+            if (skipTrailingWhitespaces(uri, from, s) - from == authority.length()
+                      && CharSequences.regionMatches(uri, from, authority, true))
+            {
+                from = skipLeadingWhitespaces(uri, s+1, length);    // Start of code part.
+                if (from >= length) {
+                    return null;
+                }
+                /*
+                 * The substring is expected to contains zero or one more separator character.
+                 * If present, then the separator character and everything before it are ignored.
+                 * The ignored part should be the version number, but this is not verified.
+                 */
+                s = indexOf(uri, SEPARATOR, from, length);
+                if (s >= 0) {
+                    from = skipLeadingWhitespaces(uri, s+1, length);
+                    if (from >= length || indexOf(uri, SEPARATOR, from, length) >= 0) {
+                        /*
+                         * If the remaining substring contains more ':' characters, then it means that
+                         * the code has parameters, e.g. "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45".
+                         */
+                        return null;
+                    }
+                }
+                return uri.subSequence(from, skipTrailingWhitespaces(uri, from, length)).toString();
             }
-            final DefinitionURI def = parse(uri);
+            final DefinitionURI def = parse(uri.toString());
             if (def != null && def.parameters == null) {
                 if (type.equalsIgnoreCase(def.type) && authority.equalsIgnoreCase(def.authority)) {
                     String code = def.code;
@@ -602,7 +592,7 @@ public final class DefinitionURI {
         for (final Map.Entry<String,String> entry : paths.entrySet()) {
             final String path = entry.getValue();
             if (url.regionMatches(true, lower, path, 0, path.length())) {
-                lower = CharSequences.skipLeadingWhitespaces(url, lower + path.length(), url.length());
+                lower = skipLeadingWhitespaces(url, lower + path.length(), url.length());
                 if (authority == null) {
                     authority = url.substring(lower, skipIdentifierPart(url, lower));
                 } else if (!url.regionMatches(true, lower, authority, 0, authority.length())) {

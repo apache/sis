@@ -66,7 +66,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@code ValueConverter} to a (un)marshaller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -304,13 +304,16 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given string to a unit. The default implementation is as below, omitting
-     * the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
-     * in case of error:
+     * Converts the given string to a unit.
+     * This method shall accept all the following forms (example for the metre unit):
      *
-     * {@preformat java
-     *     return Units.valueOf(value);
-     * }
+     * <ul>
+     *   <li>{@code m}</li>
+     *   <li>{@code EPSG:9001}</li>
+     *   <li>{@code urn:ogc:def:uom:epsg::9001}</li>
+     *   <li>{@code http://www.opengis.net/def/uom/EPSG/0/9001}</li>
+     *   <li>{@code http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])}</li>
+     * </ul>
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a unit, or {@code null}.
@@ -323,6 +326,36 @@ public class ValueConverter {
     public Unit<?> toUnit(final MarshalContext context, String value) throws IllegalArgumentException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
+            /*
+             * First, check for X-Paths like below:
+             *
+             *     http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+             *
+             * Technically the 'm' value in the X-Path is not necessarily a unit symbol.
+             * It is rather a reference to a definition like below:
+             *
+             * <uomItem>
+             *   <gml:BaseUnit gml:id="m">
+             *     <gml:description>
+             *       The metre is the length of the path travelled by ligth in vaccum during a time interval of 1/299 792 458 of a second
+             *     </gml:description>
+             *     <gml:identifier codeSpace="http://www.bipm.fr/en/si/base_units">metre</gml:identifier>
+             *     <gml:quantityType>length</gml:quantityType>
+             *     <gml:catalogSymbol codeSpace="http://www.bipm.org/en/si/base_units">m</gml:catalogSymbol>
+             *     <gml:unitsSystem xlink:href="http://www.bipm.fr/en/si"/>
+             *   </gml:BaseUnit>
+             * </uomItem>
+             *
+             * But current version of this method parses the anchor as if it was a unit symbol,
+             * because we do not have a resolution mechanism yet.
+             */
+            final int endOfURI = XPointer.endOfURI(value, 0);
+            if (endOfURI > 0) {
+                final String anchor = XPointer.UOM.reference(value.substring(0, endOfURI));
+                if (anchor != null) {
+                    value = anchor;
+                }
+            }
             return Units.valueOf(value);
         } catch (ParserException e) {
             if (!exceptionOccured(context, value, String.class, Unit.class, e)) {
