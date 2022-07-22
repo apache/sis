@@ -459,6 +459,13 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Returns the image index used in the default identifier.
+     */
+    final String getImageIndex() {
+        return String.valueOf(index + 1);
+    }
+
+    /**
      * Returns the identifier in the namespace of the {@link GeoTiffStore}.
      * The first image has the sequence number "1", optionally customized.
      * If this image is an overview, then its namespace should be the name of the base image
@@ -477,8 +484,8 @@ final class ImageFileDirectory extends DataCube {
                     // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
                     return Optional.empty();
                 }
-                final String id = String.valueOf(index + 1);
-                final GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), id);
+                GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), getImageIndex());
+                name = name.toFullyQualifiedName();     // Because "1" alone is not very informative.
                 identifier = reader.store.customizer.customize(index, name);
                 if (identifier == null) identifier = name;
             }

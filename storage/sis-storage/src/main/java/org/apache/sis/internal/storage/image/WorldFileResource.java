@@ -26,7 +26,6 @@ import java.awt.image.BandedSampleModel;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
-import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.image.ImageProcessor;
@@ -58,7 +57,7 @@ import static java.lang.Math.toIntExact;
  * A single image in a {@link WorldFileStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -89,7 +88,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      *
      * @see #getIdentifier()
      */
-    private LocalName identifier;
+    private GenericName identifier;
 
     /**
      * The grid geometry of this resource. The grid extent is the image size.
@@ -188,7 +187,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                 if (store.suffix != null) {
                     filename = IOUtilities.filenameWithoutExtension(filename);
                 }
-                identifier = Names.createLocalName(filename, null, id);
+                identifier = Names.createLocalName(filename, null, id).toFullyQualifiedName();
             }
             return Optional.of(identifier);
         }
@@ -362,7 +361,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     final void dispose() {
         if (identifier != null) {
             // For information purpose but not really used.
-            store.identifiers.put(identifier.toString(), Boolean.FALSE);
+            store.identifiers.put(identifier.tip().toString(), Boolean.FALSE);
         }
         store            = null;
         identifier       = null;
