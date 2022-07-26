@@ -309,7 +309,10 @@ final class GridMapping {
             meridian = defaultDefinitions.primeMeridian();
         }
         /*
-         * Ellipsoid built from "semi_major_axis", "semi_minor_axis", etc.
+         * Ellipsoid built from "semi_major_axis" and "semi_minor_axis" parameters. Note that it is okay
+         * to use the OGC name (e.g. "semi_major") instead of the netCDF name (e.g. ""semi_major_axis").
+         * The Apache SIS implementation of parameter value group understands the aliases. Using the OGC
+         * names is safer because they should be understood by most map projection implementations.
          */
         Ellipsoid ellipsoid;
         try {

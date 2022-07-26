@@ -459,6 +459,10 @@ public class Convention {
      *     <td>{@link Number} or {@code double[]}</td>
      *     <td>Map projection parameter values</td>
      *   </tr><tr>
+     *     <td>{@value CF#SEMI_MAJOR_AXIS} and {@value CF#SEMI_MINOR_AXIS}</td>
+     *     <td>{@link Number}</td>
+     *     <td>Ellipsoid axis lengths.</td>
+     *   </tr><tr>
      *     <td>{@value #TOWGS84}</td>
      *     <td>{@link BursaWolfParameters}</td>
      *     <td>Datum shift information.</td>

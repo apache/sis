@@ -117,7 +117,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_c/">SHIKISAI (GCOM-C) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -361,11 +361,13 @@ public final class GCOM_C extends Convention {
         if (name == null) {
             return super.projection(node);
         }
+        Number radius = null;
         final String method;
         final int s = name.indexOf(' ');
         final String code = (s >= 0) ? name.substring(0, s) : name;
         if (code.equalsIgnoreCase("EQA")) {
             method = Sinusoidal.NAME;
+            radius = 6371000;           // "Not specified (based on Authalic Sphere)" datum (EPSG:6035).
         } else if (code.equalsIgnoreCase("EQR")) {
             method = Equirectangular.NAME;
         } else if (code.equalsIgnoreCase("PS")) {
@@ -376,6 +378,11 @@ public final class GCOM_C extends Convention {
         final Map<String,Object> definition = new HashMap<>(4);
         definition.put(CF.GRID_MAPPING_NAME, method);
         definition.put(CONVERSION_NAME, name);
+        if (radius != null) {
+            definition.put(CF.SEMI_MAJOR_AXIS, radius);
+            definition.put(CF.SEMI_MINOR_AXIS, radius);
+            definition.put(ELLIPSOID_NAME, "Authalic sphere");
+        }
         return definition;
     }
 
