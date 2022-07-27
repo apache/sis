@@ -16,14 +16,21 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.List;
 import java.util.Optional;
 import java.nio.file.Path;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.storage.CoverageReadConsistency;
 import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.opengis.util.GenericName;
 
 import static org.junit.Assume.assumeNotNull;
 
@@ -81,5 +88,26 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
      */
     public SelfConsistencyTest() throws DataStoreException {
         super(store.components().iterator().next());
+    }
+
+    @Test
+    public void findResourceByName() throws Exception {
+        final List<GridCoverageResource> datasets = store.components();
+        Assume.assumeFalse(datasets.isEmpty());
+        for (GridCoverageResource dataset : datasets) {
+            final GenericName name = dataset.getIdentifier()
+                    .orElseThrow(() -> new AssertionError("A component of the GeoTiff datastore is unnamed"));
+            GridCoverageResource foundResource = store.findResource(name.toString());
+            Assert.assertEquals(dataset, foundResource);
+            foundResource = store.findResource(name.tip().toString());
+            Assert.assertEquals(dataset, foundResource);
+        }
+
+        try {
+            final GridCoverageResource r = store.findResource("a_wrong_namespace:1");
+            Assert.fail("No dataset should be returned when user specify the wrong namespace. However, the datastore returned "+ r);
+        } catch (IllegalNameException e) {
+            // Expected behaviour
+        }
     }
 }

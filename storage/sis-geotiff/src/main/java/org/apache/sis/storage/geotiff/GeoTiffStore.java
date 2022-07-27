@@ -25,6 +25,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.iso.Names;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -473,22 +476,50 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized GridCoverageResource findResource(final String sequence) throws DataStoreException {
-        Exception cause;
-        int index;
         try {
-            index = Integer.parseInt(sequence);
-            cause = null;
-        } catch (NumberFormatException e) {
-            index = 0;
-            cause = e;
-        }
-        if (index > 0) try {
-            GridCoverageResource image = reader().getImage(index - 1);
+            final int index = parseIndex(sequence);
+            final GridCoverageResource image = reader().getImage(index - 1);
             if (image != null) return image;
+        } catch (NullArgumentException | IllegalArgumentException e) {
+            throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence), e);
         } catch (IOException e) {
             throw errorIO(e);
         }
-        throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence), cause);
+
+        throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence));
+    }
+
+    /**
+     * Validate input resource name and extract the image index it should contain.
+     * We verify that:
+     * <ul>
+     *     <li>Input tip (last name part) is a strictly positive integer ({@code > 0})</li>
+     *     <li>
+     *         If input provide more than a tip, i.e has more than one name part,
+     *         we verify that the part just before the tip matches this datastore namespace
+     *         (should be the name of the Geotiff file without its extension).
+     *     </li>
+     * </ul>
+     *
+     * @param resourceName A string representing the name of a resource present in this datastore.
+     * @return The index of the Geotiff image matching the requested resource.
+     * @throws IllegalArgumentException If input validation fails.
+     */
+    private int parseIndex(String resourceName) {
+        final GenericName name = Names.parseGenericName(null, null, resourceName);
+        final String tip = name.tip().toString();
+        ArgumentChecks.ensureNonEmpty("Resource name tip", tip);
+
+        final int depth = name.depth();
+        if (depth > 1) {
+            final GenericName userNameSpace = name.getParsedNames().get(depth - 2);
+            final GenericName storeNameSpace = namespace().name();
+            if (!userNameSpace.equals(storeNameSpace)) throw new IllegalArgumentException(
+                    "Input name head does not match this datastore context. Expected: " + storeNameSpace + " but received: " + userNameSpace);
+        }
+        final int index = Integer.parseInt(tip);
+        ArgumentChecks.ensureStrictlyPositive("Resource index", index);
+        return index;
     }
 
     /**
