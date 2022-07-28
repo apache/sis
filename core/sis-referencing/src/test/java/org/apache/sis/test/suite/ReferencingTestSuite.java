@@ -176,6 +176,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransformTest.class,
     org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
+    org.apache.sis.referencing.operation.transform.ZeroBasedTransformTest.class,
 
     // Test map projections. Those tests need the providers tested above.
     org.apache.sis.referencing.operation.projection.InitializerTest.class,
