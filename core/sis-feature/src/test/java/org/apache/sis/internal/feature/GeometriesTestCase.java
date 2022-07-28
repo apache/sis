@@ -18,6 +18,7 @@ package org.apache.sis.internal.feature;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import org.apache.sis.geometry.Envelope2D;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -193,7 +194,9 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS,        165, 32,  165, 33,  190, 33,  190, 32,  165, 32);
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_LOWER, -195, 32, -195, 33, -170, 33, -170, 32, -195, 32);
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_UPPER,  165, 32,  165, 33,  190, 33,  190, 32,  165, 32);
-        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, 32, -180, 33,  180, 33,  180, 32, -180, 32);
+
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, 32,  -180, 33,  0, 33,  180, 33,  180, 32,  0, 32,  -180, 32);
+
         assertToGeometryEquals(e, WraparoundMethod.SPLIT,             165, 32,  165, 33,  180, 33,  180, 32,  165, 32,
                                                                      -180, 32, -180, 33, -170, 33, -170, 32, -180, 32);
         e.setRange(0, 177, -170);
@@ -202,7 +205,9 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS,       -183, -42, -183, 2, -170, 2, -170, -42, -183, -42);
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_UPPER,  177, -42,  177, 2,  190, 2,  190, -42,  177, -42);
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_LOWER, -183, -42, -183, 2, -170, 2, -170, -42, -183, -42);
-        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, -42, -180, 2,  180, 2,  180, -42, -180, -42);
+
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, -42,  -180, 2,  0, 2,  180, 2,  180, -42,  0, -42,  -180, -42);
+
         assertToGeometryEquals(e, WraparoundMethod.SPLIT,             177, -42,  177, 2,  180, 2,  180, -42,  177, -42,
                                                                      -180, -42, -180, 2, -170, 2, -170, -42, -180, -42);
     }
@@ -218,11 +223,28 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         e.setRange(1, 1000, 1007);      // Time
         e.setRange(2,    2,    3);      // Latitude
         e.setRange(3,   89,   19);      // Longitude (span anti-meridian).
-        assertToGeometryEquals(e, WraparoundMethod.NONE,       2,   89, 2,  19, 3,  19, 3,   89, 2,   89);
-        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, 2, -271, 2,  19, 3,  19, 3, -271, 2, -271);
-        assertToGeometryEquals(e, WraparoundMethod.EXPAND,     2, -180, 2, 180, 3, 180, 3, -180, 2, -180);
-        assertToGeometryEquals(e, WraparoundMethod.SPLIT,      2,   89, 2, 180, 3, 180, 3,   89, 2,   89,
-                                                               2, -180, 2,  19, 3,  19, 3, -180, 2, -180);
+
+        assertToGeometryEquals(e, WraparoundMethod.NONE,       2, 89,  2, 19,  3, 19,  3, 89,  2, 89);
+
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, 2, -271,  2, -126,  2, 19,  3, 19,  3, -126,  3, -271, 2, -271);
+
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,     2, -180,  2, 0,  2, 180,  3, 180,  3, 0,  3, -180,  2, -180);
+
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,      2, 89,  2, 180,  3, 180,  3, 89,  2, 89,
+                                                               2, -180,  2, -80.5,  2, 19,  3, 19, 3,  -80.5,  3, -180,  2, -180);
+    }
+
+    @Test
+    public void testWorldWGS84ToGeometry2D() {
+        Envelope2D env2d = new Envelope2D(HardCodedCRS.WGS84, -180, -90, 360, 180);
+        for (WraparoundMethod method : new WraparoundMethod[] { WraparoundMethod.NONE, WraparoundMethod.CONTIGUOUS, WraparoundMethod.EXPAND, WraparoundMethod.SPLIT}) {
+            assertToGeometryEquals(env2d, method, -180, -90,  -180, 90,  0, 90,  180, 90,  180, -90,  0, -90,  -180, -90);
+        }
+
+        env2d = new Envelope2D(HardCodedCRS.WGS84_LATITUDE_FIRST, -90, -180, 180, 360);
+        for (WraparoundMethod method : new WraparoundMethod[] { WraparoundMethod.NONE, WraparoundMethod.CONTIGUOUS, WraparoundMethod.EXPAND, WraparoundMethod.SPLIT}) {
+            assertToGeometryEquals(env2d, method, -90, -180,  -90, 0,  -90, 180,  90, 180,  90, 0,  90, -180,  -90, -180);
+        }
     }
 
     /**

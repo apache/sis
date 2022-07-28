@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
+import org.apache.sis.internal.referencing.WraparoundAxesFinder;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -388,19 +389,39 @@ public abstract class Geometries<G> implements Serializable {
      * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.
      * The sequence of points describes each corner, going in clockwise direction and repeating the starting
      * point to properly close the ring.
+     * In case a wrap-around ambiguity resides, control points are also added in the middle of the rectangle edges.
      *
-     * @param  xd  dimension of first axis.
-     * @param  yd  dimension of second axis.
+     * @param xd dimension of first axis.
+     * @param yd dimension of second axis.
+     * @param xPeriod Maximum span on <em>first</em> axis before triggering a wrap-around.
+     *                If no wrap-around is possible, please set it to {@link Double#POSITIVE_INFINITY}.
+     * @param yPeriod Maximum span on <em>second</em> axis before triggering a wrap-around.
+     *                If no wrap-around is possible, please set it to {@link Double#POSITIVE_INFINITY}.
      * @return a polyline made of a sequence of 5 points describing the given rectangle.
      */
-    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd) {
+    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd, double xPeriod, double yPeriod) {
         final DirectPosition lc = envelope.getLowerCorner();
         final DirectPosition uc = envelope.getUpperCorner();
         final double xmin = lc.getOrdinate(xd);
         final double ymin = lc.getOrdinate(yd);
         final double xmax = uc.getOrdinate(xd);
         final double ymax = uc.getOrdinate(yd);
-        return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
+        final boolean applyXWrapAround = xPeriod / 2 < xmax - xmin;
+        final boolean applyYWrapAround = yPeriod / 2 < ymax - ymin;
+        if (applyXWrapAround && applyYWrapAround) {
+            final double xmid = (xmin + xmax) / 2;
+            final double ymid = (ymin + ymax) / 2;
+            return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
+                    xmin, ymin,  xmin, ymid,  xmin, ymax,  xmid, ymax,  xmax, ymid,  xmax, ymax,  xmax, ymid,  xmax, ymin,  xmid, ymin,  xmin, ymin})));
+        } else if (applyXWrapAround) {
+            final double xmid = (xmin + xmax) / 2;
+            return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
+                    xmin, ymin,  xmin, ymax,  xmid, ymax,  xmax, ymax,  xmax, ymin,  xmid, ymin,  xmin, ymin})));
+        } else if (applyYWrapAround) {
+            final double ymid = (ymin + ymax) / 2;
+            return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
+                    xmin, ymin,  xmin, ymid,  xmin, ymax,  xmax, ymax,  xmax, ymid,  xmax, ymin,  xmin, ymin})));
+        } else return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
                              xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin})));
     }
 
@@ -441,32 +462,37 @@ public abstract class Geometries<G> implements Serializable {
                  */
             }
         }
+
+        final double[] periods = crs == null ? null : new WraparoundAxesFinder(crs).periods();
+        double xPeriod = periods != null && periods.length > 0 && periods[0] > 0 ? periods[0] : Double.POSITIVE_INFINITY;
+        double yPeriod = periods != null && periods.length > 1 && periods[1] > 0 ? periods[1] : Double.POSITIVE_INFINITY;
+
         final GeometryWrapper<G> result;
         switch (strategy) {
             case NORMALIZE: {
                 throw new IllegalArgumentException();
             }
             case NONE: {
-                result = createGeometry2D(envelope, xd, yd);
+                result = createGeometry2D(envelope, xd, yd, xPeriod, yPeriod);
                 break;
             }
             default: {
                 final GeneralEnvelope ge = new GeneralEnvelope(envelope);
                 ge.normalize();
                 ge.wraparound(strategy);
-                result = createGeometry2D(ge, xd, yd);
+                result = createGeometry2D(ge, xd, yd, xPeriod, yPeriod);
                 break;
             }
             case SPLIT: {
                 final Envelope[] parts = AbstractEnvelope.castOrCopy(envelope).toSimpleEnvelopes();
                 if (parts.length == 1) {
-                    result = createGeometry2D(parts[0], xd, yd);
+                    result = createGeometry2D(parts[0], xd, yd, xPeriod, yPeriod);
                     break;
                 }
                 @SuppressWarnings({"unchecked", "rawtypes"})
                 final GeometryWrapper<G>[] polygons = new GeometryWrapper[parts.length];
                 for (int i=0; i<parts.length; i++) {
-                    polygons[i] = createGeometry2D(parts[i], xd, yd);
+                    polygons[i] = createGeometry2D(parts[i], xd, yd, xPeriod, yPeriod);
                     polygons[i].setCoordinateReferenceSystem(crs);
                 }
                 result = createMultiPolygon(polygons);

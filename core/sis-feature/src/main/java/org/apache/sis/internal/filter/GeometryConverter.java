@@ -19,6 +19,7 @@ package org.apache.sis.internal.filter;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.util.ScopedName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -149,6 +150,18 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
             envelope = new ImmutableEnvelope((GeographicBoundingBox) value);
         } else if (value instanceof Envelope) {
             envelope = (Envelope) value;
+        } else if (value instanceof DirectPosition) {
+            final DirectPosition pt = (DirectPosition) value;
+            final Object geometry;
+            if (pt.getDimension() == 2) {
+                geometry = library.createPoint(pt.getOrdinate(0), pt.getOrdinate(1));
+            } else if (pt.getDimension() == 3) {
+                geometry = library.createPoint(pt.getOrdinate(0), pt.getOrdinate(1), pt.getOrdinate(2));
+            } else throw new InvalidFilterValueException(Errors.format(
+                        Errors.Keys.IllegalClass_2, library.rootClass, Classes.getClass(value)));
+            final GeometryWrapper<G> wrapper = library.castOrWrap(geometry);
+            if (pt.getCoordinateReferenceSystem() != null) wrapper.setCoordinateReferenceSystem(pt.getCoordinateReferenceSystem());
+            return wrapper;
         } else try {
             return library.castOrWrap(value);
         } catch (ClassCastException e) {

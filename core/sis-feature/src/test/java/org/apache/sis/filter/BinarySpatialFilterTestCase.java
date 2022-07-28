@@ -18,6 +18,11 @@ package org.apache.sis.filter;
 
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.test.Assume;
+import org.opengis.filter.DistanceOperatorName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.Envelope2D;
@@ -346,5 +351,23 @@ public abstract strictfp class BinarySpatialFilterTestCase<G> extends TestCase {
         final Literal<Feature,G> right = literal(Polygon.RIGHT);
         BinarySpatialOperator<Feature> overlaps = factory.overlaps(literal(Polygon.CONTAINS), right);
         assertSerializedEquals(overlaps);
+    }
+
+    /**
+     * Ensures that a world geographic envelope, once converted to a polygon and reprojected, remain coherent.
+     * This is a regression test. In the past, the operation pipeline [envelope -> polygon -> reprojected polygon]
+     * caused the result to degenerate to single line following the anti-meridian.
+     */
+    @Test
+    public void testSpatialContextDoesNotDegenerateEnvelope() throws Exception {
+        Assume.assumeTrue("Require reprojection. Only supported for JTS for now", library.library == GeometryLibrary.JTS);
+        final Envelope e1 = new Envelope2D(HardCodedCRS.WGS84, -180, -90, 360, 180);
+        final DistanceFilter<?, G> within = new DistanceFilter<>(DistanceOperatorName.WITHIN,
+                library, factory.literal(e1),
+                factory.literal(new DirectPosition2D(HardCodedCRS.WGS84, 44, 2)),
+                Quantities.create(1.0, Units.METRE));
+
+        final GeneralEnvelope envInCtx = within.context.transform(within.expression1.apply(null)).getEnvelope();
+        assertNotEquals(envInCtx.getMinimum(0), envInCtx.getMaximum(0), 1000);
     }
 }
