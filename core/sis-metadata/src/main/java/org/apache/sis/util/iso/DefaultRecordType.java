@@ -169,7 +169,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         final LocalName   schemaName   = container.getSchemaName();
         final GenericName fullTypeName = typeName.toFullyQualifiedName();
         if (schemaName.compareTo(typeName.scope().name().tip()) != 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, schemaName, fullTypeName));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedNamespace_2, schemaName, fullTypeName));
         }
         final int size = size();
         for (int i=0; i<size; i++) {
@@ -179,7 +179,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
             }
             if (fullTypeName.compareTo(name.scope().name()) != 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2,
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedNamespace_2,
                         fullTypeName, name.toFullyQualifiedName()));
             }
         }

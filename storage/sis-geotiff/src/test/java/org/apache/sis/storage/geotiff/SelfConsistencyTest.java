@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.List;
 import java.util.Optional;
 import java.nio.file.Path;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.IllegalNameException;
@@ -26,12 +27,10 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.storage.CoverageReadConsistency;
 import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengis.util.GenericName;
 
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeNotNull;
 
 
@@ -43,7 +42,8 @@ import static org.junit.Assume.assumeNotNull;
  * a subset of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -90,24 +90,31 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
         super(store.components().iterator().next());
     }
 
+    /**
+     * Verifies that {@link GeoTiffStore#findResource(String)} returns the resource when using
+     * either the full name or only its tip.
+     *
+     * @throws DataStoreException if an error occurred while reading the file.
+     */
     @Test
-    public void findResourceByName() throws Exception {
+    public void findResourceByName() throws DataStoreException {
         final List<GridCoverageResource> datasets = store.components();
-        Assume.assumeFalse(datasets.isEmpty());
+        assertFalse(datasets.isEmpty());
         for (GridCoverageResource dataset : datasets) {
             final GenericName name = dataset.getIdentifier()
                     .orElseThrow(() -> new AssertionError("A component of the GeoTiff datastore is unnamed"));
             GridCoverageResource foundResource = store.findResource(name.toString());
-            Assert.assertEquals(dataset, foundResource);
+            assertSame(dataset, foundResource);
             foundResource = store.findResource(name.tip().toString());
-            Assert.assertEquals(dataset, foundResource);
+            assertSame(dataset, foundResource);
         }
-
         try {
             final GridCoverageResource r = store.findResource("a_wrong_namespace:1");
-            Assert.fail("No dataset should be returned when user specify the wrong namespace. However, the datastore returned "+ r);
+            fail("No dataset should be returned when user specify the wrong namespace. However, the datastore returned " + r);
         } catch (IllegalNameException e) {
-            // Expected behaviour
+            // Expected behaviour.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("a_wrong_namespace:1"));
         }
     }
 }

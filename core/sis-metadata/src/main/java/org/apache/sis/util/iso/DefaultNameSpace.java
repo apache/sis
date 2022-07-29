@@ -52,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * remain safe to call from multiple threads and do not change any public {@code NameSpace} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see DefaultScopedName
  * @see DefaultLocalName
@@ -98,12 +98,16 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * The separator to insert between the namespace and the {@linkplain AbstractName#head() head}
      * of any name in that namespace.
+     *
+     * @see #getSeparator(NameSpace, boolean)
      */
-    final String headSeparator;
+    private final String headSeparator;
 
     /**
      * The separator to insert between the {@linkplain AbstractName#getParsedNames() parsed names}
      * of any name in that namespace.
+     *
+     * @see #getSeparator(NameSpace, boolean)
      */
     final String separator;
 
@@ -250,6 +254,31 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             ns = ns.child(tip.toString(), tip.toInternationalString(), headSeparator, separator);
         }
         return ns;
+    }
+
+    /**
+     * Returns the separator between name components in the given namespace.
+     * If the given namespace is an instance of {@code DefaultNameSpace}, then this method
+     * returns the {@code headSeparator} or {@code separator} argument given to the constructor.
+     * Otherwise this method returns the {@linkplain #DEFAULT_SEPARATOR default separator}.
+     *
+     * <div class="note"><b>API note:</b>
+     * this method is static because the {@code getSeparator(…)} method is not part of GeoAPI interfaces.
+     * A static method makes easier to use without {@code (if (x instanceof DefaultNameSpace)} checks.</div>
+     *
+     * @param  ns    the namespace for which to get the separator. May be {@code null}.
+     * @param  head  {@code true} for the separator between namespace and {@linkplain AbstractName#head() head}, or
+     *               {@code false} for the separator between {@linkplain AbstractName#getParsedNames() parsed names}.
+     * @return separator between name components.
+     *
+     * @since 1.3
+     */
+    public static String getSeparator(final NameSpace ns, final boolean head) {
+        if (ns instanceof DefaultNameSpace) {
+            final DefaultNameSpace ds = (DefaultNameSpace) ns;
+            return head ? ds.headSeparator : ds.separator;
+        }
+        return DEFAULT_SEPARATOR_STRING;
     }
 
     /**

@@ -477,11 +477,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InconsistentAttribute_2 = 67;
 
         /**
-         * Expected “{0}” namespace for “{1}”.
-         */
-        public static final short InconsistentNamespace_2 = 68;
-
-        /**
          * Inconsistent table columns.
          */
         public static final short InconsistentTableColumns = 69;
@@ -895,6 +890,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 139;
+
+        /**
+         * The “{1}” name is not valid in this context, because the “{0}” namespace was expected.
+         */
+        public static final short UnexpectedNamespace_2 = 68;
 
         /**
          * Parameter “{0}” was not expected.
