@@ -64,6 +64,7 @@ org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant
 org.apache.sis.internal.referencing.provider.AzimuthalEquidistantSpherical
 org.apache.sis.internal.referencing.provider.ZonedTransverseMercator
 org.apache.sis.internal.referencing.provider.Sinusoidal
+org.apache.sis.internal.referencing.provider.PseudoSinusoidal
 org.apache.sis.internal.referencing.provider.Polyconic
 org.apache.sis.internal.referencing.provider.Mollweide
 org.apache.sis.internal.referencing.provider.SouthPoleRotation

@@ -381,7 +381,7 @@ public class Mercator extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         NormalizedProjection kernel = this;
-subst:  if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.class) {
+subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.class)) {
             if (variant == Variant.AUXILIARY && eccentricity != 0) {
                 final int type = context.getValue(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE);
                 if (type == AuthalicMercator.TYPE) {
