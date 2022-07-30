@@ -51,6 +51,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.Formulas;
@@ -176,6 +177,22 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
+
+    /**
+     * Arbitrary latitude threshold (in radians) for considering that a point is in the polar area.
+     * This is used for implementations of the {@link #getDomain(DomainDefinition)} method.
+     */
+    static final double POLAR_AREA_LIMIT = PI/2 * (84d/90);
+
+    /**
+     * An arbitrarily large longitude value (in radians) for map projections capable to have infinite
+     * extent in the east-west direction. This is the case of {@link Mercator} projection for example.
+     * Longitudes have no real world meaning outside −180° … +180° range (unless wraparound is applied),
+     * but we nevertheless accept large values without wraparound because they make envelope projection easier.
+     * This is used for implementations of the {@link #getDomain(DomainDefinition)} method,
+     * which use arbitrary limits anyway.
+     */
+    static final double LARGE_LONGITUDE_LIMIT = 100*PI;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
@@ -512,6 +529,48 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
+     * Returns a transform which may shift scaled longitude θ=n⋅λ inside the [−n⋅π … n⋅π] range.
+     * The transform intentionally does <strong>not</strong> force θ to be inside that range in all cases.
+     * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
+     * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
+     * when necessary for the problem of area crossing the anti-meridian (±180°).
+     *
+     * <div class="note"><b>Example:</b>
+     * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is
+     * at λ=177° of longitude, calculations will be performed with Δλ=331° while the correct value that we
+     * need to use is Δλ=−29°.</div>
+     *
+     * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
+     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore we add or subtract
+     * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
+     * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
+     * {@link Math#IEEEremainder(double, double)}.
+     *
+     * <h4>When to use</h4>
+     * This method is invoked by map projections that multiply the longitude values by some scale factor before
+     * to use them in trigonometric functions. Usually we do not explicitly wraparound the longitude values,
+     * because trigonometric functions do that automatically for us. However if the longitude is multiplied
+     * by some factor before to be used in trigonometric functions, then that implicit wraparound is not the
+     * one we expect. The map projection code needs to perform explicit wraparound in such cases.
+     *
+     * @param  factory  the factory to use for completing the transform with normalization/denormalization steps.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates with wraparound if needed.
+     * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     */
+    final MathTransform completeWithWraparound(final MathTransformFactory factory) throws FactoryException {
+        MathTransform kernel = this;
+        final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final double rotation = normalize.getElement(0, DIMENSION);
+        if (rotation != 0 && Double.isFinite(rotation)) {                 // Finite check is paranoiac (shall always be true).
+            kernel = new LongitudeWraparound(this,
+                    LongitudeWraparound.boundOfScaledLongitude(normalize, rotation < 0), rotation);
+        }
+        return context.completeTransform(factory, kernel);
+    }
+
+    /**
      * If this map projection can not handle the parameters given by the user but an other projection could, delegates
      * to the other projection. This method can be invoked by some {@link #createMapProjection(MathTransformFactory)}
      * implementations when the other projection can be seen as a special case.
@@ -649,37 +708,26 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * If the given scaled longitude θ=n⋅λ is outside the [−n⋅π … n⋅π] range, maybe shifts θ to that range.
-     * This method intentionally does <strong>not</strong> force θ to be inside that range in all cases.
-     * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
-     * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
-     * when necessary for the problem of area crossing the anti-meridian (±180°).
+     * The longitude value where wraparound is, or would be, applied by this map projection.
+     * This is typically {@link Math#PI} (180° converted to radians) but not necessarily,
+     * because implementations are free to scale the longitude values by an arbitrary factor.
      *
-     * <div class="note"><b>Example:</b>
-     * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is
-     * at λ=177° of longitude, calculations will be performed with Δλ=331° while the correct value that we
-     * need to use is Δλ=−29°.</div>
+     * <p>The wraparound may not be really applied by the {@code transform(…)} methods.
+     * Many map projections implicitly wraparound longitude values through the use of trigonometric functions
+     * ({@code sin(λ)}, {@code cos(λ)}, <i>etc</i>). For those map projections, the wraparound is unconditional.
+     * But some other map projections are capable to handle longitude values beyond the [−180° … +180°] range
+     * as if the world was expanding toward infinity in east and west directions.
+     * The most common example is the {@linkplain Mercator} projection.
+     * In those latter cases, wraparounds are avoided as much as possible in order to facilitate the projection
+     * of envelopes, geometries or rasters, where discontinuities (sudden jumps of 360°) cause artifacts.</p>
      *
-     * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
-     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore we add or subtract
-     * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
-     * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
-     * {@link Math#IEEEremainder(double, double)}.
+     * @return the longitude value where wraparound is or would be applied.
      *
-     * @param  θ        the scaled longitude value θ=n⋅λ where <var>n</var> is a projection-dependent factor.
-     * @param  θ_bound  minimal (if negative) or maximal (if positive) value of θ before to apply the shift.
-     *                  This is computed by <code>{@linkplain Initializer#boundOfScaledLongitude(double)
-     *                  Initializer.boundOfScaledLongitude}(n)</code>
-     * @return θ or shifted θ.
-     *
-     * @see Initializer#boundOfScaledLongitude(double)
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     * @see #getDomain(DomainDefinition)
      */
-    static double wraparoundScaledLongitude(double θ, final double θ_bound) {
-        if (θ_bound < 0 ? θ < θ_bound : θ > θ_bound) {
-            θ -= 2*θ_bound;
-        }
-        return θ;
+    final double getWraparoundLongitude() {
+        return LongitudeWraparound.boundOfScaledLongitude(
+                context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION), false);
     }
 
     /*
@@ -775,7 +823,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Inverse of a normalized map projection.
+     * Reverse of a normalized map projection.
+     * Note that a slightly modified copy of this class is in {@code LongitudeWraparound.Inverse}.
+     * If this is class is modified, consider updating {@code LongitudeWraparound.Inverse} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
@@ -789,19 +839,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         private static final long serialVersionUID = 6014176098150309651L;
 
         /**
-         * The enclosing transform.
+         * The projection to reverse, which is the enclosing transform.
          */
         private final NormalizedProjection forward;
 
         /**
-         * Default constructor.
+         * Creates a reverse projection for the given forward projection.
          */
         Inverse(final NormalizedProjection forward) {
             this.forward = forward;
         }
 
         /**
-         * Returns the inverse of this math transform.
+         * Returns the inverse of this math transform, which is the forward projection.
          */
         @Override
         public MathTransform2D inverse() {
@@ -809,7 +859,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
 
         /**
-         * Inverse transforms the specified {@code srcPts} and stores the result in {@code dstPts}.
+         * Reverse projects the specified {@code srcPts} and stores the result in {@code dstPts}.
          * If the derivative has been requested, then this method will delegate the derivative
          * calculation to the enclosing class and inverts the resulting matrix.
          */

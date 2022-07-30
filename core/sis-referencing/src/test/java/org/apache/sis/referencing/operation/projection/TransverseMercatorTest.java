@@ -146,7 +146,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(),
                 6371007,    // Semi-major axis length
                 6371007,    // Semi-minor axis length
-                0.5,        // Central meridian
+                0,          // Central meridian
                 2.5,        // Latitude of origin
                 NaN,        // Standard parallel 1 (none)
                 NaN,        // Standard parallel 2 (none)

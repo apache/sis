@@ -17,10 +17,13 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -61,7 +64,7 @@ import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -69,7 +72,7 @@ public class SatelliteTracking extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -209787336760184649L;
+    private static final long serialVersionUID = 859940667477896653L;
 
     /**
      * Sines and cosines of inclination between the plane of the Earth's Equator and the plane
@@ -97,15 +100,6 @@ public class SatelliteTracking extends NormalizedProjection {
      * {@code true} if this projection is conic, or {@code false} if cylindrical or unknown.
      */
     private final boolean isConic;
-
-    /**
-     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
-     * Some (not all) θ values need to be shifted inside that range before to use them
-     * in trigonometric functions.
-     *
-     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
-     */
-    private final double θ_bound;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database ("Relax constraint on
@@ -203,7 +197,6 @@ public class SatelliteTracking extends NormalizedProjection {
             normalize  .convertAfter (0,  n,  null);
             denormalize.convertBefore(0, +ρf, null);
             denormalize.convertBefore(1, -ρf, ρ0);
-            θ_bound = initializer.boundOfScaledLongitude(n);
         } else {
             /*
              * Cylindrical projection case. The equations are (ignoring R and λ₀):
@@ -215,13 +208,31 @@ public class SatelliteTracking extends NormalizedProjection {
              * The cosφ₁ (for x at dimension 0) and cosφ₁/F₁′ (for y at dimension 1) factors are computed
              * in advance and stored below. The remaining factor to compute in transform(…) method is L.
              */
-            n = s0 = θ_bound = Double.NaN;
+            n = s0 = Double.NaN;
             final double cotF = sqrt(cos2_φ1 - cos2_i) / (p2_on_p1*cos2_φ1 - cos_i);    // Cotangente of F₁.
             denormalize.convertBefore(0, cosφ1,      null);
             denormalize.convertBefore(1, cosφ1*cotF, null);
             if (!Double.isFinite(cotF) || cotF == 0) {
                 throw invalid(STANDARD_PARALLEL_1);
             }
+        }
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        if (isConic) {
+            return completeWithWraparound(factory);
+        } else {
+            return super.createMapProjection(factory);
         }
     }
 
@@ -330,7 +341,6 @@ public class SatelliteTracking extends NormalizedProjection {
         double x = srcPts[srcOff];
         double y = λt - p2_on_p1 * λpm;
         if (isConic) {
-            x = wraparoundScaledLongitude(x, θ_bound);
             λpm = n*y + s0;                     // Use this variable for a new purpose. Needed for derivative.
             if ((Double.doubleToRawLongBits(λpm) ^ Double.doubleToRawLongBits(n)) < 0) {
                 /*

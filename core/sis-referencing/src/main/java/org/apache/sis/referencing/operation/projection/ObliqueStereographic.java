@@ -63,7 +63,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -71,7 +71,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1725537881127730658L;
+    private static final long serialVersionUID = -1454098847621943639L;
 
     /**
      * Conformal latitude of origin (χ₀), together with its sine and cosine.
@@ -93,15 +93,6 @@ public class ObliqueStereographic extends NormalizedProjection {
      * and <var>j</var>, which are themselves used to compute conformal latitude and longitude.
      */
     private final double g, h;
-
-    /**
-     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
-     * Some (not all) θ values need to be shifted inside that range before to use them
-     * in trigonometric functions.
-     *
-     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
-     */
-    private final double θ_bound;
 
     /**
      * Creates an Oblique Stereographic projection from the given parameters.
@@ -184,7 +175,6 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double R2 = 2 * initializer.radiusOfConformalSphere(sinφ0);
         denormalize.convertBefore(0, R2, null);
         denormalize.convertBefore(1, R2, null);
-        θ_bound = initializer.boundOfScaledLongitude(n);
     }
 
     /**
@@ -192,14 +182,13 @@ public class ObliqueStereographic extends NormalizedProjection {
      */
     ObliqueStereographic(final ObliqueStereographic other) {
         super(null, other);
-        χ0      = other.χ0;
-        sinχ0   = other.sinχ0;
-        cosχ0   = other.cosχ0;
-        c       = other.c;
-        n       = other.n;
-        g       = other.g;
-        h       = other.h;
-        θ_bound = other.θ_bound;
+        χ0    = other.χ0;
+        sinχ0 = other.sinχ0;
+        cosχ0 = other.cosχ0;
+        c     = other.c;
+        n     = other.n;
+        g     = other.g;
+        h     = other.h;
     }
 
     /**
@@ -249,11 +238,10 @@ public class ObliqueStereographic extends NormalizedProjection {
                 return delegate(factory, PolarStereographicA.NAME);
             }
         }
-        ObliqueStereographic kernel = this;
         if (eccentricity == 0 && getClass() == ObliqueStereographic.class) {
-            kernel = new Spherical(this);
+            return context.completeTransform(factory, new Spherical(this));
         }
-        return context.completeTransform(factory, kernel);
+        return completeWithWraparound(factory);
     }
 
     /**
@@ -271,9 +259,8 @@ public class ObliqueStereographic extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        // Λ = λ⋅n  (see below), ignoring longitude of origin.
-        final double Λ     = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
-        final double φ     = srcPts[srcOff + 1];
+        final double Λ     = srcPts[srcOff  ];      // Λ = λ⋅n  (see below), ignoring longitude of origin.
+        final double φ     = srcPts[srcOff+1];
         final double sinφ  = sin(φ);
         final double ℯsinφ = eccentricity * sinφ;
         final double Sa    = (1 +  sinφ) / (1 -  sinφ);

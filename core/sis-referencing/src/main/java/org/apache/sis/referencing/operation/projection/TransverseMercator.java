@@ -386,7 +386,7 @@ public class TransverseMercator extends NormalizedProjection {
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
         final Envelope2D domain = new Envelope2D();
         domain.x = -PI/2 * (40d/90);
-        domain.y = -PI/2 * (84d/90);
+        domain.y = -POLAR_AREA_LIMIT;
         domain.width  = -2 * domain.x;
         domain.height = -2 * domain.y;
         return Optional.of(domain);

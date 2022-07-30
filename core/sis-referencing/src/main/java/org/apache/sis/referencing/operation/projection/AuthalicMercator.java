@@ -16,9 +16,13 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Optional;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
+import org.apache.sis.geometry.Envelope2D;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -29,7 +33,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * This is used for implementation of ESRI "Mercator Auxiliary Sphere type 3" projection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -51,6 +55,19 @@ final class AuthalicMercator extends AuthalicConversion {
      */
     AuthalicMercator(final Mercator other) {
         super(null, other);
+    }
+
+    /**
+     * Returns the domain of input coordinates.
+     * This method is defined for consistency with {@link Mercator#getDomain(DomainDefinition)}.
+     *
+     * @since 1.3
+     */
+    @Override
+    public Optional<Envelope> getDomain(final DomainDefinition criteria) {
+        return Optional.of(new Envelope2D(null,
+                 -LARGE_LONGITUDE_LIMIT,  -POLAR_AREA_LIMIT,
+                2*LARGE_LONGITUDE_LIMIT, 2*POLAR_AREA_LIMIT));
     }
 
     /**

@@ -195,12 +195,11 @@ public class Mercator extends ConformalProjection {
         final Variant variant = variant(method, Variant.values(), Variant.TWO_PARALLELS);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
-         * "Longitude of origin" is a parameter of all Mercator projections, but is intentionally omitted from
-         * this map because it will be handled in a special way by the Mercator constructor. The "scale factor"
-         * is not formally a "Mercator 2SP" argument, but we accept it anyway for all Mercator projections
-         * since it may be used in some Well Known Text (WKT).
+         * The "scale factor" is not formally a "Mercator 2SP" argument, but we accept it anyway
+         * for all Mercator projections because it may be used in some Well Known Text (WKT).
          */
-        roles.put(ParameterRole.SCALE_FACTOR, Mercator1SP.SCALE_FACTOR);
+        roles.put(ParameterRole.SCALE_FACTOR,     Mercator1SP.SCALE_FACTOR);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, Mercator1SP.LONGITUDE_OF_ORIGIN);
         switch (variant) {
             case REGIONAL: {
                 roles.put(ParameterRole.FALSE_EASTING,  RegionalMercator.EASTING_AT_FALSE_ORIGIN);
@@ -270,31 +269,10 @@ public class Mercator extends ConformalProjection {
          * if they really want, since we sometime see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
-        final DoubleDouble k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
-        final DoubleDouble ku = DoubleDouble.createAndGuessError(PI/0.5);
-        ku.multiply(k0);
-        /*
-         * Note about `ku`: in principle we should convert longitude values to radians, then apply the same
-         * scale factor k₀ to both longitude and latitude values. However in this implementation instead of
-         * converting the [−180 … 180]° range to the [−π … π] range, we rather convert to a [−½ … ½] range.
-         * This is because longitude conversions in Mercator projection do not use trigonometric functions,
-         * so we do not get the implicit wraparound performed by trigonometric functions such as sin(λ−λ₀).
-         * We will use `Math.rint(…)` instead.
-         */
+        final Number k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        final DoubleDouble forUnity = DoubleDouble.createAndGuessError(1.0/360);
-        normalize.setNumber(0, 0, forUnity);           // Overwrite the "degrees to radians" coefficient.
-        if (λ0 != 0) {
-            /*
-             * Use double-double arithmetic here for consistency with the work done in the normalization matrix.
-             * The intent is to have exact value at `double` precision when computing Matrix.invert(). Note that
-             * there is no such goal for other parameters computed from sine or consine functions.
-             */
-            forUnity.multiplyGuessError(-λ0);
-            normalize.setNumber(0, 2, forUnity);
-        }
-        denormalize.convertBefore(0, ku, null);
+        denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (φ0 != 0) {
             denormalize.convertBefore(1, null, new DoubleDouble(-log(expΨ(φ0, eccentricity * sin(φ0)))));
@@ -391,7 +369,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
             }
             kernel = new Spherical(this);
         }
-        return context.completeTransform(factory, kernel);
+        return kernel.completeWithWraparound(factory);
     }
 
     /**
@@ -399,12 +377,17 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      * the limit is arbitrarily set to 84° of latitude North and South. This is consistent with the
      * "World Mercator" domain of validity defined by EPSG:3395, which is 80°S to 84°N.
      *
+     * <p>The range of longitude values is set to an arbitrary range larger than −180° … +180°,
+     * because the Mercator projection is mathematically capable to handle coordinates beyond that range
+     * even if those coordinates have no real world meaning. This expansion can facilitate the projection
+     * of envelopes, geometries or rasters.</p>
+     *
      * @since 1.3
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double limit = (variant == Variant.MILLER) ? -PI/2 : -PI/2 * (84d/90);
-        return Optional.of(new Envelope2D(null, -0.5, limit, 1, -2*limit));
+        final double limit = (variant == Variant.MILLER) ? -PI/2 : -POLAR_AREA_LIMIT;
+        return Optional.of(new Envelope2D(null, -LARGE_LONGITUDE_LIMIT, limit, 2*LARGE_LONGITUDE_LIMIT, -2*limit));
     }
 
     /**
@@ -421,7 +404,6 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double x    = srcPts[srcOff  ];
         final double φ    = srcPts[srcOff+1];
         final double sinφ = sin(φ);
         if (dstPts != null) {
@@ -447,7 +429,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                     y = NaN;
                 }
             }
-            dstPts[dstOff  ] = x - rint(x);     // Scale will be applied by the denormalization matrix.
+            dstPts[dstOff  ] = srcPts[srcOff];   // Scale will be applied by the denormalization matrix.
             dstPts[dstOff+1] = y;
         }
         /*
@@ -467,21 +449,24 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                           final double[] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        if ((srcPts == dstPts && srcOff < dstOff) || getClass() != Mercator.class) {
+        if (srcPts != dstPts || srcOff != dstOff || getClass() != Mercator.class) {
             super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
         } else {
+            /*
+             * Override the super-class method only as an optimization in the special case where the target coordinates
+             * are written at the same locations than the source coordinates. In such case, we can take advantage of
+             * the fact that the λ values are not modified by the normalized Mercator projection.
+             */
+            dstOff--;
             while (--numPts >= 0) {
-                final double x = srcPts[srcOff++];
-                final double φ = srcPts[srcOff++];
-                final double y;
-                if (φ == 0) {
-                    y = φ;
-                } else {
+                final double φ = dstPts[dstOff += DIMENSION];                   // Same as srcPts[srcOff + 1].
+                if (φ != 0) {
                     /*
                      * See the javadoc of the Spherical inner class for a note
                      * about why we perform explicit checks for the pole cases.
                      */
                     final double a = abs(φ);
+                    final double y;
                     if (a < PI/2) {
                         y = log(expΨ(φ, eccentricity * sin(φ)));
                     } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
@@ -489,9 +474,8 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                     } else {
                         y = NaN;
                     }
+                    dstPts[dstOff] = y;
                 }
-                dstPts[dstOff++] = x - rint(x);
-                dstPts[dstOff++] = y;
             }
         }
     }
@@ -561,7 +545,6 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
-            final double x = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
             if (dstPts != null) {
                 /*
@@ -583,7 +566,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                         y = NaN;
                     }
                 }
-                dstPts[dstOff  ] = x - rint(x);
+                dstPts[dstOff  ] = srcPts[srcOff];
                 dstPts[dstOff+1] = y;
             }
             return derivate ? new Matrix2(1, 0, 0, 1/cos(φ)) : null;
@@ -601,18 +584,16 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                               final double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
-            if (srcPts == dstPts && srcOff < dstOff) {
+            if (srcPts != dstPts || srcOff != dstOff) {
                 super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
             } else {
+                dstOff--;
                 while (--numPts >= 0) {
-                    final double x = srcPts[srcOff++];
-                    final double φ = srcPts[srcOff++];
-                    final double y;
-                    if (φ == 0) {
-                        y = φ;
-                    } else {
+                    final double φ = dstPts[dstOff += DIMENSION];               // Same as srcPts[srcOff + 1].
+                    if (φ != 0) {
                         // See class javadoc for a note about explicit check for poles.
                         final double a = abs(φ);
+                        final double y;
                         if (a < PI/2) {
                             y = log(tan(PI/4 + 0.5*φ));                         // Part of Snyder (7-2)
                         } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
@@ -620,9 +601,8 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
                         } else {
                             y = NaN;
                         }
+                        dstPts[dstOff] = y;
                     }
-                    dstPts[dstOff++] = x - rint(x);
-                    dstPts[dstOff++] = y;
                 }
             }
         }
@@ -644,7 +624,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      * Invoked when {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)} detected a
      * (inverse) → (affine) → (this) transforms sequence. If the affine transform in the middle does
      * not change the latitude value, then we can take advantage of the fact that longitude conversion
-     * is linear (ignoring wraparound).
+     * is linear.
      */
     @Override
     final MathTransform tryConcatenate(boolean projectedSpace, Matrix affine, MathTransformFactory factory)
@@ -653,7 +633,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
         /*
          * Verify that the latitude row is an identity conversion except for the sign which is allowed to change
          * (but no scale and no translation are allowed).  Ignore the longitude row because it just pass through
-         * this Mercator projection with no impact on any calculation (if we ignore the wraparound).
+         * this Mercator projection with no impact on any calculation.
          */
         if (affine.getElement(1,0) == 0 && affine.getElement(1, DIMENSION) == 0 && Math.abs(affine.getElement(1,1)) == 1) {
             if (factory != null) {

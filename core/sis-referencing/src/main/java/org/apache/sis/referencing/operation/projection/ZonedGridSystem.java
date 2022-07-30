@@ -160,7 +160,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double y = -PI/2 * (84d/90);
+        final double y = -NormalizedProjection.POLAR_AREA_LIMIT;
         return Optional.of(new Envelope2D(null, -PI, y, 2*PI, -2*y));
     }
 
