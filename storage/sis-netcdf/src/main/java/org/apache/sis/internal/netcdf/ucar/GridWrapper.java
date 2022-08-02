@@ -45,7 +45,7 @@ import org.apache.sis.util.ArraysExt;
  * Many netCDF variables may be associated to the same {@code GridWrapper} instance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -193,16 +193,15 @@ final class GridWrapper extends Grid {
         return netcdfCS.getRankDomain();
     }
 
-    /**
-     * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
-     * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the length of the array returned by {@link #getAxes(Decoder)},
-     * but caller should be robust to inconsistencies.
+    /*
+     * A `getTargetDimensions()` method would be like below, but is
+     * excluded because `getAxes(…).length` is the authoritative value:
+     *
+     *     @Override
+     *     public int getTargetDimensions() {
+     *         return netcdfCS.getRankRange();
+     *     }
      */
-    @Override
-    public int getTargetDimensions() {
-        return netcdfCS.getRankRange();
-    }
 
     /**
      * Returns the dimensions of this grid, in netCDF (reverse of "natural") order.
@@ -257,9 +256,9 @@ next:       for (final String name : axisNames) {
          * In this method, `sourceDim` and `targetDim` are relative to "grid to CRS" conversion.
          * So `sourceDim` is the grid (domain) dimension and `targetDim` is the CRS (range) dimension.
          */
+        int axisCount = 0;
         int targetDim = range.size();
         final Axis[] axes = new Axis[targetDim];
-        final int lastDim = targetDim - 1;
         while (--targetDim >= 0) {
             final CoordinateAxis axis = range.get(targetDim);
             final Variable wrapper = ((DecoderWrapper) decoder).getWrapperFor(axis);
@@ -307,9 +306,11 @@ next:       for (final String name : axisNames) {
                  * package, we can proceed as if the dimension does not exist (`i` not incremented).
                  */
             }
-            axes[lastDim - targetDim] = new Axis(abbreviation, axis.getPositive(),
-                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), wrapper);
+            if (i != 0) {   // Variables with 0 dimensions sometime happen.
+                axes[axisCount++] = new Axis(abbreviation, axis.getPositive(),
+                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), wrapper);
+            }
         }
-        return axes;
+        return ArraysExt.resize(axes, axisCount);
     }
 }

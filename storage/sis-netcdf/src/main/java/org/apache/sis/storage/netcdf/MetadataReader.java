@@ -113,7 +113,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -684,17 +684,13 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     /**
      * Adds information about axes and cell geometry.
      * This is the {@code <mdb:spatialRepresentationInfo>} element in XML.
+     * We work on grid axes instead of Coordinate Reference System axes because
+     * {@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize} seems to imply that.
      *
      * @param  cs  the grid geometry (related to the netCDF coordinate system).
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
-        /*
-         * We work on grid axes instead of Coordinate Reference System axes because
-         * `metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize`
-         * seems to imply that.
-         */
-        final Axis[] axes = cs.getAxes(decoder);
+    private void addSpatialRepresentationInfo(final Axis[] axes) throws IOException, DataStoreException {
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*
@@ -1059,10 +1055,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * is built from the netCDF CoordinateSystem objects.
          */
         for (final Grid cs : decoder.getGridCandidates()) {
-            if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
-                cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
-            {
-                addSpatialRepresentationInfo(cs);
+            if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION) {
+                final Axis[] axes = cs.getAxes(decoder);
+                if (axes.length >= Grid.MIN_DIMENSION) {
+                    addSpatialRepresentationInfo(axes);
+                }
             }
         }
         setISOStandards(hasGridCoverages);

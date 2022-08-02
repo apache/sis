@@ -63,7 +63,7 @@ public strictfp class GridTest extends TestCase {
     }
 
     /**
-     * Tests {@link Grid#getSourceDimensions()} and {@link Grid#getTargetDimensions()}.
+     * Tests {@link Grid#getSourceDimensions()} and {@code Grid.getTargetDimensions()}.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -72,12 +72,12 @@ public strictfp class GridTest extends TestCase {
     public void testDimensions() throws IOException, DataStoreException {
         Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates()));
         assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
-        assertEquals("getTargetDimensions()", 2, geometry.getTargetDimensions());
+        assertEquals("getTargetDimensions()", 2, geometry.getAxes(decoder()).length);
 
         final int n = includeRuntimeDimension ? 5 : 4;
         geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates()));
         assertEquals("getSourceDimensions()", 4, geometry.getSourceDimensions());
-        assertEquals("getTargetDimensions()", n, geometry.getTargetDimensions());
+        assertEquals("getTargetDimensions()", n, geometry.getAxes(decoder()).length);
     }
 
     /**
