@@ -318,6 +318,7 @@ public abstract class ValuesUnderCursor {
             }
             evaluator = coverage.forConvertedValues(true).evaluator();
             evaluator.setNullIfOutside(true);
+            evaluator.setWraparoundEnabled(true);
             canvas(property).ifPresent((c) -> setSlice(c.getSliceExtent()));
             if (previous != null && bands.equals(previous.getSampleDimensions())) {
                 // Same configuration than previous coverage.
