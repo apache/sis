@@ -21,9 +21,15 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.function.Supplier;
+import java.text.NumberFormat;
+import java.text.FieldPosition;
 import java.text.ParseException;
+import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -58,7 +64,6 @@ import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.provider.PseudoPlateCarree;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
@@ -80,7 +85,7 @@ import ucar.nc2.constants.CF;
  * which creates Coordinate Reference Systems by inspecting coordinate system axes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
  *
@@ -89,8 +94,9 @@ import ucar.nc2.constants.CF;
  */
 final class GridMapping {
     /**
-     * The Coordinate Reference System, or {@code null} if none. This CRS can be constructed from Well Known Text
-     * or EPSG codes declared in {@code "spatial_ref"}, {@code "ESRI_pe_string"} or {@code "EPSG_code"} attributes.
+     * The Coordinate Reference System inferred from grid mapping attribute values, or {@code null} if none.
+     * This CRS may have been constructed from Well Known Text or EPSG codes declared in {@code "spatial_ref"},
+     * {@code "ESRI_pe_string"} or {@code "EPSG_code"} attributes.
      *
      * <div class="note"><b>Note:</b> this come from different information than the one used by {@link CRSBuilder},
      * which creates CRS by inspection of coordinate system axes.</div>
@@ -104,21 +110,27 @@ final class GridMapping {
     private final MathTransform gridToCRS;
 
     /**
-     * Whether the {@link #crs} where defined by an EPSG code.
+     * Whether the {@link #crs} was defined by a WKT string.
      */
-    private final boolean isEPSG;
+    private final boolean isWKT;
 
     /**
      * Creates an instance for the given {@link #crs} and {@link #gridToCRS} values.
+     *
+     * @param  crs        CRS inferred from grid mapping attribute values, or {@code null} if none.
+     * @param  gridToCRS  transform from GDAL conventions, or {@code null} if none.
+     * @param  isWKT      wether the {@code crs} was defined by a WKT string.
      */
-    private GridMapping(final CoordinateReferenceSystem crs, final MathTransform gridToCRS, final boolean isEPSG) {
+    private GridMapping(final CoordinateReferenceSystem crs, final MathTransform gridToCRS, final boolean isWKT) {
         this.crs       = crs;
         this.gridToCRS = gridToCRS;
-        this.isEPSG    = isEPSG;
+        this.isWKT     = isWKT;
     }
 
     /**
      * Fetches grid geometry information from attributes associated to the given variable.
+     * This method should be invoked only once per variable, but may return a shared {@code GridMapping} instance
+     * for all variables because there is typically only one set of grid mapping attributes for the whole file.
      *
      * @param  variable  the variable for which to create a grid geometry.
      */
@@ -302,7 +314,8 @@ final class GridMapping {
         final PrimeMeridian meridian;
         if (greenwichLongitude instanceof Number) {
             final double longitude = ((Number) greenwichLongitude).doubleValue();
-            final Map<String,?> properties = properties(definition, Convention.PRIME_MERIDIAN_NAME, null);
+            final Map<String,?> properties = properties(definition,
+                    Convention.PRIME_MERIDIAN_NAME, (longitude == 0) ? "Greenwich" : null);
             meridian = datumFactory.createPrimeMeridian(properties, longitude, Units.DEGREE);
             isSpecified = true;
         } else {
@@ -316,14 +329,34 @@ final class GridMapping {
          */
         Ellipsoid ellipsoid;
         try {
-            final double semiMajor = parameters.parameter(Constants.SEMI_MAJOR).doubleValue();
-            final Map<String,?> properties = properties(definition, Convention.ELLIPSOID_NAME, null);
-            if (parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue()) {
-                final double ivf = parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue();
-                ellipsoid = datumFactory.createFlattenedSphere(properties, semiMajor, ivf, Units.METRE);
+            final ParameterValue<?> p = parameters.parameter(Constants.SEMI_MAJOR);
+            final Unit<Length> axisUnit = p.getUnit().asType(Length.class);
+            final double  semiMajor = p.doubleValue();
+            final double  secondDefiningParameter;
+            final boolean isSphere;
+            final boolean isIvfDefinitive = parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue();
+            if (isIvfDefinitive) {
+                secondDefiningParameter = parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue();
+                isSphere = (secondDefiningParameter == 0) || Double.isInfinite(secondDefiningParameter);
             } else {
-                final double semiMinor = parameters.parameter(Constants.SEMI_MINOR).doubleValue();
-                ellipsoid = datumFactory.createEllipsoid(properties, semiMajor, semiMinor, Units.METRE);
+                secondDefiningParameter = parameters.parameter(Constants.SEMI_MINOR).doubleValue(axisUnit);
+                isSphere = secondDefiningParameter == semiMajor;
+            }
+            final Supplier<Object> fallback = () -> {           // Default ellipsoid name if not specified.
+                final Locale  locale = decoder.listeners.getLocale();
+                final NumberFormat f = NumberFormat.getNumberInstance(locale);
+                f.setMaximumFractionDigits(5);      // Centimetric precision.
+                final double km = axisUnit.getConverterTo(Units.KILOMETRE).convert(semiMajor);
+                final StringBuffer b = new StringBuffer()
+                        .append(Vocabulary.getResources(locale).getString(isSphere ? Vocabulary.Keys.Sphere : Vocabulary.Keys.Ellipsoid))
+                        .append(isSphere ? " R=" : " a=");
+                return f.format(km, b, new FieldPosition(0)).append(" km").toString();
+            };
+            final Map<String,?> properties = properties(definition, Convention.ELLIPSOID_NAME, fallback);
+            if (isIvfDefinitive) {
+                ellipsoid = datumFactory.createFlattenedSphere(properties, semiMajor, secondDefiningParameter, axisUnit);
+            } else {
+                ellipsoid = datumFactory.createEllipsoid(properties, semiMajor, secondDefiningParameter, axisUnit);
             }
             isSpecified = true;
         } catch (ParameterNotFoundException | IllegalStateException e) {
@@ -371,13 +404,15 @@ final class GridMapping {
     private static Map<String,Object> properties(final Map<String,Object> definition, final String nameAttribute, final Object fallback) {
         Object name = definition.remove(nameAttribute);
         if (name == null) {
-            if (fallback instanceof IdentifiedObject) {
-                name = ((IdentifiedObject) fallback).getName();
-            } else if (fallback != null) {
-                name = fallback.toString();
-            } else {
-                name = Vocabulary.format(Vocabulary.Keys.Unnamed);
+            if (fallback == null) {
                 // Note: IdentifiedObject.name does not accept InternationalString.
+                name = Vocabulary.format(Vocabulary.Keys.Unnamed);
+            } else if (fallback instanceof IdentifiedObject) {
+                name = ((IdentifiedObject) fallback).getName();
+            } else if (fallback instanceof Supplier<?>) {
+                name = ((Supplier<?>) fallback).get();
+            } else {
+                name = fallback.toString();
             }
         }
         return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
@@ -424,7 +459,7 @@ final class GridMapping {
         } catch (ParseException | NumberFormatException e) {
             canNotCreate(mapping, message, e);
         }
-        return new GridMapping(crs, gridToCRS, false);
+        return new GridMapping(crs, gridToCRS, wkt != null);
     }
 
     /**
@@ -444,14 +479,13 @@ final class GridMapping {
      * @return whether this method found grid geometry attributes.
      */
     private static GridMapping parseNonStandard(final Node variable) {
-        boolean isEPSG = false;
         String code = variable.getAttributeAsString("ESRI_pe_string");
-        if (code == null) {
+        final boolean isWKT = (code != null);
+        if (!isWKT) {
             code = variable.getAttributeAsString("EPSG_code");
             if (code == null) {
                 return null;
             }
-            isEPSG = true;
         }
         /*
          * The Coordinate Reference System stored in those attributes often use the GeoTIFF flavor of EPSG codes,
@@ -462,16 +496,16 @@ final class GridMapping {
          */
         CoordinateReferenceSystem crs;
         try {
-            if (isEPSG) {
-                crs = CRS.forCode(Constants.EPSG + ':' + isEPSG);
-            } else {
+            if (isWKT) {
                 crs = createFromWKT(variable, code);
+            } else {
+                crs = CRS.forCode(Constants.EPSG + ':' + code);
             }
         } catch (FactoryException | ParseException | ClassCastException e) {
             canNotCreate(variable, Resources.Keys.CanNotCreateCRS_3, e);
             crs = null;
         }
-        return new GridMapping(crs, null, isEPSG);
+        return new GridMapping(crs, null, isWKT);
     }
 
     /**
@@ -512,10 +546,12 @@ final class GridMapping {
     }
 
     /**
-     * Creates a new grid geometry for the given extent.
-     * This method should be invoked only when no existing {@link GridGeometry} can be used as template.
+     * Creates a new grid geometry with the extent of the given variable and a potentially null CRS.
+     * This method should be invoked only as a fallback when no existing {@link GridGeometry} can be used.
+     * The CRS and "grid to CRS" transform are null, unless some partial information was found for example
+     * as WKT string.
      */
-    GridGeometry createGridCRS(final Variable variable) {
+    final GridGeometry createGridCRS(final Variable variable) {
         final List<Dimension> dimensions = variable.getGridDimensions();
         final long[] upper = new long[dimensions.size()];
         for (int i=0; i<upper.length; i++) {
@@ -526,42 +562,48 @@ final class GridMapping {
     }
 
     /**
-     * Creates the grid geometry from the {@link #crs} and {@link #gridToCRS} field,
-     * completing missing information with the given template.
+     * Creates the grid geometry from the {@link #crs} and {@link #gridToCRS} fields,
+     * completing missing information with the implicit grid geometry derived from coordinate variables.
+     * For example {@code GridMapping} may contain information only about the horizontal dimensions, so
+     * the given {@code implicit} geometry is used for completing with vertical and temporal dimensions.
      *
      * @param  variable  the variable for which to create a grid geometry.
-     * @param  template  template to use for completing missing information.
+     * @param  implicit  template to use for completing missing information.
      * @param  anchor    whether we computed "grid to CRS" transform relative to pixel center or pixel corner.
      * @return the grid geometry with modified CRS and "grid to CRS" transform, or {@code null} in case of failure.
      */
-    GridGeometry adaptGridCRS(final Variable variable, final GridGeometry template, final PixelInCell anchor) {
-        CoordinateReferenceSystem givenCRS = crs;
+    final GridGeometry adaptGridCRS(final Variable variable, final GridGeometry implicit, final PixelInCell anchor) {
+        /*
+         * The CRS and grid geometry built from grid mapping attributes are called "explicit" in this method.
+         * This is by contrast with CRS derived from coordinate variables, which is only implicit.
+         */
+        CoordinateReferenceSystem explicitCRS = crs;
         int firstAffectedCoordinate = 0;
         boolean isSameGrid = true;
-        if (template.isDefined(GridGeometry.CRS)) {
-            final CoordinateReferenceSystem templateCRS = template.getCoordinateReferenceSystem();
-            if (givenCRS == null) {
-                givenCRS = templateCRS;
+        if (implicit.isDefined(GridGeometry.CRS)) {
+            final CoordinateReferenceSystem implicitCRS = implicit.getCoordinateReferenceSystem();
+            if (explicitCRS == null) {
+                explicitCRS = implicitCRS;
             } else {
                 /*
-                 * The CRS built by Grid may have a different axis order than the CRS specified by grid mapping attributes.
-                 * Check which axis order seems to fit, then replace grid CRS by given CRS (potentially with swapped axes).
-                 * This is where the potential difference between EPSG axis order and grid axis order is handled. If we can
-                 * not find where to substitute the CRS, assume that the given CRS describes the first dimensions. We have
-                 * no guarantees that this later assumption is right, but it seems to match common practice.
+                 * The CRS built by the `Grid` class (based on an inspection of coordinate variables)
+                 * may have a different axis order than the CRS specified by grid mapping attributes
+                 * (the CRS built by this class). This block checks which axis order seems to fit,
+                 * then potentially replaces `Grid` implicit CRS by `GridMapping` explicit CRS.
+                 *
+                 * This is where the potential difference between EPSG axis order and grid axis order is handled.
+                 * If we can not find which component to replace, assume that grid mapping describes the first dimensions.
+                 * We have no guarantees that this latter assumption is right, but it seems to match common practice.
                  */
-                final CoordinateSystem cs = templateCRS.getCoordinateSystem();
-                CoordinateSystem subCS = givenCRS.getCoordinateSystem();
-                firstAffectedCoordinate = AxisDirections.indexOfColinear(cs, subCS);
+                final CoordinateSystem cs = implicitCRS.getCoordinateSystem();
+                firstAffectedCoordinate = AxisDirections.indexOfColinear(cs, explicitCRS.getCoordinateSystem());
                 if (firstAffectedCoordinate < 0) {
-                    givenCRS = AbstractCRS.castOrCopy(givenCRS).forConvention(AxesConvention.RIGHT_HANDED);
-                    subCS = givenCRS.getCoordinateSystem();
-                    firstAffectedCoordinate = AxisDirections.indexOfColinear(cs, subCS);
+                    explicitCRS = AbstractCRS.castOrCopy(explicitCRS).forConvention(AxesConvention.RIGHT_HANDED);
+                    firstAffectedCoordinate = AxisDirections.indexOfColinear(cs, explicitCRS.getCoordinateSystem());
                     if (firstAffectedCoordinate < 0) {
                         firstAffectedCoordinate = 0;
-                        if (!isEPSG) {
-                            givenCRS = crs;                             // If specified by WKT, use the given CRS verbatim.
-                            subCS = givenCRS.getCoordinateSystem();
+                        if (isWKT && crs != null) {
+                            explicitCRS = crs;                         // If specified by WKT, use the CRS verbatim.
                         }
                     }
                 }
@@ -570,15 +612,15 @@ final class GridMapping {
                  * axis order. If the grid CRS contains more axes (for example elevation or time axis), we try to keep them.
                  */
                 try {
-                    givenCRS = new GeodeticObjectBuilder(variable.decoder, variable.decoder.listeners.getLocale())
-                                                .replaceComponent(templateCRS, firstAffectedCoordinate, givenCRS);
+                    explicitCRS = new CRSMerger(variable.decoder)
+                            .replaceComponent(implicitCRS, firstAffectedCoordinate, explicitCRS);
                 } catch (FactoryException e) {
                     canNotCreate(variable, Resources.Keys.CanNotCreateCRS_3, e);
                     return null;
                 }
-                isSameGrid = templateCRS.equals(givenCRS);
+                isSameGrid = implicitCRS.equals(explicitCRS);
                 if (isSameGrid) {
-                    givenCRS = templateCRS;                                 // Keep existing instance if appropriate.
+                    explicitCRS = implicitCRS;                                 // Keep existing instance if appropriate.
                 }
             }
         }
@@ -588,31 +630,31 @@ final class GridMapping {
          * then we need to perform selection in target dimensions (not source dimensions) because the first affected
          * coordinate computed above is in CRS dimension, which is the target of "grid to CRS" transform.
          */
-        MathTransform givenG2C = gridToCRS;
-        if (template.isDefined(GridGeometry.GRID_TO_CRS)) {
-            final MathTransform templateG2C = template.getGridToCRS(anchor);
-            if (givenG2C == null) {
-                givenG2C = templateG2C;
+        MathTransform explicitG2C = gridToCRS;
+        if (implicit.isDefined(GridGeometry.GRID_TO_CRS)) {
+            final MathTransform implicitG2C = implicit.getGridToCRS(anchor);
+            if (explicitG2C == null) {
+                explicitG2C = implicitG2C;
             } else try {
                 int count = 0;
                 MathTransform[] components = new MathTransform[3];
-                final TransformSeparator sep = new TransformSeparator(templateG2C, variable.decoder.getMathTransformFactory());
+                final TransformSeparator sep = new TransformSeparator(implicitG2C, variable.decoder.getMathTransformFactory());
                 if (firstAffectedCoordinate != 0) {
                     sep.addTargetDimensionRange(0, firstAffectedCoordinate);
                     components[count++] = sep.separate();
                     sep.clear();
                 }
-                components[count++] = givenG2C;
-                final int next = firstAffectedCoordinate + givenG2C.getTargetDimensions();
-                final int upper = templateG2C.getTargetDimensions();
+                components[count++] = explicitG2C;
+                final int next = firstAffectedCoordinate + explicitG2C.getTargetDimensions();
+                final int upper = implicitG2C.getTargetDimensions();
                 if (next != upper) {
                     sep.addTargetDimensionRange(next, upper);
                     components[count++] = sep.separate();
                 }
                 components = ArraysExt.resize(components, count);
-                givenG2C = MathTransforms.compound(components);
-                if (templateG2C.equals(givenG2C)) {
-                    givenG2C = templateG2C;                                 // Keep using existing instance if appropriate.
+                explicitG2C = MathTransforms.compound(components);
+                if (implicitG2C.equals(explicitG2C)) {
+                    explicitG2C = implicitG2C;                                 // Keep using existing instance if appropriate.
                 } else {
                     isSameGrid = false;
                 }
@@ -626,9 +668,9 @@ final class GridMapping {
          * If any of them have changed, create the new grid geometry.
          */
         if (isSameGrid) {
-            return template;
+            return implicit;
         } else {
-            return new GridGeometry(template.getExtent(), anchor, givenG2C, givenCRS);
+            return new GridGeometry(implicit.getExtent(), anchor, explicitG2C, explicitCRS);
         }
     }
 }
