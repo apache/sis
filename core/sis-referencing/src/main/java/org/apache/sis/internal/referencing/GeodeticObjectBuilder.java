@@ -23,6 +23,7 @@ import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -63,11 +64,11 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.6
  * @module
  */
-public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
+public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
      * The geodetic datum, or {@code null} if none.
      */
@@ -517,8 +518,7 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
     /**
      * Replaces the component starting at given index by the given component. This method can be used for replacing
      * e.g. the horizontal component of a CRS, or the vertical component, <i>etc.</i>. If a new compound CRS needs
-     * to be created and a {@linkplain #addName(org.opengis.util.GenericName) name has been specified}, that name
-     * will be used.
+     * to be created and a {@linkplain #addName(GenericName) name has been specified}, that name will be used.
      *
      * <h4>Limitations</h4>
      * Current implementation can replace exactly one component of {@link CompoundCRS}.
@@ -538,7 +538,11 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
         final int srcDim = ReferencingUtilities.getDimension(source);
         final int repDim = ReferencingUtilities.getDimension(replacement);
         if (firstDimension == 0 && srcDim == repDim) {
-            return replacement;
+            /*
+             * conceptually return the replacement. But returning the original instance if applicable
+             * allows the caller to detect that a compound CRS does not need to be replaced.
+             */
+            return source.equals(replacement) ? source : replacement;
         }
         ArgumentChecks.ensureValidIndex(srcDim - repDim, firstDimension);
         if (source instanceof CompoundCRS) {
@@ -556,8 +560,8 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
                     Object ids   = properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
                     final CoordinateReferenceSystem nc = replaceComponent(c, firstDimension - lower, replacement);
                     /*
-                     * Restore the names and identifiers before to create the final CompoundCRS. If no name was specified,
-                     * reuse the primary name of existing CRS but not the identifiers.
+                     * Restore the names and identifiers before to create the final CompoundCRS.
+                     * If no name was specified, reuse the primary name of existing CRS but not the identifiers.
                      */
                     if (name == null) {
                         name = source.getName();

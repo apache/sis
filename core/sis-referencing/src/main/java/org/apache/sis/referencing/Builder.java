@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
- * Base class of builders for various kind of {@link IdentifiedObject}. This class provides convenience methods
+ * Base class of builders for various kinds of {@link IdentifiedObject}. This class provides convenience methods
  * for filling the {@link #properties} map to be given to an {@link org.opengis.referencing.ObjectFactory}.
  * The main properties are:
  *
@@ -230,7 +230,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Verifies that {@code B} in {@code <B extends Builder<B>} is the expected class.
      * This method is for assertion purposes only.
      */
-    private static boolean verifyParameterizedType(final Class<?> expected) {
+    private static boolean verifyParameterizedType(Class<?> expected) {
         for (Class<?> c = expected; c != null; c = c.getSuperclass()) {
             Type type = c.getGenericSuperclass();
             if (type instanceof ParameterizedType) {
@@ -240,6 +240,8 @@ public abstract class Builder<B extends Builder<B>> {
                     if (type == expected) return true;
                     throw new AssertionError(type);
                 }
+            } else {
+                expected = c.getSuperclass();
             }
         }
         return false;
