@@ -625,7 +625,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
 
         /**
          * Parses the current {@link #buffer} content as a WKT elements (possibly with children elements).
-         * This method does not build the full {@link IdentifiedObject}; this later part will be done only
+         * This method does not build the full {@link IdentifiedObject}; this latter part will be done only
          * when first needed.
          *
          * <p>If {@link #aliasKey} is non-null, the first WKT is taken as a {@linkplain WKTFormat#addFragment

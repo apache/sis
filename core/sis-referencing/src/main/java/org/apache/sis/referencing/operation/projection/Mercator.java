@@ -408,8 +408,9 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
     }
 
     /**
-     * Converts the specified coordinate (implementation-specific units) and stores the result in {@code dstPts}.
+     * Projects the specified coordinates (implementation-specific units) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.

@@ -106,7 +106,7 @@ public final class LocaleAndCharset implements Node {
 
     /**
      * Returns the key or the value of the given {@link Map.Entry}. If the given object is not a map entry
-     * or is null, then it is returned as-is. This later case should never happen (the object shall always be
+     * or is null, then it is returned as-is. This latter case should never happen (the object shall always be
      * a non-null map entry), but we nevertheless check for making the code more robust to ill-formed metadata.
      * We apply this tolerance because this method is used (indirectly) for {@code toString()} implementations,
      * and failure in those methods make debugging more difficult (string representations are often requested
