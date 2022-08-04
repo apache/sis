@@ -191,11 +191,11 @@ public strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridEvaluator#apply(DirectPosition)}.
+     * Tests {@link GridCoverage.Evaluator#apply(DirectPosition)}.
      */
     @Test
     public void testEvaluator() {
-        final GridEvaluator evaluator = createTestCoverage().evaluator();
+        final GridCoverage.Evaluator evaluator = createTestCoverage().evaluator();
         /*
          * Test evaluation at indeger indices. No interpolation should be applied.
          */
@@ -227,11 +227,8 @@ public strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridEvaluator#apply(DirectPosition)} with a wraparound on the longitude axis.
+     * Tests {@link GridCoverage.Evaluator#apply(DirectPosition)} with a wraparound on the longitude axis.
      * This method tests a coordinate that would be outside the grid if wraparound was not applied.
-     *
-     * @todo Not yet implemented. One potential place where to implement this functionality could be
-     *       {@link GridEvaluator#toGridPosition(DirectPosition)}.
      */
     @Test
     @DependsOnMethod("testEvaluator")
@@ -239,12 +236,12 @@ public strictfp class GridCoverage2DTest extends TestCase {
         final Matrix3 gridToCRS = new Matrix3();
         gridToCRS.m00 = 100;        // Scale
         gridToCRS.m02 = 100;        // Offset
-        final GridEvaluator evaluator = createTestCoverage(MathTransforms.linear(gridToCRS)).evaluator();
+        final GridCoverage.Evaluator evaluator = createTestCoverage(MathTransforms.linear(gridToCRS)).evaluator();
         evaluator.setWraparoundEnabled(true);
         assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100, 0)), STRICT);
         assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200, 0)), STRICT);
         /*
-         * Following tests fail if wraparound is not applied by `GridEvaluator`.
+         * Following tests fail if wraparound is not applied by `GridCoverage.Evaluator`.
          */
         assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200 - 360, 0)), STRICT);
         assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100 - 360, 0)), STRICT);

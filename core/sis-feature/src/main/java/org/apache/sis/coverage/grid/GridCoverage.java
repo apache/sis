@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
@@ -301,8 +303,8 @@ public abstract class GridCoverage extends BandedCoverage {
      * conversions to grid indices are applied as needed.
      *
      * <h4>Multi-threading</h4>
-     * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link GridEvaluator} instance should be created for each thread by invoking this
+     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@code Evaluator} instance should be created for each thread by invoking this
      * method multiply times.
      *
      * @return a new function for computing or interpolating sample values.
@@ -310,8 +312,84 @@ public abstract class GridCoverage extends BandedCoverage {
      * @since 1.1
      */
     @Override
-    public GridEvaluator evaluator() {
+    public Evaluator evaluator() {
         return new GridEvaluator(this);
+    }
+
+    /**
+     * Interpolates values of sample dimensions at given positions.
+     * Values are computed by calls to {@link #apply(DirectPosition)} and are returned as {@code double[]}.
+     * This method extends {@link BandedCoverage.Evaluator} with the addition of some methods specific to
+     * gridded data.
+     *
+     * <h2>Multi-threading</h2>
+     * Evaluators are not thread-safe. An instance of {@code Evaluator} should be created
+     * for each thread that need to interpolate sample values.
+     *
+     * @author  Johann Sorel (Geomatys)
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.3
+     *
+     * @see GridCoverage#evaluator()
+     *
+     * @since 1.3
+     * @module
+     */
+    public interface Evaluator extends BandedCoverage.Evaluator {
+        /**
+         * Returns the coverage from which this evaluator is fetching sample values.
+         * This is the coverage on which the {@link GridCoverage#evaluator()} method has been invoked.
+         *
+         * @return the source of sample values for this evaluator.
+         */
+        @Override
+        GridCoverage getCoverage();
+
+        /**
+         * Returns the default slice where to perform evaluation, or an empty map if unspecified.
+         * Keys are dimensions from 0 inclusive to {@link GridGeometry#getDimension()} exclusive,
+         * and values are the grid coordinates of the slice in the dimension specified by the key.
+         *
+         * <p>This information allows to invoke {@link #apply(DirectPosition)} with for example
+         * two-dimensional points even if the underlying coverage is three-dimensional.
+         * The missing coordinate values are replaced by the values provided in the map.</p>
+         *
+         * @return the default slice where to perform evaluation, or an empty map if unspecified.
+         */
+        Map<Integer,Long> getDefaultSlice();
+
+        /**
+         * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
+         * A {@code null} argument restores the default value, which is to infer the slice from the coverage
+         * grid geometry.
+         *
+         * @param  slice  the default slice where to perform evaluation, or an empty map if none.
+         * @throws IllegalArgumentException if the map contains an illegal dimension or grid coordinate value.
+         *
+         * @see GridExtent#getSliceCoordinates()
+         */
+        void setDefaultSlice(Map<Integer,Long> slice);
+
+        /**
+         * Converts the specified geospatial position to grid coordinates. If the given position is associated to
+         * a non-null coordinate reference system (CRS) different than the {@linkplain #getCoverage() coverage} CRS,
+         * then this method automatically transforms that position to the {@linkplain #getCoordinateReferenceSystem()
+         * coverage CRS} before to compute grid coordinates.
+         *
+         * <p>This method does not put any restriction on the grid coordinates result.
+         * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}
+         * if the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform allows it.</p>
+         *
+         * @param  point  geospatial coordinates (in arbitrary CRS) to transform to grid coordinates.
+         * @return the grid coordinates for the given geospatial coordinates.
+         * @throws IncompleteGridGeometryException if the {@linkplain GridCoverage#getGridGeometry() grid geometry}
+         *         does not define a "grid to CRS" transform, or if the given point has a non-null CRS but the
+         *         coverage does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
+         * @throws TransformException if the given coordinates can not be transformed.
+         *
+         * @see FractionalGridCoordinates#toPosition(MathTransform)
+         */
+        FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException;
     }
 
     /**

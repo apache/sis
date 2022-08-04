@@ -53,7 +53,7 @@ import static java.util.logging.Logger.getLogger;
 
 
 /**
- * Computes or interpolates values of sample dimensions at given positions.
+ * Default implementation of {@link GridCoverage.Evaluator} for interpolating values at given positions.
  * Values are computed by calls to {@link #apply(DirectPosition)} and are returned as {@code double[]}.
  *
  * <h2>Multi-threading</h2>
@@ -72,7 +72,7 @@ import static java.util.logging.Logger.getLogger;
  * @since 1.1
  * @module
  */
-public class GridEvaluator implements GridCoverage.Evaluator {
+class GridEvaluator implements GridCoverage.Evaluator {
     /**
      * The coverage in which to evaluate sample values.
      */
@@ -170,8 +170,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Returns the coverage from which this evaluator is fetching sample values.
-     * This is usually the coverage on which the {@link GridCoverage#evaluator()} method has been invoked,
-     * but not necessarily. Implementations are allowed to use a different coverage for efficiency.
+     * This is the coverage on which the {@link GridCoverage#evaluator()} method has been invoked.
      *
      * @return the source of sample values for this evaluator.
      */
@@ -193,6 +192,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.3
      */
+    @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
     public Map<Integer,Long> getDefaultSlice() {
         if (slice == null) {
@@ -214,6 +214,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.3
      */
+    @Override
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public void setDefaultSlice(Map<Integer,Long> slice) {
         if (!Objects.equals(this.slice, slice)) {
@@ -243,6 +244,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.2
      */
+    @Override
     public boolean isWraparoundEnabled() {
         return (wraparoundAxes != 0);
     }
@@ -258,6 +260,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.2
      */
+    @Override
     public void setWraparoundEnabled(final boolean allow) {
         wraparoundAxes = 0;
         if (allow) try {
@@ -410,28 +413,25 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     }
 
     /**
-     * Converts the specified geospatial position to grid coordinates. If the given position
-     * is associated to a non-null coordinate reference system (CRS) different than the
-     * {@linkplain #coverage} CRS, then this method automatically transforms that position to the
+     * Converts the specified geospatial position to grid coordinates.
+     * If the given position is associated to a non-null coordinate reference system (CRS) different than the
+     * {@linkplain #getCoverage() coverage} CRS, then this method automatically transforms that position to the
      * {@linkplain GridCoverage#getCoordinateReferenceSystem() coverage CRS} before to compute grid coordinates.
      *
      * <p>This method does not put any restriction on the grid coordinates result.
      * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}
      * if the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform allows it.</p>
      *
-     * <p>The grid coordinates are relative to the grid of the coverage returned by {@link #getCoverage()}.
-     * This is usually the coverage on which the {@link GridCoverage#evaluator()} method has been invoked,
-     * but not necessarily. Implementations are allowed to use a different coverage for efficiency.</p>
-     *
      * @param  point  geospatial coordinates (in arbitrary CRS) to transform to grid coordinates.
      * @return the grid coordinates for the given geospatial coordinates.
      * @throws IncompleteGridGeometryException if the {@linkplain GridCoverage#getGridGeometry() grid geometry}
      *         does not define a "grid to CRS" transform, or if the given point has a non-null CRS but the
-     *         {@linkplain #coverage} does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
+     *         coverage does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
      * @throws TransformException if the given coordinates can not be transformed.
      *
      * @see FractionalGridCoordinates#toPosition(MathTransform)
      */
+    @Override
     public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
         ArgumentChecks.ensureNonNull("point", point);
         try {
