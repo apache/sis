@@ -313,7 +313,7 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Override
     public Evaluator evaluator() {
-        return new GridEvaluator(this);
+        return new DefaultEvaluator(this);
     }
 
     /**

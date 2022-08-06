@@ -515,7 +515,7 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
      */
-    private final class PixelAccessor extends GridEvaluator {
+    private final class PixelAccessor extends DefaultEvaluator {
         /**
          * Creates a new evaluator for the enclosing coverage.
          */

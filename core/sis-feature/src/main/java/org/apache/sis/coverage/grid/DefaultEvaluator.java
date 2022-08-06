@@ -31,8 +31,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -51,13 +49,17 @@ import org.apache.sis.util.logging.Logging;
 
 import static java.util.logging.Logger.getLogger;
 
+// Branch-dependent imports
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
+
 
 /**
  * Default implementation of {@link GridCoverage.Evaluator} for interpolating values at given positions.
  * Values are computed by calls to {@link #apply(DirectPosition)} and are returned as {@code double[]}.
  *
  * <h2>Multi-threading</h2>
- * Evaluators are not thread-safe. An instance of {@code GridEvaluator} should be created
+ * Evaluators are not thread-safe. An instance of {@code DefaultEvaluator} should be created
  * for each thread that need to compute sample values.
  *
  * <h2>Limitations</h2>
@@ -72,7 +74,7 @@ import static java.util.logging.Logger.getLogger;
  * @since 1.1
  * @module
  */
-class GridEvaluator implements GridCoverage.Evaluator {
+class DefaultEvaluator implements GridCoverage.Evaluator {
     /**
      * The coverage in which to evaluate sample values.
      */
@@ -156,14 +158,14 @@ class GridEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
-     * {@link GridCoverage} subclasses to provide their own {@code GridEvaluator} implementations.
+     * {@link GridCoverage} subclasses to provide their own {@code DefaultEvaluator} implementations.
      * For using an evaluator, invoke {@link GridCoverage#evaluator()} instead.
      *
      * @param  coverage  the coverage for which to create an evaluator.
      *
      * @see GridCoverage#evaluator()
      */
-    protected GridEvaluator(final GridCoverage coverage) {
+    protected DefaultEvaluator(final GridCoverage coverage) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
         this.coverage = coverage;
     }
@@ -652,6 +654,6 @@ class GridEvaluator implements GridCoverage.Evaluator {
      * @param  exception  the exception that occurred.
      */
     private static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
+        Logging.recoverableException(getLogger(Modules.RASTER), DefaultEvaluator.class, caller, exception);
     }
 }

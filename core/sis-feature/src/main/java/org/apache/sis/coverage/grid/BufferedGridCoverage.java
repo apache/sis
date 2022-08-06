@@ -289,7 +289,7 @@ public class BufferedGridCoverage extends GridCoverage {
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
      */
-    private static class CellAccessor extends GridEvaluator {
+    private static final class CellAccessor extends DefaultEvaluator {
         /**
          * A copy of {@link BufferedGridCoverage#data} reference.
          */
