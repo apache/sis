@@ -77,3 +77,4 @@ org.apache.sis.internal.referencing.provider.Interpolation1D
 org.apache.sis.internal.referencing.provider.SatelliteTracking
 org.apache.sis.internal.referencing.provider.Wraparound
 org.apache.sis.internal.referencing.provider.GeocentricToTopocentric
+org.apache.sis.internal.referencing.provider.GeographicToTopocentric

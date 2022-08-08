@@ -36,14 +36,15 @@ import org.apache.sis.internal.util.Constants;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import static java.lang.Math.toRadians;
 
 
 /**
- * The provider for the <cite>"Geocentric/topocentric conversions"</cite> (EPSG:9836)).
+ * The provider for the <cite>"Geocentric/topocentric conversions"</cite> (EPSG:9836).
  * This operation is implemented using existing {@link MathTransform} implementations;
  * there is no need for a class specifically for this transform.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
  * @module
@@ -121,7 +122,7 @@ public final class GeocentricToTopocentric extends AbstractProvider {
     }
 
     /**
-     * Notifies {@code DefaultMathTransformFactory} that Geographic/topocentric conversions
+     * Notifies {@code DefaultMathTransformFactory} that Geocentric/topocentric conversions
      * require values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
      *
      * @return 1, meaning that the operation requires a source ellipsoid.
@@ -144,44 +145,84 @@ public final class GeocentricToTopocentric extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws FactoryException
     {
-        return create(factory, Parameters.castOrWrap(values));
+        try {
+            return create(factory, Parameters.castOrWrap(values), false);
+        } catch (TransformException e) {
+            throw new FactoryException(e);
+        }
     }
 
     /**
      * Implementation of {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
      * shared with {@link GeographicToTopocentric}.
+     *
+     * @param  factory     the factory to use for creating the transform.
+     * @param  values      the parameter values that define the transform to create.
+     * @param  geographic  {@code true} if the source coordinates are geographic, or
+     *                     {@code false} if the source coordinates are geocentric.
      */
-    static MathTransform create(final MathTransformFactory factory, final Parameters values)
-            throws FactoryException
+    static MathTransform create(final MathTransformFactory factory, final Parameters values, final boolean geographic)
+            throws FactoryException, TransformException
     {
         final ParameterValue<?> ap = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = ap.getUnit().asType(Length.class);
         final double a = ap.doubleValue();
         final double b = values.parameter(Constants.SEMI_MINOR).doubleValue(unit);
-        final double x = values.doubleValue(ORIGIN_X, unit);
-        final double y = values.doubleValue(ORIGIN_Y, unit);
-        final double z = values.doubleValue(ORIGIN_Z, unit);
-        final double[] coordinates = new double[] {x/a, y/a, z/a};
-        final MathTransform t = new EllipsoidToCentricTransform(a, b, unit, false, EllipsoidToCentricTransform.TargetType.CARTESIAN);
-        try {
-            t.inverse().transform(coordinates, 0, coordinates, 0, 1);
-            final double λ    = coordinates[0];         // In radians.
-            final double φ    = coordinates[1];
-            final double sinλ = sin(λ);
-            final double cosλ = cos(λ);
-            final double sinφ = sin(φ);
-            final double cosφ = cos(φ);
+        final double x, y, z, λ, φ;
+        final MathTransform toGeocentric;
+        if (geographic) {
             /*
-             * Following transform uses the inverse of the matrix R given in EPSG guidance note
-             * because it allows us to put the (x,y,z) translation terms directly in the matrix.
+             * Full conversion from (longitude, latitude, height) in degrees
+             * to geocentric coordinates in linear units (usually metres).
              */
-            return factory.createAffineTransform(new Matrix4(
-                    -sinλ,  -sinφ*cosλ,  cosφ*cosλ,  x,
-                     cosλ,  -sinφ*sinλ,  cosφ*sinλ,  y,
-                        0,   cosφ,       sinφ,       z,
-                        0,   0,          0,          1)).inverse();
-        } catch (TransformException e) {
-            throw new FactoryException(e);
+            toGeocentric = EllipsoidToCentricTransform.createGeodeticConversion(factory,
+                    a, b, unit, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+
+            final double[] origin = new double[] {
+                values.doubleValue(GeographicToTopocentric.ORIGIN_X),
+                values.doubleValue(GeographicToTopocentric.ORIGIN_Y),
+                values.doubleValue(GeographicToTopocentric.ORIGIN_Z)};
+
+            λ = toRadians(origin[0]);
+            φ = toRadians(origin[1]);
+            toGeocentric.transform(origin, 0, origin, 0, 1);
+            x = origin[0];
+            y = origin[1];
+            z = origin[2];
+        } else {
+            /*
+             * Shorter conversion from (longitude, latitude) in radians to
+             * geocentric coordinates as fractions of semi-major axis length.
+             * This conversion is used only in this block and is not kept.
+             */
+            toGeocentric = new EllipsoidToCentricTransform(
+                    a, b, unit, false, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+
+            final double[] origin = new double[] {
+                (x = values.doubleValue(ORIGIN_X, unit)) / a,
+                (y = values.doubleValue(ORIGIN_Y, unit)) / a,
+                (z = values.doubleValue(ORIGIN_Z, unit)) / a};
+
+            toGeocentric.inverse().transform(origin, 0, origin, 0, 1);
+            λ = origin[0];         // Already in radians.
+            φ = origin[1];
         }
+        final double sinλ = sin(λ);
+        final double cosλ = cos(λ);
+        final double sinφ = sin(φ);
+        final double cosφ = cos(φ);
+        /*
+         * Following transform uses the inverse of the matrix R given in EPSG guidance note
+         * because it allows us to put the (x,y,z) translation terms directly in the matrix.
+         */
+        MathTransform mt = factory.createAffineTransform(new Matrix4(
+                -sinλ,  -sinφ*cosλ,  cosφ*cosλ,  x,
+                 cosλ,  -sinφ*sinλ,  cosφ*sinλ,  y,
+                    0,   cosφ,       sinφ,       z,
+                    0,   0,          0,          1)).inverse();
+        if (geographic) {
+            mt = factory.createConcatenatedTransform(toGeocentric, mt);
+        }
+        return mt;
     }
 }
