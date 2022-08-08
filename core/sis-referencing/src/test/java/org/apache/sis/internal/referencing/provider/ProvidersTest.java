@@ -71,6 +71,7 @@ public final strictfp class ProvidersTest extends TestCase {
             GeocentricTranslation3D.class,
             GeographicToGeocentric.class,
             GeocentricToGeographic.class,
+            GeocentricToTopocentric.class,
             Geographic3Dto2D.class,
             Geographic2Dto3D.class,
             Molodensky.class,
