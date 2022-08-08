@@ -48,7 +48,7 @@ import static java.util.logging.Logger.getLogger;
  * Base class for all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -67,10 +67,10 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * @param targetDimension  number of dimensions in the target CRS of this operation method.
      * @param parameters       the set of parameters (never {@code null}).
      */
-    AbstractProvider(final Map<String,?> properties,
-                     final int sourceDimension,
-                     final int targetDimension,
-                     final ParameterDescriptorGroup parameters)
+    protected AbstractProvider(final Map<String,?> properties,
+                               final int sourceDimension,
+                               final int targetDimension,
+                               final ParameterDescriptorGroup parameters)
     {
         super(properties, sourceDimension, targetDimension, parameters);
     }

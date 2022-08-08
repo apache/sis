@@ -62,8 +62,7 @@ import static java.lang.Math.*;
  *
  * The units of measurements depend on how the {@code MathTransform} has been created:
  * <ul>
- *   <li>{@code MolodenskyTransform} instances created directly by the constructor work with angular values in radians.
- *       That constructor is reserved for subclasses only.</li>
+ *   <li>{@code MolodenskyTransform} instances created directly by the constructor work with angular values in radians.</li>
  *   <li>Transforms created by the {@link #createGeodeticTransformation createGeodeticTransformation(…)} static method
  *       work with angular values in degrees and heights in the same units than the <strong>source</strong> ellipsoid
  *       axes (usually metres).</li>
@@ -82,7 +81,7 @@ import static java.lang.Math.*;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -145,10 +144,10 @@ public class MolodenskyTransform extends MolodenskyFormula {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, double, double, double, boolean)
      */
-    protected MolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
-                                  final Ellipsoid target, final boolean isTarget3D,
-                                  final double tX, final double tY, final double tZ,
-                                  final boolean isAbridged)
+    public MolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
+                               final Ellipsoid target, final boolean isTarget3D,
+                               final double tX, final double tY, final double tZ,
+                               final boolean isAbridged)
     {
         super(source, isSource3D, target, isTarget3D, tX, tY, tZ, null, isAbridged,
                 isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
