@@ -38,6 +38,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -165,7 +166,7 @@ import static java.util.logging.Logger.getLogger;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @version 1.1
+ * @version 1.3
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
@@ -541,16 +542,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *       coordinate systems are not {@linkplain AxesConvention#NORMALIZED normalized}.</li>
      * </ul>
      *
-     * By default this class does <strong>not</strong> handle change of
+     * This class does <strong>not</strong> handle change of
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian}
      * or anything else related to datum. Datum changes have dedicated {@link OperationMethod},
      * for example <cite>"Longitude rotation"</cite> (EPSG:9601) for changing the prime meridian.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
+     * @version 1.3
      * @since   0.7
      * @module
      */
+    @SuppressWarnings("serial")         // Fields are not statically typed as Serializable.
     public static class Context implements Serializable {
         /**
          * For cross-version compatibility.
@@ -575,14 +577,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @todo We could make this information public as a replacement of {@link #getLastMethodUsed()}.
          */
-        OperationMethod provider;
+        private OperationMethod provider;
 
         /**
          * The parameters actually used.
          *
          * @see #getCompletedParameters()
          */
-        ParameterValueGroup parameters;
+        private ParameterValueGroup parameters;
 
         /**
          * Creates a new context with all properties initialized to {@code null}.
@@ -615,10 +617,36 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @param  cs         the coordinate system to set as the source, or {@code null}.
          * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
+         *
+         * @deprecated Replaced by {@link #setSource(GeodeticCRS)}.
          */
+        @Deprecated
         public void setSource(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
             sourceCS = cs;
             sourceEllipsoid = ellipsoid;
+        }
+
+        /**
+         * Sets the source coordinate system and related ellipsoid to the components of given CRS.
+         * The {@link Ellipsoid}, fetched from the geodetic datum, is often used together with an {@link EllipsoidalCS},
+         * but not necessarily. The geodetic CRS may also be associated with a spherical or Cartesian coordinate system,
+         * and the ellipsoid information may still be needed even with those non-ellipsoidal coordinate systems.
+         *
+         * <p><strong>This method is not for datum shifts.</strong>
+         * All datum information other than the ellipsoid are ignored.</p>
+         *
+         * @param  crs  the coordinate system and ellipsoid to set as the source, or {@code null}.
+         *
+         * @since 1.3
+         */
+        public void setSource(final GeodeticCRS crs) {
+            if (crs != null) {
+                sourceCS = crs.getCoordinateSystem();
+                sourceEllipsoid = crs.getDatum().getEllipsoid();
+            } else {
+                sourceCS = null;
+                sourceEllipsoid = null;
+            }
         }
 
         /**
@@ -640,10 +668,36 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @param  cs         the coordinate system to set as the source, or {@code null}.
          * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
+         *
+         * @deprecated Replaced by {@link #setTarget(GeodeticCRS)}.
          */
+        @Deprecated
         public void setTarget(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
             targetCS = cs;
             targetEllipsoid = ellipsoid;
+        }
+
+        /**
+         * Sets the target coordinate system and related ellipsoid to the components of given CRS.
+         * The {@link Ellipsoid}, fetched from the geodetic datum, is often used together with an {@link EllipsoidalCS},
+         * but not necessarily. The geodetic CRS may also be associated with a spherical or Cartesian coordinate system,
+         * and the ellipsoid information may still be needed even with those non-ellipsoidal coordinate systems.
+         *
+         * <p><strong>This method is not for datum shifts.</strong>
+         * All datum information other than the ellipsoid are ignored.</p>
+         *
+         * @param  crs  the coordinate system and ellipsoid to set as the target, or {@code null}.
+         *
+         * @since 1.3
+         */
+        public void setTarget(final GeodeticCRS crs) {
+            if (crs != null) {
+                targetCS = crs.getCoordinateSystem();
+                targetEllipsoid = crs.getDatum().getEllipsoid();
+            } else {
+                targetCS = null;
+                targetEllipsoid = null;
+            }
         }
 
         /**
@@ -986,8 +1040,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 n = ((AbstractProvider) provider).getEllipsoidsMask();
             } else {
                 n = 0;
-                if (sourceEllipsoid != null) n  = 1;
-                if (targetEllipsoid != null) n |= 2;
+                if (getSourceEllipsoid() != null) n  = 1;
+                if (getTargetEllipsoid() != null) n |= 2;
             }
             /*
              * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source ellipsoid,
@@ -1356,7 +1410,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        final Context context = ReferencingUtilities.createTransformContext(baseCRS, null, null);
+        final Context context = ReferencingUtilities.createTransformContext(baseCRS, null);
         context.setTarget(derivedCS);
         return createParameterizedTransform(parameters, context);
     }
@@ -1403,12 +1457,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     final String operation;
                     if (isEllipsoidalSource) {
                         operation = GeographicToGeocentric.NAME;
-                        context.setSource(cs = (EllipsoidalCS) source, ellipsoid);
+                        context.setSource(cs = (EllipsoidalCS) source);
                         context.setTarget(target);
+                        context.sourceEllipsoid = ellipsoid;
                     } else {
                         operation = GeocentricToGeographic.NAME;
                         context.setSource(source);
-                        context.setTarget(cs = (EllipsoidalCS) target, ellipsoid);
+                        context.setTarget(cs = (EllipsoidalCS) target);
+                        context.targetEllipsoid = ellipsoid;
                     }
                     final ParameterValueGroup pg = getDefaultParameters(operation);
                     if (cs.getDimension() < 3) pg.parameter("dim").setValue(2);       // Apache SIS specific parameter.

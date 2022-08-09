@@ -509,38 +509,33 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Sets the source and target ellipsoids and coordinate systems to values inferred from the given CRS.
-     * The ellipsoids will be non-null only if the given CRS is geographic (not geocentric).
+     * Creates a context with source and target ellipsoids and coordinate systems inferred from the given CRS.
+     * The ellipsoids will be non-null only if the given CRS is geodetic (geographic or geocentric).
      *
-     * @param  sourceCRS  the CRS from which to get the source coordinate system and ellipsoid.
-     * @param  targetCRS  the CRS from which to get the target coordinate system and ellipsoid.
-     * @param  context    a pre-allocated context, or {@code null} for creating a new one.
-     * @return the given context if it was non-null, or a new context otherwise.
+     * @param  sourceCRS  the CRS from which to get the source coordinate system and ellipsoid, or {@code null}.
+     * @param  targetCRS  the CRS from which to get the target coordinate system and ellipsoid, or {@code null}.
+     * @return the context to provides to math transform factory.
      */
     public static Context createTransformContext(final CoordinateReferenceSystem sourceCRS,
-            final CoordinateReferenceSystem targetCRS, Context context)
+                                                 final CoordinateReferenceSystem targetCRS)
     {
-        if (context == null) {
-            context = new Context();
+        final Context context = new Context();
+        if (sourceCRS instanceof GeodeticCRS) {
+            context.setSource((GeodeticCRS) sourceCRS);
+        } else if (sourceCRS != null) {
+            context.setSource(sourceCRS.getCoordinateSystem());
         }
-        final CoordinateSystem sourceCS = (sourceCRS != null) ? sourceCRS.getCoordinateSystem() : null;
-        final CoordinateSystem targetCS = (targetCRS != null) ? targetCRS.getCoordinateSystem() : null;
-        if (sourceCRS instanceof GeodeticCRS && sourceCS instanceof EllipsoidalCS) {
-            context.setSource((EllipsoidalCS) sourceCS, ((GeodeticCRS) sourceCRS).getDatum().getEllipsoid());
-        } else {
-            context.setSource(sourceCS);
-        }
-        if (targetCRS instanceof GeodeticCRS && targetCS instanceof EllipsoidalCS) {
-            context.setTarget((EllipsoidalCS) targetCS, ((GeodeticCRS) targetCRS).getDatum().getEllipsoid());
-        } else {
-            context.setTarget(targetCS);
+        if (targetCRS instanceof GeodeticCRS) {
+            context.setTarget((GeodeticCRS) targetCRS);
+        } else if (targetCRS != null) {
+            context.setTarget(targetCRS.getCoordinateSystem());
         }
         return context;
     }
 
     /**
      * Substitute for the deprecated {@link MathTransformFactory#createBaseToDerived createBaseToDerived(…)} method.
-     * This substitute use the full {@code targetCRS} instead of only the coordinate system of the target.
+     * This substitute uses the full {@code targetCRS} instead of only the coordinate system of the target.
      * This is needed for setting the {@code "tgt_semi_minor"} and {@code "tgt_semi_major"} parameters of
      * Molodensky transformation for example.
      *
@@ -561,7 +556,7 @@ public final class ReferencingUtilities extends Static {
     {
         if (factory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) factory).createParameterizedTransform(
-                    parameters, createTransformContext(sourceCRS, targetCRS, null));
+                    parameters, createTransformContext(sourceCRS, targetCRS));
         } else {
             // Fallback for non-SIS implementations. Work for map projections but not for Molodensky.
             return factory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());

@@ -982,7 +982,7 @@ class CoordinateOperationRegistry {
             final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
             if (mtFactory instanceof DefaultMathTransformFactory) {
                 MathTransform mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
-                        parameters, ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
+                        parameters, ReferencingUtilities.createTransformContext(sourceCRS, targetCRS));
                 return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
                         sourceCRS, targetCRS, null, operation.getMethod(), mt);
             }
@@ -1104,7 +1104,7 @@ class CoordinateOperationRegistry {
                         try {
                             mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
                                     ((SingleOperation) op).getParameterValues(),
-                                    ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
+                                    ReferencingUtilities.createTransformContext(sourceCRS, targetCRS));
                         } catch (InvalidGeodeticParameterException e) {
                             log(null, e);
                             break;
