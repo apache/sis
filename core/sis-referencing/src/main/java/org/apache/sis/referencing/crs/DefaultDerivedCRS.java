@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
@@ -46,7 +45,6 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.internal.jaxb.referencing.SC_SingleCRS;
@@ -56,7 +54,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 
@@ -567,18 +564,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return WKTKeywords.Fitted_CS;
         } else {
             formatter.newLine();
-            formatter.append(new FormattableObject() {     // Format inside a "DefiningConversion" element.
-                @Override protected String formatTo(final Formatter formatter) {
-                    WKTUtilities.appendName(conversion, formatter, null);
-                    formatter.newLine();
-                    formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
-                    formatter.newLine();
-                    for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
-                        WKTUtilities.append(param, formatter);
-                    }
-                    return WKTKeywords.DerivingConversion;
-                }
-            });
+            formatter.append(new ExplicitParameters(this, WKTKeywords.DerivingConversion));     // Format inside a "DefiningConversion" element.
             if (convention == Convention.INTERNAL || !isBaseCRS(formatter)) {
                 final CoordinateSystem cs = getCoordinateSystem();
                 formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
