@@ -92,7 +92,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * will be smaller depending on the {@linkplain #denominator} required for representing that value.
      *
      * @param  value  the double-precision value to convert to a fraction.
-     * @return a fraction such as {@link #doubleValue()} is equals to the given value.
+     * @return a fraction such as {@link #doubleValue()} is equal to the given value.
      * @throws IllegalArgumentException if the given value can not be converted to a fraction.
      *
      * @since 1.0
@@ -210,7 +210,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * Returns a fraction equivalent to {@code num} / {@code den} after simplification.
-     * If the simplified fraction is equals to {@code this}, then this method returns {@code this}.
+     * If the simplified fraction is equal to {@code this}, then this method returns {@code this}.
      *
      * <p>The arguments given to this method are the results of multiplications and additions of {@code int} values.
      * This method fails if any argument value is {@link Long#MIN_VALUE} because that value can not be made positive.

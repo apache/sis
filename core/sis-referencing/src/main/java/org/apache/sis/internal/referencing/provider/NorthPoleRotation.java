@@ -21,6 +21,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -39,7 +40,7 @@ import org.apache.sis.measure.Units;
  * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the rotated North pole.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see SouthPoleRotation
  * @see <a href="https://cfconventions.org/cf-conventions/cf-conventions.html#_rotated_pole">Rotated pole in CF-conventions</a>
@@ -138,17 +139,9 @@ public final class NorthPoleRotation extends AbstractProvider {
      * Constructs a new provider.
      */
     public NorthPoleRotation() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code Conversion.class} or a sub-type.
-     */
-    @Override
-    public Class<? extends Conversion> getOperationType() {
-        return Conversion.class;
+        super(Conversion.class, PARAMETERS,
+              EllipsoidalCS.class, 2, false,
+              EllipsoidalCS.class, 2, false);
     }
 
     /**

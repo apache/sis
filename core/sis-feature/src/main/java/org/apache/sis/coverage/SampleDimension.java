@@ -458,7 +458,7 @@ public class SampleDimension implements Serializable {
      * Compares the specified object with this sample dimension for equality.
      *
      * @param  object  the object to compare with.
-     * @return {@code true} if the given object is equals to this sample dimension.
+     * @return {@code true} if the given object is equal to this sample dimension.
      */
     @Override
     public boolean equals(final Object object) {

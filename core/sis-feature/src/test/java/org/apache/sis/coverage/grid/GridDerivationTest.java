@@ -647,7 +647,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         assertExtentEquals(new long[] {0, -3410}, new long[] {75, -3158}, result.getExtent());
         assertEnvelopeEquals(new Envelope2D(null,
                 -175,           // Expected minimum value.
-                  80,           // Not interresting for this test.
+                  80,           // Not interesting for this test.
                 -172 - -175,    // Expected maximum value minus minimum.
                   90 -   80),
                 result.getEnvelope(), 0.02);

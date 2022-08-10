@@ -311,7 +311,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
 
     /**
      * Serializes the given object in memory, deserializes it and ensures that the deserialized
-     * object is equals to the original one. This method does not write anything to the disk.
+     * object is equal to the original one. This method does not write anything to the disk.
      *
      * <p>If the serialization fails, then this method throws an {@link AssertionError}
      * as do the other JUnit assertion methods.</p>

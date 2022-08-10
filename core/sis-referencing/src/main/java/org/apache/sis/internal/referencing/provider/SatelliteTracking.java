@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.Projection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -37,7 +38,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -177,7 +178,7 @@ public class SatelliteTracking extends MapProjection {
      * Constructs a new provider.
      */
     public SatelliteTracking() {
-        super(PARAMETERS);
+        super(Projection.class, PARAMETERS);
     }
 
     /**

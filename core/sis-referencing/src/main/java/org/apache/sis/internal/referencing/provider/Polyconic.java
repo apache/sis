@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/polyconic.html">GeoTIFF parameters for Polyconic</a>
  *
@@ -136,17 +136,7 @@ public class Polyconic extends MapProjection {
      * Constructs a new provider.
      */
     public Polyconic() {
-        super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code ConicProjection.class}
-     */
-    @Override
-    public Class<ConicProjection> getOperationType() {
-        return ConicProjection.class;
+        super(ConicProjection.class, PARAMETERS);
     }
 
     /**

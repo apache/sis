@@ -22,6 +22,7 @@ import java.util.List;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
+import javax.measure.IncommensurableException;
 import org.opengis.util.MemberName;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -101,7 +102,7 @@ import org.apache.sis.util.Debug;
  * overriding one method has no impact on other methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -666,6 +667,40 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             return (unit != null) ? value.doubleValue(unit) : value.doubleValue();
         } else {
             return defaultValue(parameter).doubleValue();
+        }
+    }
+
+    /**
+     * Returns the floating point value of the parameter identified by the given descriptor,
+     * converted to the given unit of measurement. See {@link #getValue(ParameterDescriptor)}
+     * for more information about how this method uses the given {@code parameter} argument.
+     *
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @param  unit       the desired unit of measurement.
+     * @return the requested parameter value if it exists, or the <strong>non-null</strong>
+     *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
+     * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
+     * @throws IllegalStateException if the value is not defined and there is no default value.
+     * @throws IllegalArgumentException if the specified unit is invalid for the parameter.
+     *
+     * @see DefaultParameterValue#doubleValue(Unit)
+     *
+     * @since 1.3
+     */
+    public double doubleValue(final ParameterDescriptor<? extends Number> parameter, final Unit<?> unit) throws ParameterNotFoundException {
+        ArgumentChecks.ensureNonNull("unit", unit);
+        final ParameterValue<?> value = getParameter(parameter);
+        if (value != null) {
+            return value.doubleValue(unit);
+        } else {
+            double d = defaultValue(parameter).doubleValue();
+            final Unit<?> source = parameter.getUnit();
+            if (source != null) try {
+                d = source.getConverterToAny(unit).convert(d);
+            } catch (IncommensurableException e) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, source, unit), e);
+            }
+            return d;
         }
     }
 

@@ -260,10 +260,9 @@ public final class DataStoreOpener extends Task<DataStore> {
                 /*
                  * Search for a title in metadata first because it has better chances to be human-readable
                  * compared to the resource identifier. If the title is the same text as the identifier,
-                 * then we will execute the code path for identifier unless the caller did not asked for
-                 * qualified name, in which case it would make no difference.
+                 * then execute the code path for identifier (i.e. try to find a more informative text).
                  */
-                GenericName name = qualified ? resource.getIdentifier().orElse(null) : null;
+                GenericName name = resource.getIdentifier().orElse(null);
                 Collection<? extends Identification> identifications = null;
                 final Metadata metadata = resource.getMetadata();
                 if (metadata != null) {
@@ -273,7 +272,7 @@ public final class DataStoreOpener extends Task<DataStore> {
                             final Citation citation = identification.getCitation();
                             if (citation != null) {
                                 final String t = string(citation.getTitle(), locale);
-                                if (t != null && (name == null || !t.equals(name.toString()))) {
+                                if (t != null && (name == null || !t.equals(name.tip().toString()))) {
                                     return t;
                                 }
                             }
@@ -285,13 +284,8 @@ public final class DataStoreOpener extends Task<DataStore> {
                  * We search for explicitly declared identifier first before to fallback on
                  * metadata identifier, because the latter is more subject to interpretation.
                  */
-                if (!qualified) {
-                    name = resource.getIdentifier().orElse(null);
-                }
                 if (name != null) {
-                    if (qualified) {
-                        name = name.toFullyQualifiedName();
-                    }
+                    name = qualified ? name.toFullyQualifiedName() : name.tip();
                     final String t = string(name.toInternationalString(), locale);
                     if (t != null) return t;
                 }

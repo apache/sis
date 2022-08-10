@@ -375,9 +375,9 @@ public final class MathTransforms extends Static {
      * <p>Invariants:</p>
      * <ul>
      *   <li>The {@linkplain AbstractMathTransform#getSourceDimensions() source dimensions} of the returned transform
-     *       is equals to the sum of the source dimensions of all given transforms.</li>
+     *       is equal to the sum of the source dimensions of all given transforms.</li>
      *   <li>The {@linkplain AbstractMathTransform#getTargetDimensions() target dimensions} of the returned transform
-     *       is equals to the sum of the target dimensions of all given transforms.</li>
+     *       is equal to the sum of the target dimensions of all given transforms.</li>
      * </ul>
      *
      * @param  components  the transforms to aggregate in a single transform, in the given order.

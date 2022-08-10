@@ -57,7 +57,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Tests {@link GeodeticObjectParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -972,6 +972,53 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a derived CRS from a WKT 2 string.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testDerivedCRS() throws ParseException {
+        final DerivedCRS crs = parse(DerivedCRS.class,
+                "GeodCRS[“EPSG topocentric example B”,\n" +
+                "  BaseGeodCRS[“WGS 84”,\n" +
+                "    Datum[“World Geodetic System 1984”,\n" +
+                "      Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
+                "      PrimeM[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]],\n" +
+                "  DerivingConversion[“EPSG topocentric example B”,\n" +
+                "    Method[“Geocentric/topocentric conversions”, Id[“EPSG”, 9836]],\n" +
+                "    Parameter[“Geocentric X of topocentric origin”, 3771793.97, LengthUnit[“metre”, 1], Id[“EPSG”, 8837]],\n" +
+                "    Parameter[“Geocentric Y of topocentric origin”,  140253.34, LengthUnit[“metre”, 1], Id[“EPSG”, 8838]],\n" +
+                "    Parameter[“Geocentric Z of topocentric origin”, 5124304.35, LengthUnit[“metre”, 1], Id[“EPSG”, 8839]]],\n" +
+                "  CS[Cartesian, 3],\n" +
+                "    Axis[“Topocentric East (U)”,  east],\n" +
+                "    Axis[“Topocentric North (V)”, north],\n" +
+                "    Axis[“Topocentric height (W)”, up],\n" +
+                "    LengthUnit[“metre”, 1],\n" +
+                "  Scope[“Example only - fictitious.”],\n" +
+                "  Id[“EPSG”, 5820, “9.9.1”, URI[“urn:ogc:def:crs:EPSG:9.9.1:5820”]]]");
+
+        assertNameAndIdentifierEqual("EPSG topocentric example B", 5820, crs);
+        assertNameAndIdentifierEqual("EPSG topocentric example B", 0, crs.getConversionFromBase());
+        CoordinateSystem cs = crs.getCoordinateSystem();
+        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
+        assertEquals("dimension", 3, cs.getDimension());
+        assertUnboundedAxisEquals("Topocentric East",   "U", AxisDirection.EAST,  Units.METRE, cs.getAxis(0));
+        assertUnboundedAxisEquals("Topocentric North",  "V", AxisDirection.NORTH, Units.METRE, cs.getAxis(1));
+        assertUnboundedAxisEquals("Topocentric height", "W", AxisDirection.UP,    Units.METRE, cs.getAxis(2));
+        /*
+         * The type of the coordinate system of the base CRS is not specified in the WKT.
+         * The parser should use the `AbstractProvider.sourceCSType` field for detecting
+         * that the expected type for “Geocentric/topocentric conversions” is Cartesian.
+         */
+        cs = crs.getBaseCRS().getCoordinateSystem();
+        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
+        assertEquals("dimension", 3, cs.getDimension());
+        assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_X, "X", AxisDirection.GEOCENTRIC_X, Units.METRE, cs.getAxis(0));
+        assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Y, "Y", AxisDirection.GEOCENTRIC_Y, Units.METRE, cs.getAxis(1));
+        assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Z, "Z", AxisDirection.GEOCENTRIC_Z, Units.METRE, cs.getAxis(2));
+    }
+
+    /**
      * Tests the parsing of an engineering CRS from a WKT 2 string.
      *
      * @throws ParseException if the parsing failed.
@@ -990,6 +1037,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("A building-centred CRS", 0, crs);
         assertNameAndIdentifierEqual("Building reference point", 0, crs.getDatum());
         final CoordinateSystem cs = crs.getCoordinateSystem();
+        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
         assertEquals("dimension", 3, cs.getDimension());
 
         // Axis names are arbitrary and could change in future SIS versions.

@@ -157,7 +157,9 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
+     * Projects the specified (λ,φ) coordinates (units in radians) and stores the result in {@code dstPts}.
+     * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @param  srcPts    source point coordinate, as (<var>longitude</var>, <var>latitude</var>) in radians.
      * @param  srcOff    the offset of the single coordinate to be converted in the source array.

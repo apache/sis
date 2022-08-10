@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -68,7 +68,7 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
      * Constructs a provider that can be resized.
      */
     PositionVector7Param2D(GeodeticOperation[] redimensioned) {
-        super(2, 2, PARAMETERS, redimensioned);
+        super(Type.SEVEN_PARAM, PARAMETERS, 2, 2, redimensioned);
     }
 
     /**
@@ -77,13 +77,5 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
     @Override
     Class<PositionVector7Param3D> variant3D() {
         return PositionVector7Param3D.class;
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return SEVEN_PARAM;
     }
 }

@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Mercator projections, and for Mercator-like projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -97,17 +97,7 @@ class AbstractMercator extends MapProjection {
      * For subclass constructors only.
      */
     AbstractMercator(final ParameterDescriptorGroup parameters) {
-        super(parameters);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code CylindricalProjection.class}
-     */
-    @Override
-    public final Class<CylindricalProjection> getOperationType() {
-        return CylindricalProjection.class;
+        super(CylindricalProjection.class, parameters);
     }
 
     /**

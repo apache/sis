@@ -21,6 +21,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -35,7 +37,7 @@ import org.apache.sis.measure.Units;
  * but subclasses will provide different operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -95,7 +97,7 @@ public class GeographicOffsets extends GeodeticOperation {
      * Constructs a provider with default parameters.
      */
     public GeographicOffsets() {
-        super(3, 3, PARAMETERS, new GeographicOffsets[4]);
+        this(3, 3, PARAMETERS, new GeographicOffsets[4]);
         redimensioned[0] = new GeographicOffsets2D(redimensioned);
         redimensioned[1] = new GeographicOffsets(2, 3, PARAMETERS, redimensioned);
         redimensioned[2] = new GeographicOffsets(3, 2, PARAMETERS, redimensioned);
@@ -106,9 +108,11 @@ public class GeographicOffsets extends GeodeticOperation {
      * For default constructors in this class and subclasses.
      */
     GeographicOffsets(int sourceDimensions, int targetDimensions,
-            ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
+                      ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, parameters, redimensioned);
+        super(Transformation.class, parameters,
+              EllipsoidalCS.class, sourceDimensions, false,
+              EllipsoidalCS.class, targetDimensions, false, redimensioned);
     }
 
     /**

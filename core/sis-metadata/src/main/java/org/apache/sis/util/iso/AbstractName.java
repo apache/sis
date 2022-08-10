@@ -277,14 +277,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * @param  name  the name after which to write a separator.
      * @return the separator to write after the given name.
      */
-    static String separator(final GenericName name) {
-        if (name != null) {
-            final NameSpace scope = name.scope();
-            if (scope instanceof DefaultNameSpace) {
-                return ((DefaultNameSpace) scope).headSeparator;
-            }
-        }
-        return DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
+    private static String headSeparator(final GenericName name) {
+        return (name != null) ? DefaultNameSpace.getSeparator(name.scope(), true)
+                              : DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
     }
 
     /**
@@ -310,7 +305,7 @@ public abstract class AbstractName implements GenericName, Serializable {
             final StringBuilder buffer = new StringBuilder();
             for (final LocalName name : getParsedNames()) {
                 if (insertSeparator) {
-                    buffer.append(separator(name));
+                    buffer.append(headSeparator(name));
                 }
                 insertSeparator = true;
                 buffer.append(name);
@@ -383,7 +378,7 @@ public abstract class AbstractName implements GenericName, Serializable {
             final StringBuilder buffer = new StringBuilder();
             for (final LocalName name : parsedNames) {
                 if (insertSeparator) {
-                    buffer.append(separator(name));
+                    buffer.append(headSeparator(name));
                 }
                 insertSeparator = true;
                 buffer.append(name.toInternationalString().toString(locale));

@@ -295,8 +295,9 @@ public class SatelliteTracking extends NormalizedProjection {
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
+     * Projects the specified (λ,φ) coordinates and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The units of measurement are implementation-specific (see super-class javadoc).
      * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * <p>The <var>y</var> axis lies along the central meridian λ₀, <var>y</var> increasing northerly, and

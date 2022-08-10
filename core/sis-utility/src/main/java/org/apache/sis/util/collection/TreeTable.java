@@ -242,9 +242,9 @@ public interface TreeTable {
          *
          * <ul>
          *   <li>The given object is also a {@code Node}.</li>
-         *   <li>The list returned by {@link TreeTable#getColumns()} is equals for both nodes.</li>
+         *   <li>The list returned by {@link TreeTable#getColumns()} is equal for both nodes.</li>
          *   <li>The objects returned by {@link #getValue(TableColumn)} are equal for each column.</li>
-         *   <li>The list returned by {@linkplain #getChildren() children} is equals for both node.</li>
+         *   <li>The list returned by {@linkplain #getChildren() children} is equal for both node.</li>
          * </ul>
          *
          * The node returned by {@link #getParent()} shall <strong>not</strong> be taken in account.

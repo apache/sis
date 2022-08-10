@@ -23,7 +23,7 @@ package org.apache.sis.util;
  * Some examples of emptiable classes are:
  *
  * <ul>
- *   <li>{@link org.apache.sis.measure.Range} when the lower bounds is equals to the upper bounds and at least
+ *   <li>{@link org.apache.sis.measure.Range} when the lower bounds is equal to the upper bounds and at least
  *       one bound is exclusive.</li>
  *   <li>{@link org.apache.sis.metadata.AbstractMetadata} when no property value has been given to the metadata,
  *       or all properties are themselves empty.</li>

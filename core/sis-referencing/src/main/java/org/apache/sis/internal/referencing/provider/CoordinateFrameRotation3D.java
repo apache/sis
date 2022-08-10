@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -72,14 +72,6 @@ public final class CoordinateFrameRotation3D extends GeocentricAffineBetweenGeog
      * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
     private CoordinateFrameRotation3D(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return FRAME_ROTATION;
+        super(Type.FRAME_ROTATION, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
     }
 }

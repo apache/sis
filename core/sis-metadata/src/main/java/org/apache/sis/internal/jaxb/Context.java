@@ -378,7 +378,7 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns {@code true} if the GML version is equals or newer than the specified version.
+     * Returns {@code true} if the GML version is equal or newer than the specified version.
      * If no GML version was specified, then this method returns {@code true}, i.e. newest
      * version is assumed.
      *
@@ -387,7 +387,7 @@ public final class Context extends MarshalContext {
      *
      * @param  context  the current context, or {@code null} if none.
      * @param  version  the version to compare to.
-     * @return {@code true} if the GML version is equals or newer than the specified version.
+     * @return {@code true} if the GML version is equal or newer than the specified version.
      *
      * @see #getVersion(String)
      */

@@ -48,13 +48,15 @@ import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 import ucar.nc2.constants.CF;
 
+import static org.apache.sis.internal.storage.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
+
 
 /**
  * A netCDF variable created by {@link Decoder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -851,6 +853,12 @@ public abstract class Variable extends Node {
         NumberRange<?> range = decoder.convention().validRange(this);
         if (range == null) {
             range = getRangeFallback();
+            if (ALLOW_LAST_RESORT_STATISTICS && range == null) try {
+                range = read().range();
+            } catch (DataStoreException | IOException e) {
+                // It should be a fatal error, but maybe the user wants only metadata.
+                error(Variable.class, "getValidRange", e, Errors.Keys.CanNotRead_1, getName());
+            }
         }
         return range;
     }

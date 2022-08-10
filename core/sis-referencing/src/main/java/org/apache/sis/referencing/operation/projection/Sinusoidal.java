@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.util.regex.Pattern;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
@@ -41,7 +42,7 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -52,16 +53,60 @@ public class Sinusoidal extends MeridianArcBased {
     private static final long serialVersionUID = 7908925241331303236L;
 
     /**
+     * Variants of Sinusoidal projection. Those variants modify the way the projections are constructed
+     * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
+     *
+     * <p>We do not provide such codes in public API because they duplicate the functionality of
+     * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
+     */
+    private enum Variant implements ProjectionVariant {
+        // Declaration order matter. Patterns are matched in that order.
+
+        /** The <cite>"Pseudo sinusoidal equal-area"</cite> projection. */
+        PSEUDO(".*\\bPseudo.*");
+
+        /** Name pattern for this variant. */
+        private final Pattern operationName;
+
+        /** Creates a new enumeration value.  */
+        private Variant(final String operationName) {
+            this.operationName = Pattern.compile(operationName, Pattern.CASE_INSENSITIVE);
+        }
+
+        /** The expected name pattern of an operation method for this variant. */
+        @Override public Pattern getOperationNamePattern() {
+            return operationName;
+        }
+
+        /** EPSG identifier of an operation method for this variant. */
+        @Override public String getIdentifier() {
+            return null;
+        }
+    }
+
+    /**
+     * The type of sinusoidal projection. Possible values are:
+     * <ul>
+     *   <li>{@link Variant#PSEUDO} if this projection is the "Pseudo sinusoidal equal-area" case.</li>
+     *   <li>{@code null} for the standard case.</li>
+     * </ul>
+     *
+     * Other cases may be added in the future.
+     */
+    private final Variant variant;
+
+    /**
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.8")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final Variant variant = variant(method, Variant.values(), null);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, null);
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -76,7 +121,17 @@ public class Sinusoidal extends MeridianArcBased {
      * @param parameters  the parameter values of the projection to create.
      */
     public Sinusoidal(final OperationMethod method, final Parameters parameters) {
-        super(initializer(method, parameters));
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private Sinusoidal(final Initializer initializer) {
+        super(initializer);
+        variant = (Variant) initializer.variant;
     }
 
     /**
@@ -84,6 +139,7 @@ public class Sinusoidal extends MeridianArcBased {
      */
     Sinusoidal(final Sinusoidal other) {
         super(other);
+        variant = other.variant;
     }
 
     /**
@@ -101,16 +157,16 @@ public class Sinusoidal extends MeridianArcBased {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Sinusoidal kernel = this;
-        if (eccentricity == 0 && getClass() == Sinusoidal.class) {
+        if ((eccentricity == 0 && getClass() == Sinusoidal.class) || variant == Variant.PSEUDO) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
-     * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
-     * if {@code derivate} is {@code true}.
+     * Projects the specified (λ,φ) coordinates (units in radians) and stores the result in {@code dstPts}.
+     * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.

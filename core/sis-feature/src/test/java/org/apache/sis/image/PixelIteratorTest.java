@@ -335,7 +335,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Verifies that actual iteration order is equals to the expected one.
+     * Verifies that actual iteration order is equal to the expected one.
      *
      * @param  singleTile  {@code true} if iteration occurs in a single tile, or {@code false} for the whole image.
      */

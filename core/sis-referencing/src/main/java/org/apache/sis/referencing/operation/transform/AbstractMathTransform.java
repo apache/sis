@@ -785,7 +785,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The default implementation performs the following steps:
      *
      * <ul>
-     *   <li>Ensure that the {@code point} dimension is equals to this math transform
+     *   <li>Ensure that the {@code point} dimension is equal to this math transform
      *       {@linkplain #getSourceDimensions() source dimensions}.</li>
      *   <li>Copy the coordinate in a temporary array and pass that array to the
      *       {@link #transform(double[], int, double[], int, boolean)} method,

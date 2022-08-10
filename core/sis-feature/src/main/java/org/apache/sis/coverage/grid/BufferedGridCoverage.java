@@ -232,11 +232,11 @@ public class BufferedGridCoverage extends GridCoverage {
      * Creates a new function for computing or interpolating sample values at given locations.
      *
      * <h4>Multi-threading</h4>
-     * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link GridEvaluator} instance should be created for each thread.
+     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Evaluator} instance should be created for each thread.
      */
     @Override
-    public GridEvaluator evaluator() {
+    public Evaluator evaluator() {
         return new CellAccessor(this);
     }
 
@@ -289,7 +289,7 @@ public class BufferedGridCoverage extends GridCoverage {
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
      */
-    private static class CellAccessor extends GridEvaluator {
+    private static final class CellAccessor extends DefaultEvaluator {
         /**
          * A copy of {@link BufferedGridCoverage#data} reference.
          */

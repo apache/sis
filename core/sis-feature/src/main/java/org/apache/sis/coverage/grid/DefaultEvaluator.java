@@ -31,8 +31,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -51,13 +49,17 @@ import org.apache.sis.util.logging.Logging;
 
 import static java.util.logging.Logger.getLogger;
 
+// Branch-dependent imports
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
+
 
 /**
- * Computes or interpolates values of sample dimensions at given positions.
+ * Default implementation of {@link GridCoverage.Evaluator} for interpolating values at given positions.
  * Values are computed by calls to {@link #apply(DirectPosition)} and are returned as {@code double[]}.
  *
  * <h2>Multi-threading</h2>
- * Evaluators are not thread-safe. An instance of {@code GridEvaluator} should be created
+ * Evaluators are not thread-safe. An instance of {@code DefaultEvaluator} should be created
  * for each thread that need to compute sample values.
  *
  * <h2>Limitations</h2>
@@ -72,7 +74,7 @@ import static java.util.logging.Logger.getLogger;
  * @since 1.1
  * @module
  */
-public class GridEvaluator implements GridCoverage.Evaluator {
+class DefaultEvaluator implements GridCoverage.Evaluator {
     /**
      * The coverage in which to evaluate sample values.
      */
@@ -156,22 +158,21 @@ public class GridEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
-     * {@link GridCoverage} subclasses to provide their own {@code GridEvaluator} implementations.
+     * {@link GridCoverage} subclasses to provide their own {@code DefaultEvaluator} implementations.
      * For using an evaluator, invoke {@link GridCoverage#evaluator()} instead.
      *
      * @param  coverage  the coverage for which to create an evaluator.
      *
      * @see GridCoverage#evaluator()
      */
-    protected GridEvaluator(final GridCoverage coverage) {
+    protected DefaultEvaluator(final GridCoverage coverage) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
         this.coverage = coverage;
     }
 
     /**
      * Returns the coverage from which this evaluator is fetching sample values.
-     * This is usually the coverage on which the {@link GridCoverage#evaluator()} method has been invoked,
-     * but not necessarily. Implementations are allowed to use a different coverage for efficiency.
+     * This is the coverage on which the {@link GridCoverage#evaluator()} method has been invoked.
      *
      * @return the source of sample values for this evaluator.
      */
@@ -183,7 +184,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     /**
      * Returns the default slice where to perform evaluation, or an empty map if unspecified.
      * Keys are dimensions from 0 inclusive to {@link GridGeometry#getDimension()} exclusive,
-     * and values are the grid coordinate of the slice in that dimension.
+     * and values are the grid coordinates of the slice in the dimension specified by the key.
      *
      * <p>This information allows to invoke {@link #apply(DirectPosition)} with for example two-dimensional points
      * even if the underlying coverage is three-dimensional. The missing coordinate values are replaced by the
@@ -193,6 +194,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.3
      */
+    @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
     public Map<Integer,Long> getDefaultSlice() {
         if (slice == null) {
@@ -204,7 +206,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
-     * A {@code null} argument restore the default value, which is to infer the slice from the coverage
+     * A {@code null} argument restores the default value, which is to infer the slice from the coverage
      * grid geometry.
      *
      * @param  slice  the default slice where to perform evaluation, or an empty map if none.
@@ -214,6 +216,8 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.3
      */
+    @Override
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public void setDefaultSlice(Map<Integer,Long> slice) {
         if (!Objects.equals(this.slice, slice)) {
             if (slice != null) {
@@ -242,6 +246,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.2
      */
+    @Override
     public boolean isWraparoundEnabled() {
         return (wraparoundAxes != 0);
     }
@@ -257,6 +262,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      *
      * @since 1.2
      */
+    @Override
     public void setWraparoundEnabled(final boolean allow) {
         wraparoundAxes = 0;
         if (allow) try {
@@ -409,28 +415,25 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     }
 
     /**
-     * Converts the specified geospatial position to grid coordinates. If the given position
-     * is associated to a non-null coordinate reference system (CRS) different than the
-     * {@linkplain #coverage} CRS, then this method automatically transforms that position to the
+     * Converts the specified geospatial position to grid coordinates.
+     * If the given position is associated to a non-null coordinate reference system (CRS) different than the
+     * {@linkplain #getCoverage() coverage} CRS, then this method automatically transforms that position to the
      * {@linkplain GridCoverage#getCoordinateReferenceSystem() coverage CRS} before to compute grid coordinates.
      *
      * <p>This method does not put any restriction on the grid coordinates result.
      * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}
      * if the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform allows it.</p>
      *
-     * <p>The grid coordinates are relative to the grid of the coverage returned by {@link #getCoverage()}.
-     * This is usually the coverage on which the {@link GridCoverage#evaluator()} method has been invoked,
-     * but not necessarily. Implementations are allowed to use a different coverage for efficiency.</p>
-     *
      * @param  point  geospatial coordinates (in arbitrary CRS) to transform to grid coordinates.
      * @return the grid coordinates for the given geospatial coordinates.
      * @throws IncompleteGridGeometryException if the {@linkplain GridCoverage#getGridGeometry() grid geometry}
      *         does not define a "grid to CRS" transform, or if the given point has a non-null CRS but the
-     *         {@linkplain #coverage} does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
+     *         coverage does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
      * @throws TransformException if the given coordinates can not be transformed.
      *
      * @see FractionalGridCoordinates#toPosition(MathTransform)
      */
+    @Override
     public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
         ArgumentChecks.ensureNonNull("point", point);
         try {
@@ -475,7 +478,6 @@ public class GridEvaluator implements GridCoverage.Evaluator {
          * If most cases, the work of this method ends here. The remaining code in this method
          * is for handling wraparound axes. If a coordinate is outside the coverage extent,
          * check if a wraparound on some axes would bring the coordinates inside the extent.
-         * The first step is to get the point closest to the extent.
          */
         long axes = wraparoundAxes;
         if (axes != 0) {
@@ -487,6 +489,12 @@ public class GridEvaluator implements GridCoverage.Evaluator {
                 final double c = coordinates[i];
                 double border;
                 if (c < (border = wraparoundExtent[j++]) || c > (border = wraparoundExtent[j])) {
+                    /*
+                     * Detected that the point is outside the grid extent along an axis where wraparound is possible.
+                     * The first time that we find such axis, expand the coordinates array for storing two points.
+                     * The two points will have the same coordinates, except on all axes where the point is outside.
+                     * On those axes, the coordinate of the first point is set to the closest border of the grid.
+                     */
                     if (outsideAxes == 0) {
                         final int n = coordinates.length;
                         coordinates = Arrays.copyOf(coordinates, 2*Math.max(n, gridToWraparound.getTargetDimensions()));
@@ -502,7 +510,10 @@ public class GridEvaluator implements GridCoverage.Evaluator {
             /*
              * If a coordinate was found outside the grid, transform to a CRS where we can apply shift.
              * It may be the same CRS than the coverage CRS or the source CRS, but not necessarily.
-             * Current version does not try to optimize by checking if `point` argument can be reused.
+             * For example if the CRS is projected, then we need to use a geographic intermediate CRS.
+             * In the common case where the source CRS is already geographic, the second point in the
+             * `coordinates` array after `transform(…)` will contain the same coordinates as `point`,
+             * but potentially with more dimensions.
              */
             if (outsideAxes != 0) {
                 gridToWraparound.transform(coordinates, 0, coordinates, 0, 2);
@@ -515,7 +526,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
                          * then round that shift to an integer amount of periods. Modify the original
                          * coordinate by applying that modified translation.
                          */
-                        final int oi = i + s;
+                        final int oi = i + s;                       // Index of original coordinates.
                         double shift = coordinates[i] - coordinates[oi];
                         shift = Math.copySign(Math.ceil(Math.abs(shift) / period), shift) * period;
                         coordinates[oi] += shift;
@@ -536,7 +547,23 @@ public class GridEvaluator implements GridCoverage.Evaluator {
                     }
                     outsideAxes &= ~(1L << i);
                 } while (outsideAxes != 0);
-                System.arraycopy(coordinates, 0, position.coordinates, 0, position.coordinates.length);
+                /*
+                 * Copy shifted coordinate values to the final `FractionalGridCoordinates`, except the NaN values.
+                 * NaN values may exist if the given `point` has less dimensions than the grid geometry, in which
+                 * case missing values have been replaced by `slice` values in the `target` array but not in the
+                 * `coordinates` array. We want to keep the `slice` values in the `target` array.
+                 *
+                 * TODO: to be strict, we should skip the copy only if `slice.containsKey(i)` is true, because it
+                 * could happen that a transform resulted in NaN values in other dimensions. But that check would
+                 * be costly, so we avoid it for now.
+                 */
+                final double[] target = position.coordinates;
+                for (int i = target.length; --i >= 0;) {
+                    final double value = coordinates[i];
+                    if (!Double.isNaN(value)) {
+                        target[i] = value;
+                    }
+                }
             }
         }
         return position;
@@ -627,6 +654,6 @@ public class GridEvaluator implements GridCoverage.Evaluator {
      * @param  exception  the exception that occurred.
      */
     private static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(getLogger(Modules.RASTER), GridEvaluator.class, caller, exception);
+        Logging.recoverableException(getLogger(Modules.RASTER), DefaultEvaluator.class, caller, exception);
     }
 }

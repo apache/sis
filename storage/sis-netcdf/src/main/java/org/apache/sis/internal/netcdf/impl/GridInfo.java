@@ -42,7 +42,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -120,16 +120,15 @@ final class GridInfo extends Grid {
         return domain.length;
     }
 
-    /**
-     * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
-     * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
-     * but caller should be robust to inconsistencies.
+    /*
+     * A `getTargetDimensions()` method would be like below, but is
+     * excluded because `getAxes(…).length` is the authoritative value:
+     *
+     *     @Override
+     *     public int getTargetDimensions() {
+     *         return range.length;
+     *     }
      */
-    @Override
-    public int getTargetDimensions() {
-        return range.length;
-    }
 
     /**
      * Returns the dimensions of this grid, in netCDF (reverse of "natural") order.

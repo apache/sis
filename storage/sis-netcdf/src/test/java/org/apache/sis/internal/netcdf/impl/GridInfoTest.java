@@ -34,7 +34,7 @@ import org.opengis.test.dataset.TestData;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -70,7 +70,7 @@ public final strictfp class GridInfoTest extends GridTest {
         final Grid[] copy = new Grid[geometries.length];
         int count = 0;
         for (final Grid geometry : geometries) {
-            if (geometry.getSourceDimensions() != 1 || geometry.getTargetDimensions() != 1) {
+            if (geometry.getSourceDimensions() != 1) {
                 copy[count++] = geometry;
             }
         }

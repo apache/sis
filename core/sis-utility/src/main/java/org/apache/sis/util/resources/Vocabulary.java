@@ -1155,6 +1155,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short SpatialRepresentation = 184;
 
         /**
+         * Sphere
+         */
+        public static final short Sphere = 271;
+
+        /**
          * Standard deviation
          */
         public static final short StandardDeviation = 185;

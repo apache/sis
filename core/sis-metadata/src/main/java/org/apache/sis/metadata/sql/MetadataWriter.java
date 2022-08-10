@@ -303,7 +303,7 @@ public class MetadataWriter extends MetadataSource {
                 }
                 /*
                  * We have found a column to add. Check if the column actually needs to be added to the parent table
-                 * (if such parent exists). In most case, the answer is "no" and 'addTo' is equals to 'table'.
+                 * (if such parent exists). In most case, the answer is "no" and 'addTo' is equal to 'table'.
                  */
                 String addTo = table;
                 if (helper.dialect.supportsTableInheritance) {

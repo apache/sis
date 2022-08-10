@@ -62,11 +62,22 @@ import org.opengis.feature.Feature;
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
 public final class StoreUtilities extends Static {
+    /**
+     * Whether to allow computation of statistics when no minimum/maximum values can be determined.
+     * This is a costly operation because it requires loading all data, so any code enabled by this
+     * flag should be executed in last resort only.
+     *
+     * <p>This flag can be set to {@code true} for exploring data that we can not visualize otherwise.
+     * But it should generally stay to {@code false}, because otherwise browsing resource metadata can
+     * become as costly (slow and high memory usage) as visualizing the full raster.</p>
+     */
+    public static final boolean ALLOW_LAST_RESORT_STATISTICS = false;
+
     /**
      * Logger for the {@value Modules#STORAGE} module. This is used when no more specific logger is available,
      * or if the more specific logger is not appropriate (e.g. because the log message come from base class).

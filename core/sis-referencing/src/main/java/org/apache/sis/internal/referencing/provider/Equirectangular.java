@@ -22,6 +22,8 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.CylindricalProjection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -61,7 +63,7 @@ import static java.lang.Math.*;
  *
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see PseudoPlateCarree
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
@@ -270,30 +272,13 @@ public final class Equirectangular extends AbstractProvider {
 
     /**
      * Constructs a new provider.
+     *
+     * @see MapProjection#MapProjection(Class, ParameterDescriptorGroup)
      */
     public Equirectangular() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code CylindricalProjection.class}
-     */
-    @Override
-    public Class<CylindricalProjection> getOperationType() {
-        return CylindricalProjection.class;
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that map projections require
-     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 1, meaning that the operation requires a source ellipsoid.
-     */
-    @Override
-    public final int getEllipsoidsMask() {
-        return 1;
+        super(CylindricalProjection.class, PARAMETERS,
+              EllipsoidalCS.class, 2, true,
+              CartesianCS.class,   2, false);
     }
 
     /**

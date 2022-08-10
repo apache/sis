@@ -22,6 +22,9 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.apache.sis.measure.Units.METRE;
+import static org.apache.sis.measure.Units.DEGREE;
+import static org.apache.sis.measure.Units.RADIAN;
 import static org.junit.Assert.*;
 
 
@@ -29,7 +32,7 @@ import static org.junit.Assert.*;
  * Tests the {@link ValueConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -90,5 +93,18 @@ public final strictfp class ValueConverterTest extends TestCase {
         assertEquals(StandardCharsets.UTF_16,     ValueConverter.DEFAULT.toCharset(null, "utf16"));
         assertEquals(StandardCharsets.ISO_8859_1, ValueConverter.DEFAULT.toCharset(null, "8859part1"));
         assertEquals(StandardCharsets.ISO_8859_1, ValueConverter.DEFAULT.toCharset(null, "ISO-8859-1"));
+    }
+
+    /**
+     * Tests {@link ValueConverter#toUnit(MarshalContext, String)}.
+     */
+    @Test
+    public void testToUnit() {
+        assertSame(METRE,  ValueConverter.DEFAULT.toUnit(null, "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertSame(DEGREE, ValueConverter.DEFAULT.toUnit(null, "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='deg'])"));
+        assertSame(RADIAN, ValueConverter.DEFAULT.toUnit(null, "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='rad'])"));
+        assertSame(METRE,  ValueConverter.DEFAULT.toUnit(null, "gmxUom.xml#m"));
+        assertSame(METRE,  ValueConverter.DEFAULT.toUnit(null, "EPSG:9001"));
+        assertSame(DEGREE, ValueConverter.DEFAULT.toUnit(null, "urn:ogc:def:uom:EPSG::9102"));
     }
 }

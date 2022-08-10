@@ -21,7 +21,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.util.FactoryException;
 
 
@@ -30,7 +29,7 @@ import org.opengis.util.FactoryException;
  * with only the ellipsoidal height which pass through.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  *
@@ -56,7 +55,9 @@ final class MapProjection3D extends AbstractProvider {
      * Constructs a three-dimensional map projection for the given two-dimensional projection.
      */
     MapProjection3D(final MapProjection proj) {
-        super(3, 3, proj.getParameters());
+        super(proj.getOperationType(), proj.getParameters(),
+              proj.sourceCSType, 3, proj.sourceOnEllipsoid,
+              proj.targetCSType, 3, proj.targetOnEllipsoid);
         redimensioned = proj;
     }
 
@@ -73,25 +74,6 @@ final class MapProjection3D extends AbstractProvider {
             return redimensioned;
         }
         return super.redimension(sourceDimensions, targetDimensions);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     */
-    @Override
-    public Class<? extends Projection> getOperationType() {
-        return redimensioned.getOperationType();
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that map projections require
-     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 1, meaning that the operation requires a source ellipsoid.
-     */
-    @Override
-    public int getEllipsoidsMask() {
-        return redimensioned.getEllipsoidsMask();
     }
 
     /**

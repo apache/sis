@@ -22,6 +22,8 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
@@ -32,7 +34,7 @@ import org.apache.sis.parameter.Parameters;
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see GeographicToGeocentric
  *
@@ -77,28 +79,9 @@ public final class GeocentricToGeographic extends GeodeticOperation {
      * @param redimensioned     providers for all combinations between 2D and 3D cases.
      */
     private GeocentricToGeographic(int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(3, targetDimensions, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return {@code Conversion.class}.
-     */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that Geographic/geocentric conversions
-     * require values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 2, meaning that the operation requires a target ellipsoid.
-     */
-    @Override
-    public int getEllipsoidsMask() {
-        return 2;
+        super(Conversion.class, PARAMETERS,
+              CartesianCS.class, 3, false,
+              EllipsoidalCS.class, targetDimensions, true, redimensioned);
     }
 
     /**

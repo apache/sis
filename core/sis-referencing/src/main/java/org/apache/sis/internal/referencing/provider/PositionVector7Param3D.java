@@ -24,7 +24,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * The provider for <cite>"Position Vector transformation (geog3D domain)"</cite> (EPSG:1037).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -70,14 +70,6 @@ public final class PositionVector7Param3D extends GeocentricAffineBetweenGeograp
      * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
     private PositionVector7Param3D(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return SEVEN_PARAM;
+        super(Type.SEVEN_PARAM, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
     }
 }

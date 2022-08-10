@@ -168,9 +168,9 @@ public class Polyconic extends MeridianArcBased {
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
-     * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
-     * if {@code derivate} is {@code true}.
+     * Projects the specified (λ,φ) coordinates (units in radians) and stores the result in {@code dstPts}.
+     * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.

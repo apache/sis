@@ -37,8 +37,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.FinalFieldSetter;
-import org.apache.sis.internal.util.XPointer;
-import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.MathFunctions;
@@ -60,23 +58,22 @@ import static java.util.logging.Logger.getLogger;
  * some symbols found in <cite>Well Known Text</cite> (WKT) definitions or in XML files.
  *
  * <h2>Parsing authority codes</h2>
- * As a special case, if a character sequence given to the {@link #parse(CharSequence)} method is of the
- * {@code "EPSG:####"} or {@code "urn:ogc:def:uom:EPSG::####"} form (ignoring case and whitespaces),
- * then {@code "####"} is parsed as an integer and forwarded to the {@link Units#valueOfEPSG(int)} method.
+ * If a character sequence given to the {@link #parse(CharSequence)} method is of the form {@code "EPSG:####"},
+ * {@code "urn:ogc:def:uom:EPSG::####"} or {@code "http://www.opengis.net/def/uom/EPSG/0/####"} (ignoring case
+ * and whitespaces around path separators), then {@code "####"} is parsed as an integer and forwarded to the
+ * {@link Units#valueOfEPSG(int)} method.
  *
- * <h2>NetCDF unit symbols</h2>
- * The attributes in netCDF files often merge the axis direction with the angular unit,
- * as in {@code "degrees_east"}, {@code "degrees_north"} or {@code "Degrees North"}.
- * This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
- * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"} do <strong>not</strong> have
- * opposite sign. It is caller responsibility to handle the direction of axes associated to netCDF units.
+ * <h2>Note on netCDF unit symbols</h2>
+ * In netCDF files, values of "unit" attribute are concatenations of an angular unit with an axis direction,
+ * as in {@code "degrees_east"} or {@code "degrees_north"}. This class ignores those suffixes and unconditionally
+ * returns {@link Units#DEGREE} for all axis directions.
  *
  * <h2>Multi-threading</h2>
  * {@code UnitFormat} is generally not thread-safe. If units need to be parsed or formatted in different threads,
  * each thread should have its own {@code UnitFormat} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see Units#valueOf(String)
  *
@@ -88,6 +85,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3064428584419360693L;
+
+    /**
+     * Whether the parsing of authority codes such as {@code "EPSG:9001"} is allowed.
+     */
+    private static final boolean PARSE_AUTHORITY_CODES = true;
 
     /**
      * The unit name for degrees (not necessarily angular), to be handled in a special way.
@@ -549,7 +551,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             nameToUnit = map;
         }
         /*
-         * The 'nameToUnit' map contains plural forms (declared in UnitAliases.properties),
+         * The `nameToUnit` map contains plural forms (declared in UnitAliases.properties),
          * but we make a special case for "degrees", "metres" and "meters" because they
          * appear in numerous places.
          */
@@ -677,7 +679,7 @@ appPow: if (unit == null) {
          * have been created by SystemUnit.transform(…), in which case "Choice 3" above would have been executed.
          */
         final Unit<?> unscaled = unit.getSystemUnit();
-        @SuppressWarnings("unchecked")          // Both 'unit' and 'unscaled' are 'Unit<Q>'.
+        @SuppressWarnings("unchecked")          // Both `unit` and `unscaled` are `Unit<Q>`.
         final double scale = AbstractConverter.scale(unit.getConverterTo((Unit) unscaled));
         if (Double.isNaN(scale)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1,
@@ -733,7 +735,7 @@ appPow: if (unit == null) {
          * Append the scale factor. If we can use a prefix (e.g. "km" instead of "1000⋅m"), we will do that.
          * Otherwise if the scale is a power of 10 and we are allowed to use Unicode symbols, we will write
          * for example 10⁵⋅m instead of 100000⋅m. If the scale is not a power of 10, or if we are requested
-         * to format UCUM symbol, then we fallback on the usual 'Double.toString(double)' representation.
+         * to format UCUM symbol, then we fallback on the usual `Double.toString(double)` representation.
          */
         if (scale != 1) {
             final char prefix = Prefixes.symbol(scale, prefixPower);
@@ -759,9 +761,9 @@ appPow: if (unit == null) {
                     toAppendTo.append(text, 0, length);
                 }
                 /*
-                 * The 'formatComponents' method appends division symbol only, no multiplication symbol.
+                 * The `formatComponents` method appends division symbol only, no multiplication symbol.
                  * If we have formatted a scale factor and there is at least one component to multiply,
-                 * we need to append the multiplication symbol ourselves. Note that 'formatComponents'
+                 * we need to append the multiplication symbol ourselves. Note that `formatComponents`
                  * put numerators before denominators, so we are sure that the first term after the
                  * multiplication symbol is a numerator.
                  */
@@ -806,7 +808,7 @@ appPow: if (unit == null) {
         /*
          * At this point, all numerators have been appended. Now append the denominators together.
          * For example pressure dimension is formatted as M∕(L⋅T²) no matter if 'M' was the first
-         * dimension in the given 'components' map or not.
+         * dimension in the given `components` map or not.
          */
         if (!deferred.isEmpty()) {
             toAppendTo.append(style.divide);
@@ -1112,22 +1114,14 @@ appPow: if (unit == null) {
          */
         int end   = symbols.length();
         int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), end);
-        int endOfURI = XPaths.endOfURI(symbols, start);
-        if (endOfURI >= 0) {
-            final String uom = symbols.subSequence(start, endOfURI).toString();
-            String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
-            /*
-             * DefinitionURI.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
-             * if no ':' character were found, in which case the string is assumed to be the code directly.
-             * This is the intended behavior for AuthorityFactory, but in the particular case of this method
-             * we want to try to parse as a xpointer before to give up.
-             */
-            if (code != null && code != uom) {
+        if (PARSE_AUTHORITY_CODES) {
+            final String code = DefinitionURI.codeOf("uom", Constants.EPSG, symbols);
+            if (code != null) {
                 NumberFormatException failure = null;
                 try {
                     final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(code));
                     if (unit != null) {
-                        position.setIndex(endOfURI);
+                        position.setIndex(end);
                         finish(position);
                         return unit;
                     }
@@ -1135,36 +1129,15 @@ appPow: if (unit == null) {
                     failure = e;
                 }
                 throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
-                        Constants.EPSG + Constants.DEFAULT_SEPARATOR + code),
-                        symbols, start + Math.max(0, uom.lastIndexOf(code))).initCause(failure);
-            }
-            /*
-             * Not an EPSG code. Maybe it is a URI like this example:
-             * http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
-             *
-             * If we find such 'uom' value, we could replace 'symbols' by that 'uom'. But it would cause a wrong
-             * error index to be reported in case of parsing failure. We will rather try to adjust the indices
-             * (and replace 'symbols' only in last resort).
-             */
-            code = XPointer.UOM.reference(uom);
-            if (code != null) {
-                final int base = start;
-                start = endOfURI - code.length();
-                do if (--start < base) {          // Should never happen (see above comment), but we are paranoiac.
-                    symbols = code;
-                    start = 0;
-                    break;
-                } while (!CharSequences.regionMatches(symbols, start, code));
-                end = start + code.length();
-            } else {
-                endOfURI = -1;
+                        Constants.EPSG + Constants.DEFAULT_SEPARATOR + code), symbols,
+                        start + Math.max(0, symbols.toString().lastIndexOf(code))).initCause(failure);
             }
         }
         /*
          * Split the unit around the multiplication and division operators and parse each term individually.
          * Note that exponentation need to be kept as part of a single unit symbol.
          *
-         * The 'start' variable is the index of the first character of the next unit term to parse.
+         * The `start` variable is the index of the first character of the next unit term to parse.
          */
         final Operation operation = new Operation(symbols);    // Enumeration value: NOOP, IMPLICIT, MULTIPLY, DIVIDE.
         Unit<?> unit = null;
@@ -1279,7 +1252,7 @@ scan:   for (int n; i < end; i += n) {
              * between the previously parsed units and the next unit to parse. A special case is IMPLICIT, which is
              * a multiplication without explicit × symbol after the parenthesis. The implicit multiplication can be
              * overridden by an explicit × or / symbol, which is what happened if we reach this point (tip: look in
-             * the above 'switch' statement all cases that end with 'break', not 'break scan' or 'continue').
+             * the above `switch` statement all cases that end with `break`, not `break scan` or `continue`).
              */
             if (operation.code != Operation.IMPLICIT) {
                 unit = operation.apply(unit, parseTerm(symbols, start, i, operation), start);
@@ -1328,13 +1301,13 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
             }
         }
         if (!(operation.finished = (component != null))) {
-            component = parseTerm(symbols, start, i, operation);            // May set 'operation.finished' flag.
+            component = parseTerm(symbols, start, i, operation);            // May set `operation.finished` flag.
         }
         if (operation.finished) {
             finish(position);           // For preventing interpretation of "degree minute" as "degree × minute".
         }
         unit = operation.apply(unit, component, start);
-        position.setIndex(endOfURI >= 0 ? endOfURI : i);
+        position.setIndex(i);
         return unit;
     }
 
@@ -1514,7 +1487,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                 try {
                                     power = new Fraction(uom.substring(i));
                                 } catch (NumberFormatException e) {
-                                    // Should never happen unless the number is larger than 'int' capacity.
+                                    // Should never happen unless the number is larger than `int` capacity.
                                     throw (ParserException) new ParserException(Errors.format(
                                             Errors.Keys.UnknownUnit_1, uom), symbols, lower+i).initCause(e);
                                 }

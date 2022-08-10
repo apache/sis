@@ -65,6 +65,6 @@ public final strictfp class SeismicBinGridMock extends ProviderMock {
      * Creates a new <cite>"Seismic bin grid transformation"</cite> operation method.
      */
     public SeismicBinGridMock() {
-        super(2, 2, PARAMETERS);
+        super(PARAMETERS, 2, 2);
     }
 }

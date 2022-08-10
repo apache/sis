@@ -731,7 +731,7 @@ public class Database<G> extends Syntax  {
      */
     protected final void log(final LogRecord record) {
         record.setSourceClassName(SQLStore.class.getName());
-        record.setSourceMethodName("components");                // Main public API trigging the database analysis.
+        record.setSourceMethodName("components");                // Main public API triggering the database analysis.
         record.setLoggerName(Modules.SQL);
         listeners.warning(record);
     }

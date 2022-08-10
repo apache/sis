@@ -257,8 +257,10 @@ public class ObliqueStereographic extends NormalizedProjection {
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
+     * Projects the specified (Λ,φ) coordinates and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The units of measurement are implementation-specific (see super-class javadoc).
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -327,7 +329,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double cosφ = cos(φ);
         final double dχ_dφ = (1/cosφ - cosφ*eccentricitySquared/(1 - ℯsinφ*ℯsinφ)) * 2*n*sqrt(w) / (w + 1);
         /*
-         * Above ∂χ/∂φ is equals to 1 in the spherical case.
+         * Above ∂χ/∂φ is equal to 1 in the spherical case.
          * Remaining formulas below are the same than in the spherical case.
          */
         final double B2 = B * B;
@@ -360,7 +362,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double j = atan2(x, g - y) - i;
         /*
          * The conformal longitude is  Λ = j + 2i + Λ₀.  In the particular case of stereographic projection,
-         * the geodetic longitude λ is equals to Λ. Furthermore in Apache SIS implementation, Λ₀ is added by
+         * the geodetic longitude λ is equal to Λ. Furthermore in Apache SIS implementation, Λ₀ is added by
          * the denormalization matrix and shall not be handled here. The only remaining part is λ = j + 2i.
          */
         final double λ = j + 2*i;

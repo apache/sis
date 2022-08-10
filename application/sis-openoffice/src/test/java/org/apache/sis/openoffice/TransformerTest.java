@@ -62,7 +62,7 @@ public final strictfp class TransformerTest extends TestCase {
     }
 
     /**
-     * Asserts that the transformation result is equals to the expected result.
+     * Asserts that the transformation result is equal to the expected result.
      */
     static void assertPointsEqual(final double[][] expected, final double[][] actual, final double tolerance) {
         assertNotSame("transform", expected, actual);

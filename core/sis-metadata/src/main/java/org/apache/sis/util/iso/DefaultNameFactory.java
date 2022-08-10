@@ -37,8 +37,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Strings;
 
-import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
-
 
 /**
  * A factory for creating {@link AbstractName} objects.
@@ -294,12 +292,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      */
     @Override
     public GenericName parseGenericName(final NameSpace scope, final CharSequence name) {
-        final String separator;
-        if (scope instanceof DefaultNameSpace) {
-            separator = ((DefaultNameSpace) scope).separator;
-        } else {
-            separator = DEFAULT_SEPARATOR_STRING;
-        }
+        final String separator = DefaultNameSpace.getSeparator(scope, false);
         final int s = separator.length();
         final List<String> names = new ArrayList<>();
         int lower = 0;

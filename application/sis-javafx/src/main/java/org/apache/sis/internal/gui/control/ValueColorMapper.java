@@ -126,7 +126,7 @@ public final class ValueColorMapper extends TabularWidget {
          * This method compares all properties, including visibility and color.
          *
          * @param  other  the other object to compare with this step.
-         * @return whether the other object is equals to this step.
+         * @return whether the other object is equal to this step.
          */
         @Override
         public boolean equals(final Object other) {

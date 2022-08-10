@@ -563,7 +563,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
                     if (endOfLine >= 0) {
                         if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
                             startLineToCompare = endOfLine + lineSeparator.length();
-                            continue;                   // Content is equals, do not set the `modified` flag.
+                            continue;                   // Content is equal, do not set the `modified` flag.
                         }
                     } else if (brackets == 0) {
                         break;              // Content finished at the same time, do not set the `modified` flag.

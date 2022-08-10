@@ -22,6 +22,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -36,7 +37,7 @@ import org.apache.sis.referencing.operation.projection.ZonedGridSystem;
  * The provider for <cite>"Transverse Mercator Zoned Grid System"</cite> projection (EPSG:9824).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -104,31 +105,13 @@ public final class ZonedTransverseMercator extends AbstractProvider {
 
     /**
      * Constructs a new provider.
+     * We do not classify this operation as a cylindrical projection
+     * because of the discontinuities between zones.
      */
     public ZonedTransverseMercator() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this projection. We do not classify this operation as a cylindrical projection
-     * for now because of the discontinuities between zones. But we may revisit that choice in any future SIS version.
-     *
-     * @return {@code Projection.class} or a sub-type.
-     */
-    @Override
-    public Class<? extends Projection> getOperationType() {
-        return Projection.class;
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that this projection requires
-     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 1, meaning that the operation requires a source ellipsoid.
-     */
-    @Override
-    public final int getEllipsoidsMask() {
-        return 1;
+        super(Projection.class, PARAMETERS,
+              EllipsoidalCS.class, 2, true,
+              EllipsoidalCS.class, 2, false);
     }
 
     /**

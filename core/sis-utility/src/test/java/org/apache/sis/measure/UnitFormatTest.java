@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -428,9 +428,9 @@ public final strictfp class UnitFormatTest extends TestCase {
     @Test
     public void testParseEPSG() {
         final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRE,             f.parse("EPSG:9001"));
         assertSame(Units.METRE,             f.parse("urn:ogc:def:uom:EPSG::9001"));
         assertSame(Units.METRES_PER_SECOND, f.parse("urn:ogc:def:uom:EPSG::1026"));
-        assertSame(Units.METRE, f.parse("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
     }
 
     /**

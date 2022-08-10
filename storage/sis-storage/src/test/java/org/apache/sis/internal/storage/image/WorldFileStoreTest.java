@@ -43,7 +43,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link WorldFileStore} and {@link WorldFileStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -126,7 +126,7 @@ public final strictfp class WorldFileStoreTest extends TestCase {
             try (WorldFileStore source = provider.open(testData())) {
                 assertFalse(source instanceof WritableStore);
                 final GridCoverageResource resource = getSingleton(source.components());
-                assertEquals("identifier", "1", resource.getIdentifier().get().toString());
+                assertEquals("identifier", "gradient:1", resource.getIdentifier().get().toString());
                 /*
                  * Above `resource` is the content of "gradient.png" file.
                  * Write the resource in a new file using a different format.

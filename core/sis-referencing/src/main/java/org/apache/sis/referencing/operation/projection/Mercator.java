@@ -381,7 +381,7 @@ public class Mercator extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         NormalizedProjection kernel = this;
-subst:  if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.class) {
+subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.class)) {
             if (variant == Variant.AUXILIARY && eccentricity != 0) {
                 final int type = context.getValue(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE);
                 if (type == AuthalicMercator.TYPE) {
@@ -408,8 +408,9 @@ subst:  if ((variant.spherical || eccentricity == 0) && getClass() == Mercator.c
     }
 
     /**
-     * Converts the specified coordinate (implementation-specific units) and stores the result in {@code dstPts}.
+     * Projects the specified coordinates (implementation-specific units) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.

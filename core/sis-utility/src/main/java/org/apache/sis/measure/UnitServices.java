@@ -46,7 +46,7 @@ import static java.util.logging.Logger.getLogger;
  * without direct dependency. A {@code UnitServices} instance can be obtained by call to {@link #current()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.2
  * @since   0.8
  * @module
  */

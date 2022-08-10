@@ -80,7 +80,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     abstract boolean contains(G outer, G inner);
 
     /**
-     * Asserts that the given envelope or rectangle is equals to the expected value.
+     * Asserts that the given envelope or rectangle is equal to the expected value.
      */
     abstract void assertGeometryEquals(G expected, G actual, double tolx, double toly);
 

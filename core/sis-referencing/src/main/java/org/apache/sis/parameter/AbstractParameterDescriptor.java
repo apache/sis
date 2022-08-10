@@ -382,7 +382,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
 
     /**
      * Invoked by JAXB for marshalling the {@link #minimumOccurs} value. Omit marshalling of this
-     * {@code gml:minimumOccurs} element if its value is equals to the default value, which is 1.
+     * {@code gml:minimumOccurs} element if its value is equal to the default value, which is 1.
      */
     @XmlElement(name = "minimumOccurs")
     @XmlSchemaType(name = "nonNegativeInteger")
@@ -393,7 +393,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
 
     /**
      * Invoked by JAXB for marshalling the {@link #maximumOccurs} value. Omit marshalling of this
-     * {@code gml:maximumOccurs} element if its value is equals to the default value, which is 1.
+     * {@code gml:maximumOccurs} element if its value is equal to the default value, which is 1.
      *
      * <p>This property should not be marshalled in {@link DefaultParameterDescriptor} objects (the GML schema
      * does not allow that). It should be marshalled only for {@link DefaultParameterDescriptorGroup} objects.

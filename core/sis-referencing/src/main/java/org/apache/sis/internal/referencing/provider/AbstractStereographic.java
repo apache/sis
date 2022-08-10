@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.PolarStereographic;
  * Base class of providers for all Stereographic projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -79,17 +79,7 @@ abstract class AbstractStereographic extends MapProjection {
      * For subclass constructors only.
      */
     AbstractStereographic(final ParameterDescriptorGroup parameters) {
-        super(parameters);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code PlanarProjection.class}
-     */
-    @Override
-    public final Class<PlanarProjection> getOperationType() {
-        return PlanarProjection.class;
+        super(PlanarProjection.class, parameters);
     }
 
     /**

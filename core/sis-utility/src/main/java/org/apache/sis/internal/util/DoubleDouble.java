@@ -88,7 +88,7 @@ public final class DoubleDouble extends Number {
 
     /**
      * When computing <var>a</var> - <var>b</var> as a double-double (106 significand bits) value,
-     * if the amount of non-zero significand bits is equals or lower than {@code ZERO_THRESHOLD+1},
+     * if the amount of non-zero significand bits is equal or lower than {@code ZERO_THRESHOLD+1},
      * consider the result as zero.
      */
     private static final int ZERO_THRESHOLD = 2;
@@ -382,9 +382,9 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Returns {@code true} if this {@code DoubleDouble} is equals to zero.
+     * Returns {@code true} if this {@code DoubleDouble} is equal to zero.
      *
-     * @return {@code true} if this {@code DoubleDouble} is equals to zero.
+     * @return {@code true} if this {@code DoubleDouble} is equal to zero.
      */
     public boolean isZero() {
         return value == 0 && error == 0;

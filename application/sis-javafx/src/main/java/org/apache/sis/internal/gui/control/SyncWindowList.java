@@ -36,8 +36,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
- * Provides a widget for listing all available windows and selecting the ones to follow
- * on gesture events (zoom, pans, <i>etc</i>).
+ * Provides a widget for listing all available windows and selecting the ones
+ * on which to replicate gesture events (zoom, pans, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -46,19 +46,19 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  */
 public final class SyncWindowList extends TabularWidget implements ListChangeListener<WindowHandler> {
     /**
-     * Window containing a {@link MapCanvas} to follow on gesture events.
-     * Gestures are followed only if {@link #linked} is {@code true}.
+     * Window containing a {@link MapCanvas} on which to replicate gesture events.
+     * Gestures are replicated only if {@link #transformEnabled} is {@code true}.
      */
     private static final class Link extends GestureFollower {
         /**
-         * The "foreigner" view for which to follow the gesture.
+         * The "foreigner" view on which to replicate the gestures.
          */
         public final WindowHandler view;
 
         /**
-         * Creates a new row for a window to follow.
+         * Creates a new row for a window on which to replicate gestures.
          *
-         * @param  view    the "foreigner" view for which to follow the gesture.
+         * @param  view    the "foreigner" view on which to replicate the gesture events.
          * @param  source  the canvas which is the source of zoom, pan or rotation events.
          * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
          */
@@ -68,23 +68,23 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
         }
 
         /**
-         * Converts the given list of handled to a list of table rows.
+         * Converts the given list of handlers to a list of table rows.
          *
          * @param  added   list of new items to put in the table.
          * @param  addTo   where to add the converted items.
          * @param  owner   item to exclude (because the referenced window is itself).
-         * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
+         * @param  source  the canvas for which to replicate the changes of zoom, pan or rotation.
          */
         static void wrap(final List<? extends WindowHandler> added, final List<Link> addTo,
-                         final WindowHandler owner, final MapCanvas target)
+                         final WindowHandler owner, final MapCanvas source)
         {
             final Link[] items = new Link[added.size()];
             int count = 0;
             try {
                 for (final WindowHandler view : added) {
                     if (view != owner) {
-                        final MapCanvas source = view.getCanvas().orElse(null);
-                        if (source != null) {
+                        final MapCanvas target = view.getCanvas().orElse(null);
+                        if (target != null) {
                             final Link item = new Link(view, source, target);;
                             items[count++] = item;          // Add now for disposing if an exception is thrown.
                             item.initialize();              // Invoked outside constructor for allowing disposal.
@@ -118,11 +118,11 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
     private final WindowHandler owner;
 
     /**
-     * The canvas on which to apply the change of zoom, pan or rotation.
+     * The canvas for which to replicate the changes of zoom, pan or rotation.
      * Needs to be fetched only when first needed (not at construction time)
      * for avoiding a stack overflow.
      */
-    private MapCanvas target;
+    private MapCanvas source;
 
     /**
      * The component to be returned by {@link #getView()}.
@@ -244,9 +244,9 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * Adds the given window handlers and items in {@link #table}.
      */
     private void addAll(final List<? extends WindowHandler> windows) {
-        if (target == null) {
-            target = owner.getCanvas().get();
+        if (source == null) {
+            source = owner.getCanvas().get();
         }
-        Link.wrap(windows, table.getItems(), owner, target);
+        Link.wrap(windows, table.getItems(), owner, source);
     }
 }

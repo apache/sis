@@ -16,14 +16,12 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -34,6 +32,9 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 
+// Branch-dependent imports
+import org.opengis.coverage.CannotEvaluateException;
+
 
 /**
  * Decorates a {@link GridCoverage} in order to convert sample values on the fly.
@@ -43,7 +44,7 @@ import org.apache.sis.image.ImageProcessor;
  *   <li>In calls to {@link #render(GridExtent)}, sample values are converted when first needed
  *       on a tile-by-tile basis then cached for future reuse. Note however that discarding the
  *       returned image may result in the lost of cached tiles.</li>
- *   <li>In calls to {@link GridEvaluator#apply(DirectPosition)}, the conversion is applied
+ *   <li>In calls to {@link GridCoverage.Evaluator#apply(DirectPosition)}, the conversion is applied
  *       on-the-fly each time in order to avoid the potentially costly tile computations.</li>
  * </ul>
  *
@@ -232,76 +233,33 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      * Creates a new function for computing or interpolating sample values at given locations.
      *
      * <h4>Multi-threading</h4>
-     * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link GridEvaluator} instance should be created for each thread.
+     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Evaluator} instance should be created for each thread.
      */
     @Override
-    public GridEvaluator evaluator() {
-        return new SampleConverter(this);
+    public Evaluator evaluator() {
+        return new SampleConverter();
     }
 
     /**
-     * Implementation of evaluator returned by {@link #evaluator()}.
+     * Implementation of evaluator returned by {@link ConvertedGridCoverage#evaluator()}.
+     * This evaluator delegates all operations to the {@link #source} coverage and converts
+     * the returned sample values.
      */
-    private static final class SampleConverter extends GridEvaluator {
-        /**
-         * The evaluator provided by source coverage.
-         */
-        private final GridEvaluator evaluator;
-
-        /**
-         * Conversions from {@linkplain #source source} values to converted values.
-         */
-        private final MathTransform1D[] converters;
-
+    private final class SampleConverter extends EvaluatorWrapper {
         /**
          * Creates a new evaluator for the enclosing coverage.
          */
-        SampleConverter(final ConvertedGridCoverage coverage) {
-            super(coverage);
-            evaluator  = coverage.source.evaluator();
-            converters = coverage.converters;
+        SampleConverter() {
+            super(source.evaluator());
         }
 
         /**
-         * Returns the default slice where to perform evaluation, or an empty map if unspecified.
+         * Returns the enclosing coverage.
          */
         @Override
-        public Map<Integer,Long> getDefaultSlice() {
-            return evaluator.getDefaultSlice();
-        }
-
-        /**
-         * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
-         */
-        @Override
-        public void setDefaultSlice(Map<Integer,Long> slice) {
-            evaluator.setDefaultSlice(slice);
-        }
-
-        /**
-         * Returns {@code true} if this evaluator is allowed to wraparound coordinates that are outside the grid.
-         */
-        @Override
-        public boolean isWraparoundEnabled() {
-            return evaluator.isWraparoundEnabled();
-        }
-
-        /**
-         * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the grid.
-         */
-        @Override
-        public void setWraparoundEnabled(final boolean allow) {
-            evaluator.setWraparoundEnabled(allow);
-        }
-
-        /**
-         * Forwards configuration to the wrapped evaluator.
-         */
-        @Override
-        public void setNullIfOutside(final boolean flag) {
-            evaluator.setNullIfOutside(flag);
-            super.setNullIfOutside(flag);
+        public GridCoverage getCoverage() {
+            return ConvertedGridCoverage.this;
         }
 
         /**
@@ -313,8 +271,9 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {
-            final double[] values = evaluator.apply(point);
+            final double[] values = super.apply(point);
             if (values != null) try {
+                final MathTransform1D[] converters = ConvertedGridCoverage.this.converters;
                 for (int i=0; i<converters.length; i++) {
                     values[i] = converters[i].transform(values[i]);
                 }
@@ -322,14 +281,6 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
             }
             return values;
-        }
-
-        /**
-         * Converts the specified geospatial position to grid coordinates.
-         */
-        @Override
-        public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
-            return evaluator.toGridCoordinates(point);
         }
     }
 

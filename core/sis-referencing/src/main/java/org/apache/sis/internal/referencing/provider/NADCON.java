@@ -32,6 +32,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
@@ -55,7 +56,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.8
+ * @version 1.3
  *
  * @see <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON on-line computation</a>
  *
@@ -125,17 +126,9 @@ public final class NADCON extends AbstractProvider {
      * Creates a new provider.
      */
     public NADCON() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
-     *
-     * @return fixed to {@link Transformation}.
-     */
-    @Override
-    public Class<Transformation> getOperationType() {
-        return Transformation.class;
+        super(Transformation.class, PARAMETERS,
+              EllipsoidalCS.class, 2, false,
+              EllipsoidalCS.class, 2, false);
     }
 
     /**

@@ -48,7 +48,7 @@ import org.apache.sis.util.ArraysExt;
  * if a variable dimensions should considered as bands instead of spatiotemporal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see Decoder#getGridCandidates()
  *
@@ -144,19 +144,16 @@ public abstract class Grid extends NamedElement {
      * This is the number of dimensions of the <em>grid</em>.
      * It should be equal to the size of {@link #getDimensions()} list.
      *
+     * <h4>Note on target dimensions</h4>
+     * A {@code getTargetDimensions()} method would return the number of dimensions of the
+     * <em>coordinate reference system</em>, which is the target of the <cite>"grid to CRS"</cite> conversion.
+     * However we do not provide that method because, while it should be equal to {@code getAxes(decoder).length},
+     * it sometime differs because {@link #getAxes(Decoder)} may exclude axis with zero dimensions.
+     * The latter method should be used as the authoritative one.
+     *
      * @return number of grid dimensions.
      */
     public abstract int getSourceDimensions();
-
-    /**
-     * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
-     * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the length of the array returned by {@link #getAxes(Decoder)},
-     * but caller should be robust to inconsistencies.
-     *
-     * @return number of CRS dimensions.
-     */
-    public abstract int getTargetDimensions();
 
     /**
      * Returns the dimensions of this grid, in netCDF (reverse of "natural") order. Each element in the list
@@ -182,10 +179,8 @@ public abstract class Grid extends NamedElement {
     protected abstract List<Dimension> getDimensions();
 
     /**
-     * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
-     * value returned by {@link #getTargetDimensions()}, but the caller should be robust to inconsistencies.
-     * The axis order is CRS order (reverse of netCDF order) for consistency with the common practice in the
-     * {@code "coordinates"} attribute.
+     * Returns the axes of the coordinate reference system. The axis order is CRS order (reverse of netCDF order)
+     * for consistency with the common practice in the {@code "coordinates"} attribute.
      *
      * <p>This method returns a direct reference to the cached array; do not modify.</p>
      *
@@ -397,9 +392,9 @@ public abstract class Grid extends NamedElement {
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
              * The order of dimensions in the transform is the reverse of the netCDF dimension order.
              */
-            int lastSrcDim = getSourceDimensions();                         // Will be decremented later, then kept final.
-            int lastTgtDim = getTargetDimensions();
-            final int[] deferred = new int[axes.length];                    // Indices of axes that have been deferred.
+            int lastSrcDim = getSourceDimensions();         // Will be decremented later, then kept final.
+            int lastTgtDim = axes.length;                   // Should be `getTargetDimensions()` but some axes may have been excluded.
+            final int[] deferred = new int[axes.length];    // Indices of axes that have been deferred.
             final List<MathTransform> nonLinears = new ArrayList<>(axes.length);
             final Matrix affine = Matrices.createZero(lastTgtDim + 1, lastSrcDim + 1);
             affine.setElement(lastTgtDim--, lastSrcDim--, 1);

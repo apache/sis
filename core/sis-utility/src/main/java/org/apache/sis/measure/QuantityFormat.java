@@ -23,7 +23,13 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import javax.measure.format.ParserException;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.FinalFieldSetter;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -86,7 +92,7 @@ public class QuantityFormat extends Format {
 
     /**
      * Formats the specified quantity in the given buffer.
-     * The given object shall be an {@link Quantity} instance.
+     * The given object shall be a {@link Quantity} instance.
      *
      * @param  quantity    the quantity to format.
      * @param  toAppendTo  where to format the quantity.
@@ -107,16 +113,22 @@ public class QuantityFormat extends Format {
      *
      * @param  source  the text, part of which should be parsed.
      * @param  pos     index and error index information.
-     * @return a unit parsed from the string, or {@code null} in case of error.
+     * @return a quantity parsed from the string, or {@code null} in case of error.
      */
     @Override
     public Object parseObject(final String source, final ParsePosition pos) {
+        final int start = pos.getIndex();
         final Number value = numberFormat.parse(source, pos);
         if (value != null) {
-            final Unit<?> unit = unitFormat.parse(source, pos);
-            if (unit != null) {
-                return Quantities.create(value.doubleValue(), unit);
+            try {
+                final Unit<?> unit = unitFormat.parse(source, pos);
+                if (unit != null) {
+                    return Quantities.create(value.doubleValue(), unit);
+                }
+            } catch (ParserException e) {
+                Logging.ignorableException(getLogger(Loggers.MEASURE), QuantityFormat.class, "parseObject", e);
             }
+            pos.setIndex(start);        // By `Format.parseObject(…)` method contract.
         }
         return null;
     }
@@ -130,16 +142,10 @@ public class QuantityFormat extends Format {
     public QuantityFormat clone() {
         final QuantityFormat clone = (QuantityFormat) super.clone();
         try {
-            java.lang.reflect.Field field;
-            field = QuantityFormat.class.getField("numberFormat");
-            field.setAccessible(true);
-            field.set(clone, numberFormat.clone());
-
-            field = QuantityFormat.class.getField("unitFormat");
-            field.setAccessible(true);
-            field.set(clone, unitFormat.clone());
+            FinalFieldSetter.set(QuantityFormat.class, "numberFormat", "unitFormat",
+                                 clone, numberFormat.clone(), unitFormat.clone());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw FinalFieldSetter.cloneFailure(e);
         }
         return clone;
     }

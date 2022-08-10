@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -29,11 +30,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 /**
  * The provider for <cite>"axis order reversal (2D)"</cite> (EPSG:9843).
- * This is a trivial operation that just swap the two axes.
+ * This is a trivial operation that just swap the two first axes.
  * The inverse operation is this operation itself.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -59,7 +60,7 @@ public class AxisOrderReversal extends AbstractProvider {
      * Constructs a provider with default parameters.
      */
     public AxisOrderReversal() {
-        super(2, 2, PARAMETERS);
+        this(PARAMETERS, 2);
     }
 
     /**
@@ -68,18 +69,10 @@ public class AxisOrderReversal extends AbstractProvider {
      * @param dimensions  number of dimensions in the source and target CRS of this operation method.
      * @param parameters  description of parameters expected by this operation.
      */
-    AxisOrderReversal(final int dimensions, final ParameterDescriptorGroup parameters) {
-        super(dimensions, dimensions, parameters);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return interface implemented by all coordinate operations that use this method.
-     */
-    @Override
-    public final Class<Conversion> getOperationType() {
-        return Conversion.class;
+    AxisOrderReversal(final ParameterDescriptorGroup parameters, final int dimensions) {
+        super(Conversion.class, parameters,
+              CoordinateSystem.class, dimensions, false,
+              CoordinateSystem.class, dimensions, false);
     }
 
     /**
