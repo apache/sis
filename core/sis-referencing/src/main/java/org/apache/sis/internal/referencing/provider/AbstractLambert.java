@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Lambert Conical projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -78,17 +78,7 @@ class AbstractLambert extends MapProjection {
      * For subclass constructors only.
      */
     AbstractLambert(final ParameterDescriptorGroup parameters) {
-        super(parameters);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code ConicProjection.class}
-     */
-    @Override
-    public final Class<ConicProjection> getOperationType() {
-        return ConicProjection.class;
+        super(ConicProjection.class, parameters);
     }
 
     /**

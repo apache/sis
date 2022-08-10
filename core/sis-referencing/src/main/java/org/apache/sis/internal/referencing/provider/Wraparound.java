@@ -21,6 +21,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -34,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.WraparoundTransform;
  * Provider for {@link WraparoundTransform} (SIS-specific operation).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -112,17 +113,9 @@ public final class Wraparound extends AbstractProvider {
      * Constructs a new provider.
      */
     public Wraparound() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return interface implemented by all coordinate operations that use this method.
-     */
-    @Override
-    public final Class<Conversion> getOperationType() {
-        return Conversion.class;
+        super(Conversion.class, PARAMETERS,
+              CoordinateSystem.class, 2, false,
+              CoordinateSystem.class, 2, false);
     }
 
     /**

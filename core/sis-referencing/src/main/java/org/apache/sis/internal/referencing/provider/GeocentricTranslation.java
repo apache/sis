@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -52,14 +52,6 @@ public final class GeocentricTranslation extends GeocentricAffine {
      * Constructs the provider.
      */
     public GeocentricTranslation() {
-        super(3, 3, PARAMETERS, null);
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return TRANSLATION;
+        super(Type.TRANSLATION, PARAMETERS, 3, 3, null);
     }
 }

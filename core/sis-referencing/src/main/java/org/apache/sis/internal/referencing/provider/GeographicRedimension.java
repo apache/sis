@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -34,7 +35,7 @@ import org.apache.sis.internal.util.Constants;
  * to {@link Geographic3Dto2D#redimension(int, int)} when the given number of dimensions are equal.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -49,30 +50,22 @@ class GeographicRedimension extends GeodeticOperation {
      * Constructs a math transform provider from a set of parameters.
      * This is for sub-class constructors only.
      */
-    GeographicRedimension(final int sourceDimensions,
+    GeographicRedimension(final ParameterDescriptorGroup parameters,
+                          final int sourceDimensions,
                           final int targetDimensions,
-                          final ParameterDescriptorGroup parameters,
                           final GeodeticOperation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, parameters, redimensioned);
+        super(Conversion.class, parameters,
+              CoordinateSystem.class, sourceDimensions, false,
+              CoordinateSystem.class, targetDimensions, false, redimensioned);
     }
 
     /**
      * Creates an identity operation of the given number of dimensions.
      */
     GeographicRedimension(final int dimension, final GeodeticOperation[] redimensioned) {
-        super(dimension, dimension, builder().setCodeSpace(Citations.SIS, Constants.SIS)
-                .addName("Identity " + dimension + 'D').createGroup(), redimensioned);
-    }
-
-    /**
-     * Returns the interface implemented by all coordinate operations that extends this class.
-     *
-     * @return default to {@link Conversion}.
-     */
-    @Override
-    public final Class<Conversion> getOperationType() {
-        return Conversion.class;
+        this(builder().setCodeSpace(Citations.SIS, Constants.SIS).addName("Identity " + dimension + 'D').createGroup(),
+             dimension, dimension, redimensioned);
     }
 
     /**

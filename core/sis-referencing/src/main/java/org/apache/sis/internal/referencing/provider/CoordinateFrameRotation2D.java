@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -66,7 +66,7 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
      * Constructs a provider that can be resized.
      */
     CoordinateFrameRotation2D(GeodeticOperation[] redimensioned) {
-        super(2, 2, PARAMETERS, redimensioned);
+        super(Type.FRAME_ROTATION, PARAMETERS, 2, 2, redimensioned);
     }
 
     /**
@@ -75,13 +75,5 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
     @Override
     Class<CoordinateFrameRotation3D> variant3D() {
         return CoordinateFrameRotation3D.class;
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return FRAME_ROTATION;
     }
 }

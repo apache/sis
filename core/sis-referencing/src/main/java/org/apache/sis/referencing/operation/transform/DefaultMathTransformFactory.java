@@ -1035,39 +1035,35 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * not a SIS implementation, use as a fallback whether ellipsoids are provided. This fallback
              * may be less reliable.
              */
-            int n;
+            final boolean sourceOnEllipsoid, targetOnEllipsoid;
             if (provider instanceof AbstractProvider) {
-                n = ((AbstractProvider) provider).getEllipsoidsMask();
+                final AbstractProvider p = (AbstractProvider) provider;
+                sourceOnEllipsoid = p.sourceOnEllipsoid;
+                targetOnEllipsoid = p.targetOnEllipsoid;
             } else {
-                n = 0;
-                if (getSourceEllipsoid() != null) n  = 1;
-                if (getTargetEllipsoid() != null) n |= 2;
+                sourceOnEllipsoid = getSourceEllipsoid() != null;
+                targetOnEllipsoid = getTargetEllipsoid() != null;
             }
             /*
              * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source ellipsoid,
              * in the target ellipsoid or in both ellipsoids.
              */
-            switch (n) {
-                case 0: return null;
-                case 1: return setEllipsoid(getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
-                case 2: return setEllipsoid(getTargetEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
-                case 3: {
-                    RuntimeException failure = null;
-                    if (sourceCS != null) try {
-                        ensureCompatibleParameters(true);
-                        final ParameterValue<?> p = parameters.parameter("dim");    // Really `parameters`, not `userParams`.
-                        if (p.getValue() == null) {
-                            p.setValue(sourceCS.getDimension());
-                        }
-                    } catch (IllegalArgumentException | IllegalStateException e) {
-                        failure = e;
-                    }
-                    failure = setEllipsoid(getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
-                    failure = setEllipsoid(getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false, failure);
-                    return failure;
+            if (!(sourceOnEllipsoid | targetOnEllipsoid)) return null;
+            if (!targetOnEllipsoid) return setEllipsoid(getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+            if (!sourceOnEllipsoid) return setEllipsoid(getTargetEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+            RuntimeException failure = null;
+            if (sourceCS != null) try {
+                ensureCompatibleParameters(true);
+                final ParameterValue<?> p = parameters.parameter("dim");    // Really `parameters`, not `userParams`.
+                if (p.getValue() == null) {
+                    p.setValue(sourceCS.getDimension());
                 }
-                default: throw new AssertionError(n);
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                failure = e;
             }
+            failure = setEllipsoid(getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
+            failure = setEllipsoid(getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false, failure);
+            return failure;
         }
     }
 

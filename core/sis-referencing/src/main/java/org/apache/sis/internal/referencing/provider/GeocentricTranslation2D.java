@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -65,7 +65,7 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
      * Constructs a provider that can be resized.
      */
     GeocentricTranslation2D(GeodeticOperation[] redimensioned) {
-        super(2, 2, PARAMETERS, redimensioned);
+        super(Type.TRANSLATION, PARAMETERS, 2, 2, redimensioned);
     }
 
     /**
@@ -74,13 +74,5 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
     @Override
     Class<GeocentricTranslation3D> variant3D() {
         return GeocentricTranslation3D.class;
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return TRANSLATION;
     }
 }

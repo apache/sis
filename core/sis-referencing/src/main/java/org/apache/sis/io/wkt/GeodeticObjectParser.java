@@ -74,10 +74,12 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
+import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
@@ -98,7 +100,7 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -463,15 +465,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     identifiers[n] = id;
                 }
                 properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifiers);
-                // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by 'toIdentifier(Object)'.
+                // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
             }
         }
         /*
          * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
          * but our parser accepts an arbitrary amount of some kinds of metadata. They can be recognized by the
-         * 'while' loop.
+         * `while` loop.
          *
-         * Most WKT do not contain any of those metadata, so we perform an 'isEmpty()' check as an optimization
+         * Most WKT do not contain any of those metadata, so we perform an `isEmpty()` check as an optimization
          * for those common cases.
          */
         if (!parent.isEmpty()) {
@@ -616,7 +618,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         /*
          * Consider the following element: UNIT[“kilometre”, 1000, ID[“EPSG”, “9036”]]
          *
-         *  - if the authority code (“9036”) refers to a unit incompatible with 'baseUnit' (“metre”), log a warning.
+         *  - if the authority code (“9036”) refers to a unit incompatible with `baseUnit` (“metre”), log a warning.
          *  - otherwise: 1) unconditionally replace the parsed unit (“km”) by the unit referenced by the authority code.
          *               2) if the new unit is not equivalent to the old one (i.e. different scale factor), log a warning.
          */
@@ -778,14 +780,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * two-dimensional Projected or three-dimensional Geocentric CRS.
                  */
                 case WKTKeywords.Cartesian: {
-                    if (!(datum instanceof GeodeticDatum)) {
+                    if (datum != null && !(datum instanceof GeodeticDatum)) {
                         throw parent.missingComponent(WKTKeywords.Axis);
                     }
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.LengthUnit);
                     }
                     if (is3D) {  // If dimension can not be 2, then CRS can not be Projected.
-                        return Legacy.standard(defaultUnit.asType(Length.class));
+                        return Legacy.standard(defaultUnit);
                     }
                     nx = AxisNames.EASTING;  x = "E";
                     ny = AxisNames.NORTHING; y = "N";
@@ -893,7 +895,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * Example: "Compound CS: East (km), North (km), Up (m)."
          */
         final String name;
-        { // For keeping the 'buffer' variable local to this block.
+        {   // For keeping the `buffer` variable local to this block.
             final StringBuilder buffer = new StringBuilder();
             if (type != null && !type.isEmpty()) {
                 final int c = type.codePointAt(0);
@@ -1074,7 +1076,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         /*
          * At this point we are done and ready to create the CoordinateSystemAxis. But there is one last element
          * specified by ISO 19162 but not in Apache SIS representation of axis: ORDER[n], which specify the axis
-         * ordering. If present we will store that value for processing by the 'parseCoordinateSystem(…)' method.
+         * ordering. If present we will store that value for processing by the `parseCoordinateSystem(…)` method.
          */
         final Element order = element.pullElement(OPTIONAL, WKTKeywords.Order);
         Integer n = null;
@@ -1116,9 +1118,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (n2 != null) {
                 return n1 - n2;
             }
-            return -1;                      // Axis 1 before Axis 2 since the latter has no 'ORDER' element.
+            return -1;                      // Axis 1 before Axis 2 since the latter has no `ORDER` element.
         } else if (n2 != null) {
-            return +1;                      // Axis 2 before Axis 1 since the latter has no 'ORDER' element.
+            return +1;                      // Axis 2 before Axis 1 since the latter has no `ORDER` element.
         }
         return 0;
     }
@@ -1243,16 +1245,28 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Returns the number of source dimensions of the given operation method, or 2 if unspecified.
+     * Parses a {@code "GeodeticCRS"} (WKT 2) element where the number of dimensions and coordinate system type
+     * are derived from the operation method. This is used for parsing the base CRS component of derived CRS.
+     *
+     * @param  mode       {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  method     the operation method, or {@code null} if unknown.
+     * @throws ParseException if the {@code "GeodeticCRS"} element can not be parsed.
      */
-    private static int getSourceDimensions(final OperationMethod method) {
+    private SingleCRS parseBaseCRS(final int mode, final Element parent, final OperationMethod method)
+            throws ParseException
+    {
+        int dimension = 2;
+        String csType = WKTKeywords.ellipsoidal;
         if (method != null) {
-            final Integer dimension = method.getSourceDimensions();
-            if (dimension != null) {
-                return dimension;
+            final Integer d = method.getSourceDimensions();
+            if (d != null) dimension = d;
+            if (method instanceof AbstractProvider) {
+                csType = WKTUtilities.toType(CoordinateSystem.class, ((AbstractProvider) method).sourceCSType);
+                if (csType == null) csType = WKTKeywords.ellipsoidal;
             }
         }
-        return 2;
+        return parseGeodeticCRS(mode, parent, dimension, csType);
     }
 
     /**
@@ -1271,7 +1285,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         /*
          * The map projection method may be specified by an EPSG identifier (or any other authority),
          * which is preferred to the method name since the latter is potentially ambiguous. However not
-         * all CoordinateOperationFactory may accept identifier as an argument to 'getOperationMethod'.
+         * all CoordinateOperationFactory may accept identifier as an argument to `getOperationMethod(…)`.
          * So if an identifier is present, we will try to use it but fallback on the name if we can
          * not use the identifier.
          */
@@ -1626,7 +1640,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  */
                 baseCRS = parseEngineeringCRS(OPTIONAL, element, true);
                 if (baseCRS == null) {
-                    baseCRS = parseGeodeticCRS(OPTIONAL, element, getSourceDimensions(fromBase.getMethod()), WKTKeywords.ellipsoidal);
+                    baseCRS = parseBaseCRS(OPTIONAL, element, fromBase.getMethod());
                     if (baseCRS == null) {
                         baseCRS = parseProjectedCRS(MANDATORY, element, true);
                     }
@@ -1746,15 +1760,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     angularUnit = csUnit.asType(Angle.class);
                 } else {
                     angularUnit = Units.DEGREE;
-                    if (csUnit == null) {
+                    if (csUnit == null && csType != null) {
                         /*
                          * A UNIT[…] is mandatory either in the CoordinateSystem as a whole (csUnit != null),
                          * or inside each AXIS[…] component (csUnit == null). An exception to this rule is when
                          * parsing a BaseGeodCRS inside a ProjectedCRS or DerivedCRS, in which case axes are omitted.
-                         * We recognize those cases by a non-null 'csType' given in argument to this method.
+                         * We recognize those cases by a non-null `csType` given in argument to this method.
                          */
-                        if (WKTKeywords.ellipsoidal.equals(csType)) {
-                            csUnit = Units.DEGREE;                        // For BaseGeodCRS in ProjectedCRS.
+                        switch (csType) {
+                            case WKTKeywords.ellipsoidal: csUnit = Units.DEGREE; break;     // For BaseGeodCRS in ProjectedCRS.
+                            case WKTKeywords.Cartesian:   csUnit = Units.METRE;  break;
                         }
                     }
                 }
@@ -1803,11 +1818,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              */
             fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, csUnit, angularUnit);
             if (fromBase != null) {
-                baseCRS = parseGeodeticCRS(MANDATORY, element, getSourceDimensions(fromBase.getMethod()), WKTKeywords.ellipsoidal);
+                baseCRS = parseBaseCRS(MANDATORY, element, fromBase.getMethod());
             }
         }
         /*
-         * At this point, we have either a non-null 'datum' or non-null 'baseCRS' + 'fromBase'.
+         * At this point, we have either a non-null `datum` or non-null `baseCRS` + `fromBase`.
          * The coordinate system is parsed in the same way for both cases, but the CRS is created differently.
          */
         final CRSFactory crsFactory = factories.getCRSFactory();
@@ -1824,7 +1839,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              *     "(snip) the prime meridian’s <irm longitude> value shall be given in the
              *     same angular units as those for the horizontal axes of the geographic CRS."
              *
-             * This is a little bit different than using the 'angularUnit' variable directly,
+             * This is a little bit different than using the `angularUnit` variable directly,
              * since the WKT could have overwritten the unit directly in the AXIS[…] element.
              * So we re-fetch the angular unit. Normally, we will get the same value (unless
              * the previous value was null).
@@ -1920,7 +1935,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
                 /*
-                 * The 'parseVerticalDatum(…)' method may have been unable to resolve the datum type.
+                 * The `parseVerticalDatum(…)` method may have been unable to resolve the datum type.
                  * But sometime the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
@@ -2129,7 +2144,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 isWKT1 ? null : WKTKeywords.Conversion, linearUnit, angularUnit);
         /*
          * Parse the coordinate system. The linear unit must be specified somewhere, either explicitly in each axis
-         * or for the whole CRS with the above 'csUnit' value. If 'csUnit' is null, then an exception will be thrown
+         * or for the whole CRS with the above `csUnit` value. If `csUnit` is null, then an exception will be thrown
          * with a message like "A LengthUnit component is missing in ProjectedCRS".
          *
          * However we make an exception if we are parsing a BaseProjCRS, since the coordinate system is unspecified

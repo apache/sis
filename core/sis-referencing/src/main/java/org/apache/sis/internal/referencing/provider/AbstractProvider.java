@@ -25,6 +25,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
@@ -57,7 +59,45 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2239172887926695217L;
+    private static final long serialVersionUID = 1165868434518724597L;
+
+    /**
+     * The base interface of the {@code CoordinateOperation} instances that use this method.
+     *
+     * @see #getOperationType()
+     */
+    private final Class<? extends SingleOperation> operationType;
+
+    /**
+     * The base interface of the coordinate system of source/target coordinates.
+     * This is used for resolving some ambiguities at WKT parsing time.
+     */
+    public final Class<? extends CoordinateSystem> sourceCSType, targetCSType;
+
+    /**
+     * Flags whether the source and/or target ellipsoid are concerned by this operation. Those flags are read by
+     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} for determining if this
+     * operation has {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"}, {@code "src_semi_minor"}
+     * parameters that may need to be filled with values inferred from the source or target
+     * {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum}.
+     * Meaning of return values:
+     *
+     * <ul>
+     *   <li>({@code false},{@code false}) if neither the source coordinate system or the destination
+     *       coordinate system is ellipsoidal. There are no parameters that need to be completed.</li>
+     *   <li>({@code true},{@code false}) if this operation has {@code "semi_major"} and {@code "semi_minor"}
+     *       parameters that need to be set to the axis lengths of the source ellipsoid.</li>
+     *   <li>({@code false},{@code true}) if this operation has {@code "semi_major"} and {@code "semi_minor"}
+     *       parameters that need to be set to the axis lengths of the target ellipsoid.</li>
+     *   <li>({@code true},{@code true}) if this operation has {@code "src_semi_major"}, {@code "src_semi_minor"},
+     *       {@code "tgt_semi_major"} and {@code "tgt_semi_minor"} parameters that need to be set to the axis lengths
+     *       of the source and target ellipsoids.</li>
+     * </ul>
+     *
+     * Those flags are only hints. If the information is not provided, {@code DefaultMathTransformFactory}
+     * will try to infer it from the type of user-specified source and target CRS.
+     */
+    public final boolean sourceOnEllipsoid, targetOnEllipsoid;
 
     /**
      * Constructs a math transform provider from the given properties and a set of parameters.
@@ -73,21 +113,36 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
                                final ParameterDescriptorGroup parameters)
     {
         super(properties, sourceDimension, targetDimension, parameters);
+        operationType = SingleOperation.class;
+        sourceCSType  = CoordinateSystem.class;
+        targetCSType  = CoordinateSystem.class;
+        sourceOnEllipsoid = false;
+        targetOnEllipsoid = false;
     }
 
     /**
      * Constructs a math transform provider from a set of parameters. The provider name and
      * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param parameters        description of parameters expected by this operation.
+     * @param operationType      base interface of the {@code CoordinateOperation} instances that use this method.
+     * @param parameters         description of parameters expected by this operation.
+     * @param sourceDimensions   number of dimensions in the source CRS of this operation method.
+     * @param sourceCSType       base interface of the coordinate system of source coordinates.
+     * @param sourceOnEllipsoid  whether the operation needs source ellipsoid axis lengths.
+     * @param targetDimensions   number of dimensions in the target CRS of this operation method.
+     * @param targetCSType       base interface of the coordinate system of target coordinates.
+     * @param targetOnEllipsoid  whether the operation needs target ellipsoid axis lengths.
      */
-    AbstractProvider(final int sourceDimensions,
-                     final int targetDimensions,
-                     final ParameterDescriptorGroup parameters)
+    AbstractProvider(final Class<? extends SingleOperation> operationType, final ParameterDescriptorGroup parameters,
+                     final Class<? extends CoordinateSystem> sourceCSType, final int sourceDimensions, final boolean sourceOnEllipsoid,
+                     final Class<? extends CoordinateSystem> targetCSType, final int targetDimensions, final boolean targetOnEllipsoid)
     {
         super(toMap(parameters), sourceDimensions, targetDimensions, parameters);
+        this.operationType     = operationType;
+        this.sourceCSType      = sourceCSType;
+        this.targetCSType      = targetCSType;
+        this.sourceOnEllipsoid = sourceOnEllipsoid;
+        this.targetOnEllipsoid = targetOnEllipsoid;
     }
 
     /**
@@ -212,32 +267,14 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     }
 
     /**
-     * Flags whether the source and/or target ellipsoid are concerned by this operation. This method is invoked by
-     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} for determining if this
-     * operation has {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"}, {@code "src_semi_minor"}
-     * parameters that may need to be filled with values inferred from the source or target
-     * {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum}.
-     * Meaning of return values:
+     * Returns the interface implemented by the coordinate operation.
+     * This method returns the type specified at construction time.
      *
-     * <ul>
-     *   <li>0 if neither the source coordinate system or the destination coordinate system is ellipsoidal.
-     *       There are no parameters that need to be completed.</li>
-     *   <li>1 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need
-     *       to be set to the axis lengths of the source ellipsoid.</li>
-     *   <li>2 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need
-     *       to be set to the axis lengths of the target ellipsoid.</li>
-     *   <li>3 if this operation has {@code "src_semi_major"}, {@code "src_semi_minor"}, {@code "tgt_semi_major"}
-     *       and {@code "tgt_semi_minor"} parameters that need to be set to the axis lengths of the source and
-     *       target ellipsoids.</li>
-     * </ul>
-     *
-     * This method is just a hint. If the information is not provided, {@code DefaultMathTransformFactory}
-     * will try to infer it from the type of user-specified source and target CRS.
-     *
-     * @return 0, 1, 2 or 3.
+     * @return interface implemented by all coordinate operations that use this method.
      */
-    public int getEllipsoidsMask() {
-        return 0;
+    @Override
+    public final Class<? extends SingleOperation> getOperationType() {
+        return operationType;
     }
 
     /**

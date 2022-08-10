@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.Projection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
@@ -107,7 +108,7 @@ public class Sinusoidal extends MapProjection {
      * Constructs a new provider.
      */
     public Sinusoidal() {
-        super(PARAMETERS);
+        this(PARAMETERS);
     }
 
     /**
@@ -116,7 +117,7 @@ public class Sinusoidal extends MapProjection {
      * @param  parameters  the set of parameters (never {@code null}).
      */
     Sinusoidal(final ParameterDescriptorGroup parameters) {
-        super(parameters);
+        super(Projection.class, parameters);
     }
 
     /**

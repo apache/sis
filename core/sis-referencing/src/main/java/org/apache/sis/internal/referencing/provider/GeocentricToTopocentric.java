@@ -23,6 +23,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -108,28 +109,9 @@ public final class GeocentricToTopocentric extends AbstractProvider {
      * Constructs a provider for the 3-dimensional case.
      */
     public GeocentricToTopocentric() {
-        super(3, 3, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return {@code Conversion.class}.
-     */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that Geocentric/topocentric conversions
-     * require values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 1, meaning that the operation requires a source ellipsoid.
-     */
-    @Override
-    public int getEllipsoidsMask() {
-        return 1;
+        super(Conversion.class, PARAMETERS,
+              CartesianCS.class, 3, true,
+              CartesianCS.class, 3, false);
     }
 
     /**

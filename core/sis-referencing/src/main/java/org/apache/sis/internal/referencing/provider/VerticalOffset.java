@@ -20,6 +20,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.cs.VerticalCS;
+import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
@@ -46,12 +48,12 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * <cite>"Vertical Offset"</cite> parameter value needs to be reversed if the target coordinate system axis is down.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.7
  * @module
  */
 @XmlTransient
-public final class VerticalOffset extends GeographicOffsets {
+public final class VerticalOffset extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -62,14 +64,16 @@ public final class VerticalOffset extends GeographicOffsets {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder().addIdentifier("9616").addName("Vertical Offset").createGroup(TZ);
+        PARAMETERS = builder().addIdentifier("9616").addName("Vertical Offset").createGroup(GeographicOffsets.TZ);
     }
 
     /**
      * Constructs a provider with default parameters.
      */
     public VerticalOffset() {
-        super(1, 1, PARAMETERS, null);
+        super(Transformation.class, PARAMETERS,
+              VerticalCS.class, 1, false,
+              VerticalCS.class, 1, false, null);
     }
 
     /**
@@ -86,7 +90,7 @@ public final class VerticalOffset extends GeographicOffsets {
             throws ParameterNotFoundException
     {
         final Parameters pv = Parameters.castOrWrap(values);
-        return MathTransforms.translation(pv.doubleValue(TZ));
+        return MathTransforms.translation(pv.doubleValue(GeographicOffsets.TZ));
     }
 
     /**

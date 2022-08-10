@@ -44,7 +44,7 @@ import org.apache.sis.parameter.Parameters;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -86,15 +86,7 @@ public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic 
      * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
     private AbridgedMolodensky(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * While Abridged Molodensky method is an approximation of geocentric translation, this is not exactly that.
-     */
-    @Override
-    int getType() {
-        return OTHER;
+        super(Type.MOLODENSKY, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
     }
 
     /**

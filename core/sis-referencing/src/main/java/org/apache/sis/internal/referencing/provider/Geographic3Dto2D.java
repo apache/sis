@@ -39,7 +39,7 @@ import org.apache.sis.internal.referencing.WKTUtilities;
  * The inverse operation arbitrarily sets the ellipsoidal height to zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see Geographic2Dto3D
  *
@@ -79,7 +79,7 @@ public final class Geographic3Dto2D extends GeographicRedimension {
      * Constructs a provider that can be resized.
      */
     private Geographic3Dto2D(GeodeticOperation[] redimensioned) {
-        super(3, 2, PARAMETERS, redimensioned);
+        super(PARAMETERS, 3, 2, redimensioned);
     }
 
     /**

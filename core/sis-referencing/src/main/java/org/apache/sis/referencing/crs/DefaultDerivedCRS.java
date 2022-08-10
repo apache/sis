@@ -48,6 +48,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.internal.jaxb.referencing.SC_SingleCRS;
 import org.apache.sis.internal.jaxb.referencing.SC_DerivedCRSType;
 import org.apache.sis.internal.jaxb.referencing.CS_CoordinateSystem;
@@ -58,7 +59,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.opengis.referencing.cs.ParametricCS;
@@ -97,7 +97,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
  *
@@ -609,9 +609,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Returns the WKT 2 keyword for a {@code DerivedCRS} having the given base CRS and derived coordinate system.
-     * Note that an ambiguity exists if the given base CRS is a {@code GeodeticCRS}, as the result could be either
-     * {@code "GeodeticCRS"} or {@code "EngineeringCRS"}. The current implementation returns the former if the
-     * derived coordinate system is of the same kind than the base coordinate system.
+     * If the type can not be identifier, then this method returns {@code null}.
      */
     static String getType(final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
         final Class<?> type;
@@ -626,14 +624,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         } else {
             return null;
         }
-        if (GeodeticCRS.class.isAssignableFrom(type)) {
-            if (Classes.implementSameInterfaces(derivedCS.getClass(),
-                    baseCRS.getCoordinateSystem().getClass(), CoordinateSystem.class))
-            {
-                return WKTKeywords.GeodeticCRS;
-            } else {
-                return WKTKeywords.EngineeringCRS;
-            }
+        if (GeodeticCRS.class.isAssignableFrom(type) && CoordinateSystems.isGeodetic(derivedCS)) {
+            return WKTKeywords.GeodeticCRS;
         } else if (VerticalCRS.class.isAssignableFrom(type) && derivedCS instanceof VerticalCS) {
             return WKTKeywords.VerticalCRS;
         } else if (TemporalCRS.class.isAssignableFrom(type) && derivedCS instanceof TimeCS) {

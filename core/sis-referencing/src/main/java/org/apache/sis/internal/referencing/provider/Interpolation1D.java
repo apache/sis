@@ -20,6 +20,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -34,7 +35,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * The provider for interpolation of one-dimensional coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -73,17 +74,9 @@ public final class Interpolation1D extends AbstractProvider {
      * Constructs a provider for the 1-dimensional case.
      */
     public Interpolation1D() {
-        super(1, 1, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return {@code Conversion.class}.
-     */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+        super(Conversion.class, PARAMETERS,
+              CoordinateSystem.class, 1, false,
+              CoordinateSystem.class, 1, false);
     }
 
     /**

@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.Constants;
  * This provider creates transforms from geographic to geocentric coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see GeocentricToGeographic
  *
@@ -116,17 +116,9 @@ public final class GeographicToGeocentric extends GeodeticOperation {
      * @param redimensioned     providers for all combinations between 2D and 3D cases.
      */
     private GeographicToGeocentric(int sourceDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, 3, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return {@code Conversion.class}.
-     */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+        super(Conversion.class, PARAMETERS,
+              EllipsoidalCS.class, sourceDimensions, true,
+              CartesianCS.class, 3, false, redimensioned);
     }
 
     /**
@@ -149,17 +141,6 @@ public final class GeographicToGeocentric extends GeodeticOperation {
             return GeocentricToGeographic.NAME;
         }
         return super.resolveAmbiguity(context);
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that Geographic/geocentric conversions
-     * require values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 1, meaning that the operation requires a source ellipsoid.
-     */
-    @Override
-    public int getEllipsoidsMask() {
-        return 1;
     }
 
     /**

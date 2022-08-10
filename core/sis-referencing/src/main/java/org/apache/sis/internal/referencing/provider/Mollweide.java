@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Projection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
@@ -30,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see <a href="https://mathworld.wolfram.com/MollweideProjection.html">Mathworld formulas</a>
  * @see <a href="http://geotiff.maptools.org/proj_list/mollweide.html">GeoTIFF parameters for Mollweide</a>
@@ -108,7 +109,7 @@ public final class Mollweide extends MapProjection {
      * Constructs a new provider.
      */
     public Mollweide() {
-        super(PARAMETERS);
+        super(Projection.class, PARAMETERS);
     }
 
     /**

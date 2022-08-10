@@ -20,6 +20,8 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -39,7 +41,7 @@ import org.apache.sis.parameter.Parameters;
  * @since   1.3
  * @module
  */
-public class GeographicToTopocentric extends AbstractProvider {
+public final class GeographicToTopocentric extends AbstractProvider {
     /**
      * For cross-version compatibility.
      */
@@ -94,30 +96,15 @@ public class GeographicToTopocentric extends AbstractProvider {
 
     /**
      * Constructs a provider for the 3-dimensional case.
+     * While this operation method looks like a map projection because it has a
+     * {@link org.opengis.referencing.crs.GeographicCRS} source and
+     * {@link org.opengis.referencing.cs.CartesianCS} destination,
+     * it is classified in the "Coordinate Operations other than Map Projections" category in EPSG guidance note.
      */
     public GeographicToTopocentric() {
-        super(3, 3, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return {@code Conversion.class}.
-     */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that Geographic/topocentric conversions
-     * require values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
-     *
-     * @return 1, meaning that the operation requires a source ellipsoid.
-     */
-    @Override
-    public int getEllipsoidsMask() {
-        return 1;
+        super(Conversion.class, PARAMETERS,
+              EllipsoidalCS.class, 3, true,
+              CartesianCS.class, 3, false);
     }
 
     /**
