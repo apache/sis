@@ -18,9 +18,9 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.opengis.referencing.operation.Transformation;
 
 
 /**
@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.Transformation;
  * variants are specific to Apache SIS and can be fetched only by a call to {@link #redimension(int, int)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -54,9 +54,13 @@ abstract class GeodeticOperation extends AbstractProvider {
      * <strong>Do not modify this array after construction</strong>, since the same array is shared by many
      * objects and there is no synchronization.
      *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
+     * <div class="note"><b>Historical note:</b>
+     * in ISO 19111:2007, the {@code OperationMethod} type had two attributes for the number of source
+     * and target dimensions. Those attributes have been removed in ISO 19111:2019 revision because not
+     * really needed in practice. However the EPSG database still distinguishes between 2D and 3D variants
+     * for some of those operations, so we still need the capability to switch operation methods according
+     * to the number of dimensions.</div>
      */
-    @Deprecated
     final GeodeticOperation[] redimensioned;
 
     /**
@@ -72,17 +76,24 @@ abstract class GeodeticOperation extends AbstractProvider {
      *   <li>3 → 3 dimensions in {@code redimensioned[3]}</li>
      * </ol>
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param parameters        description of parameters expected by this operation.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
+     * @param operationType      base interface of the {@code CoordinateOperation} instances that use this method.
+     * @param parameters         description of parameters expected by this operation.
+     * @param sourceDimensions   number of dimensions in the source CRS of this operation method.
+     * @param sourceCSType       base interface of the coordinate system of source coordinates.
+     * @param sourceOnEllipsoid  whether the operation needs source ellipsoid axis lengths.
+     * @param targetDimensions   number of dimensions in the target CRS of this operation method.
+     * @param targetCSType       base interface of the coordinate system of target coordinates.
+     * @param targetOnEllipsoid  whether the operation needs target ellipsoid axis lengths.
+     * @param redimensioned      providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeodeticOperation(final int sourceDimensions,
-                      final int targetDimensions,
-                      final ParameterDescriptorGroup parameters,
+    GeodeticOperation(Class<? extends SingleOperation> operationType, ParameterDescriptorGroup parameters,
+                      Class<? extends CoordinateSystem> sourceCSType, int sourceDimensions, boolean sourceOnEllipsoid,
+                      Class<? extends CoordinateSystem> targetCSType, int targetDimensions, boolean targetOnEllipsoid,
                       final GeodeticOperation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, parameters);
+        super(operationType, parameters,
+              sourceCSType, sourceDimensions, sourceOnEllipsoid,
+              targetCSType, targetDimensions, targetOnEllipsoid);
         this.redimensioned = redimensioned;
     }
 
@@ -118,16 +129,6 @@ abstract class GeodeticOperation extends AbstractProvider {
             }
         }
         return super.redimension(sourceDimensions, targetDimensions);
-    }
-
-    /**
-     * Returns the interface implemented by most coordinate operations that extends this class.
-     *
-     * @return default to {@link Transformation}.
-     */
-    @Override
-    public Class<? extends SingleOperation> getOperationType() {
-        return Transformation.class;
     }
 
     /**

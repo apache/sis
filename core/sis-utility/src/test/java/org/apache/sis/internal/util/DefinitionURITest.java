@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link DefinitionURI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -188,11 +188,12 @@ public final strictfp class DefinitionURITest extends TestCase {
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)} with URI like {@code "EPSG:4326"}.
+     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * with URI like {@code "EPSG:4326"}.
      */
     @Test
     public void testCodeOfEPSG() {
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "4326"));
+        assertNull  (        DefinitionURI.codeOf("crs", "EPSG", "4326"));
         assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "EPSG:4326"));
         assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "EPSG::4326"));
         assertNull  (        DefinitionURI.codeOf("crs", "EPSG", "EPSG:::4326"));
@@ -203,8 +204,8 @@ public final strictfp class DefinitionURITest extends TestCase {
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)} with URN like
-     * {@code "urn:ogc:def:crs:EPSG::4326"}.
+     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * with URN like {@code "urn:ogc:def:crs:EPSG::4326"}.
      */
     @Test
     public void testCodeOfURN() {
@@ -214,16 +215,26 @@ public final strictfp class DefinitionURITest extends TestCase {
         assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", "urn:x-ogc:def:crs:EPSG::4326"));
         assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:n-ogc:def:crs:EPSG::4326"));
         assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", " urn : ogc : def : crs : epsg : : 4326"));
-        assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:uom:EPSG:9102"));
-        assertEquals("9102",  DefinitionURI.codeOf("uom", "EPSG", "urn:ogc:def:uom:EPSG:9102"));
+        assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:uom:EPSG::9102"));
+        assertEquals("9102",  DefinitionURI.codeOf("uom", "EPSG", "urn:ogc:def:uom:EPSG::9102"));
         assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:crs:OGC:1.3:CRS84"));
         assertEquals("CRS84", DefinitionURI.codeOf("crs", "OGC",  "urn:ogc:def:crs:OGC:1.3:CRS84"));
         assertNull  (         DefinitionURI.codeOf("crs", "OGC",  "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"));
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)} with URL like
-     * {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}.
+     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * with URL like {@code "http://www.opengis.net/def/crs/EPSG/0/4326"}.
+     */
+    @Test
+    public void testCodeOfDefinitionServer() {
+        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "http://www.opengis.net/def/crs/EPSG/0/4326"));
+        assertEquals("9102", DefinitionURI.codeOf("uom", "EPSG", "http://www.opengis.net/def/uom/EPSG/0/9102"));
+    }
+
+    /**
+     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * with URL like {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}.
      */
     @Test
     public void testCodeOfGML() {

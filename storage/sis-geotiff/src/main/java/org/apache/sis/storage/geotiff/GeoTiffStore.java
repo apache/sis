@@ -56,7 +56,9 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -65,6 +67,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.8
  * @module
@@ -466,6 +469,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Returns the image at the given index. Images numbering starts at 1.
+     * If the given string has a scope (e.g. "filename:1"), then the scope
      *
      * @param  sequence  string representation of the image index, starting at 1.
      * @return image at the given index.
@@ -473,22 +477,50 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized GridCoverageResource findResource(final String sequence) throws DataStoreException {
-        Exception cause;
-        int index;
-        try {
-            index = Integer.parseInt(sequence);
-            cause = null;
-        } catch (NumberFormatException e) {
-            index = 0;
-            cause = e;
-        }
-        if (index > 0) try {
-            GridCoverageResource image = reader().getImage(index - 1);
+        ArgumentChecks.ensureNonNull("sequence", sequence);
+        final int index = parseImageIndex(sequence);
+        if (index >= 0) try {
+            final GridCoverageResource image = reader().getImage(index - 1);
             if (image != null) return image;
         } catch (IOException e) {
             throw errorIO(e);
         }
-        throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence), cause);
+        throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence));
+    }
+
+    /**
+     * Validates input resource name and extracts the image index it should contain.
+     * The resource name may be of the form "1" or "filename:1". We verify that:
+     *
+     * <ul>
+     *   <li>Input tip (last name part) is a parsable integer.</li>
+     *   <li>If input provides more than a tip, all test before the tip matches this datastore namespace
+     *       (should be the name of the Geotiff file without its extension).</li>
+     * </ul>
+     *
+     * @param  sequence  a string representing the name of a resource present in this datastore.
+     * @return the index of the Geotiff image matching the requested resource.
+     *         There is no verification that the returned index is valid.
+     * @throws IllegalNameException if the argument use an invalid namespace or if the tip is not an integer.
+     */
+    private int parseImageIndex(String sequence) throws IllegalNameException {
+        final NameSpace namespace = namespace();
+        final String separator = DefaultNameSpace.getSeparator(namespace, false);
+        final int s = sequence.lastIndexOf(separator);
+        if (s >= 0) {
+            if (namespace != null) {
+                final String expected = namespace.name().toString();
+                if (!sequence.substring(0, s).equals(expected)) {
+                    throw new IllegalNameException(errors().getString(Errors.Keys.UnexpectedNamespace_2, expected, sequence));
+                }
+            }
+            sequence = sequence.substring(s + separator.length());
+        }
+        try {
+            return Integer.parseInt(sequence);
+        } catch (NumberFormatException e) {
+            throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence), e);
+        }
     }
 
     /**

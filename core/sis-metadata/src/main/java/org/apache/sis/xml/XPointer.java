@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
-
+package org.apache.sis.xml;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
@@ -25,11 +24,11 @@ import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
  * Parsers of pointers in x-paths, adapted to the syntax found in GML documents.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
-public enum XPointer {
+enum XPointer {
     /**
      * Pointer to units of measurement. Example:
      * {@code "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"})
@@ -63,7 +62,7 @@ public enum XPointer {
     private int startOfFragment(final String url) {
         final int f = url.indexOf('#');
         if (f >= 1) {
-            final int i = url.lastIndexOf(XPaths.SEPARATOR, f-1) + 1;
+            final int i = url.lastIndexOf('/', f-1) + 1;
             for (final String document : documents) {
                 if (regionMatches(document, url, i, f)) {
                     return f + 1;
@@ -109,5 +108,48 @@ public enum XPointer {
             }
         }
         return null;
+    }
+
+    /**
+     * If the given character sequences seems to be a URI, returns the presumed end of that URN.
+     * Otherwise returns -1.
+     * Examples:
+     * <ul>
+     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
+     *   <li>{@code "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
+     * </ul>
+     *
+     * @param  uri     the URI candidate to verify.
+     * @param  offset  index of the first character to verify.
+     * @return index after the last character of the presumed URI, or -1 if this
+     *         method thinks that the given character sequence is not a URI.
+     */
+    public static int endOfURI(final CharSequence uri, int offset) {
+        boolean isURI = false;
+        int parenthesis = 0;
+        final int length = uri.length();
+scan:   while (offset < length) {
+            final int c = Character.codePointAt(uri, offset);
+            if (!Character.isLetterOrDigit(c)) {
+                switch (c) {
+                    case '#':                                           // Anchor in URL, presumed followed by xpointer.
+                    case ':': isURI |= (parenthesis == 0); break;       // Scheme or URN separator.
+                    case '_':
+                    case '-':                                           // Valid character in URL.
+                    case '%':                                           // Encoded character in URL.
+                    case '.':                                           // Domain name separator in URL.
+                    case '/': break;                                    // Path separator, but could also be division as in "m/s".
+                    case '(': parenthesis++; break;
+                    case ')': parenthesis--; break;
+                    default: {
+                        if (Character.isSpaceChar(c)) break;            // Not supposed to be valid, but be lenient.
+                        if (parenthesis != 0) break;
+                        break scan;                                     // Non-valid character outside parenthesis.
+                    }
+                }
+            }
+            offset += Character.charCount(c);
+        }
+        return isURI ? offset : -1;
     }
 }

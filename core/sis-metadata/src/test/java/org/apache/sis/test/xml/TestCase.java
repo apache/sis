@@ -196,7 +196,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Marshals the given object and ensure that the result is equals to the content of the given file.
+     * Marshals the given object and ensure that the result is equal to the content of the given file.
      *
      * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
      * @param  object             the object to marshal.
@@ -213,7 +213,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Marshals the given object and ensure that the result is equals to the content of the given file.
+     * Marshals the given object and ensure that the result is equal to the content of the given file.
      *
      * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
      * @param  object             the object to marshal.
@@ -231,7 +231,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Marshals the given object and ensure that the result is equals to the content of the given file,
+     * Marshals the given object and ensure that the result is equal to the content of the given file,
      * within a tolerance threshold for numerical values.
      *
      * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.

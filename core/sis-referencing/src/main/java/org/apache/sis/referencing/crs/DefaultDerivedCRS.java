@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
@@ -46,8 +45,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.internal.jaxb.referencing.SC_SingleCRS;
 import org.apache.sis.internal.jaxb.referencing.SC_DerivedCRSType;
 import org.apache.sis.internal.jaxb.referencing.CS_CoordinateSystem;
@@ -55,10 +54,8 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.apache.sis.referencing.cs.DefaultParametricCS;
@@ -96,7 +93,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
  *
@@ -566,18 +563,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return WKTKeywords.Fitted_CS;
         } else {
             formatter.newLine();
-            formatter.append(new FormattableObject() {     // Format inside a "DefiningConversion" element.
-                @Override protected String formatTo(final Formatter formatter) {
-                    WKTUtilities.appendName(conversion, formatter, null);
-                    formatter.newLine();
-                    formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
-                    formatter.newLine();
-                    for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
-                        WKTUtilities.append(param, formatter);
-                    }
-                    return WKTKeywords.DerivingConversion;
-                }
-            });
+            formatter.append(new ExplicitParameters(this, WKTKeywords.DerivingConversion));     // Format inside a "DefiningConversion" element.
             if (convention == Convention.INTERNAL || !isBaseCRS(formatter)) {
                 final CoordinateSystem cs = getCoordinateSystem();
                 formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
@@ -608,9 +594,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Returns the WKT 2 keyword for a {@code DerivedCRS} having the given base CRS and derived coordinate system.
-     * Note that an ambiguity exists if the given base CRS is a {@code GeodeticCRS}, as the result could be either
-     * {@code "GeodeticCRS"} or {@code "EngineeringCRS"}. The current implementation returns the former if the
-     * derived coordinate system is of the same kind than the base coordinate system.
+     * If the type can not be identifier, then this method returns {@code null}.
      */
     static String getType(final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
         final Class<?> type;
@@ -625,14 +609,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         } else {
             return null;
         }
-        if (GeodeticCRS.class.isAssignableFrom(type)) {
-            if (Classes.implementSameInterfaces(derivedCS.getClass(),
-                    baseCRS.getCoordinateSystem().getClass(), CoordinateSystem.class))
-            {
-                return WKTKeywords.GeodeticCRS;
-            } else {
-                return WKTKeywords.EngineeringCRS;
-            }
+        if (GeodeticCRS.class.isAssignableFrom(type) && CoordinateSystems.isGeodetic(derivedCS)) {
+            return WKTKeywords.GeodeticCRS;
         } else if (VerticalCRS.class.isAssignableFrom(type) && derivedCS instanceof VerticalCS) {
             return WKTKeywords.VerticalCRS;
         } else if (TemporalCRS.class.isAssignableFrom(type) && derivedCS instanceof TimeCS) {

@@ -570,7 +570,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *
      * <h4>Scientific notation</h4>
      * The {@link NumberFormat} created here does not use scientific notation. This is okay for many
-     * WKT formatting purpose since Earth ellipsoid axis lengths in metres are large enough for trigging
+     * WKT formatting purpose since Earth ellipsoid axis lengths in metres are large enough for triggering
      * scientific notation, while we want to express them as normal numbers with centimetre precision.
      * However this is problematic for small numbers like 1E-5. Callers may need to adjust the precision
      * depending on the kind of numbers (length or angle) to format.

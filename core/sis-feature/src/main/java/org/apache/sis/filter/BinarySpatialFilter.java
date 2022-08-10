@@ -31,7 +31,7 @@ import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
 /**
  * Spatial operations between two geometries.
  * The nature of the operation depends on {@link #getOperatorType()}.
- * A standard set of spatial operators is equals, disjoin, touches,
+ * A standard set of spatial operators is equal, disjoin, touches,
  * within, overlaps, crosses, intersects, contains, beyond and BBOX.
  *
  * @author  Johann Sorel (Geomatys)

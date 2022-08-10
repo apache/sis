@@ -449,6 +449,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                         if (range.getMinDouble() >= 0 && range.getMaxDouble() > axis.getMaximumValue()) {
                             referenceSystem = (SingleCRS) AbstractCRS.castOrCopy(referenceSystem)
                                                 .forConvention(AxesConvention.POSITIVE_RANGE);
+                            coordinateSystem = null;
                             break;
                         }
                     }

@@ -692,9 +692,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
 
     /**
-     * Converts a single coordinate in {@code srcPts} at the given offset and stores the result
-     * in {@code dstPts} at the given offset. In addition, opportunistically computes the
-     * transform derivative if requested.
+     * Projects a single coordinate tuple in {@code srcPts} at the given offset
+     * and stores the result in {@code dstPts} at the given offset.
+     * In addition, opportunistically computes the transform derivative if requested.
      *
      * <h4>Normalization</h4>
      * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and

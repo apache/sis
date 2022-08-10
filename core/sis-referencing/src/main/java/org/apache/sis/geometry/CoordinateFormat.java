@@ -178,7 +178,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Value of {@link #desiredPrecisions} which cause {@link #accuracyText} to be shown.
      * For each dimension identified by {@link #groundDimensions}, if the corresponding
-     * value in {@link #desiredPrecisions} is equals or smaller to this threshold, then
+     * value in {@link #desiredPrecisions} is equal or smaller to this threshold, then
      * {@link #accuracyText} will be appended after the formatted coordinates.
      *
      * @see #desiredPrecisions

@@ -92,6 +92,8 @@ public final strictfp class CRSTest extends TestCase {
 
     /**
      * Tests {@link CRS#forCode(String)} with EPSG codes.
+     * The codes tested by this method shall be in the list of EPSG codes
+     * for which Apache SIS has hard-coded fallbacks to use if no EPSG database is available.
      *
      * @throws FactoryException if a CRS can not be constructed.
      *

@@ -38,6 +38,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -84,7 +86,7 @@ import static java.lang.Float.parseFloat;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -242,7 +244,9 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                                   final ParameterDescriptorGroup parameters,
                                   final GeodeticOperation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, parameters, redimensioned);
+        super(Transformation.class, parameters,
+              EllipsoidalCS.class, sourceDimensions, true,
+              EllipsoidalCS.class, targetDimensions, true, redimensioned);
     }
 
     /**
@@ -266,18 +270,6 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     @Override
     public AbstractProvider inverse() {
         return null;
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that map projections require values for the
-     * {@code "src_semi_major"}, {@code "src_semi_minor"} , {@code "tgt_semi_major"} and
-     * {@code "tgt_semi_minor"} parameters.
-     *
-     * @return 3, meaning that the operation requires source and target ellipsoids.
-     */
-    @Override
-    public int getEllipsoidsMask() {
-        return 3;
     }
 
     /**
@@ -337,6 +329,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         final Path file = pg.getMandatoryValue(FILE);
         final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file,
                 isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
+
         MathTransform tr = createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
                                     Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()),   // GRS 1980 ellipsoid

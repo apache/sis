@@ -61,7 +61,7 @@ final strictfp class TransformResultComparator implements MathTransform {
     }
 
     /**
-     * Delegates to the tested implementation and verifies that the value is equals
+     * Delegates to the tested implementation and verifies that the value is equal
      * to the one provided by the reference implementation.
      */
     @Override
@@ -72,7 +72,7 @@ final strictfp class TransformResultComparator implements MathTransform {
     }
 
     /**
-     * Delegates to the tested implementation and verifies that the value is equals
+     * Delegates to the tested implementation and verifies that the value is equal
      * to the one provided by the reference implementation.
      */
     @Override
@@ -83,7 +83,7 @@ final strictfp class TransformResultComparator implements MathTransform {
     }
 
     /**
-     * Delegates to the tested implementation and verifies that the value is equals
+     * Delegates to the tested implementation and verifies that the value is equal
      * to the one provided by the reference implementation.
      */
     @Override
@@ -94,7 +94,7 @@ final strictfp class TransformResultComparator implements MathTransform {
     }
 
     /**
-     * Delegates to the tested implementation and verifies that the value is equals
+     * Delegates to the tested implementation and verifies that the value is equal
      * to the one provided by the reference implementation.
      */
     @Override
@@ -105,7 +105,7 @@ final strictfp class TransformResultComparator implements MathTransform {
     }
 
     /**
-     * Delegates to the tested implementation and verifies that the value is equals
+     * Delegates to the tested implementation and verifies that the value is equal
      * to the one provided by the reference implementation.
      */
     @Override

@@ -23,7 +23,7 @@
  * environment variable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.4
  * @module
  */

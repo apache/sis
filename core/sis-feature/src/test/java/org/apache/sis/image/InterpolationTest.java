@@ -169,7 +169,7 @@ public final strictfp class InterpolationTest extends TestCase {
     }
 
     /**
-     * Verifies that a pixel value interpolated in the source image is equals to the expected value.
+     * Verifies that a pixel value interpolated in the source image is equal to the expected value.
      *
      * @param x         <var>x</var> coordinate in the source image, from {@value #XMIN} to {@value #XUP} (exclusive).
      * @param y         <var>y</var> coordinate in the source image, from {@value #YMIN} to {@value #YUP} (exclusive).

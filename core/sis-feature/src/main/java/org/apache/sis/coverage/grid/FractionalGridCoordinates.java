@@ -49,7 +49,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *
- * @see GridEvaluator#toGridCoordinates(DirectPosition)
+ * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
  * @since 1.1
  * @module
@@ -70,7 +70,7 @@ public class FractionalGridCoordinates implements Serializable {
      *
      * <div class="note"><b>Note:</b>
      * {@code FractionalGridCoordinates} are usually not created directly, but are instead obtained
-     * indirectly for example from the {@linkplain GridEvaluator#toGridCoordinates(DirectPosition)
+     * indirectly for example from the {@linkplain GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
      * conversion of a geospatial position}.</div>
      *
      * @param  dimension  the number of dimensions.
@@ -343,7 +343,7 @@ public class FractionalGridCoordinates implements Serializable {
      * @return the grid coordinates converted using the given transform.
      * @throws TransformException if the grid coordinates can not be converted by {@code gridToCRS}.
      *
-     * @see GridEvaluator#toGridCoordinates(DirectPosition)
+     * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
      */
     public DirectPosition toPosition(final MathTransform gridToCRS) throws TransformException {
         return gridToCRS.transform(new Position(this), null);

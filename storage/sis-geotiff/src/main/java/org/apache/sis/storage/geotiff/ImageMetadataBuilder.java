@@ -39,7 +39,7 @@ import org.apache.sis.measure.Units;
  * discard them (which save a little bit of space) when no longer needed.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -170,7 +170,11 @@ final class ImageMetadataBuilder extends MetadataBuilder {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     void finish(final ImageFileDirectory image, final StoreListeners listeners) throws DataStoreException {
-        image.getIdentifier().ifPresent((id) -> addTitle(id.toString()));
+        image.getIdentifier().ifPresent((id) -> {
+            if (!image.getImageIndex().equals(id.tip().toString())) {
+                addTitle(id.toString());
+            }
+        });
         /*
          * Add information about the file format.
          *

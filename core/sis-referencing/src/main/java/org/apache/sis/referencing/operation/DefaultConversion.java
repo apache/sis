@@ -256,10 +256,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  */
                 final DefaultMathTransformFactory.Context context;
                 if (target instanceof GeneralDerivedCRS) {
-                    context = ReferencingUtilities.createTransformContext(source, null, null);
+                    context = ReferencingUtilities.createTransformContext(source, null);
                     context.setTarget(target.getCoordinateSystem());    // Using `target` would be unsafe here.
                 } else {
-                    context = ReferencingUtilities.createTransformContext(source, target, null);
+                    context = ReferencingUtilities.createTransformContext(source, target);
                 }
                 transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
                 parameters = Parameters.unmodifiable(context.getCompletedParameters());
@@ -431,7 +431,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Ensures that the {@code actual} CRS uses a datum which is equals, ignoring metadata,
+     * Ensures that the {@code actual} CRS uses a datum which is equal, ignoring metadata,
      * to the datum of the {@code expected} CRS.
      *
      * @param  param     the parameter name, used only in case of error.

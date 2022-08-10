@@ -40,7 +40,7 @@ import org.apache.sis.parameter.Parameters;
  * format the inverse ({@code "INVERSE_MT"}) of 3D to 2D transform.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see Geographic3Dto2D
  *
@@ -86,7 +86,7 @@ public final class Geographic2Dto3D extends GeographicRedimension {
      * Constructs a provider that can be resized.
      */
     Geographic2Dto3D(GeodeticOperation[] redimensioned) {
-        super(2, 3, PARAMETERS, redimensioned);
+        super(PARAMETERS, 2, 3, redimensioned);
     }
 
     /**

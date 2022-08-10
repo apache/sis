@@ -18,6 +18,8 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -33,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * <p>Subclasses may be promoted to a real operation if we implement their formulas in a future Apache SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -42,11 +44,13 @@ abstract strictfp class ProviderMock extends AbstractProvider {
     /**
      * Creates a new mock provider.
      */
-    ProviderMock(final int sourceDimension,
-                 final int targetDimension,
-                 final ParameterDescriptorGroup parameters)
+    ProviderMock(final ParameterDescriptorGroup parameters,
+                 final int sourceDimension,
+                 final int targetDimension)
     {
-        super(sourceDimension, targetDimension, parameters);
+        super(SingleOperation.class, parameters,
+              CoordinateSystem.class, sourceDimension, false,
+              CoordinateSystem.class, targetDimension, false);
     }
 
     /**

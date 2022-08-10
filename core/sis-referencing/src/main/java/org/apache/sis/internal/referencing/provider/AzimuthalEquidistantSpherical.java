@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * This projection method has no EPSG code.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/azimuthal_equidistant.html">GeoTIFF parameters for Azimuthal Equidistant</a>
  *
@@ -60,15 +60,7 @@ public final class AzimuthalEquidistantSpherical extends MapProjection {
      * Constructs a new provider.
      */
     public AzimuthalEquidistantSpherical() {
-        super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     */
-    @Override
-    public Class<PlanarProjection> getOperationType() {
-        return PlanarProjection.class;
+        super(PlanarProjection.class, PARAMETERS);
     }
 
     /**

@@ -165,7 +165,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate and stores the result in {@code dstPts}.
+     * Projects the specified (λ,φ) coordinates and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      * Note that the derivative does not contain zone prefix.
      *

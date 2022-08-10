@@ -355,7 +355,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  dimension  the dimension for which to obtain the coordinate value.
      * @return the starting coordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      *
      * @see #getLowerCorner()
@@ -370,7 +370,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  dimension  the dimension for which to obtain the coordinate value.
      * @return the starting coordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      *
      * @see #getUpperCorner()
@@ -387,7 +387,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  dimension  the dimension for which to obtain the coordinate value.
      * @return the minimal coordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -409,7 +409,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  dimension  the dimension for which to obtain the coordinate value.
      * @return the maximal coordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -424,7 +424,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Returns the median coordinate along the specified dimension.
-     * In most cases, the result is equals (minus rounding error) to:
+     * In most cases, the result is equal (minus rounding error) to:
      *
      * {@preformat java
      *     median = (getUpper(dimension) + getLower(dimension)) / 2;
@@ -442,7 +442,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  dimension  the dimension for which to obtain the coordinate value.
      * @return the median coordinate at the given dimension, or {@link Double#NaN}.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      *
      * @see #getMedian()
@@ -477,7 +477,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Returns the envelope span (typically width or height) along the specified dimension.
-     * In most cases, the result is equals (minus rounding error) to:
+     * In most cases, the result is equal (minus rounding error) to:
      *
      * {@preformat java
      *     span = getUpper(dimension) - getLower(dimension);
@@ -493,7 +493,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  dimension  the dimension for which to obtain the span.
      * @return the span (typically width or height) at the given dimension, or {@link Double#NaN}.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -873,7 +873,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                 /*
                  * If this envelope does not cross the anti-meridian but the given envelope does,
                  * then this envelope does not contain the given envelope except in the special
-                 * case where the envelope spanning is equals or greater than the axis spanning
+                 * case where the envelope spanning is equal or greater than the axis spanning
                  * (including the case where this envelope expands to infinities).
                  */
                 if ((lower0 == Double.NEGATIVE_INFINITY && upper0 == Double.POSITIVE_INFINITY) ||

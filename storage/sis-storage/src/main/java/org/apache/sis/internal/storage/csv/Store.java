@@ -309,7 +309,7 @@ final class Store extends URIDataStore implements FeatureSet {
     /**
      * Moves the reader position to beginning of file, if possible. We try to use the mark defined by the constructor,
      * which is set after the last header line. If the mark is no longer valid, then we have to create a new line reader.
-     * In this later case, we have to skip the header lines (i.e. we reproduce the constructor loop, but without parsing
+     * In this latter case, we have to skip the header lines (i.e. we reproduce the constructor loop, but without parsing
      * metadata).
      *
      * @todo Not yet used. This is planned for a future version of {@link #features(boolean)} method implementation.

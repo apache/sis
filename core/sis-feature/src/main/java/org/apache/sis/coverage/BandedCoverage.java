@@ -47,7 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * {@link Evaluator#apply(DirectPosition)} method signatures.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -112,7 +112,7 @@ public abstract class BandedCoverage {
      *
      * <h4>Multi-threading</h4>
      * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link Evaluator} instance should be created for each thread by invoking this
+     * a new {@code Evaluator} instance should be created for each thread by invoking this
      * method multiply times.
      *
      * @return a new function for computing or interpolating sample values.
@@ -129,7 +129,7 @@ public abstract class BandedCoverage {
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
+     * @version 1.3
      *
      * @see BandedCoverage#evaluator()
      *
@@ -139,6 +139,7 @@ public abstract class BandedCoverage {
     public interface Evaluator extends Function<DirectPosition, double[]> {
         /**
          * Returns the coverage from which this evaluator is computing sample values.
+         * This is the coverage on which the {@link BandedCoverage#evaluator()} method has been invoked.
          *
          * @return the source of sample values for this evaluator.
          */
@@ -162,6 +163,31 @@ public abstract class BandedCoverage {
          *               {@link PointOutsideCoverageException} for signaling that a point is outside coverage bounds.
          */
         void setNullIfOutside(boolean flag);
+
+        /**
+         * Returns {@code true} if this evaluator is allowed to wraparound coordinates that are outside the coverage.
+         * The initial value is {@code false}. This method may continue to return {@code false} even after a call to
+         * {@code setWraparoundEnabled(true)} if no wraparound axis has been found in the coverage CRS,
+         * or if automatic wraparound is not supported.
+         *
+         * @return {@code true} if this evaluator may wraparound coordinates that are outside the coverage.
+         *
+         * @since 1.3
+         */
+        boolean isWraparoundEnabled();
+
+        /**
+         * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the coverage.
+         * If {@code true} and if a given coordinate is outside the coverage, then this evaluator may translate
+         * the point along a wraparound axis in an attempt to get the point inside the coverage. For example if
+         * the coverage CRS has a longitude axis, then the evaluator may translate the longitude value by a
+         * multiple of 360°.
+         *
+         * @param  allow  whether to allow wraparound of coordinates that are outside the coverage.
+         *
+         * @since 1.3
+         */
+        void setWraparoundEnabled(final boolean allow);
 
         /**
          * Returns a sequence of double values for a given point in the coverage.

@@ -20,7 +20,6 @@ import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.MathFunctions;
 
@@ -40,7 +39,7 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.2
  * @since   0.3
  * @module
  */
@@ -280,7 +279,7 @@ class SexagesimalConverter extends AbstractConverter {
                     if (min >= 0) deg++; else deg--;
                     min = 0;
                 } else {
-                    throw illegalField(angle, min, Vocabulary.Keys.AngularMinutes);
+                    throw illegalField(angle, min, 0);
                 }
             }
             if (sec <= -60 || sec >= 60) {                              // Do not enter for NaN
@@ -288,7 +287,7 @@ class SexagesimalConverter extends AbstractConverter {
                     if (sec >= 0) min++; else min--;
                     sec = 0;
                 } else {
-                    throw illegalField(angle, sec, Vocabulary.Keys.AngularSeconds);
+                    throw illegalField(angle, sec, 1);
                 }
             }
             return (sec/60 + min)/60 + deg;
@@ -299,12 +298,11 @@ class SexagesimalConverter extends AbstractConverter {
          *
          * @param  value  the user-supplied angle value.
          * @param  field  the value of the illegal field.
-         * @param  unit   the vocabulary key for the field (minutes or seconds).
+         * @param  unit   0 for minutes or 1 for seconds.
          * @return the exception to throw.
          */
-        private static IllegalArgumentException illegalField(final double value, final double field, final short unit) {
-            return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentField_4,
-                    "angle", value, Vocabulary.format(unit), field));
+        private static IllegalArgumentException illegalField(final double value, final double field, final int unit) {
+            return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalSexagesimalField_3, value, unit, field));
         }
     }
 }

@@ -119,7 +119,7 @@ public final strictfp class TransliteratorTest extends TestCase {
 
     /**
      * Asserts that the name of the given axis, after replacement by a short name,
-     * is equals to the expected string.
+     * is equal to the expected string.
      */
     private static void assertShortAxisNameEquals(final String expected, final CoordinateSystemAxisMock axis) {
         assertEquals("name", expected, Transliterator.DEFAULT.toShortAxisName(axis,
@@ -128,7 +128,7 @@ public final strictfp class TransliteratorTest extends TestCase {
 
     /**
      * Asserts that the abbreviation of the given axis, after replacement of Greek letters,
-     * is equals to the expected string.
+     * is equal to the expected string.
      */
     private static void assertAbbreviationEquals(final String expected, final CoordinateSystemAxisMock axis) {
         assertEquals("abbreviation", expected, Transliterator.DEFAULT.toLatinAbbreviation(axis,

@@ -151,7 +151,7 @@ public class ConverterRegistry {
     }
 
     /**
-     * If {@code existing} or one of its children is equals to the given {@code converter},
+     * If {@code existing} or one of its children is equal to the given {@code converter},
      * returns it. Otherwise returns {@code null}.
      *
      * @param  <S>        the {@code converter} source class.

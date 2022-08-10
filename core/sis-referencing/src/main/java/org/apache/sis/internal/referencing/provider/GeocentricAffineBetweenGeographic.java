@@ -21,6 +21,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -38,8 +39,17 @@ import org.apache.sis.measure.Units;
  * operation methods performing <em>approximation</em> of above, even if they do not really pass
  * through geocentric coordinates.
  *
+ * <h2>Default values to verify</h2>
+ * This class assumes the following default values.
+ * Subclasses should verify if those default values are suitable from them:
+ *
+ * <ul>
+ *   <li>{@link #getOperationType()} defaults to {@link org.opengis.referencing.operation.Transformation}.</li>
+ *   <li>{@link #sourceCSType} and {@link #targetCSType} default to {@link EllipsoidalCS}.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -157,27 +167,18 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     /**
      * Constructs a provider with the specified parameters.
      *
+     * @param type              the operation type as an enumeration value.
+     * @param parameters        description of parameters expected by this operation.
      * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
      * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param parameters        description of parameters expected by this operation.
      * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeocentricAffineBetweenGeographic(int sourceDimensions, int targetDimensions,
-            ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
+    GeocentricAffineBetweenGeographic(Type operationType, ParameterDescriptorGroup parameters,
+            int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, parameters, redimensioned);
-    }
-
-    /**
-     * Notifies {@code DefaultMathTransformFactory} that this operation requires values for
-     * the {@code "src_semi_major"}, {@code "src_semi_minor"}, {@code "tgt_semi_major"} and
-     * {@code "tgt_semi_minor"} parameters.
-     *
-     * @return 3, meaning that the operation requires source and target ellipsoids.
-     */
-    @Override
-    public final int getEllipsoidsMask() {
-        return 3;
+        super(operationType, parameters,
+              EllipsoidalCS.class, sourceDimensions, true,
+              EllipsoidalCS.class, targetDimensions, true, redimensioned);
     }
 
     /**

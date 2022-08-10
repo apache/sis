@@ -245,7 +245,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     /**
      * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
-     * May be {@code null} if unknown. If non-null, the array length is equals to
+     * May be {@code null} if unknown. If non-null, the array length is equal to
      * the number of CRS dimensions.
      *
      * @see #RESOLUTION
@@ -559,7 +559,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Ensures that the given dimension is equals to the expected value. If not, throws an exception.
+     * Ensures that the given dimension is equal to the expected value. If not, throws an exception.
      * This method assumes that the argument name is {@code "extent"}.
      *
      * @param extent    the extent to validate, or {@code null} if none.
@@ -1563,7 +1563,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
      * @param  object  the object to compare with.
-     * @return {@code true} if the given object is equals to this grid geometry.
+     * @return {@code true} if the given object is equal to this grid geometry.
      */
     @Override
     public boolean equals(final Object object) {

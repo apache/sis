@@ -33,11 +33,11 @@ import static org.apache.sis.internal.referencing.provider.AbstractProvider.buil
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.3
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/orthographic.html">GeoTIFF parameters for Orthographic</a>
  *
- * @version 1.1
- * @since   1.1
+ * @since 1.1
  * @module
  */
 @XmlTransient
@@ -173,15 +173,7 @@ public class Orthographic extends MapProjection {
      * Constructs a new provider.
      */
     public Orthographic() {
-        super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     */
-    @Override
-    public Class<PlanarProjection> getOperationType() {
-        return PlanarProjection.class;
+        super(PlanarProjection.class, PARAMETERS);
     }
 
     /**

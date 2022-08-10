@@ -37,7 +37,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Linearizer;
 import org.apache.sis.internal.netcdf.Node;
-import org.apache.sis.internal.referencing.provider.Sinusoidal;
+import org.apache.sis.internal.referencing.provider.PseudoSinusoidal;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
@@ -117,7 +117,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_c/">SHIKISAI (GCOM-C) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -365,7 +365,7 @@ public final class GCOM_C extends Convention {
         final int s = name.indexOf(' ');
         final String code = (s >= 0) ? name.substring(0, s) : name;
         if (code.equalsIgnoreCase("EQA")) {
-            method = Sinusoidal.NAME;
+            method = PseudoSinusoidal.NAME;
         } else if (code.equalsIgnoreCase("EQR")) {
             method = Equirectangular.NAME;
         } else if (code.equalsIgnoreCase("PS")) {

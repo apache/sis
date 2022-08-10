@@ -229,7 +229,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
             }
             /*
              * At this point we have a non-empty valid sequence of coordinate values. If the first point of current
-             * vector is equals to the last point of previous vector, assume that they form a continuous polyline.
+             * vector is equal to the last point of previous vector, assume that they form a continuous polyline.
              */
             if (previous != null) {
                 if (equals(previous, v, dimension)) {
@@ -280,7 +280,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
     }
 
     /**
-     * Returns {@code true} if the last coordinate of the {@code previous} vector is equals to the first
+     * Returns {@code true} if the last coordinate of the {@code previous} vector is equal to the first
      * coordinate of the {@code next} vector.
      *
      * @param previous   the previous vector.

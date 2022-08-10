@@ -675,7 +675,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @param  index  the dimension for which to obtain the coordinate value.
      * @return the low coordinate value at the given dimension, inclusive.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      *
      * @see #getHigh(int)
@@ -691,7 +691,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @param  index  the dimension for which to obtain the coordinate value.
      * @return the high coordinate value at the given dimension, <strong>inclusive</strong>.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      *
      * @see #getLow(int)
@@ -709,7 +709,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @param  index  the dimension for which to obtain the size.
      * @return the number of integer grid coordinates along the given dimension.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      * @throws ArithmeticException if the size is too large for the {@code long} primitive type.
      *
@@ -796,7 +796,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @return grid coordinates for all dimensions where the grid has a size of 1.
      *
-     * @see GridEvaluator#setDefaultSlice(Map)
+     * @see GridCoverage.Evaluator#setDefaultSlice(Map)
      *
      * @since 1.3
      */
@@ -908,7 +908,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @param  index  the dimension for which to obtain the axis type.
      * @return the axis type at the given dimension. May be absent if the type is unknown.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      */
     public Optional<DimensionNameType> getAxisType(final int index) {

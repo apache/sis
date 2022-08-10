@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.filter;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -23,22 +23,22 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link XPointer}.
+ * Tests {@link XPath}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.3
+ * @since   0.4
  * @module
  */
-public final strictfp class XPointerTest extends TestCase {
+public final strictfp class XPathTest extends TestCase {
     /**
-     * Tests {@link XPointer#UOM}.
+     * Tests {@link XPath#split(String)}.
      */
     @Test
-    public void testUOM() {
-        assertEquals("m", XPointer.UOM.reference("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m"));
-        assertEquals("m", XPointer.UOM.reference("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertEquals("m", XPointer.UOM.reference("http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertEquals("m", XPointer.UOM.reference("../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+    public void testSplit() {
+        assertNull(XPath.split("property"));
+        assertArrayEquals(new String[] {"/property"},                    XPath.split("/property").toArray());
+        assertArrayEquals(new String[] {"Feature", "property", "child"}, XPath.split("Feature/property/child").toArray());
+        assertArrayEquals(new String[] {"/Feature", "property"},         XPath.split("/Feature/property").toArray());
     }
 }

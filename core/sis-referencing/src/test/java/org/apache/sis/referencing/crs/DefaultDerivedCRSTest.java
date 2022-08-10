@@ -44,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultDerivedCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -87,13 +87,13 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
         assertEquals("Using consistent arguments but one less dimension.", WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_2D));
 
-        assertEquals("Using different coordinate system type.", WKTKeywords.EngineeringCRS,
+        assertEquals("Using different coordinate system type.", WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.SPHERICAL));
 
-        assertEquals("Using different coordinate system type.", WKTKeywords.EngineeringCRS,
+        assertEquals("Using different coordinate system type.", WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.CARTESIAN_2D));
 
-        assertEquals("Using illegal coordinate system type.", WKTKeywords.EngineeringCRS,
+        assertNull("Using illegal coordinate system type.",
                 DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GRAVITY_RELATED_HEIGHT));
     }
 

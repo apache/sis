@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.Projection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
@@ -32,7 +33,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * This projection method has no associated EPSG code.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see <a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a>
  * @see <a href="http://geotiff.maptools.org/proj_list/sinusoidal.html">GeoTIFF parameters for Sinusoidal</a>
@@ -41,16 +42,11 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @module
  */
 @XmlTransient
-public final class Sinusoidal extends MapProjection {
+public class Sinusoidal extends MapProjection {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3236247448683326299L;
-
-    /**
-     * Name of this projection.
-     */
-    public static final String NAME = "Sinusoidal";
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of projection center</cite> (λ₀) parameter value.
@@ -97,10 +93,10 @@ public final class Sinusoidal extends MapProjection {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder().setCodeSpace(Citations.OGC, Constants.OGC)
-                .addName      (NAME)
+                .addName      ("Sinusoidal")
                 .addName      ("Sanson-Flamsteed")
                 .addName      (Citations.GEOTIFF,  "CT_Sinusoidal")
                 .addIdentifier(Citations.GEOTIFF,  "24")
@@ -112,7 +108,16 @@ public final class Sinusoidal extends MapProjection {
      * Constructs a new provider.
      */
     public Sinusoidal() {
-        super(PARAMETERS);
+        this(PARAMETERS);
+    }
+
+    /**
+     * Constructs a math transform provider from a set of parameters.
+     *
+     * @param  parameters  the set of parameters (never {@code null}).
+     */
+    Sinusoidal(final ParameterDescriptorGroup parameters) {
+        super(Projection.class, parameters);
     }
 
     /**

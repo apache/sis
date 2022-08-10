@@ -361,7 +361,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the result of setting the origin of the scale of measurement to the given value.
-     * For example {@code CELSIUS = KELVIN.shift(273.15)} returns a unit where 0°C is equals to 273.15 K.
+     * For example {@code CELSIUS = KELVIN.shift(273.15)} returns a unit where 0°C is equal to 273.15 K.
      *
      * @param  offset  the value to add when converting from the new unit to this unit.
      * @return this unit offset by the specified value, or {@code this} if the given offset is zero.
@@ -385,7 +385,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the result of multiplying this unit by the specified factor.
-     * For example {@code KILOMETRE = METRE.multiply(1000)} returns a unit where 1 km is equals to 1000 m.
+     * For example {@code KILOMETRE = METRE.multiply(1000)} returns a unit where 1 km is equal to 1000 m.
      *
      * @param  multiplier  the scale factor when converting from the new unit to this unit.
      * @return this unit scaled by the specified multiplier.
@@ -413,7 +413,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the result of dividing this unit by an approximate divisor.
-     * For example {@code GRAM = KILOGRAM.divide(1000)} returns a unit where 1 g is equals to 0.001 kg.
+     * For example {@code GRAM = KILOGRAM.divide(1000)} returns a unit where 1 g is equal to 0.001 kg.
      *
      * @param  divisor  the inverse of the scale factor when converting from the new unit to this unit.
      * @return this unit divided by the specified divisor.

@@ -384,7 +384,7 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
-     * Verifies that the length of the given array is equals to the tensor rank.
+     * Verifies that the length of the given array is equal to the tensor rank.
      */
     private void verifyRank(final int[] indices) {
         if (indices.length != rank()) {

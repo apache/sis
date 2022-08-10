@@ -147,7 +147,7 @@ public final strictfp class ExtentsTest extends TestCase {
     @Test
     public void testArea() {
         /*
-         * The nautical mile is equals to the length of 1 second of arc along a meridian or parallel at the equator.
+         * The nautical mile is equal to the length of 1 second of arc along a meridian or parallel at the equator.
          * Since we are using the GRS80 authalic sphere instead of WGS84, and since the nautical mile definition
          * itself is a little bit approximated, we add a slight empirical shift.
          */

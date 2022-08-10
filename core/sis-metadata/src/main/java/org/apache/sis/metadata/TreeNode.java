@@ -381,7 +381,7 @@ class TreeNode implements Node {
          * in order to get the singular form instead of the plural one, because we will create one
          * node for each element in a collection.
          *
-         * <p>If the property name is equals, ignoring case, to the simple type name, then this method
+         * <p>If the property name is equal, ignoring case, to the simple type name, then this method
          * returns the subtype name (<a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>).
          * For example instead of:</p>
          *

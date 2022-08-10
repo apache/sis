@@ -524,8 +524,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * set to Greenwich in EPSG dataset 8.9.  For safety, the SIS's DefaultGeodeticDatum class ensures that if the
          * prime meridians are not the same, then the target meridian must be Greenwich.
          */
-        final DefaultMathTransformFactory.Context context = ReferencingUtilities.createTransformContext(
-                sourceCRS, targetCRS, new MathTransformContext(sourceDatum, targetDatum));
+        final DefaultMathTransformFactory.Context context = new MathTransformContext(sourceDatum, targetDatum);
+        context.setSource(sourceCRS);
+        context.setTarget(targetCRS);
         /*
          * If both CRS use the same datum and the same prime meridian, then the coordinate operation is only axis
          * swapping, unit conversion or change of coordinate system type (Ellipsoidal ↔ Cartesian ↔ Spherical).

@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -35,7 +36,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * axis units are degrees.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see Equirectangular
  *
@@ -60,18 +61,9 @@ public final class PseudoPlateCarree extends AbstractProvider {
      * Constructs a new provider.
      */
     public PseudoPlateCarree() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type. We do not declare that operation method as a
-     * {@link org.opengis.referencing.operation.Projection} because axis units are degrees.
-     *
-     * @return interface implemented by all coordinate operations that use this method.
-     */
-    @Override
-    public final Class<Conversion> getOperationType() {
-        return Conversion.class;
+        super(Conversion.class, PARAMETERS,
+              EllipsoidalCS.class, 2, false,
+              EllipsoidalCS.class, 2, false);
     }
 
     /**

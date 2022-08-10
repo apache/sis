@@ -1493,6 +1493,12 @@ codes:  for (int i=0; i<codes.length; i++) {
                                  * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
                                  * need the `instanceof` check. However the EPSG dataset version 8.9 also uses the
                                  * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
+                                 *
+                                 * TODO: there is an ambiguity when the source CRS is geographic but the operation
+                                 * is nevertheless considered as not a map projection. It is the case of EPSG:5819.
+                                 * The problem is that the "COORD_REF_SYS_KIND" column still contains "Projected".
+                                 * We need to check if EPSG database 10+ has more specific information.
+                                 * See https://issues.apache.org/jira/browse/SIS-518
                                  */
                                 final Map<String, Object> properties = createProperties("Coordinate Reference System",
                                                                         name, epsg, area, scope, remarks, deprecated);

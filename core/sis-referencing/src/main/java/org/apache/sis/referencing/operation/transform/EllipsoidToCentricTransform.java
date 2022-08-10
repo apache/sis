@@ -90,14 +90,13 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * The units of measurements depend on how the {@code MathTransform} has been created:
  * <ul>
  *   <li>{@code EllipsoidToCentricTransform} instances created directly by the constructor expect (λ,φ) values
- *       in radians and compute (X,Y,Z) values in units of an ellipsoid having a semi-major axis length of 1.
- *       That constructor is reserved for subclasses only.</li>
+ *       in radians and compute (X,Y,Z) values in units of an ellipsoid having a semi-major axis length of 1.</li>
  *   <li>Transforms created by the {@link #createGeodeticConversion createGeodeticConversion(…)} static method expect
  *       (λ,φ) values in degrees and compute (X,Y,Z) values in units of the ellipsoid axes (usually metres).</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -265,7 +264,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean, TargetType)
      */
-    protected EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
+    public EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
             final Unit<Length> unit, final boolean withHeight, final TargetType target)
     {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);

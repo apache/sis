@@ -58,7 +58,7 @@ public strictfp class MetadataAssert extends Assert {
     }
 
     /**
-     * Asserts that the English title of the given citation is equals to the expected string.
+     * Asserts that the English title of the given citation is equal to the expected string.
      *
      * @param message   the message to report in case of test failure.
      * @param expected  the expected English title.
@@ -77,7 +77,7 @@ public strictfp class MetadataAssert extends Assert {
 
     /**
      * Asserts that the given citation has only one responsible party,
-     * and its English name is equals to the expected string.
+     * and its English name is equal to the expected string.
      *
      * @param message   the message to report in case of test failure.
      * @param expected  the expected English responsibly party name.

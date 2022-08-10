@@ -94,13 +94,12 @@ abstract class DerivedGridCoverage extends GridCoverage {
      * That function accepts {@link DirectPosition} in arbitrary Coordinate Reference System;
      * conversions to grid indices are applied by the {@linkplain #source} as needed.
      *
-     * @todo The results returned by {@link GridEvaluator#toGridCoordinates(DirectPosition)}
-     *       would need to be transformed. But it would force us to return a wrapper, which
-     *       would add an indirection level for all others (more important) method calls.
-     *       Is it worth to do so?
+     * @todo The results returned by {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)}
+     *       would need to be transformed. But it would force us to return a wrapper, which would add
+     *       an indirection level for all others (more important) method calls. Is it worth to do so?
      */
     @Override
-    public GridEvaluator evaluator() {
+    public Evaluator evaluator() {
         return source.evaluator();
     }
 

@@ -59,7 +59,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -170,15 +170,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * @param redimensioned     providers for all combinations between 2D and 3D cases.
      */
     private Molodensky(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * While Molodensky method is an approximation of geocentric translation, this is not exactly that.
-     */
-    @Override
-    int getType() {
-        return OTHER;
+        super(Type.MOLODENSKY, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
     }
 
     /**

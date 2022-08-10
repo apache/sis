@@ -664,7 +664,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * <ul>
      *   <li>If the range {@linkplain #isEmpty() is empty}, then this method returns "{@code {}}".</li>
-     *   <li>Otherwise if the minimal value is equals to the maximal value, then the string
+     *   <li>Otherwise if the minimal value is equal to the maximal value, then the string
      *       representation of that value is returned inside braces as in "{@code {value}}".</li>
      *   <li>Otherwise the string representation of the minimal and maximal values are formatted
      *       like "{@code [min … max]}" for inclusive endpoints or "{@code (min … max)}" for exclusive

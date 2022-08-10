@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -218,25 +218,23 @@ public final class Quantities extends Static {
         Number v2 = u2.getConverterTo(s2).convert(q2.getValue());
         if (Numbers.isNaN(v2)) return q1;
         if (Numbers.isNaN(v1)) return q2;
-        /*
-         * If the two types are instances of `Scalar`, we can compare them directly. Otherwise convert the
-         * `Scalar` type (if any) to `Double` type, then convert again to the widest type of both values.
-         */
-        final boolean t1 = (v1 instanceof Scalar);
-        final boolean t2 = (v2 instanceof Scalar);
-        if (!(t1 & t2)) {
-            if (t1) v1 = v1.doubleValue();
-            if (t2) v2 = v2.doubleValue();
-            final Class<? extends Number> type = Numbers.widestClass(v1, v2);
-            v1 = Numbers.cast(v1, type);
-            v2 = Numbers.cast(v2, type);
-        }
-        /*
-         * Both v1 and v2 are instance of `Comparable<?>` because `Numbers.widestClass(…)`
-         * accepts only known number types such as `Integer`, `Float`, `BigDecimal`, etc.
-         */
-        @SuppressWarnings("unchecked")
-        final int c = ((Comparable) v1).compareTo((Comparable) v2);
+        final int c = compare(v1, v2);
         return (max ? c >= 0 : c <= 0) ? q1 : q2;
+    }
+
+    /**
+     * Compares the two given number, without casting to {@code double} if we can avoid that cast.
+     * The intent is to avoid loosing precision for example by casting a {@code BigDecimal}.
+     */
+    @SuppressWarnings("unchecked")
+    private static int compare(final Number v1, final Number v2) {
+        if (v1 instanceof Comparable<?>) {
+            if (v1.getClass().isInstance(v2)) {
+                return ((Comparable) v1).compareTo(v2);
+            } else if (v2 instanceof Comparable<?> && v2.getClass().isInstance(v1)) {
+                return -((Comparable) v2).compareTo(v1);
+            }
+        }
+        return Double.compare(v1.doubleValue(), v2.doubleValue());
     }
 }

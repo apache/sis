@@ -133,7 +133,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     }
 
     /**
-     * Asserts that the tip of the unique alias of the given object is equals to the expected value.
+     * Asserts that the tip of the unique alias of the given object is equal to the expected value.
      * As a special case if the expected value is null, then this method verifies that the given object has no alias.
      *
      * @param expected  the expected alias, or {@code null} if we expect no alias.

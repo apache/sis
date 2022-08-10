@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * Tests {@link Providers} and some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -72,6 +72,8 @@ public final strictfp class ProvidersTest extends TestCase {
             GeocentricTranslation3D.class,
             GeographicToGeocentric.class,
             GeocentricToGeographic.class,
+            GeocentricToTopocentric.class,
+            GeographicToTopocentric.class,
             Geographic3Dto2D.class,
             Geographic2Dto3D.class,
             Molodensky.class,
@@ -115,6 +117,7 @@ public final strictfp class ProvidersTest extends TestCase {
             ZonedTransverseMercator.class,
             SatelliteTracking.class,
             Sinusoidal.class,
+            PseudoSinusoidal.class,
             Polyconic.class,
             Mollweide.class,
             SouthPoleRotation.class,

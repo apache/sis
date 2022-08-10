@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Projection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.parameter.Parameters;
@@ -29,7 +30,7 @@ import org.apache.sis.parameter.Parameters;
  * This projection is similar to {@link TransverseMercator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/cassini_soldner.html">GeoTIFF parameters for Cassini-Soldner</a>
  *
@@ -161,14 +162,14 @@ public class CassiniSoldner extends MapProjection {
      * Constructs a new provider.
      */
     public CassiniSoldner() {
-        super(PARAMETERS);
+        this(PARAMETERS);
     }
 
     /**
      * Constructs a provider from a set of parameters.
      */
     CassiniSoldner(final ParameterDescriptorGroup parameters) {
-        super(parameters);
+        super(Projection.class, parameters);
     }
 
     /**

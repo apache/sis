@@ -121,7 +121,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
 
     /**
      * Sets the attribute of the given name to the given value.
-     * First, this method verifies that the previous value is equals to the given one.
+     * First, this method verifies that the previous value is equal to the given one.
      * Then, this method set the attribute to the given value and check if the result.
      *
      * @param  name      the name of the attribute to set.

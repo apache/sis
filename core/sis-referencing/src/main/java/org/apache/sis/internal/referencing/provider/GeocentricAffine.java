@@ -28,6 +28,8 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
@@ -58,16 +60,25 @@ import static java.util.logging.Logger.getLogger;
  * "Geocentric translations" is an operation name defined by EPSG.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.7
  * @module
  */
 @XmlTransient
 public abstract class GeocentricAffine extends GeodeticOperation {
     /**
+     * The transformation type (translation, frame rotation, <i>etc.</i>).
+     *
+     * @todo Merge with {@link DatumShiftMethod}.
+     *
+     * @see #type
+     */
+    protected enum Type {TRANSLATION, SEVEN_PARAM, FRAME_ROTATION, MOLODENSKY, CONVERSION};
+
+    /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8291967302538661639L;
+    private static final long serialVersionUID = 5597594719123422532L;
 
     /**
      * The tolerance factor for comparing the {@link BursaWolfParameters} values.
@@ -206,27 +217,42 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     }
 
     /**
-     * Return value for {@link #getType()}.
+     * The transformation type (translation, frame rotation, <i>etc.</i>).
      */
-    static final int TRANSLATION=1, SEVEN_PARAM=2, FRAME_ROTATION=3, OTHER=0;
+    private final Type type;
 
     /**
      * Constructs a provider with the specified parameters.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param parameters        description of parameters expected by this operation.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
+     * @param type               the operation type as an enumeration value.
+     * @param parameters         description of parameters expected by this operation.
+     * @param sourceDimensions   number of dimensions in the source CRS of this operation method.
+     * @param sourceCSType       base interface of the coordinate system of source coordinates.
+     * @param sourceOnEllipsoid  whether the operation needs source ellipsoid axis lengths.
+     * @param targetDimensions   number of dimensions in the target CRS of this operation method.
+     * @param targetCSType       base interface of the coordinate system of target coordinates.
+     * @param targetOnEllipsoid  whether the operation needs target ellipsoid axis lengths.
+     * @param redimensioned      providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeocentricAffine(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, parameters, redimensioned);
+    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters,
+                     Class<? extends CoordinateSystem> sourceCSType, int sourceDimensions, boolean sourceOnEllipsoid,
+                     Class<? extends CoordinateSystem> targetCSType, int targetDimensions, boolean targetOnEllipsoid,
+                     GeodeticOperation[] redimensioned)
+    {
+        super((operationType == Type.CONVERSION) ? Conversion.class : Transformation.class, parameters,
+              sourceCSType, sourceDimensions, sourceOnEllipsoid,
+              targetCSType, targetDimensions, targetOnEllipsoid, redimensioned);
+        type = operationType;
     }
 
     /**
-     * Returns the operation sub-type as one of {@link #TRANSLATION}, {@link #SEVEN_PARAM},
-     * {@link #FRAME_ROTATION} or {@link #OTHER} constants.
+     * Constructs a provider with the specified parameters for an operation in Cartesian space.
      */
-    abstract int getType();
+    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters, int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
+        this(operationType, parameters,
+             CartesianCS.class, sourceDimensions, false,
+             CartesianCS.class, targetDimensions, false, redimensioned);
+    }
 
     /**
      * Creates a math transform from the specified group of parameter values.
@@ -246,8 +272,8 @@ public abstract class GeocentricAffine extends GeodeticOperation {
         final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
         final Parameters pv = Parameters.castOrWrap(values);
         boolean reverseRotation = false;
-        switch (getType()) {
-            default:             throw new AssertionError();
+        switch (type) {
+            default:             throw new AssertionError(type);
             case FRAME_ROTATION: reverseRotation = true;                    // Fall through
             case SEVEN_PARAM:    parameters.rX = pv.doubleValue(RX);
                                  parameters.rY = pv.doubleValue(RY);

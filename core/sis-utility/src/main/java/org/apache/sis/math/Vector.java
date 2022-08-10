@@ -1663,7 +1663,7 @@ search:     for (;;) {
     }
 
     /**
-     * Returns {@code true} if this vector in the given range is equals to the specified vector.
+     * Returns {@code true} if this vector in the given range is equal to the specified vector.
      * NaN values are considered equal to all other NaN values, and -0.0 is different than +0.0.
      *
      * @param  lower        index of the first value to compare in this vector, inclusive.

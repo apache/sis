@@ -340,12 +340,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalArgumentClass_3 = 43;
 
         /**
-         * Argument ‘{0}’ can not take the “{1}” value, because the ‘{2}’ field can not take the “{3}”
-         * value.
-         */
-        public static final short IllegalArgumentField_4 = 44;
-
-        /**
          * Argument ‘{0}’ can not take the “{1}” value.
          */
         public static final short IllegalArgumentValue_2 = 45;
@@ -436,6 +430,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalRange_2 = 60;
 
         /**
+         * Sexagesimal angle {0,number} is illegal because the {1,choice,0#minutes|1#seconds} field can
+         * not take the {2,number} value.
+         */
+        public static final short IllegalSexagesimalField_3 = 44;
+
+        /**
          * Value {1} for “{0}” is not a valid Unicode code point.
          */
         public static final short IllegalUnicodeCodePoint_2 = 61;
@@ -475,11 +475,6 @@ public final class Errors extends IndexedResourceBundle {
          * Value “{1}” of attribute ‘{0}’ is inconsistent with other attributes.
          */
         public static final short InconsistentAttribute_2 = 67;
-
-        /**
-         * Expected “{0}” namespace for “{1}”.
-         */
-        public static final short InconsistentNamespace_2 = 68;
 
         /**
          * Inconsistent table columns.
@@ -895,6 +890,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 139;
+
+        /**
+         * The “{1}” name is not valid in this context, because the “{0}” namespace was expected.
+         */
+        public static final short UnexpectedNamespace_2 = 68;
 
         /**
          * Parameter “{0}” was not expected.

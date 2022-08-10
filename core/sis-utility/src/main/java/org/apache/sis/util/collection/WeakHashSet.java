@@ -45,7 +45,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * <h2>Optimizing memory use in factory implementations</h2>
  * The {@code WeakHashSet} class has a {@link #get(Object)} method that is not part of the
  * {@link java.util.Set} interface. This {@code get} method retrieves an entry from this set
- * that is equals to the supplied object. The {@link #unique(Object)} method combines a
+ * that is equal to the supplied object. The {@link #unique(Object)} method combines a
  * {@code get} followed by a {@code add} operation if the specified object was not in the set.
  * This is similar in spirit to the {@link String#intern()} method. The following example shows
  * a convenient way to use {@code WeakHashSet} as an internal pool of immutable objects:

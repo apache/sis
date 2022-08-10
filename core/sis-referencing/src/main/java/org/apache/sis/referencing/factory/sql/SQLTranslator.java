@@ -507,7 +507,7 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * Replaces the text at the given position in the buffer if it is equals to the {@code expected} text.
+     * Replaces the text at the given position in the buffer if it is equal to the {@code expected} text.
      */
     private static boolean replaceIfEquals(final StringBuilder ansi, final int pos,
             final String expected, final String replacement)

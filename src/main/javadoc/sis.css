@@ -262,37 +262,3 @@ span.deprecated {
 :not(td) > div.block {
   text-align: justify;
 }
-
-
-
-/* ----------------------------------------------------------------------
- * End of SIS-specific part. The remaining of this file overwrite some
- * aspects of the Javadoc default stylesheet.
- */
-body, div.block {
-  color:       black;
-  font-family: Helvetica, Arial, sans-serif;
-}
-
-.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd {
-  color:       #353833;
-  font-family: Helvetica, Arial, sans-serif;
-  margin-left: 40px;
-}
-
-pre, div.block pre, code, tt, dt code, table tr td dt code {
-  font-family: Andale Mono, Courier New, monospace;
-}
-
-div.block pre, code, tt, dt code, table tr td dt code {
-  line-height: 1em;
-  font-size:   1em;
-}
-
-/* Appareance of links in the "Description" column of class and package summaries.
- * JDK style uses bold characters for the left column, which contains the class and
- * package names. But we do not want those bold characters to apply to the descriptions.
- */
-td.colLast div.block a:link {
-  font-weight: normal;
-}

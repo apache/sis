@@ -74,7 +74,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Verifies that the given point is equals to the given latitude and longitude.
+     * Verifies that the given point is equal to the given latitude and longitude.
      *
      * @param φ  the expected latitude value, in degrees.
      * @param λ  the expected longitude value, in degrees.

@@ -79,7 +79,7 @@ public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> 
     }
 
     /**
-     * Asserts that the given rectangle is equals to the expected value.
+     * Asserts that the given rectangle is equal to the expected value.
      */
     @Override
     void assertGeometryEquals(Rectangle2D expected, Rectangle2D actual, double tolx, double toly) {

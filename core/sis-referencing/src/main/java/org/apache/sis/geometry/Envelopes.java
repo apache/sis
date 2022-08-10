@@ -833,7 +833,7 @@ poles:  for (int i=0; i<dimension; i++) {
             if ((includedMinValue & includedMaxValue & dimensionBitMask) == 0 && CoordinateOperations.isWrapAround(axis)) {
                 isWrapAroundAxis |= dimensionBitMask;
             }
-            // Restore `targetPt` to its initial state, which is equals to `centerPt`.
+            // Restore `targetPt` to its initial state, which is equal to `centerPt`.
             if (targetPt != null) {
                 targetPt.setOrdinate(i, centerPt[i]);
             }

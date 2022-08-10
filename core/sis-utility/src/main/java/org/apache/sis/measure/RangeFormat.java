@@ -55,7 +55,7 @@ import org.apache.sis.internal.util.Numerics;
  *
  * <ul>
  *   <li>If the range {@linkplain Range#isEmpty() is empty}, then the range is represented by "{@code {}}".</li>
- *   <li>Otherwise if the {@linkplain Range#getMinValue() minimal value} is equals to the
+ *   <li>Otherwise if the {@linkplain Range#getMinValue() minimal value} is equal to the
  *       {@linkplain Range#getMaxValue() maximal value}, then that single value is formatted
  *       inside braces as in "{@code {value}}".</li>
  *   <li>Otherwise the minimal and maximal values are formatted inside bracket or parenthesis,

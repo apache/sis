@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * The provider for "<cite>Lambert Azimuthal Equal Area</cite>" projection (EPSG:9820).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/lambert_azimuthal_equal_area.html">GeoTIFF parameters for Lambert Azimuthal Equal Area</a>
  *
@@ -152,7 +152,7 @@ public class LambertAzimuthalEqualArea extends MapProjection {
      * Constructs a new provider.
      */
     public LambertAzimuthalEqualArea() {
-        super(PARAMETERS);
+        this(PARAMETERS);
     }
 
     /**
@@ -161,17 +161,7 @@ public class LambertAzimuthalEqualArea extends MapProjection {
      * @param  parameters  the set of parameters (never {@code null}).
      */
     LambertAzimuthalEqualArea(final ParameterDescriptorGroup parameters) {
-        super(parameters);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code PlanarProjection.class}
-     */
-    @Override
-    public Class<PlanarProjection> getOperationType() {
-        return PlanarProjection.class;
+        super(PlanarProjection.class, parameters);
     }
 
     /**

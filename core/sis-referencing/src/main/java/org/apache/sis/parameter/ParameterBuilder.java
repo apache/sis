@@ -420,10 +420,14 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *     <td>Array of 1 or 2 elements mapped to {@code "standard_parallel_1"} and {@code "standard_parallel_2"}.</td></tr>
      * </table>
      *
-     * <div class="note"><b>Note:</b>
-     * When the {@code "earth_radius"} parameter is read, its value is the
-     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}
-     * computed from the semi-major and semi-minor axis lengths.</div>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>The {@code "standard_parallel"} parameter descriptor is added only if the {@code parameters} argument
+     *       contains {@code "standard_parallel_1"} and {@code "standard_parallel_2"} descriptors.</li>
+     *   <li>When the {@code "earth_radius"} parameter is read, its value is the
+     *       {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}
+     *       computed from the semi-major and semi-minor axis lengths.</li>
+     * </ul>
      *
      * Map projection parameter groups always have a {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs()
      * minimum} and {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum occurrence} of 1,

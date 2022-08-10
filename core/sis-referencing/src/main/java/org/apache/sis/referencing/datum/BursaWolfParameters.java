@@ -344,7 +344,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Returns {@code true} if the {@linkplain #targetDatum target datum} is equals (at least on computation purpose)
+     * Returns {@code true} if the {@linkplain #targetDatum target datum} is equal (at least on computation purpose)
      * to the WGS84 datum. If the datum is unspecified, then this method returns {@code true} since WGS84 is the only
      * datum supported by the WKT 1 format, and is what users often mean.
      *

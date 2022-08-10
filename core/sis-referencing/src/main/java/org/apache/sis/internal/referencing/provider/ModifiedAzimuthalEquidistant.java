@@ -38,7 +38,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * approximation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/azimuthal_equidistant.html">GeoTIFF parameters for Azimuthal Equidistant</a>
  *
@@ -155,15 +155,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * Constructs a new provider.
      */
     public ModifiedAzimuthalEquidistant() {
-        super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     */
-    @Override
-    public Class<PlanarProjection> getOperationType() {
-        return PlanarProjection.class;
+        super(PlanarProjection.class, PARAMETERS);
     }
 
     /**

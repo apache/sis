@@ -67,7 +67,7 @@ public abstract class AppenderTestCase extends TestCase {
     abstract void run(final String lineSeparator) throws IOException;
 
     /**
-     * Ensures that the buffer content is equals to the given string.
+     * Ensures that the buffer content is equal to the given string.
      *
      * @param  expected  the expected content.
      * @throws IOException should never happen since the tests will write in a buffer.

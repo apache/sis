@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -67,14 +67,6 @@ public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeogra
      * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
     private GeocentricTranslation3D(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the type of this operation.
-     */
-    @Override
-    int getType() {
-        return TRANSLATION;
+        super(Type.TRANSLATION, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
     }
 }

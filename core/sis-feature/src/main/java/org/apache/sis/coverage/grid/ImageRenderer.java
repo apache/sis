@@ -379,7 +379,7 @@ public class ImageRenderer {
     }
 
     /**
-     * Ensures that the given number is equals to the expected number of bands.
+     * Ensures that the given number is equal to the expected number of bands.
      * The given number shall be either 1 (case of interleaved sample model) or
      * {@link #getNumBands()} (case of banded sample model).
      */

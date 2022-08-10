@@ -409,8 +409,9 @@ public class TransverseMercator extends NormalizedProjection {
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
+     * Projects the specified (λ,φ) coordinates (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * <h4>Accuracy and domain of validity</h4>
      * Projection errors depend on the difference ∆λ between longitude λ and the central meridian λ₀.

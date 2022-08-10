@@ -28,6 +28,7 @@ import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -69,6 +70,20 @@ public final class CoordinateSystems extends Static {
      * Do not allow instantiation of this class.
      */
     private CoordinateSystems() {
+    }
+
+    /**
+     * Returns whether the given coordinate system can be associated to a {@link org.opengis.referencing.crs.GeodeticCRS}.
+     * This is true for instances of {@link EllipsoidalCS}, {@link CartesianCS} and {@link SphericalCS},
+     * and false for all other types of coordinate system.
+     *
+     * @param  cs  the coordinate system to test (can be {@code null}).
+     * @return whether the given coordinate system can be associated to a geodetic CRS.
+     *
+     * @since 1.3
+     */
+    public static boolean isGeodetic(final CoordinateSystem cs) {
+        return (cs instanceof EllipsoidalCS) || (cs instanceof CartesianCS) || (cs instanceof SphericalCS);
     }
 
     /**

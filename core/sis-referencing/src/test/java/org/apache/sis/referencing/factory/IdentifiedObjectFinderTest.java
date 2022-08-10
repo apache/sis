@@ -89,7 +89,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
                    finder.findSingleton(search));
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
-        assertSame("A full scan should allow us to find WGS84, since it is equals ignoring metadata to CRS:84.",
+        assertSame("A full scan should allow us to find WGS84, since it is equal ignoring metadata to CRS:84.",
                    CRS84, finder.findSingleton(search));
     }
 

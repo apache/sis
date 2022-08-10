@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-metadata} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -59,6 +59,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.test.DocumentComparatorTest.class,
     org.apache.sis.xml.NamespacesTest.class,
     org.apache.sis.xml.XLinkTest.class,
+    org.apache.sis.xml.XPointerTest.class,
     org.apache.sis.xml.NilReasonTest.class,
     org.apache.sis.xml.LegacyCodesTest.class,
     org.apache.sis.xml.ValueConverterTest.class,

@@ -17,6 +17,11 @@
 package org.apache.sis.test.integration;
 
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.TestFactorySource;
@@ -24,15 +29,15 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 import static org.junit.Assume.assumeNotNull;
 
 
 /**
- * Advances CRS constructions requiring the EPSG geodetic dataset.
+ * Advanced CRS constructions requiring the EPSG geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -54,5 +59,32 @@ public final strictfp class CoordinateReferenceSystemTest extends TestCase {
         assumeNotNull(TestFactorySource.getSharedFactory());
         CoordinateReferenceSystem crs = CRS.forCode("urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701");
         assertSame("OSGB 1936 / British National Grid + ODN height", CRS.forCode("EPSG:7405"), crs);
+    }
+
+    /**
+     * Tests creation of "EPSG topocentric example A/B". They are derived geodetic CRS.
+     *
+     * @throws FactoryException if an authority or a code is not recognized.
+     */
+    @Test
+    public void testDerivedCRS() throws FactoryException {
+        assumeNotNull(TestFactorySource.getSharedFactory());
+        CoordinateReferenceSystem crs = CRS.forCode("EPSG:5820");
+        assertInstanceOf("Derived CRS type",  DerivedCRS .class, crs);
+        assertInstanceOf("Derived CRS type",  GeodeticCRS.class, crs);
+        assertInstanceOf("CS of derived CRS", CartesianCS.class, crs.getCoordinateSystem());
+        assertInstanceOf("CS of base CRS",    CartesianCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
+        /*
+         * Some tests are disabled because `EPSGDataAccess` confuse this derived CRS
+         * with a projected CRS. We are waiting for upgrade to EPSG database 10+
+         * before to re-evaluate how to fix this issue.
+         *
+         * https://issues.apache.org/jira/browse/SIS-518
+         */
+        crs = CRS.forCode("EPSG:5819");
+//      assertInstanceOf("Derived CRS type",  DerivedCRS .class, crs);
+//      assertInstanceOf("Derived CRS type",  GeodeticCRS.class, crs);
+        assertInstanceOf("CS of derived CRS", CartesianCS.class, crs.getCoordinateSystem());
+        assertInstanceOf("CS of base CRS",    EllipsoidalCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
     }
 }

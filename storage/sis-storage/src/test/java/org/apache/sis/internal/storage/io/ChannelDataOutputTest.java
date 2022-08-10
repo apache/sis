@@ -113,7 +113,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     }
 
     /**
-     * Asserts that the content of {@link #testedStream} is equals to the content of {@link #referenceStream}.
+     * Asserts that the content of {@link #testedStream} is equal to the content of {@link #referenceStream}.
      * This method closes the reference stream before to perform the comparison.
      */
     final void assertStreamContentEquals() throws IOException {

@@ -133,7 +133,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      *
      * @param  dimension  the dimension for the coordinate of interest.
      * @param  value      the coordinate value of interest.
-     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() position dimension}.
      * @throws UnsupportedOperationException if this direct position is immutable.
      */

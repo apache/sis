@@ -570,7 +570,7 @@ public class IdentifiedObjectFinder {
      * <p>This method is invoked by the default {@link #find(IdentifiedObject)} method implementation.
      * The caller iterates through the returned codes, instantiate the objects and compare them with
      * the specified one in order to determine which codes are really applicable.
-     * The iteration stops as soon as a match is found (in other words, if more than one object is equals
+     * The iteration stops as soon as a match is found (in other words, if more than one object is equal
      * to the specified one, then the {@code find(…)} method selects the first one in iteration order).</p>
      *
      * <h4>Default implementation</h4>

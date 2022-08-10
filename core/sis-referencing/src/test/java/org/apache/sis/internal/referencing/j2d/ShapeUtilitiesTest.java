@@ -44,7 +44,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     private static final double EPS = 1E-12;
 
     /**
-     * Asserts that the given point is equals to the given value.
+     * Asserts that the given point is equal to the given value.
      */
     private static void assertPointEquals(final double x, final double y, final Point2D point) {
         assertEquals(x, point.getX(), EPS);
@@ -95,7 +95,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
 
     /**
      * Invokes {@code ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal)},
-     * then verifies that the control point of the returned curve is equals to {@code (cx, cy)}.
+     * then verifies that the control point of the returned curve is equal to {@code (cx, cy)}.
      */
     private static void assertParabolEquals(final double cx, final double cy,
                                             final double x1, final double y1,
