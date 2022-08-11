@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
@@ -87,6 +87,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private EngineeringDatum datum;
 
     /**
@@ -214,13 +215,14 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      */
     @Override
     @XmlElements({
-        @XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
-        @XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
-        @XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
-        @XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
-        @XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
-        @XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
-        @XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+        @XmlElement(name = "cartesianCS",      type = DefaultCartesianCS.class),
+        @XmlElement(name = "affineCS",         type = DefaultAffineCS.class),
+        @XmlElement(name = "cylindricalCS",    type = DefaultCylindricalCS.class),
+        @XmlElement(name = "linearCS",         type = DefaultLinearCS.class),
+        @XmlElement(name = "polarCS",          type = DefaultPolarCS.class),
+        @XmlElement(name = "sphericalCS",      type = DefaultSphericalCS.class),
+        @XmlElement(name = "userDefinedCS",    type = DefaultUserDefinedCS.class),
+        @XmlElement(name = "coordinateSystem", type = AbstractCS.class)
     })
     public CoordinateSystem getCoordinateSystem() {
         return super.getCoordinateSystem();
