@@ -19,15 +19,16 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.CoordinateSystem;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.jaxb.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -69,7 +70,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
-    "coordinateSystem",
+    "abstractCS",
+    "affineCS",
+    "cartesianCS",
+    "cylindricalCS",
+    "linearCS",
+    "polarCS",
+    "sphericalCS",
+    "userDefinedCS",
     "datum"
 })
 @XmlRootElement(name = "EngineeringCRS")
@@ -209,26 +217,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Returns the coordinate system.
-     *
-     * @return the coordinate system.
-     */
-    @Override
-    @XmlElements({
-        @XmlElement(name = "cartesianCS",      type = DefaultCartesianCS.class),
-        @XmlElement(name = "affineCS",         type = DefaultAffineCS.class),
-        @XmlElement(name = "cylindricalCS",    type = DefaultCylindricalCS.class),
-        @XmlElement(name = "linearCS",         type = DefaultLinearCS.class),
-        @XmlElement(name = "polarCS",          type = DefaultPolarCS.class),
-        @XmlElement(name = "sphericalCS",      type = DefaultSphericalCS.class),
-        @XmlElement(name = "userDefinedCS",    type = DefaultUserDefinedCS.class),
-        @XmlElement(name = "coordinateSystem", type = AbstractCS.class)
-    })
-    public CoordinateSystem getCoordinateSystem() {
-        return super.getCoordinateSystem();
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -304,10 +292,77 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
 
     /**
      * Used by JAXB only (invoked by reflection).
+     * Only one of {@code getFooCS()} methods can return a non-null value.
      *
-     * @see #getCoordinateSystem()
+     * <div class="note"><b>Implementation note:</b>
+     * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     &#64;XmlElements({
+     *       &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *       &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+     *       &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+     *       &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+     *       &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+     *       &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+     *       &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+     *     })
+     *     public CoordinateSystem getCoordinateSystem() {
+     *         return super.getCoordinateSystem();
+     *     }
+     * }
+     *
+     * However our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
+     * for an unknown reason, the unmarshalled CS object is empty.</div>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */
-    private void setCoordinateSystem(final CoordinateSystem cs) {
-        setCoordinateSystem(null, cs);  // 'null' here means to infer the XML property name from the cs type.
+    @XmlElement(name="affineCS")      private AffineCS      getAffineCS()      {return getCoordinateSystem(AffineCS     .class);}
+    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
+    @XmlElement(name="cylindricalCS") private CylindricalCS getCylindricalCS() {return getCoordinateSystem(CylindricalCS.class);}
+    @XmlElement(name="linearCS")      private LinearCS      getLinearCS()      {return getCoordinateSystem(LinearCS     .class);}
+    @XmlElement(name="polarCS")       private PolarCS       getPolarCS()       {return getCoordinateSystem(PolarCS      .class);}
+    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
+    @XmlElement(name="userDefinedCS") private UserDefinedCS getUserDefinedCS() {return getCoordinateSystem(UserDefinedCS.class);}
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     */
+    private void setAffineCS     (final AffineCS      cs) {super.setCoordinateSystem("affineCS",      cs);}
+    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
+    private void setCylindricalCS(final CylindricalCS cs) {super.setCoordinateSystem("cylindricalCS", cs);}
+    private void setLinearCS     (final LinearCS      cs) {super.setCoordinateSystem("linearCS",      cs);}
+    private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
+    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
+    private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
+
+    /**
+     * The types for which a specialized method exists.
+     * Not including {@link CartesianCS}, because this case is already covered by {@link AffineCS}.
+     */
+    private static final Class<?>[] SPECIALIZED_TYPES = {
+        AffineCS.class, SphericalCS.class, CylindricalCS.class, PolarCS.class, LinearCS.class, UserDefinedCS.class
+    };
+
+    /**
+     * Returns the coordinate system if it is not an instance of any of the types handled by specialized methods.
+     * It is the case of {@link EllipsoidalCS}, {@link VerticalCS}, {@link TimeCS} and {@link ParametricCS}.
+     */
+    @XmlElement(name = "coordinateSystem", required = true)
+    @XmlJavaTypeAdapter(CS_CoordinateSystem.class)
+    private CoordinateSystem getAbstractCS() {
+        final CoordinateSystem cs = getCoordinateSystem();
+        for (final Class<?> t : SPECIALIZED_TYPES) {
+            if (t.isInstance(cs)) return null;
+        }
+        return cs;
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     */
+    private void setAbstractCS(final CoordinateSystem cs) {
+        setCoordinateSystem(null, cs);      // `null` here means to infer the XML property name from the cs type.
     }
 }

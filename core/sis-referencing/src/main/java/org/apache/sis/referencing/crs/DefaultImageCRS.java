@@ -306,9 +306,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *     }
      * }
      *
-     * However our attempts to apply this approach worked for {@link DefaultEngineeringCRS} but not for this class:
-     * for an unknown reason, the unmarshalled CS object is empty. Maybe this is because the covariant return type
-     * ({@code AffineCS} instead of {@code CoordinateSystem} in above code) is causing confusion.</div>
+     * However our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
+     * for an unknown reason, the unmarshalled CS object is empty.</div>
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */

@@ -282,7 +282,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     final <T extends CoordinateSystem> T getCoordinateSystem(final Class<T> type) {
         final CoordinateSystem cs = coordinateSystem;
         if (type.isInstance(cs)) {
-            // Special case for AfficeCS: must ensure that the cs is not the CartesianCS subtype.
+            // Special case for AffineCS: must ensure that the cs is not the CartesianCS subtype.
             if (type != AffineCS.class || !(cs instanceof CartesianCS)) {
                 return (T) cs;
             }
