@@ -25,11 +25,13 @@ import java.util.Collections;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Path2D;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.feature.j2d.PathBuilder;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -39,7 +41,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="https://en.wikipedia.org/wiki/Marching_squares">Marching squares on Wikipedia</a>
  *
@@ -71,11 +73,13 @@ final class IsolineTracer {
 
     /**
      * Pixel coordinate on the left side of the cell where to interpolate.
+     * The range is 0 inclusive to {@code domain.width} exclusive.
      */
     int x;
 
     /**
      * Pixel coordinate on the top side of the cell where to interpolate.
+     * The range is 0 inclusive to {@code domain.height} exclusive.
      */
     int y;
 
@@ -676,6 +680,25 @@ final class IsolineTracer {
                 path  = null;
             }
         }
+
+        /**
+         * Appends the pixel coordinates of this level to the given path, for debugging purposes only.
+         * The {@link #gridToCRS} transform is <em>not</em> applied by this method.
+         * For avoiding confusing behavior, that transform should be null.
+         *
+         * @param  appendTo  where to append the coordinates.
+         *
+         * @see Isolines#toRawPath()
+         */
+        @Debug
+        final void toRawPath(final Path2D appendTo) {
+            final Shape s = (path != null) ? path.build() : shape;
+            if (s != null) appendTo.append(s, false);
+            polylineOnLeft.toRawPath(appendTo);
+            for (final Polyline p : polylinesOnTop) {
+                if (p != null) p.toRawPath(appendTo);
+            }
+        }
     }
 
     /**
@@ -841,6 +864,26 @@ final class IsolineTracer {
         @Override
         public String toString() {
             return PathBuilder.toString(coordinates, size);
+        }
+
+        /**
+         * Appends the pixel coordinates of this polyline to the given path, for debugging purposes only.
+         * The {@link #gridToCRS} transform is <em>not</em> applied by this method.
+         * For avoiding confusing behavior, that transform should be null.
+         *
+         * @param  appendTo  where to append the coordinates.
+         *
+         * @see Level#toRawPath(Path2D)
+         */
+        @Debug
+        private void toRawPath(final Path2D appendTo) {
+            int i = 0;
+            if (i < size) {
+                appendTo.moveTo(coordinates[i++], coordinates[i++]);
+                while (i < size) {
+                    appendTo.lineTo(coordinates[i++], coordinates[i++]);
+                }
+            }
         }
     }
 

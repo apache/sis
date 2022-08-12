@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.NavigableMap;
+import java.util.function.BiConsumer;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.CompletionException;
@@ -34,6 +35,7 @@ import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.internal.processing.image.IsolineTracer.UPPER_LEFT;
 import static org.apache.sis.internal.processing.image.IsolineTracer.UPPER_RIGHT;
@@ -58,6 +60,15 @@ public final class Isolines {
      * Isoline data for each level, sorted in ascending order of {@link IsolineTracer.Level#value}.
      */
     private final IsolineTracer.Level[] levels;
+
+    /**
+     * A consumer to notify about the current state of isoline generation, or {@code null} if none.
+     * This is used for debugging purposes only. This field is temporarily set to a non-null value
+     * when using {@code IsolineViewer} (in test package) for following an isoline generation step
+     * by step.
+     */
+    @Debug
+    private static final BiConsumer<String,Path2D> LISTENER = null;
 
     /**
      * Creates an initially empty set of isolines for the given levels. The given {@code values}
@@ -377,12 +388,18 @@ abort:  while (iterator.next()) {
                 }
             }
             /*
-             * Finished iteration on a row. Clear flags and update position
-             * before to move to next row.
+             * Finished iteration on a row. Clear flags and update position before to move to next row.
+             * If there is listeners to notify (for debugging purposes), notify them.
              */
             for (int b=0; b<numBands; b++) {
                 for (final IsolineTracer.Level level : isolines[b].levels) {
                     level.finishedRow();
+                }
+                if (LISTENER != null) {
+                    final int y = tracer.y;
+                    final int h = iterator.getDomain().height;
+                    LISTENER.accept(String.format("After row %d of %d (%3.1f%%)", y, h, 100f*y/h),
+                                    isolines[b].toRawPath());
                 }
             }
             tracer.x = 0;
@@ -394,6 +411,9 @@ abort:  while (iterator.next()) {
         for (int b=0; b<numBands; b++) {
             for (final IsolineTracer.Level level : isolines[b].levels) {
                 level.finish();
+            }
+            if (LISTENER != null) {
+                LISTENER.accept("Finished band " + b, isolines[b].toRawPath());
             }
         }
         return isolines;
@@ -502,5 +522,21 @@ abort:  while (iterator.next()) {
         @Override public Object[] toArray() {
             return isolines().clone();
         }
+    }
+
+    /**
+     * Appends the pixel coordinates of all level to the given path, for debugging purposes only.
+     * The {@link #gridToCRS} transform is <em>not</em> applied by this method.
+     * For avoiding confusing behavior, that transform should be null.
+     *
+     * @param  appendTo  where to append the coordinates.
+     */
+    @Debug
+    private Path2D toRawPath() {
+        final Path2D path = new Path2D.Float();
+        for (final IsolineTracer.Level level : levels) {
+            level.toRawPath(path);
+        }
+        return path;
     }
 }
