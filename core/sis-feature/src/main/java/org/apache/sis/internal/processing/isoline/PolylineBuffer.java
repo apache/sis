@@ -70,7 +70,7 @@ final class PolylineBuffer {
     }
 
     /**
-     * Creates a new polyline wrapping the given coordinates. Used for wrapping {@link Unclosed}
+     * Creates a new polyline wrapping the given coordinates. Used for wrapping {@link Fragments}
      * instances in objects expected by {@link Tracer#writeTo(Joiner, Polyline[], boolean)}.
      * Those {@code Polyline} instances are temporary.
      */
