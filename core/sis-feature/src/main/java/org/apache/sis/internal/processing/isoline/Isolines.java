@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.processing.image;
+package org.apache.sis.internal.processing.isoline;
 
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -31,15 +31,16 @@ import java.awt.image.RenderedImage;
 import org.opengis.coverage.grid.SequenceType;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.processing.image.TiledProcess;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
-import static org.apache.sis.internal.processing.image.IsolineTracer.UPPER_LEFT;
-import static org.apache.sis.internal.processing.image.IsolineTracer.UPPER_RIGHT;
-import static org.apache.sis.internal.processing.image.IsolineTracer.LOWER_RIGHT;
+import static org.apache.sis.internal.processing.isoline.Tracer.UPPER_LEFT;
+import static org.apache.sis.internal.processing.isoline.Tracer.UPPER_RIGHT;
+import static org.apache.sis.internal.processing.isoline.Tracer.LOWER_RIGHT;
 
 
 /**
@@ -57,14 +58,14 @@ import static org.apache.sis.internal.processing.image.IsolineTracer.LOWER_RIGHT
  */
 public final class Isolines {
     /**
-     * Isoline data for each level, sorted in ascending order of {@link IsolineTracer.Level#value}.
+     * Isoline data for each level, sorted in ascending order of {@link Tracer.Level#value}.
      */
-    private final IsolineTracer.Level[] levels;
+    private final Tracer.Level[] levels;
 
     /**
      * A consumer to notify about the current state of isoline generation, or {@code null} if none.
      * This is used for debugging purposes only. This field is temporarily set to a non-null value
-     * when using {@code IsolineViewer} (in test package) for following an isoline generation step
+     * when using {@code StepsViewer} (in test package) for following an isoline generation step
      * by step.
      */
     @Debug
@@ -74,8 +75,8 @@ public final class Isolines {
      * Creates an initially empty set of isolines for the given levels. The given {@code values}
      * array should be one of the arrays validated by {@link #cloneAndSort(double[][])}.
      */
-    private Isolines(final IsolineTracer tracer, final int band, final double[] values, final int width) {
-        levels = new IsolineTracer.Level[values.length];
+    private Isolines(final Tracer tracer, final int band, final double[] values, final int width) {
+        levels = new Tracer.Level[values.length];
         for (int i=0; i<values.length; i++) {
             levels[i] = tracer.new Level(band, values[i], width);
         }
@@ -105,7 +106,7 @@ public final class Isolines {
     }
 
     /**
-     * Sets the specified bit on {@link IsolineTracer.Level#isDataAbove} for all levels lower than given value.
+     * Sets the specified bit on {@link Tracer.Level#isDataAbove} for all levels lower than given value.
      *
      * <h4>How strict equalities are handled</h4>
      * Sample values exactly equal to the isoline value are handled as if they were greater. It does not matter
@@ -120,13 +121,13 @@ public final class Isolines {
      * out in the final stage, when copying coordinates in {@link Path2D} objects.
      *
      * @param  value a sample values from the image.
-     * @param  bit   {@value IsolineTracer#UPPER_LEFT}, {@value IsolineTracer#UPPER_RIGHT},
-     *               {@value IsolineTracer#LOWER_LEFT} or {@value IsolineTracer#LOWER_RIGHT}.
+     * @param  bit   {@value Tracer#UPPER_LEFT}, {@value Tracer#UPPER_RIGHT},
+     *               {@value Tracer#LOWER_LEFT} or {@value Tracer#LOWER_RIGHT}.
      *
-     * @see IsolineTracer.Level#nextColumn()
+     * @see Tracer.Level#nextColumn()
      */
     private void setMaskBit(final double value, final int bit) {
-        for (final IsolineTracer.Level level : levels) {
+        for (final Tracer.Level level : levels) {
             if (level.value > value) break;                 // See above javadoc for NaN handling.
             level.isDataAbove |= bit;
         }
@@ -196,7 +197,7 @@ public final class Isolines {
      */
     private static Isolines[] flush(final Isolines[] isolines) throws TransformException {
         for (final Isolines isoline : isolines) {
-            for (final IsolineTracer.Level level : isoline.levels) {
+            for (final Tracer.Level level : isoline.levels) {
                 level.flush();
             }
         }
@@ -291,11 +292,11 @@ public final class Isolines {
         /*
          * Prepares a window of size 2×2 pixels over pixel values. Window elements are traversed
          * by incrementing indices in following order: band, column, row. The window content will
-         * be written in this method and read by IsolineTracer.
+         * be written in this method and read by Tracer.
          */
         final int numBands = iterator.getNumBands();
         final double[] window = new double[numBands * 4];
-        final IsolineTracer tracer = new IsolineTracer(window, numBands, iterator.getDomain(), gridToCRS);
+        final Tracer tracer = new Tracer(window, numBands, iterator.getDomain(), gridToCRS);
         /*
          * Prepare the set of isolines for each band in the image.
          * The number of cells on the horizontal axis is one less
@@ -336,7 +337,7 @@ abort:  while (iterator.next()) {
              *
              *  - Get values on the 4 corners.
              *  - Save value of lower-left corner for use by next row.
-             *  - Initialize `IsolineTracer.Level.isDataAbove` bits for all levels.
+             *  - Initialize `Tracer.Level.isDataAbove` bits for all levels.
              *  - Interpolate the first cell.
              */
             System.arraycopy(valuesOnPreviousRow, 0, window, 0, twoPixels);
@@ -350,7 +351,7 @@ abort:  while (iterator.next()) {
                 }
             }
             for (final Isolines iso : isolines) {
-                for (final IsolineTracer.Level level : iso.levels) {
+                for (final Tracer.Level level : iso.levels) {
                     level.interpolate();
                 }
             }
@@ -377,12 +378,12 @@ abort:  while (iterator.next()) {
                 }
                 for (int b=0; b<numBands; b++) {
                     final Isolines iso = isolines[b];
-                    for (final IsolineTracer.Level level : iso.levels) {
+                    for (final Tracer.Level level : iso.levels) {
                         level.nextColumn();
                     }
                     iso.setMaskBit(window[numBands  + b], UPPER_RIGHT);
                     iso.setMaskBit(window[lastPixel + b], LOWER_RIGHT);
-                    for (final IsolineTracer.Level level : iso.levels) {
+                    for (final Tracer.Level level : iso.levels) {
                         level.interpolate();
                     }
                 }
@@ -392,7 +393,7 @@ abort:  while (iterator.next()) {
              * If there is listeners to notify (for debugging purposes), notify them.
              */
             for (int b=0; b<numBands; b++) {
-                for (final IsolineTracer.Level level : isolines[b].levels) {
+                for (final Tracer.Level level : isolines[b].levels) {
                     level.finishedRow();
                 }
                 if (LISTENER != null) {
@@ -409,7 +410,7 @@ abort:  while (iterator.next()) {
          * Finished iteration over the whole image.
          */
         for (int b=0; b<numBands; b++) {
-            for (final IsolineTracer.Level level : isolines[b].levels) {
+            for (final Tracer.Level level : isolines[b].levels) {
                 level.finish();
             }
             if (LISTENER != null) {
@@ -426,7 +427,7 @@ abort:  while (iterator.next()) {
      */
     public final NavigableMap<Double,Shape> polylines() {
         final TreeMap<Double,Shape> paths = new TreeMap<>();
-        for (final IsolineTracer.Level level : levels) {
+        for (final Tracer.Level level : levels) {
             final Shape path = level.shape;
             if (path != null) {
                 paths.put(level.value, path);
@@ -534,7 +535,7 @@ abort:  while (iterator.next()) {
     @Debug
     private Path2D toRawPath() {
         final Path2D path = new Path2D.Float();
-        for (final IsolineTracer.Level level : levels) {
+        for (final Tracer.Level level : levels) {
             level.toRawPath(path);
         }
         return path;

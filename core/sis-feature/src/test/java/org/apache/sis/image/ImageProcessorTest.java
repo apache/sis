@@ -20,7 +20,7 @@ import java.util.Map;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import org.apache.sis.internal.processing.image.IsolinesTest;
+import org.apache.sis.internal.processing.isoline.IsolinesTest;
 import org.apache.sis.test.DependsOn;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.test.TestCase;
@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   1.1
  * @module
  */
-@DependsOn(org.apache.sis.internal.processing.image.IsolinesTest.class)
+@DependsOn(org.apache.sis.internal.processing.isoline.IsolinesTest.class)
 public final strictfp class ImageProcessorTest extends TestCase {
     /**
      * Tests {@link ImageProcessor#isolines(RenderedImage, double[][], MathTransform)}.

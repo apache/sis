@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.processing.image;
+package org.apache.sis.internal.processing.isoline;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import org.apache.sis.util.Debug;
 /**
  * Iterator over contouring grid cells together with an interpolator and an assembler of polyline segments.
  * A single instance of this class is created by {@code Isolines.generate(…)} for all bands to process in a
- * given image. {@code IsolineTracer} is used for doing a single iteration over all image pixels.
+ * given image. {@code Tracer} is used for doing a single iteration over all image pixels.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,7 +48,7 @@ import org.apache.sis.util.Debug;
  * @since 1.1
  * @module
  */
-final class IsolineTracer {
+final class Tracer {
     /**
      * Mask to apply on {@link Level#isDataAbove} for telling that value in a corner is higher than the level value.
      * Values are defined in {@code PixelIterator.Window} iteration order: from left to right, then top to bottom.
@@ -104,7 +104,7 @@ final class IsolineTracer {
      * @param  domain       pixel coordinates where iteration will happen.
      * @param  gridToCRS    final transform to apply on coordinates (integer source coordinates at pixel centers).
      */
-    IsolineTracer(final double[] window, final int pixelStride, final Rectangle domain, final MathTransform gridToCRS) {
+    Tracer(final double[] window, final int pixelStride, final Rectangle domain, final MathTransform gridToCRS) {
         this.window      = window;
         this.pixelStride = pixelStride;
         this.translateX  = domain.x;
@@ -519,7 +519,7 @@ final class IsolineTracer {
          * {@link #polylineOnLeft} and {@code polylineOnTop} will become empty after this method call.
          *
          * @param  polylineOnTop  value of {@code polylinesOnTop[x]}.
-         * @throws TransformException if the {@link IsolineTracer#gridToCRS} transform can not be applied.
+         * @throws TransformException if the {@link Tracer#gridToCRS} transform can not be applied.
          */
         private void closeLeftWithTop(final Polyline polylineOnTop) throws TransformException {
             interpolateMissingLeftSide();
@@ -744,7 +744,7 @@ final class IsolineTracer {
 
         /**
          * Creates a new polyline wrapping the given coordinates. Used for wrapping {@link Unclosed}
-         * instances in objects expected by {@link IsolineTracer#writeTo(Joiner, Polyline[], boolean)}.
+         * instances in objects expected by {@link Tracer#writeTo(Joiner, Polyline[], boolean)}.
          * Those {@code Polyline} instances are temporary.
          */
         Polyline(final double[] data) {

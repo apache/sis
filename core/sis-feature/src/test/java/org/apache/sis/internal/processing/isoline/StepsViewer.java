@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.processing.image;
+package org.apache.sis.internal.processing.isoline;
 
 import java.awt.Shape;
 import java.awt.Color;
@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
 /**
  * A viewer for showing isoline generation step-by-step.
  * For enabling the use of this class, temporarily remove {@code private} and {@code final} keywords in
- * {@link Isolines#LISTENER}, then uncomment the {@link #setListener(IsolineViewer)} constructor body.
+ * {@link Isolines#LISTENER}, then uncomment the {@link #setListener(StepsViewer)} constructor body.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -58,13 +58,13 @@ import static org.junit.Assert.*;
  * @module
  */
 @SuppressWarnings("serial")
-public final class IsolineViewer extends JComponent implements BiConsumer<String,Path2D>, ChangeListener, ActionListener {
+public final class StepsViewer extends JComponent implements BiConsumer<String,Path2D>, ChangeListener, ActionListener {
     /**
      * Sets the component to be notified after each row of isolines generated from the rendered image.
      * The body of this method is commented-out because {@link Isolines#LISTENER} is private and final.
      * The body should be uncommented only temporarily during debugging phases.
      */
-    private static void setListener(final IsolineViewer listener) {
+    private static void setListener(final StepsViewer listener) {
         // Isolines.LISTENER = listener;
     }
 
@@ -135,7 +135,7 @@ public final class IsolineViewer extends JComponent implements BiConsumer<String
      * @param  pane  the container where to add components.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    private IsolineViewer(final RenderedImage data, final Container pane) {
+    private StepsViewer(final RenderedImage data, final Container pane) {
         final double scaleX = (CANVAS_WIDTH  - 2*PADDING) / (double) data.getWidth();
         final double scaleY = (CANVAS_HEIGHT - 2*PADDING) / (double) data.getHeight();
         sourceToCanvas = new AffineTransform2D(
@@ -170,7 +170,7 @@ public final class IsolineViewer extends JComponent implements BiConsumer<String
         final JFrame frame = new JFrame("Step-by-step isoline viewer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        final IsolineViewer viewer = new IsolineViewer(data, frame.getContentPane());
+        final StepsViewer viewer = new StepsViewer(data, frame.getContentPane());
         final Isolines iso;
         try {
             setListener(viewer);

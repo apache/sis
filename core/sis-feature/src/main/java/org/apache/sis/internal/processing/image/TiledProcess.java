@@ -56,14 +56,14 @@ import org.apache.sis.util.ArgumentChecks;
  * Consequently tile size will be determined by other considerations such as the number of processors.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @param  <R>  the type of value computed as a result of this process.
  *
  * @since 1.1
  * @module
  */
-abstract class TiledProcess<R> {
+public abstract class TiledProcess<R> {
     /**
      * Minimal "tile" size for sub-tasks computation. That size should not be too small because the
      * fork/join processes have some extra cost compared to processing the whole image as one single tile.
@@ -221,7 +221,7 @@ abstract class TiledProcess<R> {
      * <p>This class implements {@link Callable} for {@code TiledProcess} convenience.
      * This implementation details should be ignored; it may change in any future version.</p>
      */
-    abstract class Task implements Callable<R> {
+    protected abstract class Task implements Callable<R> {
         /**
          * Index of this {@code Task} instance in the {@link TiledProcess#tasks} array.
          */
