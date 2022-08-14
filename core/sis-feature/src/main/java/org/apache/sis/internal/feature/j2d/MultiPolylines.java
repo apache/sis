@@ -23,6 +23,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -36,7 +37,7 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -177,5 +178,15 @@ final class MultiPolylines extends FlatShape {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     *
+     * @return a debug string representation.
+     */
+    @Override
+    public String toString() {
+        return Classes.getShortClassName(this) + '[' + (polylines.length / 2) + " polylines]";
     }
 }

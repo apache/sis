@@ -145,7 +145,7 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     private StepsViewer(final RenderedImage data, final Container pane) {
         isolines    = new EnumMap<>(PolylineStage.class);
-        stageColors = new Color[] {Color.YELLOW, Color.CYAN, Color.GRAY};
+        stageColors = new Color[] {Color.YELLOW, Color.CYAN, Color.LIGHT_GRAY};
         setBackground(Color.BLACK);
         setOpaque(true);
         final double scaleX = (CANVAS_WIDTH  - 2*PADDING) / (double) data.getWidth();
@@ -215,9 +215,9 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
             gh.draw(bounds);
         }
         for (final Map.Entry<PolylineStage,Path2D> entry : isolines.entrySet()) {
-            final int stage = entry.getKey().ordinal();
-            gh.setStroke(new BasicStroke(stageColors.length - stage));
-            gh.setColor(stageColors[stage]);
+            final PolylineStage stage = entry.getKey();
+            gh.setStroke(new BasicStroke(stage == PolylineStage.BUFFER ? 2 : 0));
+            gh.setColor(stageColors[stage.ordinal()]);
             gh.draw(entry.getValue());
         }
     }
@@ -286,13 +286,16 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
                         isolines.remove(stage);
                     } else {
                         isolines.put(stage, update);
-                        if (stage == PolylineStage.BUFFER) {
+                        if (b == null) {
                             b = update.getBounds();
-                            b.x      -= PADDING;
-                            b.y      -= PADDING;
-                            b.width  += PADDING * 2;
-                            b.height += PADDING * 2;
-                            bounds = b;
+                            if (b.isEmpty()) {
+                                b = null;
+                            } else {
+                                b.x      -= PADDING;
+                                b.y      -= PADDING;
+                                b.width  += PADDING * 2;
+                                b.height += PADDING * 2;
+                            }
                         }
                     }
                 }

@@ -205,13 +205,6 @@ final class PolylineBuffer {
      */
     @Debug
     final void toRawPath(final Map<PolylineStage,Path2D> appendTo) {
-        int i = 0;
-        if (i < size) {
-            final Path2D p = PolylineStage.BUFFER.destination(appendTo);
-            p.moveTo(coordinates[i++], coordinates[i++]);
-            while (i < size) {
-                p.lineTo(coordinates[i++], coordinates[i++]);
-            }
-        }
+        PolylineStage.BUFFER.add(appendTo, coordinates, size);
     }
 }

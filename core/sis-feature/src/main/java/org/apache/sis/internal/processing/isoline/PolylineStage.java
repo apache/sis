@@ -64,8 +64,42 @@ enum PolylineStage {
      * @param  appendTo  map of path for different stages.
      * @return the path to use for writing polylines at this stage.
      */
-    final Path2D destination(final Map<PolylineStage,Path2D> appendTo) {
+    private Path2D destination(final Map<PolylineStage,Path2D> appendTo) {
         return appendTo.computeIfAbsent(this, (k) -> new Path2D.Float());
+    }
+
+    /**
+     * Adds coordinates to the specified map.
+     *
+     * @param  appendTo     where to append the coordinates.
+     * @param  coordinates  (x,y) tuples to append, starting with the coordinate at index 0.
+     * @param  size         number of coordinates to add (twice the number of tuples).
+     */
+    final void add(final Map<PolylineStage,Path2D> appendTo, final double[] coordinates, final int size) {
+        int i = 0;
+        if (i < size) {
+            final Path2D p = destination(appendTo);
+            p.moveTo(coordinates[i++], coordinates[i++]);
+            while (i < size) {
+                p.lineTo(coordinates[i++], coordinates[i++]);
+            }
+        }
+    }
+
+    /**
+     * Adds polylines in the values of the given map. Keys are ignored.
+     *
+     * @param  appendTo      where to append the coordinates.
+     * @param  partialPaths  map of polylines to add.
+     */
+    final void add(final Map<PolylineStage,Path2D> appendTo, final Map<?,Fragments> partialPaths) {
+        for (final Fragments fragment : partialPaths.values()) {
+            for (final double[] coordinates : fragment) {
+                if (coordinates != null) {
+                    add(appendTo, coordinates, coordinates.length);
+                }
+            }
+        }
     }
 
     /**

@@ -695,6 +695,7 @@ final class Tracer {
         @Debug
         final void toRawPath(final Map<PolylineStage,Path2D> appendTo) {
             PolylineStage.FINAL.add(appendTo, (path != null) ? path.snapshot() : shape);
+            PolylineStage.FRAGMENT.add(appendTo, partialPaths);
             polylineOnLeft.toRawPath(appendTo);
             for (final PolylineBuffer p : polylinesOnTop) {
                 if (p != null) p.toRawPath(appendTo);
