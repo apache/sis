@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.processing.isoline;
 
+import java.util.Map;
 import java.util.Arrays;
 import java.awt.geom.Path2D;
 import org.apache.sis.internal.feature.j2d.PathBuilder;
@@ -200,15 +201,16 @@ final class PolylineBuffer {
      *
      * @param  appendTo  where to append the coordinates.
      *
-     * @see Tracer.Level#toRawPath(Path2D)
+     * @see Tracer.Level#toRawPath(Map)
      */
     @Debug
-    final void toRawPath(final Path2D appendTo) {
+    final void toRawPath(final Map<PolylineStage,Path2D> appendTo) {
         int i = 0;
         if (i < size) {
-            appendTo.moveTo(coordinates[i++], coordinates[i++]);
+            final Path2D p = PolylineStage.BUFFER.destination(appendTo);
+            p.moveTo(coordinates[i++], coordinates[i++]);
             while (i < size) {
-                appendTo.lineTo(coordinates[i++], coordinates[i++]);
+                p.lineTo(coordinates[i++], coordinates[i++]);
             }
         }
     }

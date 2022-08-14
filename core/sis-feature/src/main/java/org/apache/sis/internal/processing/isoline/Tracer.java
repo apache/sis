@@ -222,15 +222,20 @@ final class Tracer {
 
         /**
          * Builder of isolines as a Java2D shape, created when first needed.
-         * The {@link PolylineBuffer} coordinates are copied in this path when a geometry is closed.
+         * The {@link PolylineBuffer} coordinates are copied in this path when a geometry is closed
+         * and transformed using {@link #gridToCRS}. This is almost final result; the only difference
+         * compared to {@link #shape} is that the coordinates are not yet wrapped in a {@link Shape}.
          *
          * @see #writeTo(Joiner, PolylineBuffer[], boolean)
+         * @see PolylineStage#FINAL
          */
         private Joiner path;
 
         /**
          * The isolines as a Java2D shape, created by {@link #finish()}.
          * This is the shape to be returned to user for this level after we finished to process all cells.
+         *
+         * @see PolylineStage#FINAL
          */
         Shape shape;
 
@@ -688,9 +693,8 @@ final class Tracer {
          * @see Isolines#toRawPath()
          */
         @Debug
-        final void toRawPath(final Path2D appendTo) {
-            final Shape s = (path != null) ? path.build() : shape;
-            if (s != null) appendTo.append(s, false);
+        final void toRawPath(final Map<PolylineStage,Path2D> appendTo) {
+            PolylineStage.FINAL.add(appendTo, (path != null) ? path.snapshot() : shape);
             polylineOnLeft.toRawPath(appendTo);
             for (final PolylineBuffer p : polylinesOnTop) {
                 if (p != null) p.toRawPath(appendTo);

@@ -19,6 +19,8 @@ package org.apache.sis.internal.processing.isoline;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.EnumMap;
 import java.util.TreeMap;
 import java.util.NavigableMap;
 import java.util.function.BiConsumer;
@@ -49,7 +51,7 @@ import static org.apache.sis.internal.processing.isoline.Tracer.LOWER_RIGHT;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="https://en.wikipedia.org/wiki/Marching_squares">Marching squares on Wikipedia</a>
  *
@@ -69,7 +71,7 @@ public final class Isolines {
      * by step.
      */
     @Debug
-    private static final BiConsumer<String,Path2D> LISTENER = null;
+    private static final BiConsumer<String,Isolines> LISTENER = null;
 
     /**
      * Creates an initially empty set of isolines for the given levels. The given {@code values}
@@ -399,8 +401,7 @@ abort:  while (iterator.next()) {
                 if (LISTENER != null) {
                     final int y = tracer.y;
                     final int h = iterator.getDomain().height;
-                    LISTENER.accept(String.format("After row %d of %d (%3.1f%%)", y, h, 100f*y/h),
-                                    isolines[b].toRawPath());
+                    LISTENER.accept(String.format("After row %d of %d (%3.1f%%)", y, h, 100f*y/h), isolines[b]);
                 }
             }
             tracer.x = 0;
@@ -414,7 +415,7 @@ abort:  while (iterator.next()) {
                 level.finish();
             }
             if (LISTENER != null) {
-                LISTENER.accept("Finished band " + b, isolines[b].toRawPath());
+                LISTENER.accept("Finished band " + b, isolines[b]);
             }
         }
         return isolines;
@@ -526,18 +527,18 @@ abort:  while (iterator.next()) {
     }
 
     /**
-     * Appends the pixel coordinates of all level to the given path, for debugging purposes only.
+     * Returns the pixel coordinates of all level, for debugging purposes only.
      * The {@link #gridToCRS} transform is <em>not</em> applied by this method.
      * For avoiding confusing behavior, that transform should be null.
      *
-     * @param  appendTo  where to append the coordinates.
+     * @return the pixel coordinates.
      */
     @Debug
-    private Path2D toRawPath() {
-        final Path2D path = new Path2D.Float();
+    final Map<PolylineStage,Path2D> toRawPath() {
+        final Map<PolylineStage,Path2D> appendTo = new EnumMap<>(PolylineStage.class);
         for (final Tracer.Level level : levels) {
-            level.toRawPath(path);
+            level.toRawPath(appendTo);
         }
-        return path;
+        return appendTo;
     }
 }

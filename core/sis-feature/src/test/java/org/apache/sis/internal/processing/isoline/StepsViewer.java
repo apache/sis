@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.processing.isoline;
 
+import java.util.Map;
+import java.util.EnumMap;
 import java.awt.Shape;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -58,7 +60,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @SuppressWarnings("serial")
-public final class StepsViewer extends JComponent implements BiConsumer<String,Path2D>, ChangeListener, ActionListener {
+public final class StepsViewer extends JComponent implements BiConsumer<String,Isolines>, ChangeListener, ActionListener {
     /**
      * Sets the component to be notified after each row of isolines generated from the rendered image.
      * The body of this method is commented-out because {@link Isolines#LISTENER} is private and final.
@@ -116,7 +118,13 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,P
     /**
      * The isolines to show.
      */
-    private Path2D isolines;
+    private final Map<PolylineStage,Path2D> isolines;
+
+    /**
+     * The colors to associate to the isoline for each stage.
+     * Array indices are {@link PolylineStage#ordinal()} values.
+     */
+    private final Color[] stageColors;
 
     /**
      * Bounds of {@link #isolines}, slightly expanded for making easier to see.
@@ -136,6 +144,10 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,P
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     private StepsViewer(final RenderedImage data, final Container pane) {
+        isolines    = new EnumMap<>(PolylineStage.class);
+        stageColors = new Color[] {Color.YELLOW, Color.CYAN, Color.GRAY};
+        setBackground(Color.BLACK);
+        setOpaque(true);
         final double scaleX = (CANVAS_WIDTH  - 2*PADDING) / (double) data.getWidth();
         final double scaleY = (CANVAS_HEIGHT - 2*PADDING) / (double) data.getHeight();
         sourceToCanvas = new AffineTransform2D(
@@ -186,7 +198,6 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,P
         for (final Shape shape : iso.polylines().values()) {
             path.append(shape, false);
         }
-        viewer.accept("Final result", path);
     }
 
     /**
@@ -196,15 +207,18 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,P
     protected void paintComponent(final Graphics g) {
         super.paintComponent(g);
         final Graphics2D gh = (Graphics2D) g;
+        gh.setColor(getBackground());
+        gh.fillRect(0, 0, getWidth(), getHeight());
         if (bounds != null) {
             gh.setStroke(new BasicStroke(2));
             gh.setColor(Color.RED);
             gh.draw(bounds);
         }
-        if (isolines != null) {
-            gh.setStroke(new BasicStroke(1));
-            gh.setColor(Color.BLUE);
-            gh.draw(isolines);
+        for (final Map.Entry<PolylineStage,Path2D> entry : isolines.entrySet()) {
+            final int stage = entry.getKey().ordinal();
+            gh.setStroke(new BasicStroke(stageColors.length - stage));
+            gh.setColor(stageColors[stage]);
+            gh.draw(entry.getValue());
         }
     }
 
@@ -246,27 +260,48 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,P
      * Invoked after a row has been processed during the isoline generation.
      * This is invoked from the main thread (<strong>not</strong> the Swing thread).
      *
-     * @param  title   description of current state.
-     * @param  update  new isolines to show.
+     * @param  title      description of current state.
+     * @param  generator  new generator of isolines.
      */
     @Override
-    public void accept(final String title, final Path2D update) {
-        update.transform(sourceToCanvas);
-        final Rectangle b = update.getBounds();
-        b.x      -= PADDING;
-        b.y      -= PADDING;
-        b.width  += PADDING * 2;
-        b.height += PADDING * 2;
+    public void accept(final String title, final Isolines generator) {
+        final Map<PolylineStage, Path2D> paths = generator.toRawPath();
+        for (final Map.Entry<PolylineStage,Path2D> entry : paths.entrySet()) {
+            entry.getValue().transform(sourceToCanvas);
+        }
         try {
             final CountDownLatch c = new CountDownLatch(1);
             EventQueue.invokeLater(() -> {
-                if (isolines != null && equal(isolines.getPathIterator(null), update.getPathIterator(null))) {
+                Rectangle b = null;
+                boolean unchanged = true;
+                for (final PolylineStage stage : PolylineStage.values()) {
+                    final Path2D current = isolines.get(stage);
+                    final Path2D update  = paths.get(stage);
+                    if (unchanged && current != update && !(current != null && update != null &&
+                            equal(current.getPathIterator(null), update.getPathIterator(null))))
+                    {
+                        unchanged = false;
+                    }
+                    if (update == null) {
+                        isolines.remove(stage);
+                    } else {
+                        isolines.put(stage, update);
+                        if (stage == PolylineStage.BUFFER) {
+                            b = update.getBounds();
+                            b.x      -= PADDING;
+                            b.y      -= PADDING;
+                            b.width  += PADDING * 2;
+                            b.height += PADDING * 2;
+                            bounds = b;
+                        }
+                    }
+                }
+                bounds = b;
+                if (unchanged) {
                     stepTitle.setText(title + " (no change)");
                     c.countDown();
                 } else {
                     stepTitle.setText(title);
-                    isolines = update;
-                    bounds = b;
                     repaint();
                     assertNull(blocker);
                     if (next.getModel().isPressed()) {
