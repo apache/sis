@@ -37,11 +37,12 @@ import org.apache.sis.internal.util.Numerics;
  * of {@code double[]} arrays: because even indices become odd and odd indices become even, points order are
  * implicitly reverted without the need to rewrite all {@code double[]} array contents.
  *
- * @see Tracer.Level#partialPaths
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
- * @since   1.1
+ *
+ * @see Tracer.Level#partialPaths
+ *
+ * @since 1.1
  * @module
  */
 @SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
