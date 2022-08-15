@@ -30,7 +30,6 @@ import java.awt.image.RenderedImage;
 import org.opengis.coverage.grid.SequenceType;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.processing.image.TiledProcess;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -171,14 +170,35 @@ public final class Isolines {
     {
         ArgumentChecks.ensureNonNull("data",   data);
         ArgumentChecks.ensureNonNull("levels", levels);
-        return new Process(data, cloneAndSort(levels), gridToCRS).execute();
+        return new Parallelized(data, cloneAndSort(levels), gridToCRS).execute();
+    }
+
+    /**
+     * Merges results of two partial computations (tiles).
+     * This is invoked only in multi-threaded isoline computation.
+     * The {@code isolines} instances are modified in-place.
+     * The {@code neighbor} instances can be discarded after the merge.
+     *
+     * @param  isolines  the first set of isolines to merge.
+     * @param  neighbor  another set of isolines close to the first set.
+     *
+     * @see Parallelized
+     */
+    static void merge(final Isolines[] isolines, final Isolines[] neighbor) throws TransformException {
+        for (int i=0; i<isolines.length; i++) {
+            final Isolines target = isolines[i];
+            final Isolines source = neighbor[i];
+            for (int j=0; j<target.levels.length; j++) {
+                target.levels[j].merge(source.levels[j]);
+            }
+        }
     }
 
     /**
      * Returns a provider of {@link PixelIterator} suitable to isoline computations.
      * It is critical that iterators use {@link SequenceType#LINEAR} iterator order.
      */
-    private static PixelIterator.Builder iterators() {
+    static PixelIterator.Builder iterators() {
         return new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR);
     }
 
@@ -193,7 +213,7 @@ public final class Isolines {
      * @return the {@code isolines} array, returned for convenience.
      * @throws TransformException if an error occurred during polylines creation.
      */
-    private static Isolines[] flush(final Isolines[] isolines) throws TransformException {
+    static Isolines[] flush(final Isolines[] isolines) throws TransformException {
         for (final Isolines isoline : isolines) {
             for (final Tracer.Level level : isoline.levels) {
                 level.flush();
@@ -203,89 +223,12 @@ public final class Isolines {
     }
 
     /**
-     * Wraps {@code Isolines.generate(…)} calculation in a process for parallel execution.
-     * The source image is divided in sub-region and the isolines in each sub-region will
-     * be computed in a different thread.
-     */
-    private static final class Process extends TiledProcess<Isolines[]> {
-        /**
-         * Values for which to compute isolines. An array should be provided for each band.
-         * If there is more bands than {@code levels.length}, the last array is reused for
-         * all remaining bands.
-         *
-         * @see #cloneAndSort(double[][])
-         */
-        private final double[][] levels;
-
-        /**
-         * Transform from image upper left corner (in pixel coordinates) to geometry coordinates.
-         */
-        private final MathTransform gridToCRS;
-
-        /**
-         * Creates a process for parallel isoline computation.
-         *
-         * @param  data       image providing source values.
-         * @param  levels     values for which to compute isolines.
-         * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
-         */
-        Process(final RenderedImage data, final double[][] levels, final MathTransform gridToCRS) {
-            super(data, 1, 1, iterators());
-            this.levels = levels;
-            this.gridToCRS = gridToCRS;
-        }
-
-        /**
-         * Invoked by {@link TiledProcess} for creating a sub-task
-         * doing isoline computation on a sub-region of the image.
-         */
-        @Override
-        protected Task createSubTask() {
-            return new Tile();
-        }
-
-        /**
-         * A sub-task doing isoline computation on a sub-region of the image.
-         * The region is determined by the {@link #iterator}.
-         */
-        private final class Tile extends Task {
-            /** Isolines computed in the sub-region of this sub-task. */
-            private Isolines[] isolines;
-
-            /** Creates a new sub-task. */
-            Tile() {
-            }
-
-            /** Invoked in a background thread for performing isoline computation. */
-            @Override protected void execute() throws TransformException {
-                isolines = generate(iterator, levels, gridToCRS);
-            }
-
-            /** Invoked in a background thread for merging results of two sub-tasks. */
-            @Override protected void merge(final Task neighbor) throws TransformException {
-                for (int i=0; i<isolines.length; i++) {
-                    final Isolines target = isolines[i];
-                    final Isolines source = ((Tile) neighbor).isolines[i];
-                    for (int j=0; j<target.levels.length; j++) {
-                        target.levels[j].merge(source.levels[j]);
-                    }
-                }
-            }
-
-            /** Invoked on the last sub-task (after all merges) for getting final result. */
-            @Override protected Isolines[] result() throws TransformException {
-                return flush(isolines);
-            }
-        }
-    }
-
-    /**
      * Generates isolines for the specified levels in the region traversed by the given iterator.
      * This is the implementation of {@link #generate(RenderedImage, double[][], MathTransform)}
      * but potentially on a sub-region for parallel "fork-join" execution.
      */
-    private static Isolines[] generate(final PixelIterator iterator, final double[][] levels,
-                                       final MathTransform gridToCRS) throws TransformException
+    static Isolines[] generate(final PixelIterator iterator, final double[][] levels, final MathTransform gridToCRS)
+            throws TransformException
     {
         /*
          * Prepares a window of size 2×2 pixels over pixel values. Window elements are traversed
