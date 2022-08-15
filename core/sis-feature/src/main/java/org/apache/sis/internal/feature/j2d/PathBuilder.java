@@ -221,7 +221,7 @@ public class PathBuilder {
      * The {@link #createPolyline(boolean)} method should be invoked before this method
      * for making sure that there are no pending polylines.
      *
-     * @return the polyline, polygon or collector of polylines.
+     * @return the polyline, polygon or collection of polylines.
      *         May be {@code null} if no polyline or polygon has been created.
      */
     public final Shape build() {
@@ -230,6 +230,17 @@ public class PathBuilder {
             case 1:  return polylines.get(0);
             default: return new MultiPolylines(polylines.toArray(new Polyline[polylines.size()]));
         }
+    }
+
+    /**
+     * Returns a snapshot of currently added polylines or polygons without modifying the state of this builder.
+     * It is safe to continue building the shape and invoke this method again later for progressive rendering.
+     *
+     * @return the polyline, polygon or collection of polylines added so far.
+     *         May be {@code null} if no polyline or polygon has been created.
+     */
+    public final Shape snapshot() {
+        return build();
     }
 
     /**

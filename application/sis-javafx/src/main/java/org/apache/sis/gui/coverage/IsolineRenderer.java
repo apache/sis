@@ -38,7 +38,7 @@ import javafx.collections.ListChangeListener;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.gui.control.ColorRamp;
-import org.apache.sis.internal.processing.image.Isolines;
+import org.apache.sis.internal.processing.isoline.Isolines;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.gui.control.ValueColorMapper.Step;
 import org.apache.sis.internal.feature.j2d.EmptyShape;

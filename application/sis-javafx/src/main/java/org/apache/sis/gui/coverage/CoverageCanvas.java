@@ -70,7 +70,7 @@ import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
-import org.apache.sis.internal.processing.image.Isolines;
+import org.apache.sis.internal.processing.isoline.Isolines;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;

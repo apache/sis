@@ -152,6 +152,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * @since 0.3
  * @module
  */
+@SuppressWarnings("serial")                             // Fields are not statically typed as Serializable.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
     "metadataIdentifier",
@@ -1698,8 +1699,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Invoked by JAXB {@link javax.xml.bind.Marshaller} after this object has been marshalled to
-     * XML. This method restores the locale to be used for XML marshalling to its previous value.
+     * Invoked by JAXB {@link javax.xml.bind.Marshaller} after this object has been marshalled to XML.
+     * This method restores the locale to be used for XML marshalling to its previous value.
      */
     @SuppressWarnings("unused")
     private void afterMarshal(final Marshaller marshaller) {

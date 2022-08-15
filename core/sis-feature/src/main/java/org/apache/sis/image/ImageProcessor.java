@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
-import org.apache.sis.internal.processing.image.Isolines;
+import org.apache.sis.internal.processing.isoline.Isolines;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;

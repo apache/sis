@@ -16,7 +16,7 @@
  */
 
 /**
- * Image processing operations.
+ * Isolines generation.
  *
  * <p><strong>Do not use!</strong></p>
  *
@@ -29,4 +29,4 @@
  * @since   1.1
  * @module
  */
-package org.apache.sis.internal.processing.image;
+package org.apache.sis.internal.processing.isoline;

@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests {@link DefaultEngineeringCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -117,22 +117,24 @@ public final strictfp class DefaultEngineeringCRSTest extends TestCase {
         assertXmlEquals(
                 "<gml:EngineeringCRS xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:name>A construction site CRS</gml:name>\n" +
-                "  <gml:cartesianCS gml:id=\"Cartesian2D\">\n" +
-                "    <gml:name>Cartesian 2D</gml:name>\n" +
-                "    <gml:axis>\n" +
-                "      <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"x\">\n" +
-                "        <gml:name>x</gml:name>\n" +
-                "        <gml:axisAbbrev>x</gml:axisAbbrev>\n" +
-                "        <gml:axisDirection codeSpace=\"EPSG\">east</gml:axisDirection>\n" +
-                "      </gml:CoordinateSystemAxis>\n" +
-                "    </gml:axis>\n" +
-                "    <gml:axis>\n" +
-                "      <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"y\">\n" +
-                "        <gml:name>y</gml:name>\n" +
-                "        <gml:axisAbbrev>y</gml:axisAbbrev>\n" +
-                "        <gml:axisDirection codeSpace=\"EPSG\">north</gml:axisDirection>\n" +
-                "      </gml:CoordinateSystemAxis>\n" +
-                "    </gml:axis>\n" +
+                "  <gml:cartesianCS>\n" +
+                "    <gml:CartesianCS gml:id=\"Cartesian2D\">\n" +
+                "      <gml:name>Cartesian 2D</gml:name>\n" +
+                "      <gml:axis>\n" +
+                "        <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"x\">\n" +
+                "          <gml:name>x</gml:name>\n" +
+                "          <gml:axisAbbrev>x</gml:axisAbbrev>\n" +
+                "          <gml:axisDirection codeSpace=\"EPSG\">east</gml:axisDirection>\n" +
+                "        </gml:CoordinateSystemAxis>\n" +
+                "      </gml:axis>\n" +
+                "      <gml:axis>\n" +
+                "        <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"y\">\n" +
+                "          <gml:name>y</gml:name>\n" +
+                "          <gml:axisAbbrev>y</gml:axisAbbrev>\n" +
+                "          <gml:axisDirection codeSpace=\"EPSG\">north</gml:axisDirection>\n" +
+                "        </gml:CoordinateSystemAxis>\n" +
+                "      </gml:axis>\n" +
+                "    </gml:CartesianCS>\n" +
                 "  </gml:cartesianCS>\n" +
                 "  <gml:engineeringDatum>\n" +
                 "    <gml:EngineeringDatum gml:id=\"P1\">\n" +
@@ -167,37 +169,39 @@ public final strictfp class DefaultEngineeringCRSTest extends TestCase {
         assertXmlEquals(
                 "<gml:EngineeringCRS xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:name>A spherical CRS</gml:name>\n" +
-                "  <gml:sphericalCS gml:id=\"Spherical\">\n" +
-                "    <gml:name>Spherical</gml:name>\n" +
-                "    <gml:axis>\n" +
-                "      <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9122\" gml:id=\"SphericalLatitude\">\n" +
-                "        <gml:name>Spherical latitude</gml:name>\n" +
-                "        <gml:axisAbbrev>Ω</gml:axisAbbrev>\n" +
-                "        <gml:axisDirection codeSpace=\"EPSG\">north</gml:axisDirection>\n" +
-                "        <gml:minimumValue>-90.0</gml:minimumValue>\n" +
-                "        <gml:maximumValue>90.0</gml:maximumValue>\n" +
-                "        <gml:rangeMeaning codeSpace=\"EPSG\">exact</gml:rangeMeaning>\n" +
-                "      </gml:CoordinateSystemAxis>\n" +
-                "    </gml:axis>\n" +
-                "    <gml:axis>\n" +
-                "      <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9122\" gml:id=\"SphericalLongitude\">\n" +
-                "        <gml:name>Spherical longitude</gml:name>\n" +
-                "        <gml:axisAbbrev>θ</gml:axisAbbrev>\n" +
-                "        <gml:axisDirection codeSpace=\"EPSG\">east</gml:axisDirection>\n" +
-                "        <gml:minimumValue>-180.0</gml:minimumValue>\n" +
-                "        <gml:maximumValue>180.0</gml:maximumValue>\n" +
-                "        <gml:rangeMeaning codeSpace=\"EPSG\">wraparound</gml:rangeMeaning>\n" +
-                "      </gml:CoordinateSystemAxis>\n" +
-                "    </gml:axis>\n" +
-                "    <gml:axis>\n" +
-                "      <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"GeocentricRadius\">\n" +
-                "        <gml:name>Geocentric radius</gml:name>\n" +
-                "        <gml:axisAbbrev>r</gml:axisAbbrev>\n" +
-                "        <gml:axisDirection codeSpace=\"EPSG\">up</gml:axisDirection>\n" +
-                "        <gml:minimumValue>0.0</gml:minimumValue>\n" +
-                "        <gml:rangeMeaning codeSpace=\"EPSG\">exact</gml:rangeMeaning>\n" +
-                "      </gml:CoordinateSystemAxis>\n" +
-                "    </gml:axis>\n" +
+                "  <gml:sphericalCS>\n" +
+                "    <gml:SphericalCS gml:id=\"Spherical\">\n" +
+                "      <gml:name>Spherical</gml:name>\n" +
+                "      <gml:axis>\n" +
+                "        <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9122\" gml:id=\"SphericalLatitude\">\n" +
+                "          <gml:name>Spherical latitude</gml:name>\n" +
+                "          <gml:axisAbbrev>Ω</gml:axisAbbrev>\n" +
+                "          <gml:axisDirection codeSpace=\"EPSG\">north</gml:axisDirection>\n" +
+                "          <gml:minimumValue>-90.0</gml:minimumValue>\n" +
+                "          <gml:maximumValue>90.0</gml:maximumValue>\n" +
+                "          <gml:rangeMeaning codeSpace=\"EPSG\">exact</gml:rangeMeaning>\n" +
+                "        </gml:CoordinateSystemAxis>\n" +
+                "      </gml:axis>\n" +
+                "      <gml:axis>\n" +
+                "        <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9122\" gml:id=\"SphericalLongitude\">\n" +
+                "          <gml:name>Spherical longitude</gml:name>\n" +
+                "          <gml:axisAbbrev>θ</gml:axisAbbrev>\n" +
+                "          <gml:axisDirection codeSpace=\"EPSG\">east</gml:axisDirection>\n" +
+                "          <gml:minimumValue>-180.0</gml:minimumValue>\n" +
+                "          <gml:maximumValue>180.0</gml:maximumValue>\n" +
+                "          <gml:rangeMeaning codeSpace=\"EPSG\">wraparound</gml:rangeMeaning>\n" +
+                "        </gml:CoordinateSystemAxis>\n" +
+                "      </gml:axis>\n" +
+                "      <gml:axis>\n" +
+                "        <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"GeocentricRadius\">\n" +
+                "          <gml:name>Geocentric radius</gml:name>\n" +
+                "          <gml:axisAbbrev>r</gml:axisAbbrev>\n" +
+                "          <gml:axisDirection codeSpace=\"EPSG\">up</gml:axisDirection>\n" +
+                "          <gml:minimumValue>0.0</gml:minimumValue>\n" +
+                "          <gml:rangeMeaning codeSpace=\"EPSG\">exact</gml:rangeMeaning>\n" +
+                "        </gml:CoordinateSystemAxis>\n" +
+                "      </gml:axis>\n" +
+                "    </gml:SphericalCS>\n" +
                 "  </gml:sphericalCS>\n" +
                 "  <gml:engineeringDatum>\n" +
                 "    <gml:EngineeringDatum gml:id=\"Centre\">\n" +
