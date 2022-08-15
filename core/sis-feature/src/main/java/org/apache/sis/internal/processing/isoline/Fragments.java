@@ -178,8 +178,9 @@ final class Fragments extends ArrayList<double[]> {
     /**
      * Associates this polyline to its two extremities in the given map. If other polylines already exist
      * for one or both extremities, then this polyline will be merged with previously existing polylines.
-     * This method returns {@code true} if the polyline has been closed, in which case caller should store
-     * the coordinates in {@link Tracer.Level#path} immediately.
+     * This method returns {@code true} if caller should store the coordinates in {@link Tracer.Level#path}
+     * immediately. It may be either because the polyline has been closed as a polygon, or because the two
+     * extremities contains NaN values in which case the polylines are not anymore in {@code partialPaths}.
      *
      * @param  partialPaths  where to add or merge polylines.
      * @return {@code true} if this polyline became a closed polygon as a result of merge operation.
@@ -197,7 +198,7 @@ final class Fragments extends ArrayList<double[]> {
             // Intentionally replace previous values.
             if (firstPoint != null) partialPaths.put(firstPoint, this);
             if (lastPoint  != null) partialPaths.put(lastPoint,  this);
-            return false;
+            return firstPoint == null && lastPoint == null;
         }
     }
 
@@ -255,6 +256,8 @@ final class Fragments extends ArrayList<double[]> {
     /**
      * Returns the content of this list as an array of {@link PolylineBuffer} instances.
      * {@code PolylineBuffer} instances at even index should be written with their points in reverse order.
+     *
+     * @return  elements of this array as polylines. May contain null elements.
      *
      * @see #writeTo(Joiner, PolylineBuffer[], boolean)
      */

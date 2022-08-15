@@ -78,21 +78,24 @@ final class Result extends AbstractList<NavigableMap<Double,Shape>> {
     /**
      * Returns the list length, which is the number of bands.
      */
-    @Override public int size() {
+    @Override
+    public int size() {
         return isolines().length;
     }
 
     /**
      * Returns the isolines in the given band.
      */
-    @Override public NavigableMap<Double,Shape> get(final int band) {
+    @Override
+    public NavigableMap<Double,Shape> get(final int band) {
         return isolines()[band];
     }
 
     /**
      * Returns the list content as an array.
      */
-    @Override public Object[] toArray() {
+    @Override
+    public Object[] toArray() {
         return isolines().clone();
     }
 }
