@@ -117,6 +117,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #getAxis(int)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private CoordinateSystemAxis[] axes;
 
     /**

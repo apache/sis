@@ -24,6 +24,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -57,7 +58,7 @@ import org.apache.sis.internal.util.Numerics;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -303,5 +304,15 @@ class Polyline extends FlatShape {
             inflate.transform(coordinates, position, coords, 0, 1);
             return (position == 0) ? SEG_MOVETO : SEG_LINETO;
         }
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     *
+     * @return a debug string representation.
+     */
+    @Override
+    public String toString() {
+        return Classes.getShortClassName(this) + '[' + (coordinates.length / 2) + " points]";
     }
 }

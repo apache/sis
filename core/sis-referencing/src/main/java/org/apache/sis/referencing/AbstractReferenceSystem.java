@@ -82,6 +82,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *
      * @see #getDomainOfValidity()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Extent domainOfValidity;
 
     /**
@@ -93,6 +94,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *
      * @see #getScope()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private InternationalString scope;
 
     /**
