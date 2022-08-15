@@ -26,12 +26,16 @@ import java.awt.BasicStroke;
 import java.awt.EventQueue;
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import javax.swing.Timer;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -137,6 +141,16 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
     private final AffineTransform2D sourceToCanvas;
 
     /**
+     * The image to show in background. This image has the size of the canvas.
+     */
+    private final BufferedImage background;
+
+    /**
+     * The final result returned by public API.
+     */
+    private Shape result;
+
+    /**
      * Creates a new viewer.
      *
      * @param  data  the source of data for isolines.
@@ -145,16 +159,50 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     private StepsViewer(final RenderedImage data, final Container pane) {
         isolines    = new EnumMap<>(PolylineStage.class);
-        stageColors = new Color[] {Color.YELLOW, Color.CYAN, Color.LIGHT_GRAY};
-        setBackground(Color.BLACK);
-        setOpaque(true);
+        stageColors = new Color[] {Color.YELLOW, Color.PINK, Color.BLUE};
+        /*
+         * Computes a transform from indices in the data matrix to pixel coordinates in the canvas.
+         */
+        setMaximumSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
         final double scaleX = (CANVAS_WIDTH  - 2*PADDING) / (double) data.getWidth();
         final double scaleY = (CANVAS_HEIGHT - 2*PADDING) / (double) data.getHeight();
         sourceToCanvas = new AffineTransform2D(
                 FLIP_X ? -scaleX : scaleX, 0, 0, FLIP_Y ? -scaleY : scaleY,
                 scaleX * (PADDING + data.getMinX() + (FLIP_X ? data.getWidth()  : 0)),
                 scaleY * (PADDING + data.getMinY() + (FLIP_Y ? data.getHeight() : 0)));
-
+        /*
+         * Creates a background image as a grayscale image with pixel values in the range 0 to 64.
+         * It produces a dark image for making the isolines (in bright colors) easier to see.
+         */
+        background = new BufferedImage(CANVAS_WIDTH, CANVAS_HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
+        {   // For keeping variable locale.
+            final Graphics2D gh = background.createGraphics();
+            gh.drawRenderedImage(data, sourceToCanvas);
+            gh.dispose();
+            final WritableRaster r = background.getRaster();
+            int min = 256, max = 2;
+            for (int y=0; y<CANVAS_HEIGHT; y++) {
+                for (int x=0; x<CANVAS_WIDTH; x++) {
+                    final int value = r.getSample(x, y, 0);
+                    if (value != 0) {
+                        if (value < min) min = value;
+                        if (value > max) max = value;
+                    }
+                }
+            }
+            if (--min < max) {
+                final float scale = 128f / (max - min);
+                for (int y=0; y<CANVAS_HEIGHT; y++) {
+                    for (int x=0; x<CANVAS_WIDTH; x++) {
+                        final int value = r.getSample(x, y, 0);
+                        r.setSample(x, y, 0, Math.max(Math.round(scale * (value - min)), 0));
+                    }
+                }
+            }
+        }
+        /*
+         * Swing controls.
+         */
         stepTitle = new JLabel();
         next = new JButton("Next");
         next.setEnabled(false);
@@ -198,6 +246,9 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
         for (final Shape shape : iso.polylines().values()) {
             path.append(shape, false);
         }
+        path.transform(viewer.sourceToCanvas);
+        viewer.result = path;
+        viewer.repaint();
     }
 
     /**
@@ -207,18 +258,22 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
     protected void paintComponent(final Graphics g) {
         super.paintComponent(g);
         final Graphics2D gh = (Graphics2D) g;
-        gh.setColor(getBackground());
-        gh.fillRect(0, 0, getWidth(), getHeight());
+        gh.drawRenderedImage(background, new AffineTransform());
         if (bounds != null) {
             gh.setStroke(new BasicStroke(2));
-            gh.setColor(Color.RED);
+            gh.setColor(Color.ORANGE);
             gh.draw(bounds);
         }
         for (final Map.Entry<PolylineStage,Path2D> entry : isolines.entrySet()) {
             final PolylineStage stage = entry.getKey();
-            gh.setStroke(new BasicStroke(stage == PolylineStage.BUFFER ? 2 : 0));
-            gh.setColor(stageColors[stage.ordinal()]);
+            gh.setStroke(new BasicStroke((result == null) ? (stage == PolylineStage.BUFFER ? 2 : 0) : 5));
+            gh.setColor((result == null) ? stageColors[stage.ordinal()] : Color.YELLOW);
             gh.draw(entry.getValue());
+        }
+        if (result != null) {
+            gh.setStroke(new BasicStroke(2));
+            gh.setColor(Color.BLUE);
+            gh.draw(result);
         }
     }
 
@@ -286,7 +341,7 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
                         isolines.remove(stage);
                     } else {
                         isolines.put(stage, update);
-                        if (b == null) {
+                        if (stage == PolylineStage.BUFFER) {
                             b = update.getBounds();
                             if (b.isEmpty()) {
                                 b = null;
