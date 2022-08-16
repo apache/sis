@@ -21,6 +21,7 @@ import java.util.Collections;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
@@ -197,6 +198,8 @@ public interface GridCoverageResource extends DataSet {
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
      * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
      * @return the grid coverage for the specified domain and range.
+     * @throws DisjointExtentException if the given domain does not intersect the resource extent.
+     * @throws IllegalArgumentException if the given domain or range is invalid for another reason.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     GridCoverage read(GridGeometry domain, int... range) throws DataStoreException;

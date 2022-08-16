@@ -30,6 +30,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.Query;
@@ -40,15 +41,19 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * Exposes a sequence of {@link FeatureSet}s as a single one. A few notes:
- * <ol>
- *   <li>The feature set concatenation must be built with a non-empty array or collection of feature set.
- *     It is copied verbatim in an unmodifiable list, meaning that duplicated instances won't be removed,
- *     and iteration order is driven by input sequence.</li>
- *   <li>All input feature sets must share a common type, or at least a common super-type. If you want to sequence
- *     sets which does not share any common parent, please pre-process them to modify their public type.</li>
- *   <li>There is no {@linkplain #getIdentifier() identifier} since this feature set is a computation result.</li>
- * </ol>
+ * Exposes a sequence of {@link FeatureSet}s as a single one.
+ * The concatenation is built from an array or collection of input feature sets,
+ * copied verbatim in iteration order and without removal of duplicated elements.
+ * All input feature sets must share a common type, or at least a common super-type.
+ * The {@linkplain #getType() feature type of this concatenated set} will be the
+ * {@linkplain Features#findCommonParent(Iterable) most specific type} found among all input feature sets.
+ *
+ * <h2>Identification</h2>
+ * There is no {@linkplain #getIdentifier() identifier} since this feature set is a computation result.
+ *
+ * <h2>Multi-threading</h2>
+ * Concatenated feature set is immutable and thread-safe if all input feature sets
+ * are immutable and thread-safe.
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -101,7 +106,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
         commonType = Features.findCommonParent(Arrays.asList(types));
         if (commonType == null) {
             // TODO: localize.
-            throw new DataStoreContentException("Cannot find a common super type across all feature sets to concatenate");
+            throw new DataStoreContentException(Resources.format(Resources.Keys.NoCommonFeatureType));
         }
     }
 
@@ -136,7 +141,9 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
         ArgumentChecks.ensureNonNull("sources", sources);
         final int size = sources.size();
         switch (size) {
-            case 0: throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "sources"));
+            case 0: {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "sources"));
+            }
             case 1: {
                 final FeatureSet fs = CollectionsExt.first(sources);
                 ArgumentChecks.ensureNonNullElement("sources", 0, fs);
@@ -184,8 +191,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
                 if (count.isPresent()) {
                     final long c = count.getAsLong();
                     if (c >= 0) {                               // Paranoiac check.
-                        sum += c;
-                        if (sum < 0) {                          // Integer overflow.
+                        if ((sum += c) < 0) {                   // Integer overflow.
                             sum = Long.MAX_VALUE;
                             break;
                         }
@@ -234,7 +240,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
         for (int i=0; i<subsets.length; i++) {
             FeatureSet source = sources.get(i);
             subsets[i] = source.subset(query);
-            modified |= subsets[i] != source;
+            modified |= (subsets[i] != source);
         }
         return modified ? new ConcatenatedFeatureSet(subsets, this) : this;
     }

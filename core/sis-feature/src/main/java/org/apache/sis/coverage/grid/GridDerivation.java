@@ -1199,6 +1199,7 @@ public class GridDerivation {
      * <p>This method can be invoked after {@link #build()} for getting additional information.</p>
      *
      * @return intersection of grid geometry extents in units of {@link #base} grid cells.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent.
      */
     public GridExtent getIntersection() {
         return getBaseExtentExpanded(true);

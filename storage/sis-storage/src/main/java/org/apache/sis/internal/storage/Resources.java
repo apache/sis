@@ -317,6 +317,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingSchemeInURI_1 = 11;
 
         /**
+         * No feature type is common to all the features to aggregate.
+         */
+        public static final short NoCommonFeatureType = 75;
+
+        /**
          * No directory of resources found at “{0}”.
          */
         public static final short NoSuchResourceDirectory_1 = 46;
