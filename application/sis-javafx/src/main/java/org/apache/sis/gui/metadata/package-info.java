@@ -23,7 +23,7 @@
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */

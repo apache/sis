@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.text.FieldPosition;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.SpatialRepresentation;
@@ -93,10 +92,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
      *       the resolution. Note that VectorSpatialRepresentation would also needs a table.
      */
     private void build(final GridSpatialRepresentation info) {
-        final Integer dimension = info.getNumberOfDimensions();
-        if (dimension != null) {
-            addLine(Vocabulary.Keys.NumberOfDimensions, owner.getNumberFormat().format(dimension));
-        }
+        addLine(Vocabulary.Keys.NumberOfDimensions, owner.format(info.getNumberOfDimensions()));
         final StringBuffer gridSize   = new StringBuffer(20);
         final StringBuffer resolution = new StringBuffer(20);
         for (final Dimension dim : nonNull(info.getAxisDimensionProperties())) {
@@ -106,9 +102,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
                 if (gridSize.length() != 0) {
                     gridSize.append(" × ");
                 }
-                if (size != null) {
-                    owner.getNumberFormat().format(size, gridSize, new FieldPosition(0));
-                }
+                owner.format(size, gridSize);
                 if (name != null) {
                     if (size != null) gridSize.append(' ');
                     gridSize.append(name);
@@ -119,7 +113,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
                 if (resolution.length() != 0) {
                     resolution.append(" × ");
                 }
-                owner.getNumberFormat().format(r, resolution, new FieldPosition(0));
+                owner.format(r, resolution);
             }
         }
         if (gridSize.length() != 0) {
