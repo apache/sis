@@ -120,21 +120,20 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testGetIdentifier() {
-        assertEquals("Apache:SIS",           getIdentifier(SIS));
-        assertEquals("OGC",                  getIdentifier(OGC));
-        assertEquals("IOGP",                 getIdentifier(IOGP));
-        assertEquals("EPSG",                 getIdentifier(EPSG));
-        assertEquals("ESRI:ArcGIS",          getIdentifier(ESRI));
-        assertEquals("NetCDF",               getIdentifier(NETCDF));
-        assertEquals("GeoTIFF",              getIdentifier(GEOTIFF));
-        assertEquals("Pitney Bowes:MapInfo", getIdentifier(MAP_INFO));
-        assertEquals("ISBN",                 getIdentifier(ISBN));
-        assertEquals("ISSN",                 getIdentifier(ISSN));
-        assertEquals("OSGeo:PROJ",           getIdentifier(PROJ4));              // Not a valid Unicode identifier.
-        assertEquals("IHO:S-57",             getIdentifier(S57));                // Not a valid Unicode identifier.
-        assertEquals("ISO:19115-1",          getIdentifier(ISO_19115.get(0)));   // The ':' separator is not usual in ISO references
-        assertEquals("ISO:19115-2",          getIdentifier(ISO_19115.get(1)));   // and could be changed in future SIS versions.
-        assertEquals("OGC:WMS",              getIdentifier(WMS));
+        assertEquals("Apache:SIS",  getIdentifier(SIS));
+        assertEquals("OGC",         getIdentifier(OGC));
+        assertEquals("IOGP",        getIdentifier(IOGP));
+        assertEquals("EPSG",        getIdentifier(EPSG));
+        assertEquals("ESRI:ArcGIS", getIdentifier(ESRI));
+        assertEquals("NetCDF",      getIdentifier(NETCDF));
+        assertEquals("GeoTIFF",     getIdentifier(GEOTIFF));
+        assertEquals("ISBN",        getIdentifier(ISBN));
+        assertEquals("ISSN",        getIdentifier(ISSN));
+        assertEquals("OSGeo:PROJ",  getIdentifier(PROJ4));              // Not a valid Unicode identifier.
+        assertEquals("IHO:S-57",    getIdentifier(S57));                // Not a valid Unicode identifier.
+        assertEquals("ISO:19115-1", getIdentifier(ISO_19115.get(0)));   // The ':' separator is not usual in ISO references
+        assertEquals("ISO:19115-2", getIdentifier(ISO_19115.get(1)));   // and could be changed in future SIS versions.
+        assertEquals("OGC:WMS",     getIdentifier(WMS));
     }
 
     /**
