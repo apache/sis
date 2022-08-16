@@ -255,11 +255,11 @@ public abstract class ChannelData implements Markable {
      */
     public final void flushBefore(final long position) throws IOException {
         final long currentPosition = getStreamPosition();
-        if (position < bufferOffset || position > currentPosition) {
+        if (position > currentPosition) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.ValueOutOfRange_4,
                     "position", bufferOffset, currentPosition, position));
         }
-        final int n = (int) (position - bufferOffset);
+        final int n = (int) Math.max(position - bufferOffset, 0);
         final int p = buffer.position() - n;
         final int r = buffer.limit() - n;
         flushAndSetPosition(n);                             // Number of bytes to forget.
