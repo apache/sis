@@ -42,6 +42,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
     /**
      * Constructs a new grid coverage which will delegate the rendering operation to the given source.
      * This coverage will take the same sample dimensions than the source.
+     * The {@code domain} size must be the same than the source grid geometry size.
      *
      * @param  source       the source on which to delegate rendering operations.
      * @param  domain       the grid extent, CRS and conversion from cell indices to CRS.
@@ -56,10 +57,14 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
      * Returns a grid coverage which will use the {@code domain} grid geometry.
      * This coverage will take the same sample dimensions than the source.
      *
+     * <p>If {@code domain} is non-null, then it should have the same size than the source grid geometry size.
+     * If this is not the case, then this method returns {@code null}.</p>
+     *
      * @param  source       the source on which to delegate rendering operations.
      * @param  domain       the geometry of the grid coverage to return, or {@code null} for automatic.
      * @param  translation  translation to apply on the argument given to {@link #render(GridExtent)}.
-     * @return the coverage. May be the {@code source} returned as-is.
+     * @return the coverage, or {@code null} if {@code domain} is non-null but does not have the expected size.
+     *         May be the {@code source} returned as-is.
      */
     static GridCoverage create(GridCoverage source, GridGeometry domain, long[] translation,
                                final boolean allowSourceReplacement)
@@ -81,6 +86,8 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
         final GridGeometry gridGeometry = source.getGridGeometry();
         if (domain == null) {
             domain = gridGeometry.translate(translation);
+        } else if (!domain.extent.isSameSize(gridGeometry.extent)) {
+            return null;
         }
         if (domain.equals(gridGeometry)) {
             return source;                  // All (potentially updated) translation terms are zero.
