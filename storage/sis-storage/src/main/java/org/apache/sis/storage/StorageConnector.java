@@ -99,7 +99,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -711,6 +711,10 @@ public class StorageConnector implements Serializable {
      *           (including the {@link ImageInputStream} and {@link javax.imageio.stream.ImageOutputStream} types),
      *           then it is returned unchanged.</li>
      *
+     *       <li>Otherwise if the input is an instance of {@link ByteBuffer}, then an {@link ImageInputStream}
+     *           backed by a read-only view of that buffer is created when first needed and returned.
+     *           The properties (position, mark, limit) of the original buffer are unmodified.</li>
+     *
      *       <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
      *           {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link InputStream} or
      *           {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
@@ -952,6 +956,11 @@ public class StorageConnector implements Serializable {
         reset();
         if (storage instanceof InputStream) {
             ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
+        }
+        if (storage instanceof ByteBuffer) {
+            final ChannelDataInput asDataInput = new ChannelImageInputStream(getStorageName(), (ByteBuffer) storage);
+            addView(ChannelDataInput.class, asDataInput);
+            return asDataInput;
         }
         /*
          * Following method call recognizes ReadableByteChannel, InputStream (with optimization for FileInputStream),

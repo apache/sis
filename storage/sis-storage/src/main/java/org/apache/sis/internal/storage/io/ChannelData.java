@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * querying or modifying the stream position. This class does not define any read or write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -123,6 +123,21 @@ public abstract class ChannelData implements Markable {
         this.filename      = filename;
         this.buffer        = buffer;
         this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
+    }
+
+    /**
+     * Creates a new instance for a buffer filled with the bytes to use.
+     * This constructor uses an independent, read-only view of the given buffer.
+     * No reference to the given buffer will be retained.
+     *
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
+     * @param  data      the buffer filled with all bytes to read.
+     */
+    ChannelData(final String filename, final ByteBuffer data) {
+        this.filename = filename;
+        buffer = data.asReadOnlyBuffer();
+        buffer.order(data.order());
+        channelOffset = 0;
     }
 
     /**
@@ -245,9 +260,10 @@ public abstract class ChannelData implements Markable {
     /**
      * Discards the initial portion of the stream prior to the indicated position.
      * Attempting to {@linkplain #seek(long) seek} to an offset within the flushed
-     * portion of the stream will result in an {@link IndexOutOfBoundsException}.
+     * portion of the stream may result in an {@link IndexOutOfBoundsException}.
      *
-     * <p>This method moves the data starting at the given position to the beginning of the {@link #buffer},
+     * <p>If the {@link #buffer} is read-only, then this method does nothing. Otherwise
+     * this method moves the data starting at the given position to the beginning of the {@link #buffer},
      * thus making more room for new data before the data at the given position is discarded.</p>
      *
      * @param  position  the length of the stream prefix that may be flushed.
@@ -258,6 +274,9 @@ public abstract class ChannelData implements Markable {
         if (position > currentPosition) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.ValueOutOfRange_4,
                     "position", bufferOffset, currentPosition, position));
+        }
+        if (buffer.isReadOnly()) {
+            return;
         }
         final int n = (int) Math.max(position - bufferOffset, 0);
         final int p = buffer.position() - n;
