@@ -86,6 +86,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
@@ -461,6 +462,7 @@ public final class CRS extends Static {
      *
      * @since 0.8
      */
+    @OptionalCandidate
     public static CoordinateReferenceSystem suggestCommonTarget(GeographicBoundingBox regionOfInterest,
                                                                 CoordinateReferenceSystem... sourceCRS)
     {
@@ -728,6 +730,7 @@ public final class CRS extends Static {
      *
      * @since 0.7
      */
+    @OptionalCandidate
     public static double getLinearAccuracy(final CoordinateOperation operation) {
         if (operation == null) {
             return Double.NaN;
@@ -758,6 +761,7 @@ public final class CRS extends Static {
      *
      * @since 0.7
      */
+    @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateOperation operation) {
         if (operation == null) {
             return null;
@@ -785,6 +789,7 @@ public final class CRS extends Static {
      *
      * @category information
      */
+    @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
         return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomainOfValidity()) : null;
     }
@@ -812,6 +817,7 @@ public final class CRS extends Static {
      * @category information
      * @since 0.8
      */
+    @OptionalCandidate
     public static Envelope getDomainOfValidity(final CoordinateReferenceSystem crs) {
         Envelope envelope = null;
         GeneralEnvelope merged = null;
@@ -1096,6 +1102,7 @@ public final class CRS extends Static {
      *
      * @see org.apache.sis.geometry.GeneralEnvelope#horizontal()
      */
+    @OptionalCandidate
     public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
         switch (horizontalCode(crs)) {
             /*
@@ -1190,6 +1197,7 @@ public final class CRS extends Static {
      *
      * @category information
      */
+    @OptionalCandidate
     public static VerticalCRS getVerticalComponent(final CoordinateReferenceSystem crs, final boolean allowCreateEllipsoidal) {
         if (crs instanceof VerticalCRS) {
             return (VerticalCRS) crs;
@@ -1233,6 +1241,7 @@ public final class CRS extends Static {
      *
      * @category information
      */
+    @OptionalCandidate
     public static TemporalCRS getTemporalComponent(final CoordinateReferenceSystem crs) {
         if (crs instanceof TemporalCRS) {
             return (TemporalCRS) crs;
@@ -1348,6 +1357,7 @@ public final class CRS extends Static {
      *
      * @since 0.5
      */
+    @OptionalCandidate
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
         if (crs == null) return null;     // Skip bounds check.
         int dimension = ReferencingUtilities.getDimension(crs);
