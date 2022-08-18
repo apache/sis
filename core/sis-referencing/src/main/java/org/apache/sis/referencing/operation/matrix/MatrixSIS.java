@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see Matrices
  *
@@ -161,6 +161,21 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     void set(final int row, final int column, final DoubleDouble dd) {
         setElement(row, column, dd.doubleValue());
+    }
+
+    /**
+     * Retrieves the value at the specified row and column of this matrix, rounded to nearest integer.
+     * This method may be more accurate than {@link #getElement(int, int)} in some implementations
+     * when the value is expected to be an integer (for example in conversions of pixel coordinates).
+     *
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column, rounded to nearest integer.
+     *
+     * @since 1.3
+     */
+    public long getInteger(int row, int column) {
+        return Math.round(getElement(row, column));
     }
 
     /**

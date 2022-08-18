@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -57,6 +58,22 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     void validate(final MatrixSIS matrix) {
         super.validate(matrix);
         assertEquals(GeneralMatrix.class, matrix.getClass());
+    }
+
+    /**
+     * Tests {@link GeneralMatrix#getNumber(int, int)} and {@link GeneralMatrix#getInteger(int, int)}
+     * using a value which can not be stored accurately in a {@code double} type.
+     */
+    @Test
+    public void testExtendedPrecision() {
+        final long value = 1000000000000010000L;
+        assertNotEquals(value, Math.round((double) value));
+        final GeneralMatrix m = new GeneralMatrix(1, 1, false, 2);
+        final DoubleDouble ddval = new DoubleDouble((Long) value);
+        m.setNumber(0, 0, ddval);
+        assertEquals(Long.toString(value), ddval.toString());
+        assertEquals(ddval, m.getNumber (0, 0));
+        assertEquals(value, m.getInteger(0, 0));
     }
 
     /**
