@@ -40,7 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -48,7 +48,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * The grid coverage specified at construction time.
      */
-    private final GridCoverage coverage;
+    public final GridCoverage coverage;
 
     /**
      * Creates a new coverage stored in memory.
