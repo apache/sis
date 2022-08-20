@@ -40,7 +40,7 @@ import org.junit.Test;
  */
 public final strictfp class PolarToCartesianTest extends TransformTestCase {
     /**
-     * Returns coordinate points in polar or cylindrical coordinates and their equivalent in Cartesian coordinates.
+     * Returns coordinate tuples in polar or cylindrical coordinates and their equivalent in Cartesian coordinates.
      */
     static double[][] testData(final boolean withHeight) {
         final double z     = 20;

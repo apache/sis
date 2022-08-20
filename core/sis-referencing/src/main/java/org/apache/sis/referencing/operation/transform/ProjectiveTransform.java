@@ -207,7 +207,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     }
 
     /**
-     * Converts a single coordinate point in a list of coordinate values,
+     * Converts a single coordinate tuple in a list of coordinate values,
      * and optionally computes the derivative at that location.
      *
      * @return {@inheritDoc}
@@ -436,7 +436,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * the derivative is the same everywhere and the given point is ignored.
      * For a perspective transform, the given point is used.
      *
-     * @param  point  the coordinate point where to evaluate the derivative.
+     * @param  point  the coordinate tuple where to evaluate the derivative.
      */
     @Override
     public final Matrix derivative(final DirectPosition point) {

@@ -697,9 +697,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <h4>Normalization</h4>
      * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
-     * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
+     * Input coordinates shall have the <cite>central meridian</cite> removed from the longitude by the caller
      * before this method is invoked. After this method is invoked, the caller will need to multiply the output
-     * coordinate by the global <cite>scale factor</cite>,
+     * coordinates by the global <cite>scale factor</cite>,
      * apply the (<cite>false easting</cite>, <cite>false northing</cite>) offset
      * and eventually other projection-specific factors.
      * This means that projections that implement this method are performed on a sphere or ellipse
@@ -721,40 +721,40 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * If this assumption is not applicable to a particular subclass, then it is implementer responsibility to check
      * the range.
      *
-     * @param  srcPts    the array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
+     * @param  srcPts    the array containing the source point coordinates, as (<var>longitude</var>, <var>latitude</var>)
      *                   angles in <strong>radians</strong>.
-     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
-     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
+     * @param  srcOff    the offset of the single coordinate tuple to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinates is returned (may be the same than {@code srcPts}).
      *                   Coordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
-     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  dstOff    the offset of the location of the converted coordinates that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public abstract Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate)
             throws ProjectionException;
 
     /**
-     * Inverse converts the single coordinate in {@code srcPts} at the given offset and stores the result in
+     * Inverse converts the single coordinate tuple in {@code srcPts} at the given offset and stores the result in
      * {@code ptDst} at the given offset. The output coordinates are (<var>longitude</var>, <var>latitude</var>)
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
      * <h4>Normalization</h4>
-     * Input coordinate shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
+     * Input coordinates shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
      * by the caller and the result divided by the global <cite>scale factor</cite> before this method is invoked.
      * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude
-     * in the output coordinate. This means that projections that implement this method are performed on a sphere
+     * in the output coordinates. This means that projections that implement this method are performed on a sphere
      * or ellipse having a semi-major axis of 1.
      * Additional projection-specific factors may also need to be applied (see class javadoc).
      *
      * <div class="note"><b>Note:</b> in the <a href="https://proj.org/">PROJ</a> library, the same standardization,
      * described above, is handled by {@code pj_inv.c}, except for the projection-specific additional factors.</div>
      *
-     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcPts  the array containing the source point coordinates, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.
-     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
      *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.

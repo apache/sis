@@ -106,10 +106,10 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)}
      * using a temporary array of doubles.
      *
-     * @param  ptSrc  the coordinate point to be transformed.
-     * @param  ptDst  the coordinate point that stores the result of transforming {@code ptSrc},
+     * @param  ptSrc  the coordinate tuple to be transformed.
+     * @param  ptDst  the coordinate tuple that stores the result of transforming {@code ptSrc},
      *                or {@code null} if a new point shall be created.
-     * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+     * @return the coordinate tuple after transforming {@code ptSrc} and storing the result in {@code ptDst},
      *         or in a new point if {@code ptDst} was null.
      * @throws TransformException if the point can not be transformed.
      *
@@ -305,14 +305,14 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * The default implementation performs the following steps:
      *
      * <ul>
-     *   <li>Copy the coordinate in a temporary array and pass that array to the
+     *   <li>Copy the coordinates in a temporary array and pass that array to the
      *       {@link #transform(double[], int, double[], int, boolean)} method,
      *       with the {@code derivate} boolean argument set to {@code true}.</li>
      *   <li>If the latter method returned a non-null matrix, returns that matrix.
      *       Otherwise throws {@link TransformException}.</li>
      * </ul>
      *
-     * @param  point  the coordinate point where to evaluate the derivative.
+     * @param  point  the coordinate tuple where to evaluate the derivative.
      * @return the derivative at the specified point as a 2×2 matrix.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
@@ -325,8 +325,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * Implementation of {@link #derivative(DirectPosition)} shared by the inverse transform.
      */
     static Matrix derivative(final AbstractMathTransform tr, final Point2D point) throws TransformException {
-        final double[] coordinate = new double[] {point.getX(), point.getY()};
-        final Matrix derivative = tr.transform(coordinate, 0, null, 0, true);
+        final double[] coordinates = new double[] {point.getX(), point.getY()};
+        final Matrix derivative = tr.transform(coordinates, 0, null, 0, true);
         if (derivative == null) {
             throw new TransformException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
@@ -377,10 +377,10 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)}
          * using a temporary array of doubles.
          *
-         * @param  ptSrc  the coordinate point to be transformed.
-         * @param  ptDst  the coordinate point that stores the result of transforming {@code ptSrc},
+         * @param  ptSrc  the coordinate tuple to be transformed.
+         * @param  ptDst  the coordinate tuple that stores the result of transforming {@code ptSrc},
          *                or {@code null} if a new point shall be created.
-         * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+         * @return the coordinate tuple after transforming {@code ptSrc} and storing the result in {@code ptDst},
          *         or in a new point if {@code ptDst} was null.
          * @throws TransformException if the point can not be transformed.
          *
@@ -411,14 +411,14 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          * The default implementation performs the following steps:
          *
          * <ul>
-         *   <li>Copy the coordinate in a temporary array and pass that array to the
+         *   <li>Copy the coordinates in a temporary array and pass that array to the
          *       {@link #transform(double[], int, double[], int, boolean)} method,
          *       with the {@code derivate} boolean argument set to {@code true}.</li>
          *   <li>If the latter method returned a non-null matrix, returns that matrix.
          *       Otherwise throws {@link TransformException}.</li>
          * </ul>
          *
-         * @param  point  the coordinate point where to evaluate the derivative.
+         * @param  point  the coordinate tuple where to evaluate the derivative.
          * @return the derivative at the specified point as a 2×2 matrix.
          * @throws TransformException if the derivative can not be evaluated at the specified point.
          */

@@ -171,7 +171,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException if the coordinate can not be converted.
+     * @throws TransformException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

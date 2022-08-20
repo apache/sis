@@ -362,7 +362,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     }
 
     /**
-     * Transforms a single coordinate point in an array,
+     * Transforms a single coordinate tuple in an array,
      * and optionally computes the transform derivative at that location.
      * Source and target axis order is (<var>longitude</var>, <var>latitude</var>).
      */
@@ -421,7 +421,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     }
 
     /**
-     * Converts a list of coordinate points. This method performs the same calculation than above
+     * Converts a list of coordinate tuples. This method performs the same calculation than above
      * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point can not be converted.

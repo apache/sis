@@ -236,7 +236,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -256,7 +256,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Converts a list of coordinate points. This method performs the same calculation than above
+     * Converts a list of coordinate tuples. This method performs the same calculation than above
      * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point can not be converted.
