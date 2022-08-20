@@ -183,11 +183,15 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
      * The wraparound is applied, if needed, on the longitude value before to delegate to {@link #projection}.
      */
     @Override
-    public Matrix transform(final double[] srcPts, final int srcOff,
-                            final double[] dstPts, final int dstOff, boolean derivate) throws TransformException
+    public Matrix transform(final double[] srcPts, final int srcOff, double[] dstPts, int dstOff, final boolean derivate)
+            throws TransformException
     {
         final double λ = srcPts[srcOff];
         if (negative ? λ < bound : λ > bound) {
+            if (dstPts == null) {
+                dstPts = new double[DIMENSION];
+                dstOff = 0;
+            }
             dstPts[dstOff+1] = srcPts[srcOff+1];        // Must be first.
             dstPts[dstOff  ] = λ - 2*bound;
             return projection.transform(dstPts, dstOff, dstPts, dstOff, derivate);
