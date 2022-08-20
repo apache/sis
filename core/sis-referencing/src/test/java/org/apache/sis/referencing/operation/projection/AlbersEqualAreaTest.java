@@ -195,7 +195,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests a few "special" points which need special care in inverse projection algorithm.
+     * Tests a few "special" points which need special care in reverse projection algorithm.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -295,7 +295,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         toleranceModifier = ToleranceModifier.PROJECTION;
         /*
          * Skip inverse transform because the 176.003° become -183.997°. It is not the purpose
-         * of this test to verify longitude wraparound in inverse projection (we do not expect
+         * of this test to verify longitude wraparound in reverse projection (we do not expect
          * such wraparound to be applied).
          */
         isInverseTransformSupported = false;

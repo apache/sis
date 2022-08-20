@@ -89,7 +89,7 @@ public final class Benchmark {
     private final Transforms forward;
 
     /**
-     * The math transforms to use for the inverse projection.
+     * The math transforms to use for the reverse projection.
      */
     private final Transforms inverse;
 
@@ -104,7 +104,7 @@ public final class Benchmark {
     private final double[] result;
 
     /**
-     * Difference between inverse projections and the original coordinates.
+     * Difference between reverse projections and the original coordinates.
      */
     private final Statistics errors;
 

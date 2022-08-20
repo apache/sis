@@ -155,7 +155,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         χ0    = asin(sinχ0);
         cosχ0 = cos(χ0);
         /*
-         * Following variables are used only by the inverse projection.
+         * Following variables are used only by the reverse projection.
          */
         g = tan(PI/4 - χ0/2);
         h = 2*tan(χ0) + g;

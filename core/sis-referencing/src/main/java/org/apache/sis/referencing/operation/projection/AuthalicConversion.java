@@ -61,7 +61,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
     private static final double ECCENTRICITY_THRESHOLD = 0.1;
 
     /**
-     * Coefficients of the first terms in the series expansion of the inverse projection.
+     * Coefficients of the first terms in the series expansion of the reverse projection.
      * Values of those coefficients depend only on {@linkplain #eccentricity eccentricity} value.
      * The series expansion is published under the following form, where β is the <cite>authalic latitude</cite>:
      *

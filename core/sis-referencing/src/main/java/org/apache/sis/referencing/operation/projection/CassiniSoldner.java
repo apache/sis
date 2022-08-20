@@ -63,7 +63,7 @@ public class CassiniSoldner extends MeridianArcBased {
     /**
      * The hyperbolic variants of this projection. {@link #VANUA} is the special case
      * of <cite>Vanua Levu Grid</cite>, which is the only hyperbolic variant for which
-     * inverse projection is supported.
+     * reverse projection is supported.
      *
      * @see #variant
      */
@@ -78,7 +78,7 @@ public class CassiniSoldner extends MeridianArcBased {
 
         /**
          * The special case of <cite>"Vanua Levu Grid"</cite> at φ₀=16°15′S.
-         * This is the only hyperbolic variant for which inverse projection is supported.
+         * This is the only hyperbolic variant for which reverse projection is supported.
          * This special case is detected by checking the value of the latitude of origin.
          */
         VANUA(HYPERBOLIC.operationName, HyperbolicCassiniSoldner.IDENTIFIER);

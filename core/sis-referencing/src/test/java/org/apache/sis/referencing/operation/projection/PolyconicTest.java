@@ -77,7 +77,7 @@ public final strictfp class PolyconicTest extends MapProjectionTestCase {
     /**
      * Tests the projection of a few points on an ellipsoid. The first point in this test is provided
      * by Snyder at page 304. The Snyder example gives intermediate values at different step, which may
-     * be verified by executing this code in the debugger. In particular during inverse projection,
+     * be verified by executing this code in the debugger. In particular during reverse projection,
      * values of φ should be as below during each iteration steps:
      *
      * <ol>

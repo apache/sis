@@ -50,9 +50,9 @@ import static org.junit.Assert.*;
 @SuppressWarnings("serial")
 final strictfp class ProjectionResultComparator extends NormalizedProjection {
     /**
-     * Maximum difference allowed when comparing the result of an inverse projections, in radians.
+     * Maximum difference allowed when comparing the result of an reverse projections, in radians.
      * A value of 1E-11 radians is approximately 5 centimetres.
-     * Note that inverse projections are typically less accurate than forward projections.
+     * Note that reverse projections are typically less accurate than forward projections.
      */
     private static final double INVERSE_TOLERANCE = NormalizedProjection.ANGULAR_TOLERANCE;
 

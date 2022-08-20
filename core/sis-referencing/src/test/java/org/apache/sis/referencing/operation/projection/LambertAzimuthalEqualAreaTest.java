@@ -241,7 +241,7 @@ public final strictfp class LambertAzimuthalEqualAreaTest extends MapProjectionT
         tolerance = LINEAR_TOLERANCE;
         createProjection(elliptical, 90, true);
         /*
-         * Project the origin. Result should be (0,0). Do not test the inverse projection
+         * Project the origin. Result should be (0,0). Do not test the reverse projection
          * because the longitude could be anything and still be the North pole. We test that
          * by projecting again with an other longitude, set to 45°, and expect the same result.
          */

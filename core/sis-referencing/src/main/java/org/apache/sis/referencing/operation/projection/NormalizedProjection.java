@@ -116,7 +116,7 @@ import static java.util.logging.Logger.getLogger;
  * on intent (except indirectly), in order to make clear that those parameters are not used by subclasses.
  * The ability to recognize two {@code NormalizedProjection}s as {@linkplain #equals(Object, ComparisonMode) equivalent}
  * without consideration for the scale factor (among other) allow more efficient concatenation in some cases
- * (typically some combinations of inverse projection followed by a direct projection).
+ * (typically some combinations of reverse projection followed by a direct projection).
  *
  * <p>All angles (either fields, method parameters or return values) in this class and subclasses are
  * in radians. This is the opposite of {@link Parameters} where all angles are in CRS-dependent units,
@@ -910,8 +910,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             if (m != null) {
                 /*
                  * 'projectedSpace' values:
-                 *   - false if applyOtherFirst == false since we have (inverse projection) → (affine) → (projection).
-                 *   - true  if applyOtherFirst == true  since we have (projection) → (affine) → (inverse projection).
+                 *   - false if applyOtherFirst == false since we have (reverse projection) → (affine) → (projection).
+                 *   - true  if applyOtherFirst == true  since we have (projection) → (affine) → (reverse projection).
                  */
                 return forward.tryConcatenate(applyOtherFirst, m, factory);
             }
@@ -921,8 +921,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Concatenates or pre-concatenates in an optimized way this projection with the given transform, if possible.
-     * If transforms are concatenated in an (inverse projection) → (affine) → (projection) sequence where the
-     * (projection) and (inverse projection) steps are the {@linkplain #inverse() inverse} of each other,
+     * If transforms are concatenated in a (reverse projection) → (affine) → (projection) sequence where the
+     * (projection) and (reverse projection) steps are the {@linkplain #inverse() inverse} of each other,
      * then in some particular case the sequence can be replaced by a single affine transform.
      * If no such simplification is possible, this method returns {@code null}.
      *
@@ -939,8 +939,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         if (m != null) {
             /*
              * 'projectedSpace' values:
-             *   - false if applyOtherFirst == true  since we have (inverse projection) → (affine) → (projection).
-             *   - true  if applyOtherFirst == false since we have (projection) → (affine) → (inverse projection).
+             *   - false if applyOtherFirst == true  since we have (reverse projection) → (affine) → (projection).
+             *   - true  if applyOtherFirst == false since we have (projection) → (affine) → (reverse projection).
              */
             return tryConcatenate(!applyOtherFirst, m, factory);
         }
@@ -969,10 +969,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * If a sequence of 3 transforms are (inverse projection) → (affine) → (projection) where
-     * the (projection) and (inverse projection) steps are the inverse of each other, returns
+     * If a sequence of 3 transforms are (reverse projection) → (affine) → (projection) where
+     * the (projection) and (reverse projection) steps are the inverse of each other, returns
      * the matrix of the affine transform step. Otherwise returns {@code null}. This method
-     * accepts also (projection) → (affine) → (inverse projection) sequence, but such sequences
+     * accepts also (projection) → (affine) → (reverse projection) sequence, but such sequences
      * should be much more unusual.
      *
      * @param  projection       either {@link NormalizedProjection} or {@link Inverse}.

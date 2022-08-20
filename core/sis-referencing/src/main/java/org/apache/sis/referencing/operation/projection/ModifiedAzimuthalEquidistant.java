@@ -73,14 +73,14 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
      * The ℯ⋅cos(φ₀)/√(1 − ℯ²) term. This is the <var>H</var> term in EPSG guidance notes
      * but without the cos(α) term (omitted because α depends on the point to project).
      *
-     * <p>Note that during inverse projection, EPSG guidance notes has a <var>A</var> as:
+     * <p>Note that during reverse projection, EPSG guidance notes has a <var>A</var> as:
      * −ℯ²⋅cos²φ₀/(1 − ℯ²)⋅cos²α. We opportunistically use Hp² for that purpose.</p>
      */
     private final double Hp;
 
     /**
      * The 3⋅ℯ²⋅sin(φ₀)⋅cos(φ₀)/(1 − ℯ²) term. This is the <var>B</var> term in EPSG guidance notes
-     * for inverse projection but without the terms that depend on coordinates of transformed point.
+     * for reverse projection but without the terms that depend on coordinates of transformed point.
      */
     private final double Bp;
 

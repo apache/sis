@@ -409,7 +409,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyTransform(coordinates, expected);
         /*
-         * Replace the 181° longitude by -179° so we can test inverse projection.
+         * Replace the 181° longitude by -179° so we can test reverse projection.
          */
         coordinates[2] = -179;
         isInverseTransformSupported = true;
