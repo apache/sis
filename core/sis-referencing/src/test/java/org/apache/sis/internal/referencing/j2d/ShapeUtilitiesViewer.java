@@ -86,7 +86,7 @@ public final strictfp class ShapeUtilitiesViewer extends JPanel {
     private final Random random;
 
     /**
-     * Where to write the coordinate points.
+     * Where to write the coordinate tuples.
      */
     private final PrintWriter out;
 

@@ -51,7 +51,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
 /**
  * A mutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
  * Regardless of dimension, an {@code Envelope} can be represented without ambiguity
- * as two {@linkplain AbstractDirectPosition direct positions} (coordinate points).
+ * as two {@linkplain AbstractDirectPosition direct positions} (coordinate tuples).
  * To encode an {@code Envelope}, it is sufficient to encode these two points.
  *
  * <div class="note"><b>Note:</b>
@@ -66,7 +66,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
  * <ul>
  *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all coordinates initialized to 0.</li>
- *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate points}.</li>
+ *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate tuples}.</li>
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a an other envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
  *   <li>{@linkplain #GeneralEnvelope(CharSequence) From a character sequence}

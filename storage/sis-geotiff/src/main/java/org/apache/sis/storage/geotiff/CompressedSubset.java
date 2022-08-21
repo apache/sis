@@ -216,7 +216,7 @@ final class CompressedSubset extends DataSubset {
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;
         if (inflater == null) {
-            inflater = Inflater.create(this, input(), source.getCompression(), source.getPredictor(),
+            inflater = Inflater.create(source.listeners(), input(), source.getCompression(), source.getPredictor(),
                         sourcePixelStride, getTileSize(X_DIMENSION), chunksPerRow, samplesPerChunk, skipAfterChunks,
                         pixelsPerElement, dataType);
         }

@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
 
@@ -26,7 +27,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * This compression is described in section 9 of TIFF 6 specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -53,10 +54,11 @@ final class PackBits extends CompressionChannel {
      * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
-     * @param  input  the source of data to decompress.
+     * @param  input      the source of data to decompress.
+     * @param  listeners  object where to report warnings.
      */
-    public PackBits(final ChannelDataInput input) {
-        super(input);
+    public PackBits(final ChannelDataInput input, final StoreListeners listeners) {
+        super(input, listeners);
     }
 
     /**

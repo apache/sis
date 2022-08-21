@@ -125,17 +125,17 @@ public class Mollweide extends NormalizedProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ = srcPts[srcOff];
+        final double λ = srcPts[srcOff];            // Scaled by 2√2.
         final double φ = srcPts[srcOff + 1];
         final double sinφ = sin(φ);
-        double θp = 2 * asin(φ / (PI/2));           // θ′ in Snyder formulas.
+        double θp = 2 * asin(φ * (2/PI));           // θ′ in Snyder formulas.
         /*
          * If sin(φ) is 1 or -1 we are on a pole.
          * Iteration would produce NaN values.
@@ -182,7 +182,7 @@ public class Mollweide extends NormalizedProjection {
         final double y  = srcPts[srcOff + 1];
         final double θ  = asin(y);
         final double θp = 2 * θ;
-        final double φ  = asin((θp + sin(θp)) / PI);
+        final double φ  = asin((θp + sin(θp)) * (1/PI));
         double λ = x / cos(θ);
         if (abs(λ) > 2*SQRT_2*PI) {
             λ = Double.NaN;

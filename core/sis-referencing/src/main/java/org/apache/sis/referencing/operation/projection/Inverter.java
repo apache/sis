@@ -24,7 +24,7 @@ import static java.lang.Math.abs;
 
 /**
  * A temporary Jacobian matrix where to write the derivative of a forward projection.
- * This Jacobian matrix is used for calculation of inverse projection when no inverse
+ * This Jacobian matrix is used for calculation of reverse projection when no inverse
  * formulas is available, or when the inverse formula is too approximate (for example
  * because eccentricity is too high). This class processes as below:
  *
@@ -41,7 +41,7 @@ import static java.lang.Math.abs;
  *
  * <p>This algorithm is defined in a {@link Matrix2} subclass for allowing map projection
  * implementations to use {@code if (derivative instanceof Inverter)} check for detecting
- * when a {@code transform} method is invoked for the purpose of an inverse projection.</p>
+ * when a {@code transform} method is invoked for the purpose of a reverse projection.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -68,7 +68,7 @@ final class Inverter extends Matrix2 {
      * <p>Note: restricted to {@link Orthographic} projection for now,
      * but may be generalized to any projection in a future version.</p>
      *
-     * @param  projection  the forward projection for which to compute an inverse projection.
+     * @param  projection  the forward projection for which to compute a reverse projection.
      * @param  x           the  easting value from {@code srcPts[srcOff]}.
      * @param  y           the northing value from {@code srcPts[srcOff+1]}.
      * @param  dstPts      the array where to refine the (λ,φ) values.

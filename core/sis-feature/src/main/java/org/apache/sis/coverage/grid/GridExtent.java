@@ -1703,14 +1703,28 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a hash value for this grid extent. This value needs not to remain
-     * consistent between different implementations of the same class.
+     * Returns whether this grid extent has the same size than the given extent.
+     * If the given extent is {@code null} or has a different number of dimensions,
+     * then this method returns {@code false}.
      *
-     * @return a hash value for this grid extent.
+     * <p>This method is not public because we do not yet have a policy
+     * about whether we should verify if axis {@link #types} match.</p>
+     *
+     * @param  other  the other extent to compare with this extent. Can be {@code null}.
+     * @return whether the two extents has the same size.
      */
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(coordinates) + Arrays.hashCode(types) ^ (int) serialVersionUID;
+    final boolean isSameSize(final GridExtent other) {
+        if (other == null || coordinates.length != other.coordinates.length) {
+            return false;
+        }
+        final int dimension = getDimension();
+        final long[] oc = other.coordinates;
+        for (int i=0; i<dimension; i++) {
+            if (coordinates[i+dimension] - coordinates[i] != oc[i+dimension] - oc[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1753,6 +1767,17 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a hash value for this grid extent. This value needs not to remain
+     * consistent between different implementations of the same class.
+     *
+     * @return a hash value for this grid extent.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(coordinates) + Arrays.hashCode(types) ^ (int) serialVersionUID;
     }
 
     /**

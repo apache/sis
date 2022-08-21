@@ -17,9 +17,11 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Iterator;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -37,7 +39,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -223,6 +225,23 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         assertToGeometryEquals(e, WraparoundMethod.EXPAND,     2, -180, 2, 180, 3, 180, 3, -180, 2, -180);
         assertToGeometryEquals(e, WraparoundMethod.SPLIT,      2,   89, 2, 180, 3, 180, 3,   89, 2,   89,
                                                                2, -180, 2,  19, 3,  19, 3, -180, 2, -180);
+    }
+
+    /**
+     * Tests conversion of a world-wide envelope using all supported wraparound methods.
+     */
+    @Test
+    public void testWorldToGeometry2D() {
+        final EnumSet<WraparoundMethod> methods = EnumSet.allOf(WraparoundMethod.class);
+        assertTrue(methods.remove(WraparoundMethod.NORMALIZE));
+        Envelope2D env2d = new Envelope2D(HardCodedCRS.WGS84, -180, -90, 360, 180);
+        for (WraparoundMethod method : methods) {
+            assertToGeometryEquals(env2d, method, -180, -90,  -180, 90,  180, 90,  180, -90, -180, -90);
+        }
+        env2d = new Envelope2D(HardCodedCRS.WGS84_LATITUDE_FIRST, -90, -180, 180, 360);
+        for (WraparoundMethod method : methods) {
+            assertToGeometryEquals(env2d, method, -90, -180,  -90, 180,  90, 180,  90, -180,  -90, -180);
+        }
     }
 
     /**

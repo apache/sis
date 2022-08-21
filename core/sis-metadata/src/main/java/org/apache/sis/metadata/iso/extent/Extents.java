@@ -51,6 +51,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -130,10 +131,11 @@ public final class Extents extends Static {
      * using {@link #getGeographicBoundingBox(Extent)}.</div>
      *
      * @param  metadata  the metadata from which to get a global bounding box, or {@code null} if none.
-     * @return a global bounding box for all extents found in the given metadata.
+     * @return a global bounding box for all extents found in the given metadata, or {@code null} if none.
      *
      * @since 1.1
      */
+    @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final Metadata metadata) {
         if (metadata == null) {
             return null;
@@ -179,6 +181,7 @@ public final class Extents extends Static {
      *
      * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      */
+    @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final Extent extent) {
         if (extent == null) {
             return null;
@@ -328,6 +331,7 @@ public final class Extents extends Static {
      *
      * @since 0.4
      */
+    @OptionalCandidate
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
         VerticalDatumType selectedType = null;
@@ -402,6 +406,7 @@ public final class Extents extends Static {
      *
      * @since 0.4
      */
+    @OptionalCandidate
     public static Range<Date> getTimeRange(final Extent extent) {
         Date min = null;
         Date max = null;
@@ -451,6 +456,7 @@ public final class Extents extends Static {
      *
      * @since 0.4
      */
+    @OptionalCandidate
     public static Date getDate(final Extent extent, final double location) {
         ArgumentChecks.ensureFinite("location", location);
         Date min = null;
@@ -487,6 +493,7 @@ public final class Extents extends Static {
      *
      * @since 1.1
      */
+    @OptionalCandidate
     public static String getDescription(final Extent extent, final Locale locale) {
         return (extent != null) ? Types.toString(extent.getDescription(), locale) : null;
     }

@@ -266,7 +266,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
          * Returns a sequence of double values for a given point in the coverage.
          * This method delegates to the source coverage, then converts the values.
          *
-         * @param  point  the coordinate point where to evaluate.
+         * @param  point  the position where to evaluate.
          * @throws CannotEvaluateException if the values can not be computed.
          */
         @Override

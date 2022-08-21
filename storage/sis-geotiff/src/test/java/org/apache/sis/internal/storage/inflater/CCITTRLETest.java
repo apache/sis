@@ -500,7 +500,7 @@ public final strictfp class CCITTRLETest extends TestCase {
     private void verifyReading() throws IOException {
         final CCITTRLE decoder = new CCITTRLE(
                 new ChannelDataInput("sequenceOfAllWords", null, sequenceOfAllWords, true),
-                sequenceOfAllWords.limit());
+                null, sequenceOfAllWords.limit());
         decoder.setInputRegion(0, sequenceOfAllWords.limit());
         int runLength = 0;
         do {

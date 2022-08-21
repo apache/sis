@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.function.IntFunction;
 import javafx.collections.ObservableList;
@@ -175,9 +174,8 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
         final ObservableList<Node> pages = pagination.getChildren();
         int i = pages.size();
         if (i < n) {
-            final NumberFormat format = owner.getNumberFormat();
             do {
-                final ToggleButton b = new ToggleButton(format.format(++i));
+                final ToggleButton b = new ToggleButton(owner.format(++i));
                 b.setToggleGroup(pageGroup);
                 b.setOnAction​(this);
                 pages.add(b);

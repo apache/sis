@@ -59,7 +59,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
     /**
      * Provider for {@link java.text.NumberFormat}, {@link java.text.DateFormat}, <i>etc</i>.
      */
-    private final TextFormats formats;
+    private final PropertyValueFormats formats;
 
     /**
      * The current property value. This is used for detecting changes.
@@ -147,7 +147,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
-        formats = new TextFormats(locale);
+        formats = new PropertyValueFormats(locale);
         this.view = view;
         if (background != null) {
             getImageCanvas().backgroundProperty().bind(background);

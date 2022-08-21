@@ -375,7 +375,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * Furthermore whether a source coordinate is an integer value or not is subject to rounding errors,
      * which may cause unpredictable behavior if infinite values were returned.</div>
      *
-     * @param  point  the coordinate point where to evaluate the derivative
+     * @param  point  the position where to evaluate the derivative
      *                (ignored in default implementation, may be {@code null}).
      * @return transform derivative (identity matrix in default implementation).
      */

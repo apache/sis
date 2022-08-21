@@ -54,7 +54,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
 
 /**
  * Creates an "almost linear" transform mapping the given source points to the given target points.
- * The transform is backed by a <cite>grid of localization</cite>, a two-dimensional array of coordinate points.
+ * The transform is backed by a <cite>grid of localization</cite>, a two-dimensional array of coordinate tuples.
  * Grid size is {@code width} × {@code height} and input coordinates are (<var>i</var>,<var>j</var>) indices in the grid,
  * where <var>i</var> must be in the [0…{@code width}-1] range and <var>j</var> in the [0…{@code height}-1] range inclusive.
  * Output coordinates are the values stored in the grid of localization at the specified index.

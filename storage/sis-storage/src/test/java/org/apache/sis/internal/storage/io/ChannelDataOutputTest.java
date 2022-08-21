@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -223,13 +223,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             assertTrue(message, message.contains("position"));
         }
         testedStream.flush();
-        try {
-            testedStream.flushBefore(0);
-            fail("Shall not flush at a position before buffer base.");
-        } catch (IndexOutOfBoundsException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("position"));
-        }
+        testedStream.flushBefore(0);    // Should be a no-operation.
         assertStreamContentEquals();
     }
 

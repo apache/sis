@@ -56,7 +56,7 @@ import org.apache.sis.math.DecimalFunctions;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
@@ -220,6 +220,8 @@ public final class DoubleDouble extends Number {
             value = otherValue.doubleValue();
             if (otherValue instanceof DoubleDouble) {
                 error = ((DoubleDouble) otherValue).error;
+            } else if (otherValue instanceof Long) {
+                error = otherValue.longValue() - (long) value;
             } else if (otherValue instanceof BigDecimal) {
                 // Really need new BigDecimal(value) below, not BigDecimal.valueOf(value).
                 error = ((BigDecimal) otherValue).subtract(new BigDecimal(value), MathContext.DECIMAL64).doubleValue();
@@ -231,8 +233,11 @@ public final class DoubleDouble extends Number {
 
     /**
      * Returns {@code true} if the given value is one of the special cases recognized by the
-     * {@link DoubleDouble(Number)} constructor. Those special cases should rarely occur, so
-     * we do not complicate the code with optimized code paths.
+     * {@link #DoubleDouble(Number)} constructor. Those special cases should rarely occur,
+     * so we do not complicate the code with optimized code paths.
+     *
+     * <p>This method does not test if the given value is already an instance of {@code DoubleDouble}.
+     * That verification should be done by the caller.</p>
      *
      * @param  value  the value to test.
      * @return {@code true} if it is worth to convert the given value to a {@code DoubleDouble}.
@@ -240,7 +245,8 @@ public final class DoubleDouble extends Number {
      * @since 0.8
      */
     public static boolean shouldConvert(final Number value) {
-        return (value instanceof Fraction) || (value instanceof BigInteger) || (value instanceof BigDecimal);
+        return (value instanceof Fraction)   || (value instanceof Long) ||
+               (value instanceof BigInteger) || (value instanceof BigDecimal);
     }
 
     /**

@@ -66,7 +66,7 @@ import static java.lang.Math.toIntExact;
  * the same tile indices than {@link DataCube} in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -181,7 +181,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     @Override
     public final Locale getLocale() {
-        return source.getLocale();
+        return source.listeners().getLocale();
     }
 
     /**

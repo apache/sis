@@ -103,10 +103,10 @@ INSERT INTO metadata."Organisation" ("ID", "name") VALUES
   ('{org}ISBN',   'International ISBN Agency'),
   ('{org}ISSN',   'The International Centre for the registration of serial publications'),
   ('{org}ISO',    'International Organization for Standardization'),
+  ('{org}MIF',    'Precisely'),
   ('{org}NATO',   'North Atlantic Treaty Organization'),
   ('{org}OGC',    'Open Geospatial Consortium'),
   ('{org}OSGeo',  'The Open Source Geospatial Foundation'),
-  ('{org}PBI',    'Pitney Bowes Inc.'),
   ('{org}WMO',    'World Meteorological Organization');
 
 INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
@@ -117,7 +117,7 @@ INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
   ('ISBN',    '{org}ISBN',   'principalInvestigator'),
   ('ISSN',    '{org}ISSN',   'principalInvestigator'),
   ('ISO',     '{org}ISO',    'principalInvestigator'),
-  ('MapInfo', '{org}PBI',    'principalInvestigator'),
+  ('MapInfo', '{org}MIF',    'principalInvestigator'),
   ('NATO',    '{org}NATO',   'principalInvestigator'),
   ('OGC',     '{org}OGC',    'principalInvestigator'),
   ('OSGeo',   '{org}OSGeo',  'resourceProvider'),
@@ -185,15 +185,15 @@ FOREIGN KEY ("authority") REFERENCES metadata."Citation" ("ID") ON UPDATE RESTRI
 -- There is almost a one-to-one relationship between identifiers and citations.
 --
 INSERT INTO metadata."Identifier" ("ID", "code", "codeSpace", "version") VALUES
-  ('ISO 19115-1', '19115-1', 'ISO',         '2014'),
-  ('ISO 19115-2', '19115-2', 'ISO',         '2019'),
-  ('IHO S-57',    'S-57',    'IHO',         '3.1'),
-  ('WMS',         'WMS',     'OGC',         '1.3'),
-  ('EPSG',        'EPSG',    'IOGP',         NULL),
-  ('ArcGIS',      'ArcGIS',  'ESRI',         NULL),
-  ('MapInfo',     'MapInfo', 'Pitney Bowes', NULL),
-  ('PROJ',        'PROJ',    'OSGeo',        NULL),
-  ('SIS',         'SIS',     'Apache',       NULL);
+  ('ISO 19115-1', '19115-1', 'ISO',      '2014'),
+  ('ISO 19115-2', '19115-2', 'ISO',      '2019'),
+  ('IHO S-57',    'S-57',    'IHO',      '3.1'),
+  ('WMS',         'WMS',     'OGC',      '1.3'),
+  ('EPSG',        'EPSG',    'IOGP',      NULL),
+  ('ArcGIS',      'ArcGIS',  'ESRI',      NULL),
+  ('MapInfo',     'MapInfo', 'Precisely', NULL),
+  ('PROJ',        'PROJ',    'OSGeo',     NULL),
+  ('SIS',         'SIS',     'Apache',    NULL);
 
 INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedResponsibleParty", "presentationForm", "alternateTitle" , "title") VALUES
   ('ISBN',       'ISBN',  NULL,              'ISBN',    NULL,             'ISBN',         'International Standard Book Number'),

@@ -84,7 +84,7 @@ abstract class ConformalProjection extends NormalizedProjection {
     private final boolean useIterations;
 
     /**
-     * Coefficients of the first terms in the series expansion of the inverse projection.
+     * Coefficients of the first terms in the series expansion of the reverse projection.
      * Values of those coefficients depend only on {@linkplain #eccentricity eccentricity} value.
      * The series expansion is published under the following form, where χ is the <cite>conformal latitude</cite>:
      *
@@ -168,7 +168,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * Lambert Conic Conformal for instance.
      *
      * <p>This function is <em>almost</em> the converse of the {@link #expΨ(double, double)} function.
-     * In a Mercator inverse projection, the value of the {@code rexpΨ} argument is {@code exp(-Ψ)}.</p>
+     * In a Mercator reverse projection, the value of the {@code rexpΨ} argument is {@code exp(-Ψ)}.</p>
      *
      * <p>The input should be a positive number, otherwise the result will be either outside
      * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:</p>

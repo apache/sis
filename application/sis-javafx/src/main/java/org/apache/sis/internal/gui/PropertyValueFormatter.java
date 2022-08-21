@@ -36,7 +36,7 @@ public class PropertyValueFormatter extends PropertyFormat {
      * The formats to use for objects. Its locale is usually {@link Locale#getDefault()}.
      * The locale is also given to {@link InternationalString#toString(Locale)} calls.
      */
-    final TextFormats formats;
+    final PropertyValueFormats formats;
 
     /**
      * Creates a formatter for the specified locale.
@@ -47,7 +47,7 @@ public class PropertyValueFormatter extends PropertyFormat {
     public PropertyValueFormatter(final Appendable buffer, final Locale locale) {
         super(buffer);
         setLineSeparator(" ¶ ");
-        formats = new TextFormats(locale);
+        formats = new PropertyValueFormats(locale);
     }
 
     /**

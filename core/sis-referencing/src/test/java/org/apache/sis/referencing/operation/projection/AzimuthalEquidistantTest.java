@@ -56,7 +56,7 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the forward and inverse projection using test point given in Snyder page 337.
+     * Tests the forward and reverse projection using test point given in Snyder page 337.
      * The Snyder's test uses a sphere of radius R=3 and a center at 40°N and 100°W.
      * The test in this class modify the longitude to 10°W for avoiding to mix wraparound
      * considerations in this test.

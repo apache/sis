@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.aggregate;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.internal.storage.MetadataBuilder;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;

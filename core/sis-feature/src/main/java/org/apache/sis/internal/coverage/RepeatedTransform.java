@@ -94,7 +94,7 @@ final class RepeatedTransform extends CompoundTransform {
     }
 
     /**
-     * Transforms a single coordinate point in an array, and optionally computes the transform derivative
+     * Transforms a single coordinate tuple in an array, and optionally computes the transform derivative
      * at that location.
      */
     @Override
@@ -120,7 +120,7 @@ final class RepeatedTransform extends CompoundTransform {
     }
 
     /**
-     * Transforms a list of coordinate points.
+     * Transforms a list of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, final int srcOff,
@@ -130,7 +130,7 @@ final class RepeatedTransform extends CompoundTransform {
     }
 
     /**
-     * Transforms a list of coordinate points.
+     * Transforms a list of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, final int srcOff,
@@ -140,7 +140,7 @@ final class RepeatedTransform extends CompoundTransform {
     }
 
     /**
-     * Transforms a list of coordinate points.
+     * Transforms a list of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, final int srcOff,
@@ -150,7 +150,7 @@ final class RepeatedTransform extends CompoundTransform {
     }
 
     /**
-     * Transforms a list of coordinate points.
+     * Transforms a list of coordinate tuples.
      */
     @Override
     public void transform(final float [] srcPts, final int srcOff,

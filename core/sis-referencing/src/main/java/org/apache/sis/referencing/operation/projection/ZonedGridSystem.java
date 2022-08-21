@@ -160,7 +160,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double y = -PI/2 * (84d/90);
+        final double y = -NormalizedProjection.POLAR_AREA_LIMIT;
         return Optional.of(new Envelope2D(null, -PI, y, 2*PI, -2*y));
     }
 
@@ -171,7 +171,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException if the coordinate can not be converted.
+     * @throws TransformException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

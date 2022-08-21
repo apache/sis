@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.BufferOverflowException;
 import java.util.zip.Inflater;
 import java.util.zip.DataFormatException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
 
@@ -29,7 +30,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -46,12 +47,13 @@ final class ZIP extends CompressionChannel {
      * before a reading process can start.
      *
      * @param  input      the source of data to decompress.
+     * @param  listeners  object where to report warnings.
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
      * @throws IOException if the stream can not be seek to the given start position.
      */
-    public ZIP(final ChannelDataInput input) {
-        super(input);
+    public ZIP(final ChannelDataInput input, final StoreListeners listeners) {
+        super(input, listeners);
         inflater = new Inflater();
     }
 

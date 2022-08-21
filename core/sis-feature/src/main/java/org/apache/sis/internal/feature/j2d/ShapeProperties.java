@@ -109,7 +109,7 @@ final class ShapeProperties {
      * It should be invoked only for small or medium shapes. For large shapes, the path iterator should be used
      * directly without copy to arrays.
      *
-     * @return coordinate points as (<var>x</var>,<var>y</var>) tuples.
+     * @return coordinate tuples as (<var>x</var>,<var>y</var>) tuples.
      * @throws IllegalPathStateException if the given path iterator contains curves.
      */
     public List<double[]> coordinatesAsDoubles() {
@@ -121,8 +121,8 @@ final class ShapeProperties {
      * {@link #coordinates(double)} implementation for the double-precision case.
      * The {@link #isPolygon} field needs to be set before to invoke this method.
      *
-     * @param  it  path iterator of the geometry for which to get the coordinate points.
-     * @return coordinate points as (<var>x</var>,<var>y</var>) tuples.
+     * @param  it  path iterator of the geometry for which to get the coordinate tuples.
+     * @return coordinate tuples as (<var>x</var>,<var>y</var>) tuples.
      * @throws IllegalPathStateException if the given path iterator contains curves.
      */
     private List<double[]> coordinatesAsDoubles(final PathIterator it) {
@@ -177,8 +177,8 @@ final class ShapeProperties {
      * {@link #coordinates(double)} implementation for the single-precision case.
      * The {@link #isPolygon} field needs to be set before to invoke this method.
      *
-     * @param  it  path iterator of the geometry for which to get the coordinate points.
-     * @return coordinate points as (<var>x</var>,<var>y</var>) tuples.
+     * @param  it  path iterator of the geometry for which to get the coordinate tuples.
+     * @return coordinate tuples as (<var>x</var>,<var>y</var>) tuples.
      * @throws IllegalPathStateException if the given path iterator contains curves.
      */
     private List<float[]> coordinatesAsFloats(final PathIterator it) {

@@ -74,7 +74,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8786460743797422415L;
+    private static final long serialVersionUID = 2067358524298002016L;
 
     /**
      * Variants of Lambert Conical Conformal projection. Those variants modify the way the projections are constructed
@@ -164,15 +164,6 @@ public class LambertConicConformal extends ConformalProjection {
      * </ul>
      */
     final double n;
-
-    /**
-     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
-     * Some (not all) θ values need to be shifted inside that range before to use them
-     * in trigonometric functions.
-     *
-     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
-     */
-    final double θ_bound;
 
     /**
      * Creates a Lambert projection from the given parameters.
@@ -375,7 +366,6 @@ public class LambertConicConformal extends ConformalProjection {
         normalize  .convertAfter(1, sφ, null);
         denormalize.convertBefore(0, F, null); F.negate();
         denormalize.convertBefore(1, F, rF);
-        θ_bound = initializer.boundOfScaledLongitude(sλ);
     }
 
     /**
@@ -383,8 +373,7 @@ public class LambertConicConformal extends ConformalProjection {
      */
     LambertConicConformal(final LambertConicConformal other) {
         super(other);
-        n       = other.n;
-        θ_bound = other.θ_bound;
+        n = other.n;
     }
 
     /**
@@ -423,7 +412,7 @@ public class LambertConicConformal extends ConformalProjection {
         if (eccentricity == 0 && getClass() == LambertConicConformal.class) {
             kernel = new Spherical(this);
         }
-        return context.completeTransform(factory, kernel);
+        return kernel.completeWithWraparound(factory);
     }
 
     /**
@@ -436,7 +425,7 @@ public class LambertConicConformal extends ConformalProjection {
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double x = abs(θ_bound);
+        final double x = getWraparoundLongitude();
         final double y = copySign(PI/2, -n);
         return Optional.of(new Envelope2D(null, -x, Math.min(y, 0), 2*x, Math.abs(y)));
     }
@@ -449,7 +438,7 @@ public class LambertConicConformal extends ConformalProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -461,8 +450,8 @@ public class LambertConicConformal extends ConformalProjection {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double θ    = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);     // θ = Δλ⋅n
-        final double φ    = srcPts[srcOff + 1];                         // Sign may be reversed
+        final double θ    = srcPts[srcOff  ];           // θ = Δλ⋅n
+        final double φ    = srcPts[srcOff+1];           // Sign may be reversed
         final double absφ = abs(φ);
         final double sinθ = sin(θ);
         final double cosθ = cos(θ);
@@ -572,8 +561,8 @@ public class LambertConicConformal extends ConformalProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
-            final double θ    = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);     // θ = Δλ⋅n
-            final double φ    = srcPts[srcOff + 1];                         // Sign may be reversed
+            final double θ    = srcPts[srcOff  ];       // θ = Δλ⋅n
+            final double φ    = srcPts[srcOff+1];       // Sign may be reversed
             final double absφ = abs(φ);
             final double sinθ = sin(θ);
             final double cosθ = cos(θ);

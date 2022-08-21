@@ -28,8 +28,8 @@ import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Localized;
 
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
 
@@ -46,7 +46,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * and band subset.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -167,7 +167,7 @@ public abstract class Inflater implements Closeable {
      * (e.g. 1 bit) if {@code pixelsPerElement} is greater than 1. If that case, the {@link #elementsPerChunk}
      * and {@link #skipAfterChunks} values will be divided by {@code pixelsPerElement}.
      *
-     * @param  caller             object calling this method (used in case an error message most be produced).
+     * @param  listeners          object where to report warnings.
      * @param  input              the source of data to decompress.
      * @param  compression        the compression method.
      * @param  predictor          the mathematical operator to apply after decompression.
@@ -188,7 +188,7 @@ public abstract class Inflater implements Closeable {
      *       in a way that make them usable with other tiled formats than TIFF.
      */
     @SuppressWarnings("fallthrough")
-    public static Inflater create(final Localized        caller,
+    public static Inflater create(final StoreListeners   listeners,
                                   final ChannelDataInput input,
                                   final Compression      compression,
                                   final Predictor        predictor,
@@ -204,18 +204,18 @@ public abstract class Inflater implements Closeable {
         ArgumentChecks.ensureNonNull("input", input);
         final CompressionChannel inflater;
         switch (compression) {
-            case LZW:      inflater = new LZW     (input); break;
-            case DEFLATE:  inflater = new ZIP     (input); break;
-            case PACKBITS: inflater = new PackBits(input); break;
-            case CCITTRLE: inflater = new CCITTRLE(input, sourceWidth); break;
+            case LZW:      inflater = new LZW     (input, listeners); break;
+            case DEFLATE:  inflater = new ZIP     (input, listeners); break;
+            case PACKBITS: inflater = new PackBits(input, listeners); break;
+            case CCITTRLE: inflater = new CCITTRLE(input, listeners, sourceWidth); break;
             case NONE: {
                 if (predictor == Predictor.NONE) {
                     return CopyFromBytes.create(input, dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
                 }
-                throw unsupportedEncoding(caller, Resources.Keys.UnsupportedPredictor_1, predictor);
+                throw unsupportedEncoding(listeners, Resources.Keys.UnsupportedPredictor_1, predictor);
             }
             default: {
-                throw unsupportedEncoding(caller, Resources.Keys.UnsupportedCompressionMethod_1, compression);
+                throw unsupportedEncoding(listeners, Resources.Keys.UnsupportedCompressionMethod_1, compression);
             }
         }
         final PixelChannel channel;
@@ -236,7 +236,7 @@ public abstract class Inflater implements Closeable {
                 // Fallthrough.
             }
             default: {
-                throw unsupportedEncoding(caller, Resources.Keys.UnsupportedPredictor_1, predictor);
+                throw unsupportedEncoding(listeners, Resources.Keys.UnsupportedPredictor_1, predictor);
             }
         }
         final int scanlineStride = Math.multiplyExact(sourceWidth, sourcePixelStride * dataType.bytes());
@@ -247,8 +247,8 @@ public abstract class Inflater implements Closeable {
     /**
      * Returns the exception to throw for an unsupported compression or predictor.
      */
-    private static UnsupportedEncodingException unsupportedEncoding(final Localized caller, final short key, final Enum<?> value) {
-        return new UnsupportedEncodingException(Resources.forLocale(caller.getLocale()).getString(key, value));
+    private static UnsupportedEncodingException unsupportedEncoding(StoreListeners listeners, short key, Enum<?> value) {
+        return new UnsupportedEncodingException(Resources.forLocale(listeners.getLocale()).getString(key, value));
     }
 
     /**

@@ -16,15 +16,16 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
@@ -54,7 +55,7 @@ import org.apache.sis.util.Classes;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -274,6 +275,27 @@ public abstract class Geometries<G> implements Serializable {
     public abstract GeometryWrapper<G> parseWKB(ByteBuffer data) throws Exception;
 
     /**
+     * Creates and wraps a point from the given position.
+     *
+     * @param  point  the point to convert to a geometry.
+     * @return the given point converted to a geometry.
+     */
+    public final GeometryWrapper<G> createPoint(final DirectPosition point) {
+        final Object geometry;
+        final int n = point.getDimension();
+        switch (n) {
+            case 2: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1)); break;
+            case 3: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1), point.getOrdinate(2)); break;
+            default: throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "point", (n <= 2) ? 2 : 3, n));
+        }
+        final GeometryWrapper<G> wrapper = castOrWrap(geometry);
+        if (point.getCoordinateReferenceSystem() != null) {
+            wrapper.setCoordinateReferenceSystem(point.getCoordinateReferenceSystem());
+        }
+        return wrapper;
+    }
+
+    /**
      * Returns whether this library can produce geometry backed by the {@code float} primitive type
      * instead of the {@code double} primitive type. If single-precision mode is supported, using
      * that mode may reduce memory usage. This method is used for checking whether it is worth to
@@ -387,21 +409,78 @@ public abstract class Geometries<G> implements Serializable {
     /**
      * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.
      * The sequence of points describes each corner, going in clockwise direction and repeating the starting
-     * point to properly close the ring.
+     * point to properly close the ring. If wraparound may happen on at least one axis, then this method may
+     * add intermediate points on the axes where the envelope crosses the axis limit.
      *
-     * @param  xd  dimension of first axis.
-     * @param  yd  dimension of second axis.
-     * @return a polyline made of a sequence of 5 points describing the given rectangle.
+     * @param  xd      dimension of first axis.
+     * @param  yd      dimension of second axis.
+     * @param  expand  whether to expand the envelope to full axis range if there is a wraparound.
+     * @param  addPts  whether to allow insertion of intermediate points on edges of axis domains.
+     * @return a polyline made of a sequence of at least 5 points describing the given rectangle.
      */
-    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd) {
-        final DirectPosition lc = envelope.getLowerCorner();
-        final DirectPosition uc = envelope.getUpperCorner();
-        final double xmin = lc.getOrdinate(xd);
-        final double ymin = lc.getOrdinate(yd);
-        final double xmax = uc.getOrdinate(xd);
-        final double ymax = uc.getOrdinate(yd);
-        return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
-                             xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin})));
+    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd,
+                                                final boolean expand, final boolean addPts)
+    {
+        final double  xmin, ymin, xmax, ymax;
+        if (expand) {
+            xmin = envelope.getMinimum(xd);
+            ymin = envelope.getMinimum(yd);
+            xmax = envelope.getMaximum(xd);
+            ymax = envelope.getMaximum(yd);
+        } else {
+            final DirectPosition lc = envelope.getLowerCorner();
+            final DirectPosition uc = envelope.getUpperCorner();
+            xmin = lc.getOrdinate(xd);
+            ymin = lc.getOrdinate(yd);
+            xmax = uc.getOrdinate(xd);
+            ymax = uc.getOrdinate(yd);
+        }
+        final double[] coordinates;
+        /*
+         * Find if some intermediate points need to be added. We add points only at the edges of axis domain,
+         * for example at 180°E or 180°W. Furthermore we add points only on axes having increasing values,
+         * i.e. we do not add points on axes using the "end point < start point" convention.
+         */
+        final CoordinateReferenceSystem crs;
+        if (addPts && (crs  = envelope.getCoordinateReferenceSystem()) != null) {
+            final double  xminIn,  yminIn,  xmaxIn,  ymaxIn;        // Intermediate min/max.
+            final boolean addXmin, addYmin, addXmax, addYmax;       // Whether to add intermediate min/max.
+            int n = 5*BIDIMENSIONAL;                                // Number of coordinate values.
+
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            CoordinateSystemAxis axis = cs.getAxis(xd);
+            xminIn = axis.getMinimumValue();
+            xmaxIn = axis.getMaximumValue();
+            axis   = cs.getAxis(yd);
+            yminIn = axis.getMinimumValue();
+            ymaxIn = axis.getMaximumValue();
+            final boolean addX = xmin <= xmax;      // Whether we can add intermediates X/Y.
+            final boolean addY = ymin <= ymax;
+            if (addXmin = (addX && xminIn > xmin)) n += 2*BIDIMENSIONAL;
+            if (addYmin = (addY && yminIn > ymin)) n += 2*BIDIMENSIONAL;
+            if (addXmax = (addX && xmaxIn < xmax)) n += 2*BIDIMENSIONAL;
+            if (addYmax = (addY && ymaxIn < ymax)) n += 2*BIDIMENSIONAL;
+
+            int i = 0;
+            coordinates = new double[n];
+            /*Envelope*/ {coordinates[i++] = xmin;    coordinates[i++] = ymin;}
+            if (addYmin) {coordinates[i++] = xmin;    coordinates[i++] = yminIn;}
+            if (addYmax) {coordinates[i++] = xmin;    coordinates[i++] = ymaxIn;}
+            /*Envelope*/ {coordinates[i++] = xmin;    coordinates[i++] = ymax;}
+            if (addXmin) {coordinates[i++] = xminIn;  coordinates[i++] = ymax;}
+            if (addXmax) {coordinates[i++] = xmaxIn;  coordinates[i++] = ymax;}
+            /*Envelope*/ {coordinates[i++] = xmax;    coordinates[i++] = ymax;}
+            if (addYmax) {coordinates[i++] = xmax;    coordinates[i++] = ymaxIn;}
+            if (addYmin) {coordinates[i++] = xmax;    coordinates[i++] = yminIn;}
+            /*Envelope*/ {coordinates[i++] = xmax;    coordinates[i++] = ymin;}
+            if (addXmax) {coordinates[i++] = xmaxIn;  coordinates[i++] = ymin;}
+            if (addXmin) {coordinates[i++] = xminIn;  coordinates[i++] = ymin;}
+            /*Envelope*/ {coordinates[i++] = xmin;    coordinates[i++] = ymin;}
+            assert i == n : i;
+        } else {
+            coordinates = new double[] {xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin};
+        }
+        return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(coordinates)));
     }
 
     /**
@@ -446,27 +525,31 @@ public abstract class Geometries<G> implements Serializable {
             case NORMALIZE: {
                 throw new IllegalArgumentException();
             }
+            /*
+             * TODO: `addPts` is `false` in all cases. We have not yet determined
+             *       what could be a public API for enabling this option.
+             */
             case NONE: {
-                result = createGeometry2D(envelope, xd, yd);
+                result = createGeometry2D(envelope, xd, yd, false, false);
                 break;
             }
             default: {
                 final GeneralEnvelope ge = new GeneralEnvelope(envelope);
                 ge.normalize();
                 ge.wraparound(strategy);
-                result = createGeometry2D(ge, xd, yd);
+                result = createGeometry2D(ge, xd, yd, true, false);
                 break;
             }
             case SPLIT: {
                 final Envelope[] parts = AbstractEnvelope.castOrCopy(envelope).toSimpleEnvelopes();
                 if (parts.length == 1) {
-                    result = createGeometry2D(parts[0], xd, yd);
+                    result = createGeometry2D(parts[0], xd, yd, true, false);
                     break;
                 }
                 @SuppressWarnings({"unchecked", "rawtypes"})
                 final GeometryWrapper<G>[] polygons = new GeometryWrapper[parts.length];
                 for (int i=0; i<parts.length; i++) {
-                    polygons[i] = createGeometry2D(parts[i], xd, yd);
+                    polygons[i] = createGeometry2D(parts[i], xd, yd, true, false);
                     polygons[i].setCoordinateReferenceSystem(crs);
                 }
                 result = createMultiPolygon(polygons);
@@ -519,14 +602,6 @@ public abstract class Geometries<G> implements Serializable {
      * @see #castOrWrap(Object)
      */
     protected abstract GeometryWrapper<G> createWrapper(G geometry);
-
-    /**
-     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
-     *
-     * @return the unique {@code Geometries} instance for this class.
-     * @throws ObjectStreamException if the object state is invalid.
-     */
-    protected abstract Object readResolve() throws ObjectStreamException;
 
     /**
      * Returns an error message for an unsupported operation. This error message is used by non-abstract methods

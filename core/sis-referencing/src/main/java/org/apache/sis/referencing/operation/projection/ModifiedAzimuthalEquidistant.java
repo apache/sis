@@ -73,14 +73,14 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
      * The ℯ⋅cos(φ₀)/√(1 − ℯ²) term. This is the <var>H</var> term in EPSG guidance notes
      * but without the cos(α) term (omitted because α depends on the point to project).
      *
-     * <p>Note that during inverse projection, EPSG guidance notes has a <var>A</var> as:
+     * <p>Note that during reverse projection, EPSG guidance notes has a <var>A</var> as:
      * −ℯ²⋅cos²φ₀/(1 − ℯ²)⋅cos²α. We opportunistically use Hp² for that purpose.</p>
      */
     private final double Hp;
 
     /**
      * The 3⋅ℯ²⋅sin(φ₀)⋅cos(φ₀)/(1 − ℯ²) term. This is the <var>B</var> term in EPSG guidance notes
-     * for inverse projection but without the terms that depend on coordinates of transformed point.
+     * for reverse projection but without the terms that depend on coordinates of transformed point.
      */
     private final double Bp;
 
@@ -155,13 +155,13 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     }
 
     /**
-     * Projects the specified (λ,φ) coordinate (units in radians)
+     * Projects the specified (λ,φ) coordinates (units in radians)
      * and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
      * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

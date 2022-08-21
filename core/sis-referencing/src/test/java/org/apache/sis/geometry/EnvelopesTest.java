@@ -23,6 +23,7 @@ import org.apache.sis.measure.Range;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -30,12 +31,15 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
+import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -49,6 +53,7 @@ import static org.opengis.test.Validators.validate;
  * This class inherits the test methods defined in {@link TransformTestCase}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.3
  * @module
@@ -321,5 +326,34 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         assertEquals(2, results.length);
         assertEnvelopeEquals(new GeneralEnvelope(new double[] {-200, 5}, new double[] {-100, 9}), results[0]);
         assertEnvelopeEquals(new GeneralEnvelope(new double[] { 160, 5}, new double[] { 260, 9}), results[1]);
+    }
+
+    /**
+     * Tests with an envelope slightly outside the domain of validity of Mercator projection.
+     * This tests simulates the conversion of grid indices to CRS coordinates in a way similar
+     * to what {@link org.apache.sis.coverage.grid.GridGeometry} does.
+     * An envelope slightly outside the -180° … 180° longitude range is used.
+     * A key goal of this test is to ensure that no unexpected longitude wraparound is applied.
+     *
+     * <p>This test uses a combination of the following factors:</p>
+     * <ul>
+     *   <li>A source envelope whose origin is zero.</li>
+     *   <li>An intermediate geographic transform involving a wrap-around.</li>
+     *   <li>A Mercator CRS destination.</li>
+     * </ul>
+     *
+     * @throws TransformException if a coordinate transformation failed.
+     */
+    @Test
+    public void testOutsideMercatorDomain() throws TransformException {
+        final Envelope gridExtent = new Envelope2D(HardCodedCRS.IMAGE, 0, 0, 1024, 512);
+        final ProjectedCRS targetCRS = HardCodedConversions.mercator();
+        MathTransform gridToCRS = new AffineTransform2D(0.3515625, 0, 0, -0.3515625, -180.00001, 90);
+        gridToCRS = MathTransforms.concatenate(gridToCRS, targetCRS.getConversionFromBase().getMathTransform());
+
+        final GeneralEnvelope targetEnvelope = Envelopes.transform(gridToCRS, gridExtent);
+        final double expected = targetCRS.getDatum().getEllipsoid().getSemiMajorAxis() * Math.PI;
+        assertEquals("min X", -expected, targetEnvelope.getMinimum(0), 2);
+        assertEquals("max X", +expected, targetEnvelope.getMaximum(0), 2);
     }
 }

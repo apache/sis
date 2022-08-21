@@ -278,7 +278,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Transforms a single coordinate point in an array, and optionally computes the transform
+     * Transforms a single coordinate tuple in an array, and optionally computes the transform
      * derivative at that location. This method delegates to the most specialized transform.
      */
     @Override
@@ -311,7 +311,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Transforms a list of coordinate points. This method delegates to the most specialized transform,
+     * Transforms a list of coordinate tuples. This method delegates to the most specialized transform,
      * with single {@code transform(…)} calls for coordinate sequences as long as possible.
      *
      * @param  transform  caller for a {@code MathTransform.transform(…)} method.
@@ -358,7 +358,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Transforms a list of coordinate points.
+     * Transforms a list of coordinate tuples.
      * This method delegates to the most specialized transform.
      */
     @Override
@@ -391,7 +391,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Transforms a list of coordinate points.
+     * Transforms a list of coordinate tuples.
      * This method delegates to the most specialized transform.
      */
     @Override
@@ -424,7 +424,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Transforms a list of coordinate points. This method delegates to the most specialized transform,
+     * Transforms a list of coordinate tuples. This method delegates to the most specialized transform,
      * with single {@code transform(…)} calls for coordinate sequences as long as possible.
      */
     @Override
@@ -440,7 +440,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Transforms a list of coordinate points. This method delegates to the most specialized transform,
+     * Transforms a list of coordinate tuples. This method delegates to the most specialized transform,
      * with single {@code transform(…)} calls for coordinate sequences as long as possible.
      */
     @Override
@@ -580,7 +580,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         }
 
         /**
-         * Inverse transforms a single coordinate point in an array, and optionally computes the transform
+         * Inverse transforms a single coordinate tuple in an array, and optionally computes the transform
          * derivative at that location.
          */
         @Override
@@ -661,7 +661,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         }
 
         /**
-         * Inverse transforms a list of coordinate points.
+         * Inverse transforms a list of coordinate tuples.
          * The transformed points are written directly in the destination array.
          */
         @Override
@@ -684,7 +684,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         }
 
         /**
-         * Inverse transforms a list of coordinate points. This method uses an temporary {@code double[]} buffer
+         * Inverse transforms a list of coordinate tuples. This method uses an temporary {@code double[]} buffer
          * for testing {@code SubArea} inclusion with full precision before to cast to {@code float} values.
          */
         @Override
@@ -706,7 +706,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         }
 
         /**
-         * Inverse transforms a list of coordinate points. This method uses an temporary {@code double[]} buffer
+         * Inverse transforms a list of coordinate tuples. This method uses an temporary {@code double[]} buffer
          * for testing {@code SubArea} inclusion with full precision before to cast to {@code float} values.
          */
         @Override
@@ -727,7 +727,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         }
 
         /**
-         * Inverse transforms a list of coordinate points.
+         * Inverse transforms a list of coordinate tuples.
          * The transformed points are written directly in the destination array.
          */
         @Override

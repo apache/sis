@@ -352,7 +352,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * <p>The default implementation invokes {@link GridCoverage#render(GridExtent)} for a small region
      * around the point. Subclasses should override with more efficient implementation.</p>
      *
-     * @param  point   the coordinate point where to evaluate.
+     * @param  point   the position where to evaluate.
      * @return the sample values at the specified point, or {@code null} if the point is outside the coverage.
      *         For performance reason, this method may return the same array
      *         on every method call by overwriting previous values.

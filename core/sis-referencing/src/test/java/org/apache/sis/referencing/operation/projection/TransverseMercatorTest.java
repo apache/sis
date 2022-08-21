@@ -71,7 +71,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * Karney (2009) uses an “extended” domain of transverse Mercator projection, but Apache SIS
      * does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90° should
      * be considered invalid but are not rejected by Apache SIS. Note that even for those invalid
-     * values, the inverse projection continue to gives back the original values.
+     * values, the reverse projection continue to gives back the original values.
      */
     private static final double DOMAIN_OF_VALIDITY = 82.63627282416406551;      // (1 − ℯ)⋅90°
 
@@ -146,7 +146,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(),
                 6371007,    // Semi-major axis length
                 6371007,    // Semi-minor axis length
-                0.5,        // Central meridian
+                0,          // Central meridian
                 2.5,        // Latitude of origin
                 NaN,        // Standard parallel 1 (none)
                 NaN,        // Standard parallel 2 (none)

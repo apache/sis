@@ -178,7 +178,7 @@ public class TransverseMercator extends NormalizedProjection {
     private final double cf2, cf4, cf6, cf8;
 
     /**
-     * Coefficients in the series expansion of the inverse projection,
+     * Coefficients in the series expansion of the reverse projection,
      * depending only on {@linkplain #eccentricity eccentricity} value.
      */
     private final double ci2, ci4, ci6, ci8;
@@ -264,7 +264,7 @@ public class TransverseMercator extends NormalizedProjection {
             cf6 = ( -103. /    140)*n4  +  (61. / 240)*n3;
             cf8 = (49561. / 161280)*n4;
             /*
-             * Coefficients for the inverse projections.
+             * Coefficients for the reverse projections.
              * Add the smallest values first in order to reduce rounding errors.
              */
             ci2 = (  -1. /    360)*n4  +  (37. /  96)*n3  +  (-2. /  3)*n2  +  n/2;
@@ -386,7 +386,7 @@ public class TransverseMercator extends NormalizedProjection {
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
         final Envelope2D domain = new Envelope2D();
         domain.x = -PI/2 * (40d/90);
-        domain.y = -PI/2 * (84d/90);
+        domain.y = -POLAR_AREA_LIMIT;
         domain.width  = -2 * domain.x;
         domain.height = -2 * domain.y;
         return Optional.of(domain);
@@ -431,8 +431,8 @@ public class TransverseMercator extends NormalizedProjection {
      * Karney (2009) uses an “extended” domain of transverse Mercator projection for ∆λ ≥ (1 − ℯ)⋅90°,
      * but Apache SIS does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90°
      * should be considered invalid but are not rejected by Apache SIS. Note that those invalid values are
-     * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) inverse projection}
-     * (i.e. applying a projection followed by an inverse projection gives approximately the original values).
+     * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) reverse projection}
+     * (i.e. applying a projection followed by a reverse projection gives approximately the original values).
      *
      * <div class="note"><b>Rational:</b>
      * those coordinates are accepted despite the low accuracy of projection results because they are sometime
@@ -448,7 +448,7 @@ public class TransverseMercator extends NormalizedProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

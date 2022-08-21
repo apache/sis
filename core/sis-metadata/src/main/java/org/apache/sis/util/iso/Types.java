@@ -39,6 +39,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -149,6 +150,7 @@ public final class Types extends Static {
      *
      * @see #forStandardName(String)
      */
+    @OptionalCandidate
     public static String getStandardName(final Class<?> type) {
         if (type != null) {
             final UML uml = type.getAnnotation(UML.class);
@@ -294,6 +296,7 @@ public final class Types extends Static {
      * @see #getCodeTitle(ControlledVocabulary)
      * @see #getDescription(Class)
      */
+    @OptionalCandidate
     public static InternationalString getDescription(final ControlledVocabulary code) {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
@@ -313,6 +316,7 @@ public final class Types extends Static {
      *
      * @see #getDescription(ControlledVocabulary)
      */
+    @OptionalCandidate
     public static InternationalString getDescription(final Class<?> type) {
         final String name = getStandardName(type);
         if (name != null) {
@@ -690,6 +694,7 @@ public final class Types extends Static {
      *
      * @since 0.4
      */
+    @OptionalCandidate
     public static InternationalString toInternationalString(Map<String,?> properties, final String prefix)
             throws IllegalArgumentException
     {

@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -63,5 +63,14 @@ public final strictfp class BinarySpatialFilterUsingESRI_Test extends BinarySpat
     @Override
     @Ignore("Not yet mapped to an ESRI operation.")
     public void testWithReprojection() {
+    }
+
+    /**
+     * Test ignored for now (not yet mapped to an ESRI operation).
+     */
+    @Test
+    @Override
+    @Ignore("Requires geometry reprojection.")
+    public void testSpatialContextDoesNotDegenerateEnvelope() {
     }
 }

@@ -17,8 +17,6 @@
 package org.apache.sis.gui.metadata;
 
 import java.util.Locale;
-import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javafx.application.Platform;
@@ -55,7 +53,7 @@ import org.apache.sis.gui.Widget;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -74,18 +72,11 @@ public class MetadataSummary extends Widget {
     final Vocabulary vocabulary;
 
     /**
-     * The format to use for writing numbers, created when first needed.
+     * The format to use for writing dates and numbers.
      *
-     * @see #getNumberFormat()
+     * @see #format(Object, StringBuffer)
      */
-    private NumberFormat numberFormat;
-
-    /**
-     * The format to use for writing dates, created when first needed.
-     *
-     * @see #getDateFormat()
-     */
-    private DateFormat dateFormat;
+    final VerboseFormats formats;
 
     /**
      * An image of size 360×180 pixels showing a map of the world.
@@ -134,6 +125,7 @@ public class MetadataSummary extends Widget {
      */
     public MetadataSummary() {
         vocabulary  = Vocabulary.getResources((Locale) null);
+        formats     = new VerboseFormats(vocabulary.getLocale());
         information = new TitledPane[] {
             // If order is modified, revisit `getIdentificationInfo()`.
             new TitledPane(vocabulary.getString(Vocabulary.Keys.ResourceIdentification), new IdentificationInfo(this)),
@@ -172,23 +164,27 @@ public class MetadataSummary extends Widget {
     }
 
     /**
-     * Returns the format to use for writing numbers.
+     * Formats the given property value.
+     * The formatter is selected from the object class.
+     *
+     * @param  value  the property value to format, or {@code null} if none.
+     * @return formatted string representation of the given value, or {@code null} if the given value was null.
      */
-    final NumberFormat getNumberFormat() {
-        if (numberFormat == null) {
-            numberFormat = NumberFormat.getInstance();
-        }
-        return numberFormat;
+    final String format(final Object value) {
+        return (value != null) ? formats.formatValue(value, true) : null;
     }
 
     /**
-     * Returns the format to use for writing dates.
+     * Formats the given property value in the specified buffer.
+     * The formatter is selected from the object class.
+     *
+     * @param  value       the property value to format, or {@code null} if none.
+     * @param  toAppendTo  where to append the property value.
      */
-    final DateFormat getDateFormat() {
-        if (dateFormat == null) {
-            dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM);
+    final void format(final Object value, final StringBuffer toAppendTo) {
+        if (value != null) {
+            formats.format(value, toAppendTo);
         }
-        return dateFormat;
     }
 
     /**
