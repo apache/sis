@@ -61,7 +61,7 @@ import org.opengis.filter.DistanceOperatorName;
  * <p>The serialization form is not a committed API and may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -79,11 +79,13 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * Approximate geographic area of geometries, or {@code null} if unspecified.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final GeographicBoundingBox areaOfInterest;
 
     /**
      * The target CRS in which to transform geometries, or {@code null} for inferring automatically.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final CoordinateReferenceSystem computationCRS;
 
     /**
@@ -92,6 +94,7 @@ public final class SpatialOperationContext implements Serializable {
      * Note that it does not mean that the units of measurement must be meters; only that they must
      * be compatible with meters.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Unit<?> systemUnit;
 
     /**
@@ -103,6 +106,7 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * The common CRS found by {@link #transform(GeometryWrapper[])}. May be null.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     CoordinateReferenceSystem commonCRS;
 
     /**
@@ -335,6 +339,17 @@ select: if (commonCRS == null) {
      * This is defined in a separated class for lazy static field initialization.
      */
     private static final class Projector {
+        /**
+         * Whether the operation {@linkplain #method} used by this projector can handle longitude wraparounds
+         * as a continuous mathematical function. It is the case of projections using longitude value only in
+         * trigonometric functions such as {@link Math#sin(double)}. It is <strong>not</strong> the case of
+         * Mercator projection, where wraparounds cause a sudden jump from big positive values to big negative
+         * values (or conversely).
+         *
+         * @see org.apache.sis.referencing.operation.projection.LongitudeWraparound
+         */
+        private static final boolean CONTINUOUS_WRAPAROUND = false;
+
         /** A singleton map containing the name to assign to the CRS. */
         private final Map<String,?> name;
 
@@ -401,10 +416,14 @@ select: if (commonCRS == null) {
             }
             /*
              * Create a projected coordinate reference system for the geometry center.
+             * The central meridian should be set only if it does not cause insertion
+             * of `LongitudeWraparound` transform.
              */
             final ParameterValueGroup p = method.getParameters().createValue();
             p.parameter(Constants.STANDARD_PARALLEL_1).setValue(latitude);
-            p.parameter(Constants.CENTRAL_MERIDIAN).setValue(longitude);
+            if (CONTINUOUS_WRAPAROUND) {
+                p.parameter(Constants.CENTRAL_MERIDIAN).setValue(longitude);
+            }
             final DefaultConversion conversion = new DefaultConversion(name, method, null, p);
             return new DefaultProjectedCRS(name, baseCRS, conversion, cartCS);
         }
