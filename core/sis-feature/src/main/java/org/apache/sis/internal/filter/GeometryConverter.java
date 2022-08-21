@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.ScopedName;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
@@ -41,7 +43,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <G>  the geometry implementation type.
@@ -72,6 +74,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      *
      * @see #getParameters()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final Expression<? super R, ?> expression;
 
     /**
@@ -149,8 +152,12 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
         } else if (value instanceof Envelope) {
             envelope = (Envelope) value;
         } else try {
-            return library.castOrWrap(value);
-        } catch (ClassCastException e) {
+            if (value instanceof DirectPosition) {
+                return library.createPoint((DirectPosition) value);
+            } else {
+                return library.castOrWrap(value);
+            }
+        } catch (ClassCastException | MismatchedDimensionException e) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalClass_2, library.rootClass, Classes.getClass(value)), e);
         }

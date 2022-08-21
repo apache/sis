@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -104,6 +104,19 @@ public class ChannelDataInput extends ChannelData {
             channel.read(buffer);
             buffer.flip();
         }
+    }
+
+    /**
+     * Creates a new instance for a buffer filled with the bytes to use.
+     * This constructor uses an independent, read-only view of the given buffer.
+     * No reference to the given buffer will be retained.
+     *
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
+     * @param  data      the buffer filled with all bytes to read.
+     */
+    public ChannelDataInput(final String filename, final ByteBuffer data) {
+        super(filename, data);
+        channel = new NullChannel();
     }
 
     /**

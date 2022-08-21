@@ -184,10 +184,10 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      * If this coverage can be represented as a {@link GridCoverage2D} instance,
      * returns such instance. Otherwise returns {@code this}.
      *
-     * @param  isGeometryExplicit  whether grid extent or "grid to CRS" transform have been explicitly
-     *         specified by user. In such case, this method will not be allowed to change those values.
+     * @param  allowGeometryReplacement   whether to allow the replacement of grid geometry in the target coverage.
+     * @param  allowOperationReplacement  whether to allow the replacement of this operation by a more efficient one.
      */
-    private GridCoverage specialize(final boolean isGeometryExplicit, final boolean allowOperationReplacement)
+    private GridCoverage specialize(final boolean allowGeometryReplacement, final boolean allowOperationReplacement)
             throws TransformException
     {
         if (allowOperationReplacement) {
@@ -196,7 +196,8 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
                 (translation = getIntegerTranslation(toSourceCorner)) != null)
             {
                 // No need to allow source replacement because it is already done by caller.
-                return TranslatedGridCoverage.create(source, gridGeometry, translation, false);
+                GridCoverage c = TranslatedGridCoverage.create(source, gridGeometry, translation, false);
+                if (c != null) return c;
             }
         }
         GridExtent extent = gridGeometry.getExtent();
@@ -210,7 +211,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
          * (i.e. user specified only a target CRS), keep same image with a different `gridToCRS` transform instead
          * than doing a resampling. The intent is to avoid creating a new image if user apparently doesn't care.
          */
-        if (!isGeometryExplicit && toSourceCorner instanceof LinearTransform) {
+        if (allowGeometryReplacement && toSourceCorner instanceof LinearTransform) {
             MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CORNER);
             if (gridToCRS instanceof LinearTransform) {
                 final GridGeometry sourceGG = source.getGridGeometry();
@@ -287,8 +288,10 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      *     result.</li>
      * </ul>
      *
-     * @param  source  the grid coverage to resample.
-     * @param  target  the desired geometry of returned grid coverage. May be incomplete.
+     * @param  source     the grid coverage to resample.
+     * @param  target     the desired geometry of returned grid coverage. May be incomplete.
+     * @param  processor  the processor to use for executing the resample operation on images.
+     * @param  allowOperationReplacement  whether to allow the replacement of this operation by a more efficient one.
      * @return a grid coverage with the characteristics specified in the given grid geometry.
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
@@ -452,33 +455,34 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
          * Build the final target GridGeometry if any components were missing.
          * If an envelope is defined, resample only that sub-region.
          */
-        GridGeometry resampled = target;
+        GridGeometry complete = target;
         ComparisonMode mode = ComparisonMode.IGNORE_METADATA;
         if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
             final CoordinateReferenceSystem targetCRS = changeOfCRS.getTargetCRS();
-            resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
+            complete = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
             mode = ComparisonMode.APPROXIMATE;
             if (target.isDefined(GridGeometry.ENVELOPE)) {
-                final MathTransform targetCornerToCRS = resampled.getGridToCRS(PixelInCell.CELL_CORNER);
-                GeneralEnvelope bounds = new GeneralEnvelope(resampled.getEnvelope());
+                final MathTransform targetCornerToCRS = complete.getGridToCRS(PixelInCell.CELL_CORNER);
+                GeneralEnvelope bounds = new GeneralEnvelope(complete.getEnvelope());
                 bounds.intersect(target.getEnvelope());
                 bounds = Envelopes.transform(targetCornerToCRS.inverse(), bounds);
                 targetExtent = new GridExtent(bounds, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, targetExtent, null);
-                resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
+                complete = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
                 isGeometryExplicit = true;
             }
         }
-        if (sourceGG.equals(resampled, mode)) {
+        if (sourceGG.equals(complete, mode)) {
             return source;
         }
         /*
          * Complete the "target to source" transform.
          */
-        final MathTransform targetCornerToCRS = resampled.getGridToCRS(PixelInCell.CELL_CORNER);
-        return new ResampledGridCoverage(source, resampled,
+        final MathTransform targetCornerToCRS = complete.getGridToCRS(PixelInCell.CELL_CORNER);
+        final ResampledGridCoverage resampled = new ResampledGridCoverage(source, complete,
                 MathTransforms.concatenate(targetCornerToCRS, crsToSourceCorner),
                 MathTransforms.concatenate(targetCenterToCRS, crsToSourceCenter),
-                changeOfCRS, processor).specialize(isGeometryExplicit, allowOperationReplacement);
+                changeOfCRS, processor);
+        return resampled.specialize(!isGeometryExplicit, allowOperationReplacement);
     }
 
     /**

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Locale;
 import java.util.Optional;
 import java.nio.file.Path;
 import java.awt.image.DataBuffer;
@@ -26,6 +25,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.geotiff.Resources;
@@ -43,8 +43,11 @@ import org.apache.sis.math.Vector;
  * But it can also be a stack of images organized in a <var>n</var>-dimensional data cube,
  * or a pyramid of images with their overviews used when low resolution images is requested.
  *
+ * <p><b>Warning:</b> do not implement {@link org.apache.sis.util.Localized},
+ * as it may cause an infinite loop in {@code listeners.getLocale()} call.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -82,13 +85,10 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     }
 
     /**
-     * Returns the locale for warnings and error messages.
-     *
-     * <p><b>Warning:</b> do not implement {@link org.apache.sis.util.Localized},
-     * as it may cause an infinite loop in {@code listeners.getLocale()} call.</p>
+     * Access to the protected {@link #listeners} field.
      */
-    final Locale getLocale() {
-        return listeners.getLocale();
+    final StoreListeners listeners() {
+        return listeners;
     }
 
     /**

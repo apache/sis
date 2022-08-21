@@ -106,7 +106,7 @@ public final strictfp class MollweideTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests inverse projection of a point outside domain of validity.
+     * Tests reverse projection of a point outside domain of validity.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.

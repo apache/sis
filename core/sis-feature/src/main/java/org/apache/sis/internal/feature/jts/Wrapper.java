@@ -156,7 +156,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
     }
 
     /**
-     * Gets the number of dimensions of geometry vertex (sequence of coordinate points), which can be 2 or 3.
+     * Gets the number of dimensions of geometry vertex (sequence of coordinate tuples), which can be 2 or 3.
      * Note that this is different than the {@linkplain Geometry#getDimension() geometry topological dimension},
      * which can be 0, 1 or 2.
      *

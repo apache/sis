@@ -384,7 +384,7 @@ public final class Shapes2D extends Static {
         /*
          * Note: a previous version had an "assert" statement here comparing our calculation
          * with the calculation performed by the more general method working on Envelope. We
-         * verified that the same values (coordinate points and derivatives) were ultimately
+         * verified that the same values (coordinate tuples and derivatives) were ultimately
          * passed to the CurveExtremum.resolve(…) method, so we would expect the same result.
          * However the iteration order is different. The result seems insensitive to iteration
          * order most of the time, but not always. However, it seems that the cases were the

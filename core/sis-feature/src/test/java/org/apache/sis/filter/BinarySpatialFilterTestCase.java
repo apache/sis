@@ -19,8 +19,13 @@ package org.apache.sis.filter;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.measure.Quantities;
@@ -38,6 +43,7 @@ import static org.apache.sis.test.Assert.assertSerializedEquals;
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.internal.geoapi.filter.Literal;
+import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
 
 
 /**
@@ -47,7 +53,7 @@ import org.apache.sis.internal.geoapi.filter.Literal;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @param  <G> root class of geometry implementation.
  *
@@ -342,5 +348,31 @@ public abstract strictfp class BinarySpatialFilterTestCase<G> extends TestCase {
         final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
         Filter<AbstractFeature> overlaps = factory.overlaps(literal(Polygon.CONTAINS), right);
         assertSerializedEquals(overlaps);
+    }
+
+    /**
+     * Ensures that a world geographic envelope, once converted to a polygon and reprojected, remain coherent.
+     * This is a regression test. In the past, the operation pipeline [envelope → polygon → reprojected polygon]
+     * caused the result to degenerate to single line following the anti-meridian.
+     *
+     * @throws FactoryException if an error occurred while fetching a CRS.
+     * @throws TransformException if a coordinate conversion was required but failed.
+     */
+    @Test
+    public void testSpatialContextDoesNotDegenerateEnvelope() throws FactoryException, TransformException {
+        final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
+        final Envelope e1 = new Envelope2D(sourceCRS, -180, -90, 360, 180);
+        final DistanceFilter<?, G> within = new DistanceFilter<>(DistanceOperatorName.WITHIN,
+                library, factory.literal(e1),
+                factory.literal(new DirectPosition2D(sourceCRS, 44, 2)),
+                Quantities.create(1.0, Units.METRE));
+
+        final GeneralEnvelope envInCtx = within.context.transform(within.expression1.apply(null)).getEnvelope();
+        final double xmin = envInCtx.getMinimum(0);
+        final double xmax = envInCtx.getMaximum(0);
+        assertNotEquals("Degenerated envelope.", xmin, xmax, 1000);
+
+        final double expected = sourceCRS.getDatum().getEllipsoid().getSemiMajorAxis() * (2*Math.PI);
+        assertEquals(expected, xmax - xmin, expected / 1000);
     }
 }

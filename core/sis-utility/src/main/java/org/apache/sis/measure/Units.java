@@ -27,6 +27,7 @@ import org.opengis.geometry.DirectPosition;         // For javadoc
 import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 
 import org.apache.sis.util.Static;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 
@@ -1793,6 +1794,7 @@ public final class Units extends Static {
      *
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createUnit(String)
      */
+    @OptionalCandidate
     public static Unit<?> valueOfEPSG(final int code) {
         /*
          * The switch for the SexagesimalConverter cases are needed since we did not put those units
@@ -1838,6 +1840,7 @@ public final class Units extends Static {
      *
      * @since 0.4
      */
+    @OptionalCandidate
     public static Integer getEpsgCode(Unit<?> unit, final boolean inAxis) {
         if (unit != null) {
             if (!(unit instanceof AbstractUnit<?>)) {

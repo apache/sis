@@ -124,7 +124,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * Gets the derivative of this transform at a point. The default implementation ensures that
      * {@code point} is one-dimensional, then delegates to {@link #derivative(double)}.
      *
-     * @param  point  the coordinate point where to evaluate the derivative, or {@code null}.
+     * @param  point  the position where to evaluate the derivative, or {@code null}.
      * @return the derivative at the specified point (never {@code null}).
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
@@ -204,7 +204,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
          * Gets the derivative of this transform at a point. The default implementation ensures that
          * {@code point} is one-dimensional, then delegates to {@link #derivative(double)}.
          *
-         * @param  point  the coordinate point where to evaluate the derivative, or {@code null}.
+         * @param  point  the position where to evaluate the derivative, or {@code null}.
          * @return the derivative at the specified point (never {@code null}).
          * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
          * @throws TransformException if the derivative can not be evaluated at the specified point.

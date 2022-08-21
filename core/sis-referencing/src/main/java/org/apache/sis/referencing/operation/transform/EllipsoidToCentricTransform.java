@@ -488,7 +488,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * transform derivative, because that calculation needs to inverse a square matrix with all terms in it before
      * to drop the last row in the two-dimensional case.</div>
      *
-     * @param  point  the coordinate point where to evaluate the derivative.
+     * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */

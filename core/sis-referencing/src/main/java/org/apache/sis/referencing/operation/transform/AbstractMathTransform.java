@@ -293,9 +293,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * This method does not update the associated {@link org.opengis.referencing.crs.CoordinateReferenceSystem} value.
      *
-     * @param  ptSrc  the coordinate point to be transformed.
-     * @param  ptDst  the coordinate point that stores the result of transforming {@code ptSrc}, or {@code null}.
-     * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+     * @param  ptSrc  the coordinate tuple to be transformed.
+     * @param  ptDst  the coordinate tuple that stores the result of transforming {@code ptSrc}, or {@code null}.
+     * @return the coordinate tuple after transforming {@code ptSrc} and storing the result in {@code ptDst},
      *         or a newly created point if {@code ptDst} was null.
      * @throws MismatchedDimensionException if {@code ptSrc} or {@code ptDst} doesn't have the expected dimension.
      * @throws TransformException if the point can not be transformed.
@@ -346,7 +346,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a single coordinate point in an array, and optionally computes the transform
+     * Transforms a single coordinate tuple in an array, and optionally computes the transform
      * derivative at that location. Invoking this method is conceptually equivalent to running
      * the following:
      *
@@ -377,9 +377,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The source and destination may overlap. Consequently, implementers must read all source
      * coordinate values before to start writing the transformed coordinates in the destination array.
      *
-     * @param  srcPts    the array containing the source coordinate (can not be {@code null}).
+     * @param  srcPts    the array containing the source coordinates (can not be {@code null}).
      * @param  srcOff    the offset to the point to be transformed in the source array.
-     * @param  dstPts    the array into which the transformed coordinate is returned. May be the same than {@code srcPts}.
+     * @param  dstPts    the array into which the transformed coordinates is returned. May be the same than {@code srcPts}.
      *                   May be {@code null} if only the derivative matrix is desired.
      * @param  dstOff    the offset to the location of the transformed point that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
@@ -396,7 +396,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             throws TransformException;
 
     /**
-     * Transforms a list of coordinate points. This method is provided for efficiently transforming many points.
+     * Transforms a list of coordinate tuples. This method is provided for efficiently transforming many points.
      * The supplied array of coordinate values will contain packed coordinate values.
      *
      * <div class="note"><b>Example:</b> if the source dimension is 3, then the coordinates will be packed in this order:
@@ -507,7 +507,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         /*
          * If some points failed to be transformed, let the first exception propagate.
          * But before doing so we declare that this transform has nevertheless be able
-         * to process all coordinate points, setting them to NaN when transform failed.
+         * to process all coordinate tuples, setting them to NaN when transform failed.
          */
         if (failure != null) {
             failure.setLastCompletedTransform(this);
@@ -516,7 +516,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a list of coordinate points. The default implementation delegates
+     * Transforms a list of coordinate tuples. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
      *
      * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
@@ -556,10 +556,10 @@ public abstract class AbstractMathTransform extends FormattableObject
         /*
          * We need to check if writing the transformed coordinates in the same array than the source
          * coordinates will cause an overlapping problem. However we can consider the whole buffer as
-         * if it was a single coordinate with a very large dimension. Doing so increase the chances
+         * if it was a single coordinate tuple with a very large dimension. Doing so increase the chances
          * that IterationStrategy.suggest(...) doesn't require us an other buffer  (hint: the -1 in
-         * suggest(...) mathematic matter and reflect the contract saying that the input coordinate
-         * must be fully read before the output coordinate is written - which is the behavior we get
+         * suggest(...) mathematic matter and reflect the contract saying that the input coordinates
+         * must be fully read before the output coordinates is written - which is the behavior we get
          * with our buffer).
          */
         int srcInc = dimSource * numBufferedPts;
@@ -588,8 +588,8 @@ public abstract class AbstractMathTransform extends FormattableObject
             }
         }
         /*
-         * Computes the offset of the first source coordinate in the buffer. The offset of the
-         * first destination coordinate will always be zero.   We compute the source offset in
+         * Computes the offset of the first source coordinates in the buffer. The offset of the
+         * first destination coordinates will always be zero.   We compute the source offset in
          * such a way that the default transform(double[],int,double[],int,int) implementation
          * should never needs to copy the source coordinates in yet an other temporary buffer.
          * We will verify that with an assert statement inside the do loop.
@@ -621,7 +621,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             } catch (TransformException exception) {
                 /*
                  * If an exception occurred but the transform nevertheless declares having been
-                 * able to process all coordinate points (setting to NaN those that can not be
+                 * able to process all coordinate tuples (setting to NaN those that can not be
                  * transformed), we will keep the first exception (to be propagated at the end
                  * of this method) and continue. Otherwise we will stop immediately.
                  */
@@ -646,7 +646,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a list of coordinate points. The default implementation delegates
+     * Transforms a list of coordinate tuples. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
      *
      * @param  srcPts  the array containing the source point coordinates.
@@ -709,7 +709,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a list of coordinate points. The default implementation delegates
+     * Transforms a list of coordinate tuples. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles
      * if necessary.
      *
@@ -787,27 +787,27 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <ul>
      *   <li>Ensure that the {@code point} dimension is equal to this math transform
      *       {@linkplain #getSourceDimensions() source dimensions}.</li>
-     *   <li>Copy the coordinate in a temporary array and pass that array to the
+     *   <li>Copy the coordinates in a temporary array and pass that array to the
      *       {@link #transform(double[], int, double[], int, boolean)} method,
      *       with the {@code derivate} boolean argument set to {@code true}.</li>
      *   <li>If the latter method returned a non-null matrix, returns that matrix.
      *       Otherwise throws {@link TransformException}.</li>
      * </ul>
      *
-     * @param  point  the coordinate point where to evaluate the derivative.
+     * @param  point  the coordinate tuple where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
-     * @throws NullPointerException if the derivative depends on coordinate and {@code point} is {@code null}.
+     * @throws NullPointerException if the derivative depends on coordinates and {@code point} is {@code null}.
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
         final int dimSource = getSourceDimensions();
-        final double[] coordinate = point.getCoordinate();
-        if (coordinate.length != dimSource) {
-            throw mismatchedDimension("point", dimSource, coordinate.length);
+        final double[] coordinates = point.getCoordinate();
+        if (coordinates.length != dimSource) {
+            throw mismatchedDimension("point", dimSource, coordinates.length);
         }
-        final Matrix derivative = transform(coordinate, 0, null, 0, true);
+        final Matrix derivative = transform(coordinates, 0, null, 0, true);
         if (derivative == null) {
             throw new TransformException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
@@ -1139,7 +1139,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * returned by the {@linkplain #inverse() inverse} math transform.
          *
          * @return {@inheritDoc}
-         * @throws NullPointerException if the derivative depends on coordinate and {@code point} is {@code null}.
+         * @throws NullPointerException if the derivative depends on coordinates and {@code point} is {@code null}.
          * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
          * @throws TransformException if the derivative can not be evaluated at the specified point.
          */

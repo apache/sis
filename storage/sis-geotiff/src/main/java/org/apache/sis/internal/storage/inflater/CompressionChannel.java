@@ -23,6 +23,7 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -54,14 +55,21 @@ abstract class CompressionChannel extends PixelChannel {
     private long endPosition;
 
     /**
+     * Objects where to report warnings.
+     */
+    protected final StoreListeners listeners;
+
+    /**
      * Creates a new channel which will decompress data from the given input.
      * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
-     * @param  input  the source of data to decompress.
+     * @param  input      the source of data to decompress.
+     * @param  listeners  object where to report warnings.
      */
-    protected CompressionChannel(final ChannelDataInput input) {
-        this.input = input;
+    protected CompressionChannel(final ChannelDataInput input, final StoreListeners listeners) {
+        this.input     = input;
+        this.listeners = listeners;
     }
 
     /**
@@ -140,10 +148,9 @@ abstract class CompressionChannel extends PixelChannel {
     }
 
     /**
-     * Returns the resources for error messages. Current implementation does not know the locale.
-     * But if this information become known in a future version, this is the code to update.
+     * Returns the resources for error messages.
      */
     final Resources resources() {
-        return Resources.forLocale(null);
+        return Resources.forLocale(listeners.getLocale());
     }
 }

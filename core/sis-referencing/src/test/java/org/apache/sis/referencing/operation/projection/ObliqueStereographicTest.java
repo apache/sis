@@ -222,7 +222,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
     }
 
     /**
-     * Tests consistency between forward and inverse projection using a point that was known to fail.
+     * Tests consistency between forward and reverse projection using a point that was known to fail.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
@@ -326,7 +326,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         dstPts[1] = toDegrees(dstPts[1]);
 
         // Use a smaller tolerance because spherical and elliptical formulas should be equivalent in this case.
-        assertArrayEquals("Spherical inverse projection", refPts, dstPts, Formulas.ANGULAR_TOLERANCE / 1E6);
+        assertArrayEquals("Spherical reverse projection", refPts, dstPts, Formulas.ANGULAR_TOLERANCE / 1E6);
     }
 
     /**

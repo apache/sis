@@ -116,7 +116,7 @@ abstract class EvaluatorWrapper implements GridCoverage.Evaluator {
      * This method should be overridden if this evaluator is for a coverage
      * doing some on-the-fly conversion of sample values.
      *
-     * @param  point  the coordinate point where to evaluate.
+     * @param  point  the position where to evaluate.
      * @throws CannotEvaluateException if the values can not be computed.
      */
     @Override

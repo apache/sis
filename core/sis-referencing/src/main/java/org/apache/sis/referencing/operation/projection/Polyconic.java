@@ -67,7 +67,7 @@ public class Polyconic extends MeridianArcBased {
     private static final long serialVersionUID = -808283103170618880L;
 
     /**
-     * Coefficients for inverse projection. Snyder 18-17 gives:
+     * Coefficients for reverse projection. Snyder 18-17 gives:
      *
      * {@preformat math
      *     c₀ =    (-5/256 ⋅e⁶  +  -3/64 ⋅e⁴  +  -1/4⋅e²  +  1)

@@ -18,9 +18,11 @@ package org.apache.sis.internal.storage.inflater;
 
 import java.util.Arrays;
 import java.io.IOException;
+import java.io.EOFException;
 import java.nio.ByteBuffer;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -234,10 +236,11 @@ final class LZW extends CompressionChannel {
      * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
-     * @param  input  the source of data to decompress.
+     * @param  input      the source of data to decompress.
+     * @param  listeners  object where to report warnings.
      */
-    public LZW(final ChannelDataInput input) {
-        super(input);
+    public LZW(final ChannelDataInput input, final StoreListeners listeners) {
+        super(input, listeners);
         indexOfFreeEntry = FIRST_ADAPTATIVE_CODE;
         entriesForCodes  = new int[(1 << MAX_CODE_SIZE) - OFFSET_TO_MAXIMUM];
         stringsFromCode  = new byte[3 << (MAX_CODE_SIZE + STRING_ALIGNMENT)];   // Dynamically expanded if needed.
@@ -276,6 +279,25 @@ final class LZW extends CompressionChannel {
     }
 
     /**
+     * Reads {@link #codeSize} bits from the stream.
+     *
+     * @return the value of the next bits from the stream.
+     * @throws IOException if an error occurred while reading.
+     */
+    public final int readNextCode() throws IOException {
+        try {
+            return (int) input.readBits(codeSize);
+        } catch (EOFException e) {
+            if (finished()) {
+                listeners.warning(null, e);
+                return EOI_CODE;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
      * Decompresses some bytes from the {@linkplain #input input} into the given destination buffer.
      *
      * @param  target  the buffer into which bytes are to be transferred.
@@ -310,7 +332,7 @@ final class LZW extends CompressionChannel {
         int stringLength = length(entryForCode);
         int maximumIndex = (1 << codeSize) - OFFSET_TO_MAXIMUM;
         int code;
-        while ((code = (int) input.readBits(codeSize)) != EOI_CODE) {       // GetNextCode()
+        while ((code = readNextCode()) != EOI_CODE) {                       // GetNextCode()
             if (code == CLEAR_CODE) {
                 clearTable();                                               // InitializeTable()
                 maximumIndex = (1 << MIN_CODE_SIZE) - OFFSET_TO_MAXIMUM;
@@ -319,7 +341,7 @@ final class LZW extends CompressionChannel {
                  * The first valid code after `CLEAR_CODE` shall be a byte. If we reached the end
                  * of strip, the EOI code should be mandatory but appears to be sometime missing.
                  */
-                do code = finished() ? EOI_CODE : (int) input.readBits(MIN_CODE_SIZE);      // GetNextCode()
+                do code = readNextCode();                                   // GetNextCode()
                 while (code == CLEAR_CODE);
                 if ((code & ~0xFF) != 0) {
                     if (code == EOI_CODE) break;

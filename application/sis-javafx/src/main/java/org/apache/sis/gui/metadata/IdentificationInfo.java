@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.StringJoiner;
+import javax.measure.Unit;
 import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.scene.canvas.Canvas;
@@ -49,6 +50,8 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
@@ -79,7 +82,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -315,6 +318,17 @@ final class IdentificationInfo extends Section<Identification> {
         final DataIdentification dataInfo = (info instanceof DataIdentification) ? (DataIdentification) info : null;
         if (dataInfo != null) {
             addLine(Vocabulary.Keys.TopicCategory, owner.string(nonNull(dataInfo.getTopicCategories())));
+            addLine(Vocabulary.Keys.TypeOfResource, owner.string(nonNull(dataInfo.getSpatialRepresentationTypes())));
+        }
+        /*
+         * Resource format. Current implementation shows only the first format found.
+         */
+        for (final Format format : nonNull(info.getResourceFormats())) {
+            text = owner.string(format.getSpecification());
+            if (text != null) {
+                addLine(Vocabulary.Keys.Format, text);
+                break;
+            }
         }
         /*
          * Select a single, arbitrary date. We take the release or publication date if available.
@@ -340,37 +354,19 @@ final class IdentificationInfo extends Section<Identification> {
                     }
                 }
             }
-            if (date != null) {
-                addLine(label, owner.getDateFormat().format(date));
-            }
+            addLine(label, owner.format(date));
         }
         /*
-         * Type of resource: vector, grid, table, tin, video, etc. It gives a slight overview
-         * of the next section, "Spatial representation". For that reason we put it close to
-         * that next section, i.e. last in this section but just before the map.
-         */
-        if (dataInfo != null) {
-            addLine(Vocabulary.Keys.TypeOfResource, owner.string(nonNull(dataInfo.getSpatialRepresentationTypes())));
-        }
-        /*
-         * Resource format. Current implementation shows only the first format found.
-         */
-        for (final Format format : nonNull(info.getResourceFormats())) {
-            text = owner.string(format.getSpecification());
-            if (text != null) {
-                addLine(Vocabulary.Keys.Format, text);
-                break;
-            }
-        }
-        /*
-         * Write the first description about the spatio-temporal extent, then draw all geographic bounding boxes
+         * Fetch the first description about the spatio-temporal extent, then draw all geographic bounding boxes
          * on a world map. If the bounding box encompasses the whole world, replace it by a "World" description.
          * The reason is that drawing a box over the whole world is not very informative; it rather looks like a
          * border around the image.
          */
         text = null;
         Identifier identifier = null;
-        if (dataInfo != null) for (final Extent extent : nonNull(dataInfo.getExtents())) {
+        Range<Date> timeRange = null;
+        Range<Double> heights = null;
+        for (final Extent extent : nonNull(dataInfo != null ? dataInfo.getExtents() : null)) {
             if (extent != null) {
                 if (text == null) {
                     text = owner.string(extent.getDescription());
@@ -383,6 +379,10 @@ final class IdentificationInfo extends Section<Identification> {
                         isWorld = drawOnMap((GeographicBoundingBox) ge);
                     }
                 }
+                final MeasurementRange<Double> v = Extents.getVerticalRange(extent);
+                if (v != null) heights = (heights != null) ? heights.union(v) : v;
+                final Range<Date> t = Extents.getTimeRange(extent);
+                if (t != null) timeRange = (timeRange != null) ? timeRange.union(t) : t;
             }
         }
         if (text == null) {
@@ -394,7 +394,38 @@ final class IdentificationInfo extends Section<Identification> {
                 text = owner.vocabulary.getString(Vocabulary.Keys.World);
             }
         }
+        /*
+         * Write the temporal, vertical and geographic extents fetched above.
+         */
         addLine(Vocabulary.Keys.Extent, text);
+        if (timeRange != null) {
+            label = Vocabulary.Keys.StartDate;
+            Date t = timeRange.getMinValue();
+            if (t == null) {
+                t = timeRange.getMaxValue();
+                label = Vocabulary.Keys.EndDate;
+            }
+            addLine(label, owner.format(t));
+        }
+        if (heights != null) {
+            final Double min = heights.getMinValue();
+            final Double max = heights.getMaxValue();
+            if (min != null || max != null) {
+                StringBuffer b = new StringBuffer(20);
+                if (min != null && max != null && !min.equals(max)) {
+                    owner.formats.formatPair(min, " … ", max, b);
+                } else {
+                    owner.format(min != null ? min : max, b);
+                }
+                if (heights instanceof MeasurementRange<?>) {
+                    final Unit<?> unit = ((MeasurementRange<?>) heights).unit();
+                    if (unit != null) {
+                        owner.format(unit, b.append(' '));
+                    }
+                }
+                addLine(Vocabulary.Keys.Height, b.toString());
+            }
+        }
         setRowIndex(extentOnMap, nextRowIndex());
     }
 

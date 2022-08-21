@@ -161,14 +161,14 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
-     * @param  srcPts    source point coordinate, as (<var>longitude</var>, <var>latitude</var>) in radians.
-     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
-     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
-     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  srcPts    source point coordinates, as (<var>longitude</var>, <var>latitude</var>) in radians.
+     * @param  srcOff    the offset of the single coordinate tuple to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinates is returned (may be the same than {@code srcPts}).
+     * @param  dstOff    the offset of the location of the converted coordinates that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -215,9 +215,9 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
      *
-     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcPts  the array containing the source point coordinates, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.
-     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.
      */

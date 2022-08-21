@@ -50,7 +50,7 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -58,7 +58,7 @@ public class AlbersEqualArea extends AuthalicConversion {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -3466040922402982480L;
+    private static final long serialVersionUID = -3024658742514888646L;
 
     /**
      * Internal coefficients for computation, depending only on eccentricity and values of standards parallels.
@@ -80,15 +80,6 @@ public class AlbersEqualArea extends AuthalicConversion {
      * Geomatics Guidance Note number 7, part 2 – April 2015.
      */
     final double C;
-
-    /**
-     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
-     * Some (not all) θ values need to be shifted inside that range before to use them
-     * in trigonometric functions.
-     *
-     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
-     */
-    final double θ_bound;
 
     /**
      * Creates an Albers Equal Area projection from the given parameters.
@@ -173,7 +164,6 @@ public class AlbersEqualArea extends AuthalicConversion {
         denormalize.convertBefore(0, rn, null); rn.negate();
         denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
         normalize.convertAfter(0, rn, null);    // On this line, `rn` became `n`.
-        θ_bound = initializer.boundOfScaledLongitude(rn);
     }
 
     /**
@@ -181,9 +171,8 @@ public class AlbersEqualArea extends AuthalicConversion {
      */
     AlbersEqualArea(final AlbersEqualArea other) {
         super(other);
-        nm      = other.nm;
-        C       = other.C;
-        θ_bound = other.θ_bound;
+        nm = other.nm;
+        C  = other.C;
     }
 
     /**
@@ -222,7 +211,7 @@ public class AlbersEqualArea extends AuthalicConversion {
         if (eccentricity == 0 && getClass() == AlbersEqualArea.class) {
             kernel = new Spherical(this);
         }
-        return context.completeTransform(factory, kernel);
+        return kernel.completeWithWraparound(factory);
     }
 
     /**
@@ -233,16 +222,15 @@ public class AlbersEqualArea extends AuthalicConversion {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
-        final double θ = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
-        final double φ = srcPts[srcOff + 1];
+        final double θ = srcPts[srcOff  ];      // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
+        final double φ = srcPts[srcOff+1];
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
         final double sinφ = sin(φ);
@@ -329,9 +317,8 @@ public class AlbersEqualArea extends AuthalicConversion {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
-            // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
-            final double θ = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
-            final double φ = srcPts[srcOff + 1];
+            final double θ = srcPts[srcOff  ];              // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
+            final double φ = srcPts[srcOff+1];
             final double cosθ = cos(θ);
             final double sinθ = sin(θ);
             final double sinφ = sin(φ);

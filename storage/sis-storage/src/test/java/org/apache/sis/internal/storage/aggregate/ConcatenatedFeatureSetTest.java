@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.aggregate;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +22,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;

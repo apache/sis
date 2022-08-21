@@ -36,7 +36,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * the {@link DoubleDouble#error}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @see Matrices#createDiagonal(int, int)
  *
@@ -259,6 +259,32 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             assert dd.equals(getNumber(row, column));
         } else {
             elements[iv] = dd.doubleValue();
+        }
+    }
+
+    /**
+     * Retrieves the value at the specified row and column of this matrix, rounded to nearest integer.
+     *
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column, rounded to nearest integer.
+     *
+     * @see DoubleDouble#longValue()
+     *
+     * @since 1.3
+     */
+    @Override
+    public long getInteger(int row, int column) {
+        if (row >= 0 && row < numRow && column >= 0 && column < numCol) {
+            int i = row * numCol + column;
+            long value = Math.round(elements[i]);
+            i += numRow * numCol;
+            if (i < elements.length) {
+                value += (long) elements[i];        // Really want rounding toward zero.
+            }
+            return value;
+        } else {
+            throw indexOutOfBounds(row, column);
         }
     }
 

@@ -42,7 +42,7 @@ import javax.imageio.stream.ImageInputStream;
  * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see javax.imageio.stream.FileImageInputStream
  * @see javax.imageio.ImageIO#createImageInputStream(Object)
@@ -66,6 +66,18 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
             final ByteBuffer buffer, final boolean filled) throws IOException
     {
         super(filename, channel, buffer, filled);
+    }
+
+    /**
+     * Creates a new instance for a buffer filled with the bytes to use.
+     * This constructor uses an independent, read-only view of the given buffer.
+     * No reference to the given buffer will be retained.
+     *
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
+     * @param  data      the buffer filled with all bytes to read.
+     */
+    public ChannelImageInputStream(final String filename, final ByteBuffer data) {
+        super(filename, data);
     }
 
     /**

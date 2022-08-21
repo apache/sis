@@ -16,7 +16,7 @@
  */
 
 /**
- * Conversions or transformations of multi-dimensional coordinate points.
+ * Conversions or transformations of multi-dimensional coordinate tuples.
  * {@link org.opengis.referencing.operation.MathTransform} provides a single API for
  * coordinate conversions or transformations, including map projections.
  * Each {@code MathTransform} instances can:

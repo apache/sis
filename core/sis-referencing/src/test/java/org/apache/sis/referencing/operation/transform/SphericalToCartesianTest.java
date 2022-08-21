@@ -39,7 +39,7 @@ import org.junit.Test;
  */
 public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     /**
-     * Returns coordinate points in spherical coordinates and their equivalent in Cartesian coordinates.
+     * Returns coordinate tuples in spherical coordinates and their equivalent in Cartesian coordinates.
      */
     static double[][] testData() {
         final double r     = 1000;

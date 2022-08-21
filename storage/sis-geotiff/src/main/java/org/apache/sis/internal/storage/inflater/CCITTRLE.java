@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
 
@@ -41,7 +42,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * which is not equivalent to "0011" neither. Consequently we can not parse directly the bits as integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -120,10 +121,11 @@ final class CCITTRLE extends CompressionChannel {
      * before a reading process can start.
      *
      * @param  input        the source of data to decompress.
+     * @param  listeners    object where to report warnings.
      * @param  sourceWidth  number of pixels in a row of the source image.
      */
-    CCITTRLE(final ChannelDataInput input, final int sourceWidth) {
-        super(input);
+    CCITTRLE(final ChannelDataInput input, final StoreListeners listeners, final int sourceWidth) {
+        super(input, listeners);
         bitsPerRow = sourceWidth;
     }
 

@@ -354,7 +354,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         createCompleteProjection(new Mercator1SP(),
                 6371007,    // Semi-major axis length
                 6371007,    // Semi-minor axis length
-                0.5,        // Central meridian
+                0,          // Central meridian
                 NaN,        // Latitude of origin (none)
                 NaN,        // Standard parallel 1 (none)
                 NaN,        // Standard parallel 2 (none)
@@ -397,6 +397,12 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         };
         isInverseTransformSupported = false;
         tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(coordinates, expected);
+        /*
+         * Replace the 181° longitude by -179° so we can test reverse projection.
+         */
+        coordinates[2] = -179;
+        isInverseTransformSupported = true;
         verifyTransform(coordinates, expected);
     }
 }

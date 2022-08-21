@@ -37,6 +37,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Static;
@@ -612,6 +613,7 @@ public final class MathTransforms extends Static {
      * @see #linear(Matrix)
      * @see LinearTransform#getMatrix()
      */
+    @OptionalCandidate
     public static Matrix getMatrix(final MathTransform transform) {
         if (transform instanceof LinearTransform) {
             return ((LinearTransform) transform).getMatrix();

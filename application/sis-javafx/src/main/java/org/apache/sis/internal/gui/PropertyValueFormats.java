@@ -22,26 +22,27 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.io.IOException;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.CompoundFormat;
 
 
 /**
  * A provider for {@link java.text.NumberFormat}, {@link java.text.DateFormat}, <i>etc</i>.
- * Used for formatting values in {@link PropertyValueFormatter}.
+ * Used for formatting values in {@link PropertyValueFormatter} or in metadata summary.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
 @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
-final class TextFormats extends CompoundFormat<Object> {
+public class PropertyValueFormats extends CompoundFormat<Object> {
     /**
      * Creates a new format for the given locale.
+     *
+     * @param  locale  the locale to use for formatting objects.
      */
-    TextFormats(final Locale locale) {
+    protected PropertyValueFormats(final Locale locale) {
         super(locale, TimeZone.getDefault());
     }
 
@@ -64,7 +65,7 @@ final class TextFormats extends CompoundFormat<Object> {
      * @throws ParseException always thrown.
      */
     @Override
-    public Object parse(CharSequence text, ParsePosition pos) throws ParseException {
+    public final Object parse(CharSequence text, ParsePosition pos) throws ParseException {
         throw new ParseException(null, 0);
     }
 
@@ -77,7 +78,7 @@ final class TextFormats extends CompoundFormat<Object> {
      * @param  toAppendTo  where to append the property value.
      */
     @Override
-    public void format(final Object value, final Appendable toAppendTo) throws IOException {
+    public final void format(final Object value, final Appendable toAppendTo) {
         final StringBuffer buffer = (StringBuffer) toAppendTo;
         final Format f = getFormat(value.getClass());
         if (f != null) {
@@ -96,7 +97,7 @@ final class TextFormats extends CompoundFormat<Object> {
      *         for the given object. If {@code false}, then {@code null} will be returned instead.
      * @return formatted string representation of the given value.
      */
-    public String formatValue(final Object value, final boolean toStringAllowed) {
+    public final String formatValue(final Object value, final boolean toStringAllowed) {
         final Format f = getFormat(value.getClass());
         if (f == null) {
             return value.toString();
@@ -116,7 +117,7 @@ final class TextFormats extends CompoundFormat<Object> {
      * @param  second      the maximum value of the range.
      * @param  toAppendTo  where to append the property value.
      */
-    public void formatPair(final double first, final String separator, final double second, final StringBuffer toAppendTo) {
+    public final void formatPair(final double first, final String separator, final double second, final StringBuffer toAppendTo) {
         final FieldPosition pos = new FieldPosition(0);
         final Format f = getFormat(Number.class);
         format(f, first,  toAppendTo, pos); toAppendTo.append(separator);

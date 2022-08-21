@@ -41,7 +41,7 @@ import org.apache.sis.util.Workaround;
 
 
 /**
- * Transforms two-dimensional coordinate points using an affine transform. This class both extends
+ * Transforms two-dimensional coordinate tuples using an affine transform. This class both extends
  * {@link AffineTransform} and implements {@link MathTransform2D}, so it can be used as a bridge
  * between Java2D and the referencing module. Note that this bridge role involves a tricky issue with
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.

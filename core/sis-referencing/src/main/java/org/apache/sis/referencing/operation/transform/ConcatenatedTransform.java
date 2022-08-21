@@ -650,7 +650,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (length > MAXIMUM_BUFFER_SIZE) {
             numBuf = Math.max(1, MAXIMUM_BUFFER_SIZE / bufferDim);
             if (srcPts == dstPts) {
-                // Since we are using a buffer, the whole buffer is like a single coordinate point.
+                // Since we are using a buffer, the whole buffer is like a single coordinate tuple.
                 switch (IterationStrategy.suggest(srcOff, numBuf*sourceDim, dstOff, numBuf*targetDim, numPts)) {
                     default: {
                         // Needs to copy the whole data.
@@ -846,7 +846,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param  point  the coordinate point where to evaluate the derivative.
+     * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can't be evaluated at the specified point.
      */

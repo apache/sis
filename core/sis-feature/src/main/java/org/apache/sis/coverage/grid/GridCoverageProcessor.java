@@ -164,8 +164,8 @@ public class GridCoverageProcessor implements Cloneable {
      * but may change other aspects (in a compatible way) such as the {@link GridCoverage} subclass
      * returned or the size of the underlying rendered images.
      *
-     * <p>By default all optimizations are enabled. Users may want to disable some optimizations
-     * for example in order to get more predictable results.</p>
+     * <p>By default the {@link #REPLACE_OPERATION} and {@link #REPLACE_SOURCE} optimizations are enabled.
+     * Users may want to disable some optimizations for example in order to get more predictable results.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
@@ -178,6 +178,7 @@ public class GridCoverageProcessor implements Cloneable {
     public enum Optimization {
         /**
          * Allows the replacement of an operation by a more efficient one.
+         * This optimization is enabled by default.
          *
          * <div class="note"><b>Example:</b>
          * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
@@ -189,6 +190,7 @@ public class GridCoverageProcessor implements Cloneable {
 
         /**
          * Allows the replacement of source parameter by a more fundamental source.
+         * This optimization is enabled by default.
          *
          * <div class="note"><b>Example:</b>
          * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with a source

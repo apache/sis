@@ -50,6 +50,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.Formulas;
@@ -117,7 +118,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * on intent (except indirectly), in order to make clear that those parameters are not used by subclasses.
  * The ability to recognize two {@code NormalizedProjection}s as {@linkplain #equals(Object, ComparisonMode) equivalent}
  * without consideration for the scale factor (among other) allow more efficient concatenation in some cases
- * (typically some combinations of inverse projection followed by a direct projection).
+ * (typically some combinations of reverse projection followed by a direct projection).
  *
  * <p>All angles (either fields, method parameters or return values) in this class and subclasses are
  * in radians. This is the opposite of {@link Parameters} where all angles are in CRS-dependent units,
@@ -178,6 +179,22 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
+
+    /**
+     * Arbitrary latitude threshold (in radians) for considering that a point is in the polar area.
+     * This is used for implementations of the {@link #getDomain(DomainDefinition)} method.
+     */
+    static final double POLAR_AREA_LIMIT = PI/2 * (84d/90);
+
+    /**
+     * An arbitrarily large longitude value (in radians) for map projections capable to have infinite
+     * extent in the east-west direction. This is the case of {@link Mercator} projection for example.
+     * Longitudes have no real world meaning outside −180° … +180° range (unless wraparound is applied),
+     * but we nevertheless accept large values without wraparound because they make envelope projection easier.
+     * This is used for implementations of the {@link #getDomain(DomainDefinition)} method,
+     * which use arbitrary limits anyway.
+     */
+    static final double LARGE_LONGITUDE_LIMIT = 100*PI;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
@@ -514,6 +531,48 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
+     * Returns a transform which may shift scaled longitude θ=n⋅λ inside the [−n⋅π … n⋅π] range.
+     * The transform intentionally does <strong>not</strong> force θ to be inside that range in all cases.
+     * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
+     * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
+     * when necessary for the problem of area crossing the anti-meridian (±180°).
+     *
+     * <div class="note"><b>Example:</b>
+     * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is
+     * at λ=177° of longitude, calculations will be performed with Δλ=331° while the correct value that we
+     * need to use is Δλ=−29°.</div>
+     *
+     * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
+     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore we add or subtract
+     * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
+     * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
+     * {@link Math#IEEEremainder(double, double)}.
+     *
+     * <h4>When to use</h4>
+     * This method is invoked by map projections that multiply the longitude values by some scale factor before
+     * to use them in trigonometric functions. Usually we do not explicitly wraparound the longitude values,
+     * because trigonometric functions do that automatically for us. However if the longitude is multiplied
+     * by some factor before to be used in trigonometric functions, then that implicit wraparound is not the
+     * one we expect. The map projection code needs to perform explicit wraparound in such cases.
+     *
+     * @param  factory  the factory to use for completing the transform with normalization/denormalization steps.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates with wraparound if needed.
+     * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     */
+    final MathTransform completeWithWraparound(final MathTransformFactory factory) throws FactoryException {
+        MathTransform kernel = this;
+        final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final double rotation = normalize.getElement(0, DIMENSION);
+        if (rotation != 0 && Double.isFinite(rotation)) {                 // Finite check is paranoiac (shall always be true).
+            kernel = new LongitudeWraparound(this,
+                    LongitudeWraparound.boundOfScaledLongitude(normalize, rotation < 0), rotation);
+        }
+        return context.completeTransform(factory, kernel);
+    }
+
+    /**
      * If this map projection can not handle the parameters given by the user but an other projection could, delegates
      * to the other projection. This method can be invoked by some {@link #createMapProjection(MathTransformFactory)}
      * implementations when the other projection can be seen as a special case.
@@ -651,37 +710,26 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * If the given scaled longitude θ=n⋅λ is outside the [−n⋅π … n⋅π] range, maybe shifts θ to that range.
-     * This method intentionally does <strong>not</strong> force θ to be inside that range in all cases.
-     * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
-     * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
-     * when necessary for the problem of area crossing the anti-meridian (±180°).
+     * The longitude value where wraparound is, or would be, applied by this map projection.
+     * This is typically {@link Math#PI} (180° converted to radians) but not necessarily,
+     * because implementations are free to scale the longitude values by an arbitrary factor.
      *
-     * <div class="note"><b>Example:</b>
-     * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is
-     * at λ=177° of longitude, calculations will be performed with Δλ=331° while the correct value that we
-     * need to use is Δλ=−29°.</div>
+     * <p>The wraparound may not be really applied by the {@code transform(…)} methods.
+     * Many map projections implicitly wraparound longitude values through the use of trigonometric functions
+     * ({@code sin(λ)}, {@code cos(λ)}, <i>etc</i>). For those map projections, the wraparound is unconditional.
+     * But some other map projections are capable to handle longitude values beyond the [−180° … +180°] range
+     * as if the world was expanding toward infinity in east and west directions.
+     * The most common example is the {@linkplain Mercator} projection.
+     * In those latter cases, wraparounds are avoided as much as possible in order to facilitate the projection
+     * of envelopes, geometries or rasters, where discontinuities (sudden jumps of 360°) cause artifacts.</p>
      *
-     * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
-     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore we add or subtract
-     * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
-     * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
-     * {@link Math#IEEEremainder(double, double)}.
+     * @return the longitude value where wraparound is or would be applied.
      *
-     * @param  θ        the scaled longitude value θ=n⋅λ where <var>n</var> is a projection-dependent factor.
-     * @param  θ_bound  minimal (if negative) or maximal (if positive) value of θ before to apply the shift.
-     *                  This is computed by <code>{@linkplain Initializer#boundOfScaledLongitude(double)
-     *                  Initializer.boundOfScaledLongitude}(n)</code>
-     * @return θ or shifted θ.
-     *
-     * @see Initializer#boundOfScaledLongitude(double)
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     * @see #getDomain(DomainDefinition)
      */
-    static double wraparoundScaledLongitude(double θ, final double θ_bound) {
-        if (θ_bound < 0 ? θ < θ_bound : θ > θ_bound) {
-            θ -= 2*θ_bound;
-        }
-        return θ;
+    final double getWraparoundLongitude() {
+        return LongitudeWraparound.boundOfScaledLongitude(
+                context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION), false);
     }
 
     /*
@@ -699,9 +747,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <h4>Normalization</h4>
      * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
-     * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
+     * Input coordinates shall have the <cite>central meridian</cite> removed from the longitude by the caller
      * before this method is invoked. After this method is invoked, the caller will need to multiply the output
-     * coordinate by the global <cite>scale factor</cite>,
+     * coordinates by the global <cite>scale factor</cite>,
      * apply the (<cite>false easting</cite>, <cite>false northing</cite>) offset
      * and eventually other projection-specific factors.
      * This means that projections that implement this method are performed on a sphere or ellipse
@@ -723,40 +771,40 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * If this assumption is not applicable to a particular subclass, then it is implementer responsibility to check
      * the range.
      *
-     * @param  srcPts    the array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
+     * @param  srcPts    the array containing the source point coordinates, as (<var>longitude</var>, <var>latitude</var>)
      *                   angles in <strong>radians</strong>.
-     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
-     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
+     * @param  srcOff    the offset of the single coordinate tuple to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinates is returned (may be the same than {@code srcPts}).
      *                   Coordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
-     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  dstOff    the offset of the location of the converted coordinates that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinate can not be converted.
+     * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
     public abstract Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate)
             throws ProjectionException;
 
     /**
-     * Inverse converts the single coordinate in {@code srcPts} at the given offset and stores the result in
+     * Inverse converts the single coordinate tuple in {@code srcPts} at the given offset and stores the result in
      * {@code ptDst} at the given offset. The output coordinates are (<var>longitude</var>, <var>latitude</var>)
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
      * <h4>Normalization</h4>
-     * Input coordinate shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
+     * Input coordinates shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
      * by the caller and the result divided by the global <cite>scale factor</cite> before this method is invoked.
      * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude
-     * in the output coordinate. This means that projections that implement this method are performed on a sphere
+     * in the output coordinates. This means that projections that implement this method are performed on a sphere
      * or ellipse having a semi-major axis of 1.
      * Additional projection-specific factors may also need to be applied (see class javadoc).
      *
      * <div class="note"><b>Note:</b> in the <a href="https://proj.org/">PROJ</a> library, the same standardization,
      * described above, is handled by {@code pj_inv.c}, except for the projection-specific additional factors.</div>
      *
-     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcPts  the array containing the source point coordinates, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.
-     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
      *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.
@@ -777,7 +825,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Inverse of a normalized map projection.
+     * Reverse of a normalized map projection.
+     * Note that a slightly modified copy of this class is in {@code LongitudeWraparound.Inverse}.
+     * If this is class is modified, consider updating {@code LongitudeWraparound.Inverse} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
@@ -791,19 +841,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         private static final long serialVersionUID = 6014176098150309651L;
 
         /**
-         * The enclosing transform.
+         * The projection to reverse, which is the enclosing transform.
          */
         private final NormalizedProjection forward;
 
         /**
-         * Default constructor.
+         * Creates a reverse projection for the given forward projection.
          */
         Inverse(final NormalizedProjection forward) {
             this.forward = forward;
         }
 
         /**
-         * Returns the inverse of this math transform.
+         * Returns the inverse of this math transform, which is the forward projection.
          */
         @Override
         public MathTransform2D inverse() {
@@ -811,7 +861,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
 
         /**
-         * Inverse transforms the specified {@code srcPts} and stores the result in {@code dstPts}.
+         * Reverse projects the specified {@code srcPts} and stores the result in {@code dstPts}.
          * If the derivative has been requested, then this method will delegate the derivative
          * calculation to the enclosing class and inverts the resulting matrix.
          */
@@ -862,8 +912,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             if (m != null) {
                 /*
                  * 'projectedSpace' values:
-                 *   - false if applyOtherFirst == false since we have (inverse projection) → (affine) → (projection).
-                 *   - true  if applyOtherFirst == true  since we have (projection) → (affine) → (inverse projection).
+                 *   - false if applyOtherFirst == false since we have (reverse projection) → (affine) → (projection).
+                 *   - true  if applyOtherFirst == true  since we have (projection) → (affine) → (reverse projection).
                  */
                 return forward.tryConcatenate(applyOtherFirst, m, factory);
             }
@@ -873,8 +923,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Concatenates or pre-concatenates in an optimized way this projection with the given transform, if possible.
-     * If transforms are concatenated in an (inverse projection) → (affine) → (projection) sequence where the
-     * (projection) and (inverse projection) steps are the {@linkplain #inverse() inverse} of each other,
+     * If transforms are concatenated in a (reverse projection) → (affine) → (projection) sequence where the
+     * (projection) and (reverse projection) steps are the {@linkplain #inverse() inverse} of each other,
      * then in some particular case the sequence can be replaced by a single affine transform.
      * If no such simplification is possible, this method returns {@code null}.
      *
@@ -891,8 +941,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         if (m != null) {
             /*
              * 'projectedSpace' values:
-             *   - false if applyOtherFirst == true  since we have (inverse projection) → (affine) → (projection).
-             *   - true  if applyOtherFirst == false since we have (projection) → (affine) → (inverse projection).
+             *   - false if applyOtherFirst == true  since we have (reverse projection) → (affine) → (projection).
+             *   - true  if applyOtherFirst == false since we have (projection) → (affine) → (reverse projection).
              */
             return tryConcatenate(!applyOtherFirst, m, factory);
         }
@@ -921,10 +971,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * If a sequence of 3 transforms are (inverse projection) → (affine) → (projection) where
-     * the (projection) and (inverse projection) steps are the inverse of each other, returns
+     * If a sequence of 3 transforms are (reverse projection) → (affine) → (projection) where
+     * the (projection) and (reverse projection) steps are the inverse of each other, returns
      * the matrix of the affine transform step. Otherwise returns {@code null}. This method
-     * accepts also (projection) → (affine) → (inverse projection) sequence, but such sequences
+     * accepts also (projection) → (affine) → (reverse projection) sequence, but such sequences
      * should be much more unusual.
      *
      * @param  projection       either {@link NormalizedProjection} or {@link Inverse}.
