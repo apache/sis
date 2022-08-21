@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
@@ -603,14 +602,6 @@ public abstract class Geometries<G> implements Serializable {
      * @see #castOrWrap(Object)
      */
     protected abstract GeometryWrapper<G> createWrapper(G geometry);
-
-    /**
-     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
-     *
-     * @return the unique {@code Geometries} instance for this class.
-     * @throws ObjectStreamException if the object state is invalid.
-     */
-    protected abstract Object readResolve() throws ObjectStreamException;
 
     /**
      * Returns an error message for an unsupported operation. This error message is used by non-abstract methods

@@ -61,8 +61,8 @@ public final class Factory extends Geometries<Shape> {
      * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
      *
      * @return {@link #INSTANCE}.
+     * @throws ObjectStreamException if the object state is invalid.
      */
-    @Override
     protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
