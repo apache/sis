@@ -215,6 +215,8 @@ public final class Numerics extends Static {
      * @return x/y rounded toward positive infinity.
      *
      * @see Math#floorDiv(int, int)
+     *
+     * @todo Replace by {@link Math#ceilDiv(int, int)} in JDK18.
      */
     public static int ceilDiv(final int x, final int y) {
         int r = x / y;

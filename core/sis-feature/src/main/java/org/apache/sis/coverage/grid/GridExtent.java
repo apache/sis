@@ -748,6 +748,39 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns the average of low and high coordinates, rounded toward positive infinity.
+     * This method is equivalent to computing any of the following,
+     * except that this method does not overflow even if the sum would overflow:
+     *
+     * <ul>
+     *   <li>(<var>low</var> + <var>high</var>) / 2 rounded toward positive infinity, or</li>
+     *   <li>(<var>low</var> + <var>high</var> + 1) / 2 rounded toward negative infinity.</li>
+     * </ul>
+     *
+     * The two above formulas are equivalent, so the result does not depend
+     * on whether the high coordinate should be inclusive or exclusive.
+     *
+     * @param  index  the dimension for which to obtain the coordinate value.
+     * @return the median coordinate value at the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() grid dimension}.
+     *
+     * @since 1.3
+     */
+    public long getMedian(final int index) {
+        final int dimension = getDimension();
+        ArgumentChecks.ensureValidIndex(dimension, index);
+        final long low  = coordinates[index];
+        final long high = coordinates[index + dimension];
+        /*
+         * Use `>> 1` instead of `/2` because the two operations differ in their rounding mode for negative values.
+         * The former rounds toward negative infinity (which is intended here) while the latter rounds toward zero.
+         * If at least one value is odd, add +1 to the result.
+         */
+        return (low >> 1) + (high >> 1) + ((low | high) & 1);
+    }
+
+    /**
      * Returns the number of integer grid coordinates along the specified dimension.
      * This is equal to {@code getHigh(dimension) - getLow(dimension) + 1}.
      *
