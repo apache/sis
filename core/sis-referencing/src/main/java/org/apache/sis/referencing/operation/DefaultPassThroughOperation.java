@@ -68,6 +68,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *
      * @see #getOperation()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private CoordinateOperation operation;
 
     /**

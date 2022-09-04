@@ -109,6 +109,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *
      * @see #descriptors()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private List<GeneralParameterDescriptor> descriptors;
 
     /**

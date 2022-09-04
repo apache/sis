@@ -149,6 +149,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #getDescriptor()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private ParameterDescriptor<T> descriptor;
 
     /**
@@ -158,6 +159,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @since 0.7
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected T value;
 
     /**
@@ -167,6 +169,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @since 0.7
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected Unit<?> unit;
 
     /**

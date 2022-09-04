@@ -91,6 +91,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * @see #getMethod()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private OperationMethod method;
 
     /**
@@ -99,7 +100,10 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
      * at XML unmarshalling time by {@link #setParameters(GeneralParameterValue[])}.</p>
+     *
+     * @see #getParameterValues()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     ParameterValueGroup parameters;
 
     /**

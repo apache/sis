@@ -96,6 +96,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * @see #getValidValues()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Set<T> validValues;
 
     /**
@@ -118,6 +119,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * @see #getDefaultValue()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final T defaultValue;
 
     /**
@@ -451,7 +453,9 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * All other properties (minimum and maximum occurrences, minimum, maximum and valid values)
      * are compared only for modes stricter than {@link ComparisonMode#IGNORE_METADATA}.
      *
-     * @return {@inheritDoc}
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
+     * @return {@code true} if both objects are equal according the given comparison mode.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

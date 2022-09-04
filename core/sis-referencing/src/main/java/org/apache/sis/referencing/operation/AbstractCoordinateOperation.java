@@ -139,6 +139,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getSourceCRS()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     CoordinateReferenceSystem sourceCRS;
 
     /**
@@ -150,6 +151,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getTargetCRS()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     CoordinateReferenceSystem targetCRS;
 
     /**
@@ -161,6 +163,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getInterpolationCRS()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private CoordinateReferenceSystem interpolationCRS;
 
     /**
@@ -183,6 +186,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getCoordinateOperationAccuracy()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     Collection<PositionalAccuracy> coordinateOperationAccuracy;
 
     /**
@@ -194,6 +198,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getDomainOfValidity()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     Extent domainOfValidity;
 
     /**
@@ -204,6 +209,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getScope()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private InternationalString scope;
 
     /**
@@ -214,6 +220,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * This field is non-final only for the convenience of constructors and for initialization
      * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     MathTransform transform;
 
     /**

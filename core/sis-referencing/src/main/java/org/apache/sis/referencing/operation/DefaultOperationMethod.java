@@ -155,6 +155,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This field is modified only at unmarshalling time by {@link #setFormulaCitation(Citation)}
      * or {@link #setFormulaDescription(String)}.</p>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Formula formula;
 
     /**
@@ -193,6 +194,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}</p>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private ParameterDescriptorGroup parameters;
 
     /**

@@ -252,6 +252,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      *
      * @see #getPreferredCodespaces()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Set<String> preferredCodespaces;
 
     /**

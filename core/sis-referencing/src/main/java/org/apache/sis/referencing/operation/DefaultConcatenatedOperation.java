@@ -72,6 +72,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setSteps(CoordinateOperation[])}</p>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private List<? extends CoordinateOperation> operations;
 
     /**

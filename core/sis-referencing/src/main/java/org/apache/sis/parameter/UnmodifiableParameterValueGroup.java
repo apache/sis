@@ -59,6 +59,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      *
      * @see #getDescriptor()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
@@ -66,6 +67,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      *
      * @see #values()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final List<GeneralParameterValue> values;
 
     /**
