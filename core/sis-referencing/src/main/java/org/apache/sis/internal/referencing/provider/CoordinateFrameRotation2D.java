@@ -22,7 +22,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Coordinate Frame Rotation (geog2D domain)"</cite> (EPSG:9607).
+ * The provider for <cite>"Coordinate Frame rotation (geog2D domain)"</cite> (EPSG:9607).
  * This is the same transformation than "{@link PositionVector7Param}"
  * except that the rotation angles have the opposite sign.
  *
@@ -45,13 +45,13 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
     static {
         PARAMETERS = builder()
                 .addIdentifier("9607")
-                .addName("Coordinate Frame Rotation (geog2D domain)")
+                .addName("Coordinate Frame rotation (geog2D domain)")
                 .addName(Citations.ESRI, "Coordinate_Frame")
                 .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
-         * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
-         * We also omit "Coordinate Frame Rotation" alias for similar reason.
+         * to both "Coordinate Frame rotation" and "Position Vector 7-param. transformation"
+         * We also omit "Coordinate Frame rotation" alias for similar reason.
          */
     }
 

@@ -187,7 +187,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
                         } else {
                             tgt.setValue(-src.doubleValue());
                         }
-                        // No need to add 'tgt' to 'copy' since it was done by the call to copy.parameter(…).
+                        // No need to add `tgt` to `copy` since it was done by the call to copy.parameter(…).
                         continue;
                     }
                 }
