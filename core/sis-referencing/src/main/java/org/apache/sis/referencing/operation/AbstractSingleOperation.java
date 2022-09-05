@@ -20,16 +20,19 @@ import java.util.Map;
 import java.util.List;
 import java.util.IdentityHashMap;
 import java.util.Objects;
+import java.util.function.Predicate;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -64,7 +67,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@link DefaultPassThroughOperation}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -102,6 +105,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * at XML unmarshalling time by {@link #setParameters(GeneralParameterValue[])}.</p>
      *
      * @see #getParameterValues()
+     * @see #setParameterValues(ParameterValueGroup, Map)
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
     ParameterValueGroup parameters;
@@ -127,7 +131,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * However there is a few cases, for example the Molodenski transform, where we can not infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
-        parameters = Parameters.unmodifiable(Containers.property(properties, CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class));
+        setParameterValues(Containers.property(properties, CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class), null);
     }
 
     /**
@@ -220,6 +224,60 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     @Override
     public ParameterValueGroup getParameterValues() {
         return (parameters != null) ? parameters : super.getParameterValues();
+    }
+
+    /**
+     * Sets the parameter values to a copy of given parameters,
+     * making sure that the parameters are compatible with the ones expected by the operation method.
+     * This method should be invoked by constructors only, after {@link #method} has been initialized.
+     *
+     * <p>If {@code ignore} is non-null, then parameters associated to {@link Boolean#TRUE} may be hidden.
+     * This situation happens when this operation has been initialized from a <em>defining conversion</em>
+     * and the caller refined the parameters using information provided by the math transform factory.
+     * On one hand, we want to take advantage of additional information present in {@code definition}
+     * such as OGC aliases (those information are often missing in {@link #method} if the latter
+     * is not a {@link org.apache.sis.referencing.operation.transform.MathTransformProvider}).
+     * But on the other hand, {@code definition} may contain contextual parameters (ellipsoid semi-axis lengths)
+     * which are unknown to {@link #method} and would cause an {@link InvalidParameterValueException} if we try
+     * to set them. We could replace {@link #method}, but if the latter was created from EPSG database it also
+     * contains metadata not present in {@code definition} descriptor. The compromise applied in this method is
+     * to keep {@link #method} as provided by user, also keep {@code definition} descriptor as supplied even if
+     * it is different than {@link #method} descriptor, but hide (not remove) parameters that are known
+     * to be redundant with information that can be inferred from the context.</p>
+     *
+     * @param  definition  the parameter to set, or {@code null} if none.
+     * @param  ignore      parameters to hide when the associated value is {@link Boolean#TRUE},
+     *                     or {@code null} for no filtering. This map may be modified in-place.
+     */
+    final void setParameterValues(ParameterValueGroup definition, final Map<String,Boolean> ignore) {
+        Predicate<GeneralParameterDescriptor> filter = null;
+        if (ignore != null) {
+            /*
+             * We enter in this block if creating a complete conversion from a defining conversion.
+             * The `method` instance typically come from an EPSG factory, so we want to keep it.
+             * The `definition` descriptor typically come from a `MathTransformProvider`,
+             * so we also want to keep it because it contains OGC aliases not present in `method`.
+             * For making both of them compatible, we will remove all contextual parameters
+             * (e.g. "semi_major") unless those parameters are known to `method`.
+             */
+            for (final GeneralParameterDescriptor accepted : method.getParameters().descriptors()) {
+                ignore.remove(accepted.getName().getCode());
+                for (final GenericName alias : accepted.getAlias()) {
+                    ignore.remove(alias.tip().toString());              // Do not ignore known parameters.
+                }
+            }
+            filter = (candidate) -> {                     // Exclude only if `ignore.get(…) == true`.
+                Boolean isContextual = ignore.get(candidate.getName().getCode());
+                if (isContextual == null) {
+                    for (final GenericName alias : candidate.getAlias()) {
+                        isContextual = ignore.get(alias.tip().toString());
+                        if (isContextual != null) break;
+                    }
+                }
+                return !Boolean.TRUE.equals(isContextual);
+            };
+        }
+        parameters = Parameters.unmodifiable(definition, filter);
     }
 
     /**

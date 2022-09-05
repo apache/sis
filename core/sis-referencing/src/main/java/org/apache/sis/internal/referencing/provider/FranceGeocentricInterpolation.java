@@ -60,6 +60,7 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 
 import static java.lang.Float.parseFloat;
+import static org.apache.sis.internal.util.Constants.DIM;
 
 
 /**
@@ -324,7 +325,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             case 2:  break;
             case 3:  withHeights = true; break;
             default: throw new InvalidParameterValueException(Errors.format(
-                            Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
+                            Errors.Keys.IllegalArgumentValue_2, DIM, dim), DIM, dim);
         }
         final Path file = pg.getMandatoryValue(FILE);
         final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file,

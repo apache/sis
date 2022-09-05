@@ -113,7 +113,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  *
@@ -641,7 +641,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 descriptor = GeocentricToGeographic.PARAMETERS;
             }
             parameters = descriptor.createValue();
-            parameters.parameter("dim").setValue(geographic.getCoordinateSystem().getDimension());
+            parameters.parameter(Constants.DIM).setValue(geographic.getCoordinateSystem().getDimension());
         } else {
             /*
              * Coordinate system change (including change in the number of dimensions) without datum shift.
@@ -681,9 +681,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          */
         MathTransform transform = mtFactory.createParameterizedTransform(parameters, context);
         if (method == null) {
-            method = mtFactory.getLastMethodUsed();
+            method = context.getMethodUsed();
         }
         if (before != null) {
+            parameters = null;      // Providing parameters would be misleading because they apply to only a step of the operation.
             transform = mtFactory.createConcatenatedTransform(before, transform);
             if (after != null) {
                 transform = mtFactory.createConcatenatedTransform(transform, after);

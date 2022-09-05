@@ -91,7 +91,7 @@
  * for example by specifying the area of interest.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */

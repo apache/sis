@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Predicate;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
@@ -115,6 +116,18 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     }
 
     /**
+     * Returns {@code true} if the given parameter group is a non-null instance created by {@code unmodifiable(…)}.
+     *
+     * @param  parameters  the parameter group to test. Can be {@code null}.
+     * @return whether the given parameters are non-null and unmodifiable.
+     *
+     * @since 1.3
+     */
+    public static boolean isUnmodifiable(final ParameterValueGroup parameters) {
+        return (parameters instanceof UnmodifiableParameterValueGroup);
+    }
+
+    /**
      * Returns the given parameter value group as an unmodifiable {@code Parameters} instance.
      * If the given parameters is already an unmodifiable instance of {@code Parameters},
      * then it is returned as-is. Otherwise this method copies all parameter values in a new,
@@ -130,6 +143,34 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      */
     public static Parameters unmodifiable(final ParameterValueGroup parameters) {
         return UnmodifiableParameterValueGroup.create(parameters);
+    }
+
+    /**
+     * Returns the given parameter value group as an unmodifiable {@code Parameters} instance
+     * with some parameters hidden. The hidden parameters are excluded from the list returned
+     * by {@link Parameters#values()}, but are otherwise still accessible when the hidden
+     * parameters is explicitly named in a call to {@link #parameter(String)}.
+     *
+     * <div class="note"><b>Use case:</b>
+     * this method is used for hiding parameters that should be inferred from the context.
+     * For example the {@code "semi_major"} and {@code "semi_minor"} parameters are included
+     * in the list of {@link org.opengis.referencing.operation.MathTransform} parameters
+     * because that class has no way to know the values if they are not explicitly provided.
+     * But those semi-axis length parameters should not be included in the list of
+     * {@link org.opengis.referencing.operation.CoordinateOperation} parameters
+     * because they are inferred from the context (the source and target CRS).</div>
+     *
+     * @param  parameters  the parameters to make unmodifiable, or {@code null}.
+     * @param  filter      specifies which source parameters to keep visible, or {@code null} if no filtering.
+     * @return an unmodifiable group with the parameters of the given group to keep visible,
+     *         or {@code null} if the {@code parameters} argument was null.
+     *
+     * @since 1.3
+     */
+    public static Parameters unmodifiable(final ParameterValueGroup parameters,
+            final Predicate<? super GeneralParameterDescriptor> filter)
+    {
+        return FilteredParameters.create(UnmodifiableParameterValueGroup.create(parameters), filter);
     }
 
     /**
@@ -156,6 +197,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     @SuppressWarnings("CloneDoesntCallSuperClone")
     private static final class Wrapper extends Parameters implements Serializable {
         private static final long serialVersionUID = -5491790565456920471L;
+
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final ParameterValueGroup delegate;
         Wrapper(final ParameterValueGroup delegate) {this.delegate = delegate;}
 
