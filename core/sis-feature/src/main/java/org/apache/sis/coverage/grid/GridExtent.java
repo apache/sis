@@ -190,7 +190,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private static DimensionNameType[] validateAxisTypes(DimensionNameType[] types) throws IllegalArgumentException {
-        if (types == null) {
+        if (types == null || ArraysExt.allEquals(types, null)) {
             return null;
         }
         if (Arrays.equals(DEFAULT_TYPES, types)) {          // Common case verified before POOL synchronized lock.
