@@ -329,6 +329,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ForbiddenProperty_1 = 41;
 
         /**
+         * Identifier “{1}” is not in “{0}” namespace.
+         */
+        public static final short IdentifierNotInNamespace_2 = 199;
+
+        /**
          * Argument ‘{0}’ can not be an instance of ‘{1}’.
          */
         public static final short IllegalArgumentClass_2 = 42;

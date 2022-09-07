@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.List;
 import org.apache.sis.internal.system.Loggers;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -55,7 +56,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -143,6 +144,19 @@ public final strictfp class CRSTest extends TestCase {
     }
 
     /**
+     * Tests {@link CRS#forCode(String)} with temporal CRS codes.
+     *
+     * @throws FactoryException if a CRS can not be constructed.
+     */
+    @Test
+    public void testForTemporalCode() throws FactoryException {
+        verifyForCode(CommonCRS.Temporal.JULIAN.crs(), "OGC:JulianDate");
+        verifyForCode(CommonCRS.Temporal.UNIX.crs(),   "OGC:UnixTime");
+        verifyForCode(CommonCRS.Temporal.TRUNCATED_JULIAN.crs(),
+                      "http://www.opengis.net/gml/srs/crs.xml#TruncatedJulianDate");
+    }
+
+    /**
      * Test {@link CRS#forCode(String)} with values that should be invalid.
      *
      * @throws FactoryException if an error other than {@link NoSuchAuthorityCodeException} happened.
@@ -155,6 +169,36 @@ public final strictfp class CRSTest extends TestCase {
         } catch (NoSuchAuthorityCodeException e) {
             assertEquals("4", e.getAuthorityCode());
         }
+    }
+
+    /**
+     * Asserts that the result of {@link CRS#forCode(String)} for a compound CRS are the given components.
+     */
+    private static void verifyForCompoundCode(final String code, final SingleCRS... expected) throws FactoryException {
+        final List<SingleCRS> components = CRS.getSingleComponents(CRS.forCode(code));
+        final int count = Math.min(components.size(), expected.length);
+        for (int i=0; i<count; i++) {
+            assertTrue(String.valueOf(i), Utilities.deepEquals(expected[i], components.get(i), ComparisonMode.DEBUG));
+        }
+        assertEquals(expected.length, components.size());
+    }
+
+    /**
+     * Tests {@link CRS#forCode(String)} with compound CRS codes.
+     *
+     * @throws FactoryException if a CRS can not be constructed.
+     */
+    @Test
+    public void testForCompoundCode() throws FactoryException {
+        verifyForCompoundCode("urn:ogc:def:crs,crs:EPSG::4326,crs:EPSG::5714",
+                CommonCRS.WGS84.geographic(), CommonCRS.Vertical.MEAN_SEA_LEVEL.crs());
+        verifyForCompoundCode("urn:ogc:def:crs,crs:EPSG::4326,crs:EPSG::5714,crs:OGC::TruncatedJulianDate",
+                CommonCRS.WGS84.geographic(), CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+
+        verifyForCompoundCode("http://www.opengis.net/def/crs-compound?" +
+                            "1=http://www.opengis.net/def/crs/epsg/0/4326&" +
+                            "2=http://www.opengis.net/def/crs/epsg/0/5715",
+                CommonCRS.WGS84.geographic(), CommonCRS.Vertical.DEPTH.crs());
     }
 
     /**
