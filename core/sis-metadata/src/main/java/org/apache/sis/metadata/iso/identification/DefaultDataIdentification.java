@@ -103,7 +103,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     private Map<Locale,Charset> locales;
 
     /**
-     * Description of the dataset in the producers processing environment, including items
+     * Description of the dataset in the producer's processing environment, including items
      * such as the software, the computer operating system, file name, and the dataset size
      */
     @SuppressWarnings("serial")
@@ -286,7 +286,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets the description of the resource in the producers processing environment.
+     * Sets the description of the resource in the producer's processing environment.
      *
      * @param  newValue  the new environment description.
      */

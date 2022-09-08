@@ -189,7 +189,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     }
 
     /**
-     * Sets the general explanation of the data producers knowledge about the lineage of a dataset.
+     * Sets the general explanation of the data producer's knowledge about the lineage of a dataset.
      *
      * @param  newValue  the new statement.
      */

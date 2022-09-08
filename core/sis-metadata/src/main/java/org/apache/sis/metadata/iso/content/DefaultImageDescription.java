@@ -78,7 +78,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Illumination elevation measured in degrees clockwise from the target plane
-     * at intersection of the optical line of sight with the Earths surface.
+     * at intersection of the optical line of sight with the Earth's surface.
      * For images from a scanning device, refer to the centre pixel of the image.
      */
     private Double illuminationElevationAngle;
