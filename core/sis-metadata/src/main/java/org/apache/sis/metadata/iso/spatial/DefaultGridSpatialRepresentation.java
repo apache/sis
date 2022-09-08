@@ -96,6 +96,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Information about spatial-temporal axis properties.
      */
+    @SuppressWarnings("serial")
     private List<Dimension> axisDimensionProperties;
 
     /**

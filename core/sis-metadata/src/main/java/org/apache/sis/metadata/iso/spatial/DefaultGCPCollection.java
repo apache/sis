@@ -78,16 +78,19 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Name of the GCP collection.
      */
+    @SuppressWarnings("serial")
     private InternationalString collectionName;
 
     /**
      * Coordinate system in which the ground control points are defined.
      */
+    @SuppressWarnings("serial")
     private ReferenceSystem coordinateReferenceSystem;
 
     /**
      * Ground control point(s) used in the collection.
      */
+    @SuppressWarnings("serial")
     private Collection<GCP> GCPs;
 
     /**

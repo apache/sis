@@ -59,16 +59,19 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Party to which the release statement applies.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> addressees;
 
     /**
      * Release statement.
      */
+    @SuppressWarnings("serial")
     private InternationalString statement;
 
     /**
      * Component in determining releasability.
      */
+    @SuppressWarnings("serial")
     private Collection<Restriction> disseminationConstraints;
 
     /**

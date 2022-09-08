@@ -71,12 +71,14 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * Access constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations on obtaining the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Restriction> accessConstraints;
 
     /**
      * Constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations or warnings on using the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Restriction> useConstraints;
 
     /**
@@ -85,6 +87,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * or {@linkplain #getUseConstraints() use constraints} declares
      * {@linkplain Restriction#OTHER_RESTRICTIONS other restrictions}.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> otherConstraints;
 
     /**

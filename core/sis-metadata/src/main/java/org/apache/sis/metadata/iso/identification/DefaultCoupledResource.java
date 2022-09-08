@@ -75,21 +75,25 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Scoped identifier of the resource in the context of the given service instance.
      */
+    @SuppressWarnings("serial")
     private ScopedName scopedName;
 
     /**
      * References to the resource on which the services operates.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> resourceReferences;
 
     /**
      * The tightly coupled resources.
      */
+    @SuppressWarnings("serial")
     private Collection<DataIdentification> resources;
 
     /**
      * The service operation.
      */
+    @SuppressWarnings("serial")
     private OperationMetadata operation;
 
     /**

@@ -73,6 +73,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
     /**
      * The identifier used to represent a geographic area.
      */
+    @SuppressWarnings("serial")
     private Identifier geographicIdentifier;
 
     /**

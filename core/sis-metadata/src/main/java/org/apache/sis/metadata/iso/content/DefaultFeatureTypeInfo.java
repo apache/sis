@@ -65,6 +65,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     /**
      * Name of the feature type.
      */
+    @SuppressWarnings("serial")
     private GenericName featureTypeName;
 
     /**

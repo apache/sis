@@ -61,12 +61,14 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata implements 
      * Information about on-line sources containing the community profile name and
      * the extended metadata elements. Information for all new metadata elements.
      */
+    @SuppressWarnings("serial")
     private OnlineResource extensionOnLineResource;
 
     /**
      * Provides information about a new metadata element, not found in ISO 19115, which is
      * required to describe geographic data.
      */
+    @SuppressWarnings("serial")
     private Collection<ExtendedElementInformation> extendedElementInformation;
 
     /**

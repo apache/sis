@@ -90,6 +90,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Name of the medium on which the resource can be received.
      */
+    @SuppressWarnings("serial")
     private Citation name;
 
     /**
@@ -101,6 +102,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Units of measure for the recording density.
      */
+    @SuppressWarnings("serial")
     private Unit<?> densityUnits;
 
     /**
@@ -111,11 +113,13 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Methods used to write to the medium.
      */
+    @SuppressWarnings("serial")
     private Collection<MediumFormat> mediumFormats;
 
     /**
      * Description of other limitations or requirements for using the medium.
      */
+    @SuppressWarnings("serial")
     private InternationalString mediumNote;
 
     /**

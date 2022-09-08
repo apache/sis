@@ -69,11 +69,13 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * The spatial extent component of composite
      * spatial and temporal extent.
      */
+    @SuppressWarnings("serial")
     private Collection<GeographicExtent> spatialExtent;
 
     /**
      * Vertical extent component.
      */
+    @SuppressWarnings("serial")
     private VerticalExtent verticalExtent;
 
     /**

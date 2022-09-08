@@ -108,21 +108,25 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * The spatial and temporal extent for the referring object.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Provides geographic component of the extent of the referring object.
      */
+    @SuppressWarnings("serial")
     private Collection<GeographicExtent> geographicElements;
 
     /**
      * Provides vertical component of the extent of the referring object.
      */
+    @SuppressWarnings("serial")
     private Collection<VerticalExtent> verticalElements;
 
     /**
      * Provides temporal component of the extent of the referring object.
      */
+    @SuppressWarnings("serial")
     private Collection<TemporalExtent> temporalElements;
 
     /**

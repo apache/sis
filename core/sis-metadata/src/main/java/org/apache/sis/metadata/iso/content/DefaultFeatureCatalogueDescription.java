@@ -94,6 +94,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Language(s) and character set(s) used within the catalogue.
      */
+    @SuppressWarnings("serial")
     private Map<Locale,Charset> locales;
 
     /**
@@ -104,11 +105,13 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Subset of feature types from cited feature catalogue occurring in resource.
      */
+    @SuppressWarnings("serial")
     private Collection<FeatureTypeInfo> featureTypes;
 
     /**
      * Complete bibliographic reference to one or more external feature catalogues.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> featureCatalogueCitations;
 
     /**

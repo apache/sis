@@ -75,6 +75,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Name of the application schema used.
      */
+    @SuppressWarnings("serial")
     private Citation name;
 
     /**
@@ -90,16 +91,19 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Full application schema given as an ASCII file.
      */
+    @SuppressWarnings("serial")
     private CharSequence schemaAscii;
 
     /**
      * Full application schema given as a graphics file.
      */
+    @SuppressWarnings("serial")
     private OnlineResource graphicsFile;
 
     /**
      * Full application schema given as a software development file.
      */
+    @SuppressWarnings("serial")
     private OnlineResource softwareDevelopmentFile;
 
     /**

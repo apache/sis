@@ -97,6 +97,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Specifies the image quality.
      */
+    @SuppressWarnings("serial")
     private Identifier imageQualityCode;
 
     /**

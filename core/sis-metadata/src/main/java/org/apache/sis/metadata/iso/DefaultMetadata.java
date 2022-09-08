@@ -144,7 +144,6 @@ import org.apache.sis.math.FunctionProperty;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("serial")                             // Fields are not statically typed as Serializable.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
     "metadataIdentifier",
@@ -208,112 +207,134 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Language(s) and character set(s) used within the dataset.
      */
+    @SuppressWarnings("serial")
     private Map<Locale,Charset> locales;
 
     /**
      * Identification of the parent metadata record.
      */
+    @SuppressWarnings("serial")
     private Citation parentMetadata;
 
     /**
      * Scope to which the metadata applies.
      */
+    @SuppressWarnings("serial")
     private Collection<MetadataScope> metadataScopes;
 
     /**
      * Parties responsible for the metadata information.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> contacts;
 
     /**
      * Date(s) associated with the metadata.
      */
+    @SuppressWarnings("serial")
     private Collection<CitationDate> dateInfo;
 
     /**
      * Citation(s) for the standard(s) to which the metadata conform.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> metadataStandards;
 
     /**
      * Citation(s) for the profile(s) of the metadata standard to which the metadata conform.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> metadataProfiles;
 
     /**
      * Reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> alternativeMetadataReferences;
 
     /**
      * Online location(s) where the metadata is available.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> metadataLinkages;
 
     /**
      * Digital representation of spatial information in the dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<SpatialRepresentation> spatialRepresentationInfo;
 
     /**
      * Description of the spatial and temporal reference systems used in the dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<ReferenceSystem> referenceSystemInfo;
 
     /**
      * Information describing metadata extensions.
      */
+    @SuppressWarnings("serial")
     private Collection<MetadataExtensionInformation> metadataExtensionInfo;
 
     /**
      * Basic information about the resource(s) to which the metadata applies.
      */
+    @SuppressWarnings("serial")
     private Collection<Identification> identificationInfo;
 
     /**
      * Provides information about the feature catalogue and describes the coverage and
      * image data characteristics.
      */
+    @SuppressWarnings("serial")
     private Collection<ContentInformation> contentInfo;
 
     /**
      * Provides information about the distributor of and options for obtaining the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Distribution> distributionInfo;
 
     /**
      * Provides overall assessment of quality of a resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<DataQuality> dataQualityInfo;
 
     /**
      * Provides information about the catalogue of rules defined for the portrayal of a resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<PortrayalCatalogueReference> portrayalCatalogueInfo;
 
     /**
      * Provides restrictions on the access and use of metadata.
      */
+    @SuppressWarnings("serial")
     private Collection<Constraints> metadataConstraints;
 
     /**
      * Provides information about the conceptual schema of a dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<ApplicationSchemaInformation> applicationSchemaInfo;
 
     /**
      * Provides information about the frequency of metadata updates, and the scope of those updates.
      */
+    @SuppressWarnings("serial")
     private MaintenanceInformation metadataMaintenance;
 
     /**
      * Provides information about the acquisition of the data.
      */
+    @SuppressWarnings("serial")
     private Collection<AcquisitionInformation> acquisitionInformation;
 
     /**
      * Information about the provenance, sources and/or the production processes applied to the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Lineage> resourceLineages;
 
     /**

@@ -93,6 +93,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Units in which sensor wavelengths are expressed.
      */
+    @SuppressWarnings("serial")
     private Unit<Length> boundUnits;
 
     /**

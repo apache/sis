@@ -82,31 +82,37 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Telephone numbers at which the organization or individual may be contacted.
      */
+    @SuppressWarnings("serial")
     private Collection<Telephone> phones;
 
     /**
      * Physical and email addresses at which the organization or individual may be contacted.
      */
+    @SuppressWarnings("serial")
     private Collection<Address> addresses;
 
     /**
      * On-line information that can be used to contact the individual or organization.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> onlineResources;
 
     /**
      * Time period (including time zone) when individuals can contact the organization or individual.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> hoursOfService;
 
     /**
      * Supplemental instructions on how or when to contact the individual or organization.
      */
+    @SuppressWarnings("serial")
     private InternationalString contactInstructions;
 
     /**
      * Type of the contact.
      */
+    @SuppressWarnings("serial")
     private InternationalString contactType;
 
     /**

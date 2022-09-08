@@ -118,6 +118,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
      *
      * @see #getDomainValue()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private volatile Object domainValue;
 
     /**

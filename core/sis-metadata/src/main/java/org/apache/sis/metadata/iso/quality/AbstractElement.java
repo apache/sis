@@ -99,31 +99,37 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Name of the test applied to the data.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> namesOfMeasure;
 
     /**
      * Code identifying a registered standard procedure, or {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private Identifier measureIdentification;
 
     /**
      * Description of the measure being determined.
      */
+    @SuppressWarnings("serial")
     private InternationalString measureDescription;
 
     /**
      * Type of method used to evaluate quality of the dataset, or {@code null} if unspecified.
      */
+    @SuppressWarnings("serial")
     private EvaluationMethodType evaluationMethodType;
 
     /**
      * Description of the evaluation method.
      */
+    @SuppressWarnings("serial")
     private InternationalString evaluationMethodDescription;
 
     /**
      * Reference to the procedure information, or {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private Citation evaluationProcedure;
 
     /**
@@ -299,6 +305,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * come of evaluating the obtained value (or set of values) against a specified
      * acceptable conformance quality level.
      */
+    @SuppressWarnings("serial")
     private Collection<Result> results;
 
     /**

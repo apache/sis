@@ -79,11 +79,13 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Information about the spatial, vertical and temporal extent of the resource specified by the scope.
      */
+    @SuppressWarnings("serial")
     private Collection<Extent> extents;
 
     /**
      * Detailed description about the level of the data specified by the scope.
      */
+    @SuppressWarnings("serial")
     private Collection<ScopeDescription> levelDescription;
 
     /**

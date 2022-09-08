@@ -99,17 +99,20 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Language(s) and character set(s) used within the dataset.
      */
+    @SuppressWarnings("serial")
     private Map<Locale,Charset> locales;
 
     /**
      * Description of the dataset in the producers processing environment, including items
      * such as the software, the computer operating system, file name, and the dataset size
      */
+    @SuppressWarnings("serial")
     private InternationalString environmentDescription;
 
     /**
      * Any other descriptive information about the dataset.
      */
+    @SuppressWarnings("serial")
     private InternationalString supplementalInformation;
 
     /**

@@ -88,16 +88,19 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Identification of reference or guidance material for the requirement.
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Origin of requirement.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> requestors;
 
     /**
      * Person(s), or body(ies), to receive results of requirement.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> recipients;
 
     /**
@@ -108,6 +111,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Required or preferred acquisition date and time.
      */
+    @SuppressWarnings("serial")
     private RequestedDate requestedDate;
 
     /**
@@ -119,6 +123,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Plan that identifies solution to satisfy the requirement.
      */
+    @SuppressWarnings("serial")
     private Collection<Plan> satisfiedPlans;
 
     /**

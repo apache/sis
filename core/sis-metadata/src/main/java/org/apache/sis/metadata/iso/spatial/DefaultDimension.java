@@ -94,11 +94,13 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * Example: dimensionName = "column",
      *          dimensionTitle = "longitude"
      */
+    @SuppressWarnings("serial")
     private InternationalString dimensionTitle;
 
     /**
      * Description of the axis.
      */
+    @SuppressWarnings("serial")
     private InternationalString dimensionDescription;
 
     /**

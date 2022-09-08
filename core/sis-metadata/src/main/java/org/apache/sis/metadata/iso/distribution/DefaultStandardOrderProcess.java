@@ -74,6 +74,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Fees and terms for retrieving the resource.
      * Include monetary units (as specified in ISO 4217).
      */
+    @SuppressWarnings("serial")
     private InternationalString fees;
 
     /**
@@ -90,21 +91,25 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * General instructions, terms and services provided by the distributor.
      */
+    @SuppressWarnings("serial")
     private InternationalString orderingInstructions;
 
     /**
      * Typical turnaround time for the filling of an order.
      */
+    @SuppressWarnings("serial")
     private InternationalString turnaround;
 
     /**
      * Description of the order options record.
      */
+    @SuppressWarnings("serial")
     private RecordType orderOptionsType;
 
     /**
      * Request/purchase choices.
      */
+    @SuppressWarnings("serial")
     private Record orderOptions;
 
     /**

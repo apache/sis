@@ -69,21 +69,25 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Complete citation of the instrument.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> citations;
 
     /**
      * Name of the type of instrument. Examples: framing, line-scan, push-broom, pan-frame.
      */
+    @SuppressWarnings("serial")
     private InternationalString type;
 
     /**
      * Textual description of the instrument.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Platform on which the instrument is mounted.
      */
+    @SuppressWarnings("serial")
     private Platform mountedOn;
 
     /**

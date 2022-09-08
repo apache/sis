@@ -80,22 +80,26 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Provides the digital representation of data quality measures composing the coverage result.
      */
+    @SuppressWarnings("serial")
     private SpatialRepresentation resultSpatialRepresentation;
 
     /**
      * Provides the description of the content of the result coverage, i.e. semantic definition
      * of the data quality measures.
      */
+    @SuppressWarnings("serial")
     private CoverageDescription resultContentDescription;
 
     /**
      * Provides information about the format of the result coverage data.
      */
+    @SuppressWarnings("serial")
     private Format resultFormat;
 
     /**
      * Provides information about the data file containing the result coverage data.
      */
+    @SuppressWarnings("serial")
     private DataFile resultFile;
 
     /**

@@ -84,6 +84,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Brief description of the resource and/or resource series usage.
      */
+    @SuppressWarnings("serial")
     private InternationalString specificUsage;
 
     /**
@@ -97,27 +98,32 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Applications, determined by the user for which the resource and/or resource series
      * is not suitable.
      */
+    @SuppressWarnings("serial")
     private InternationalString userDeterminedLimitations;
 
     /**
      * Identification of and means of communicating with person(s) and organization(s) using the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> userContactInfo;
 
     /**
      * Responses to the user-determined limitations.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> responses;
 
     /**
      * Publication that describe usage of data.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> additionalDocumentation;
 
     /**
      * Citation of a description of known issues associated with the resource
      * along with proposed solutions if available.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> identifiedIssues;
 
     /**

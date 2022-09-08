@@ -58,16 +58,19 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Name of the series, or aggregate dataset, of which the dataset is a part.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**
      * Information identifying the issue of the series.
      */
+    @SuppressWarnings("serial")
     private InternationalString issueIdentification;
 
     /**
      * Details on which pages of the publication the article was published.
      */
+    @SuppressWarnings("serial")
     private InternationalString page;
 
     /**

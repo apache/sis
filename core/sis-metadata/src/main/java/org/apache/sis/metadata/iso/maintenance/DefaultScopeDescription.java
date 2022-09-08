@@ -125,6 +125,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *   <li>{@code InternationalString} for the {@code other} property</li>
      * </ul>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object value;
 
     /**

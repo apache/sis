@@ -96,27 +96,32 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * Should be provided only if {@linkplain DefaultScope#getLevel scope level} is
      * {@linkplain ScopeCode#DATASET dataset} or {@linkplain ScopeCode#SERIES series}.
      */
+    @SuppressWarnings("serial")
     private InternationalString statement;
 
     /**
      * Type of resource and / or extent to which the lineage information applies.
      */
+    @SuppressWarnings("serial")
     private Scope scope;
 
     /**
      * A resources (for example publication) that describes the whole
      * process to generate this resource (for example a dataset).
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> additionalDocumentation;
 
     /**
      * Information about an event in the creation process for the data specified by the scope.
      */
+    @SuppressWarnings("serial")
     private Collection<ProcessStep> processSteps;
 
     /**
      * Information about the source data used in creating the data specified by the scope.
      */
+    @SuppressWarnings("serial")
     private Collection<Source> sources;
 
     /**

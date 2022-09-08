@@ -73,21 +73,25 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Source where information about the platform is described.
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Narrative description of the platform supporting the instrument.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Organization responsible for building, launch, or operation of the platform.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> sponsors;
 
     /**
      * Instrument(s) mounted on a platform.
      */
+    @SuppressWarnings("serial")
     private Collection<Instrument> instruments;
 
     /**

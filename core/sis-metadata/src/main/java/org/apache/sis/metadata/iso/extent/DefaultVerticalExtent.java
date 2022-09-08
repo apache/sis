@@ -96,6 +96,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * which the maximum and minimum elevation values are measured. The CRS
      * identification includes unit of measure.
      */
+    @SuppressWarnings("serial")
     private VerticalCRS verticalCRS;
 
     /**

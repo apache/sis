@@ -83,6 +83,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Meteorological conditions in the photo flight area, in particular clouds, snow and wind.
      */
+    @SuppressWarnings("serial")
     private InternationalString meteorologicalConditions;
 
     /**

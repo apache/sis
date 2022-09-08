@@ -84,6 +84,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @since 1.0
      */
+    @SuppressWarnings("serial")
     private InternationalString fileDescription;
 
     /**
@@ -99,6 +100,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This attribute may be omitted when the dataset is composed of a single file and/or the
      * data does not relate to a feature catalogue.
      */
+    @SuppressWarnings("serial")
     private Collection<GenericName> featureTypes;
 
     /**
@@ -107,6 +109,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @deprecated Removed in latest XSD schemas.
      */
     @Deprecated
+    @SuppressWarnings("serial")
     private Format fileFormat;
 
     /**

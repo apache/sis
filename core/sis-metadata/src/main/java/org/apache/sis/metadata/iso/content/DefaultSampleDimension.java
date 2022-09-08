@@ -123,6 +123,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Units of data in each dimension included in the resource.
      */
+    @SuppressWarnings("serial")
     private Unit<?> units;
 
     /**
@@ -155,12 +156,14 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Type of other attribute description.
      */
+    @SuppressWarnings("serial")
     private RecordType otherPropertyType;
 
     /**
      * Instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}.
      */
+    @SuppressWarnings("serial")
     private Record otherProperty;
 
     /**

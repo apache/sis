@@ -69,36 +69,43 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Identifies the plan as implemented by the acquisition.
      */
+    @SuppressWarnings("serial")
     private Collection<Plan> acquisitionPlans;
 
     /**
      * Identifies the requirement the data acquisition intends to satisfy.
      */
+    @SuppressWarnings("serial")
     private Collection<Requirement> acquisitionRequirements;
 
     /**
      * A record of the environmental circumstances during the data acquisition.
      */
+    @SuppressWarnings("serial")
     private EnvironmentalRecord environmentalConditions;
 
     /**
      * General information about the instrument used in data acquisition.
      */
+    @SuppressWarnings("serial")
     private Collection<Instrument> instruments;
 
     /**
      * Identification of the area or object to be sensed.
      */
+    @SuppressWarnings("serial")
     private Collection<Objective> objectives;
 
     /**
      * General information about an identifiable activity which provided the data.
      */
+    @SuppressWarnings("serial")
     private Collection<Operation> operations;
 
     /**
      * General information about the platform from which the data were taken.
      */
+    @SuppressWarnings("serial")
     private Collection<Platform> platforms;
 
     /**

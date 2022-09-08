@@ -100,6 +100,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Description of geographic position points used to test the accuracy of the
      * georeferenced grid data.
      */
+    @SuppressWarnings("serial")
     private InternationalString checkPointDescription;
 
     /**
@@ -108,6 +109,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * diagonals in the grid spatial dimensions. There are four corner points in a
      * georectified grid; at least two corner points along one diagonal are required.
      */
+    @SuppressWarnings("serial")
     private List<Point> cornerPoints;
 
     /**
@@ -115,6 +117,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * and the grid coordinate of the cell halfway between opposite ends of the grid in the
      * spatial dimensions.
      */
+    @SuppressWarnings("serial")
     private Point centrePoint;
 
     /**
@@ -125,16 +128,19 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Description of the information about which grid dimensions are the spatial dimensions.
      */
+    @SuppressWarnings("serial")
     private InternationalString transformationDimensionDescription;
 
     /**
      * Information about which grid dimensions are the spatial dimensions.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> transformationDimensionMapping;
 
     /**
      * Geographic references used to validate georectification of the data.
      */
+    @SuppressWarnings("serial")
     private Collection<GCP> checkPoints;
 
     /**

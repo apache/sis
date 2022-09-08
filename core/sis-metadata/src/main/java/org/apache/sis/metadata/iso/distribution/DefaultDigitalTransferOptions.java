@@ -76,6 +76,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Tiles, layers, geographic areas, etc., in which data is available.
      */
+    @SuppressWarnings("serial")
     private InternationalString unitsOfDistribution;
 
     /**
@@ -87,21 +88,25 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Information about online sources from which the resource can be obtained.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> onLines;
 
     /**
      * Information about offline media on which the resource can be obtained.
      */
+    @SuppressWarnings("serial")
     private Collection<Medium> offLines;
 
     /**
      * Rate of occurrence of distribution.
      */
+    @SuppressWarnings("serial")
     private PeriodDuration transferFrequency;
 
     /**
      * Formats of distribution.
      */
+    @SuppressWarnings("serial")
     private Collection<Format> distributionFormats;
 
     /**

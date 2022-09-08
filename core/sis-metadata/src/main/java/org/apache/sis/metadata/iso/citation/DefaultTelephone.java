@@ -222,6 +222,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @deprecated This field will be removed after we removed the deprecated public methods.
      */
     @Deprecated
+    @SuppressWarnings("serial")
     private Collection<Telephone> owner;
 
     /**

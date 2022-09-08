@@ -72,16 +72,19 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * The name as used by the service for this chain.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**
      * A narrative explanation of the services in the chain and resulting output.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Information about the operations applied by the chain.
      */
+    @SuppressWarnings("serial")
     private List<OperationMetadata> operations;
 
     /**

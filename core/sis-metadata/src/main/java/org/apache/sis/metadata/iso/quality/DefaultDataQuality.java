@@ -73,6 +73,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * The specific data to which the data quality information applies.
      */
+    @SuppressWarnings("serial")
     private Scope scope;
 
     /**
@@ -80,6 +81,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * Should be provided only if {@linkplain Scope#getLevel scope level} is
      * {@linkplain org.opengis.metadata.maintenance.ScopeCode#DATASET dataset}.
      */
+    @SuppressWarnings("serial")
     private Collection<Element> reports;
 
     /**
@@ -87,6 +89,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * Should be provided only if {@linkplain Scope#getLevel scope level} is
      * {@linkplain org.opengis.metadata.maintenance.ScopeCode#DATASET dataset}.
      */
+    @SuppressWarnings("serial")
     private Lineage lineage;
 
     /**

@@ -95,6 +95,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * All identifiers associated with this metadata, or {@code null} if none.
      * This field is initialized to a non-null value when first needed.
      */
+    @SuppressWarnings("serial")
     private Collection<Identifier> identifiers;
 
     /**

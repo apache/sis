@@ -118,6 +118,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * Either the scale as a {@link RepresentativeFraction} instance, the distance, the angle,
      * or the level of details as an {@link InternationalString} instance.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object value;
 
     /**

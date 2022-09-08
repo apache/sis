@@ -78,6 +78,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     /**
      * The date and time for the content of the dataset.
      */
+    @SuppressWarnings("serial")
     private TemporalPrimitive extent;
 
     /**

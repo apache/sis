@@ -129,103 +129,123 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Citation for the resource(s).
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Brief narrative summary of the resource(s).
      */
+    @SuppressWarnings("serial")
     private InternationalString abstracts;
 
     /**
      * Summary of the intentions with which the resource(s) was developed.
      */
+    @SuppressWarnings("serial")
     private InternationalString purpose;
 
     /**
      * Recognition of those who contributed to the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> credits;
 
     /**
      * Status of the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Progress> status;
 
     /**
      * Identification of, and means of communication with, person(s) and organizations(s)
      * associated with the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> pointOfContacts;
 
     /**
      * Methods used to spatially represent geographic information.
      */
+    @SuppressWarnings("serial")
     private Collection<SpatialRepresentationType> spatialRepresentationTypes;
 
     /**
      * Factor which provides a general understanding of the density of spatial data in the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Resolution> spatialResolutions;
 
     /**
      * Smallest resolvable temporal period in a resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Duration> temporalResolutions;
 
     /**
      * Main theme(s) of the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<TopicCategory> topicCategories;
 
     /**
      * Spatial and temporal extent of the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Extent> extents;
 
     /**
      * Other documentation associated with the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> additionalDocumentations;
 
     /**
      * Code that identifies the level of processing in the producers coding system of a resource.
      */
+    @SuppressWarnings("serial")
     private Identifier processingLevel;
 
     /**
      * Provides information about the frequency of resource updates, and the scope of those updates.
      */
+    @SuppressWarnings("serial")
     private Collection<MaintenanceInformation> resourceMaintenances;
 
     /**
      * Provides a graphic that illustrates the resource(s) (should include a legend for the graphic).
      */
+    @SuppressWarnings("serial")
     private Collection<BrowseGraphic> graphicOverviews;
 
     /**
      * Provides a description of the format of the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Format> resourceFormats;
 
     /**
      * Provides category keywords, their type, and reference source.
      */
+    @SuppressWarnings("serial")
     private Collection<Keywords> descriptiveKeywords;
 
     /**
      * Provides basic information about specific application(s) for which the resource(s)
      * has/have been or is being used by different users.
      */
+    @SuppressWarnings("serial")
     private Collection<Usage> resourceSpecificUsages;
 
     /**
      * Provides information about constraints which apply to the resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<Constraints> resourceConstraints;
 
     /**
      * Provides aggregate dataset information.
      */
+    @SuppressWarnings("serial")
     private Collection<AssociatedResource> associatedResources;
 
     /**

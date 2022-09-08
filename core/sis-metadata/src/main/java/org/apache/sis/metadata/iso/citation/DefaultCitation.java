@@ -103,22 +103,26 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Name by which the cited resource is known.
      */
+    @SuppressWarnings("serial")
     private InternationalString title;
 
     /**
      * Short name or other language name by which the cited information is known.
      * Example: "DCW" as an alternative title for "Digital Chart of the World.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> alternateTitles;
 
     /**
      * Reference date for the cited resource.
      */
+    @SuppressWarnings("serial")
     private Collection<CitationDate> dates;
 
     /**
      * Version of the cited resource.
      */
+    @SuppressWarnings("serial")
     private InternationalString edition;
 
     /**
@@ -131,23 +135,27 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Roles, Name, contact, and position information for an individual or organization that is responsible
      * for the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> citedResponsibleParties;
 
     /**
      * Mode in which the resource is represented, or an empty collection if none.
      */
+    @SuppressWarnings("serial")
     private Collection<PresentationForm> presentationForms;
 
     /**
      * Information about the series, or aggregate dataset, of which the dataset is a part.
      * May be {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private Series series;
 
     /**
      * Other information required to complete the citation that is not recorded elsewhere.
      * May be {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> otherCitationDetails;
 
     /**
@@ -158,16 +166,19 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @deprecated Removed as of ISO 19115:2014.
      */
     @Deprecated
+    @SuppressWarnings("serial")
     private InternationalString collectiveTitle;
 
     /**
      * Online references to the cited resource.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> onlineResources;
 
     /**
      * Citation graphic or logo for cited party.
      */
+    @SuppressWarnings("serial")
     private Collection<BrowseGraphic> graphics;
 
     /**

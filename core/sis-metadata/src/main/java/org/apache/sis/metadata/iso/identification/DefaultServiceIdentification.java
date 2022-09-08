@@ -96,16 +96,19 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * A service type name.
      */
+    @SuppressWarnings("serial")
     private GenericName serviceType;
 
     /**
      * The version of the service, supports searching based on the version of serviceType.
      */
+    @SuppressWarnings("serial")
     private Collection<String> serviceTypeVersions;
 
     /**
      * Information about the availability of the service.
      */
+    @SuppressWarnings("serial")
     private StandardOrderProcess accessProperties;
 
     /**
@@ -116,36 +119,43 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Further description of the data coupling in the case of tightly coupled services.
      */
+    @SuppressWarnings("serial")
     private Collection<CoupledResource> coupledResources;
 
     /**
      * References to the resource on which the service operates.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> operatedDatasets;
 
     /**
      * Profiles to which the service adheres.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> profiles;
 
     /**
      * Standards to which the service adheres.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> serviceStandards;
 
     /**
      * Information about the operations that comprise the service.
      */
+    @SuppressWarnings("serial")
     private Collection<OperationMetadata> containsOperations;
 
     /**
      * Information on the resources that the service operates on.
      */
+    @SuppressWarnings("serial")
     private Collection<DataIdentification> operatesOn;
 
     /**
      * Information about the chain applied by the service.
      */
+    @SuppressWarnings("serial")
     private Collection<OperationChainMetadata> containsChain;
 
     /**

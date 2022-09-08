@@ -75,22 +75,26 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Party from whom the resource may be obtained. This list need not be exhaustive.
      */
+    @SuppressWarnings("serial")
     private Responsibility distributorContact;
 
     /**
      * Provides information about how the resource may be obtained, and related
      * instructions and fee information.
      */
+    @SuppressWarnings("serial")
     private Collection<StandardOrderProcess> distributionOrderProcesses;
 
     /**
      * Provides information about the format used by the distributor.
      */
+    @SuppressWarnings("serial")
     private Collection<Format> distributorFormats;
 
     /**
      * Provides information about the technical means and media used by the distributor.
      */
+    @SuppressWarnings("serial")
     private Collection<DigitalTransferOptions> distributorTransferOptions;
 
     /**
