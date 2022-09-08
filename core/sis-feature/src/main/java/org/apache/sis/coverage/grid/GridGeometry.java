@@ -1471,6 +1471,62 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Creates a new grid geometry upsampling the GridExtent by the given amount of cells along each grid dimensions.
+     * This method multiplies {@linkplain GridExtent#getLow(int) low coordinates} and {@linkplain GridExtent#getSize(int) grid sizes}
+     * by the given periods.
+     *
+     * <div class="note"><b>Note:</b>
+     * The envelope of the new grid geometry is preserved after upsampling.
+     * </div>
+     *
+     * This method does not change the number of dimensions of the grid geometry.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     *
+     * @see GridExtent#upsample(int...)
+     */
+    public GridGeometry upsample(int... periods) {
+
+        final GridExtent extent = getExtent();
+        final GridExtent upExtent = extent.upsample(periods);
+        if (upExtent == extent) {
+            //unchanged
+            return this;
+        }
+        final int dimension = upExtent.getDimension();
+
+        final MathTransform gridToCrs = getGridToCRS(PixelInCell.CELL_CORNER);
+        final MathTransform upGridToCrs;
+        if (gridToCrs instanceof LinearTransform) {
+            /*
+            By dividing the matrix elements directly we avoid some numeric errors.
+            */
+            final LinearTransform lnt = (LinearTransform) gridToCrs;
+            final MatrixSIS matrix = Matrices.copy(lnt.getMatrix());
+            for (int i = 0; i < dimension; i++) {
+                for (int k = 0; k < dimension; k++) {
+                    matrix.setElement(k, i, matrix.getElement(k, i) / periods[i]);
+                }
+            }
+            upGridToCrs = MathTransforms.linear(matrix);
+        } else {
+            final double[] scaling = new double[dimension];
+            for (int i = 0; i < dimension; i++) {
+                scaling[i] = 1.0 / periods[i];
+            }
+            upGridToCrs = MathTransforms.concatenate(MathTransforms.scale(scaling), gridToCrs);
+        }
+        return new GridGeometry(upExtent, PixelInCell.CELL_CORNER, upGridToCrs, getCoordinateReferenceSystem());
+    }
+
+    /**
      * Creates a one-, two- or three-dimensional coordinate reference system for cell indices in the grid.
      * This method returns a CRS which is derived from the "real world" CRS or a subset of it.
      * If the "real world" CRS is an instance of {@link org.opengis.referencing.crs.SingleCRS},

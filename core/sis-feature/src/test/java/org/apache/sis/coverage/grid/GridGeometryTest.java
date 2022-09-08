@@ -562,6 +562,40 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridGeometry#upsample(int...)}.
+     */
+    @Test
+    public void testUpsample() {
+
+        final GridGeometry grid;
+        { //grid
+            final GridExtent extent = new GridExtent(null, new long[]{10,-8}, new long[]{100, 50}, false);
+            final Matrix3 mat = new Matrix3(
+                    1,  0, 10,
+                    0, -2, 50,
+                    0,  0,  1);
+            final MathTransform gridToCRS = MathTransforms.linear(mat);
+            grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
+        }
+
+        final GridGeometry surSampling = grid.upsample(4, 4);
+
+        final GridGeometry expected;
+        { //expected grid
+            GridExtent extent = new GridExtent(null, new long[]{40,-32}, new long[]{400, 200}, false);
+            final Matrix3 mat = new Matrix3(
+                    0.25,  0,  9.625,
+                    0,  -0.5, 50.750,
+                    0,     0,      1);
+            final MathTransform gridToCRS = MathTransforms.linear(mat);
+            expected = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
+        }
+
+        assertEquals(grid.getEnvelope(), surSampling.getEnvelope());
+        assertEquals(expected, surSampling);
+    }
+
+    /**
      * Tests {@link GridGeometry#reduce(int...)} with a {@code gridToCRS} transform having a constant value
      * in one dimension. This method tests indirectly {@link SliceGeometry#findTargetDimensions(MathTransform,
      * GridExtent, double[], int[], int)}.

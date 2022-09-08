@@ -84,6 +84,18 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
+     * Tests the {@link GridExtent#upsample(int...)}.
+     */
+    @Test
+    public void testUpsample() {
+        GridExtent extent = create3D();
+        extent = extent.upsample(4, 3, 9);
+        assertExtentEquals(extent, 0, 400, 1999);               // 1600 cells
+        assertExtentEquals(extent, 1, 600, 2399);               // 1800 cells
+        assertExtentEquals(extent, 2, 360,  449);               //   90 cells
+    }
+
+    /**
      * Tests the {@link GridExtent#GridExtent(AbstractEnvelope,
      * GridRoundingMode, int[], int[], GridExtent, int[])} constructor.
      */

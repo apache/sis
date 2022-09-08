@@ -1511,6 +1511,49 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Creates a new grid extent upsampled by the given amount of cells along each grid dimensions.
+     * This method multiplies {@linkplain #getLow(int) low coordinates} and {@linkplain #getSize(int) grid sizes}
+     * by the given periods.
+     *
+     * <div class="note"><b>Note:</b>
+     * The envelope computed from a grid extent is preserved after upsampling.
+     * </div>
+     *
+     * This method does not change the number of dimensions of the grid extent.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @return the upsampled extent, or {@code this} is upsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     */
+    public GridExtent upsample(int... periods) {
+        ArgumentChecks.ensureNonNull("periods", periods);
+        final int m = getDimension();
+        final int length = Math.min(m, periods.length);
+        final GridExtent sub = new GridExtent(this);
+        for (int i=0; i<length; i++) {
+            final long s = periods[i];
+            if (s > 1) {
+                final int j = i + m;
+                long low  = coordinates[i];
+                long size = coordinates[j] - low + 1;                      // Result is an unsigned number.
+                if (size == 0) {
+                    throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
+                }
+                sub.coordinates[i] = low * s;
+                sub.coordinates[j] = sub.coordinates[i] + size * s -1;
+            } else if (s <= 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
+            }
+        }
+        return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
+    }
+
+    /**
      * Returns a slice of this grid extent computed by a ratio between 0 and 1 inclusive.
      * This is a helper method for {@link GridDerivation#sliceByRatio(double, int...)} implementation.
      *
