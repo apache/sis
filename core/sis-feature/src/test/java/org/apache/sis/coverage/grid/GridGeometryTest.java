@@ -44,6 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link GridGeometry} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
  * @module
@@ -468,6 +469,36 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridGeometry#upsample(int...)}.
+     */
+    @Test
+    public void testUpsample() {
+        final GridGeometry grid;
+        {   // Source grid
+            final GridExtent extent = new GridExtent(null, new long[] {10,-8}, new long[] {100, 50}, false);
+            final Matrix3 mat = new Matrix3(
+                    1,  0, 10,
+                    0, -2, 50,
+                    0,  0,  1);
+            final MathTransform gridToCRS = MathTransforms.linear(mat);
+            grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
+        }
+        final GridGeometry upsampled = grid.upsample(4, 4);
+        final GridGeometry expected;
+        {   // Expected grid
+            GridExtent extent = new GridExtent(null, new long[] {40,-32}, new long[] {400, 200}, false);
+            final Matrix3 mat = new Matrix3(
+                    0.25,  0,  9.625,
+                    0,  -0.5, 50.750,
+                    0,     0,      1);
+            final MathTransform gridToCRS = MathTransforms.linear(mat);
+            expected = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
+        }
+        assertSame(grid.getEnvelope(), upsampled.getEnvelope());
+        assertEquals(expected, upsampled);
+    }
+
+    /**
      * Tests {@link GridGeometry#translate(long...)}.
      */
     @Test
@@ -559,40 +590,6 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertArrayEquals("resolution", new double[] {0.5, 0.5, 2}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2));
         verifyGridToCRS(grid);
-    }
-
-    /**
-     * Tests {@link GridGeometry#upsample(int...)}.
-     */
-    @Test
-    public void testUpsample() {
-
-        final GridGeometry grid;
-        { //grid
-            final GridExtent extent = new GridExtent(null, new long[]{10,-8}, new long[]{100, 50}, false);
-            final Matrix3 mat = new Matrix3(
-                    1,  0, 10,
-                    0, -2, 50,
-                    0,  0,  1);
-            final MathTransform gridToCRS = MathTransforms.linear(mat);
-            grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
-        }
-
-        final GridGeometry surSampling = grid.upsample(4, 4);
-
-        final GridGeometry expected;
-        { //expected grid
-            GridExtent extent = new GridExtent(null, new long[]{40,-32}, new long[]{400, 200}, false);
-            final Matrix3 mat = new Matrix3(
-                    0.25,  0,  9.625,
-                    0,  -0.5, 50.750,
-                    0,     0,      1);
-            final MathTransform gridToCRS = MathTransforms.linear(mat);
-            expected = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
-        }
-
-        assertEquals(grid.getEnvelope(), surSampling.getEnvelope());
-        assertEquals(expected, surSampling);
     }
 
     /**

@@ -47,6 +47,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
  * @module
@@ -72,7 +73,7 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GridExtent#subsample(int...)}.
+     * Tests {@link GridExtent#subsample(int...)}.
      */
     @Test
     public void testSubsample() {
@@ -84,7 +85,7 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GridExtent#upsample(int...)}.
+     * Tests {@link GridExtent#upsample(int...)}.
      */
     @Test
     public void testUpsample() {

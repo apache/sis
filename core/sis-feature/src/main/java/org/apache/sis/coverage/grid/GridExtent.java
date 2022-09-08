@@ -91,6 +91,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
  * @module
@@ -1466,7 +1467,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * of one cell may exist).
      *
      * <div class="note"><b>Note:</b>
-     * The envelope computed from a grid extent may become <em>larger</em> after subsampling, not smaller.
+     * If the "real world" envelope computed from grid extent needs to stay approximately the same, then the
+     * {@linkplain GridGeometry#getGridToCRS grid to CRS} transform needs to compensate the subsampling with
+     * a pre-multiplication of each grid coordinates by {@code periods}.
+     * However the envelope computed that way may become <em>larger</em> after subsampling, not smaller.
      * This effect can be understood intuitively if we consider that cells become larger after subsampling,
      * which implies that accurate representation of the same envelope may require fractional cells on some
      * grid borders.</div>
@@ -1480,7 +1484,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is longer, extraneous values are ignored.
      *
      * @param  periods  the subsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
-     * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
+     * @return the subsampled extent, or {@code this} if subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
      * @see GridDerivation#subgrid(GridExtent, int...)
@@ -1500,11 +1504,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
                 }
                 long r = Long.divideUnsigned(size, s);
-                if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
+                if (r*s == size) r--;                   // Make inclusive if the division did not already rounded toward 0.
                 sub.coordinates[i] = low /= s;
                 sub.coordinates[j] = low + r;
             } else if (s <= 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
@@ -1512,12 +1517,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Creates a new grid extent upsampled by the given amount of cells along each grid dimensions.
-     * This method multiplies {@linkplain #getLow(int) low coordinates} and {@linkplain #getSize(int) grid sizes}
+     * This method multiplies {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
      * by the given periods.
-     *
-     * <div class="note"><b>Note:</b>
-     * The envelope computed from a grid extent is preserved after upsampling.
-     * </div>
      *
      * This method does not change the number of dimensions of the grid extent.
      *
@@ -1527,27 +1528,27 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is longer, extraneous values are ignored.
      *
      * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
-     * @return the upsampled extent, or {@code this} is upsampling results in the same extent.
+     * @return the upsampled extent, or {@code this} if upsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
+     * @throws ArithmeticException if the upsampled extent overflows the {@code long} capacity.
+     *
+     * @see GridGeometry#upsample(int...)
+     * @since 1.3
      */
-    public GridExtent upsample(int... periods) {
+    public GridExtent upsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
-            final long s = periods[i];
+            final int s = periods[i];
             if (s > 1) {
                 final int j = i + m;
-                long low  = coordinates[i];
-                long size = coordinates[j] - low + 1;                      // Result is an unsigned number.
-                if (size == 0) {
-                    throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
-                }
-                sub.coordinates[i] = low * s;
-                sub.coordinates[j] = sub.coordinates[i] + size * s -1;
+                sub.coordinates[i] = Math.multiplyExact(coordinates[i], s);
+                sub.coordinates[j] = Math.addExact(Math.multiplyExact(coordinates[j], s), s-1);
             } else if (s <= 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;

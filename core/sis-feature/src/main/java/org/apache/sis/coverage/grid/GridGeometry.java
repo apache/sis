@@ -55,6 +55,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -132,6 +133,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * The same instance can be shared by different {@link GridCoverage} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
  * @module
@@ -730,6 +732,18 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Converts a "grid to CRS" transform from "cell corner" convention to "cell center" convention.
+     * This is a helper method for use of {@link #GridGeometry(GridExtent, MathTransform, MathTransform,
+     * ImmutableEnvelope, double[], long)} constructor.
+     *
+     * @param  gridToCRS  the transform to convert, or {@code null} if none.
+     * @return the converted transform, or {@code null} if the given transform was null.
+     */
+    private static MathTransform cornerToCenter(final MathTransform gridToCRS) {
+        return PixelTranslation.translate(gridToCRS, PixelInCell.CELL_CORNER, PixelInCell.CELL_CENTER);
+    }
+
+    /**
      * Returns the number of dimensions of the <em>grid</em>. This is typically the same
      * than the number of {@linkplain #getEnvelope() envelope} dimensions or the number of
      * {@linkplain #getCoordinateReferenceSystem() coordinate reference system} dimensions,
@@ -853,7 +867,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @return linear approximation of the conversion from grid coordinates to "real world" coordinates.
      * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      * @throws IncompleteGridGeometryException if this grid geometry has no transform,
-     *          of if the transform is non-linear but this grid geometry has no extent.
+     *         or if the transform is non-linear but this grid geometry has no extent.
      * @throws TransformException if an error occurred while computing the tangent.
      *
      * @since 1.3
@@ -1365,6 +1379,70 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Creates a new grid geometry upsampled by the given amount of cells along each grid dimensions.
+     * This method multiplies {@linkplain GridExtent#getLow(int) low} and {@linkplain GridExtent#getHigh(int) high}
+     * coordinates by the given periods, then scales the {@link #getGridToCRS(PixelInCell) grid to CRS} transform
+     * for compensating the grid change.
+     * The grid geometry {@link #getEnvelope() envelope} is preserved after upsampling.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of grid dimensions}.
+     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     *
+     * @see GridExtent#upsample(int...)
+     * @since 1.3
+     */
+    public GridGeometry upsample(final int... periods) {
+        GridExtent newExtent = extent;
+        if (newExtent != null) {
+            newExtent = newExtent.upsample(periods);
+            if (newExtent == extent) return this;       // Unchanged.
+        }
+        boolean changed = false;                        // Additional check in case `extent` was null.
+        MathTransform newGridToCRS = null;
+        double[] newResolution = null;
+        if (cornerToCRS != null) {
+            final int tgtDim = cornerToCRS.getTargetDimensions();
+            final int srcDim = cornerToCRS.getSourceDimensions();
+            MatrixSIS matrix = Matrices.copy(MathTransforms.getMatrix(cornerToCRS));
+            final boolean isNonLinear = (matrix == null);
+            if (isNonLinear) {
+                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.IDENTITY);
+            }
+            /*
+             * By dividing the matrix elements directly, we avoid some numerical errors.
+             * This is because 100*0.1 is not exactly equal to 100/10.
+             * Each period value must be multiplied by a full column.
+             */
+            newResolution = resolution.clone();
+            final DoubleDouble div = new DoubleDouble();
+            for (int i = Math.min(srcDim, periods.length); --i >= 0;) {
+                for (int j=0; j<tgtDim; j++) {
+                    div.error = 0;
+                    div.value = periods[i];
+                    if (div.value != 1) {
+                        newResolution[i] /= div.value;
+                        div.inverseDivide(DoubleDouble.castOrCopy(matrix.getNumber(j, i)));
+                        matrix.setNumber(j, i, div);
+                        changed = true;
+                    }
+                }
+            }
+            newGridToCRS = MathTransforms.linear(matrix);
+            if (isNonLinear) {
+                newGridToCRS = MathTransforms.concatenate(newGridToCRS, cornerToCRS);
+            }
+        }
+        if (!changed) return this;
+        return new GridGeometry(newExtent, cornerToCenter(newGridToCRS), newGridToCRS, envelope, newResolution, nonLinears);
+    }
+
+    /**
      * Returns a grid geometry translated by the given amount of cells compared to this grid.
      * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
      * i.e. both low and high grid coordinates are displaced by the same amount of cells.
@@ -1388,10 +1466,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     public GridGeometry translate(final long... translation) {
         ArgumentChecks.ensureNonNull("translation", translation);
-        GridExtent te = extent;
-        if (te != null) {
-            te = te.translate(translation);
-            if (te == extent) return this;
+        GridExtent newExtent = extent;
+        if (newExtent != null) {
+            newExtent = newExtent.translate(translation);
+            if (newExtent == extent) return this;
         }
         MathTransform t1 = gridToCRS;
         MathTransform t2 = cornerToCRS;
@@ -1407,7 +1485,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             t1 = MathTransforms.concatenate(t, t1);
             t2 = MathTransforms.concatenate(t, t2);
         }
-        return new GridGeometry(te, t1, t2, envelope, resolution, nonLinears);
+        return new GridGeometry(newExtent, t1, t2, envelope, resolution, nonLinears);
     }
 
     /**
@@ -1418,27 +1496,27 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <p>The given extent is taken verbatim; this method does no clipping.
      * The given extent does not need to intersect the extent of this grid geometry.</p>
      *
-     * @param  extent  extent of the grid geometry to return.
+     * @param  newExtent  extent of the grid geometry to return.
      * @return grid geometry with the given extent. May be {@code this} if there is no change.
      * @throws TransformException if the geospatial envelope can not be recomputed with the new grid extent.
      *
      * @since 1.3
      */
-    public GridGeometry relocate(final GridExtent extent) throws TransformException {
-        ArgumentChecks.ensureNonNull("size", extent);
-        if (extent.equals(this.extent)) {
+    public GridGeometry relocate(final GridExtent newExtent) throws TransformException {
+        ArgumentChecks.ensureNonNull("newExtent", newExtent);
+        if (newExtent.equals(extent)) {
             return this;
         }
-        ensureDimensionMatches(getDimension(), extent);
+        ensureDimensionMatches(getDimension(), newExtent);
         final ImmutableEnvelope relocated;
         if (cornerToCRS != null) {
-            final GeneralEnvelope env = extent.toEnvelope(cornerToCRS, gridToCRS, null);
+            final GeneralEnvelope env = newExtent.toEnvelope(cornerToCRS, gridToCRS, null);
             env.setCoordinateReferenceSystem(getCoordinateReferenceSystem(envelope));
             relocated = new ImmutableEnvelope(env);
         } else {
             relocated = envelope;           // Either null or contains only the CRS.
         }
-        return new GridGeometry(extent, gridToCRS, cornerToCRS, relocated, resolution, nonLinears);
+        return new GridGeometry(newExtent, gridToCRS, cornerToCRS, relocated, resolution, nonLinears);
     }
 
     /**
@@ -1468,62 +1546,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
-    }
-
-    /**
-     * Creates a new grid geometry upsampling the GridExtent by the given amount of cells along each grid dimensions.
-     * This method multiplies {@linkplain GridExtent#getLow(int) low coordinates} and {@linkplain GridExtent#getSize(int) grid sizes}
-     * by the given periods.
-     *
-     * <div class="note"><b>Note:</b>
-     * The envelope of the new grid geometry is preserved after upsampling.
-     * </div>
-     *
-     * This method does not change the number of dimensions of the grid geometry.
-     *
-     * <h4>Number of arguments</h4>
-     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
-     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
-     * If the array is longer, extraneous values are ignored.
-     *
-     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
-     * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
-     * @throws IllegalArgumentException if a period is not greater than zero.
-     *
-     * @see GridExtent#upsample(int...)
-     */
-    public GridGeometry upsample(int... periods) {
-
-        final GridExtent extent = getExtent();
-        final GridExtent upExtent = extent.upsample(periods);
-        if (upExtent == extent) {
-            //unchanged
-            return this;
-        }
-        final int dimension = upExtent.getDimension();
-
-        final MathTransform gridToCrs = getGridToCRS(PixelInCell.CELL_CORNER);
-        final MathTransform upGridToCrs;
-        if (gridToCrs instanceof LinearTransform) {
-            /*
-            By dividing the matrix elements directly we avoid some numeric errors.
-            */
-            final LinearTransform lnt = (LinearTransform) gridToCrs;
-            final MatrixSIS matrix = Matrices.copy(lnt.getMatrix());
-            for (int i = 0; i < dimension; i++) {
-                for (int k = 0; k < dimension; k++) {
-                    matrix.setElement(k, i, matrix.getElement(k, i) / periods[i]);
-                }
-            }
-            upGridToCrs = MathTransforms.linear(matrix);
-        } else {
-            final double[] scaling = new double[dimension];
-            for (int i = 0; i < dimension; i++) {
-                scaling[i] = 1.0 / periods[i];
-            }
-            upGridToCrs = MathTransforms.concatenate(MathTransforms.scale(scaling), gridToCrs);
-        }
-        return new GridGeometry(upExtent, PixelInCell.CELL_CORNER, upGridToCrs, getCoordinateReferenceSystem());
     }
 
     /**
