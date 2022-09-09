@@ -337,6 +337,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotAWritableFeatureSet_1 = 47;
 
         /**
+         * Original data.
+         */
+        public static final short OriginalData = 76;
+
+        /**
          * Processing executed on {0}.
          */
         public static final short ProcessingExecutedOn_1 = 12;

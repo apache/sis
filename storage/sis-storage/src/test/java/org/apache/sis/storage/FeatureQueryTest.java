@@ -22,12 +22,14 @@ import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -47,7 +49,7 @@ import org.opengis.filter.SortProperty;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -141,6 +143,10 @@ public final strictfp class FeatureQueryTest extends TestCase {
                                  + "Actual:%n%s%n", i, expected, actual));
             }
         }
+        /*
+         * Verify lineage metadata. They are stored in specialized sub-type of `Source`.
+         */
+        assertSame(featureSet, getSingleton(StoreUtilities.getSources(fs.getMetadata())));
     }
 
     /**

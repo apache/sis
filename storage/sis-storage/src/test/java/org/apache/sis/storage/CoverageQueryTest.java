@@ -23,18 +23,20 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
  * Tests {@link CoverageQuery} and (indirectly) {@link CoverageSubset}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  */
 public final strictfp class CoverageQueryTest extends TestCase {
@@ -178,5 +180,9 @@ public final strictfp class CoverageQueryTest extends TestCase {
             request = createSubGrid(-4 + expansion);
         }
         assertEquals(request, coverage.getGridGeometry());
+        /*
+         * Verify lineage metadata. They are stored in specialized sub-type of `Source`.
+         */
+        assertSame(resource, getSingleton(StoreUtilities.getSources(subset.getMetadata())));
     }
 }

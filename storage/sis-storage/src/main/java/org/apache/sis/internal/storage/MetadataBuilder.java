@@ -73,6 +73,7 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -110,7 +111,7 @@ import org.opengis.feature.FeatureType;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -1081,7 +1082,8 @@ public class MetadataBuilder {
 
     /**
      * Adds information about the scope of the resource.
-     * The scope is typically {@link ScopeCode#DATASET}.
+     * The scope is typically (but not restricted to) {@link ScopeCode#COVERAGE},
+     * {@link ScopeCode#FEATURE} or the more generic {@link ScopeCode#DATASET}.
      * Storage locations are:
      *
      * <ul>
@@ -2889,6 +2891,23 @@ parse:      for (int i = 0; i < length;) {
         if (i18n != null) {
             final DefaultLineage lineage = lineage();
             lineage.setStatement(append(lineage.getStatement(), i18n));
+        }
+    }
+
+    /**
+     * Creates metadata about the sources of a resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/source}</li>
+     * </ul>
+     *
+     * @param  sources  the sources of the resource for which to describe the lineage.
+     * @throws DataStoreException if an error occurred while fetching metadata from a resource.
+     */
+    public final void addSources(final Resource... sources) throws DataStoreException {
+        if (sources != null && sources.length != 0) {
+            ResourceLineage.setSources(lineage(), sources);
         }
     }
 

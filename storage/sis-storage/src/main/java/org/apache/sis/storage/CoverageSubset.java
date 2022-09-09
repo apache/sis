@@ -18,6 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
@@ -28,6 +29,7 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -63,6 +65,19 @@ final class CoverageSubset extends AbstractGridCoverageResource {
         super(source instanceof AbstractResource ? ((AbstractResource) source).listeners : null, false);
         this.source = source;
         this.query  = query;
+    }
+
+    /**
+     * Creates metadata about this subset.
+     * It includes information about the complete feature set.
+     */
+    @Override
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, listeners);
+        builder.addLineage(Resources.formatInternational(Resources.Keys.OriginalData));
+        builder.addSources(source);
+        return builder.build();
     }
 
     /**
