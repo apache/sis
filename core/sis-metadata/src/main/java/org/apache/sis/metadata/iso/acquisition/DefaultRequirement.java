@@ -30,8 +30,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
 
 
 /**

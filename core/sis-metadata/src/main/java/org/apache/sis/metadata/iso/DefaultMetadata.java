@@ -68,7 +68,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
@@ -900,7 +900,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(metadataScopes));
+        checkWritePermission(ImplementationHelper.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
@@ -951,7 +951,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(metadataScopes));
+        checkWritePermission(ImplementationHelper.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
@@ -1036,7 +1036,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(dateInfo));
+        checkWritePermission(ImplementationHelper.valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
@@ -1169,7 +1169,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@link #setMetadataStandardVersion(String)} methods.
      */
     private void setMetadataStandard(final boolean version, final String newValue) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(metadataStandards));
+        checkWritePermission(ImplementationHelper.valueIfDefined(metadataStandards));
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
@@ -1328,7 +1328,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = (newValue != null) ? new URI(newValue) : null;
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
-        checkWritePermission(MetadataUtilities.valueIfDefined(info));
+        checkWritePermission(ImplementationHelper.valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             if (uri == null) return;
@@ -1346,10 +1346,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             firstOnline = new DefaultOnlineResource();
         }
         firstOnline.setLinkage(uri);
-        onlineResources = MetadataUtilities.setFirst(onlineResources, firstOnline);
+        onlineResources = ImplementationHelper.setFirst(onlineResources, firstOnline);
         citation.setOnlineResources(onlineResources);
         firstId.setCitation(citation);
-        info = MetadataUtilities.setFirst(info, firstId);
+        info = ImplementationHelper.setFirst(info, firstId);
         setIdentificationInfo(info);
     }
 

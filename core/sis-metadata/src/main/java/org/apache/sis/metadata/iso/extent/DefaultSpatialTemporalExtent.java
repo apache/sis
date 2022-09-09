@@ -29,7 +29,7 @@ import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**

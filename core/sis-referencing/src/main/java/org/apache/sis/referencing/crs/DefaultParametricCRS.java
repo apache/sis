@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.Formatter;
@@ -285,7 +285,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
         if (datum == null) {
             datum = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultParametricCRS.class, "setDatum", "parametricDatum");
+            ImplementationHelper.propertyAlreadySet(DefaultParametricCRS.class, "setDatum", "parametricDatum");
         }
     }
 

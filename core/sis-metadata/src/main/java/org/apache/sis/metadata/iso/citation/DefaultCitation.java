@@ -40,8 +40,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
 
 
 /**

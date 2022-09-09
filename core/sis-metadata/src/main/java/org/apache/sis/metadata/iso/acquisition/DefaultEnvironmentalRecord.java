@@ -24,7 +24,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensureInRange;
 
 
 /**

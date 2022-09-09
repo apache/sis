@@ -35,7 +35,7 @@ import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.util.CollectionsExt;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 
 /**

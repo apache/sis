@@ -42,7 +42,7 @@ import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.internal.system.Semaphores;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**

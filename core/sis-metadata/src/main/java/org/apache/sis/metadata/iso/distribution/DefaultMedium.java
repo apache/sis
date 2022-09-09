@@ -41,7 +41,7 @@ import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.util.CollectionsExt;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 
 /**

@@ -30,8 +30,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
 
 
 /**

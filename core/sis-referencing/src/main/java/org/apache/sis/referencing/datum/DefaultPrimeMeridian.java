@@ -32,7 +32,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.util.Numerics;
@@ -444,7 +444,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                 }
             }
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
+            ImplementationHelper.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
         }
     }
 }

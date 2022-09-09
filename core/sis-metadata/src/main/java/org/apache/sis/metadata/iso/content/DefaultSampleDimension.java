@@ -34,7 +34,7 @@ import org.apache.sis.internal.jaxb.gco.GO_Integer;
 import org.apache.sis.internal.jaxb.gco.GO_Record;
 import org.apache.sis.internal.jaxb.gco.GO_RecordType;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 
 /**

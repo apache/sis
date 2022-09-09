@@ -46,7 +46,7 @@ import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.util.collection.Containers;
@@ -371,7 +371,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         if (method == null) {
             method = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setMethod", "method");
+            ImplementationHelper.propertyAlreadySet(AbstractSingleOperation.class, "setMethod", "method");
         }
     }
 
@@ -445,7 +445,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             CC_OperationMethod.store(values, parameters.values(), replacements);
             parameters = Parameters.unmodifiable(parameters);
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
+            ImplementationHelper.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
         }
     }
 

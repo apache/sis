@@ -33,7 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.IdentifiersTest.class,
     org.apache.sis.internal.metadata.AxisNamesTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
-    org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
+    org.apache.sis.internal.metadata.ImplementationHelperTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,

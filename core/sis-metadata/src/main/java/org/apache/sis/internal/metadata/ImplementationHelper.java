@@ -33,21 +33,20 @@ import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
- * Miscellaneous utility methods for metadata.
+ * Miscellaneous utility methods for implementation of metadata classes.
+ * Many methods in this class are related to (un)marshalling.
+ * This is not an helper class for <em>usage</em> of metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
- *
- * @todo Most methods in this class are related to (un)marshalling. We should rename as {@code MarshallingUtilities}
- *       and move to a JAXB package after we removed the {@code toMilliseconds(…)} and {@code toDate(…)} methods.
  */
-public final class MetadataUtilities extends Static {
+public final class ImplementationHelper extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private MetadataUtilities() {
+    private ImplementationHelper() {
     }
 
     /**

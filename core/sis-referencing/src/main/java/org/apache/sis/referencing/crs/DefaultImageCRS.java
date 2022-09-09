@@ -26,7 +26,7 @@ import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -284,7 +284,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
         if (datum == null) {
             datum = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultImageCRS.class, "setDatum", "imageDatum");
+            ImplementationHelper.propertyAlreadySet(DefaultImageCRS.class, "setDatum", "imageDatum");
         }
     }
 
