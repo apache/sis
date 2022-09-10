@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 
 // Branch-dependent imports
@@ -78,7 +79,8 @@ final class FeatureSubset extends AbstractFeatureSet {
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
-        builder.addLineage(Resources.formatInternational(Resources.Keys.OriginalData));
+        builder.addLineage(Resources.formatInternational(Resources.Keys.UnfilteredData));
+        builder.addProcessDescription(Resources.formatInternational(Resources.Keys.SubsetQuery_1, StoreUtilities.getLabel(source)));
         builder.addSources(source);
         return builder.build();
     }

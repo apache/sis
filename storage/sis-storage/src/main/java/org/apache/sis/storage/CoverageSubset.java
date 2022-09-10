@@ -30,6 +30,7 @@ import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -75,7 +76,8 @@ final class CoverageSubset extends AbstractGridCoverageResource {
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
-        builder.addLineage(Resources.formatInternational(Resources.Keys.OriginalData));
+        builder.addLineage(Resources.formatInternational(Resources.Keys.UnfilteredData));
+        builder.addProcessDescription(Resources.formatInternational(Resources.Keys.SubsetQuery_1, StoreUtilities.getLabel(source)));
         builder.addSources(source);
         return builder.build();
     }

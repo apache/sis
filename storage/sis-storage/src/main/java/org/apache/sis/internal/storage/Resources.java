@@ -337,11 +337,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotAWritableFeatureSet_1 = 47;
 
         /**
-         * Original data.
-         */
-        public static final short OriginalData = 76;
-
-        /**
          * Processing executed on {0}.
          */
         public static final short ProcessingExecutedOn_1 = 12;
@@ -422,6 +417,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsWriteOnce_1 = 21;
 
         /**
+         * Query a subset of “{0}”.
+         */
+        public static final short SubsetQuery_1 = 77;
+
+        /**
          * Can not open {0} data store without “{1}” parameter.
          */
         public static final short UndefinedParameter_2 = 27;
@@ -430,6 +430,11 @@ public final class Resources extends IndexedResourceBundle {
          * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
          */
         public static final short UnexpectedNumberOfCoordinates_4 = 58;
+
+        /**
+         * Unfiltered data.
+         */
+        public static final short UnfilteredData = 76;
 
         /**
          * Format of “{0}” is not recognized.

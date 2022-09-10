@@ -1051,7 +1051,7 @@ public class MetadataBuilder {
     public final void addLanguage(final Locale language, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
-            // No need to use 'addIfNotPresent(…)' because Locale collection is a Set by default.
+            // No need to use `addIfNotPresent(…)` because Locale collection is a Set by default.
             if (scope != Scope.RESOURCE) metadata().getLanguages().add(language);
             if (scope != Scope.METADATA) identification().getLanguages().add(language);
         }
@@ -1074,7 +1074,7 @@ public class MetadataBuilder {
     public final void addEncoding(final Charset encoding, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (encoding != null) {
-            // No need to use 'addIfNotPresent(…)' because Charset collection is a Set by default.
+            // No need to use `addIfNotPresent(…)` because Charset collection is a Set by default.
             if (scope != Scope.RESOURCE) metadata().getCharacterSets().add(encoding);
             if (scope != Scope.METADATA) identification().getCharacterSets().add(encoding);
         }
@@ -1417,7 +1417,7 @@ public class MetadataBuilder {
      */
     public final void addTopicCategory(final TopicCategory topic) {
         if (topic != null) {
-            // No need to use 'addIfNotPresent(…)' for enumerations.
+            // No need to use `addIfNotPresent(…)` for enumerations.
             identification().getTopicCategories().add(topic);
         }
     }
@@ -1805,7 +1805,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addAccessConstraint(final Restriction restriction) {
         if (restriction != null) {
-            // No need to use 'addIfNotPresent(…)' for code lists.
+            // No need to use `addIfNotPresent(…)` for code lists.
             constraints().getAccessConstraints().add(restriction);
         }
     }
@@ -2042,7 +2042,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addSpatialRepresentation(final SpatialRepresentationType type) {
         if (type != null) {
-            // No need to use 'addIfNotPresent(…)' for code lists.
+            // No need to use `addIfNotPresent(…)` for code lists.
             identification().getSpatialRepresentationTypes().add(type);
         }
     }
@@ -2895,7 +2895,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Creates metadata about the sources of a resource.
+     * Adds metadata about the sources of a resource.
      * Storage location is:
      *
      * <ul>
@@ -2904,10 +2904,17 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  sources  the sources of the resource for which to describe the lineage.
      * @throws DataStoreException if an error occurred while fetching metadata from a resource.
+     *
+     * @see #addLineage(CharSequence)
+     * @see #addProcessDescription(CharSequence)
      */
     public final void addSources(final Resource... sources) throws DataStoreException {
         if (sources != null && sources.length != 0) {
-            ResourceLineage.setSources(lineage(), sources);
+            final ResourceLineage[] wrappers  = new ResourceLineage[sources.length];
+            for (int i=0; i<wrappers.length; i++) {
+                wrappers[i] = new ResourceLineage(sources[i]);
+            }
+            lineage().getSources().addAll(Arrays.asList(wrappers));
         }
     }
 
@@ -2929,6 +2936,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  level        hierarchical level of the source (e.g. model), or {@code null} if unspecified.
      * @param  feature      more detailed name for {@code level}, or {@code null} if none.
      *
+     * @see #addSources(Resource...)
      * @see #addProcessing(CharSequence, String)
      * @see #addProcessDescription(CharSequence)
      */
@@ -2969,6 +2977,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  metadata  the metadata of the source, or {@code null} if none.
      * @param  level     hierarchical level of the source (e.g. feature). Should not be null.
      * @param  features  names of dataset, features or attributes used in the source.
+     *
+     * @see #addSources(Resource...)
      */
     public final void addSource(final Metadata metadata, final ScopeCode level, final CharSequence... features) {
         if (metadata != null) {
