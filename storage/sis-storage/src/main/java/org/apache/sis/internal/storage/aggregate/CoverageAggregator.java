@@ -16,12 +16,21 @@
  */
 package org.apache.sis.internal.storage.aggregate;
 
-import java.util.List;
 import java.util.Locale;
+import java.util.List;
+import java.util.Queue;
+import java.util.ArrayDeque;
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -39,10 +48,15 @@ import org.apache.sis.util.collection.BackingStoreException;
  */
 public final class CoverageAggregator extends Group<GroupBySample> {
     /**
-     * The listeners of the parent resource (typically a {@link org.apache.sis.storage.DataStore}),
-     * or {@code null} if none.
+     * The listeners of the parent resource (typically a {@link DataStore}), or {@code null} if none.
      */
     private final StoreListeners listeners;
+
+    /**
+     * The aggregates which where the sources of components added during a call to {@link #addComponents(Aggregate)}.
+     * This is used for reusing existing aggregates instead of {@link GroupAggregate} when the content is the same.
+     */
+    private final Map<Set<Resource>, Queue<Aggregate>> aggregates;
 
     /**
      * Creates an initially empty aggregator.
@@ -52,6 +66,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public CoverageAggregator(final StoreListeners listeners) {
         this.listeners = listeners;
+        aggregates = new HashMap<>();
     }
 
     /**
@@ -89,6 +104,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
 
     /**
      * Adds the given resource. This method can be invoked from any thread.
+     * This method does <em>not</em> recursively decomposes an {@link Aggregate} into its component.
      *
      * @param  resource  resource to add.
      * @throws DataStoreException if the resource can not be used.
@@ -108,19 +124,78 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
+     * Adds all components of the given aggregate. This method can be invoked from any thread.
+     * It delegates to {@link #add(GridCoverageResource)} for each component in the aggregate
+     * which is an instance of {@link GridCoverageResource}.
+     * Components that are themselves instance of {@link Aggregate} are decomposed recursively.
+     *
+     * @param  resource  resource to add.
+     * @throws DataStoreException if a component of the resource can not be used.
+     *
+     * @todo Instead of ignoring non-coverage instances, we should put them in a separated aggregate.
+     */
+    public void addComponents(final Aggregate resource) throws DataStoreException {
+        boolean hasDuplicated = false;
+        final Set<Resource> components = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (final Resource component : resource.components()) {
+            if (components.add(component)) {
+                if (component instanceof GridCoverageResource) {
+                    add((GridCoverageResource) component);
+                } else if (component instanceof Aggregate) {
+                    addComponents((Aggregate) component);
+                }
+            } else {
+                hasDuplicated = true;       // Should never happen, but we are paranoiac.
+            }
+        }
+        if (!(hasDuplicated || components.isEmpty())) {
+            /*
+             * We should not have 2 aggregates with the same components.
+             * But if it happens anyway, put the aggregates in a queue.
+             * Each aggregate will be used at most once.
+             */
+            synchronized (aggregates) {
+                aggregates.computeIfAbsent(components, (k) -> new ArrayDeque<>(1)).add(resource);
+            }
+        }
+    }
+
+    /**
+     * If an user-supplied aggregate exists for all the given components, returns that aggregate.
+     * The returned aggregate is removed from the pool; aggregates are not returned twice.
+     * This method is thread-safe.
+     *
+     * @param  components  the components for which to get user-supplied aggregate.
+     * @return user-supplied aggregate if it exists. The returned aggregate is removed from the pool.
+     */
+    final Optional<Aggregate> existingAggregate(final Resource[] components) {
+        final Set<Resource> key = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (Collections.addAll(key, components)) {
+            final Queue<Aggregate> r;
+            synchronized (aggregates) {
+                r = aggregates.get(key);
+            }
+            if (r != null) {
+                return Optional.ofNullable(r.poll());
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Builds a resource which is the aggregation or concatenation of all components added to this aggregator.
      * The returned resource will be an instance of {@link GridCoverageResource} if possible,
-     * or an instance of {@link Aggregate} is some heterogeneity in grid geometries or sample dimensions
+     * or an instance of {@link Aggregate} if some heterogeneity in grid geometries or sample dimensions
      * prevent the concatenation of all coverages in a single resource.
      *
      * <p>This method is not thread safe. If the {@code add(…)} and {@code addAll(…)} methods were invoked
-     * in background threads, but all additions must be finished before this method is invoked.</p>
+     * in background threads, then all additions must be finished before this method is invoked.</p>
      *
      * @return the aggregation or concatenation of all components added to this aggregator.
      */
     public Resource build() {
         final GroupAggregate aggregate = prepareAggregate(listeners);
         aggregate.fillWithChildAggregates(this, GroupBySample::createComponents);
-        return aggregate.simplify();
+        return aggregate.simplify(this);
     }
 }

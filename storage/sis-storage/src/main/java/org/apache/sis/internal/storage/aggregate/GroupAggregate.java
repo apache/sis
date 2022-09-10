@@ -74,7 +74,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
      * This is used for skipping calls to {@link #simplify()} when it is known that
      * no component can be simplified.
      */
-    private boolean componentsAreCoverages;
+    private boolean componentsAreLeaves;
 
     /**
      * The envelope of this aggregate, or {@code null} if not yet computed.
@@ -123,10 +123,12 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
      *                     The first {@link BiConsumer} argument is a {@code children} member (the source)
      *                     and the second argument is the sub-aggregate to initialize (the target).
      */
-    final <E> void fillWithChildAggregates(final Group<E> children, final BiConsumer<E,GroupAggregate> childFiller) {
+    final <E extends Group> void fillWithChildAggregates(final Group<E> children, final BiConsumer<E,GroupAggregate> childFiller) {
+        assert components.length == children.members.size();
         for (int i=0; i < components.length; i++) {
-            final GroupAggregate child = children.prepareAggregate(listeners);
-            childFiller.accept(children.members.get(i), child);
+            final E member = children.members.get(i);
+            final GroupAggregate child = member.prepareAggregate(listeners);
+            childFiller.accept(member, child);
             components[i] = child;
         }
     }
@@ -140,7 +142,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")    // Copy done by GroupBySample constructor.
     final void fillWithCoverageComponents(final List<GroupByTransform> children, final List<SampleDimension> ranges) {
-        componentsAreCoverages = true;
+        componentsAreLeaves = true;
         for (int i=0; i < components.length; i++) {
             components[i] = children.get(i).createResource(listeners, ranges);
         }
@@ -149,21 +151,22 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
     /**
      * Simplifies the resource tree by removing all aggregates of 1 component.
      *
+     * @param  aggregator  the aggregation builder which is invoking this method.
      * @return the resource to use after simplification.
      */
-    final Resource simplify() {
-        if (!componentsAreCoverages) {
+    final Resource simplify(final CoverageAggregator aggregator) {
+        if (!componentsAreLeaves) {
             for (int i=0; i < components.length; i++) {
                 final Resource r = components[i];
                 if (r instanceof GroupAggregate) {
-                    components[i] = ((GroupAggregate) r).simplify();
+                    components[i] = ((GroupAggregate) r).simplify(aggregator);
                 }
             }
         }
         if (components.length == 1) {
             return components[0];
         }
-        return this;
+        return aggregator.existingAggregate(components).orElse(this);
     }
 
     /**

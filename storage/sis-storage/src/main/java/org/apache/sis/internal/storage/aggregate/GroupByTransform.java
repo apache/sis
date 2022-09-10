@@ -112,7 +112,6 @@ final class GroupByTransform extends Group<GridSlice> {
         final DimensionSelector[] selects;
         synchronized (members) {                // Should no longer be needed at this step, but we are paranoiac.
             int i = members.size();
-            if (i < 2) return ArraysExt.EMPTY_INT;
             selects = new DimensionSelector[geometry.getDimension()];
             for (int dim = selects.length; --dim >= 0;) {
                 selects[dim] = new DimensionSelector(dim, i);
@@ -134,25 +133,21 @@ final class GroupByTransform extends Group<GridSlice> {
 
     /**
      * Sorts the slices in increasing order of low grid coordinates in the concatenated dimension.
-     * Then build a concatenated grid coverage resource capable to perform binary searches along that dimension.
+     * Then builds a concatenated grid coverage resource capable to perform binary searches along that dimension.
      *
      * @param  parentListeners   listeners of the parent resource, or {@code null} if none.
      * @param  sampleDimensions  the sample dimensions of the resource to build.
+     * @return the concatenated resource.
      */
     final GridCoverageResource createResource(final StoreListeners parentListeners, final List<SampleDimension> ranges) {
+        final int n = members.size();
+        if (n == 1) {
+            return members.get(0).resource;
+        }
         final int[] dimensions = findConcatenatedDimensions();
-        if (dimensions.length == 0) {
-            return null;
-        }
-        final int dim = dimensions[0];
-        final GridSliceLocator locator;
-        final GridCoverageResource[] slices;
-        final GridGeometry domain;
-        synchronized (members) {                // Should no longer be needed at this step, but we are paranoiac.
-            slices  = new GridCoverageResource[members.size()];
-            locator = new GridSliceLocator(members, dim, slices);
-            domain  = locator.union(geometry, members, GridSlice::getGridExtent);
-        }
+        final GridCoverageResource[] slices  = new GridCoverageResource[n];
+        final GridSliceLocator       locator = new GridSliceLocator(members, dimensions[0], slices);
+        final GridGeometry           domain  = locator.union(geometry, members, GridSlice::getGridExtent);
         return new ConcatenatedGridResource(parentListeners, domain, ranges, slices, locator);
     }
 }

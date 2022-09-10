@@ -62,7 +62,7 @@ abstract class Group<E> {
 
     /**
      * Prepares an initially empty aggregate.
-     * One of the {@code GroupAggregate.fill(…)} methods must be invoked after this method.
+     * One of the {@code GroupAggregate.fillFoo(…)} methods must be invoked after this method.
      *
      * @param listeners  listeners of the parent resource, or {@code null} if none.
      * @return an initially empty aggregate.

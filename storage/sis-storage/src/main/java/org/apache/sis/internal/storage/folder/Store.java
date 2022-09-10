@@ -55,6 +55,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.aggregate.CoverageAggregator;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
@@ -82,7 +83,7 @@ import org.apache.sis.storage.event.WarningEvent;
  * @since   0.8
  * @module
  */
-class Store extends DataStore implements StoreResource, Aggregate, DirectoryStream.Filter<Path> {
+class Store extends DataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
     /**
      * The data store for the root directory specified by the user.
      * May be {@code this} if this store instance is for the root directory.
@@ -150,6 +151,14 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * This is used for avoiding to report the same message many times.
      */
     private transient boolean sharedRepositoryReported;
+
+    /**
+     * A structured view of this aggregate, or {@code null} if not net computed.
+     * May be {@code this} if {@link CoverageAggregator} can not do better than current resource.
+     *
+     * @see #getStructuredView()
+     */
+    private transient Resource structuredView;
 
     /**
      * Creates a new folder store from the given file, path or URI.
@@ -395,6 +404,22 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
             sharedRepositoryReported = true;
             listeners.warning(message(Resources.Keys.SharedDirectory_1, candidate));
         }
+    }
+
+    /**
+     * Returns a more structured (if possible) view of this resource.
+     *
+     * @return structured view. May be {@code this} if this method can not do better than current resource.
+     * @throws DataStoreException if an error occurred during the attempt to create a structured view.
+     */
+    @Override
+    public synchronized Resource getStructuredView() throws DataStoreException {
+        if (structuredView == null) {
+            final CoverageAggregator aggregator = new CoverageAggregator(listeners);
+            aggregator.addComponents(this);
+            structuredView = aggregator.build();
+        }
+        return structuredView;
     }
 
     /**

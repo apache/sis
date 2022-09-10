@@ -42,6 +42,7 @@ import org.apache.sis.util.ArraysExt;
 /**
  * A grid coverage resource where a single dimension is the concatenation of many grid coverage resources.
  * All components must have the same "grid to CRS" transform.
+ * Instances of {@code ConcatenatedGridResource} are created by {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
