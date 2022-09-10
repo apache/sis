@@ -59,6 +59,11 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     private final Map<Set<Resource>, Queue<Aggregate>> aggregates;
 
     /**
+     * An optional resource to declare as the source of this aggregate in lineage metadata.
+     */
+    private Resource sourceMetadata;
+
+    /**
      * Creates an initially empty aggregator.
      *
      * @param listeners  listeners of the parent resource, or {@code null} if none.
@@ -183,6 +188,17 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
+     * Sets the resource to declare as the source in lineage metadata.
+     * Note that it will cause the aggregation returned by {@link #build()}
+     * to hold a strong reference to the resource specified to this method.
+     *
+     * @param  source  the resource to declare as the source in lineage metadata.
+     */
+    public void setSourceMetadata(final Resource source) {
+        sourceMetadata = source;
+    }
+
+    /**
      * Builds a resource which is the aggregation or concatenation of all components added to this aggregator.
      * The returned resource will be an instance of {@link GridCoverageResource} if possible,
      * or an instance of {@link Aggregate} if some heterogeneity in grid geometries or sample dimensions
@@ -196,6 +212,12 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     public Resource build() {
         final GroupAggregate aggregate = prepareAggregate(listeners);
         aggregate.fillWithChildAggregates(this, GroupBySample::createComponents);
-        return aggregate.simplify(this);
+        final Resource result = aggregate.simplify(this);
+        if (result instanceof GroupAggregate) {
+            ((GroupAggregate) result).sourceMetadata = sourceMetadata;
+        } else if (result instanceof ConcatenatedGridResource) {
+            ((ConcatenatedGridResource) result).sourceMetadata = sourceMetadata;
+        }
+        return result;
     }
 }

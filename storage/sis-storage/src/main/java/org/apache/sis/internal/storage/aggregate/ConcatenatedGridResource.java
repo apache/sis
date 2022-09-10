@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -28,12 +29,14 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.MemoryGridResource;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArraysExt;
@@ -98,6 +101,12 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource {
     private double[][] resolutions;
 
     /**
+     * An optional resource to declare as the source of this aggregate in lineage metadata.
+     * This is reset to {@code null} when no longer needed.
+     */
+    Resource sourceMetadata;
+
+    /**
      * Creates a new aggregated resource.
      *
      * @param  listeners  listeners of the parent resource, or {@code null} if none.
@@ -116,6 +125,20 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource {
         this.sampleDimensions = ranges;
         this.slices           = slices;
         this.locator          = locator;
+    }
+
+    /**
+     * Creates when first requested the metadata about this resource.
+     */
+    @Override
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, listeners);
+        if (sourceMetadata != null) {
+            builder.addSources(sourceMetadata);
+            sourceMetadata = null;
+        }
+        return builder.build();
     }
 
     /**
