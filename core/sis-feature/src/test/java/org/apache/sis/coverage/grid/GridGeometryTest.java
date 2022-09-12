@@ -494,8 +494,9 @@ public final strictfp class GridGeometryTest extends TestCase {
             final MathTransform gridToCRS = MathTransforms.linear(mat);
             expected = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
         }
-        assertSame(grid.getEnvelope(), upsampled.getEnvelope());
-        assertEquals(expected, upsampled);
+        assertSame("envelope", grid.getEnvelope(), upsampled.getEnvelope());
+        assertEquals("GridGeometry", expected, upsampled);
+        assertArrayEquals("resolution", new double[] {0.25, 0.5}, expected.getResolution(false), STRICT);
     }
 
     /**

@@ -1422,11 +1422,12 @@ public class GridGeometry implements LenientComparable, Serializable {
             newResolution = resolution.clone();
             final DoubleDouble div = new DoubleDouble();
             for (int i = Math.min(srcDim, periods.length); --i >= 0;) {
-                for (int j=0; j<tgtDim; j++) {
-                    div.error = 0;
-                    div.value = periods[i];
-                    if (div.value != 1) {
-                        newResolution[i] /= div.value;
+                final double p = periods[i];
+                if (p != 1) {
+                    newResolution[i] /= p;
+                    for (int j=0; j<tgtDim; j++) {
+                        div.error = 0;
+                        div.value = p;
                         div.inverseDivide(DoubleDouble.castOrCopy(matrix.getNumber(j, i)));
                         matrix.setNumber(j, i, div);
                         changed = true;
