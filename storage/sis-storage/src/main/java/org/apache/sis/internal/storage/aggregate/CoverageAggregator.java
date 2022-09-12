@@ -82,7 +82,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @return a name which can be used as aggregation name, or {@code null} if none.
      */
     @Override
-    final String getName(final Locale locale) {
+    final String createName(final Locale locale) {
         return (listeners != null) ? listeners.getSourceName() : null;
     }
 
@@ -213,10 +213,8 @@ public final class CoverageAggregator extends Group<GroupBySample> {
         final GroupAggregate aggregate = prepareAggregate(listeners);
         aggregate.fillWithChildAggregates(this, GroupBySample::createComponents);
         final Resource result = aggregate.simplify(this);
-        if (result instanceof GroupAggregate) {
-            ((GroupAggregate) result).sourceMetadata = sourceMetadata;
-        } else if (result instanceof ConcatenatedGridResource) {
-            ((ConcatenatedGridResource) result).sourceMetadata = sourceMetadata;
+        if (result instanceof AggregatedResource) {
+            ((AggregatedResource) result).setSourceMetadata(sourceMetadata);
         }
         return result;
     }

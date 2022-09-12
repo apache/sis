@@ -31,6 +31,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -50,17 +51,17 @@ import org.apache.sis.geometry.ImmutableEnvelope;
  * @since   1.3
  * @module
  */
-final class GroupAggregate extends AbstractResource implements Aggregate {
+final class GroupAggregate extends AbstractResource implements Aggregate, AggregatedResource {
     /**
      * Minimum number of components for keeping this aggregate after analysis.
      */
-    static final int KEEP_ALIVE = 2;
+    private static final int KEEP_ALIVE = 2;
 
     /**
      * Name of this aggregate, or {@code null} if none.
      * This is <strong>not</strong> a persistent identifier.
      */
-    private final String name;
+    private String name;
 
     /**
      * The components of this aggregate. Array elements are initially null, but should all become non-null
@@ -101,7 +102,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
      * An optional resource to declare as the source of this aggregate in lineage metadata.
      * This is reset to {@code null} when no longer needed.
      */
-    Resource sourceMetadata;
+    private Resource sourceMetadata;
 
     /**
      * Creates a new aggregate with the specified number of components.
@@ -129,7 +130,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
      *                     The first {@link BiConsumer} argument is a {@code children} member (the source)
      *                     and the second argument is the sub-aggregate to initialize (the target).
      */
-    final <E extends Group> void fillWithChildAggregates(final Group<E> children, final BiConsumer<E,GroupAggregate> childFiller) {
+    final <E extends Group<?>> void fillWithChildAggregates(final Group<E> children, final BiConsumer<E,GroupAggregate> childFiller) {
         assert components.length == children.members.size();
         for (int i=0; i < components.length; i++) {
             final E member = children.members.get(i);
@@ -170,7 +171,11 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
             }
         }
         if (components.length == 1) {
-            return components[0];
+            final Resource c = components[0];
+            if (c instanceof AggregatedResource) {
+                ((AggregatedResource) c).setName(name);
+            }
+            return c;
         }
         return aggregator.existingAggregate(components).orElse(this);
     }
@@ -224,6 +229,24 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
     }
 
     /**
+     * Modifies the name of the resource.
+     * This information is used for metadata.
+     */
+    @Override
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * Specifies the resource to declare in lineage metadata as the source of this resource.
+     * This information is used for metadata.
+     */
+    @Override
+    public void setSourceMetadata(final Resource source) {
+        sourceMetadata = source;
+    }
+
+    /**
      * Creates when first requested the metadata about this aggregate.
      * The metadata contains the title for this aggregation, the sample dimensions
      * (if they are the same for all children) and the geographic bounding box.
@@ -247,5 +270,13 @@ final class GroupAggregate extends AbstractResource implements Aggregate {
             sourceMetadata = null;
         }
         return builder.build();
+    }
+
+    /**
+     * Returns a string representation of this aggregate for debugging purposes.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "name", name, "size", components.length);
     }
 }

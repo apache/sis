@@ -52,7 +52,12 @@ import org.apache.sis.util.ArraysExt;
  * @since   1.3
  * @module
  */
-final class ConcatenatedGridResource extends AbstractGridCoverageResource {
+final class ConcatenatedGridResource extends AbstractGridCoverageResource implements AggregatedResource {
+    /**
+     * Name of this resource.
+     */
+    private String name;
+
     /**
      * The grid geometry of this aggregated resource.
      *
@@ -104,27 +109,48 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource {
      * An optional resource to declare as the source of this aggregate in lineage metadata.
      * This is reset to {@code null} when no longer needed.
      */
-    Resource sourceMetadata;
+    private Resource sourceMetadata;
 
     /**
      * Creates a new aggregated resource.
      *
+     * @param  name       name of the grid coverage to create.
      * @param  listeners  listeners of the parent resource, or {@code null} if none.
      * @param  domain     value to be returned by {@link #getGridGeometry()}.
      * @param  ranges     value to be returned by {@link #getSampleDimensions()}.
      * @param  slices     the slices of this resource, in the same order than {@code coordinatesOfSlices}.
      */
-    ConcatenatedGridResource(final StoreListeners         listeners,
+    ConcatenatedGridResource(final String                 name,
+                             final StoreListeners         listeners,
                              final GridGeometry           domain,
                              final List<SampleDimension>  ranges,
                              final GridCoverageResource[] slices,
                              final GridSliceLocator       locator)
     {
         super(listeners, false);
+        this.name             = name;
         this.gridGeometry     = domain;
         this.sampleDimensions = ranges;
         this.slices           = slices;
         this.locator          = locator;
+    }
+
+    /**
+     * Modifies the name of the resource.
+     * This information is used for metadata.
+     */
+    @Override
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * Specifies the resource to declare in lineage metadata as the source of this resource.
+     * This information is used for metadata.
+     */
+    @Override
+    public void setSourceMetadata(final Resource source) {
+        sourceMetadata = source;
     }
 
     /**
@@ -133,6 +159,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource {
     @Override
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
+        builder.addTitle(name);
         builder.addDefaultMetadata(this, listeners);
         if (sourceMetadata != null) {
             builder.addSources(sourceMetadata);

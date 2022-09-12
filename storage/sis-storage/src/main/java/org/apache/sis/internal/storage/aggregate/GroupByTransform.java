@@ -75,7 +75,7 @@ final class GroupByTransform extends Group<GridSlice> {
      * that they differ by their resolution.
      */
     @Override
-    final String getName(final Locale locale) {
+    final String createName(final Locale locale) {
         final Vocabulary    v = Vocabulary.getResources(locale);
         final StringBuffer  b = new StringBuffer(v.getLabel(Vocabulary.Keys.Resolution));
         final NumberFormat  f = NumberFormat.getIntegerInstance(v.getLocale());
@@ -148,6 +148,6 @@ final class GroupByTransform extends Group<GridSlice> {
         final GridCoverageResource[] slices  = new GridCoverageResource[n];
         final GridSliceLocator       locator = new GridSliceLocator(members, dimensions[0], slices);
         final GridGeometry           domain  = locator.union(geometry, members, GridSlice::getGridExtent);
-        return new ConcatenatedGridResource(parentListeners, domain, ranges, slices, locator);
+        return new ConcatenatedGridResource(getName(parentListeners), parentListeners, domain, ranges, slices, locator);
     }
 }

@@ -37,6 +37,13 @@ import org.apache.sis.storage.event.StoreListeners;
  */
 abstract class Group<E> {
     /**
+     * The name of this group, or {@code null} if not yet computed.
+     *
+     * @see #getName(StoreListeners)
+     */
+    private String name;
+
+    /**
      * All members of this group. This list is populated by calls to {@link GridSlice#addTo(List)}.
      * Accesses to this list should be synchronized during the phase when this list is populated,
      * because that part may be parallelized by {@link CoverageAggregator#addResources(Stream)}.
@@ -52,13 +59,26 @@ abstract class Group<E> {
     }
 
     /**
-     * Returns a name for this group.
+     * Creates a name for this group.
      * This is used as the resource name if an aggregated resource needs to be created.
      *
      * @param  locale  the locale for the name to return, or {@code null} for the default.
      * @return a name which can be used as aggregation name.
      */
-    abstract String getName(Locale locale);
+    abstract String createName(Locale locale);
+
+    /**
+     * Returns the name of this group.
+     *
+     * @param  listeners  listeners from which to get the locale, or {@code null} for the default.
+     * @return a name which can be used as aggregation name.
+     */
+    final String getName(final StoreListeners listeners) {
+        if (name == null) {
+            name = createName(listeners == null ? null : listeners.getLocale());
+        }
+        return name;
+    }
 
     /**
      * Prepares an initially empty aggregate.
@@ -68,14 +88,7 @@ abstract class Group<E> {
      * @return an initially empty aggregate.
      */
     final GroupAggregate prepareAggregate(final StoreListeners listeners) {
-        final int count = members.size();
-        final String name;
-        if (count >= GroupAggregate.KEEP_ALIVE) {
-            name = getName(listeners == null ? null : listeners.getLocale());
-        } else {
-            name = null;        // Because it will not be needed.
-        }
-        return new GroupAggregate(listeners, name, count);
+        return new GroupAggregate(listeners, getName(listeners), members.size());
     }
 
     /**

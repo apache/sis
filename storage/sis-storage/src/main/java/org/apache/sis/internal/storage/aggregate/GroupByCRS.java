@@ -60,7 +60,7 @@ final class GroupByCRS<E> extends Group<E> {
      * Returns a name for this group.
      */
     @Override
-    final String getName(final Locale locale) {
+    final String createName(final Locale locale) {
         return IdentifiedObjects.getDisplayName(crs, locale);
     }
 
