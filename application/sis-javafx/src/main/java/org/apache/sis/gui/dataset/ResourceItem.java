@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
@@ -27,6 +28,7 @@ import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.folder.UnstructuredAggregate;
 import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -35,8 +37,8 @@ import org.apache.sis.internal.gui.LogHandler;
 
 /**
  * An item of the {@link Resource} tree completed with additional information.
- * The list of children is fetched in a background thread when first needed.
- * This node contains only the data; for visual appearance, see {@link Cell}.
+ * The {@linkplain #getChildren() list of children} is fetched in a background thread when first needed.
+ * This node contains only the data; for visual appearance, see {@link ResourceCell}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -105,7 +107,7 @@ final class ResourceItem extends TreeItem<Resource> {
     /**
      * Creates an item for a resource that we failed to load.
      */
-    ResourceItem(final Throwable exception) {
+    private ResourceItem(final Throwable exception) {
         isLeaf = true;
         error  = exception;
     }
@@ -118,13 +120,13 @@ final class ResourceItem extends TreeItem<Resource> {
     ResourceItem(final Resource resource) {
         super(resource);
         isLoading = true;       // Means that the label still need to be fetched.
-        isLeaf = !(resource instanceof Aggregate);
+        isLeaf    = !(resource instanceof Aggregate);
         LogHandler.installListener(resource);
     }
 
     /**
      * Update {@link #label} with the resource label fetched in background thread.
-     * Caller should invoke this method only if {@link #isLoading} is {@code true}.
+     * Caller should use this task only if {@link #isLoading} is {@code true}.
      */
     final class Completer implements Runnable {
         /** The resource for which to fetch a label. */
@@ -152,7 +154,7 @@ final class ResourceItem extends TreeItem<Resource> {
         }
 
         /** Invoked in JavaFX thread after the label has been fetched. */
-        public void run() {
+        @Override public void run() {
             isLoading = false;
             label     = result;
             error     = failure;
@@ -232,11 +234,182 @@ final class ResourceItem extends TreeItem<Resource> {
 
         /**
          * Invoked in JavaFX thread if children can not be loaded.
+         * This method replaces all children (which are unknown) by
+         * a single node which represents a failure to load the data.
          */
         @Override
         @SuppressWarnings("unchecked")
         protected void failed() {
             ResourceItem.super.getChildren().setAll(new ResourceItem(getException()));
         }
+    }
+
+
+
+
+    // ┌──────────────────────────────────────────────────────────────────────────────────────────┐
+    // │ Management of different Views of the resoure (for example aggregations of folder conent) │
+    // └──────────────────────────────────────────────────────────────────────────────────────────┘
+
+    /**
+     * If derived resources (aggregation, etc.) are created, the derived resource for each view.
+     * Otherwise {@code null}. This is used for switching view without recomputing the resource.
+     * All {@link ResourceItem} derived from the same source will share the same map of views.
+     */
+    private EnumMap<TreeViewType,ResourceItem> views;
+
+    /**
+     * Returns the resource which is the source of this item.
+     */
+    final Resource getSource() {
+        return (views != null ? views.get(TreeViewType.SOURCE) : this).getValue();
+    }
+
+    /**
+     * Returns {@code true} if the value, or the value of one of the views, is the given resource.
+     * This method should be used instead of {@code getValue() == resource} for locating the item
+     * that represents a resource.
+     */
+    final boolean contains(final Resource resource) {
+        if (getValue() == resource) {
+            return true;
+        }
+        if (views != null) {
+            for (final ResourceItem view : views.values()) {
+                if (view.getValue() == resource) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether this item is for the specified view.
+     * This is used for deciding whether the corresponding menu item should be checked.
+     *
+     * @param  type  the view to test.
+     * @return whether this item is for the specified view.
+     */
+    final boolean isView(final TreeViewType type) {
+        return (views != null) && views.get(type) == this;
+    }
+
+    /**
+     * Returns whether the specified type of view can be used with the given resource.
+     *
+     * @param  resource  the resource on which different types of views may apply.
+     * @param  type      the desired type of view.
+     * @return whether the specified type of view can be used.
+     */
+    final boolean isViewSelectable(final Resource resource, final TreeViewType type) {
+        if (views != null && views.containsKey(type)) {
+            return true;
+        }
+        if (getParent() != null) {      // Views can be changed only if a parent exists.
+            switch (type) {
+                case AGGREGATION: return (resource instanceof UnstructuredAggregate);
+                // More views may be added in the future.
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Replaces this resource item by the specified view.
+     * The replacement is performed in the list of children of the parent.
+     *
+     * @param  view  the view to select as the active view.
+     */
+    private void selectView(final ResourceItem view) {
+        final TreeItem<Resource> parent = getParent();
+        final List<TreeItem<Resource>> siblings;
+        if (parent != null) {
+            siblings = parent.getChildren();
+            final int i = siblings.indexOf(this);
+            if (i >= 0) {
+                siblings.set(i, view);
+                return;
+            }
+            // Should never happen, otherwise the `parent` information would be wrong.
+        } else {
+            siblings = super.getChildren();
+        }
+        /*
+         * Following fallback should never happen. If it happen anyway, add the view as a sibling
+         * for avoiding the complete lost of the resource. It is possible only if a parent exists.
+         * A parent may not exist if the resource was declared by `ResourceTree.setResource(…)`,
+         * in which case we do not want to change the resource specified by user.
+         */
+        siblings.add(view);
+    }
+
+    /**
+     * Replaces this resource item by a newly created view.
+     * This method must be invoked on the item to replace,
+     * which may be the placeholder for the "loading" label.
+     *
+     * @param  cell  the cell which is requesting a view.
+     * @param  type  type of the newly created view.
+     * @param  view  the newly created view to select as the active view.
+     */
+    private void setNewView(final ResourceCell cell, final TreeViewType type, final ResourceItem view) {
+        view.views = views;
+        views.put(type, view);
+        if (cell == null || cell.isActiveView(type)) {
+            selectView(view);
+        }
+    }
+
+    /**
+     * Enables or disables the aggregated view. This functionality is used mostly when the resource is a folder,
+     * for example added by a drag-and-drop action. It usually do not apply to individual files.
+     *
+     * @param  cell    the cell which is requesting a view.
+     * @param  type    the type of view to show.
+     * @param  locale  the locale to use for fetching resource label.
+     */
+    final void setView(final ResourceCell cell, final TreeViewType type, final Locale locale) {
+        if (views == null) {
+            views = new EnumMap<>(TreeViewType.class);
+            views.put(TreeViewType.SOURCE, this);
+        }
+        final ResourceItem existing = views.get(type);
+        if (existing != null) {
+            selectView(existing);
+            return;
+        }
+        final Resource resource = getSource();
+        final ResourceItem loading = new ResourceItem();
+        setNewView(null, type, loading);
+        BackgroundThreads.execute(new Task<ResourceItem>() {
+            /** Fetch in a background thread the view selected by user. */
+            @Override protected ResourceItem call() throws DataStoreException {
+                Resource result = resource;
+                switch (type) {
+                    case AGGREGATION: {
+                        if (resource instanceof UnstructuredAggregate) {
+                            result = ((UnstructuredAggregate) resource).getStructuredView();
+                        }
+                        break;
+                    }
+                    // More cases may be added in the future.
+                }
+                final ResourceItem item = new ResourceItem(result);
+                item.label = DataStoreOpener.findLabel(resource, locale, false);
+                item.isLoading = false;
+                return item;
+            }
+
+            /** Invoked in JavaFX thread after the requested view has been obtained. */
+            @Override protected void succeeded() {
+                loading.setNewView(cell, type, getValue());
+            }
+
+            /** Invoked in JavaFX thread if an exception occurred while fetching the view. */
+            @Override protected void failed() {
+                loading.setNewView(cell, type, new ResourceItem(getException()));
+            }
+        });
     }
 }

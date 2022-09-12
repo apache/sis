@@ -256,6 +256,9 @@ public class ResourceTree extends TreeView<Resource> {
      * Adds the given store as a resource, then notifies {@link #onResourceLoaded}
      * handler that a resource at the given path has been loaded.
      * This method is invoked from JavaFX thread.
+     *
+     * @param  store   the data store which has been loaded.
+     * @param  source  the user-supplied object which was the input of the store.
      */
     private void addLoadedResource(final DataStore store, final Object source) {
         final boolean added = addResource(store);
@@ -351,9 +354,12 @@ public class ResourceTree extends TreeView<Resource> {
      * @see #addResource(Resource)
      * @see ResourceExplorer#removeAndClose(Resource)
      */
-    public void removeAndClose(final Resource resource) {
+    public void removeAndClose(Resource resource) {
         final TreeItem<Resource> item = findOrRemove(resource, true);
-        if (item != null && resource instanceof DataStore) {
+        if (item instanceof ResourceItem) {
+            resource = ((ResourceItem) item).getSource();
+        }
+        if (resource instanceof DataStore) {
             final DataStore store = (DataStore) resource;
             DataStoreOpener.removeAndClose(store, this);
             final EventHandler<ResourceEvent> handler = onResourceClosed.get();
@@ -396,7 +402,7 @@ public class ResourceTree extends TreeView<Resource> {
             if (remove) {
                 final ObservableList<TreeItem<Resource>> items = getSelectionModel().getSelectedItems();
                 for (int i=items.size(); --i >= 0;) {
-                    if (items.get(i).getValue() == resource) {
+                    if (((ResourceItem) items.get(i)).contains(resource)) {
                         getSelectionModel().clearSelection(i);
                     }
                 }

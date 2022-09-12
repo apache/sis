@@ -21,6 +21,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.paint.Color;
@@ -55,21 +56,14 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 final class ResourceCell extends TreeCell<Resource> {
     /**
+     * The type of view (original resource, aggregated resources, etc.) shown in this node.
+     */
+    private TreeViewType viewType;
+
+    /**
      * Creates a new cell with initially no data.
      */
     ResourceCell() {
-    }
-
-    /**
-     * Returns a localized (if possible) string representation of the given exception.
-     * This method returns the message if one exists, or the exception class name otherwise.
-     */
-    private static String string(final Throwable failure, final Locale locale) {
-        String text = Strings.trimOrNull(Exceptions.getLocalizedMessage(failure, locale));
-        if (text == null) {
-            text = Classes.getShortClassName(failure);
-        }
-        return text;
     }
 
     /**
@@ -121,7 +115,8 @@ final class ResourceCell extends TreeCell<Resource> {
                         text = Vocabulary.getResources(tree.locale).getString(Vocabulary.Keys.Unnamed);
                     } else {
                         // More serious error (no resource), show exception message.
-                        text = string(error, tree.locale);
+                        text = Strings.trimOrNull(Exceptions.getLocalizedMessage(error, tree.locale));
+                        if (text == null) text = Classes.getShortClassName(error);
                     }
                     item.label = text;
                 }
@@ -137,25 +132,14 @@ final class ResourceCell extends TreeCell<Resource> {
                 });
             }
             /*
-             * If the resource is one of the "root" resources, add a menu for removing it.
-             * If we find that the cell already has a menu, we do not need to build it again.
+             * Following block is for the contextual menu. In current version,
+             * we provide menu only for "root" resources (usually data stores).
              */
             if (tree.findOrRemove(resource, false) != null) {
-                menu = getContextMenu();
-                if (menu == null) {
-                    menu = new ContextMenu();
-                    final Resources localized = tree.localized();
-                    final MenuItem[] items = new MenuItem[CLOSE + 1];
-                    items[COPY_PATH]   = localized.menu(Resources.Keys.CopyFilePath, new PathAction(this, false));
-                    items[OPEN_FOLDER] = localized.menu(Resources.Keys.OpenContainingFolder, new PathAction(this, true));
-                    items[CLOSE]       = localized.menu(Resources.Keys.Close, (e) -> {
-                        ((ResourceTree) getTreeView()).removeAndClose(getItem());
-                    });
-                    menu.getItems().setAll(items);
-                }
                 /*
                  * "Copy file path" menu item should be enabled only if we can
                  * get some kind of file path or URI from the specified resource.
+                 * "Aggregated view" should be enabled only on supported resources.
                  */
                 Object path;
                 try {
@@ -164,9 +148,31 @@ final class ResourceCell extends TreeCell<Resource> {
                     path = null;
                     ResourceTree.unexpectedException("updateItem", e);
                 }
+                final boolean aggregatable = item.isViewSelectable(resource, TreeViewType.AGGREGATION);
+                /*
+                 * Create (if not already done) and configure contextual menu using above information.
+                 */
+                menu = getContextMenu();
+                if (menu == null) {
+                    menu = new ContextMenu();
+                    final Resources localized = tree.localized();
+                    final MenuItem[] items = new MenuItem[CLOSE + 1];
+                    items[COPY_PATH]   = localized.menu(Resources.Keys.CopyFilePath, new PathAction(this, false));
+                    items[OPEN_FOLDER] = localized.menu(Resources.Keys.OpenContainingFolder, new PathAction(this, true));
+                    items[AGGREGATED]  = localized.menu(Resources.Keys.AggregatedView, false, (p,o,n) -> {
+                        setView(n ? TreeViewType.AGGREGATION : TreeViewType.SOURCE);
+                    });
+                    items[CLOSE] = localized.menu(Resources.Keys.Close, (e) -> {
+                        ((ResourceTree) getTreeView()).removeAndClose(getItem());
+                    });
+                    menu.getItems().setAll(items);
+                }
                 final ObservableList<MenuItem> items = menu.getItems();
                 items.get(COPY_PATH).setDisable(!IOUtilities.isKindOfPath(path));
                 items.get(OPEN_FOLDER).setDisable(PathAction.isBrowseDisabled || IOUtilities.toFile(path) == null);
+                final CheckMenuItem aggregated = (CheckMenuItem) items.get(AGGREGATED);
+                aggregated.setDisable(!aggregatable);
+                aggregated.setSelected(aggregatable && item.isView(TreeViewType.AGGREGATION));
             }
         }
         setText(text);
@@ -179,5 +185,24 @@ final class ResourceCell extends TreeCell<Resource> {
      * Position of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
      * Above method assumes that {@link #CLOSE} is the last menu item.
      */
-    private static final int COPY_PATH = 0, OPEN_FOLDER = 1, CLOSE = 2;
+    private static final int COPY_PATH = 0, OPEN_FOLDER = 1, AGGREGATED = 2, CLOSE = 3;
+
+    /**
+     * Sets the view of the resource to show in this node.
+     * For example instead of showing the components as given by the data store,
+     * we can create an aggregated view of all components.
+     */
+    private void setView(final TreeViewType type) {
+        viewType = type;
+        ((ResourceItem) getTreeItem()).setView(this, type, ((ResourceTree) getTreeView()).locale);
+    }
+
+    /**
+     * Returns whether the specified view is the currently active view.
+     * This is used for detecting if users changed their selection again
+     * while computation was in progress in the background thread.
+     */
+    final boolean isActiveView(final TreeViewType type) {
+        return viewType == type;
+    }
 }

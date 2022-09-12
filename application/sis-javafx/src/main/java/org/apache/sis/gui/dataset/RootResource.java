@@ -69,7 +69,7 @@ final class RootResource implements Aggregate {
     TreeItem<Resource> contains(final Resource resource, final boolean remove) {
         for (int i=components.size(); --i >= 0;) {
             final TreeItem<Resource> item = components.get(i);
-            if (item.getValue() == resource) {
+            if (((ResourceItem) item).contains(resource)) {
                 return remove ? components.remove(i) : item;
             }
         }
@@ -78,13 +78,16 @@ final class RootResource implements Aggregate {
 
     /**
      * Adds the given resource if not already present.
+     * This is invoked when new resources are opened and listed in {@link ResourceTree}.
      *
      * @param  resource  the resource to add.
      * @return whether the given resource has been added.
+     *
+     * @see ResourceTree#addResource(Resource)
      */
     boolean add(final Resource resource) {
         for (int i = components.size(); --i >= 0;) {
-            if (components.get(i).getValue() == resource) {
+            if (((ResourceItem) components.get(i)).contains(resource)) {
                 return false;
             }
         }
