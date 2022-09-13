@@ -37,8 +37,10 @@ import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -74,10 +76,33 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     private final List<SampleDimension> sampleDimensions;
 
     /**
+     * Whether all {@link SampleDimension} represent "real world" values.
+     */
+    final boolean isConverted;
+
+    /**
      * The slices of this resource, in the same order than {@link #coordinatesOfSlices}.
      * Each slice is not necessarily 1 cell tick; larger slices are accepted.
      */
     private final GridCoverageResource[] slices;
+
+    /**
+     * Whether loading of grid coverages should be deferred to rendering time.
+     * This is a bit set packed as {@code long} values. A bit value of 1 means
+     * that the coverages at the corresponding index should be loaded from the
+     * {@linkplain #slices} at same index only when first needed.
+     *
+     * <p>Whether a bit is set or not depends on two factor:</p>
+     * <ul>
+     *   <li>Whether deferred loading has been requested by a call to {@link #setLoadingStrategy(RasterLoadingStrategy)}.</li>
+     *   <li>Whether the slice at the corresponding index can handle deferred loading itself.
+     *       In such case, we let the resource manages its own lazy loading.</li>
+     * </ul>
+     *
+     * @see RasterLoadingStrategy#AT_READ_TIME
+     * @see RasterLoadingStrategy#AT_RENDER_TIME
+     */
+    private final long[] deferredLoading;
 
     /**
      * The object for identifying indices in the {@link #slices} array.
@@ -133,6 +158,14 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
         this.sampleDimensions = ranges;
         this.slices           = slices;
         this.locator          = locator;
+        this.deferredLoading  = new long[Numerics.ceilDiv(slices.length, Long.SIZE)];
+        for (final SampleDimension sd : ranges) {
+            if (sd.forConvertedValues(true) != sd) {
+                isConverted = false;
+                return;
+            }
+        }
+        isConverted = true;
     }
 
     /**
@@ -253,19 +286,30 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      */
     @Override
     public RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
-        RasterLoadingStrategy common = null;
+        /*
+         * If at least one bit of `deferredLoading` is set, then it means that
+         * `setLoadingStrategy(…)` has been invoked with anything else than `AT_READ_TIME`.
+         */
+        int  bitx = 0;
+        long mask = 1;
+        RasterLoadingStrategy conservative = RasterLoadingStrategy.AT_GET_TILE_TIME;
         for (final GridCoverageResource slice : slices) {
-            final RasterLoadingStrategy sr = slice.getLoadingStrategy();
-            if (sr != null) {       // Should never be null, but we are paranoiac.
-                if (common == null || sr.ordinal() < common.ordinal()) {
-                    common = sr;
-                    if (common.ordinal() == 0) {
-                        break;
-                    }
-                }
+            RasterLoadingStrategy s = slice.getLoadingStrategy();
+            if (s == null || s.ordinal() == 0) {                    // Should never be null, but we are paranoiac.
+                s = ((deferredLoading[bitx] & mask) != 0)
+                        ? RasterLoadingStrategy.AT_RENDER_TIME
+                        : RasterLoadingStrategy.AT_READ_TIME;
+            }
+            if (s.ordinal() < conservative.ordinal()) {
+                conservative = s;
+                if (s.ordinal() == 0) break;
+            }
+            if ((mask <<= 1) == 0) {
+                mask=1;
+                bitx++;
             }
         }
-        return common;
+        return conservative;
     }
 
     /**
@@ -278,9 +322,20 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      */
     @Override
     public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
-        boolean accepted = false;
+        final boolean deferred = (strategy.ordinal() != 0);
+        Arrays.fill(deferredLoading, 0);
+        boolean accepted = true;
+        int  bitx = 0;
+        long mask = 1;
         for (final GridCoverageResource slice : slices) {
-            accepted |= slice.setLoadingStrategy(strategy);
+            if (!slice.setLoadingStrategy(strategy)) {
+                if (deferred) deferredLoading[bitx] |= mask;
+                accepted = false;
+            }
+            if ((mask <<= 1) == 0) {
+                mask=1;
+                bitx++;
+            }
         }
         return accepted;
     }
@@ -289,12 +344,18 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      * Loads a subset of the grid coverage represented by this resource.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, final int... ranges) throws DataStoreException {
+    public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+        /*
+         * Validate arguments.
+         */
+        if (ranges != null) {
+            ranges = RangeArgument.validate(sampleDimensions.size(), ranges, listeners).getSelectedBands();
+        }
         int lower = 0, upper = slices.length;
         if (domain != null) {
             final GridDerivation subgrid = gridGeometry.derive().rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
@@ -308,19 +369,47 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
          * Create arrays with only the requested range, without keeping reference to this concatenated resource,
          * for allowing garbage-collection of resources outside that range.
          */
-        final GridCoverage[] coverages = new GridCoverage[upper - lower];
-        for (int i=0; i < coverages.length; i++) {
+        final int              count      = upper - lower;
+        final GridGeometry[]   geometries = new GridGeometry[count];
+        final GridCoverage[]   coverages  = new GridCoverage[count];
+        GridCoverageResource[] resources  = null;                           // Created when first needed.
+        int  bitx = lower >>> Numerics.LONG_SHIFT;
+        long mask = 1L << lower;                        // No need for (lower & 63) because high bits are ignored.
+        if (count <= 1) mask = 0;                       // Trick for forcing coverage loading.
+        for (int i=0; i<count; i++) {
             final GridCoverageResource slice = slices[lower + i];
             if (slice instanceof MemoryGridResource) {
-                coverages[i] = ((MemoryGridResource) slice).coverage;
+                final GridCoverage coverage = ((MemoryGridResource) slice).coverage;
+                coverages [i] = coverage;
+                geometries[i] = coverage.getGridGeometry();
+            } else if ((deferredLoading[bitx] & mask) == 0) {
+                final GridCoverage coverage = slice.read(domain, ranges);
+                coverages [i] = coverage;
+                geometries[i] = coverage.getGridGeometry();
             } else {
-                coverages[i] = slice.read(domain, ranges);
+                if (resources == null) {
+                    resources  = new GridCoverageResource[count];
+                }
+                resources [i] = slice;
+                geometries[i] = slice.getGridGeometry();
+            }
+            if ((mask <<= 1) == 0) {
+                mask=1;
+                bitx++;
             }
         }
-        if (coverages.length == 1) {
+        /*
+         * If it was not necessary to keep references to any resource, clear references to information
+         * which were needed only for loading coverages from resources. Then create create the coverage.
+         */
+        if (count == 1) {
             return coverages[0];
         }
-        domain = locator.union(gridGeometry, Arrays.asList(coverages), (c) -> c.getGridGeometry().getExtent());
-        return new ConcatenatedGridCoverage(this, domain, coverages, lower);
+        if (resources == null) {
+            domain = null;
+            ranges = null;
+        }
+        final GridGeometry union = locator.union(gridGeometry, Arrays.asList(geometries), GridGeometry::getExtent);
+        return new ConcatenatedGridCoverage(this, union, domain, coverages, resources, lower, ranges);
     }
 }
