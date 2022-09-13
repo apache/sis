@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
     org.apache.sis.internal.storage.RangeArgumentTest.class,
     org.apache.sis.internal.storage.MemoryGridResourceTest.class,
+    org.apache.sis.internal.storage.ConvertedCoverageResourceTest.class,
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
