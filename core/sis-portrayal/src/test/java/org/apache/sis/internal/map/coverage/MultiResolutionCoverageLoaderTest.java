@@ -128,7 +128,7 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
         }
 
         /** Returns a dummy value (will not be used by this test). */
-        @Override public GridCoverage read(final GridGeometry domain, final int... range) {
+        @Override public GridCoverage read(final GridGeometry domain, final int... ranges) {
             final SampleDimension band = new SampleDimension(Names.createLocalName(null, null, "dummy"), null, Collections.emptyList());
             return new GridCoverage(domain, Collections.singletonList(band)) {
                 @Override public RenderedImage render(GridExtent sliceExtent) {

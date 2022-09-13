@@ -124,12 +124,12 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      *
      * @see #getSampleDimensions()
      */
-    private final SampleDimension[] ranges;
+    private final SampleDimension[] sampleDimensions;
 
     /**
-     * The netCDF variables for each sample dimensions. The length of this array shall be equal to {@code ranges.length},
-     * except if bands are stored as one variable dimension ({@link #bandDimension} ≥ 0) in which case the length shall
-     * be exactly 1. Accesses to this array need to take in account that the length may be only 1. Example:
+     * The netCDF variables for each sample dimensions. The length of this array shall be equal to {@code sampleDimensions.length},
+     * except if bands are stored as one variable dimension ({@link #bandDimension} ≥ 0) in which case the length shall be exactly 1.
+     * Accesses to this array need to take in account that the length may be only 1. Example:
      *
      * {@preformat java
      *     Variable v = data[bandDimension >= 0 ? 0 : index];
@@ -193,15 +193,15 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             final int numBands, final int bandDim, final DataStore lock)
     {
         super(decoder.listeners, false);
-        this.lock     = lock;
-        gridGeometry  = grid;
-        bandDimension = bandDim;
-        location      = decoder.location;
-        identifier    = decoder.nameFactory.createLocalName(decoder.namespace, name);
-        visibleBand   = decoder.convention().getVisibleBand();
-        ranges        = new SampleDimension[numBands];
-        data          = bands.toArray(new Variable[bands.size()]);
-        assert data.length == (bandDimension >= 0 ? 1 : ranges.length);
+        this.lock        = lock;
+        gridGeometry     = grid;
+        bandDimension    = bandDim;
+        location         = decoder.location;
+        identifier       = decoder.nameFactory.createLocalName(decoder.namespace, name);
+        visibleBand      = decoder.convention().getVisibleBand();
+        sampleDimensions = new SampleDimension[numBands];
+        data             = bands.toArray(new Variable[bands.size()]);
+        assert data.length == (bandDimension >= 0 ? 1 : sampleDimensions.length);
     }
 
     /**
@@ -448,12 +448,12 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         SampleDimension.Builder builder = null;
         try {
             synchronized (lock) {
-                for (int i=0; i<ranges.length; i++) {
-                    if (ranges[i] == null) {
+                for (int i=0; i<sampleDimensions.length; i++) {
+                    if (sampleDimensions[i] == null) {
                         if (builder == null) {
                             builder = new SampleDimension.Builder();
                         }
-                        ranges[i] = createSampleDimension(builder, getVariable(i), i);
+                        sampleDimensions[i] = createSampleDimension(builder, getVariable(i), i);
                         builder.clear();
                     }
                 }
@@ -461,7 +461,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         } catch (RuntimeException e) {
             throw new DataStoreContentException(e);
         }
-        return UnmodifiableArrayList.wrap(ranges);
+        return UnmodifiableArrayList.wrap(sampleDimensions);
     }
 
     /**
@@ -621,14 +621,14 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * Loads a subset of the grid coverage represented by this resource.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
+    public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
         final long startTime = System.nanoTime();
-        final RangeArgument rangeIndices = RangeArgument.validate(ranges.length, range, listeners);
+        final RangeArgument rangeIndices = RangeArgument.validate(sampleDimensions.length, ranges, listeners);
         final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.getFirstSpecified()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
@@ -670,7 +670,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             }
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
-             * by the `range` argument.  The intent is to perform sequential I/O as much as possible, without
+             * by the `ranges` argument. The intent is to perform sequential I/O as much as possible, without
              * seeking backward. In the (uncommon) case where bands are one of the variable dimension instead
              * than different variables, the reading of the whole variable occurs during the first iteration.
              */
@@ -680,9 +680,9 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                     int indexInResource = rangeIndices.getSourceIndex(i);     // In strictly increasing order.
                     int indexInRaster   = rangeIndices.getTargetIndex(i);
                     Variable variable   = getVariable(indexInResource);
-                    SampleDimension b   = ranges[indexInResource];
+                    SampleDimension b   = sampleDimensions[indexInResource];
                     if (b == null) {
-                        ranges[indexInResource] = b = createSampleDimension(rangeIndices.builder(), variable, i);
+                        sampleDimensions[indexInResource] = b = createSampleDimension(rangeIndices.builder(), variable, i);
                     }
                     bands[indexInRaster] = b;
                     if (bandOffsets != null) {

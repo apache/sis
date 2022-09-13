@@ -498,15 +498,15 @@ final class RawRasterStore extends RasterStore {
      * Loads the data.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   indices of bands to load.
+     * @param  ranges  indices of bands to load.
      * @return the grid coverage for the specified domain.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public synchronized GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+    public synchronized GridCoverage read(GridGeometry domain, final int... ranges) throws DataStoreException {
         try {
             getSampleDimensions();      // Force reading the header and building the list of sample dimensions.
-            final RangeArgument  bands  = RangeArgument.validate(reader.layout.getNumBands(), range, listeners);
+            final RangeArgument  bands  = RangeArgument.validate(reader.layout.getNumBands(), ranges, listeners);
             final WritableRaster raster = reader.read(domain, bands);
             return createCoverage(reader.getEffectiveDomain(), bands, raster, null);
         } catch (IOException e) {

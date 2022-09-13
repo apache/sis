@@ -198,12 +198,12 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * </ul>
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+    public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
         if (domain == null) {
             domain = source.getGridGeometry();
         }
@@ -213,21 +213,21 @@ final class CoverageSubset extends AbstractGridCoverageResource {
          */
         domain = clip(domain, GridRoundingMode.ENCLOSING, GridClippingMode.BORDER_EXPANSION);
         final int[] qr = query.getProjection();
-        if (range == null) {
-            range = qr;
+        if (ranges == null) {
+            ranges = qr;
         } else if (qr != null) {
-            final int[] sub = new int[range.length];
-            for (int i=0; i<range.length; i++) {
-                final int j = range[i];
+            final int[] sub = new int[ranges.length];
+            for (int i=0; i<ranges.length; i++) {
+                final int j = ranges[i];
                 if (j >= 0 && j < qr.length) {
                     sub[i] = qr[j];
                 } else {
                     throw new IllegalArgumentException(invalidRange(qr.length, j));
                 }
             }
-            range = sub;
+            ranges = sub;
         }
-        return source.read(domain, range);
+        return source.read(domain, ranges);
     }
 
     /**

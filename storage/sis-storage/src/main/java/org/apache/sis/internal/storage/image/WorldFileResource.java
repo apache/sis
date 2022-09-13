@@ -249,13 +249,13 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      * Loads a subset of the image wrapped by this resource.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public final GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        final boolean isFullCoverage = (domain == null && range == null);
+    public final GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+        final boolean isFullCoverage = (domain == null && ranges == null);
         final WorldFileStore store = store();
         try {
             synchronized (store) {
@@ -310,18 +310,18 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                  * Those heuristic rules may be changed in any future version.
                  */
                 List<SampleDimension> bands = getSampleDimensions();
-                if (range != null) {
+                if (ranges != null) {
                     final ImageTypeSpecifier type = reader.getRawImageType(getImageIndex());
-                    final RangeArgument args = RangeArgument.validate(type.getNumBands(), range, listeners);
+                    final RangeArgument args = RangeArgument.validate(type.getNumBands(), ranges, listeners);
                     if (args.isIdentity()) {
-                        range = null;
+                        ranges = null;
                     } else {
                         bands = UnmodifiableArrayList.wrap(args.select(bands));
                         if (args.hasAllBands || type.getSampleModel() instanceof BandedSampleModel) {
-                            range = args.getSelectedBands();
-                            param.setSourceBands(range);
-                            param.setDestinationBands(ArraysExt.range(0, range.length));
-                            range = null;
+                            ranges = args.getSelectedBands();
+                            param.setSourceBands(ranges);
+                            param.setDestinationBands(ArraysExt.range(0, ranges.length));
+                            ranges = null;
                         }
                     }
                 }
@@ -331,8 +331,8 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                  * It waste some memory because unused bands still in memory. But we do that as a
                  * workaround for limitations in some `ImageReader` implementations.
                  */
-                if (range != null) {
-                    image = new ImageProcessor().selectBands(image, range);
+                if (ranges != null) {
+                    image = new ImageProcessor().selectBands(image, ranges);
                 }
                 final GridCoverage coverage = new GridCoverage2D(domain, bands, image);
                 if (isFullCoverage) {

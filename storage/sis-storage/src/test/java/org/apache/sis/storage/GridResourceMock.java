@@ -83,12 +83,12 @@ final strictfp class GridResourceMock extends AbstractGridCoverageResource {
      * The image will always be a {@link BufferedImage} with pixel coordinates starting at (0,0).
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for the whole domain.
-     * @param  range   must be null, empty or a singleton containing only value 0.
+     * @param  ranges  must be null, empty or a singleton containing only value 0.
      * @return the grid coverage for the specified domain.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, final int... range) {
-        assertTrue(range == null || range.length == 0 || (range.length == 1 && range[0] == 0));
+    public GridCoverage read(GridGeometry domain, final int... ranges) {
+        assertTrue(ranges == null || ranges.length == 0 || (ranges.length == 1 && ranges[0] == 0));
         if (domain == null) {
             domain = gridGeometry;
         } else {
