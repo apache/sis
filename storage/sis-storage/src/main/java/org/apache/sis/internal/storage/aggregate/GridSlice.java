@@ -129,11 +129,12 @@ final class GridSlice {
      * The CRS comparisons ignore metadata and transform comparisons ignore integer translations.
      * This method takes a synchronization lock on the given list.
      *
-     * @param  groups  the list where to search for a group.
+     * @param  groups    the list where to search for a group.
+     * @param  strategy  algorithm to apply when more than one grid coverage can be found at the same grid index.
      * @return group of objects associated to the given transform (never null).
      * @throws NoninvertibleTransformException if the transform is not invertible.
      */
-    final GroupByTransform getList(final List<GroupByCRS<GroupByTransform>> groups)
+    final GroupByTransform getList(final List<GroupByCRS<GroupByTransform>> groups, final MergeStrategy strategy)
             throws NoninvertibleTransformException
     {
         final MathTransform gridToCRS = geometry.getGridToCRS(PixelInCell.CELL_CORNER);
@@ -144,10 +145,11 @@ final class GridSlice {
                 final Matrix groupToSlice = c.linearTransform(crsToGrid);
                 if (groupToSlice != null && isIntegerTranslation(groupToSlice)) {
                     setOffset(MatrixSIS.castOrCopy(groupToSlice));
+                    c.strategy = strategy;
                     return c;
                 }
             }
-            final GroupByTransform c = new GroupByTransform(geometry, gridToCRS);
+            final GroupByTransform c = new GroupByTransform(geometry, gridToCRS, strategy);
             transforms.add(c);
             return c;
         }

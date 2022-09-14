@@ -109,6 +109,11 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     final GridSliceLocator locator;
 
     /**
+     * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     */
+    final MergeStrategy strategy;
+
+    /**
      * The envelope of this aggregate, or {@code null} if not yet computed.
      * May also be {@code null} if no slice declare an envelope, or if the union can not be computed.
      *
@@ -143,7 +148,8 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
                              final GridGeometry           domain,
                              final List<SampleDimension>  ranges,
                              final GridCoverageResource[] slices,
-                             final GridSliceLocator       locator)
+                             final GridSliceLocator       locator,
+                             final MergeStrategy          strategy)
     {
         super(listeners, false);
         this.name             = name;
@@ -151,6 +157,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
         this.sampleDimensions = ranges;
         this.slices           = slices;
         this.locator          = locator;
+        this.strategy         = strategy;
         this.deferredLoading  = new long[Numerics.ceilDiv(slices.length, Long.SIZE)];
         for (final SampleDimension sd : ranges) {
             if (sd.forConvertedValues(true) != sd) {

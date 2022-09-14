@@ -58,14 +58,23 @@ final class GroupByTransform extends Group<GridSlice> {
     private final MathTransform gridToCRS;
 
     /**
+     * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * This is set at construction time and usually keep the same value after that point,
+     * unless {@link CoverageAggregator#setMergeStrategy(MergeStrategy)} is invoked again.
+     */
+    MergeStrategy strategy;
+
+    /**
      * Creates a new group of objects associated to the given transform.
      *
      * @param  geometry   geometry of the grid coverage or resource.
      * @param  gridToCRS  value or {@code geometry.getGridToCRS(PixelInCell.CELL_CORNER)}.
+     * @param  strategy   algorithm to apply when more than one grid coverage can be found at the same grid index.
      */
-    GroupByTransform(final GridGeometry geometry, final MathTransform gridToCRS) {
+    GroupByTransform(final GridGeometry geometry, final MathTransform gridToCRS, final MergeStrategy strategy) {
         this.geometry  = geometry;
         this.gridToCRS = gridToCRS;
+        this.strategy  = strategy;
     }
 
     /**
@@ -148,6 +157,7 @@ final class GroupByTransform extends Group<GridSlice> {
         final GridCoverageResource[] slices  = new GridCoverageResource[n];
         final GridSliceLocator       locator = new GridSliceLocator(members, dimensions[0], slices);
         final GridGeometry           domain  = locator.union(geometry, members, GridSlice::getGridExtent);
-        return new ConcatenatedGridResource(getName(parentListeners), parentListeners, domain, ranges, slices, locator);
+        return new ConcatenatedGridResource(getName(parentListeners), parentListeners,
+                                            domain, ranges, slices, locator, strategy);
     }
 }

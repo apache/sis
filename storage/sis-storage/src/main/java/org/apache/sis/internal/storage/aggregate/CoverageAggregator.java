@@ -35,11 +35,30 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
  * Creates a grid coverage resource from an aggregation of an arbitrary amount of other resources.
+ *
+ * <div class="note"><b>Example:</b>
+ * a collection of {@link GridCoverage} instances may represent the same phenomenon
+ * (for example Sea Surface Temperature) over the same geographic area but at different dates and times.
+ * {@link CoverageAggregator} can be used for building a single data cube with a time axis.</div>
+ *
+ * All source coverages should share the same CRS and have the same ranges (sample dimensions).
+ * If this is not the case, then the source coverages will be grouped in different aggregates
+ * with an uniform CRS and set of ranges in each sub-aggregates.
+ *
+ * <h2>Multi-threading and concurrency</h2>
+ * All {@code add(…)} methods can be invoked concurrently from arbitrary threads.
+ * It is okay to load {@link GridCoverageResource} instances in parallel threads
+ * and add those resources to {@code CoverageAggregator} without synchronization.
+ * However the final {@link #build()} method is <em>not</em> thread-safe;
+ * that method shall be invoked from a single thread after all sources have been added
+ * and no more addition are in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -59,6 +78,13 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     private final Map<Set<Resource>, Queue<Aggregate>> aggregates;
 
     /**
+     * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     *
+     * @see #getMergeStrategy()
+     */
+    private volatile MergeStrategy strategy;
+
+    /**
      * Creates an initially empty aggregator.
      *
      * @param listeners  listeners of the parent resource, or {@code null} if none.
@@ -67,6 +93,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     public CoverageAggregator(final StoreListeners listeners) {
         this.listeners = listeners;
         aggregates = new HashMap<>();
+        strategy = MergeStrategy.FAIL;
     }
 
     /**
@@ -114,7 +141,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
         final GridSlice slice = new GridSlice(resource);
         final List<GridSlice> slices;
         try {
-            slices = slice.getList(bySample.members).members;
+            slices = slice.getList(bySample.members, strategy).members;
         } catch (NoninvertibleTransformException e) {
             throw new DataStoreContentException(e);
         }
@@ -180,6 +207,36 @@ public final class CoverageAggregator extends Group<GroupBySample> {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns the algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * This is the most recent value set by a call to {@link #setMergeStrategy(MergeStrategy)},
+     * or {@link MergeStrategy#FAIL} by default.
+     *
+     * @return algorithm to apply for merging source coverages at the same grid index.
+     */
+    public MergeStrategy getMergeStrategy() {
+        return strategy;
+    }
+
+    /**
+     * Sets the algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * The new strategy applies to the <em>next</em> coverages to be added;
+     * previously added coverage may or may not be impacted by this change (see below).
+     * Consequently this method should usually be invoked before to add the first coverage.
+     *
+     * <h4>Effect on previously added coverages</h4>
+     * The merge strategy of previously added coverages is not modified by this method call,
+     * except for coverages that become part of the same aggregated {@link GridCoverageResource}
+     * than a coverage added after this method call.
+     * In such case, the strategy set by the most recent call to {@code setMergeStrategy(…)} prevails.
+     *
+     * @param strategy new algorithm to apply for merging source coverages at the same grid index.
+     */
+    public void setMergeStrategy(final MergeStrategy strategy) {
+        ArgumentChecks.ensureNonNull("strategy", strategy);
+        this.strategy = strategy;
     }
 
     /**

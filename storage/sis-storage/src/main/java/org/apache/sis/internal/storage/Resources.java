@@ -327,6 +327,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoCommonFeatureType = 75;
 
         /**
+         * Index {1} in dimension “{0}” maps to {2} slices.
+         */
+        public static final short NoSliceMapped_3 = 79;
+
+        /**
+         * Extent in dimension “{0}” should be a slice, but {1} cells were specified.
+         */
+        public static final short NoSliceSpecified_2 = 80;
+
+        /**
          * No directory of resources found at “{0}”.
          */
         public static final short NoSuchResourceDirectory_1 = 46;

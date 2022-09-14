@@ -86,6 +86,11 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     private final int startAt;
 
     /**
+     * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     */
+    private final MergeStrategy strategy;
+
+    /**
      * Creates a new aggregated coverage.
      *
      * @param source     the concatenated resource which is creating this coverage.
@@ -108,6 +113,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         this.ranges      = ranges;
         this.isConverted = source.isConverted;
         this.locator     = source.locator;
+        this.strategy    = source.strategy;
     }
 
     /**
@@ -124,6 +130,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         this.request     = source.request;
         this.ranges      = source.ranges;
         this.locator     = source.locator;
+        this.strategy    = source.strategy;
         this.isConverted = converted;
     }
 
@@ -178,9 +185,32 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         } else {
             extent = gridGeometry.getExtent();
         }
-        if (upper - lower != 1) {
-            throw new SubspaceNotSpecifiedException();
+        final int size = upper - lower;
+        if (size != 1) {
+            switch (strategy) {
+                default: {
+                    /*
+                     * Can not infer a slice. If the user specified a single slice but that slice
+                     * maps to more than one coverage, the error message tells that this problem
+                     * can be avoided by specifying a merge strategy.
+                     */
+                    final short message;
+                    final Object[] arguments;
+                    if (locator.isSlice(extent)) {
+                        message   = Resources.Keys.NoSliceMapped_3;
+                        arguments = new Object[] {locator.getDimensionName(extent), lower, size};
+                    } else {
+                        message   = Resources.Keys.NoSliceSpecified_2;
+                        arguments = new Object[] {locator.getDimensionName(extent), size};
+                    }
+                    throw new SubspaceNotSpecifiedException(Resources.format(message, arguments));
+                }
+            }
         }
+        /*
+         * Argument have been validated and slice has been located.
+         * If the coverage has not already been loaded, load it now.
+         */
         GridCoverage slice = slices[lower];
         if (slice == null) try {
             slice = resources[lower].read(request, ranges).forConvertedValues(isConverted);

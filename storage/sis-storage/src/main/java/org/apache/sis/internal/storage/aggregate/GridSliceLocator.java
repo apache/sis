@@ -21,11 +21,13 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Function;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -189,5 +191,27 @@ final class GridSliceLocator {
             }
         }
         return toIndex;
+    }
+
+    /**
+     * Returns {@code true} if the grid extent in the search dimension is a slice of size 1.
+     *
+     * @param  sliceExtent  the extent to search.
+     * @return whether the extent is a slice in the search dimension.
+     */
+    final boolean isSlice(final GridExtent sliceExtent) {
+        return sliceExtent.getLow(searchDimension) == sliceExtent.getHigh(searchDimension);
+    }
+
+    /**
+     * Return the name of the extent axis in the search dimension.
+     *
+     * @param  extent  the extent from which to get an axis label.
+     * @return label for the search axis.
+     */
+    final String getDimensionName(final GridExtent extent) {
+        return extent.getAxisType(searchDimension)
+                .map(Types::getCodeTitle).map(InternationalString::toString)
+                .orElseGet(() -> String.valueOf(searchDimension));
     }
 }
