@@ -31,6 +31,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -1731,29 +1732,35 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Returns the intersection of this grid extent with to the given grid extent.
-     * The given extent shall have the same number of dimensions.
-     *
-     * <p>This method is not public because we do not yet have a policy
-     * about whether we should verify if axis {@link #types} match.</p>
+     * The given extent shall have the same number of dimensions than this extent.
+     * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
+     * be the same in all dimensions, ignoring types that are absent.
      *
      * @param  other  the grid to intersect with.
      * @return the intersection result. May be one of the existing instances.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException} if axis types are specified but inconsistent for at least one dimension.
+     *
+     * @since 1.3
      */
-    final GridExtent intersect(final GridExtent other) {
+    public GridExtent intersect(final GridExtent other) {
         return combine(other, false);
     }
 
     /**
      * Returns the union of this grid extent with to the given grid extent.
-     * The given extent shall have the same number of dimensions.
-     *
-     * <p>This method is not public because we do not yet have a policy
-     * about whether we should verify if axis {@link #types} match.</p>
+     * The given extent shall have the same number of dimensions than this extent.
+     * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
+     * be the same in all dimensions, ignoring types that are absent.
      *
      * @param  other  the grid to combine with.
      * @return the union result. May be one of the existing instances.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException} if axis types are specified but inconsistent for at least one dimension.
+     *
+     * @since 1.3
      */
-    final GridExtent union(final GridExtent other) {
+    public GridExtent union(final GridExtent other) {
         return combine(other, true);
     }
 
@@ -1763,6 +1770,21 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     private GridExtent combine(final GridExtent other, final boolean union) {
         final int n = coordinates.length;
         final int m = n >>> 1;
+        if (n != other.coordinates.length) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, "other", m, other.getDimension()));
+        }
+        if (types != null && other.types != null) {
+            for (int i=0; i<m; i++) {
+                final DimensionNameType t1 = types[i];
+                if (t1 != null) {
+                    final DimensionNameType t2 = other.types[i];
+                    if (t2 != null && !t1.equals(t2)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedAxes_3, i, t1, t2));
+                    }
+                }
+            }
+        }
         final long[] clipped = new long[n];
         int i = 0;
         while (i < m) {clipped[i] = extremum(coordinates[i], other.coordinates[i], !union); i++;}

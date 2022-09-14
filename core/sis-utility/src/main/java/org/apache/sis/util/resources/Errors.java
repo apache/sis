@@ -537,6 +537,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedArrayLengths = 77;
 
         /**
+         * Mismatched axes “{1}” and “{2}” at dimension {0}.
+         */
+        public static final short MismatchedAxes_3 = 200;
+
+        /**
          * The coordinate reference system must be the same for all objects.
          */
         public static final short MismatchedCRS = 78;

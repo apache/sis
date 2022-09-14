@@ -298,6 +298,24 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridExtent#intersect(GridExtent)} with inconsistent axis types.
+     * An exception should be thrown.
+     */
+    @Test
+    public void testCombineInvalid() {
+        final GridExtent domain = createOther();
+        final GridExtent other = new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.TRACK, DimensionNameType.TIME},
+                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+        try {
+            domain.intersect(other);
+            fail("Should not be allowed");
+        } catch (IllegalArgumentException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
      * Tests {@link GridExtent#slice(DirectPosition, int[])}.
      */
     @Test
