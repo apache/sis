@@ -417,7 +417,6 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         if (structuredView == null) {
             final CoverageAggregator aggregator = new CoverageAggregator(listeners);
             aggregator.addComponents(this);
-            aggregator.setSourceMetadata(this);
             structuredView = aggregator.build();
         }
         return structuredView;

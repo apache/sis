@@ -99,12 +99,6 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     List<SampleDimension> sampleDimensions;
 
     /**
-     * An optional resource to declare as the source of this aggregate in lineage metadata.
-     * This is reset to {@code null} when no longer needed.
-     */
-    private Resource sourceMetadata;
-
-    /**
      * Creates a new aggregate with the specified number of components.
      * One of the {@code fill(…)} methods must be invoked after this constructor.
      *
@@ -238,15 +232,6 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     }
 
     /**
-     * Specifies the resource to declare in lineage metadata as the source of this resource.
-     * This information is used for metadata.
-     */
-    @Override
-    public void setSourceMetadata(final Resource source) {
-        sourceMetadata = source;
-    }
-
-    /**
      * Creates when first requested the metadata about this aggregate.
      * The metadata contains the title for this aggregation, the sample dimensions
      * (if they are the same for all children) and the geographic bounding box.
@@ -264,10 +249,6 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
             for (final SampleDimension band : sampleDimensions) {
                 builder.addNewBand(band);
             }
-        }
-        if (sourceMetadata != null) {
-            builder.addSources(sourceMetadata);
-            sourceMetadata = null;
         }
         return builder.build();
     }

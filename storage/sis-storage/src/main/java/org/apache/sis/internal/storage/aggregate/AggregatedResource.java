@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.storage.aggregate;
 
-import org.apache.sis.storage.Resource;
-
 
 /**
  * The result of an aggregation computed by {@link CoverageAggregator}.
@@ -34,9 +32,4 @@ interface AggregatedResource {
      * @param  name  new name of the resource.
      */
     void setName(String name);
-
-    /**
-     * Specifies the resource to declare in lineage metadata as the source of this resource.
-     */
-    void setSourceMetadata(Resource source);
 }

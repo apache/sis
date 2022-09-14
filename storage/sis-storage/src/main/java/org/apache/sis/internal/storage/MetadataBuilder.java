@@ -73,7 +73,6 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -1199,7 +1198,7 @@ public class MetadataBuilder {
      * This operation does nothing if the title is already defined and the given
      * title is already used as an identifier (this policy is a complement of the
      * {@link #addTitleOrIdentifier(String, Scope)} behavior).
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/identificationInfo/citation/title} if not yet used</li>
@@ -1980,7 +1979,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds descriptions for the given feature.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/featureTypes/featureTypeName}</li>
@@ -2009,7 +2008,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds descriptions for a feature of the given name.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/featureTypes/featureTypeName}</li>
@@ -2187,7 +2186,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets whether parameters for transformation, control/check point(s) or orientation parameters are available.
-     * Storage location are:
+     * Storage locations are:
      *
      * <ul>
      *   <li>If georeferenceable:<ul>
@@ -2242,7 +2241,7 @@ parse:      for (int i = 0; i < length;) {
      * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
      * Ground control points (GCP) are large marked targets on the ground. GCP should not be used for storing the
      * localization grid (e.g. "model tie points" in a GeoTIFF file).
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/spatialRepresentationInfo/checkPoint/geographicCoordinates} if georectified</li>
@@ -2607,7 +2606,7 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Sets the scale factor and offset which have been applied to the cell value.
      * The transfer function type is declared {@linkplain TransferFunctionType#LINEAR linear}
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/scale}</li>
@@ -2895,32 +2894,35 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds metadata about the sources of a resource.
-     * Storage location is:
+     * Adds a source described by the given metadata.
+     * Storage locations are:
      *
      * <ul>
-     *   <li>{@code metadata/resourceLineage/source}</li>
+     *   <li>{@code metadata/resourceLineage/source/description}</li>
+     *   <li>{@code metadata/resourceLineage/source/citation}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/extent}</li>
+     *   <li>{@code metadata/resourceLineage/source/sourceReferenceSystem}</li>
+     *   <li>{@code metadata/resourceLineage/source/sourceSpatialResolution}</li>
      * </ul>
      *
-     * @param  sources  the sources of the resource for which to describe the lineage.
-     * @throws DataStoreException if an error occurred while fetching metadata from a resource.
+     * @param  source  metadata about a source of the resource for which to describe the lineage.
      *
      * @see #addLineage(CharSequence)
      * @see #addProcessDescription(CharSequence)
      */
-    public final void addSources(final Resource... sources) throws DataStoreException {
-        if (sources != null && sources.length != 0) {
-            final ResourceLineage[] wrappers  = new ResourceLineage[sources.length];
-            for (int i=0; i<wrappers.length; i++) {
-                wrappers[i] = new ResourceLineage(sources[i]);
+    public final void addSource(final Metadata source) {
+        if (source != null) {
+            final ResourceLineage r = new ResourceLineage(source);
+            if (!r.isEmpty()) {
+                addIfNotPresent(lineage().getSources(), r.build());
             }
-            lineage().getSources().addAll(Arrays.asList(wrappers));
         }
     }
 
     /**
      * Adds information about a source of data used for producing the resource.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/resourceLineage/source/description}</li>
@@ -2936,7 +2938,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  level        hierarchical level of the source (e.g. model), or {@code null} if unspecified.
      * @param  feature      more detailed name for {@code level}, or {@code null} if none.
      *
-     * @see #addSources(Resource...)
+     * @see #addSource(Metadata)
      * @see #addProcessing(CharSequence, String)
      * @see #addProcessDescription(CharSequence)
      */
@@ -2958,7 +2960,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds information about a source of data used for producing the resource.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
@@ -2978,7 +2980,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  level     hierarchical level of the source (e.g. feature). Should not be null.
      * @param  features  names of dataset, features or attributes used in the source.
      *
-     * @see #addSources(Resource...)
+     * @see #addSource(Metadata)
      */
     public final void addSource(final Metadata metadata, final ScopeCode level, final CharSequence... features) {
         if (metadata != null) {

@@ -18,8 +18,6 @@ package org.apache.sis.internal.storage;
 
 import java.util.Set;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.logging.Filter;
@@ -36,8 +34,6 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.lineage.Lineage;
-import org.opengis.metadata.lineage.Source;
 import org.apache.sis.util.Static;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
@@ -55,8 +51,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -212,26 +206,6 @@ public final class StoreUtilities extends Static {
             }
         }
         return bounds;
-    }
-
-    /**
-     * Fetches all resources that are the sources of a resource described by given metadata.
-     *
-     * @param  metadata  metadata of the resource for which to get the sources, or {@code null} if none.
-     * @return sources found in given metadata.
-     */
-    public static List<Resource> getSources(final Metadata metadata) {
-        final List<Resource> sources = new ArrayList<>();
-        if (metadata != null) {
-            for (final Lineage lineage : nonNull(metadata.getResourceLineages())) {
-                for (final Source candidate : nonNull(lineage.getSources())) {
-                    if (candidate instanceof ResourceLineage) {
-                        sources.add(((ResourceLineage) candidate).source);
-                    }
-                }
-            }
-        }
-        return sources;
     }
 
     /**

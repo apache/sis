@@ -20,20 +20,16 @@ import java.util.Collection;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.lineage.Source;
-import org.opengis.metadata.maintenance.Scope;
-import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.Resource;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
@@ -47,95 +43,77 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @since   1.3
  * @module
  */
-final class ResourceLineage implements Source {
+final class ResourceLineage {
     /**
-     * The source of the derived resource described by the lineage.
+     * Description of the level of the source data, or {@code null} if none.
+     * Current implementation uses the first non-null title of a citation.
      */
-    public final Resource source;
+    private InternationalString description;
 
     /**
-     * Metadata of the source, or {@code null} if none.
-     * All properties returned by this class are inferred from those metadata.
+     * Recommended reference to be used for the source data, or {@code null}.
+     * Current implementation uses the first citation provided by {@link Metadata#getIdentificationInfo()}.
      */
-    private final Metadata metadata;
+    private Citation sourceCitation;
 
     /**
-     * The scope, computed when first requested.
-     *
-     * @see #getScope()
+     * The type and extent of the source, or {@code null} if none.
+     * Current implementation uses the resource scope declared in source metadata,
+     * together with the source extents.
      */
-    private transient Scope scope;
+    private DefaultScope scope;
 
     /**
-     * Whether {@link #scope} has been initialized. The result may still be null.
+     * She spatial reference system used by the source data, or {@code null} if none.
+     * Current implementation uses the first reference system declared by metadata.
      */
-    private boolean scopeInitialized;
+    private ReferenceSystem referenceSystem;
 
     /**
-     * Creates a new source wrapping the given resource.
-     *
-     * @param  source  the source of the derived resource described by the resource lineage.
-     * @throws DataStoreException if an error occurred while fetching metadata from the source.
+     * Spatial resolution expressed as a scale factor, an angle or a level of detail.
+     * Current implementation uses the first resolution found in identification information.
      */
-    ResourceLineage(final Resource source) throws DataStoreException {
-        this.source = source;
-        metadata = source.getMetadata();
+    private Resolution resolution;
+
+    /**
+     * Returns {@code false} if this object has at least one non-null value.
+     */
+    final boolean isEmpty() {
+        return description == null && sourceCitation == null && scope == null
+                && referenceSystem == null && resolution == null;
     }
 
     /**
-     * Returns a description of the level of the source data.
-     * Default implementation returns the title of the {@linkplain #getSourceCitation() source citation}.
+     * Collects information about a source of the derived resource for which to provide lineage.
      *
-     * @return description of the level of the source data, or {@code null} if none.
+     * @param  source  metadata of a source of the derived resource for which to provide lineage.
      */
-    @Override
-    public InternationalString getDescription() {
-        final Citation citation = getSourceCitation();
-        return (citation != null) ? citation.getTitle() : null;
-    }
-
-    /**
-     * Returns the recommended reference to be used for the source data.
-     * Default implementation returns the first citation having a non-null title
-     * among the citations provided by {@link Metadata#getIdentificationInfo()}.
-     *
-     * @return recommended reference to be used for the source data, or {@code null}.
-     */
-    @Override
-    public Citation getSourceCitation() {
-        if (metadata != null) {
-            for (final Identification info : nonNull(metadata.getIdentificationInfo())) {
-                final Citation citation = info.getCitation();
-                if (citation != null) {
-                    if (citation.getTitle() != null) {
-                        return citation;
+    ResourceLineage(final Metadata source) {
+        referenceSystem = CollectionsExt.first(source.getReferenceSystemInfo());
+        for (final Identification info : nonNull(source.getIdentificationInfo())) {
+            final Citation citation = info.getCitation();
+            if (citation != null) {
+                if (sourceCitation == null) {
+                    sourceCitation = citation;
+                }
+                if (description == null) {
+                    description = citation.getTitle();
+                }
+            }
+            if (resolution == null) {
+                for (final Resolution candidate : nonNull(info.getSpatialResolutions())) {
+                    if (candidate != null) {
+                        resolution = candidate;
                     }
                 }
             }
         }
-        return null;
-    }
-
-    /**
-     * Returns the type and extent of the source. Default implementation returns the resource scope
-     * declared in source metadata, together with the {@linkplain #getSourceExtents() source extents}.
-     *
-     * @return type and extent of the source, or {@code null} if none.
-     */
-    @Override
-    public synchronized Scope getScope() {
-        if (!scopeInitialized) {
-            scopeInitialized = true;
-            final ScopeCode level = getScopeLevel();
-            final Collection<? extends Extent> extents = getSourceExtents();
-            if (level != null || !extents.isEmpty()) {
-                final DefaultScope scope = new DefaultScope(level);
-                scope.setExtents(extents);
-                scope.transitionTo(ModifiableMetadata.State.FINAL);
-                this.scope = scope;
-            }
+        final ScopeCode level = getScopeLevel(source);
+        final Collection<? extends Extent> extents = Extents.fromIdentificationInfo(source);
+        if (level != null || !extents.isEmpty()) {
+            scope = new DefaultScope(level);
+            scope.setExtents(extents);
         }
-        return scope;
     }
 
     /**
@@ -143,18 +121,16 @@ final class ResourceLineage implements Source {
      *
      * @return scope level (coverage, feature, …), or {@code null} if none.
      */
-    private ScopeCode getScopeLevel() {
+    private static ScopeCode getScopeLevel(final Metadata source) {
         ScopeCode level = null;
-        if (metadata != null) {
-            for (final MetadataScope ms : nonNull(metadata.getMetadataScopes())) {
-                final ScopeCode c = ms.getResourceScope();
-                if (c != null) {
-                    if (level == null) {
-                        level = c;
-                    } else if (!level.equals(c)) {
-                        level = null;
-                        break;
-                    }
+        for (final MetadataScope ms : nonNull(source.getMetadataScopes())) {
+            final ScopeCode c = ms.getResourceScope();
+            if (c != null) {
+                if (level == null) {
+                    level = c;
+                } else if (!level.equals(c)) {
+                    level = null;
+                    break;
                 }
             }
         }
@@ -162,47 +138,15 @@ final class ResourceLineage implements Source {
     }
 
     /**
-     * Information about the spatial, vertical and temporal extent of the source data.
-     * Default implementation returns all extents declared in {@link Metadata#getIdentificationInfo()}.
-     *
-     * @return information about the extent of the source data, or an empty collection if none.
-     *
-     * @deprecated As of ISO 19115:2014, moved to {@link Scope#getExtents()}.
+     * Creates an ISO 19115 metadata object from the information collected in this class.
      */
-    @Override
-    @Deprecated
-    public Collection<? extends Extent> getSourceExtents() {
-        return Extents.fromIdentificationInfo(metadata);
-    }
-
-    /**
-     * Returns the spatial reference system used by the source data.
-     * Default implementation returns the first reference system declared by metadata.
-     *
-     * @return spatial reference system used by the source data, or {@code null}.
-     */
-    @Override
-    public ReferenceSystem getSourceReferenceSystem() {
-        return (metadata != null) ? CollectionsExt.first(metadata.getReferenceSystemInfo()) : null;
-    }
-
-    /**
-     * Spatial resolution expressed as a scale factor, an angle or a level of detail.
-     * Default implementation returns the first resolution found in identification information.
-     *
-     * @return spatial resolution, or {@code null} if none.
-     */
-    @Override
-    public Resolution getSourceSpatialResolution() {
-        if (metadata != null) {
-            for (final Identification info : nonNull(metadata.getIdentificationInfo())) {
-                for (final Resolution candidate : nonNull(info.getSpatialResolutions())) {
-                    if (candidate != null) {
-                        return candidate;
-                    }
-                }
-            }
-        }
-        return null;
+    final DefaultSource build() {
+        final DefaultSource source = new DefaultSource();
+        source.setDescription(description);
+        source.setSourceCitation(sourceCitation);
+        source.setScope(scope);
+        source.setSourceReferenceSystem(referenceSystem);
+        source.setSourceSpatialResolution(resolution);
+        return source;
     }
 }

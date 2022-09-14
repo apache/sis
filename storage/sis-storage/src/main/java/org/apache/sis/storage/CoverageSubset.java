@@ -78,7 +78,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
         builder.addDefaultMetadata(this, listeners);
         builder.addLineage(Resources.formatInternational(Resources.Keys.UnfilteredData));
         builder.addProcessDescription(Resources.formatInternational(Resources.Keys.SubsetQuery_1, StoreUtilities.getLabel(source)));
-        builder.addSources(source);
+        builder.addSource(source.getMetadata());
         return builder.build();
     }
 

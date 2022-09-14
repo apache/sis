@@ -29,7 +29,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -131,12 +130,6 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     private double[][] resolutions;
 
     /**
-     * An optional resource to declare as the source of this aggregate in lineage metadata.
-     * This is reset to {@code null} when no longer needed.
-     */
-    private Resource sourceMetadata;
-
-    /**
      * Creates a new aggregated resource.
      *
      * @param  name       name of the grid coverage to create.
@@ -178,15 +171,6 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     }
 
     /**
-     * Specifies the resource to declare in lineage metadata as the source of this resource.
-     * This information is used for metadata.
-     */
-    @Override
-    public void setSourceMetadata(final Resource source) {
-        sourceMetadata = source;
-    }
-
-    /**
      * Creates when first requested the metadata about this resource.
      */
     @Override
@@ -194,10 +178,6 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
         final MetadataBuilder builder = new MetadataBuilder();
         builder.addTitle(name);
         builder.addDefaultMetadata(this, listeners);
-        if (sourceMetadata != null) {
-            builder.addSources(sourceMetadata);
-            sourceMetadata = null;
-        }
         return builder.build();
     }
 
