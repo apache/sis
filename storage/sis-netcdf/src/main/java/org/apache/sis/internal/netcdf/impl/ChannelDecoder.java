@@ -1058,7 +1058,7 @@ nextVar:    for (final VariableInfo variable : variables) {
 
     /**
      * Adds netCDF attributes to the given node, including variables attributes.
-     * Variables attributes are shown fist, and global attributes are last.
+     * Variables attributes are shown first, and global attributes are last.
      *
      * @param  root  the node where to add netCDF attributes.
      */

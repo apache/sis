@@ -134,7 +134,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat(null, null);
         /*
-         * The fist keyword in WKT below should be "GeodeticCRS" in WKT 2, but we use the WKT 1 keyword ("GEOGCS")
+         * The first keyword in WKT below should be "GeodeticCRS" in WKT 2, but we use the WKT 1 keyword ("GEOGCS")
          * for allowing inclusion in ProjectedCRS.  SIS is okay with mixed WKT versions, but this is of course not
          * something to recommend in production.
          */

@@ -169,7 +169,7 @@ final class GridSliceLocator {
     }
 
     /**
-     * Returns the index of the fist slice which intersect the given extent.
+     * Returns the index of the first slice which intersect the given extent.
      * This method performs a linear search. For better performance, it should be invoked
      * with {@code toIndex} parameter set to {@link #getUpper(GridExtent, int, int)} value.
      *

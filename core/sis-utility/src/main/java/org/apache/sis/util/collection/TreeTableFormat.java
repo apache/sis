@@ -450,7 +450,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 break;                                          // The line contains only whitespaces.
             }
             /*
-             * Go back to the fist non-space character (should be '─'). We do that in case the
+             * Go back to the first non-space character (should be '─'). We do that in case the
              * user puts some spaces in the text of the node label, since we don't want those
              * user-spaces to interfer with the calculation of indentation.
              */
