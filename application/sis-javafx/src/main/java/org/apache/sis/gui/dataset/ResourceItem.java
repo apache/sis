@@ -28,6 +28,7 @@ import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.aggregate.MergeStrategy;
 import org.apache.sis.internal.storage.folder.UnstructuredAggregate;
 import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.BackgroundThreads;
@@ -390,6 +391,7 @@ final class ResourceItem extends TreeItem<Resource> {
                     case AGGREGATION: {
                         if (resource instanceof UnstructuredAggregate) {
                             result = ((UnstructuredAggregate) resource).getStructuredView();
+                            result = MergeStrategy.selectByTimeThenArea(null).update(result);
                         }
                         break;
                     }

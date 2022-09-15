@@ -115,6 +115,26 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     }
 
     /**
+     * Returns an aggregate with the same data than this aggregate but a different merge strategy.
+     */
+    final synchronized GroupAggregate update(final MergeStrategy strategy) {
+        boolean changed = false;
+        final GroupAggregate copy = new GroupAggregate(listeners, name, components.length);
+        for (int i=0; i < components.length; i++) {
+            final Resource component = components[i];
+            changed |= ((copy.components[i] = strategy.update(component)) != component);
+        }
+        if (!changed) {
+            return this;
+        }
+        copy.componentsAreLeaves = componentsAreLeaves;
+        copy.envelope            = envelope;
+        copy.envelopeIsEvaluated = envelopeIsEvaluated;
+        copy.sampleDimensions    = sampleDimensions;
+        return copy;
+    }
+
+    /**
      * Sets all components of this aggregate to sub-aggregates, which are themselves initialized with the given filler.
      * This method may be invoked recursively if the sub-aggregates themselves have sub-sub-aggregates.
      *

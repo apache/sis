@@ -196,7 +196,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns {@code true} if the loading the coverage at the given index is deferred.
+     * Returns {@code true} if the loading of the coverage at the given index is deferred.
      * If {@code true},  then {@code slices[i]} shall be an instance of {@link GridCoverageResource}.
      * If {@code false}, then {@code slices[i]} shall be an instance of {@link GridCoverage}.
      */

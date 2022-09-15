@@ -18,6 +18,7 @@ package org.apache.sis.storage.aggregate;
 
 import java.time.Instant;
 import java.time.Duration;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -49,6 +50,14 @@ import org.apache.sis.internal.util.Strings;
  * @module
  */
 public final class MergeStrategy {
+    /**
+     * Selects a single slice using criteria based first on temporal extent, then on geographic area.
+     * This default instance do not use any duration.
+     *
+     * @see #selectByTimeThenArea(Duration)
+     */
+    private static final MergeStrategy SELECT_BY_TIME = new MergeStrategy(null);
+
     /**
      * Temporal granularity of the time of interest, or {@code null} if none.
      * If non-null, intersections with TOI will be rounded to an integer amount of this granularity.
@@ -105,11 +114,15 @@ public final class MergeStrategy {
      *
      * If two slices are still considered equal after all above criteria, then an arbitrary one is selected.
      *
+     * <h4>Limitations</h4>
+     * Current implementation does not check the vertical dimension.
+     * This check may be added in a future version.
+     *
      * @param  timeGranularity  the temporal granularity of the Time of Interest (TOI), or {@code null} if none.
      * @return a merge strategy for selecting a slice based on temporal criteria first.
      */
     public static MergeStrategy selectByTimeThenArea(final Duration timeGranularity) {
-        return new MergeStrategy(timeGranularity);
+        return (timeGranularity != null) ? new MergeStrategy(timeGranularity) : SELECT_BY_TIME;
     }
 
     /**
@@ -139,6 +152,27 @@ public final class MergeStrategy {
                               (n == 0) ? null : t[n-1], i);
         }
         return selector.best();
+    }
+
+    /**
+     * Updates the merge strategy of the specified resource.
+     * If the given resource is an instance created by {@link CoverageAggregator} and uses a different strategy,
+     * then a new resource using this merge strategy is returned. Otherwise the given resource is returned as-is.
+     * The returned resource will share the same resources and caches than the given resource.
+     *
+     * @param  resource  the resource for which to update the merge strategy, or {@code null}.
+     * @return resource with updated merge strategy, or {@code null} if the given resource was null.
+     */
+    public Resource update(Resource resource) {
+        if (resource instanceof ConcatenatedGridResource) {
+            final ConcatenatedGridResource c = (ConcatenatedGridResource) resource;
+            if (!equals(c.strategy)) {
+                resource = new ConcatenatedGridResource(c, this);
+            }
+        } else if (resource instanceof GroupAggregate) {
+            resource = ((GroupAggregate) resource).update(this);
+        }
+        return resource;
     }
 
     /**
