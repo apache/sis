@@ -110,6 +110,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
 
     /**
      * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * This is {@code null} if no merge should be attempted.
      */
     final MergeStrategy strategy;
 

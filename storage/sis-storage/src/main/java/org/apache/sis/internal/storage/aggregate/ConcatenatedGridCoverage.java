@@ -24,12 +24,14 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.storage.Resources;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -87,6 +89,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
 
     /**
      * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * This is {@code null} if no merge should be attempted.
      */
     private final MergeStrategy strategy;
 
@@ -185,26 +188,42 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         } else {
             extent = gridGeometry.getExtent();
         }
-        final int size = upper - lower;
-        if (size != 1) {
-            switch (strategy) {
-                default: {
-                    /*
-                     * Can not infer a slice. If the user specified a single slice but that slice
-                     * maps to more than one coverage, the error message tells that this problem
-                     * can be avoided by specifying a merge strategy.
-                     */
-                    final short message;
-                    final Object[] arguments;
-                    if (locator.isSlice(extent)) {
-                        message   = Resources.Keys.NoSliceMapped_3;
-                        arguments = new Object[] {locator.getDimensionName(extent), lower, size};
-                    } else {
-                        message   = Resources.Keys.NoSliceSpecified_2;
-                        arguments = new Object[] {locator.getDimensionName(extent), size};
-                    }
-                    throw new SubspaceNotSpecifiedException(Resources.format(message, arguments));
+        final int count = upper - lower;
+        if (count != 1) {
+            if (count == 0) {
+                throw new DisjointExtentException();
+            }
+            if (strategy == null) {
+                /*
+                 * Can not infer a slice. If the user specified a single slice but that slice
+                 * maps to more than one coverage, the error message tells that this problem
+                 * can be avoided by specifying a merge strategy.
+                 */
+                final short message;
+                final Object[] arguments;
+                if (locator.isSlice(extent)) {
+                    message   = Resources.Keys.NoSliceMapped_3;
+                    arguments = new Object[] {locator.getDimensionName(extent), lower, count};
+                } else {
+                    message   = Resources.Keys.NoSliceSpecified_2;
+                    arguments = new Object[] {locator.getDimensionName(extent), count};
                 }
+                throw new SubspaceNotSpecifiedException(Resources.format(message, arguments));
+            }
+            /*
+             * Select a slice using the user-specified merge strategy.
+             * Current implementation does only a selection; a future version may allow real merges.
+             */
+            final GridGeometry[] geometries = new GridGeometry[count];
+            try {
+                for (int i=0; i<count; i++) {
+                    final int j = lower + i;
+                    final GridCoverage slice = slices[j];
+                    geometries[i] = (slice != null) ? slice.getGridGeometry() : resources[j].getGridGeometry();
+                }
+                lower += strategy.apply(new GridGeometry(getGridGeometry(), extent, null), geometries);
+            } catch (DataStoreException | TransformException e) {
+                throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotSelectSlice), e);
             }
         }
         /*

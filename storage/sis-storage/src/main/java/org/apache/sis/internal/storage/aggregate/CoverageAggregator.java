@@ -37,7 +37,6 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -108,6 +107,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
 
     /**
      * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * This is {@code null} by default.
      *
      * @see #getMergeStrategy()
      */
@@ -122,7 +122,6 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     public CoverageAggregator(final StoreListeners listeners) {
         this.listeners = listeners;
         aggregates = new HashMap<>();
-        strategy = MergeStrategy.FAIL;
     }
 
     /**
@@ -241,9 +240,11 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     /**
      * Returns the algorithm to apply when more than one grid coverage can be found at the same grid index.
      * This is the most recent value set by a call to {@link #setMergeStrategy(MergeStrategy)},
-     * or {@link MergeStrategy#FAIL} by default.
+     * or {@code null} if no strategy has been specified. In the latter case,
+     * a {@link SubspaceNotSpecifiedException} will be thrown by {@link GridCoverage#render(GridExtent)}
+     * if more than one source coverage (slice) is found for a specified grid index.
      *
-     * @return algorithm to apply for merging source coverages at the same grid index.
+     * @return algorithm to apply for merging source coverages at the same grid index, or {@code null} if none.
      */
     public MergeStrategy getMergeStrategy() {
         return strategy;
@@ -263,10 +264,10 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Said otherwise, the merge strategy of a data cube is the strategy which was active
      * at the time of the most recently added slice.
      *
-     * @param  strategy  new algorithm to apply for merging source coverages at the same grid index.
+     * @param  strategy  new algorithm to apply for merging source coverages at the same grid index,
+     *                   or {@code null} if none.
      */
     public void setMergeStrategy(final MergeStrategy strategy) {
-        ArgumentChecks.ensureNonNull("strategy", strategy);
         this.strategy = strategy;
     }
 
