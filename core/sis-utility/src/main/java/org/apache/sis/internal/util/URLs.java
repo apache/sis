@@ -29,7 +29,7 @@ import org.apache.sis.util.Static;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -48,6 +48,11 @@ public final class URLs extends Static {
      * Installation instructions for EPSG database.
      */
     public static final String EPSG_INSTALL = "https://sis.apache.org/epsg.html";
+
+    /**
+     * List of operation methods supported by Apache SIS.
+     */
+    public static final String OPERATION_METHODS = "https://sis.apache.org/tables/CoordinateOperationMethods.html";
 
     /**
      * The Well-Known Text (WKT) 2 specification implemented by Apache SIS.

@@ -54,6 +54,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.io.wkt.Parser;
+import org.apache.sis.internal.util.URLs;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.LazySet;
@@ -475,7 +476,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 method = CoordinateOperations.getOperationMethod(methods, identifier);
             }
             if (method == null) {
-                throw new NoSuchIdentifierException(Resources.format(Resources.Keys.NoSuchOperationMethod_1, identifier), identifier);
+                throw new NoSuchIdentifierException(Resources.format(
+                        Resources.Keys.NoSuchOperationMethod_2, identifier, URLs.OPERATION_METHODS), identifier);
             }
             /*
              * Remember the method we just found, for faster check next time.

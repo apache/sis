@@ -327,7 +327,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoCommonFeatureType = 75;
 
         /**
-         * Index {1} in dimension “{0}” maps to {2} slices.
+         * Index {1} in dimension “{0}” maps to {2} slices. This error can be avoided by specifying a
+         * merge strategy.
          */
         public static final short NoSliceMapped_3 = 79;
 

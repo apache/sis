@@ -1739,7 +1739,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  other  the grid to intersect with.
      * @return the intersection result. May be one of the existing instances.
      * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
-     * @throws IllegalArgumentException} if axis types are specified but inconsistent for at least one dimension.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      *
      * @since 1.3
      */
@@ -1756,7 +1756,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  other  the grid to combine with.
      * @return the union result. May be one of the existing instances.
      * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
-     * @throws IllegalArgumentException} if axis types are specified but inconsistent for at least one dimension.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      *
      * @since 1.3
      */
@@ -1774,7 +1774,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             throw new MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, "other", m, other.getDimension()));
         }
-        if (types != null && other.types != null) {
+        // First condition below is a fast check for a common case.
+        if (types != other.types && types != null && other.types != null) {
             for (int i=0; i<m; i++) {
                 final DimensionNameType t1 = types[i];
                 if (t1 != null) {

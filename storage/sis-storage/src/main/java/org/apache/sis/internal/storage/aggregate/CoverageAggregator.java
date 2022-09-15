@@ -51,6 +51,35 @@ import org.apache.sis.util.ArgumentChecks;
  * All source coverages should share the same CRS and have the same ranges (sample dimensions).
  * If this is not the case, then the source coverages will be grouped in different aggregates
  * with an uniform CRS and set of ranges in each sub-aggregates.
+ * More specifically, {@code CoverageAggregator} organizes resources as below,
+ * except that parent nodes having only one child are omitted:
+ *
+ * {@preformat text
+ *     Root aggregate
+ *     ├─ All coverages with same sample dimensions #1
+ *     │  └─ ...
+ *     └─ All coverages with same sample dimensions #2
+ *        ├─ Coverages with equivalent reference systems #1
+ *        │  └─ ...
+ *        └─ Coverages with equivalent reference systems #2
+ *           ├─ Slices with compatible "grid to CRS" #1
+ *           ├─ Slices with compatible "grid to CRS" #2
+ *           └─ ...
+ * }
+ *
+ * Where:
+ *
+ * <ul>
+ *   <li><dfn>Equivalent reference systems</dfn> means two {@link org.opengis.referencing.crs.CoordinateReferenceSystem} instances
+ *       for which {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)} returns {@code true}.</li>
+ *   <li><dfn>Compatible grid to CRS</dfn> means two {@linkplain org.apache.sis.coverage.grid.GridGeometry#getGridToCRS grid to CRS}
+ *       transforms which are identical (with small tolerance for rounding errors) except for the translation terms,
+ *       with the additional condition that the translations, when expressed in units of grid cell indices,
+ *       can differ only by integer amounts of cells.</li>
+ *   <li><dfn>Slices</dfn> means source coverages declared to this aggregator by calls to {@code add(…)} methods,
+ *       after they have been incorporated in a data cube by this aggregator.
+ *       Above tree does not contain the individual slices, but data cubes containing all slices that can fit.</li>
+ * </ul>
  *
  * <h2>Multi-threading and concurrency</h2>
  * All {@code add(…)} methods can be invoked concurrently from arbitrary threads.
@@ -227,12 +256,14 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Consequently this method should usually be invoked before to add the first coverage.
      *
      * <h4>Effect on previously added coverages</h4>
-     * The merge strategy of previously added coverages is not modified by this method call,
-     * except for coverages that become part of the same aggregated {@link GridCoverageResource}
-     * than a coverage added after this method call.
-     * In such case, the strategy set by the most recent call to {@code setMergeStrategy(…)} prevails.
+     * The merge strategy of previously added coverages is not modified by this method call, except
+     * for coverages (slices) that become part of the same aggregated {@link GridCoverageResource}
+     * (data cube) than a coverage added after this method call.
+     * In such case, the strategy set by this call to {@code setMergeStrategy(…)} prevails.
+     * Said otherwise, the merge strategy of a data cube is the strategy which was active
+     * at the time of the most recently added slice.
      *
-     * @param strategy new algorithm to apply for merging source coverages at the same grid index.
+     * @param  strategy  new algorithm to apply for merging source coverages at the same grid index.
      */
     public void setMergeStrategy(final MergeStrategy strategy) {
         ArgumentChecks.ensureNonNull("strategy", strategy);
