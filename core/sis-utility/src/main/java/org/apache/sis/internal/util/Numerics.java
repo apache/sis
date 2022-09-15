@@ -149,13 +149,11 @@ public final class Numerics extends Static {
 
     /**
      * Maximal integer value which is convertible to {@code float} type without lost of precision digits.
-     *
-     * @since 1.1
      */
     public static final int MAX_INTEGER_CONVERTIBLE_TO_FLOAT = 1 << (SIGNIFICAND_SIZE_OF_FLOAT + 1);
 
     /**
-     * Right shift to apply for a result equivalent to a division by {@Long#SIZE} (ignoring negative numbers).
+     * Right shift to apply for a result equivalent to a division by {@value Long#SIZE} (ignoring negative numbers).
      * The value is {@value} so that the following relationship hold: 2⁶ = {@value Long#SIZE}.
      *
      * <h4>Usage</h4>
@@ -166,6 +164,12 @@ public final class Numerics extends Static {
      * equivalent for all numbers (positive or negative), so the compiler is more likely to optimize itself.
      */
     public static final int LONG_SHIFT = 6;
+
+    /**
+     * Right shift to apply for a result equivalent to a division by {@value Integer#SIZE} (ignoring negative numbers).
+     * This is for the same purpose as {@link #LONG_SHIFT} but applied to 32 bits integer.
+     */
+    public static final int INT_SHIFT = 5;
 
     /**
      * Do not allow instantiation of this class.

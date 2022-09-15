@@ -34,17 +34,18 @@ import static org.junit.Assert.*;
  * Tests the {@link Numerics} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 public final strictfp class NumericsTest extends TestCase {
     /**
-     * Verifies the value of {@link Numerics#LONG_SHIFT}.
+     * Verifies the value of {@link Numerics#LONG_SHIFT} and {@link Numerics#INT_SHIFT}.
      */
     @Test
     public void verifyMaxDimension() {
+        assertEquals(Integer.SIZE, 1 << Numerics.INT_SHIFT);
         assertEquals(Long.SIZE, 1 << Numerics.LONG_SHIFT);
         for (int i=350; i<400; i += 17) {
             assertEquals(i / Long.SIZE, i >> Numerics.LONG_SHIFT);

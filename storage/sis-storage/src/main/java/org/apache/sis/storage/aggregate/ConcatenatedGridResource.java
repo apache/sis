@@ -80,7 +80,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     final boolean isConverted;
 
     /**
-     * The slices of this resource, in the same order than {@link #coordinatesOfSlices}.
+     * The slices of this resource, in the same order than {@link GridSliceLocator#sliceLows}.
      * Each slice is not necessarily 1 cell tick; larger slices are accepted.
      */
     private final GridCoverageResource[] slices;
@@ -142,7 +142,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      * @param  listeners  listeners of the parent resource, or {@code null} if none.
      * @param  domain     value to be returned by {@link #getGridGeometry()}.
      * @param  ranges     value to be returned by {@link #getSampleDimensions()}.
-     * @param  slices     the slices of this resource, in the same order than {@code coordinatesOfSlices}.
+     * @param  slices     the slices of this resource, in the same order than {@link GridSliceLocator#sliceLows}.
      */
     ConcatenatedGridResource(final String                 name,
                              final StoreListeners         listeners,
@@ -357,10 +357,10 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
          * Create arrays with only the requested range, without keeping reference to this concatenated resource,
          * for allowing garbage-collection of resources outside that range.
          */
-        final int              count      = upper - lower;
-        final GridGeometry[]   geometries = new GridGeometry[count];
-        final GridCoverage[]   coverages  = new GridCoverage[count];
-        GridCoverageResource[] resources  = null;                           // Created when first needed.
+        final int            count      = upper - lower;
+        final Object[]       coverages  = new Object[count];
+        final GridGeometry[] geometries = new GridGeometry[count];
+        int[] deferred = null;
         int  bitx = lower >>> Numerics.LONG_SHIFT;
         long mask = 1L << lower;                        // No need for (lower & 63) because high bits are ignored.
         if (count <= 1) mask = 0;                       // Trick for forcing coverage loading.
@@ -375,11 +375,12 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
                 coverages [i] = coverage;
                 geometries[i] = coverage.getGridGeometry();
             } else {
-                if (resources == null) {
-                    resources  = new GridCoverageResource[count];
-                }
-                resources [i] = slice;
+                coverages [i] = slice;
                 geometries[i] = slice.getGridGeometry();
+                if (deferred == null) {
+                    deferred = new int[Numerics.ceilDiv(count, Integer.SIZE)];
+                }
+                deferred[i >>> Numerics.INT_SHIFT] |= (1 << i);
             }
             if ((mask <<= 1) == 0) {
                 mask=1;
@@ -387,17 +388,13 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
             }
         }
         /*
-         * If it was not necessary to keep references to any resource, clear references to information
-         * which were needed only for loading coverages from resources. Then create create the coverage.
+         * Following cast should never fail because the `mask = 0` trick ensures that we loaded the coverage.
+         * Otherwise (if more than one slice), create a concatenation of all slices.
          */
         if (count == 1) {
-            return coverages[0];
-        }
-        if (resources == null) {
-            domain = null;
-            ranges = null;
+            return (GridCoverage) coverages[0];
         }
         final GridGeometry union = locator.union(gridGeometry, Arrays.asList(geometries), GridGeometry::getExtent);
-        return new ConcatenatedGridCoverage(this, union, domain, coverages, resources, lower, ranges);
+        return new ConcatenatedGridCoverage(this, union, coverages, lower, deferred, domain, ranges);
     }
 }

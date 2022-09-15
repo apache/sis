@@ -28,6 +28,8 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.collection.Cache;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;
@@ -45,39 +47,6 @@ import org.opengis.referencing.operation.TransformException;
  */
 final class ConcatenatedGridCoverage extends GridCoverage {
     /**
-     * The slices of this coverage, in the same order than {@link #coordinatesOfSlices}.
-     * Each slice is not necessarily 1 cell tick; larger slices are accepted.
-     * The length of this array shall be at least 2.
-     *
-     * <p>Some elements in the array may be {@code null} if the coverage are lazily loaded.</p>
-     */
-    private final GridCoverage[] slices;
-
-    /**
-     * The resource from which load the coverages in the {@link #slices} array, or {@code null} if none.
-     * This is non-null only if the {@linkplain #slices} are lazily loaded.
-     */
-    private final GridCoverageResource[] resources;
-
-    /**
-     * The domain to request when reading a coverage from the resource.
-     * This is non-null only if the {@linkplain #slices} are lazily loaded.
-     */
-    private final GridGeometry request;
-
-    /**
-     * The sample dimensions to request when loading slices from the {@linkplain #resources}.
-     * This is non-null only if the {@linkplain #slices} are lazily loaded.
-     */
-    private final int[] ranges;
-
-    /**
-     * Whether this grid coverage should be considered as converted.
-     * This is used only if the {@linkplain #slices} are lazily loaded.
-     */
-    private final boolean isConverted;
-
-    /**
      * The object for identifying indices in the {@link #slices} array.
      */
     private final GridSliceLocator locator;
@@ -88,6 +57,100 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     private final int startAt;
 
     /**
+     * The class in charge of loading and caching grid coverages.
+     * The same loader may be shared by many {@link ConcatenatedGridCoverage} instances.
+     * Loaders are immutable (except for the cache) and thread-safe.
+     */
+    private static final class Loader {
+        /**
+         * Whether loading of grid coverages should be deferred to rendering time.
+         * This is a bit set packed as {@code long} values. A bit value of 1 means
+         * that the coverages at the corresponding index should be loaded from the
+         * {@linkplain #slices slices} at same index only when first needed.
+         *
+         * @see ConcatenatedGridResource#deferredLoading
+         * @see #isDeferred(int)
+         */
+        final int[] deferred;
+
+        /**
+         * The domain to request when reading a coverage from the resource.
+         */
+        private final GridGeometry domain;
+
+        /**
+         * The sample dimensions to request when loading slices from the {@linkplain #resources}.
+         */
+        private final int[] ranges;
+
+        /**
+         * Cache of {@link GridCoverage} instances. Keys are index in the {@link #slices} array.
+         */
+        private final Cache<Integer,GridCoverage> coverages;
+
+        /**
+         * Creates a new loader.
+         *
+         * @param deferred  whether loading of grid coverages should be deferred to rendering time.
+         * @param domain    grid geometry to request when loading data.
+         * @param ranges    bands to request when loading coverages.
+         */
+        Loader(final int[] deferred, final GridGeometry domain, final int[] ranges) {
+            this.deferred = deferred;
+            this.domain   = domain;
+            this.ranges   = ranges;
+            coverages     = new Cache<>(15, 2, true);   // Keep 2 slices by strong reference (for interpolations).
+        }
+
+        /**
+         * Returns the coverage if available in the cache, or load it immediately otherwise.
+         * This method shall be invoked only when {@code isDeferred(key) == true}.
+         * This method can be invoked from any thread.
+         *
+         * @param  key     index of the {@link GridCoverageResource} in the {@link #slices} array.
+         * @param  source  value of {@code slices[key]}, used only if data need to be loaded.
+         * @return the coverage at the given index.
+         * @throws NullPointerException if no {@link GridCoverageResource} are expected to exist.
+         * @throws DataStoreException if an error occurred while loading data from the resource.
+         */
+        final GridCoverage getOrLoad(final Integer key, final GridCoverageResource source) throws DataStoreException {
+            GridCoverage coverage = coverages.peek(key);
+            if (coverage == null) {
+                final Cache.Handler<GridCoverage> handler = coverages.lock(key);
+                try {
+                    coverage = handler.peek();
+                    if (coverage == null) {
+                        coverage = source.read(domain, ranges);
+                    }
+                } finally {
+                    handler.putAndUnlock(coverage);
+                }
+            }
+            return coverage;
+        }
+    }
+
+    /**
+     * The object in charge of loading and caching grid coverages, or {@code null} if none.
+     * The same loader may be shared by many {@link ConcatenatedGridCoverage} instances.
+     */
+    private final Loader loader;
+
+    /**
+     * The slices of this coverage, in the same order than {@link GridSliceLocator#sliceLows}.
+     * Array elements shall be instances of {@link GridCoverage} or {@link GridCoverageResource}.
+     * Each slice is not necessarily 1 cell tick; larger slices are accepted.
+     * The length of this array shall be at least 2. Shall be read-only.
+     */
+    private final Object[] slices;
+
+    /**
+     * Whether this grid coverage should be considered as converted.
+     * This is used only if the {@linkplain #slices} are lazily loaded.
+     */
+    private final boolean isConverted;
+
+    /**
      * Algorithm to apply when more than one grid coverage can be found at the same grid index.
      * This is {@code null} if no merge should be attempted.
      */
@@ -96,24 +159,21 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     /**
      * Creates a new aggregated coverage.
      *
-     * @param source     the concatenated resource which is creating this coverage.
-     * @param domain     domain of the coverage to create.
-     * @param request    grid geometry to request when loading data. Used only if {@code resources} is non-null.
-     * @param slices     grid coverages for each slice. May contain {@code null} elements is lazy loading is applied.
-     * @param resources  resources from which to load grid coverages, or {@code null} if none.
-     * @param startAt    index of the first slice in {@link #locator}.
-     * @param ranges     bands to request when loading coverages. Used only if {@code resources} is non-null.
+     * @param source    the concatenated resource which is creating this coverage.
+     * @param domain    domain of the coverage to create.
+     * @param slices    each slice as instances of {@link GridCoverage} or {@link GridCoverageResource}.
+     * @param startAt   index of the first slice in {@link #locator}.
+     * @param deferred  whether loading of grid coverages should be deferred to rendering time, or {@code null} if none.
+     * @param request   grid geometry to request when loading data. Used only if {@code slices} are lazily loaded.
+     * @param ranges    bands to request when loading coverages. Used only if {@code slices} are lazily loaded.
      */
-    ConcatenatedGridCoverage(final ConcatenatedGridResource source, final GridGeometry domain, final GridGeometry request,
-                             final GridCoverage[] slices, final GridCoverageResource[] resources, final int startAt,
-                             final int[] ranges)
+    ConcatenatedGridCoverage(final ConcatenatedGridResource source, final GridGeometry domain, final Object[] slices,
+                             final int startAt, final int[] deferred, final GridGeometry request, final int[] ranges)
     {
         super(domain, source.getSampleDimensions());
+        loader = (deferred != null) ? new Loader(deferred, request, ranges) : null;
         this.slices      = slices;
-        this.resources   = resources;
         this.startAt     = startAt;
-        this.request     = request;
-        this.ranges      = ranges;
         this.isConverted = source.isConverted;
         this.locator     = source.locator;
         this.strategy    = source.strategy;
@@ -123,18 +183,25 @@ final class ConcatenatedGridCoverage extends GridCoverage {
      * Creates a new aggregated coverage for the result of a conversion from/to packed values.
      * This constructor assumes that all slices use the same sample dimensions.
      */
-    private ConcatenatedGridCoverage(final ConcatenatedGridCoverage source, final GridCoverage[] slices,
-            final List<SampleDimension> sampleDimensions, final boolean converted)
+    private ConcatenatedGridCoverage(final ConcatenatedGridCoverage source, final Object[] slices,
+                                     final List<SampleDimension> sampleDimensions, final boolean converted)
     {
         super(source.getGridGeometry(), sampleDimensions);
         this.slices      = slices;
-        this.resources   = source.resources;
+        this.loader      = source.loader;
         this.startAt     = source.startAt;
-        this.request     = source.request;
-        this.ranges      = source.ranges;
         this.locator     = source.locator;
         this.strategy    = source.strategy;
         this.isConverted = converted;
+    }
+
+    /**
+     * Returns {@code true} if the loading the coverage at the given index is deferred.
+     * If {@code true},  then {@code slices[i]} shall be an instance of {@link GridCoverageResource}.
+     * If {@code false}, then {@code slices[i]} shall be an instance of {@link GridCoverage}.
+     */
+    private boolean isDeferred(final int i) {
+        return (loader == null) || (loader.deferred[i >>> Numerics.INT_SHIFT] & (1 << i)) != 0;
     }
 
     /**
@@ -149,13 +216,13 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     @Override
     protected GridCoverage createConvertedValues(final boolean converted) {
         boolean changed = false;
-        int template = -1;              // Index of a grid coverage to use as a template.
-        final GridCoverage[] c = new GridCoverage[slices.length];
+        GridCoverage template = null;           // Arbitrary instance to use as a template for sample dimensions.
+        final Object[] c = slices.clone();
         for (int i=0; i<c.length; i++) {
-            final GridCoverage source = slices[i];
-            if (source != null) {
+            if (!isDeferred(i)) {
+                final GridCoverage source = (GridCoverage) c[i];        // Should never fail.
                 changed |= (c[i] = source.forConvertedValues(converted)) != source;
-                template = i;
+                template = source;
             } else {
                 changed |= (converted != isConverted);
             }
@@ -164,8 +231,8 @@ final class ConcatenatedGridCoverage extends GridCoverage {
             return this;
         }
         final List<SampleDimension> sampleDimensions;
-        if (template >= 0) {
-            sampleDimensions = c[template].getSampleDimensions();
+        if (template !=null) {
+            sampleDimensions = template.getSampleDimensions();
         } else {
             sampleDimensions = new ArrayList<>(getSampleDimensions());
             sampleDimensions.replaceAll((b) -> b.forConvertedValues(converted));
@@ -218,8 +285,9 @@ final class ConcatenatedGridCoverage extends GridCoverage {
             try {
                 for (int i=0; i<count; i++) {
                     final int j = lower + i;
-                    final GridCoverage slice = slices[j];
-                    geometries[i] = (slice != null) ? slice.getGridGeometry() : resources[j].getGridGeometry();
+                    final Object slice = slices[j];
+                    geometries[i] = isDeferred(j) ? ((GridCoverageResource) slice).getGridGeometry()
+                                                  : ((GridCoverage)         slice).getGridGeometry();
                 }
                 lower += strategy.apply(new GridGeometry(getGridGeometry(), extent, null), geometries);
             } catch (DataStoreException | TransformException e) {
@@ -230,13 +298,15 @@ final class ConcatenatedGridCoverage extends GridCoverage {
          * Argument have been validated and slice has been located.
          * If the coverage has not already been loaded, load it now.
          */
-        GridCoverage slice = slices[lower];
-        if (slice == null) try {
-            slice = resources[lower].read(request, ranges).forConvertedValues(isConverted);
-            slices[lower] = slice;
+        final GridCoverage coverage;
+        final Object slice = slices[lower];
+        if (!isDeferred(lower)) {
+            coverage = (GridCoverage) slice;    // Should never fail.
+        } else try {
+            coverage = loader.getOrLoad(lower, (GridCoverageResource) slice).forConvertedValues(isConverted);
         } catch (DataStoreException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotReadSlice_1, lower + startAt), e);
         }
-        return slice.render(locator.toSliceExtent(extent, lower));
+        return coverage.render(locator.toSliceExtent(extent, lower));
     }
 }
