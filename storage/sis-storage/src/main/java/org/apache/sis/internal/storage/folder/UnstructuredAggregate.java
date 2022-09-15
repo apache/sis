@@ -19,7 +19,7 @@ package org.apache.sis.internal.storage.folder;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.aggregate.CoverageAggregator;
+import org.apache.sis.storage.aggregate.CoverageAggregator;
 
 
 /**

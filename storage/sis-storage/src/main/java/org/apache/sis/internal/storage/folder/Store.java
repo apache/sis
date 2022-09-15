@@ -55,10 +55,10 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.aggregate.CoverageAggregator;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.storage.aggregate.CoverageAggregator;
 
 
 /**

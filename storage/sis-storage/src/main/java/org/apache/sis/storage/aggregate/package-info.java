@@ -16,12 +16,9 @@
  */
 
 /**
- * Resources which are aggregations of other resources.
- *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Resources which are aggregations or concatenations of other resources.
+ * This package can concatenate set of features, or perform an operation
+ * equivalent to SQL "JOIN", or create a data cube from a set of slices.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -29,4 +26,4 @@
  * @since   1.3
  * @module
  */
-package org.apache.sis.internal.storage.aggregate;
+package org.apache.sis.storage.aggregate;

@@ -65,8 +65,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.esri.BIPConsistencyTest.class,
     org.apache.sis.internal.storage.esri.BILConsistencyTest.class,
     org.apache.sis.internal.storage.folder.StoreTest.class,
-    org.apache.sis.internal.storage.aggregate.JoinFeatureSetTest.class,
-    org.apache.sis.internal.storage.aggregate.ConcatenatedFeatureSetTest.class,
+    org.apache.sis.storage.aggregate.JoinFeatureSetTest.class,
+    org.apache.sis.storage.aggregate.ConcatenatedFeatureSetTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
