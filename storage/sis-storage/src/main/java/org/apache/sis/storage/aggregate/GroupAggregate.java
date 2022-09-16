@@ -115,23 +115,36 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     }
 
     /**
+     * Creates a new resource with the same data than given resource but a different merge strategy.
+     *
+     * @param  source      the resource to copy.
+     * @param  components  components with the new merge strategy.
+     */
+    private GroupAggregate(final GroupAggregate source, final Resource[] components) {
+        super(source.listeners, true);
+        name                = source.name;
+        envelope            = source.envelope;
+        envelopeIsEvaluated = source.envelopeIsEvaluated;
+        sampleDimensions    = source.sampleDimensions;
+        componentsAreLeaves = source.componentsAreLeaves;
+        this.components     = components;
+    }
+
+    /**
      * Returns an aggregate with the same data than this aggregate but a different merge strategy.
      */
-    final synchronized GroupAggregate update(final MergeStrategy strategy) {
+    @Override
+    public final synchronized Resource apply(final MergeStrategy strategy) {
         boolean changed = false;
-        final GroupAggregate copy = new GroupAggregate(listeners, name, components.length);
-        for (int i=0; i < components.length; i++) {
-            final Resource component = components[i];
-            changed |= ((copy.components[i] = strategy.update(component)) != component);
+        final Resource[] copy = components.clone();
+        for (int i=0; i < copy.length; i++) {
+            final Resource c = copy[i];
+            if (c instanceof AggregatedResource) {
+                final AggregatedResource component = (AggregatedResource) c;
+                changed |= ((copy[i] = component.apply(strategy)) != component);
+            }
         }
-        if (!changed) {
-            return this;
-        }
-        copy.componentsAreLeaves = componentsAreLeaves;
-        copy.envelope            = envelope;
-        copy.envelopeIsEvaluated = envelopeIsEvaluated;
-        copy.sampleDimensions    = sampleDimensions;
-        return copy;
+        return changed ? new GroupAggregate(this, copy) : this;
     }
 
     /**

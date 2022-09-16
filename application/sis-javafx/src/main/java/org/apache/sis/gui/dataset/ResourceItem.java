@@ -391,7 +391,7 @@ final class ResourceItem extends TreeItem<Resource> {
                     case AGGREGATION: {
                         if (resource instanceof UnstructuredAggregate) {
                             result = ((UnstructuredAggregate) resource).getStructuredView();
-                            result = MergeStrategy.selectByTimeThenArea(null).update(result);
+                            result = MergeStrategy.selectByTimeThenArea(null).apply(result);
                         }
                         break;
                     }

@@ -155,7 +155,7 @@ public final class MergeStrategy {
     }
 
     /**
-     * Updates the merge strategy of the specified resource.
+     * Returns a resource with same data than specified resource but using this merge strategy.
      * If the given resource is an instance created by {@link CoverageAggregator} and uses a different strategy,
      * then a new resource using this merge strategy is returned. Otherwise the given resource is returned as-is.
      * The returned resource will share the same resources and caches than the given resource.
@@ -163,14 +163,9 @@ public final class MergeStrategy {
      * @param  resource  the resource for which to update the merge strategy, or {@code null}.
      * @return resource with updated merge strategy, or {@code null} if the given resource was null.
      */
-    public Resource update(Resource resource) {
-        if (resource instanceof ConcatenatedGridResource) {
-            final ConcatenatedGridResource c = (ConcatenatedGridResource) resource;
-            if (!equals(c.strategy)) {
-                resource = new ConcatenatedGridResource(c, this);
-            }
-        } else if (resource instanceof GroupAggregate) {
-            resource = ((GroupAggregate) resource).update(this);
+    public Resource apply(Resource resource) {
+        if (resource instanceof AggregatedResource) {
+            return ((AggregatedResource) resource).apply(this);
         }
         return resource;
     }

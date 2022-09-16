@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.aggregate;
 
+import org.apache.sis.storage.Resource;
+
 
 /**
  * The result of an aggregation computed by {@link CoverageAggregator}.
@@ -28,8 +30,28 @@ package org.apache.sis.storage.aggregate;
 interface AggregatedResource {
     /**
      * Sets the name of the resource.
+     * This method is invoked by {@link GroupAggregate#simplify(CoverageAggregator)} when
+     * a aggregate node is excluded and we want to inherit the name of the excluded node.
+     * It should happen before the resource is published.
      *
      * @param  name  new name of the resource.
      */
     void setName(String name);
+
+    /**
+     * Returns a resource with the same data but the specified merge strategy.
+     * If this resource already uses the given strategy, then returns {@code this}.
+     * Otherwise returns a new resource. This resource is not modified by this method
+     * call because this method can be invoked after this resource has been published.
+     *
+     * <div class="note"><b>API design note:</b>
+     * we could try to design a common API for {@link org.apache.sis.storage.RasterLoadingStrategy}
+     * and {@link MergeStrategy}. But the former changes the state of the resource while the latter
+     * returns a new resource. This is because {@code RasterLoadingStrategy} does not change data,
+     * while {@link MergeStrategy} can change the data obtained from the resource.</div>
+     *
+     * @param  strategy  the new merge strategy to apply.
+     * @return resource using the specified strategy (may be {@code this}).
+     */
+    Resource apply(MergeStrategy strategy);
 }

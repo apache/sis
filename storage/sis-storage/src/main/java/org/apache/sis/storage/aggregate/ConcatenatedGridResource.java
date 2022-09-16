@@ -18,6 +18,7 @@ package org.apache.sis.storage.aggregate;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -29,6 +30,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -181,21 +183,28 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      * @param  source    the resource to copy.
      * @param  strategy  the new merge strategy.
      */
-    ConcatenatedGridResource(final ConcatenatedGridResource source, final MergeStrategy strategy) {
-        super(source.listeners, false);
-        synchronized (source) {
-            name                = source.name;
-            gridGeometry        = source.gridGeometry;
-            sampleDimensions    = source.sampleDimensions;
-            isConverted         = source.isConverted;
-            slices              = source.slices;
-            deferredLoading     = source.deferredLoading;
-            locator             = source.locator;
-            envelope            = source.envelope;
-            envelopeIsEvaluated = source.envelopeIsEvaluated;
-            resolutions         = source.resolutions;
-        }
+    private ConcatenatedGridResource(final ConcatenatedGridResource source, final MergeStrategy strategy) {
+        super(source.listeners, true);
+        name                = source.name;
+        gridGeometry        = source.gridGeometry;
+        sampleDimensions    = source.sampleDimensions;
+        isConverted         = source.isConverted;
+        slices              = source.slices;
+        deferredLoading     = source.deferredLoading;
+        locator             = source.locator;
+        envelope            = source.envelope;
+        envelopeIsEvaluated = source.envelopeIsEvaluated;
+        resolutions         = source.resolutions;
         this.strategy = strategy;
+    }
+
+    /**
+     * Returns a coverage with the same data than this coverage but a different merge strategy.
+     */
+    @Override
+    public final synchronized Resource apply(final MergeStrategy s) {
+        if (Objects.equals(strategy, s)) return this;
+        return new ConcatenatedGridResource(this, s);
     }
 
     /**
