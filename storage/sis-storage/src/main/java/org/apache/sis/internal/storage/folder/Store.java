@@ -42,12 +42,14 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.aggregate.CoverageAggregator;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -55,10 +57,6 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
-import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.storage.aggregate.CoverageAggregator;
 
 
 /**
@@ -187,7 +185,6 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         children   = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
-        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -331,6 +328,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
                         connector.setOption(OptionKey.LOCALE,   locale);
                         connector.setOption(OptionKey.TIMEZONE, timezone);
                         connector.setOption(OptionKey.ENCODING, encoding);
+                        connector.setOption(DataOptionKey.PARENT_LISTENERS, listeners);
                         try {
                             if (componentProvider == null) {
                                 next = DataStores.open(connector);          // May throw UnsupportedStorageException.
@@ -436,19 +434,6 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
      */
     final String message(final short key, final Object value) {
         return messages().getString(key, value);
-    }
-
-    /**
-     * Registers a listener to notify when the specified kind of event occurs in this data store.
-     * The current implementation of this data store can emit only {@link WarningEvent}s;
-     * any listener specified for another kind of events will be ignored.
-     */
-    @Override
-    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
-        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
-        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(eventType, listener);
-        }
     }
 
     /**

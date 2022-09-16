@@ -28,6 +28,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Filter;
 import java.util.concurrent.ExecutionException;
 import java.lang.reflect.Method;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
@@ -41,6 +42,7 @@ import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
@@ -236,10 +238,10 @@ public class StoreListeners implements Localized {
         }
 
         /**
-         * Returns {@code true} if this element has at least one listener.
+         * Returns the number of listeners.
          */
-        final boolean hasListeners() {
-            return listeners != null;
+        final int count() {
+            return (listeners != null) ? listeners.length : 0;
         }
 
         /**
@@ -865,7 +867,7 @@ public class StoreListeners implements Localized {
         do {
             for (ForType<?> e = m.listeners; e != null; e = e.next) {
                 if (eventType.isAssignableFrom(e.type)) {
-                    if (e.hasListeners()) {
+                    if (e.count() != 0) {
                         return true;
                     }
                 }
@@ -981,5 +983,22 @@ public class StoreListeners implements Localized {
          * No need to cleanup `cascadedListeners`. It does not hurt (those listeners practically
          * become no-op) and the objects are probably going to be garbage collected soon anyway.
          */
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     *
+     * @return a debug string.
+     */
+    @Override
+    public String toString() {
+        int count = 0;
+        for (ForType<?> e = listeners; e != null; e = e.next) {
+            count += e.count();
+        }
+        return Strings.toString(getClass(),
+                "parent", (parent != null) ? Classes.getShortClassName(parent.source) : null,
+                "source", Classes.getShortClassName(source),
+                "count",  count);
     }
 }

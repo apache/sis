@@ -397,6 +397,7 @@ final class ResourceItem extends TreeItem<Resource> {
                     }
                     // More cases may be added in the future.
                 }
+                LogHandler.redirect(result, resource);
                 final ResourceItem item = new ResourceItem(result);
                 item.label = DataStoreOpener.findLabel(resource, locale, false);
                 item.isLoading = false;

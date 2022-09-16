@@ -774,4 +774,12 @@ public final class RasterResource extends AbstractGridCoverageResource implement
          */
         return lock;
     }
+
+    /**
+     * Returns a string representation of this resource for debuging purposes.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "identifier", identifier);
+    }
 }
