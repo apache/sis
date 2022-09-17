@@ -564,7 +564,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             ValuesUnderCursor.update(this, o, n);
             if (o != null) items.remove(o.valueChoices);
             if (n != null) items.add(1, n.valueChoices);
-            setSampleValuesVisible(n != null && !n.isEmpty());
+            setSampleValuesVisible(n != null);
         });
     }
 
@@ -1061,7 +1061,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         }
         target.setCoordinateReferenceSystem(crs);
         format.setDefaultCRS(crs);
-        targetCoordinates = target;         // Assign only after abpve succeed.
+        targetCoordinates = target;         // Assign only after above succeed.
         formatAsIdentifiers = null;
         format.setGroundAccuracy(Quantities.max(accuracy, lowestAccuracy.get()));
         setTooltip(crs);
@@ -1365,17 +1365,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     public void setLocalCoordinates(final double x, final double y) {
         if (x != lastX || y != lastY) {
-            String text = formatLocalCoordinates(lastX = x, lastY = y);
-            position.setText(text);
             if (isSampleValuesVisible) {
-                String values;
-                try {
-                    values = sampleValuesProvider.get().evaluate(targetCoordinates);
-                } catch (RuntimeException e) {
-                    values = cause(e);
-                }
-                sampleValues.setText(values);
+                sampleValuesProvider.get().evaluateLater(targetCoordinates);        // Work in a background thread.
             }
+            final String text = formatLocalCoordinates(lastX = x, lastY = y);
+            position.setText(text);
             /*
              * Make sure that there is enough space for keeping the coordinates always visible.
              * This is needed if there is an error message on the left which may be long.
@@ -1515,8 +1509,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         lastX = lastY = Double.NaN;
         position.setText(outsideText);
         if (isSampleValuesVisible) {
-            sampleValues.setText(sampleValuesProvider.get().evaluate(null));
+            sampleValuesProvider.get().evaluateLater(null);
         }
+    }
+
+    /**
+     * Sets the result of formatting sample values under cursor position.
+     */
+    final void setSampleValues(final String text) {
+        sampleValues.setText(text);
     }
 
     /**
@@ -1539,21 +1540,23 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     private void setSampleValuesVisible(final boolean visible) {
         final ObservableList<Node> c = view.getChildren();
+        Label view = sampleValues;
         if (visible) {
-            if (sampleValues == null) {
-                sampleValues = new Label();
-                sampleValues.setAlignment(Pos.CENTER_RIGHT);
-                sampleValues.setTextAlignment(TextAlignment.RIGHT);
-                sampleValues.setMinWidth(Label.USE_PREF_SIZE);
-                sampleValues.setMaxWidth(Label.USE_PREF_SIZE);
+            if (view == null) {
+                view = new Label();
+                view.setAlignment(Pos.CENTER_RIGHT);
+                view.setTextAlignment(TextAlignment.RIGHT);
+                view.setMinWidth(Label.USE_PREF_SIZE);
+                view.setMaxWidth(Label.USE_PREF_SIZE);
+                sampleValues = view;
             }
-            if (c.lastIndexOf(sampleValues) < 0) {
+            if (c.lastIndexOf(view) < 0) {
                 final Separator separator = new Separator(Orientation.VERTICAL);
-                c.addAll(separator, sampleValues);
+                c.addAll(separator, view);
             }
-        } else if (sampleValues != null) {
-            sampleValues.setText(null);
-            int i = c.lastIndexOf(sampleValues);
+        } else if (view != null) {
+            view.setText(null);
+            int i = c.lastIndexOf(view);
             if (i >= 0) {
                 c.remove(i);
                 if (--i >= 0) {
@@ -1570,7 +1573,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * If {@code prototype} is empty, then no sample values are expected and the {@link #sampleValues} label will be
      * hidden.
      *
-     * @param  prototype  an example of longest normal text that we expect.
+     * @param  prototype  an example of longest normal text that we expect, or {@code null} or empty for hiding.
      * @param  others     some other texts that may appear, such as labels for missing data.
      * @return {@code true} on success, or {@code false} if this method should be invoked again.
      *
@@ -1579,13 +1582,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     final boolean computeSizeOfSampleValues(final String prototype, final Iterable<String> others) {
         setSampleValuesVisible(prototype != null && !prototype.isEmpty());
         if (isSampleValuesVisible) {
-            sampleValues.setText(prototype);
-            sampleValues.setPrefWidth(Label.USE_COMPUTED_SIZE);                 // Enable `prefWidth(…)` computation.
-            double width = sampleValues.prefWidth(sampleValues.getHeight());
+            final Label view = sampleValues;
+            view.setText(prototype);
+            view.setPrefWidth(Label.USE_COMPUTED_SIZE);                 // Enable `prefWidth(…)` computation.
+            double width = view.prefWidth(view.getHeight());
             final double max = Math.max(width * 1.25, 200);                     // Arbitrary limit.
             for (final String other : others) {
-                sampleValues.setText(other);
-                final double cw = sampleValues.prefWidth(sampleValues.getHeight());
+                view.setText(other);
+                final double cw = view.prefWidth(view.getHeight());
                 if (cw > width) {
                     width = cw;
                     if (width > max) {
@@ -1594,11 +1598,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                     }
                 }
             }
-            sampleValues.setText(null);
+            view.setText(null);
             if (!(width > 0)) {                 // May be 0 if canvas is not yet added to scene graph.
                 return false;
             }
-            sampleValues.setPrefWidth(width + VALUES_PADDING);
+            view.setPrefWidth(width + VALUES_PADDING);
         }
         return true;
     }
@@ -1722,7 +1726,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  e  the exception.
      * @return the exception message or class name.
      */
-    private String cause(Throwable e) {
+    final String cause(Throwable e) {
         if (e instanceof Exception) {
             e = Exceptions.unwrap((Exception) e);
         }
