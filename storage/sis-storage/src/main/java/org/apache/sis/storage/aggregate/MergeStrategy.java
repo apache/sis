@@ -131,7 +131,7 @@ public final class MergeStrategy {
      * A future version may allow real merge operations.
      *
      * @param  request     the geographic area and temporal extent requested by user.
-     * @param  candidates  grid geometry of all slices that intersect the request.
+     * @param  candidates  grid geometry of all slices that intersect the request. Null elements are ignored.
      * @return index of best slice according the heuristic rules of this {@code MergeStrategy}.
      */
     final Integer apply(final GridGeometry request, final GridGeometry[] candidates) {
@@ -145,11 +145,13 @@ public final class MergeStrategy {
         }
         for (int i=0; i < candidates.length; i++) {
             final GridGeometry candidate = candidates[i];
-            final Instant[] t = candidate.getTemporalExtent();
-            final int n = t.length;
-            selector.evaluate(candidate.getGeographicExtent().orElse(null),
-                              (n == 0) ? null : t[0],
-                              (n == 0) ? null : t[n-1], i);
+            if (candidate != null) {
+                final Instant[] t = candidate.getTemporalExtent();
+                final int n = t.length;
+                selector.evaluate(candidate.getGeographicExtent().orElse(null),
+                                  (n == 0) ? null : t[0],
+                                  (n == 0) ? null : t[n-1], i);
+            }
         }
         return selector.best();
     }

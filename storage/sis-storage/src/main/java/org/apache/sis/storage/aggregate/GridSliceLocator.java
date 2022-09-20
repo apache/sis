@@ -49,7 +49,7 @@ final class GridSliceLocator {
      *
      * @see GroupByTransform#findConcatenatedDimensions()
      */
-    private final int searchDimension;
+    final int searchDimension;
 
     /**
      * Lows grid coordinates of each slice (inclusive) in the search dimension.
