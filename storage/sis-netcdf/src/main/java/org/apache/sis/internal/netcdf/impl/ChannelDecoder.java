@@ -47,6 +47,7 @@ import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Dimension;
+import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Constants;
@@ -73,7 +74,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -790,8 +791,15 @@ public final class ChannelDecoder extends Decoder {
      * @see #getAttributeNames()
      */
     private Object findAttribute(final String name) {
-        Object value = attributeMap.get(name);
-        if (value == null && name != null) {
+        if (name == null) {
+            return null;
+        }
+        int index = 0;
+        String mappedName;
+        final Convention convention = convention();
+        while ((mappedName = convention.mapAttributeName(name, index++)) != null) {
+            Object value = attributeMap.get(mappedName);
+            if (value != null) return value;
             /*
              * If no value were found for the given name, tries the following alternatives:
              *
@@ -802,21 +810,13 @@ public final class ChannelDecoder extends Decoder {
              * Identity comparisons performed between String instances below are okay since they
              * are only optimizations for skipping calls to Map.get(Object) in common cases.
              */
-            String lower = name.toLowerCase(NAME_LOCALE);
-            if (lower == name || (value = attributeMap.get(lower)) == null) {
-                final String mappedName = convention().mapAttributeName(name);
-                if (mappedName != name) {
-                    value = attributeMap.get(mappedName);
-                    if (value == null) {
-                        lower = name.toLowerCase(NAME_LOCALE);
-                        if (lower != mappedName) {
-                            value = attributeMap.get(lower);
-                        }
-                    }
-                }
+            final String lowerCase = mappedName.toLowerCase(NAME_LOCALE);
+            if (lowerCase != mappedName) {
+                value = attributeMap.get(lowerCase);
+                if (value != null) return value;
             }
         }
-        return value;
+        return null;
     }
 
     /**
