@@ -18,7 +18,6 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.AbstractMap;
@@ -950,7 +949,7 @@ public final class ChannelDecoder extends Decoder {
                 break;
             }
             axes.add(axis);
-            dimensions.addAll(Arrays.asList(axis.dimensions));
+            Collections.addAll(dimensions, axis.dimensions);
         }
         return true;
     }

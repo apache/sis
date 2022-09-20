@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -217,7 +217,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             }
             if (modified) {
                 phones.clear();
-                phones.addAll(Arrays.asList(p));
+                Collections.addAll(phones, p);
             }
         }
     }

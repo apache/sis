@@ -88,9 +88,9 @@ import org.apache.sis.util.Utilities;
  *
  * <div class="note"><b>Example:</b>
  * {@preformat java
- *     ParameterValue<?>[] parameter = ...; // Defined elsewhere.
+ *     ParameterValue<?>[] parameter = ...;        // Defined elsewhere.
  *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
- *     mercator.values().addAll(Arrays.asList(parameters));
+ *     Collections.addAll(mercator.values(), parameters);
  * }
  * </div>
  *

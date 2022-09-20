@@ -322,7 +322,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         boolean isUnknown    = false;           // True if `total` is actually unknown.
         for (final VariableInfo variable : variables) {
             // Opportunistically store names of all axes listed in "coordinates" attributes of all variables.
-            referencedAsAxis.addAll(Arrays.asList(variable.getCoordinateVariables()));
+            Collections.addAll(referencedAsAxis, variable.getCoordinateVariables());
             if (variable.isUnlimited()) {
                 final long paddedSize = variable.paddedSize();
                 unlimited[count++] = variable;

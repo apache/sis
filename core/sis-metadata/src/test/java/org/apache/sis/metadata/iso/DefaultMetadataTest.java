@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.MetadataScope;
@@ -113,7 +114,7 @@ public final strictfp class DefaultMetadataTest extends TestCase {
          * Add other languages. They should appear as additional entries after the first one.
          * The "language" property shall be unmodified by changes in the "other locales" one.
          */
-        metadata.getLocales().addAll(Arrays.asList(Locale.FRENCH, Locale.ENGLISH));
+        Collections.addAll(metadata.getLocales(), Locale.FRENCH, Locale.ENGLISH);
         assertLanguagesEquals(metadata, Locale.JAPANESE, Locale.FRENCH, Locale.ENGLISH);
         /*
          * Ensure that the "locales" list is modifiable, since JAXB writes directly in it.
