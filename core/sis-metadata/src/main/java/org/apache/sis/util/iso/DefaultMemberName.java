@@ -63,6 +63,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**
      * The type of the data associated with the record member.
      */
+    @SuppressWarnings("serial")
     @XmlElement(required = true)
     private final TypeName attributeType;
 

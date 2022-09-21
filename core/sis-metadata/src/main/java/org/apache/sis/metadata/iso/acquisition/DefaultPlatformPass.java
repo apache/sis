@@ -65,11 +65,13 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Area covered by the pass.
      */
+    @SuppressWarnings("serial")
     private Geometry extent;
 
     /**
      * Occurrence of one or more events for a pass.
      */
+    @SuppressWarnings("serial")
     private Collection<Event> relatedEvents;
 
     /**

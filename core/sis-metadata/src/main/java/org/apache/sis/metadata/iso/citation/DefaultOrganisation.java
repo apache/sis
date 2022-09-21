@@ -58,11 +58,13 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
     /**
      * Graphic identifying organization.
      */
+    @SuppressWarnings("serial")
     private Collection<BrowseGraphic> logo;
 
     /**
      * Individuals in the named organization.
      */
+    @SuppressWarnings("serial")
     private Collection<Individual> individual;
 
     /**

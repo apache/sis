@@ -75,6 +75,7 @@ public class CoordinateOperationContext implements Serializable {
      * The spatiotemporal area of interest, or {@code null} if none. This instance may be updated or
      * replaced by other methods in this class, or (indirectly) by {@link CoordinateOperationFinder}.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Extent areaOfInterest;
 
     /**

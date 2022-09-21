@@ -27,8 +27,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensureInRange;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 
 /**
@@ -78,7 +78,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Illumination elevation measured in degrees clockwise from the target plane
-     * at intersection of the optical line of sight with the Earths surface.
+     * at intersection of the optical line of sight with the Earth's surface.
      * For images from a scanning device, refer to the centre pixel of the image.
      */
     private Double illuminationElevationAngle;
@@ -97,6 +97,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Specifies the image quality.
      */
+    @SuppressWarnings("serial")
     private Identifier imageQualityCode;
 
     /**

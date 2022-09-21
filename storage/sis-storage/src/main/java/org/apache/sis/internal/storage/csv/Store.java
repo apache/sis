@@ -642,7 +642,7 @@ final class Store extends URIDataStore implements FeatureSet {
                 listeners.warning(e);
             }
             builder.addEncoding(encoding, MetadataBuilder.Scope.ALL);
-            builder.addResourceScope(ScopeCode.DATASET, null);
+            builder.addResourceScope(ScopeCode.FEATURE, null);
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {

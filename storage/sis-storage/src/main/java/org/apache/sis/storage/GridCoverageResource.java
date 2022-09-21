@@ -21,6 +21,7 @@ import java.util.Collections;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
@@ -187,19 +188,21 @@ public interface GridCoverageResource extends DataSet {
      * matching exactly the given geometry.
      *
      * <p>The returned coverage shall contain the exact set of sample dimensions specified by the {@code range} argument,
-     * in the specified order (the "best-effort basis" flexibility applies only to the grid geometry, not to the range).
-     * All {@code range} values shall be between 0 inclusive and <code>{@linkplain #getSampleDimensions()}.size()</code>
+     * in the specified order (the "best-effort basis" flexibility applies only to the grid geometry, not to the ranges).
+     * All {@code ranges} values shall be between 0 inclusive and <code>{@linkplain #getSampleDimensions()}.size()</code>
      * exclusive, without duplicated values.</p>
      *
      * <p>While this method name suggests an immediate reading, some implementations may defer the actual reading
      * at a later stage.</p>
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
+     * @throws DisjointExtentException if the given domain does not intersect the resource extent.
+     * @throws IllegalArgumentException if the given domain or ranges are invalid for another reason.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
-    GridCoverage read(GridGeometry domain, int... range) throws DataStoreException;
+    GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException;
 
     /**
      * Returns an indication about when the "physical" loading of raster data will happen.

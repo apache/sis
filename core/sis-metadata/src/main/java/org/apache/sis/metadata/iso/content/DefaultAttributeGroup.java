@@ -64,11 +64,13 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
     /**
      * Type of information represented by the value(s).
      */
+    @SuppressWarnings("serial")
     private Collection<CoverageContentType> contentTypes;
 
     /**
      * Content type for attributes groups for a {@link RangeDimension}.
      */
+    @SuppressWarnings("serial")
     private Collection<RangeDimension> attributes;
 
     /**

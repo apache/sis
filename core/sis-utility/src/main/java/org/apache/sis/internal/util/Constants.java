@@ -31,7 +31,7 @@ import org.apache.sis.util.Static;
  * creates itself the instance to be tested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -125,6 +125,13 @@ public final class Constants extends Static {
      * The {@code CRS:1} identifier for a coordinate reference system.
      */
     public static final byte CRS1 = 1;
+
+    /**
+     * Name of a SIS-specific parameter for setting the number of dimensions of a coordinate operation.
+     * This constant should be used only in the context of coordinate operations, not in other contexts
+     * (e.g. not for the netCDF attribute of the same name).
+     */
+    public static final String DIM = "dim";
 
     /**
      * The netCDF parameter name for the Earth radius.

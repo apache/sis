@@ -69,16 +69,19 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * Explanation of the application of the legal constraints or other restrictions and legal
      * prerequisites for obtaining and using the resource.
      */
+    @SuppressWarnings("serial")
     private InternationalString userNote;
 
     /**
      * Name of the classification system.
      */
+    @SuppressWarnings("serial")
     private InternationalString classificationSystem;
 
     /**
      * Additional information about the restrictions on handling the resource.
      */
+    @SuppressWarnings("serial")
     private InternationalString handlingDescription;
 
     /**

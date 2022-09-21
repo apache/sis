@@ -1,0 +1,352 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.storage.aggregate;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.awt.image.RenderedImage;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.logging.Logging;
+
+// Branch-dependent imports
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.referencing.operation.TransformException;
+
+
+/**
+ * A grid coverage where a single dimension is the concatenation of many grid coverages.
+ * All components must have the same "grid to CRS" transform, except for a translation term.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.3
+ * @since   1.3
+ * @module
+ */
+final class ConcatenatedGridCoverage extends GridCoverage {
+    /**
+     * The object for identifying indices in the {@link #slices} array.
+     */
+    private final GridSliceLocator locator;
+
+    /**
+     * Index of the first slice in {@link #locator}.
+     */
+    private final int startAt;
+
+    /**
+     * The class in charge of loading and caching grid coverages.
+     * The same loader may be shared by many {@link ConcatenatedGridCoverage} instances.
+     * Loaders are immutable (except for the cache) and thread-safe.
+     */
+    private static final class Loader {
+        /**
+         * Whether loading of grid coverages should be deferred to rendering time.
+         * This is a bit set packed as {@code long} values. A bit value of 1 means
+         * that the coverages at the corresponding index should be loaded from the
+         * {@linkplain #slices slices} at same index only when first needed.
+         *
+         * @see ConcatenatedGridResource#deferredLoading
+         * @see #isDeferred(int)
+         */
+        final int[] deferred;
+
+        /**
+         * The domain to request when reading a coverage from the resource.
+         */
+        private final GridGeometry domain;
+
+        /**
+         * The sample dimensions to request when loading slices from the {@linkplain #resources}.
+         */
+        private final int[] ranges;
+
+        /**
+         * Cache of {@link GridCoverage} instances. Keys are index in the {@link #slices} array.
+         */
+        private final Cache<Integer,GridCoverage> coverages;
+
+        /**
+         * Creates a new loader.
+         *
+         * @param deferred  whether loading of grid coverages should be deferred to rendering time.
+         * @param domain    grid geometry to request when loading data.
+         * @param ranges    bands to request when loading coverages.
+         */
+        Loader(final int[] deferred, final GridGeometry domain, final int[] ranges) {
+            this.deferred = deferred;
+            this.domain   = domain;
+            this.ranges   = ranges;
+            coverages     = new Cache<>(15, 2, true);   // Keep 2 slices by strong reference (for interpolations).
+        }
+
+        /**
+         * Returns the coverage if available in the cache, or load it immediately otherwise.
+         * This method shall be invoked only when {@code isDeferred(key) == true}.
+         * This method can be invoked from any thread.
+         *
+         * @param  key     index of the {@link GridCoverageResource} in the {@link #slices} array.
+         * @param  source  value of {@code slices[key]}, used only if data need to be loaded.
+         * @return the coverage at the given index.
+         * @throws NullPointerException if no {@link GridCoverageResource} are expected to exist.
+         * @throws DataStoreException if an error occurred while loading data from the resource.
+         */
+        final GridCoverage getOrLoad(final Integer key, final GridCoverageResource source) throws DataStoreException {
+            GridCoverage coverage = coverages.peek(key);
+            if (coverage == null) {
+                final Cache.Handler<GridCoverage> handler = coverages.lock(key);
+                try {
+                    coverage = handler.peek();
+                    if (coverage == null) {
+                        coverage = source.read(domain, ranges);
+                    }
+                } finally {
+                    handler.putAndUnlock(coverage);
+                }
+            }
+            return coverage;
+        }
+    }
+
+    /**
+     * The object in charge of loading and caching grid coverages, or {@code null} if none.
+     * The same loader may be shared by many {@link ConcatenatedGridCoverage} instances.
+     */
+    private final Loader loader;
+
+    /**
+     * The slices of this coverage, in the same order than {@link GridSliceLocator#sliceLows}.
+     * Array elements shall be instances of {@link GridCoverage} or {@link GridCoverageResource}.
+     * Each slice is not necessarily 1 cell tick; larger slices are accepted.
+     * The length of this array shall be at least 2. Shall be read-only.
+     */
+    private final Object[] slices;
+
+    /**
+     * Whether this grid coverage should be considered as converted.
+     * This is used only if the {@linkplain #slices} are lazily loaded.
+     */
+    private final boolean isConverted;
+
+    /**
+     * Algorithm to apply when more than one grid coverage can be found at the same grid index.
+     * This is {@code null} if no merge should be attempted.
+     */
+    private final MergeStrategy strategy;
+
+    /**
+     * Creates a new aggregated coverage.
+     *
+     * @param source    the concatenated resource which is creating this coverage.
+     * @param domain    domain of the coverage to create.
+     * @param slices    each slice as instances of {@link GridCoverage} or {@link GridCoverageResource}.
+     * @param startAt   index of the first slice in {@link #locator}.
+     * @param deferred  whether loading of grid coverages should be deferred to rendering time, or {@code null} if none.
+     * @param request   grid geometry to request when loading data. Used only if {@code slices} are lazily loaded.
+     * @param ranges    bands to request when loading coverages. Used only if {@code slices} are lazily loaded.
+     */
+    ConcatenatedGridCoverage(final ConcatenatedGridResource source, final GridGeometry domain, final Object[] slices,
+                             final int startAt, final int[] deferred, final GridGeometry request, final int[] ranges)
+    {
+        super(domain, source.getSampleDimensions());
+        loader = (deferred != null) ? new Loader(deferred, request, ranges) : null;
+        this.slices      = slices;
+        this.startAt     = startAt;
+        this.isConverted = source.isConverted;
+        this.locator     = source.locator;
+        this.strategy    = source.strategy;
+    }
+
+    /**
+     * Creates a new aggregated coverage for the result of a conversion from/to packed values.
+     * This constructor assumes that all slices use the same sample dimensions.
+     */
+    private ConcatenatedGridCoverage(final ConcatenatedGridCoverage source, final Object[] slices,
+                                     final List<SampleDimension> sampleDimensions, final boolean converted)
+    {
+        super(source.getGridGeometry(), sampleDimensions);
+        this.slices      = slices;
+        this.loader      = source.loader;
+        this.startAt     = source.startAt;
+        this.locator     = source.locator;
+        this.strategy    = source.strategy;
+        this.isConverted = converted;
+    }
+
+    /**
+     * Returns {@code true} if the loading of the coverage at the given index is deferred.
+     * If {@code true},  then {@code slices[i]} shall be an instance of {@link GridCoverageResource}.
+     * If {@code false}, then {@code slices[i]} shall be an instance of {@link GridCoverage}.
+     */
+    private boolean isDeferred(final int i) {
+        return (loader == null) || (loader.deferred[i >>> Numerics.INT_SHIFT] & (1 << i)) != 0;
+    }
+
+    /**
+     * Returns a grid coverage that contains real values or sample values,
+     * depending if {@code converted} is {@code true} or {@code false} respectively.
+     * This method delegates to all slices in this concatenated coverage.
+     *
+     * @param  converted  {@code true} for a coverage containing converted values,
+     *                    or {@code false} for a coverage containing packed values.
+     * @return a coverage containing requested values. May be {@code this} but never {@code null}.
+     */
+    @Override
+    protected GridCoverage createConvertedValues(final boolean converted) {
+        boolean changed = false;
+        GridCoverage template = null;           // Arbitrary instance to use as a template for sample dimensions.
+        final Object[] c = slices.clone();
+        for (int i=0; i<c.length; i++) {
+            if (!isDeferred(i)) {
+                final GridCoverage source = (GridCoverage) c[i];        // Should never fail.
+                changed |= (c[i] = source.forConvertedValues(converted)) != source;
+                template = source;
+            } else {
+                changed |= (converted != isConverted);
+            }
+        }
+        if (!changed) {
+            return this;
+        }
+        final List<SampleDimension> sampleDimensions;
+        if (template !=null) {
+            sampleDimensions = template.getSampleDimensions();
+        } else {
+            sampleDimensions = new ArrayList<>(getSampleDimensions());
+            sampleDimensions.replaceAll((b) -> b.forConvertedValues(converted));
+        }
+        return new ConcatenatedGridCoverage(this, c, sampleDimensions, converted);
+    }
+
+    /**
+     * Returns a two-dimensional slice of grid data as a rendered image.
+     * Invoking this method may cause the loading of data from {@link ConcatenatedGridResource}.
+     * Most recently used slices are cached for future invocations of this method.
+     *
+     * @param  extent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
+     * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
+     */
+    @Override
+    public RenderedImage render(GridExtent extent) {
+        int lower = startAt, upper = lower + slices.length;
+        if (extent != null) {
+            upper = locator.getUpper(extent, lower, upper);
+            lower = locator.getLower(extent, lower, upper);
+        } else {
+            extent = gridGeometry.getExtent();
+        }
+        final GridGeometry   request;           // The geographic area and temporal extent requested by user.
+        final GridGeometry[] candidates;        // Grid geometry of all slices that intersect the request.
+        final int count = upper - lower;
+        if (count > 1) {
+            if (strategy == null) {
+                /*
+                 * Can not infer a slice. If the user specified a single slice but that slice
+                 * maps to more than one coverage, the error message tells that this problem
+                 * can be avoided by specifying a merge strategy.
+                 */
+                final short message;
+                final Object[] arguments;
+                if (locator.isSlice(extent)) {
+                    message   = Resources.Keys.NoSliceMapped_3;
+                    arguments = new Object[] {locator.getDimensionName(extent), lower, count};
+                } else {
+                    message   = Resources.Keys.NoSliceSpecified_2;
+                    arguments = new Object[] {locator.getDimensionName(extent), count};
+                }
+                throw new SubspaceNotSpecifiedException(Resources.format(message, arguments));
+            }
+            /*
+             * Prepare a list of slice candidates. Later in this method, a single slice will be selected
+             * among those candidates using the user-specified merge strategy. Elements in `candidates`
+             * array will become null if that candidate did not worked and we want to look again among
+             * remaining candidates.
+             */
+            try {
+                request    = new GridGeometry(getGridGeometry(), extent, null);
+                candidates = new GridGeometry[count];
+                for (int i=0; i<count; i++) {
+                    final int j = lower + i;
+                    final Object slice = slices[j];
+                    candidates[i] = isDeferred(j) ? ((GridCoverageResource) slice).getGridGeometry()
+                                                  : ((GridCoverage)         slice).getGridGeometry();
+                }
+            } catch (DataStoreException | TransformException e) {
+                throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotSelectSlice), e);
+            }
+        } else {
+            request    = null;
+            candidates = null;
+        }
+        /*
+         * The following loop should be executed exactly once. However it may happen that the "best" slice
+         * actually does not intersect the requested extent, for example because the merge strategy looked
+         * only for temporal intersection and did not saw that the geographic extents do not intersect.
+         */
+        DisjointExtentException failure = null;
+        if (count > 0) do {
+            int index = lower;
+            if (candidates != null) {
+                final Integer n = strategy.apply(request, candidates);
+                if (n == null) break;
+                candidates[n] = null;
+                index += n;
+            }
+            final Object slice = slices[index];
+            final GridCoverage coverage;
+            if (!isDeferred(index)) {
+                coverage = (GridCoverage) slice;        // This cast should never fail.
+            } else try {
+                coverage = loader.getOrLoad(index, (GridCoverageResource) slice).forConvertedValues(isConverted);
+            } catch (DataStoreException e) {
+                throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotReadSlice_1, index + startAt), e);
+            }
+            /*
+             * At this point, coverage of the "best" slice has been fetched from the cache or read from resource.
+             * Delegate the rendering to that coverage, after converting the extent from this grid coverage space
+             * to the slice coordinate space. If the coverage said that the converted extent does not intersect,
+             * try the "next best" slice until we succeed or until we exhausted the candidate list.
+             */
+            try {
+                final RenderedImage image = coverage.render(locator.toSliceExtent(extent, index));
+                if (failure != null) {
+                    Logging.ignorableException(Logger.getLogger(Modules.STORAGE),
+                            ConcatenatedGridCoverage.class, "render", failure);
+                }
+                return image;
+            } catch (DisjointExtentException e) {
+                if (failure == null) failure = e;
+                else failure.addSuppressed(e);
+            }
+        } while (candidates != null);
+        if (failure == null) {
+            failure = new DisjointExtentException(gridGeometry.getExtent(), extent, locator.searchDimension);
+        }
+        throw failure;
+    }
+}

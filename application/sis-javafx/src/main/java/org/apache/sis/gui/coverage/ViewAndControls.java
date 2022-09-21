@@ -181,7 +181,7 @@ abstract class ViewAndControls {
         final GridCoverage coverage = owner.getCoverage();
         if (coverage != null) try {
             isAdjustingSlice = true;
-            load(new ImageRequest(coverage, slice));        // Show a new slice of data.
+            load(new ImageRequest(owner.getResource(), coverage, slice));       // Show a new slice of data.
         } finally {
             isAdjustingSlice = false;
         }

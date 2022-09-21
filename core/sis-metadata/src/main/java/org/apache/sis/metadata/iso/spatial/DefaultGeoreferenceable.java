@@ -97,21 +97,25 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Description of parameters used to describe sensor orientation.
      */
+    @SuppressWarnings("serial")
     private InternationalString orientationParameterDescription;
 
     /**
      * Terms which support grid data georeferencing.
      */
+    @SuppressWarnings("serial")
     private Record georeferencedParameters;
 
     /**
      * Reference providing description of the parameters.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> parameterCitations;
 
     /**
      * Information that can be used to geolocate the data.
      */
+    @SuppressWarnings("serial")
     private Collection<GeolocationInformation> geolocationInformation;
 
     /**

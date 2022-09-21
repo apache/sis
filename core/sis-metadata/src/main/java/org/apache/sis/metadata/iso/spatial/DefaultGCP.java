@@ -67,11 +67,13 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Geographic or map position of the control point, in either two or three dimensions.
      */
+    @SuppressWarnings("serial")
     private DirectPosition geographicCoordinates;
 
     /**
      * Accuracy of a ground control point.
      */
+    @SuppressWarnings("serial")
     private Collection<Element> accuracyReports;
 
     /**

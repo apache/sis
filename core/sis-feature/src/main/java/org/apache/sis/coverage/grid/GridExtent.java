@@ -31,6 +31,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -91,6 +92,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
  * @module
@@ -190,7 +192,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private static DimensionNameType[] validateAxisTypes(DimensionNameType[] types) throws IllegalArgumentException {
-        if (types == null) {
+        if (types == null || ArraysExt.allEquals(types, null)) {
             return null;
         }
         if (Arrays.equals(DEFAULT_TYPES, types)) {          // Common case verified before POOL synchronized lock.
@@ -745,6 +747,39 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
         return coordinates[index + dimension];
+    }
+
+    /**
+     * Returns the average of low and high coordinates, rounded toward positive infinity.
+     * This method is equivalent to computing any of the following,
+     * except that this method does not overflow even if the sum would overflow:
+     *
+     * <ul>
+     *   <li>(<var>low</var> + <var>high</var>) / 2 rounded toward positive infinity, or</li>
+     *   <li>(<var>low</var> + <var>high</var> + 1) / 2 rounded toward negative infinity.</li>
+     * </ul>
+     *
+     * The two above formulas are equivalent, so the result does not depend
+     * on whether the high coordinate should be inclusive or exclusive.
+     *
+     * @param  index  the dimension for which to obtain the coordinate value.
+     * @return the median coordinate value at the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() grid dimension}.
+     *
+     * @since 1.3
+     */
+    public long getMedian(final int index) {
+        final int dimension = getDimension();
+        ArgumentChecks.ensureValidIndex(dimension, index);
+        final long low  = coordinates[index];
+        final long high = coordinates[index + dimension];
+        /*
+         * Use `>> 1` instead of `/2` because the two operations differ in their rounding mode for negative values.
+         * The former rounds toward negative infinity (which is intended here) while the latter rounds toward zero.
+         * If at least one value is odd, add +1 to the result.
+         */
+        return (low >> 1) + (high >> 1) + ((low | high) & 1);
     }
 
     /**
@@ -1433,7 +1468,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * of one cell may exist).
      *
      * <div class="note"><b>Note:</b>
-     * The envelope computed from a grid extent may become <em>larger</em> after subsampling, not smaller.
+     * If the "real world" envelope computed from grid extent needs to stay approximately the same, then the
+     * {@linkplain GridGeometry#getGridToCRS grid to CRS} transform needs to compensate the subsampling with
+     * a pre-multiplication of each grid coordinates by {@code periods}.
+     * However the envelope computed that way may become <em>larger</em> after subsampling, not smaller.
      * This effect can be understood intuitively if we consider that cells become larger after subsampling,
      * which implies that accurate representation of the same envelope may require fractional cells on some
      * grid borders.</div>
@@ -1447,7 +1485,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is longer, extraneous values are ignored.
      *
      * @param  periods  the subsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
-     * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
+     * @return the subsampled extent, or {@code this} if subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
      * @see GridDerivation#subgrid(GridExtent, int...)
@@ -1467,11 +1505,51 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
                 }
                 long r = Long.divideUnsigned(size, s);
-                if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
+                if (r*s == size) r--;                   // Make inclusive if the division did not already rounded toward 0.
                 sub.coordinates[i] = low /= s;
                 sub.coordinates[j] = low + r;
             } else if (s <= 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
+            }
+        }
+        return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
+    }
+
+    /**
+     * Creates a new grid extent upsampled by the given amount of cells along each grid dimensions.
+     * This method multiplies {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
+     * by the given periods.
+     *
+     * This method does not change the number of dimensions of the grid extent.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @return the upsampled extent, or {@code this} if upsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     * @throws ArithmeticException if the upsampled extent overflows the {@code long} capacity.
+     *
+     * @see GridGeometry#upsample(int...)
+     * @since 1.3
+     */
+    public GridExtent upsample(final int... periods) {
+        ArgumentChecks.ensureNonNull("periods", periods);
+        final int m = getDimension();
+        final int length = Math.min(m, periods.length);
+        final GridExtent sub = new GridExtent(this);
+        for (int i=0; i<length; i++) {
+            final int s = periods[i];
+            if (s > 1) {
+                final int j = i + m;
+                sub.coordinates[i] = Math.multiplyExact(coordinates[i], s);
+                sub.coordinates[j] = Math.addExact(Math.multiplyExact(coordinates[j], s), s-1);
+            } else if (s <= 0) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
@@ -1654,29 +1732,35 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Returns the intersection of this grid extent with to the given grid extent.
-     * The given extent shall have the same number of dimensions.
-     *
-     * <p>This method is not public because we do not yet have a policy
-     * about whether we should verify if axis {@link #types} match.</p>
+     * The given extent shall have the same number of dimensions than this extent.
+     * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
+     * be the same in all dimensions, ignoring types that are absent.
      *
      * @param  other  the grid to intersect with.
      * @return the intersection result. May be one of the existing instances.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
+     *
+     * @since 1.3
      */
-    final GridExtent intersect(final GridExtent other) {
+    public GridExtent intersect(final GridExtent other) {
         return combine(other, false);
     }
 
     /**
      * Returns the union of this grid extent with to the given grid extent.
-     * The given extent shall have the same number of dimensions.
-     *
-     * <p>This method is not public because we do not yet have a policy
-     * about whether we should verify if axis {@link #types} match.</p>
+     * The given extent shall have the same number of dimensions than this extent.
+     * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
+     * be the same in all dimensions, ignoring types that are absent.
      *
      * @param  other  the grid to combine with.
      * @return the union result. May be one of the existing instances.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
+     *
+     * @since 1.3
      */
-    final GridExtent union(final GridExtent other) {
+    public GridExtent union(final GridExtent other) {
         return combine(other, true);
     }
 
@@ -1686,6 +1770,22 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     private GridExtent combine(final GridExtent other, final boolean union) {
         final int n = coordinates.length;
         final int m = n >>> 1;
+        if (n != other.coordinates.length) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, "other", m, other.getDimension()));
+        }
+        // First condition below is a fast check for a common case.
+        if (types != other.types && types != null && other.types != null) {
+            for (int i=0; i<m; i++) {
+                final DimensionNameType t1 = types[i];
+                if (t1 != null) {
+                    final DimensionNameType t2 = other.types[i];
+                    if (t2 != null && !t1.equals(t2)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedAxes_3, i, t1, t2));
+                    }
+                }
+            }
+        }
         final long[] clipped = new long[n];
         int i = 0;
         while (i < m) {clipped[i] = extremum(coordinates[i], other.coordinates[i], !union); i++;}

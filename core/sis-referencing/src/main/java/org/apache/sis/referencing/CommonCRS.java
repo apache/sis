@@ -76,6 +76,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -456,7 +457,7 @@ public enum CommonCRS {
      * Invoked by when the cache needs to be cleared after a classpath change.
      */
     @SuppressWarnings("NestedSynchronizedStatement")    // Safe because cachedProjections never call any method of 'this'.
-    synchronized void clear() {
+    final synchronized void clear() {
         cached           = null;
         cachedGeo3D      = null;
         cachedNormalized = null;
@@ -1363,7 +1364,7 @@ public enum CommonCRS {
         /**
          * Invoked by when the cache needs to be cleared after a classpath change.
          */
-        synchronized void clear() {
+        final synchronized void clear() {
             cached = null;
         }
 
@@ -1514,21 +1515,22 @@ public enum CommonCRS {
      *   TemporalCRS crs = CommonCRS.Temporal.JULIAN.crs();
      * }
      *
-     * Below is an alphabetical list of object names available in this enumeration:
+     * Below is an alphabetical list of object names available in this enumeration.
+     * Note that the namespace of identifiers ("OGC" versus "SIS") may change in any future version.
      *
      * <blockquote><table class="sis">
      *   <caption>Temporal objects accessible by enumeration constants</caption>
-     *   <tr><th>Name or alias</th>    <th>Object type</th> <th>Enumeration value</th></tr>
-     *   <tr><td>Dublin Julian</td>    <td>CRS, Datum</td>  <td>{@link #DUBLIN_JULIAN}</td></tr>
-     *   <tr><td>Java time</td>        <td>CRS</td>         <td>{@link #JAVA}</td></tr>
-     *   <tr><td>Julian</td>           <td>CRS, Datum</td>  <td>{@link #JULIAN}</td></tr>
-     *   <tr><td>Modified Julian</td>  <td>CRS, Datum</td>  <td>{@link #MODIFIED_JULIAN}</td></tr>
-     *   <tr><td>Truncated Julian</td> <td>CRS, Datum</td>  <td>{@link #TRUNCATED_JULIAN}</td></tr>
-     *   <tr><td>Unix/POSIX time</td>  <td>CRS, Datum</td>  <td>{@link #UNIX}</td></tr>
+     *   <tr><th>Name or alias</th>    <th>Identifier</th>                      <th>Object type</th> <th>Enumeration value</th></tr>
+     *   <tr><td>Dublin Julian</td>    <td>{@code SIS:DublinJulian}</td>        <td>CRS, Datum</td>  <td>{@link #DUBLIN_JULIAN}</td></tr>
+     *   <tr><td>Java time</td>        <td>{@code SIS:JavaTime}</td>            <td>CRS</td>         <td>{@link #JAVA}</td></tr>
+     *   <tr><td>Julian</td>           <td>{@code OGC:JulianDate}</td>          <td>CRS, Datum</td>  <td>{@link #JULIAN}</td></tr>
+     *   <tr><td>Modified Julian</td>  <td>{@code SIS:ModifiedJulianDate}</td>  <td>CRS, Datum</td>  <td>{@link #MODIFIED_JULIAN}</td></tr>
+     *   <tr><td>Truncated Julian</td> <td>{@code OGC:TruncatedJulianDate}</td> <td>CRS, Datum</td>  <td>{@link #TRUNCATED_JULIAN}</td></tr>
+     *   <tr><td>Unix/POSIX time</td>  <td>{@code OGC:UnixTime}</td>            <td>CRS, Datum</td>  <td>{@link #UNIX}</td></tr>
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.3
      *
      * @see Engineering#TIME
      *
@@ -1549,14 +1551,16 @@ public enum CommonCRS {
          * the {@link java.text.SimpleDateFormat} class is closer to the common practice (but not ISO 8601
          * compliant).</p>
          */
-        JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2),
+        JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
+               "JulianDate", true),
 
         /**
          * Time measured as days since November 17, 1858 at 00:00 UTC.
          * A <cite>Modified Julian day</cite> (MJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code MJD = JD − 2400000.5}.
          */
-        MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * MILLISECONDS_PER_DAY),
+        MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * MILLISECONDS_PER_DAY,
+                        "ModifiedJulianDate", false),
 
         /**
          * Time measured as days since May 24, 1968 at 00:00 UTC.
@@ -1564,24 +1568,26 @@ public enum CommonCRS {
          * A <cite>Truncated Julian day</cite> (TJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code TJD = JD − 2440000.5}.
          */
-        TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * MILLISECONDS_PER_DAY),
+        TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * MILLISECONDS_PER_DAY,
+                         "TruncatedJulianDate", true),
 
         /**
          * Time measured as days since December 31, 1899 at 12:00 UTC.
          * A <cite>Dublin Julian day</cite> (DJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code DJD = JD − 2415020}.
          */
-        DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2),
+        DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
+                      "DublinJulian", false),
 
         /**
          * Time measured as seconds since January 1st, 1970 at 00:00 UTC.
          */
-        UNIX(Vocabulary.Keys.Time_1, 0),
+        UNIX(Vocabulary.Keys.Time_1, 0, "UnixTime", true),
 
         /**
          * Time measured as milliseconds since January 1st, 1970 at 00:00 UTC.
          */
-        JAVA(Vocabulary.Keys.Time_1, 0);
+        JAVA(Vocabulary.Keys.Time_1, 0, "JavaTime", false);
 
         /**
          * The resource keys for the name as one of the {@code Vocabulary.Keys} constants.
@@ -1594,6 +1600,18 @@ public enum CommonCRS {
         private final long epoch;
 
         /**
+         * Identifier in OGC or SIS namespace.
+         *
+         * @see org.apache.sis.referencing.factory.CommonAuthorityFactory#TEMPORAL_NAMES
+         */
+        private final String identifier;
+
+        /**
+         * Whether the identifier is in OGC namespace.
+         */
+        private final boolean isOGC;
+
+        /**
          * The cached object. This is initially {@code null}, then set to various kinds of objects depending
          * on which method has been invoked. The kind of object stored in this field may change during the
          * application execution.
@@ -1603,9 +1621,11 @@ public enum CommonCRS {
         /**
          * Creates a new enumeration value of the given name with time counted since the given epoch.
          */
-        private Temporal(final short name, final long epoch) {
-            this.key   = name;
-            this.epoch = epoch;
+        private Temporal(final short name, final long epoch, final String identifier, final boolean isOGC) {
+            this.key        = name;
+            this.epoch      = epoch;
+            this.identifier = identifier;
+            this.isOGC      = isOGC;
         }
 
         /**
@@ -1625,8 +1645,37 @@ public enum CommonCRS {
         /**
          * Invoked by when the cache needs to be cleared after a classpath change.
          */
-        synchronized void clear() {
+        final synchronized void clear() {
             cached = null;
+        }
+
+        /**
+         * Returns the enumeration value for the given identifier (without namespace).
+         * Identifiers in OGC namespace are {@code "JulianDate"}, {@code "TruncatedJulianDate"} and {@code "UnixTime"}.
+         * Identifiers in SIS namespace are {@code "ModifiedJulianDate"}, {@code "DublinJulian"} and {@code "JavaTime"}.
+         * Note that the content of OGC and SIS namespaces may change in any future version.
+         *
+         * @param  identifier  case-insensitive identifier of the desired temporal CRS, without namespace.
+         * @param  onlyOGC     whether to return the CRS only if its identifier is in OGC namespace.
+         * @return the enumeration value for the given identifier.
+         * @throws IllegalArgumentException if the given identifier is not recognized.
+         *
+         * @see <a href="http://www.opengis.net/def/crs/OGC/0">OGC Definitions Server</a>
+         *
+         * @since 1.3
+         */
+        public static Temporal forIdentifier(final String identifier, final boolean onlyOGC) {
+            ArgumentChecks.ensureNonEmpty("identifier", identifier);
+            for (final Temporal candidate : values()) {
+                if (candidate.identifier.equalsIgnoreCase(identifier)) {
+                    if (onlyOGC & !candidate.isOGC) {
+                        throw new IllegalArgumentException(Errors.format(
+                                Errors.Keys.IdentifierNotInNamespace_2, Constants.OGC, candidate.identifier));
+                    }
+                    return candidate;
+                }
+            }
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_2, Temporal.class, identifier));
         }
 
         /**
@@ -1638,6 +1687,7 @@ public enum CommonCRS {
          *
          * @since 1.0
          */
+        @OptionalCandidate
         public static Temporal forEpoch(final Instant epoch) {
             if (epoch != null) {
                 final long e = epoch.toEpochMilli();
@@ -1677,12 +1727,15 @@ public enum CommonCRS {
                     object = crs(cached);
                     if (object == null) {
                         final TemporalDatum datum = datum();
-                        final Map<String,?> properties;
+                        final Map<String,?> source;
                         if (this == JAVA) {
-                            properties = properties(Vocabulary.formatInternational(key, "Java"));
+                            source = properties(Vocabulary.formatInternational(key, "Java"));
                         } else {
-                            properties = IdentifiedObjects.getProperties(datum, exclude());
+                            source = IdentifiedObjects.getProperties(datum, exclude());
                         }
+                        final Map<String,Object> properties = new HashMap<>(source);
+                        properties.put(TemporalCRS.IDENTIFIERS_KEY,
+                                new NamedIdentifier(isOGC ? Citations.OGC : Citations.SIS, identifier));
                         object = new DefaultTemporalCRS(properties, datum, cs());
                         cached = object;
                     }
@@ -1958,14 +2011,14 @@ public enum CommonCRS {
      * @param  key  a constant from {@link org.apache.sis.util.resources.Vocabulary.Keys}.
      * @return the properties to give to the object constructor.
      */
-    static Map<String,?> properties(final short key) {
+    private static Map<String,?> properties(final short key) {
         return properties(Vocabulary.formatInternational(key));
     }
 
     /**
      * Puts the given name in a map of properties to be given to object constructors.
      */
-    static Map<String,?> properties(final InternationalString name) {
+    private static Map<String,?> properties(final InternationalString name) {
         return singletonMap(NAME_KEY, new NamedIdentifier(null, name));
     }
 
@@ -1989,7 +2042,7 @@ public enum CommonCRS {
      * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
      * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
      */
-    static GeodeticAuthorityFactory factory() {
+    private static GeodeticAuthorityFactory factory() {
         if (!EPSGFactoryFallback.FORCE_HARDCODED) {
             final GeodeticAuthorityFactory factory = AuthorityFactories.EPSG();
             if (!(factory instanceof EPSGFactoryFallback)) {
@@ -2003,7 +2056,7 @@ public enum CommonCRS {
      * Invoked when a factory failed to create an object.
      * After invoking this method, the caller will fallback on hard-coded values.
      */
-    static void failure(final Object caller, final String method, final FactoryException e, final int code) {
+    private static void failure(final Object caller, final String method, final FactoryException e, final int code) {
         String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, (Constants.EPSG + ':') + code);
         message = Exceptions.formatChainedMessages(null, message, e);
         final LogRecord record = new LogRecord(Level.WARNING, message);

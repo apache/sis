@@ -48,7 +48,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * All tests performed by this class are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  *
@@ -271,8 +271,9 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
      * @see org.apache.sis.referencing.operation.CoordinateOperationRegistry#inverse(SingleOperation)
      */
     private static Conversion inverse(final Conversion conversion) throws NoninvertibleTransformException {
-        return new DefaultConversion(IdentifiedObjects.getProperties(conversion), conversion.getTargetCRS(),
-                conversion.getSourceCRS(), null, conversion.getMethod(), conversion.getMathTransform().inverse());
+        return new DefaultConversion(IdentifiedObjects.getProperties(conversion, Conversion.IDENTIFIERS_KEY),
+                conversion.getTargetCRS(), conversion.getSourceCRS(), null,
+                conversion.getMethod(), conversion.getMathTransform().inverse());
     }
 
     /**

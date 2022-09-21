@@ -27,7 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
@@ -287,7 +287,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         if (pixelInCell == null) {
             pixelInCell = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultImageDatum.class, "setPixelInCell", "pixelInCell");
+            ImplementationHelper.propertyAlreadySet(DefaultImageDatum.class, "setPixelInCell", "pixelInCell");
         }
     }
 }

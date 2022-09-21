@@ -56,6 +56,7 @@ public class DefaultIndividual extends AbstractParty implements Individual {
     /**
      * Position of the individual in an organization.
      */
+    @SuppressWarnings("serial")
     private InternationalString positionName;
 
     /**

@@ -69,21 +69,25 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Quantitative value or values, content determined by the evaluation procedure used.
      */
+    @SuppressWarnings("serial")
     private List<Record> values;
 
     /**
      * Value type for reporting a data quality result, or {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private RecordType valueType;
 
     /**
      * Value unit for reporting a data quality result, or {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private Unit<?> valueUnit;
 
     /**
      * Statistical method used to determine the value, or {@code null} if none.
      */
+    @SuppressWarnings("serial")
     private InternationalString errorStatistic;
 
     /**

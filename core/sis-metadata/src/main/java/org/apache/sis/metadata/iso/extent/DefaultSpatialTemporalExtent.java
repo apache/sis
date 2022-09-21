@@ -29,7 +29,7 @@ import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**
@@ -69,11 +69,13 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * The spatial extent component of composite
      * spatial and temporal extent.
      */
+    @SuppressWarnings("serial")
     private Collection<GeographicExtent> spatialExtent;
 
     /**
      * Vertical extent component.
      */
+    @SuppressWarnings("serial")
     private VerticalExtent verticalExtent;
 
     /**

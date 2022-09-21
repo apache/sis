@@ -61,6 +61,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata implements P
     /**
      * Bibliographic reference to the portrayal catalogue cited.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> portrayalCatalogueCitations;
 
     /**

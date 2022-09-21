@@ -62,6 +62,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     /**
      * The sets of points defining the bounding polygon.
      */
+    @SuppressWarnings("serial")
     private Collection<Geometry> polygons;
 
     /**

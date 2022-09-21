@@ -42,12 +42,14 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.aggregate.CoverageAggregator;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -55,9 +57,6 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
-import org.apache.sis.storage.event.WarningEvent;
 
 
 /**
@@ -82,7 +81,7 @@ import org.apache.sis.storage.event.WarningEvent;
  * @since   0.8
  * @module
  */
-class Store extends DataStore implements StoreResource, Aggregate, DirectoryStream.Filter<Path> {
+class Store extends DataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
     /**
      * The data store for the root directory specified by the user.
      * May be {@code this} if this store instance is for the root directory.
@@ -152,6 +151,14 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     private transient boolean sharedRepositoryReported;
 
     /**
+     * A structured view of this aggregate, or {@code null} if not net computed.
+     * May be {@code this} if {@link CoverageAggregator} can not do better than current resource.
+     *
+     * @see #getStructuredView()
+     */
+    private transient Resource structuredView;
+
+    /**
      * Creates a new folder store from the given file, path or URI.
      * The folder store will attempt to open only the files of the given format, if non-null.
      * If a null format is specified, then the folder store will attempt to open any file
@@ -178,7 +185,6 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         children   = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
-        listeners.useReadOnlyEvents();
     }
 
     /**
@@ -322,6 +328,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
                         connector.setOption(OptionKey.LOCALE,   locale);
                         connector.setOption(OptionKey.TIMEZONE, timezone);
                         connector.setOption(OptionKey.ENCODING, encoding);
+                        connector.setOption(DataOptionKey.PARENT_LISTENERS, listeners);
                         try {
                             if (componentProvider == null) {
                                 next = DataStores.open(connector);          // May throw UnsupportedStorageException.
@@ -398,6 +405,22 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     }
 
     /**
+     * Returns a more structured (if possible) view of this resource.
+     *
+     * @return structured view. May be {@code this} if this method can not do better than current resource.
+     * @throws DataStoreException if an error occurred during the attempt to create a structured view.
+     */
+    @Override
+    public synchronized Resource getStructuredView() throws DataStoreException {
+        if (structuredView == null) {
+            final CoverageAggregator aggregator = new CoverageAggregator(listeners);
+            aggregator.addComponents(this);
+            structuredView = aggregator.build();
+        }
+        return structuredView;
+    }
+
+    /**
      * Returns the resource bundle to use for error message in exceptions.
      */
     final Resources messages() {
@@ -411,19 +434,6 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      */
     final String message(final short key, final Object value) {
         return messages().getString(key, value);
-    }
-
-    /**
-     * Registers a listener to notify when the specified kind of event occurs in this data store.
-     * The current implementation of this data store can emit only {@link WarningEvent}s;
-     * any listener specified for another kind of events will be ignored.
-     */
-    @Override
-    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
-        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
-        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(eventType, listener);
-        }
     }
 
     /**

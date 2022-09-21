@@ -67,16 +67,19 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
     /**
      * Designation associated with a set of range elements.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**
      * Description of a set of specific range elements.
      */
+    @SuppressWarnings("serial")
     private InternationalString definition;
 
     /**
      * Specific range elements, i.e. range elements associated with a name and their definition.
      */
+    @SuppressWarnings("serial")
     private Collection<Record> rangeElements;
 
     /**

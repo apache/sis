@@ -17,9 +17,9 @@
 package org.apache.sis.storage.landsat;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
@@ -143,7 +143,7 @@ final class BandGroup extends AbstractResource implements Aggregate, StoreResour
         final List<Band> bands = new ArrayList<>();
         if (components != null) {
             for (final BandGroup c : components) {
-                bands.addAll(Arrays.asList(c.components));
+                Collections.addAll(bands, c.components);
             }
         }
         return bands;

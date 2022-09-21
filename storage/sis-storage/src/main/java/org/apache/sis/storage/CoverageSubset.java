@@ -18,6 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
@@ -28,6 +29,8 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -63,6 +66,20 @@ final class CoverageSubset extends AbstractGridCoverageResource {
         super(source instanceof AbstractResource ? ((AbstractResource) source).listeners : null, false);
         this.source = source;
         this.query  = query;
+    }
+
+    /**
+     * Creates metadata about this subset.
+     * It includes information about the complete feature set.
+     */
+    @Override
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        builder.addDefaultMetadata(this, listeners);
+        builder.addLineage(Resources.formatInternational(Resources.Keys.UnfilteredData));
+        builder.addProcessDescription(Resources.formatInternational(Resources.Keys.SubsetQuery_1, StoreUtilities.getLabel(source)));
+        builder.addSource(source.getMetadata());
+        return builder.build();
     }
 
     /**
@@ -181,12 +198,12 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * </ul>
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+    public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
         if (domain == null) {
             domain = source.getGridGeometry();
         }
@@ -196,21 +213,21 @@ final class CoverageSubset extends AbstractGridCoverageResource {
          */
         domain = clip(domain, GridRoundingMode.ENCLOSING, GridClippingMode.BORDER_EXPANSION);
         final int[] qr = query.getProjection();
-        if (range == null) {
-            range = qr;
+        if (ranges == null) {
+            ranges = qr;
         } else if (qr != null) {
-            final int[] sub = new int[range.length];
-            for (int i=0; i<range.length; i++) {
-                final int j = range[i];
+            final int[] sub = new int[ranges.length];
+            for (int i=0; i<ranges.length; i++) {
+                final int j = ranges[i];
                 if (j >= 0 && j < qr.length) {
                     sub[i] = qr[j];
                 } else {
                     throw new IllegalArgumentException(invalidRange(qr.length, j));
                 }
             }
-            range = sub;
+            ranges = sub;
         }
-        return source.read(domain, range);
+        return source.read(domain, ranges);
     }
 
     /**

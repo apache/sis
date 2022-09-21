@@ -24,7 +24,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensureInRange;
 
 
 /**
@@ -83,6 +83,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Meteorological conditions in the photo flight area, in particular clouds, snow and wind.
      */
+    @SuppressWarnings("serial")
     private InternationalString meteorologicalConditions;
 
     /**

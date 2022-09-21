@@ -44,11 +44,11 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * the addition of {@code semi_major} and {@code semi_minor} parameters by {@code DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
-final class UnmodifiableParameterValueGroup extends Parameters implements LenientComparable, Serializable {
+class UnmodifiableParameterValueGroup extends Parameters implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -59,6 +59,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      *
      * @see #getDescriptor()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
@@ -66,7 +67,19 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      *
      * @see #values()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final List<GeneralParameterValue> values;
+
+    /**
+     * Creates a copy of the given parameter group.
+     * This is used by {@link FilteredParameters} constructor only.
+     *
+     * @param group  the group of values to copy.
+     */
+    UnmodifiableParameterValueGroup(final UnmodifiableParameterValueGroup group) {
+        descriptor = group.descriptor;
+        values     = group.values;
+    }
 
     /**
      * Creates a new unmodifiable parameter group.
@@ -131,7 +144,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      * {@link #parameterIfExist(String)}.
      */
     @Override
-    boolean isKnownImplementation() {
+    final boolean isKnownImplementation() {
         return true;
     }
 
@@ -139,7 +152,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      * Returns the value in this group for the specified name.
      */
     @Override
-    public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
+    public final ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final ParameterValue<?> value = parameterIfExist(name);
         if (value != null) {
@@ -176,7 +189,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      * Operation not allowed.
      */
     @Override
-    public ParameterValueGroup addGroup(final String name) throws IllegalStateException {
+    public final ParameterValueGroup addGroup(final String name) throws IllegalStateException {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, ParameterValueGroup.class));
     }
 

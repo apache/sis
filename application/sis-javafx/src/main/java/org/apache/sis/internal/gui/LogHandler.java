@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,7 +42,7 @@ import org.apache.sis.util.CharSequences;
  * This class maintains both a global (system) list and a list of log records specific to each resource.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -91,11 +93,36 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
         private TreeItem<String> loggers;
 
         /**
+         * Previous values of {@link #inProgress} in case of nested calls to {@link #loadingStart(Resource)}.
+         */
+        private final List<Destination> nested;
+
+        /**
          * Creates a new list of records.
          */
         Destination() {
             queue   = FXCollections.observableArrayList();
             records = FXCollections.unmodifiableObservableList(queue);
+            nested  = new ArrayList<>(3);
+        }
+
+        /**
+         * Invoked when a nested call to {@link #loadingStart(Resource)} is detected.
+         *
+         * @param  newer  the new destination of log records.
+         * @return {@code newer}.
+         */
+        final Destination startNested(final Destination newer) {
+            newer.nested.add(this);
+            return newer;
+        }
+
+        /**
+         * Invoked for potentially nested call to {@link #loadingStop(Long)}.
+         */
+        final Destination stopNested() {
+            final int n = nested.size();
+            return (n != 0) ? nested.remove(n-1) : null;
         }
 
         /**
@@ -218,6 +245,24 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
     }
 
     /**
+     * Redirects log records from the given source to the given target.
+     * This is used when the source is a view derived from the target.
+     * Invoking this method causes the logs from the two resources to go into a single list of log records,
+     * which can be viewed from the "Log" pane of any of those two resources.
+     *
+     * @param  source  the source of logs, typically a view derived from {@code target}.
+     * @param  target  the resource where to add logs, typically the original resource
+     *                 for which a window is provided.
+     */
+    public static void redirect(final Resource source, final Resource target) {
+        if (source != target && source != null && target != null) {
+            synchronized (INSTANCE.resourceLogs) {
+                INSTANCE.resourceLogs.putIfAbsent(target, getRecords(source));
+            }
+        }
+    }
+
+    /**
      * Notifies this {@code LogHandler} that an operation is about to start on the given resource.
      * Call to this method must be followed by call to {@link #loadingStop(Long)} in a {@code finally} block.
      *
@@ -227,7 +272,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
     public static Long loadingStart(final Resource source) {
         if (source == null) return null;
         final Long id = Thread.currentThread().getId();
-        INSTANCE.inProgress.put(id, INSTANCE.getRecordsNonNull(source));
+        INSTANCE.inProgress.merge(id, getRecords(source), Destination::startNested);
         return id;
     }
 
@@ -239,7 +284,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      */
     public static void loadingStop(final Long id) {
         if (id != null) {
-            INSTANCE.inProgress.remove(id);
+            INSTANCE.inProgress.computeIfPresent(id, (k,v) -> v.stopNested());
         }
     }
 

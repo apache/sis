@@ -36,7 +36,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
@@ -78,7 +77,7 @@ import org.apache.sis.util.Utilities;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  *
  * @see DefaultTransformation
  *
@@ -212,9 +211,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             throw new IllegalArgumentException(Resources.forProperties(properties)
                     .getString(Resources.Keys.UnspecifiedParameterValues));
         }
-        if (parameters != null) {
-            this.parameters = Parameters.unmodifiable(parameters);
-        }
+        setParameterValues(parameters, null);
         checkDimensions(properties);
     }
 
@@ -262,7 +259,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                     context = ReferencingUtilities.createTransformContext(source, target);
                 }
                 transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
-                parameters = Parameters.unmodifiable(context.getCompletedParameters());
+                actual[0] = context.getMethodUsed();
+                setParameterValues(context.getCompletedParameters(), context.getContextualParameters());
             } else {
                 /*
                  * Fallback for non-SIS implementation. Equivalent to the above code, except that we can
@@ -270,8 +268,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  * the code should work anyway.
                  */
                 transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
+                actual[0] = factory.getLastMethodUsed();
             }
-            actual[0] = factory.getLastMethodUsed();
         } else {
             /*
              * If the user specified explicitly a MathTransform, we may still need to swap or scale axes.

@@ -91,7 +91,7 @@ public final class GeographicToGeocentric extends GeodeticOperation {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        DIMENSION = builder.addName(Citations.SIS, "dim").setRequired(false).createBounded(Integer.class, 2, 3, 3);
+        DIMENSION = builder.addName(Citations.SIS, Constants.DIM).setRequired(false).createBounded(Integer.class, 2, 3, 3);
         PARAMETERS = builder
                 .addIdentifier("9602")
                 .addName("Geographic/geocentric conversions")

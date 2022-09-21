@@ -1246,9 +1246,16 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Returns {@code true} if the given portion of the code is equal, ignoring case, to the given namespace.
+     *
+     * @param  namespace  expected namespace (e.g. "OGC" or "EPSG").
+     * @param  code       the code where to check namespace.
+     * @param  start      index of first character of the namespace in the code.
+     * @param  end        index after last character of the namespace in the code.
+     * @return whether the specified region of the code is equal to the namespace.
      */
     static boolean regionMatches(final String namespace, final String code, final int start, final int end) {
-        return (namespace.length() == end - start) && code.regionMatches(true, start, namespace, 0, namespace.length());
+        final int length = namespace.length();
+        return (length == end - start) && code.regionMatches(true, start, namespace, 0, length);
     }
 
     /**

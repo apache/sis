@@ -26,6 +26,8 @@ import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -35,6 +37,7 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
@@ -47,8 +50,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.SimpleInternationalString;
@@ -151,6 +152,30 @@ import static java.util.logging.Logger.getLogger;
  *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian}</td>
  *     <td>(east, north)</td>
  *     <td>user-specified</td>
+ *   </tr><tr>
+ *     <td>OGC</td>
+ *     <td>JulianDate</td>
+ *     <td>Julian</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS Temporal}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}</td>
+ *     <td>(future)</td>
+ *     <td>days</td>
+ *   </tr><tr>
+ *     <td>OGC</td>
+ *     <td>TruncatedJulianDate</td>
+ *     <td>Truncated Julian</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS Temporal}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}</td>
+ *     <td>(future)</td>
+ *     <td>days</td>
+ *   </tr><tr>
+ *     <td>OGC</td>
+ *     <td>UnixTime</td>
+ *     <td>Unix Time</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS Temporal}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}</td>
+ *     <td>(future)</td>
+ *     <td>seconds</td>
  *   </tr>
  * </table>
  *
@@ -184,7 +209,7 @@ import static java.util.logging.Logger.getLogger;
  * switching to polar stereographic projections for high latitudes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see CommonCRS
  *
@@ -195,7 +220,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * The {@value} prefix for a code identified by parameters.
      * This is defined in annexes B.7 to B.11 of WMS 1.3 specification.
-     * The {@code "AUTO(2)"} namespaces are not considered by SIS as real authorities.
+     * The {@code "AUTO(2)"} namespaces are not considered by Apache SIS as real authorities.
      */
     private static final String AUTO2 = "AUTO2";
 
@@ -206,11 +231,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     private static final Set<String> CODESPACES = Collections.unmodifiableSet(
             new LinkedHashSet<>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
-
-    /**
-     * The bit for saying that a namespace is the legacy {@code "AUTO"} namespace.
-     */
-    private static final int LEGACY_MASK = 0x80000000;
 
     /**
      * First code in the AUTO(2) namespace.
@@ -232,13 +252,22 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     };
 
     /**
-     * The parameter separator for codes in the {@code "AUTO(2)"} namespace.
+     * Names of temporal CRS in OGC namespace.
+     * Those CRS are defined by {@link CommonCRS.Temporal}.
+     * Codes in Apache SIS namespace are excluded from this list.
+     *
+     * @see CommonCRS.Temporal#identifier
      */
-    static final char SEPARATOR = ',';
+    private static final String[] TEMPORAL_NAMES = {
+        "JulianDate",
+        "TruncatedJulianDate",
+        "UnixTime"
+    };
 
     /**
      * The codes known to this factory, associated with their CRS type. This is set to an empty map
      * at {@code CommonAuthorityFactory} construction time and filled only when first needed.
+     * Keys are of the form "AUTHORITY:IDENTIFIER".
      */
     private final Map<String,Class<?>> codes;
 
@@ -274,79 +303,41 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Rewrites the given code in a canonical format.
-     * If the code can not be reformatted, then this method returns {@code null}.
+     * Rewrites the given code in a canonical format and without parameters.
+     * If the code is not in a known namespace, then this method returns {@code null}.
      */
-    static String reformat(final String code) {
+    static String reformat(String code) {
         try {
-            return format(Integer.parseInt(code.substring(skipNamespace(code) & ~LEGACY_MASK)));
+            final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
+            code = parsed.localCode;
+            code = parsed.isNumeric ? format(Integer.parseInt(code)) : format(code);
         } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
-            Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
+            Logging.ignorableException(getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
             return null;
         }
+        return code;
     }
 
     /**
-     * Returns the index where the code begins, ignoring spaces and the {@code "OGC"}, {@code "CRS"}, {@code "AUTO"},
-     * {@code "AUTO1"} or {@code "AUTO2"} namespaces if present. If a namespace is found and is a legacy one, then
-     * this {@link #LEGACY_MASK} bit will be set.
-     *
-     * @return index where the code begin, possibly with the {@link #LEGACY_MASK} bit set.
-     * @throws NoSuchAuthorityCodeException if an authority is present but is not one of the recognized authorities.
+     * Formats the given code with a {@code "CRS:"} or {@code "AUTO2:"} prefix.
+     * This is used for numerical codes such as "CRS:84".
      */
-    private static int skipNamespace(final String code) throws NoSuchAuthorityCodeException {
-        int isLegacy = 0;
-        int s = code.indexOf(Constants.DEFAULT_SEPARATOR);
-        if (s >= 0) {
-            final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);
-            final int start = CharSequences.skipLeadingWhitespaces (code, 0, end);
-            if (!regionMatches(Constants.CRS, code, start, end) &&
-                !regionMatches(Constants.OGC, code, start, end))
-            {
-                boolean isRecognized = false;
-                final int length = AUTO2.length() - 1;
-                if (code.regionMatches(true, start, AUTO2, 0, length)) {
-                    switch (end - start - length) {         // Number of extra characters after "AUTO".
-                        case 0: {                           // Namespace is exactly "AUTO" (ignoring case).
-                            isRecognized = true;
-                            isLegacy = LEGACY_MASK;
-                            break;
-                        }
-                        case 1: {                           // Namespace has one more character than "AUTO".
-                            final char c = code.charAt(end - 1);
-                            isRecognized = (c >= '1' && c <= '2');
-                            if (c == '1') {
-                                isLegacy = LEGACY_MASK;
-                            }
-                        }
-                    }
-                }
-                if (!isRecognized) {
-                    throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.UnknownAuthority_1,
-                            CharSequences.trimWhitespaces(code, 0, s)), Constants.OGC, code);
-                }
-            }
-        }
-        s = CharSequences.skipLeadingWhitespaces(code, s+1, code.length());
-        /*
-         * Above code removed the "CRS" part when it is used as a namespace, as in "CRS:84".
-         * The code below removes the "CRS" prefix when it is concatenated within the code,
-         * as in "CRS84". Together, those two checks handle redundant codes like "CRS:CRS84"
-         * (malformed code, but seen in practice).
-         */
-        if (code.regionMatches(true, s, Constants.CRS, 0, Constants.CRS.length())) {
-            s = CharSequences.skipLeadingWhitespaces(code, s + Constants.CRS.length(), code.length());
-        }
-        if (s >= code.length()) {
-            throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.EmptyArgument_1, "code"), Constants.OGC, code);
-        }
-        return s | isLegacy;
+    private static String format(final int code) {
+        return ((code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS) + Constants.DEFAULT_SEPARATOR + code;
+    }
+
+    /**
+     * Formats the given code with an {@code "OGC:"} prefix.
+     * This is used for non-numerical codes such as "OGC:JulianDate".
+     */
+    private static String format(final String code) {
+        return Constants.OGC + Constants.DEFAULT_SEPARATOR + code;
     }
 
     /**
      * Provides a complete set of the known codes provided by this factory.
-     * The returned set contains a namespace followed by numeric identifiers
-     * like {@code "CRS:84"}, {@code "CRS:27"}, {@code "AUTO2:42001"}, <i>etc</i>.
+     * The returned set contains a namespace followed by identifiers like
+     * {@code "CRS:84"}, {@code "CRS:27"}, {@code "AUTO2:42001"}, <i>etc</i>.
      *
      * @param  type  the spatial reference objects type.
      * @return the set of authority codes for spatial reference objects of the given type.
@@ -368,16 +359,12 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 for (int code = FIRST_PROJECTION_CODE; code < FIRST_PROJECTION_CODE + PROJECTION_NAMES.length; code++) {
                     add(code, ProjectedCRS.class);
                 }
+                for (final String name : TEMPORAL_NAMES) {
+                    codes.put(format(name), TemporalCRS.class);
+                }
             }
         }
         return new FilteredCodes(codes, type).keySet();
-    }
-
-    /**
-     * Formats the given code with a {@code "CRS:"} or {@code "AUTO2:"} prefix.
-     */
-    private static String format(final int code) {
-        return ((code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS) + Constants.DEFAULT_SEPARATOR + code;
     }
 
     /**
@@ -434,27 +421,37 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     @Override
     public InternationalString getDescriptionText(final String code) throws FactoryException {
-        final int s = skipNamespace(code) & ~LEGACY_MASK;
-        final String localCode = code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, code.length()));
-        if (localCode.indexOf(SEPARATOR) < 0) {
+        final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
+        if (parsed.isNumeric && parsed.parameters().length == 0) {
             /*
              * For codes in the "AUTO(2)" namespace without parameters, we can not rely on the default implementation
-             * since it would fail to create the ProjectedCRS instance. Instead we return a generic description.
+             * because it would fail to create the ProjectedCRS instance. Instead we return a generic description.
              * Note that we do not execute this block if parametes were specified. If there is parameters,
              * then we instead rely on the default implementation for a more accurate description text.
+             * Note also that we do not restrict to "AUTOx" namespaces because erroneous namespaces exist
+             * in practice and the numerical codes are non-ambiguous (at least in current version).
              */
             final int codeValue;
             try {
-                codeValue = Integer.parseInt(localCode);
+                codeValue = Integer.parseInt(parsed.localCode);
             } catch (NumberFormatException exception) {
-                throw noSuchAuthorityCode(localCode, code, exception);
+                throw noSuchAuthorityCode(parsed.localCode, code, exception);
             }
             final int i = codeValue - FIRST_PROJECTION_CODE;
             if (i >= 0 && i < PROJECTION_NAMES.length) {
                 return new SimpleInternationalString(PROJECTION_NAMES[i]);
             }
         }
-        return new SimpleInternationalString(createCoordinateReferenceSystem(localCode).getName().getCode());
+        /*
+         * Fallback on fetching the full CRS, then request its name.
+         * It will include the parsing of parameters if any.
+         */
+        final Identifier name = createCoordinateReferenceSystem(code, parsed).getName();
+        if (name instanceof GenericName) {
+            return ((GenericName) name).tip().toInternationalString();
+        } else {
+            return new SimpleInternationalString(name.getCode());
+        }
     }
 
     /**
@@ -488,28 +485,38 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
-        final String localCode;
-        final boolean isLegacy;
-        String complement = null;
-        { // Block for keeping 'start' and 'end' variables locale.
-            int start = skipNamespace(code);
-            isLegacy = (start & LEGACY_MASK) != 0;
-            start &= ~LEGACY_MASK;
-            final int startOfParameters = code.indexOf(SEPARATOR, start);
-            int end = CharSequences.skipTrailingWhitespaces(code, start, code.length());
-            if (startOfParameters >= 0) {
-                complement = code.substring(startOfParameters + 1);
-                end = CharSequences.skipTrailingWhitespaces(code, start, startOfParameters);
-            }
-            localCode = code.substring(start, end);
+        return createCoordinateReferenceSystem(code, new CommonAuthorityCode(code));
+    }
+
+    /**
+     * Implementation of {@link #createCoordinateReferenceSystem(String)} after the user-supplied code has been parsed.
+     *
+     * @param  code    the user-supplied code of desired CRS.
+     * @param  parsed  result of parsing the supplied {@code code}.
+     * @throws FactoryException if the object creation failed.
+     */
+    private CoordinateReferenceSystem createCoordinateReferenceSystem(final String code, final CommonAuthorityCode parsed)
+            throws FactoryException
+    {
+        /*
+         * First, handled the case of non-numerical parameterless codes ("OGC:JulianDate", etc.)
+         * We accept also SIS-specific codes (e.g. "OGC:ModifiedJulianDate", "OGC:JavaTime") if
+         * the namespace is the more neutral "CRS" instead of "OGC". The SIS-specific codes are
+         * never listed in `getAuthorityCodes(…)`.
+         */
+        final String localCode = parsed.localCode;
+        final double[] parameters = parsed.parameters();
+        if (!parsed.isNumeric && !parsed.isAuto(false) && parameters.length == 0) try {
+            return CommonCRS.Temporal.forIdentifier(localCode, parsed.isOGC).crs();
+        } catch (IllegalArgumentException e) {
+            throw noSuchAuthorityCode(localCode, code, e);
         }
-        int codeValue = 0;
-        double[] parameters = ArraysExt.EMPTY_DOUBLE;
+        /*
+         * In current version, all non-temporal CRS have a numerical code.
+         */
+        final int codeValue;
         try {
             codeValue = Integer.parseInt(localCode);
-            if (complement != null) {
-                parameters = CharSequences.parseDoubles(complement, SEPARATOR);
-            }
         } catch (NumberFormatException exception) {
             throw noSuchAuthorityCode(localCode, code, exception);
         }
@@ -528,6 +535,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 errorKey = Errors.Keys.TooManyArguments_2;
             }
             if (errorKey == 0) {
+                final boolean isLegacy = parsed.isAuto(true);
                 return createAuto(code, codeValue, isLegacy,
                         (count > 2) ? parameters[0] : isLegacy ? Constants.EPSG_METRE : 1,
                                       parameters[count - 2],
@@ -536,8 +544,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             throw new NoSuchAuthorityCodeException(Errors.format(errorKey, expected, count), AUTO2, localCode, code);
         }
         if (count != 0) {
-            throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
-                    localCode, complement), Constants.CRS, localCode, code);
+            throw new NoSuchAuthorityCodeException(parsed.unexpectedParameters(), Constants.CRS, localCode, code);
         }
         final CommonCRS crs;
         switch (codeValue) {
@@ -562,7 +569,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @param  latitude    a latitude in the desired projection zone.
      * @return the projected CRS for the given projection and parameters.
      */
-    @SuppressWarnings("null")
     private ProjectedCRS createAuto(final String code, final int projection, final boolean isLegacy,
             final double factor, final double longitude, final double latitude) throws FactoryException
     {

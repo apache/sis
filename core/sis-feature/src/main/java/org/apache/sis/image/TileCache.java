@@ -23,6 +23,7 @@ import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -38,7 +39,7 @@ import org.apache.sis.internal.feature.Resources;
  * {@linkplain Key#dispose() cleaned}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -68,7 +69,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
      */
     @Override
     protected int cost​(final Raster tile) {
-        long numBits = ((long) tile.getWidth()) * tile.getHeight() * tile.getNumBands();
+        long numBits = JDK9.multiplyFull(tile.getWidth(), tile.getHeight()) * tile.getNumBands();
         final DataBuffer buffer = tile.getDataBuffer();
         if (buffer != null) try {
             numBits *= DataBuffer.getDataTypeSize(buffer.getDataType());
@@ -76,6 +77,20 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
             numBits *= Integer.SIZE;                // Conservatively assume 32 bits values.
         }
         return Numerics.clamp(numBits / Byte.SIZE);
+    }
+
+    /**
+     * Forces the removal of all garbage collected tiles.
+     * This method should not need to be invoked.
+     * It is provided as a debugging tools when suspecting a memory leak.
+     *
+     * @return {@code true} if some entries have been removed as a result of this method call.
+     */
+    @Override
+    public boolean flush() {
+        boolean changed = keySet().removeIf(Key::isEmpty);
+        changed |= super.flush();
+        return changed;
     }
 
     /**
@@ -87,7 +102,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          * for the same image will share the same reference.  Consequently it is okay to compare
          * {@code image} fields directly instead of {@code image.get()}.
          */
-        private final Reference<ComputedImage> image;
+        private final ComputedTiles image;
 
         /**
          * Index of the tile owned by the image.
@@ -101,7 +116,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          * @param  tileX  the column index of the cached tile.
          * @param  tileY  the row index of the cached tile.
          */
-        Key(final Reference<ComputedImage> image, final int tileX, final int tileY) {
+        Key(final ComputedTiles image, final int tileX, final int tileY) {
             this.image = image;
             this.tileX = tileX;
             this.tileY = tileY;
@@ -130,6 +145,14 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          */
         final void dispose() {
             GLOBAL.remove(this);
+        }
+
+        /**
+         * Returns {@code true} if the reference to the image has been cleared.
+         * The {@link #dispose()} should have been invoked in such cases.
+         */
+        final boolean isEmpty() {
+            return image.get() == null;     // TODO: use `refersTo(null)` with JDK16.
         }
 
         /**

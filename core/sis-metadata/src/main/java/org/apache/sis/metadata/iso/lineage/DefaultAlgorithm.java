@@ -65,11 +65,13 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Information identifying the algorithm and version or date.
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Information describing the algorithm used to generate the data.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**

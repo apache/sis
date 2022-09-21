@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.Collections;
 import java.io.PrintWriter;
 
 import org.junit.Test;
@@ -268,7 +269,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
             final FrameworkMethod method = methods[i];
             final DependsOnMethod depend = method.getAnnotation(DependsOnMethod.class);
             if (depend != null) {
-                dependencies.addAll(Arrays.asList(depend.value()));
+                Collections.addAll(dependencies, depend.value());
                 for (int j=methods.length; --j>i;) {
                     if (dependencies.contains(methods[j].getName())) {
                         /*

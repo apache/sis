@@ -68,11 +68,13 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Citation of product specification or user requirement against which data is being evaluated.
      */
+    @SuppressWarnings("serial")
     private Citation specification;
 
     /**
      * Explanation of the meaning of conformance for this result.
      */
+    @SuppressWarnings("serial")
     private InternationalString explanation;
 
     /**

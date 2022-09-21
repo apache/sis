@@ -66,6 +66,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
     /**
      * Description of the scope.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**

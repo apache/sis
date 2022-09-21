@@ -29,52 +29,52 @@ import static java.util.Locale.*;
 
 
 /**
- * Tests the {@link MetadataUtilities} class.
+ * Tests the {@link ImplementationHelper} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
-public final strictfp class MetadataUtilitiesTest extends TestCase {
+public final strictfp class ImplementationHelperTest extends TestCase {
     /**
-     * Tests {@link MetadataUtilities#toMilliseconds(Date)}.
+     * Tests {@link ImplementationHelper#toMilliseconds(Date)}.
      */
     @Test
     public void testToMilliseconds() {
-        assertEquals(1000,           MetadataUtilities.toMilliseconds(new Date(1000)));
-        assertEquals(Long.MIN_VALUE, MetadataUtilities.toMilliseconds(null));
+        assertEquals(1000,           ImplementationHelper.toMilliseconds(new Date(1000)));
+        assertEquals(Long.MIN_VALUE, ImplementationHelper.toMilliseconds(null));
     }
 
     /**
-     * Tests {@link MetadataUtilities#toDate(long)}.
+     * Tests {@link ImplementationHelper#toDate(long)}.
      */
     @Test
     public void testToDate() {
-        assertEquals(new Date(1000), MetadataUtilities.toDate(1000));
-        assertNull(MetadataUtilities.toDate(Long.MIN_VALUE));
+        assertEquals(new Date(1000), ImplementationHelper.toDate(1000));
+        assertNull(ImplementationHelper.toDate(Long.MIN_VALUE));
     }
 
     /**
-     * Tests the {@link MetadataUtilities#setFirst(Collection, Object)} method.
+     * Tests the {@link ImplementationHelper#setFirst(Collection, Object)} method.
      */
     @Test
     public void testSetFirst() {
-        Collection<Locale> locales = MetadataUtilities.setFirst(null, null);
+        Collection<Locale> locales = ImplementationHelper.setFirst(null, null);
         assertTrue(locales.isEmpty());
 
-        locales = MetadataUtilities.setFirst(null, GERMAN);
+        locales = ImplementationHelper.setFirst(null, GERMAN);
         assertArrayEquals(new Locale[] {GERMAN}, locales.toArray());
 
         locales = Arrays.asList(ENGLISH, JAPANESE, FRENCH);
-        assertSame("Shall set value in-place.", locales, MetadataUtilities.setFirst(locales, GERMAN));
+        assertSame("Shall set value in-place.", locales, ImplementationHelper.setFirst(locales, GERMAN));
         assertArrayEquals(new Locale[] {GERMAN, JAPANESE, FRENCH}, locales.toArray());
 
         locales = new LinkedHashSet<>(Arrays.asList(ENGLISH, JAPANESE, FRENCH));
-        locales = MetadataUtilities.setFirst(locales, ITALIAN);
+        locales = ImplementationHelper.setFirst(locales, ITALIAN);
         assertArrayEquals(new Locale[] {ITALIAN, JAPANESE, FRENCH}, locales.toArray());
 
-        locales = MetadataUtilities.setFirst(locales, null);
+        locales = ImplementationHelper.setFirst(locales, null);
         assertArrayEquals(new Locale[] {JAPANESE, FRENCH}, locales.toArray());
     }
 }

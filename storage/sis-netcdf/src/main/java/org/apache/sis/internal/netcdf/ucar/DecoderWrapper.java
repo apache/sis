@@ -49,6 +49,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
@@ -257,20 +258,17 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
-        Attribute value = (group != null) ? group.attributes().findAttributeIgnoreCase(name)
-                                          : file.findGlobalAttributeIgnoreCase(name);
-        if (value == null) {
-            final String mappedName = convention().mapAttributeName(name);
-            /*
-             * Identity check between String instances below is okay
-             * since this is only an optimization for a common case.
-             */
-            if (mappedName != name) {
-                value = (group != null) ? group.attributes().findAttributeIgnoreCase(mappedName)
-                                        : file.findGlobalAttributeIgnoreCase(mappedName);
+        int index = 0;
+        String mappedName;
+        final Convention convention = convention();
+        while ((mappedName = convention.mapAttributeName(name, index++)) != null) {
+            Attribute value = (group != null) ? group.attributes().findAttributeIgnoreCase(mappedName)
+                                              : file.findGlobalAttributeIgnoreCase(mappedName);
+            if (value != null) {
+                return value;
             }
         }
-        return value;
+        return null;
     }
 
     /**

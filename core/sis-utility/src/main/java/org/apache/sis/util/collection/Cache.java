@@ -129,7 +129,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @param <K>  the type of key objects.
  * @param <V>  the type of value objects.
@@ -140,24 +140,25 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
 public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * The map that contains the cached values. If a value is in the process of being computed,
-     * then the value will be a temporary instance of {@link Handler}.
-     * The value may also be weak or soft {@link Reference} objects.
+     * then the value is a temporary instance of {@link Handler}. Otherwise the value is a weak
+     * or soft {@link Reference} objects, or otherwise a strong {@code <V>} reference.
+     *
+     * @see #isReservedType(Object)
      */
     private final ConcurrentMap<K,Object> map;
 
     /**
      * The keys of values that are retained in the {@linkplain #map} by strong references,
-     * together with an estimation of their cost. This map is <strong>not</strong> thread
-     * safe. For this reason, it must be used by a single thread at a given time, even
-     * for read-only operations.
+     * together with an estimation of their cost. This map is <strong>not</strong> thread safe;
+     * it shall be used by a single thread at any given time, even for read-only operations.
      *
      * <p>Entries in this map are ordered from least-recently accessed to most-recently accessed.</p>
      */
     private final Map<K,Integer> costs;
 
     /**
-     * The sum of all values in the {@link #costs} map. This field must be used in the
-     * same thread than {@link #costs}.
+     * The sum of all values in the {@link #costs} map.
+     * This field shall be read and updated in the same thread than {@link #costs}.
      */
     private long totalCost;
 
@@ -173,9 +174,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     private final boolean soft;
 
     /**
-     * {@code true} if different values may be assigned to the same key. This is usually
-     * an error, so the default {@code Cache} behavior is to thrown an exception in such
-     * case.
+     * {@code true} if different values may be assigned to the same key.
+     * This is usually an error, so the default {@code Cache} behavior
+     * is to throw an exception in such cases.
      *
      * @see #isKeyCollisionAllowed()
      */
@@ -183,6 +184,8 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
 
     /**
      * A view over the entries in the cache.
+     *
+     * @see #entrySet()
      */
     private transient volatile Set<Entry<K,V>> entries;
 
@@ -376,10 +379,20 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
+     * Returns {@code true} if the given value is null or a cleared reference.
+     *
+     * @param  value  the value to test.
+     * @return whether the given value is null or a cleared reference.
+     */
+    private static boolean isNull(final Object value) {
+        return (value == null) || (value instanceof Reference<?> && ((Reference<?>) value).get() == null);  // TODO: use refersTo(null) with JDK16.
+    }
+
+    /**
      * Returns {@code true} if the given value is an instance of one of the reserved types
      * used internally by this class.
      */
-    static boolean isReservedType(final Object value) {
+    private static boolean isReservedType(final Object value) {
         return (value instanceof Handler<?> || value instanceof Reference<?>);
     }
 
@@ -430,13 +443,17 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
-     * Notifies this {@code Cache} instance that an entry has changed. This methods adjusts
-     * cost calculation. This may cause some strong references to become weak references.
+     * Notifies this {@code Cache} instance that an entry has changed.
+     * This method is invoked after {@code put(…)}, {@code replace(…)} and {@code remove(…)} operations.
+     * It does not need to be atomic with above-cited operations because this method performs its work
+     * in a background thread anyway. If the value for the specified key was retained by weak reference,
+     * it become a value retained by strong reference. Conversely some values previously retained by strong
+     * references may be retained by weak references after the cost adjustment performed by this method.
      *
      * @param  key    key of the entry that changed.
      * @param  value  the new value. May be {@code null}.
      */
-    final void notifyChange(final K key, final V value) {
+    private void notifyChange(final K key, final V value) {
         DelayedExecutor.schedule(new Strong(key, value));
     }
 
@@ -463,7 +480,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         ensureValidType(value);
         final Object previous = map.putIfAbsent(key, value);
         if (previous == null) {
-            // A non-null value means that 'putIfAbsent' did nothing.
+            // A non-null value means that `putIfAbsent` did nothing.
             notifyChange(key, value);
         }
         return valueOf(previous);
@@ -513,7 +530,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         ensureValidType(value);
         final Object previous = (value != null) ? map.replace(key, value) : map.remove(key);
         if (previous != null) {
-            // A null value means that 'replace' did nothing.
+            // A null value means that `replace` did nothing.
             notifyChange(key, value);
         }
         return immediateValueOf(previous);
@@ -651,7 +668,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * A callback for {@link Cache#map} which forwards the calls to the {@code remapping} function provided by user.
      * Before to forward the calls, {@code ReplaceAdapter} verifies if the value is under computation. If yes, then
-     * this adapter block until the value is available for forwarding it to the user.
+     * this adapter blocks until the value is available for forwarding it to the user.
      */
     private final class ReplaceAdapter implements BiFunction<K,Object,Object> {
         /** The new values for which to send notifications. */
@@ -827,7 +844,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
          * This method should be invoked from the background thread only.
          */
         @Override public void run() {
-            Cache.this.adjustReferences(key, value);
+            adjustReferences(key, value);
         }
     }
 
@@ -864,9 +881,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
                 if (value == null) {
                     /*
                      * We succeed in adding the handler in the map (we know that because all our
-                     * map.put(…) or map.replace(…) operations are guaranteed to put non-null
-                     * values). We are done. But before to leave, declare that we do not want to
-                     * unlock in the finally clause (we want the lock to still active).
+                     * map.put(…) or map.replace(…) operations are guaranteed to put non-null values).
+                     * We are done. But before to leave, declare that we do not want to unlock in the
+                     * `finally` clause (we want the lock to still active).
                      */
                     unlock = false;
                     return handler;
@@ -1112,7 +1129,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
                     throw new IllegalArgumentException(Errors.format(
                             Errors.Keys.IllegalArgumentClass_2, "result", result.getClass()));
                 }
-                // Assignation of 'value' must happen before we release the lock.
+                // Assignation of `value` must happen before we release the lock.
                 value = result;
                 if (result != null) {
                     done = map.replace(key, this, result);
@@ -1168,7 +1185,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         public void run() {
             final V value = this.value;
             if (value != null) {
-                Cache.this.adjustReferences(key, value);
+                adjustReferences(key, value);
             }
         }
     }
@@ -1182,16 +1199,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     private void adjustReferences(final K key, final V value) {
         int cost = (value != null) ? cost(value) : 0;
         synchronized (costs) {
-            final Integer old = costs.put(key, cost);
+            final Integer old = (cost > 0) ? costs.put(key, cost) : costs.remove(key);
             if (old != null) {
                 cost -= old;
-                /*
-                 * This block exists for more safety but should never be executed. If execution happens anyway,
-                 * the instance in the `costs` map may still the old one (depending on `HashMap` implementation),
-                 * not the new instance given as `key` argument. It may be a problem if we rely on this instance
-                 * for preventing the cleaning of weak references. It should nevertheless be okay because the
-                 * `costs` map is used for `Cache` entries that are not yet weak references.
-                 */
             }
             if ((totalCost += cost) > costLimit) {
                 final Iterator<Map.Entry<K,Integer>> it = costs.entrySet().iterator();
@@ -1208,8 +1218,8 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
                     final Object oldValue = map.get(oldKey);
                     if (oldValue != null && !isReservedType(oldValue)) {
                         @SuppressWarnings("unchecked")
-                        final Reference<V> ref = soft ? new Soft<>(map, oldKey, (V) oldValue)
-                                                      : new Weak<>(map, oldKey, (V) oldValue);
+                        final Reference<V> ref = soft ? new Soft(oldKey, (V) oldValue)
+                                                      : new Weak(oldKey, (V) oldValue);
                         if (!map.replace(oldKey, oldValue, ref)) {
                             ref.clear();                // Prevents the reference to be enqueued.
                         }
@@ -1224,52 +1234,60 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
-     * A soft reference which remove itself from the concurrent map when the reference
-     * is garbage-collected.
+     * A soft reference which removes itself from the cache when the reference is garbage-collected.
      */
-    private static final class Soft<K,V> extends SoftReference<V> implements Disposable {
-        /** The key of the referenced value.      */ private final K key;
-        /** The map which contains the reference. */ private final ConcurrentMap<K,Object> map;
+    private final class Soft extends SoftReference<V> implements Disposable {
+        /** The key of the referenced value. */
+        private final K key;
 
-        /** Creates a references to be stored in the given map under the given key. */
-        Soft(final ConcurrentMap<K,Object> map, final K key, final V value) {
+        /** Creates a references to be stored in the cache under the given key. */
+        Soft(final K key, final V value) {
             super(value, ReferenceQueueConsumer.QUEUE);
-            this.map = map;
             this.key = key;
         }
 
         /** Removes the reference from the map. */
         @Override public void dispose() {
-            map.remove(key, this);
-            /*
-             * There is nothing to remove from the cost map, since the latter
-             * contains only the keys of objects hold by strong reference.
-             */
+            removeKey(key, this);
         }
     }
 
     /**
-     * A weak reference which remove itself from the concurrent map when the reference
-     * is garbage-collected.
+     * A weak reference which removes itself from the cache when the reference is garbage-collected.
      */
-    private static final class Weak<K,V> extends WeakReference<V> implements Disposable {
-        /** The key of the referenced value.      */ private final K key;
-        /** The map which contains the reference. */ private final ConcurrentMap<K,Object> map;
+    private final class Weak extends WeakReference<V> implements Disposable {
+        /** The key of the referenced value. */
+        private final K key;
 
-        /** Creates a references to be stored in the given map under the given key. */
-        Weak(final ConcurrentMap<K,Object> map, final K key, final V value) {
+        /** Creates a references to be stored in the cache under the given key. */
+        Weak(final K key, final V value) {
             super(value, ReferenceQueueConsumer.QUEUE);
-            this.map = map;
             this.key = key;
         }
 
         /** Removes the reference from the map. */
         @Override public void dispose() {
-            map.remove(key, this);
-            /*
-             * There is nothing to remove from the cost map, since the latter
-             * contains only the keys of objects hold by strong reference.
-             */
+            removeKey(key, this);
+        }
+    }
+
+    /**
+     * Removes the given key from the map if it is associated to the given value, otherwise do nothing.
+     * This method is invoked when the value of a weak or soft reference has been cleared.
+     * Theoretically no entry for that key should exist in the {@link #costs} map because
+     * that map contains only the keys of objects hold by strong references.
+     * But we check anyway for reducing the risk of memory leaks.
+     * It may happen if some keys are removed from {@link #keySet()} instead of using {@code Cache} API.
+     *
+     * @param key    key of the entry to remove.
+     * @param value  expected value associated to the given entry.
+     */
+    private void removeKey(final K key, final Reference<V> value) {
+        if (map.remove(key, value)) {
+            synchronized (costs) {
+                final Integer cost = costs.remove(key);
+                if (cost != null) totalCost -= cost;
+            }
         }
     }
 
@@ -1277,7 +1295,13 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * Returns the set of keys in this cache. The returned set is subjects to the same caution
      * than the ones documented in the {@link ConcurrentHashMap#keySet()} method.
      *
+     * <p>If some elements are removed from the key set, then {@link #flush()} should be invoked after removals.
+     * This is not done automatically by the returned set. For safety, the {@link #remove(Object)} methods defined
+     * in the {@code Cache} class should be used instead.</p>
+     *
      * @return the set of keys in this cache.
+     *
+     * @see #flush()
      */
     @Override
     public Set<K> keySet() {
@@ -1344,5 +1368,24 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      */
     protected int cost(final V value) {
         return 1;
+    }
+
+    /**
+     * Forces the removal of all garbage collected values in the map.
+     * This method should not need to be invoked when using {@code Cache} API.
+     * It is provided as a debugging tools when suspecting a memory leak.
+     *
+     * @return {@code true} if some entries have been removed as a result of this method call.
+     *
+     * @see #keySet()
+     *
+     * @since 1.3
+     */
+    public boolean flush() {
+        boolean changed = map.values().removeIf(Cache::isNull);
+        synchronized (costs) {
+            changed |= costs.keySet().retainAll(map.keySet());
+        }
+        return changed;
     }
 }

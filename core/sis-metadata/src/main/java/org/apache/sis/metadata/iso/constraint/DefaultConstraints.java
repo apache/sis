@@ -82,31 +82,37 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * Limitation affecting the fitness for use of the resource.
      * Example: <cite>"not to be used for navigation"</cite>.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> useLimitations;
 
     /**
      * Spatial and / or temporal extent and or level of the application of the constraints restrictions.
      */
+    @SuppressWarnings("serial")
     private Scope constraintApplicationScope;
 
     /**
      * Graphic / symbol indicating the constraint.
      */
+    @SuppressWarnings("serial")
     private Collection<BrowseGraphic> graphics;
 
     /**
      * Citation for the limitation of constraint.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> references;
 
     /**
      * Information concerning the parties to whom the resource can or cannot be released.
      */
+    @SuppressWarnings("serial")
     private Releasability releasability;
 
     /**
      * Party responsible for the resource constraints.
      */
+    @SuppressWarnings("serial")
     private Collection<Responsibility> responsibleParties;
 
     /**

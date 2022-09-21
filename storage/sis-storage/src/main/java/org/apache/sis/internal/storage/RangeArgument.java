@@ -35,7 +35,7 @@ import org.apache.sis.util.Localized;
 
 
 /**
- * The user-provided {@code range} argument together with a set of convenience tools.
+ * The user-provided {@code ranges} argument together with a set of convenience tools.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -72,7 +72,7 @@ public final class RangeArgument {
     private SampleDimension.Builder builder;
 
     /**
-     * Encapsulates the given {@code range} argument packed in high bits.
+     * Encapsulates the user-supplied {@code ranges} argument, packed in high bits of {@code packed}.
      */
     private RangeArgument(final long[] packed, final boolean hasAllBands) {
         this.packed      = packed;
@@ -81,32 +81,32 @@ public final class RangeArgument {
     }
 
     /**
-     * Validate the {@code range} argument given to {@link GridCoverageResource#read(GridGeometry, int...)}.
+     * Validate the {@code ranges} argument given to {@link GridCoverageResource#read(GridGeometry, int...)}.
      * This method verifies that all indices are between 0 and {@code numSampleDimensions} and that there is
      * no duplicated index.
      *
      * @param  numSampleDimensions  number of sample dimensions in the resource.
      *         Equal to <code>{@linkplain GridCoverageResource#getSampleDimensions()}.size()</code>.
-     * @param  range  the {@code range} argument given by the user. May be null or empty.
+     * @param  ranges  the {@code ranges} argument given by the user. May be null or empty.
      * @param  listeners  source of locale to use if an exception must be thrown.
-     * @return the {@code range} argument encapsulated with a set of convenience tools.
+     * @return the {@code ranges} argument encapsulated with a set of convenience tools.
      * @throws IllegalArgumentException if a range index is invalid.
      */
-    public static RangeArgument validate(final int numSampleDimensions, final int[] range, final Localized listeners) {
+    public static RangeArgument validate(final int numSampleDimensions, final int[] ranges, final Localized listeners) {
         ArgumentChecks.ensureStrictlyPositive("numSampleDimensions", numSampleDimensions);
         final long[] packed;
-        if (range == null || range.length == 0) {
+        if (ranges == null || ranges.length == 0) {
             packed = new long[numSampleDimensions];
             for (int i=1; i<numSampleDimensions; i++) {
                 packed[i] = (((long) i) << Integer.SIZE) | i;
             }
         } else {
             /*
-             * Pattern: [specified `range` value | index in `range` where the value was specified]
+             * Pattern: [specified `range` value | index in `ranges` where the value was specified]
              */
-            packed = new long[range.length];
-            for (int i=0; i<range.length; i++) {
-                final int r = range[i];
+            packed = new long[ranges.length];
+            for (int i=0; i<ranges.length; i++) {
+                final int r = ranges[i];
                 if (r < 0 || r >= numSampleDimensions) {
                     throw new IllegalArgumentException(Resources.forLocale(listeners.getLocale()).getString(
                             Resources.Keys.InvalidSampleDimensionIndex_2, numSampleDimensions - 1, r));
@@ -114,7 +114,7 @@ public final class RangeArgument {
                 packed[i] = (((long) r) << Integer.SIZE) | i;
             }
             /*
-             * Sort by increasing `range` value, but keep together with index in `range` where each
+             * Sort by increasing `range` value, but keep together with index in `ranges` where each
              * value was specified. After sorting, it become easy to check for duplicated values.
              */
             Arrays.sort(packed);
@@ -151,8 +151,8 @@ public final class RangeArgument {
     }
 
     /**
-     * Returns the number of sample dimensions. This is the length of the range array supplied by user,
-     * or the number of bands in the source coverage if the {@code range} array was null or empty.
+     * Returns the number of sample dimensions. This is the length of the {@code ranges} array supplied by user,
+     * or the number of bands in the source coverage if the {@code ranges} array was null or empty.
      *
      * @return the number of sample dimensions selected by user.
      */
@@ -162,10 +162,10 @@ public final class RangeArgument {
 
     /**
      * Returns the indices of bands selected by the user.
-     * This is a copy of the {@code range} argument specified by the user, in same order.
+     * This is a copy of the {@code ranges} argument specified by the user, in same order.
      * Note that this is not necessarily increasing order.
      *
-     * @return a copy of the {@code range} argument specified by the user.
+     * @return a copy of the {@code ranges} argument specified by the user.
      */
     public int[] getSelectedBands() {
         final int[] bands = new int[getNumBands()];
@@ -179,7 +179,7 @@ public final class RangeArgument {
      * Returns the value of the first index specified by the user. This is not necessarily equal to
      * {@code getSourceIndex(0)} if the user specified the bands out of order.
      *
-     * @return index of the first value in the user-specified {@code range} array.
+     * @return index of the first value in the user-specified {@code ranges} array.
      */
     public int getFirstSpecified() {
         for (final long p : packed) {
@@ -202,11 +202,11 @@ public final class RangeArgument {
     }
 
     /**
-     * Returns the i<sup>th</sup> band position. This is the index in the user-supplied {@code range} array
+     * Returns the i<sup>th</sup> band position. This is the index in the user-supplied {@code ranges} array
      * where the {@code getSourceIndex(i)} value was specified.
      *
      * @param  i  index of the range index to get, from 0 inclusive to {@link #getNumBands()} exclusive.
-     * @return index in user-supplied {@code range} array where was specified the {@code getSourceIndex(i)} value.
+     * @return index in user-supplied {@code ranges} array where was specified the {@code getSourceIndex(i)} value.
      */
     public int getTargetIndex(final int i) {
         return (int) packed[i];
@@ -322,11 +322,11 @@ public final class RangeArgument {
      * <ul class="verbose">
      *   <li>If {@code view} is {@code true}, the sample model returned by this method will expect the
      *       same {@link java.awt.image.DataBuffer} than the one expected by the original {@code model}.
-     *       Bands enumerated in the {@code range} argument will be used and other bands will be ignored.
+     *       Bands enumerated in the {@code ranges} argument will be used and other bands will be ignored.
      *       This mode is efficient if the data are already in memory and we want to avoid copying them.
      *       An inconvenient is that all bands, including the ignored ones, are retained in memory.</li>
      *   <li>If {@code view} is {@code false}, then this method will "compress" bank indices and bit masks
-     *       for making them consecutive. For example if the {@code range} argument specifies that the bands
+     *       for making them consecutive. For example if the {@code ranges} argument specifies that the bands
      *       to read are {1, 3, 4, 6, …}, then "compressed" sample model will use bands {0, 1, 2, 3, …}.
      *       This mode is efficient if the data are not yet in memory and the reader is capable to skip
      *       the bands to ignore. In such case, this mode save memory.</li>

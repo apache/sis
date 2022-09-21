@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CompoundCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -71,6 +71,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *
      * @see #getOperation()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private SingleOperation operation;
 
     /**
@@ -345,7 +346,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
         if (operation == null) {
             operation = op;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultPassThroughOperation.class, "setOperation", "coordOperation");
+            ImplementationHelper.propertyAlreadySet(DefaultPassThroughOperation.class, "setOperation", "coordOperation");
         }
     }
 

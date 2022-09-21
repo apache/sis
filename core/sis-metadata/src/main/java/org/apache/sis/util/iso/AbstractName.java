@@ -356,6 +356,7 @@ public abstract class AbstractName implements GenericName, Serializable {
          * The sequence of {@linkplain DefaultLocalName local names} making this generic name.
          * This is the value returned by {@link AbstractName#getParsedNames()}.
          */
+        @SuppressWarnings("serial")
         private final List<? extends LocalName> parsedNames;
 
         /**

@@ -32,7 +32,7 @@ import org.apache.sis.metadata.UnmodifiableMetadataException;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
@@ -44,7 +44,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 
 /**
@@ -95,6 +95,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * All identifiers associated with this metadata, or {@code null} if none.
      * This field is initialized to a non-null value when first needed.
      */
+    @SuppressWarnings("serial")
     private Collection<Identifier> identifiers;
 
     /**
@@ -405,7 +406,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @XmlSchemaType(name = "ID")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
-        return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);
+        return isNullOrEmpty(identifiers) ? null : ImplementationHelper.getObjectID(this);
     }
 
     /**
@@ -415,7 +416,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     @SuppressWarnings("unused")
     private void setID(String id) {
-        MetadataUtilities.setObjectID(this, id);
+        ImplementationHelper.setObjectID(this, id);
     }
 
     /**

@@ -60,6 +60,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
     /**
      * The original operation method for which this {@code InverseOperationMethod} is the inverse.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final OperationMethod inverse;
 
     /**
@@ -187,7 +188,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
                         } else {
                             tgt.setValue(-src.doubleValue());
                         }
-                        // No need to add 'tgt' to 'copy' since it was done by the call to copy.parameter(…).
+                        // No need to add `tgt` to `copy` since it was done by the call to copy.parameter(…).
                         continue;
                     }
                 }

@@ -81,51 +81,61 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Description of the mission on which the platform observations are made and the objectives of that mission.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Identification of the mission.
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Status of the data acquisition.
      */
+    @SuppressWarnings("serial")
     private Progress status;
 
     /**
      * Collection technique for the operation.
      */
+    @SuppressWarnings("serial")
     private OperationType type;
 
     /**
      * Sub-missions that make up part of a larger mission.
      */
+    @SuppressWarnings("serial")
     private Collection<Operation> childOperations;
 
     /**
      * Object(s) or area(s) of interest to be sensed.
      */
+    @SuppressWarnings("serial")
     private Collection<Objective> objectives;
 
     /**
      * Heritage of the operation.
      */
+    @SuppressWarnings("serial")
     private Operation parentOperation;
 
     /**
      * Plan satisfied by the operation.
      */
+    @SuppressWarnings("serial")
     private Plan plan;
 
     /**
      * Platform (or platforms) used in the operation.
      */
+    @SuppressWarnings("serial")
     private Collection<Platform> platforms;
 
     /**
      * Record of an event occurring during an operation.
      */
+    @SuppressWarnings("serial")
     private Collection<Event> significantEvents;
 
     /**

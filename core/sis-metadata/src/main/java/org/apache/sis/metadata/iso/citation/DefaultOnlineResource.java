@@ -89,11 +89,13 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Name of the online resources.
      */
+    @SuppressWarnings("serial")
     private String name;
 
     /**
      * Detailed text description of what the online resource is/does.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**

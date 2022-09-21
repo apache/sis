@@ -70,7 +70,7 @@ import org.apache.sis.util.CharSequences;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_w/">SHIZUKU (GCOM-W) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -147,12 +147,17 @@ public final class GCOM_W extends Convention {
      * The given parameter is a name from <cite>CF conventions</cite> or from <cite>Attribute Convention for Dataset Discovery
      * (ACDD)</cite>.
      *
-     * @param  name  an attribute name from CF or ACDD convention.
-     * @return the attribute name expected to be found in a netCDF file for GCOM-W, or {@code name} if unknown.
+     * @param  name   an attribute name from CF or ACDD convention.
+     * @param  index  index of the element to get from the list of names.
+     * @return the attribute name expected to be found in a netCDF file for GCOM-W, or {@code null} if none.
      */
     @Override
-    public String mapAttributeName(final String name) {
-        return ATTRIBUTES.getOrDefault(name, name);
+    public String mapAttributeName(final String name, final int index) {
+        switch (index) {
+            case 0:  return name;
+            case 1:  return ATTRIBUTES.get(name);
+            default: return null;
+        }
     }
 
     /**

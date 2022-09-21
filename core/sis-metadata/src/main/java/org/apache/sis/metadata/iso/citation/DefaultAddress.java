@@ -62,16 +62,19 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * State, province of the location.
      */
+    @SuppressWarnings("serial")
     private InternationalString administrativeArea;
 
     /**
      * The city of the location
      */
+    @SuppressWarnings("serial")
     private InternationalString city;
 
     /**
      * Country of the physical address.
      */
+    @SuppressWarnings("serial")
     private InternationalString country;
 
     /**
@@ -82,11 +85,13 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Address line for the location (as described in ISO 11180, Annex A).
      */
+    @SuppressWarnings("serial")
     private Collection<String> deliveryPoints;
 
     /**
      * Address of the electronic mailbox of the responsible organization or individual.
      */
+    @SuppressWarnings("serial")
     private Collection<String> electronicMailAddresses;
 
     /**

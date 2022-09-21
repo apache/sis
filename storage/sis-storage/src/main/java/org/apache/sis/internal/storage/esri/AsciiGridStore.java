@@ -420,18 +420,19 @@ cellsize:       if (value != null) {
     /**
      * Loads the data if not already done and closes the channel if read-only.
      * In current implementation the image is always fully loaded and cached.
-     * The given domain is ignored. We do that in order to have determinist and stable values
-     * for the sample range and for the data type. Loading the full image is reasonable if ASCII Grid
-     * files contain only small images, which is usually the case given how inefficient this format is.
+     * The given domain is ignored. We do that in order to have determinist
+     * and stable values for the range of sample values and for the data type.
+     * Loading the full image is reasonable if ASCII Grid files contain only small images,
+     * which is usually the case given how inefficient this format is.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   shall be either 0 or a range containing only 0.
+     * @param  ranges  shall be either {@code null} or an array containing only 0.
      * @return the grid coverage for the specified domain.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public synchronized GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
-        final RangeArgument bands = RangeArgument.validate(1, range, listeners);
+    public synchronized GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
+        final RangeArgument bands = RangeArgument.validate(1, ranges, listeners);
         if (coverage == null) try {
             readHeader();
             final CharactersView view = input();

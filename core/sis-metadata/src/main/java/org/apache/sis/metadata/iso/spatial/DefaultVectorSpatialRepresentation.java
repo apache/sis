@@ -65,6 +65,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
     /**
      * Information about the geometric objects used in the dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<GeometricObjects> geometricObjects;
 
     /**

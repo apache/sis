@@ -31,8 +31,8 @@ import org.opengis.metadata.acquisition.Sequence;
 import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
 
 
 /**
@@ -102,16 +102,19 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Objective or objectives satisfied by an event.
      */
+    @SuppressWarnings("serial")
     private Collection<Objective> expectedObjectives;
 
     /**
      * Pass during which an event occurs.
      */
+    @SuppressWarnings("serial")
     private PlatformPass relatedPass;
 
     /**
      * Instrument or instruments for which the event is meaningful.
      */
+    @SuppressWarnings("serial")
     private Collection<Instrument> relatedSensors;
 
     /**

@@ -50,7 +50,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -1011,7 +1011,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                 }
             }
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
+            ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
         }
     }
 
@@ -1130,7 +1130,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (remarks == null) {
             remarks = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setRemarks", "remarks");
+            ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, "setRemarks", "remarks");
         }
     }
 }

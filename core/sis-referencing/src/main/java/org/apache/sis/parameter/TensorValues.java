@@ -82,6 +82,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * The parameter for the number of row, columns and other dimensions in the tensor.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final ParameterValue<Integer>[] dimensions;
 
     /**
@@ -91,6 +92,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * <p>Will be constructed only when first requested.
      * May be resized at any moment if a {@link #dimensions} parameter value change.</p>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object[] values;
 
     /**

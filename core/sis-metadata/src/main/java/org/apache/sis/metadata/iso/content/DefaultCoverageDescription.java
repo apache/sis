@@ -38,7 +38,7 @@ import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**
@@ -87,21 +87,25 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Description of the attribute described by the measurement value.
      */
+    @SuppressWarnings("serial")
     private RecordType attributeDescription;
 
     /**
      * Identifier for the level of processing that has been applied to the resource.
      */
+    @SuppressWarnings("serial")
     private Identifier processingLevelCode;
 
     /**
      * Information on attribute groups of the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<AttributeGroup> attributeGroups;
 
     /**
      * Provides the description of the specific range elements of a coverage.
      */
+    @SuppressWarnings("serial")
     private Collection<RangeElementDescription> rangeElementDescriptions;
 
     /**
