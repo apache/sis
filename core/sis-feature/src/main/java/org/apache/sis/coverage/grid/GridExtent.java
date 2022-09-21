@@ -1697,7 +1697,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
      * @see #startsAtZero()
-     * @see GridGeometry#translate(long...)
+     * @see GridGeometry#shiftGrid(long...)
      *
      * @since 1.1
      */

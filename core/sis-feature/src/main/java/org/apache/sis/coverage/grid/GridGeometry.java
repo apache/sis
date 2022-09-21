@@ -233,6 +233,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CENTER
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final MathTransform gridToCRS;
 
     /**
@@ -242,6 +243,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final MathTransform cornerToCRS;
 
     /**
@@ -1444,7 +1446,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns a grid geometry translated by the given amount of cells compared to this grid.
+     * Translates grid coordinates by the given amount of cells without changing "real world" coordinates.
      * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
      * i.e. both low and high grid coordinates are displaced by the same amount of cells.
      * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
@@ -1463,9 +1465,9 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see GridExtent#translate(long...)
      *
-     * @since 1.1
+     * @since 1.3
      */
-    public GridGeometry translate(final long... translation) {
+    public GridGeometry shiftGrid(final long... translation) {
         ArgumentChecks.ensureNonNull("translation", translation);
         GridExtent newExtent = extent;
         if (newExtent != null) {
@@ -1487,6 +1489,22 @@ public class GridGeometry implements LenientComparable, Serializable {
             t2 = MathTransforms.concatenate(t, t2);
         }
         return new GridGeometry(newExtent, t1, t2, envelope, resolution, nonLinears);
+    }
+
+    /**
+     * Returns a grid geometry translated by the given amount of cells compared to this grid.
+     *
+     * @param  translation  translation to apply on each grid axis in order.
+     * @return a grid geometry whose coordinates and the "grid to CRS" transforms have been translated by given amounts.
+     *
+     * @since 1.1
+     *
+     * @deprecated Renamed {@link #shiftGrid(long...)} for making clearer that this method changes
+     *             grid coordinates without changing "real world" coordinates.
+     */
+    @Deprecated
+    public GridGeometry translate(final long... translation) {
+        return shiftGrid(translation);
     }
 
     /**

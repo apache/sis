@@ -216,7 +216,7 @@ class WritableStore extends WorldFileStore {
         for (int i=0; i<translation.length; i++) {
             translation[i] = Math.negateExact(extent.getLow(i));
         }
-        gg = gg.translate(translation);
+        gg = gg.shiftGrid(translation);
         /*
          * If the data store already contains a coverage, then the given grid geometry
          * must be identical to the existing one, in which case there is nothing to do.

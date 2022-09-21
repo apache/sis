@@ -500,10 +500,10 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#translate(long...)}.
+     * Tests {@link GridGeometry#shiftGrid(long[])}.
      */
     @Test
-    public void testTranslate() {
+    public void testShiftGrid() {
         GridGeometry grid = new GridGeometry(
                 new GridExtent(17, 10),
                 PixelInCell.CELL_CENTER,
@@ -516,7 +516,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * The "real world" envelope should be unchanged by grid translation.
          */
         final Envelope envelope = grid.getEnvelope();
-        grid = grid.translate(12, 15);
+        grid = grid.shiftGrid(12, 15);
         assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, grid.getExtent());
         assertEquals(envelope, grid.getEnvelope());
     }
