@@ -66,7 +66,7 @@ final class DimensionReducer {
                     dimensions = AxisDirections.indicesOfLenientMapping(targetCS, sourceCS);
                     if (dimensions != null) {
                         Arrays.sort(dimensions);
-                        reducedCRS = CRS.reduce(targetCRS, dimensions);
+                        reducedCRS = CRS.selectDimensions(targetCRS, dimensions);
                     }
                 }
             }

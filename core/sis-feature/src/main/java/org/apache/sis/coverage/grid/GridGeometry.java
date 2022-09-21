@@ -751,7 +751,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @return the number of grid dimensions.
      *
-     * @see #reduce(int...)
+     * @see #selectDimensions(int[])
      * @see GridExtent#getDimension()
      */
     public final int getDimension() {
@@ -1370,7 +1370,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
      * {@code GridDerivation} preserves the number of dimensions. For example {@linkplain GridDerivation#slice slicing}
      * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
-     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #reduce(int...)}.
+     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */
@@ -1536,10 +1536,12 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
      * @see GridExtent#getSubspaceDimensions(int)
-     * @see GridExtent#reduceDimension(int[])
-     * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
+     * @see GridExtent#selectDimensions(int[])
+     * @see org.apache.sis.referencing.CRS#selectDimensions(CoordinateReferenceSystem, int[])
+     *
+     * @since 1.3
      */
-    public GridGeometry reduce(int... dimensions) {
+    public GridGeometry selectDimensions(int... dimensions) {
         dimensions = GridExtent.verifyDimensions(dimensions, getDimension());
         if (dimensions != null) try {
             return new SliceGeometry(this, null, dimensions, null).reduce(null, -1);
@@ -1547,6 +1549,19 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
+    }
+
+    /**
+     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
+     *
+     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
+     *
+     * @deprecated Renamed {@link #selectDimensions(int...)} for clarity and consistency with {@link GridExtent}.
+     */
+    @Deprecated
+    public GridGeometry reduce(int... dimensions) {
+        return selectDimensions(dimensions);
     }
 
     /**

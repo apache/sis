@@ -618,7 +618,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
 
 
     /**
-     * A row with an natural ordering that use the first part of the name before to use the authority code.
+     * A row with a natural ordering that use the first part of the name before to use the authority code.
      * We use only the part of the name prior some keywords (e.g. {@code "zone"}).
      * For example if the following codes:
      *

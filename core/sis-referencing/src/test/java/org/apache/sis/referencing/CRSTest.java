@@ -407,27 +407,27 @@ public final strictfp class CRSTest extends TestCase {
     }
 
     /**
-     * Tests {@link CRS#reduce(CoordinateReferenceSystem, int...)} in the simpler case where
-     * there is no three-dimensional geographic CRS to separate.
+     * Tests {@link CRS#selectDimensions(CoordinateReferenceSystem, int[])} in the simpler case
+     * where there is no three-dimensional geographic CRS to separate.
      *
      * @throws FactoryException if an error occurred while creating a compound CRS.
      *
      * @since 1.0
      */
     @Test
-    public void testReduce() throws FactoryException {
-        assertSame(HardCodedCRS.TIME,                     CRS.reduce(HardCodedCRS.GEOID_4D, 3));
-        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT,   CRS.reduce(HardCodedCRS.GEOID_4D, 2));
-        assertSame(HardCodedCRS.WGS84,                    CRS.reduce(HardCodedCRS.GEOID_4D, 0, 1));
-        assertSame(HardCodedCRS.GEOID_4D,                 CRS.reduce(HardCodedCRS.GEOID_4D, 0, 1, 2, 3));
-        assertSame(HardCodedCRS.NESTED,                   CRS.reduce(HardCodedCRS.NESTED,   0, 1, 2, 3));
-        assertSame(HardCodedCRS.GEOID_3D,                 CRS.reduce(HardCodedCRS.NESTED,   0, 1, 2));
-        assertEqualsIgnoreMetadata(HardCodedCRS.GEOID_3D, CRS.reduce(HardCodedCRS.GEOID_4D, 0, 1, 2));
+    public void testSelectDimensions() throws FactoryException {
+        assertSame(HardCodedCRS.TIME,                     CRS.selectDimensions(HardCodedCRS.GEOID_4D, 3));
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT,   CRS.selectDimensions(HardCodedCRS.GEOID_4D, 2));
+        assertSame(HardCodedCRS.WGS84,                    CRS.selectDimensions(HardCodedCRS.GEOID_4D, 0, 1));
+        assertSame(HardCodedCRS.GEOID_4D,                 CRS.selectDimensions(HardCodedCRS.GEOID_4D, 0, 1, 2, 3));
+        assertSame(HardCodedCRS.NESTED,                   CRS.selectDimensions(HardCodedCRS.NESTED,   0, 1, 2, 3));
+        assertSame(HardCodedCRS.GEOID_3D,                 CRS.selectDimensions(HardCodedCRS.NESTED,   0, 1, 2));
+        assertEqualsIgnoreMetadata(HardCodedCRS.GEOID_3D, CRS.selectDimensions(HardCodedCRS.GEOID_4D, 0, 1, 2));
     }
 
     /**
-     * Tests {@link CRS#reduce(CoordinateReferenceSystem, int...)} with a three-dimensional geographic CRS
-     * to be reduced to a two-dimensional CRS.
+     * Tests {@link CRS#selectDimensions(CoordinateReferenceSystem, int[])} with
+     * a three-dimensional geographic CRS to be reduced to a two-dimensional CRS.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
      *
@@ -436,13 +436,13 @@ public final strictfp class CRSTest extends TestCase {
     @Test
     public void testReduceGeographic3D() throws FactoryException {
         final GeographicCRS crs = HardCodedCRS.WGS84_3D;
-        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.reduce(crs, 2));
-        assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.reduce(crs, 0, 1));
+        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.selectDimensions(crs, 2));
+        assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.selectDimensions(crs, 0, 1));
     }
 
     /**
-     * Tests {@link CRS#reduce(CoordinateReferenceSystem, int...)} with a three-dimensional projected CRS
-     * to be reduced to a two-dimensional CRS.
+     * Tests {@link CRS#selectDimensions(CoordinateReferenceSystem, int[])} with
+     * a three-dimensional projected CRS to be reduced to a two-dimensional CRS.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
      *
@@ -451,8 +451,8 @@ public final strictfp class CRSTest extends TestCase {
     @Test
     public void testReduceProjected3D() throws FactoryException {
         final ProjectedCRS crs = HardCodedConversions.mercator3D();
-        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(), CRS.reduce(crs, 2));
-        assertEqualsIgnoreMetadata(HardCodedConversions.mercator(), CRS.reduce(crs, 0, 1));
+        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(), CRS.selectDimensions(crs, 2));
+        assertEqualsIgnoreMetadata(HardCodedConversions.mercator(), CRS.selectDimensions(crs, 0, 1));
     }
 
     /**

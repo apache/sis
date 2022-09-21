@@ -551,10 +551,10 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#reduce(int...)}.
+     * Tests {@link GridGeometry#selectDimensions(int[])}.
      */
     @Test
-    public void testReduce() {
+    public void testSelectDimensions() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
                 PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
@@ -565,7 +565,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Tests on the two first dimensions.
          */
-        GridGeometry reduced = grid.reduce(0, 1);
+        GridGeometry reduced = grid.selectDimensions(0, 1);
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {336, 20}, new long[] {401, 419}, reduced.getExtent());
         assertSame("CRS", HardCodedCRS.WGS84, reduced.getCoordinateReferenceSystem());
@@ -577,7 +577,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Tests on the last dimension.
          */
-        reduced = grid.reduce(2);
+        reduced = grid.selectDimensions(2);
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {4}, new long[] {10}, reduced.getExtent());
         assertSame("CRS", HardCodedCRS.GRAVITY_RELATED_HEIGHT, reduced.getCoordinateReferenceSystem());
@@ -594,12 +594,12 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#reduce(int...)} with a {@code gridToCRS} transform having a constant value
+     * Tests {@link GridGeometry#selectDimensions(int[])} with a {@code gridToCRS} transform having a constant value
      * in one dimension. This method tests indirectly {@link SliceGeometry#findTargetDimensions(MathTransform,
      * GridExtent, double[], int[], int)}.
      */
     @Test
-    public void testReduceScalelessDimension() {
+    public void testRemoveScalelessDimension() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
                 PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
@@ -608,7 +608,7 @@ public final strictfp class GridGeometryTest extends TestCase {
                         0,   0,   0,    3,   // All scale coefficients set to 0.
                         0,   0,   0,    1)), HardCodedCRS.GEOID_3D);
 
-        GridGeometry reduced = grid.reduce(0, 1);
+        GridGeometry reduced = grid.selectDimensions(0, 1);
         MathTransform tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
         /*
          * If the boolean argument given to the `GridGeometry(GridGeometry, int[], boolean)` constructor was false,
@@ -630,7 +630,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * Test again by keeping the dimension without scale instead of discarding it.
          * We have to skip `verifyGridToCRS(reduced)` because matrix is non-invertible.
          */
-        reduced = grid.reduce(2);
+        reduced = grid.selectDimensions(2);
         tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
         assertMatrixEquals("gridToCRS", new Matrix2(0, 3, 0, 1), MathTransforms.getMatrix(tr), STRICT);
     }
