@@ -30,7 +30,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -176,7 +176,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     protected DefaultTemporalDatum(final TemporalDatum datum) {
         super(datum);
-        origin = MetadataUtilities.toMilliseconds(datum.getOrigin());
+        origin = ImplementationHelper.toMilliseconds(datum.getOrigin());
     }
 
     /**
@@ -220,7 +220,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     @XmlElement(name = "origin", required = true)
     @XmlJavaTypeAdapter(UniversalTimeAdapter.class)
     public Date getOrigin() {
-        return MetadataUtilities.toDate(origin);
+        return ImplementationHelper.toDate(origin);
     }
 
     /**
@@ -339,7 +339,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (origin == Long.MIN_VALUE) {
             origin = value.getTime();
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultTemporalDatum.class, "setOrigin", "origin");
+            ImplementationHelper.propertyAlreadySet(DefaultTemporalDatum.class, "setOrigin", "origin");
         }
     }
 }

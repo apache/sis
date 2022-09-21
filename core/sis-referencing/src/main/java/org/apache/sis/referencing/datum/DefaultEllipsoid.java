@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -762,7 +762,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             unit = measure.getUnit(Length.class);
             harmonizeAxisUnits(uom);
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultEllipsoid.class, "setSemiMajorAxisMeasure", "semiMajorAxis");
+            ImplementationHelper.propertyAlreadySet(DefaultEllipsoid.class, "setSemiMajorAxisMeasure", "semiMajorAxis");
         }
     }
 
@@ -819,7 +819,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             }
         }
         if (duplicate) {
-            MetadataUtilities.propertyAlreadySet(DefaultEllipsoid.class,
+            ImplementationHelper.propertyAlreadySet(DefaultEllipsoid.class,
                     "setSecondDefiningParameter", "secondDefiningParameter");
         }
     }

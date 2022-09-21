@@ -81,22 +81,26 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Brief description of a set of distribution options.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Provides a description of the format of the data to be distributed.
      */
+    @SuppressWarnings("serial")
     private Collection<Format> distributionFormats;
 
     /**
      * Provides information about the distributor.
      */
+    @SuppressWarnings("serial")
     private Collection<Distributor> distributors;
 
     /**
      * Provides information about technical means and media by which a resource is obtained
      * from the distributor.
      */
+    @SuppressWarnings("serial")
     private Collection<DigitalTransferOptions> transferOptions;
 
     /**

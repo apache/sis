@@ -67,7 +67,7 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
@@ -192,17 +192,20 @@ public class Convention {
      * The given parameter is a name from <cite>CF conventions</cite> or from <cite>Attribute Convention for Dataset Discovery
      * (ACDD)</cite>. Some of those attribute names are listed in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
      *
+     * <p>The returned names are conceptually a list. However instead of returning a {@link java.util.List},
+     * this method is invoked repeatedly with increasing index values until this method returns {@code null}.
+     * Implementation are encouraged to return the {@code name} argument unchanged as the value at index 0.</p>
+     *
      * <p>In current version of netCDF reader, this method is invoked only for global attributes,
      * not for the attributes on variables.</p>
      *
-     * <p>The default implementation returns {@code name} unchanged.</p>
-     *
-     * @param  name  an attribute name from CF or ACDD convention.
-     * @return the attribute name expected to be found in a netCDF file structured according this {@code Convention}.
-     *         If this convention does not know about attribute of the given name, then {@code name} is returned unchanged.
+     * @param  name   an attribute name from CF or ACDD convention.
+     * @param  index  index of the element to get from the list of names.
+     * @return the attribute name expected to be found in a netCDF file structured according this {@code Convention},
+     *         or {@code null} if there is no name mapping at the given index.
      */
-    public String mapAttributeName(final String name) {
-        return name;
+    public String mapAttributeName(final String name, final int index) {
+        return (index == 0) ? name : null;
     }
 
     /**

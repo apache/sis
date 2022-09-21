@@ -68,7 +68,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
@@ -152,7 +152,6 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("serial")                             // Fields are not statically typed as Serializable.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
     "metadataIdentifier",
@@ -216,112 +215,134 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Language(s) and character set(s) used within the dataset.
      */
+    @SuppressWarnings("serial")
     private Map<Locale,Charset> locales;
 
     /**
      * Identification of the parent metadata record.
      */
+    @SuppressWarnings("serial")
     private Citation parentMetadata;
 
     /**
      * Scope to which the metadata applies.
      */
+    @SuppressWarnings("serial")
     private Collection<DefaultMetadataScope> metadataScopes;
 
     /**
      * Parties responsible for the metadata information.
      */
+    @SuppressWarnings("serial")
     private Collection<ResponsibleParty> contacts;
 
     /**
      * Date(s) associated with the metadata.
      */
+    @SuppressWarnings("serial")
     private Collection<CitationDate> dateInfo;
 
     /**
      * Citation(s) for the standard(s) to which the metadata conform.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> metadataStandards;
 
     /**
      * Citation(s) for the profile(s) of the metadata standard to which the metadata conform.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> metadataProfiles;
 
     /**
      * Reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> alternativeMetadataReferences;
 
     /**
      * Online location(s) where the metadata is available.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> metadataLinkages;
 
     /**
      * Digital representation of spatial information in the dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<SpatialRepresentation> spatialRepresentationInfo;
 
     /**
      * Description of the spatial and temporal reference systems used in the dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<ReferenceSystem> referenceSystemInfo;
 
     /**
      * Information describing metadata extensions.
      */
+    @SuppressWarnings("serial")
     private Collection<MetadataExtensionInformation> metadataExtensionInfo;
 
     /**
      * Basic information about the resource(s) to which the metadata applies.
      */
+    @SuppressWarnings("serial")
     private Collection<Identification> identificationInfo;
 
     /**
      * Provides information about the feature catalogue and describes the coverage and
      * image data characteristics.
      */
+    @SuppressWarnings("serial")
     private Collection<ContentInformation> contentInfo;
 
     /**
      * Provides information about the distributor of and options for obtaining the resource(s).
      */
+    @SuppressWarnings("serial")
     private Distribution distributionInfo;
 
     /**
      * Provides overall assessment of quality of a resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<DataQuality> dataQualityInfo;
 
     /**
      * Provides information about the catalogue of rules defined for the portrayal of a resource(s).
      */
+    @SuppressWarnings("serial")
     private Collection<PortrayalCatalogueReference> portrayalCatalogueInfo;
 
     /**
      * Provides restrictions on the access and use of metadata.
      */
+    @SuppressWarnings("serial")
     private Collection<Constraints> metadataConstraints;
 
     /**
      * Provides information about the conceptual schema of a dataset.
      */
+    @SuppressWarnings("serial")
     private Collection<ApplicationSchemaInformation> applicationSchemaInfo;
 
     /**
      * Provides information about the frequency of metadata updates, and the scope of those updates.
      */
+    @SuppressWarnings("serial")
     private MaintenanceInformation metadataMaintenance;
 
     /**
      * Provides information about the acquisition of the data.
      */
+    @SuppressWarnings("serial")
     private Collection<AcquisitionInformation> acquisitionInformation;
 
     /**
      * Information about the provenance, sources and/or the production processes applied to the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<Lineage> resourceLineages;
 
     /**
@@ -934,7 +955,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(metadataScopes));
+        checkWritePermission(ImplementationHelper.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
@@ -982,7 +1003,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(metadataScopes));
+        checkWritePermission(ImplementationHelper.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
@@ -1072,7 +1093,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(dateInfo));
+        checkWritePermission(ImplementationHelper.valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
@@ -1205,7 +1226,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@link #setMetadataStandardVersion(String)} methods.
      */
     private void setMetadataStandard(final boolean version, final String newValue) {
-        checkWritePermission(MetadataUtilities.valueIfDefined(metadataStandards));
+        checkWritePermission(ImplementationHelper.valueIfDefined(metadataStandards));
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
@@ -1364,7 +1385,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = (newValue != null) ? new URI(newValue) : null;
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
-        checkWritePermission(MetadataUtilities.valueIfDefined(info));
+        checkWritePermission(ImplementationHelper.valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             if (uri == null) return;
@@ -1382,10 +1403,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             firstOnline = new DefaultOnlineResource();
         }
         firstOnline.setLinkage(uri);
-        onlineResources = MetadataUtilities.setFirst(onlineResources, firstOnline);
+        onlineResources = ImplementationHelper.setFirst(onlineResources, firstOnline);
         citation.setOnlineResources(onlineResources);
         firstId.setCitation(citation);
-        info = MetadataUtilities.setFirst(info, firstId);
+        info = ImplementationHelper.setFirst(info, firstId);
         setIdentificationInfo(info);
     }
 

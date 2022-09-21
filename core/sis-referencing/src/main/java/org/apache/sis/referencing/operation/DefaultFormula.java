@@ -58,11 +58,13 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Formula(s) or procedure used by the operation method.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final InternationalString formula;
 
     /**
      * Reference to a publication giving the formula(s) or procedure used by the coordinate operation method.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Citation citation;
 
     /**

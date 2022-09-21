@@ -17,7 +17,6 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
@@ -172,7 +171,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
             final AbstractAttribute<?>[] characterizedBy = (AbstractAttribute<?>[]) in.readObject();
             if (characterizedBy != null) {
                 characteristics = newCharacteristicsMap();
-                characteristics.values().addAll(Arrays.asList(characterizedBy));
+                Collections.addAll(characteristics.values(), characterizedBy);
             }
         } catch (RuntimeException e) {
             // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.

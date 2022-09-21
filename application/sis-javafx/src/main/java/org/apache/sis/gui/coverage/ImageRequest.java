@@ -94,12 +94,12 @@ public class ImageRequest {
      * <p>This constructor is not in public API because users should supply only a resource or a coverage,
      * not both.</p>
      */
-    ImageRequest(final GridCoverageResource source, final GridCoverage data) {
+    ImageRequest(final GridCoverageResource source, final GridCoverage data, final GridExtent aoi) {
         resource = source;
         coverage = data;
         domain   = null;
         range    = null;
-        slice    = null;
+        slice    = aoi;
     }
 
     /**

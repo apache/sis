@@ -93,6 +93,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * The name of this namespace, usually as a {@link String} or an {@link InternationalString}.
      */
+    @SuppressWarnings("serial")
     private final CharSequence name;
 
     /**

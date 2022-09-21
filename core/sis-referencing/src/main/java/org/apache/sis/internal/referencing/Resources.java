@@ -427,9 +427,10 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoSuchAuthorityCode_3 = 49;
 
         /**
-         * No operation method found for name or identifier “{0}”.
+         * No operation method found for name or identifier “{0}”. Only methods associated to Java code
+         * are supported. See {1} for the list of available methods.
          */
-        public static final short NoSuchOperationMethod_1 = 50;
+        public static final short NoSuchOperationMethod_2 = 50;
 
         /**
          * The coordinate system axes in the given “{0}” description do not conform to the expected

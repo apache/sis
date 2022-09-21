@@ -30,7 +30,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -99,11 +99,13 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * Example: dimensionName = "column",
      *          dimensionTitle = "longitude"
      */
+    @SuppressWarnings("serial")
     private InternationalString dimensionTitle;
 
     /**
      * Description of the axis.
      */
+    @SuppressWarnings("serial")
     private InternationalString dimensionDescription;
 
     /**

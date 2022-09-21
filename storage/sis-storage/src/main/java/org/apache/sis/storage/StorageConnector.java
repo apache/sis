@@ -38,12 +38,14 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.NoSuchFileException;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
@@ -1037,7 +1039,11 @@ public class StorageConnector implements Serializable {
             views.put(DataInput.class, c);                          // Share the same Coupled instance.
         } else {
             reset();
-            asDataInput = ImageIO.createImageInputStream(storage);
+            try {
+                asDataInput = ImageIO.createImageInputStream(storage);
+            } catch (IIOException e) {
+                throw unwrap(e);
+            }
             addView(DataInput.class, asDataInput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
             /*
              * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
@@ -1361,7 +1367,11 @@ public class StorageConnector implements Serializable {
             views.put(DataOutput.class, c);                         // Share the same Coupled instance.
         } else {
             reset();
-            asDataOutput = ImageIO.createImageOutputStream(storage);
+            try {
+                asDataOutput = ImageIO.createImageOutputStream(storage);
+            } catch (IIOException e) {
+                throw unwrap(e);
+            }
             addView(DataOutput.class, asDataOutput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
             /*
              * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
@@ -1596,6 +1606,28 @@ public class StorageConnector implements Serializable {
         if (failure != null) {
             throw failure;
         }
+    }
+
+    /**
+     * Returns the cause of given exception if it exists, or the exception itself otherwise.
+     * This method is invoked in the {@code catch} block of a {@code try} block invoking
+     * {@link ImageIO#createImageInputStream(Object)} or
+     * {@link ImageIO#createImageOutputStream(Object)}.
+     *
+     * <h4>Rational</h4>
+     * As of Java 18, above-cited methods systematically catch all {@link IOException}s and wrap
+     * them in an {@link IIOException} with <cite>"Can't create cache file!"</cite> error message.
+     * This is conform to Image I/O specification but misleading if the stream provider throws an
+     * {@link IOException} for another reason. Even when the failure is really caused by a problem
+     * with cache file, we want to propagate the original exception to user because its message
+     * may tell that there is no space left on device or no write permission.
+     *
+     * @see org.apache.sis.internal.storage.image.FormatFinder#unwrap(IIOException)
+     */
+    @Workaround(library = "JDK", version = "18")
+    private static IOException unwrap(final IIOException e) {
+        final Throwable cause = e.getCause();
+        return (cause instanceof IOException) ? (IOException) cause : e;
     }
 
     /**

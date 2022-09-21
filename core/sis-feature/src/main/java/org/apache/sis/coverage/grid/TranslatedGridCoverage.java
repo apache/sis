@@ -101,18 +101,9 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
      * result in a {@link TranslatedGridCoverage} with the same {@linkplain #translation}.
      */
     @Override
-    public final synchronized GridCoverage forConvertedValues(final boolean converted) {
-        GridCoverage view = getView(converted);
-        if (view == null) {
-            final GridCoverage cs = source.forConvertedValues(converted);
-            if (cs == source) {
-                view = this;
-            } else {
-                view = new TranslatedGridCoverage(cs, gridGeometry, translation);
-            }
-            setView(converted, view);
-        }
-        return view;
+    protected final GridCoverage createConvertedValues(final boolean converted) {
+        final GridCoverage cs = source.forConvertedValues(converted);
+        return (cs == source) ? this : new TranslatedGridCoverage(cs, gridGeometry, translation);
     }
 
     /**

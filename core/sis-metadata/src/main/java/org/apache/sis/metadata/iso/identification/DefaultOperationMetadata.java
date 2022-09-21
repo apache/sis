@@ -98,31 +98,37 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Distributed computing platforms on which the operation has been implemented.
      */
+    @SuppressWarnings("serial")
     private Collection<CodeList<?>> distributedComputingPlatforms;
 
     /**
      * Free text description of the intent of the operation and the results of the operation.
      */
+    @SuppressWarnings("serial")
     private InternationalString operationDescription;
 
     /**
      * The name used to invoke this interface within the context of the DCP.
      */
+    @SuppressWarnings("serial")
     private InternationalString invocationName;
 
     /**
      * Handle for accessing the service interface.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> connectPoints;
 
     /**
      * The parameters that are required for this interface.
      */
+    @SuppressWarnings("serial")
     private Collection<ParameterDescriptor<?>> parameters;
 
     /**
      * List of operation that must be completed immediately.
      */
+    @SuppressWarnings("serial")
     private List<DefaultOperationMetadata> dependsOn;
 
     /**

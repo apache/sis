@@ -58,6 +58,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
     /**
      * Provides an overall assessment of quality of geolocation information.
      */
+    @SuppressWarnings("serial")
     private Collection<DataQuality> qualityInfo;
 
     /**

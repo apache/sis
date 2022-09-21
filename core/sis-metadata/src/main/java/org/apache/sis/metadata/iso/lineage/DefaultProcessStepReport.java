@@ -64,16 +64,19 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Name of the processing report.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**
      * Textual description of what occurred during the process step.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Type of file that contains the processing report.
      */
+    @SuppressWarnings("serial")
     private InternationalString fileType;
 
     /**

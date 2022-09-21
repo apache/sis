@@ -2121,7 +2121,7 @@ cmp:    while (ia < lga) {
      * </ul>
      *
      * @param  text       the text for which to get the token.
-     * @param  fromIndex  index of the fist character to consider in the given text.
+     * @param  fromIndex  index of the first character to consider in the given text.
      * @return a sub-sequence of {@code text} starting at the given offset, or an empty string
      *         if there are no non-blank character at or after the given offset.
      * @throws NullPointerException if the {@code text} argument is null.

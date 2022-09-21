@@ -18,6 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.HashSet;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
@@ -29,11 +30,13 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
@@ -47,13 +50,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
  * Tests {@link CommonAuthorityFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -81,7 +85,8 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertTrue("getAuthorityCodes(Datum.class)",
                 factory.getAuthorityCodes(Datum.class).isEmpty());
         assertSetEquals(Arrays.asList("CRS:1", "CRS:27", "CRS:83", "CRS:84", "CRS:88",
-                                      "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005"),
+                                      "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005",
+                                      "OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
                 factory.getAuthorityCodes(CoordinateReferenceSystem.class));
         assertSetEquals(Arrays.asList("AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005"),
                 factory.getAuthorityCodes(ProjectedCRS.class));
@@ -89,6 +94,8 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 factory.getAuthorityCodes(GeographicCRS.class));
         assertSetEquals(Arrays.asList("CRS:88"),
                 factory.getAuthorityCodes(VerticalCRS.class));
+        assertSetEquals(Arrays.asList("OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
+                factory.getAuthorityCodes(TemporalCRS.class));
         assertSetEquals(Arrays.asList("CRS:1"),
                 factory.getAuthorityCodes(EngineeringCRS.class));
 
@@ -101,6 +108,27 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertTrue ("0084",       codes.contains("0084"));
         assertFalse("0088",       codes.contains("0088"));
         assertTrue ("OGC:CRS084", codes.contains("OGC:CRS084"));
+    }
+
+    /**
+     * Verifies that the names of temporal CRS (including namespace)
+     * are identical to the one defined by {@link CommonCRS.Temporal}.
+     *
+     * @throws FactoryException if an error occurred while fetching the set of codes.
+     */
+    @Test
+    public void verifyTemporalCodes() throws FactoryException {
+        final Set<String> expected = new HashSet<>();
+        for (final CommonCRS.Temporal e : CommonCRS.Temporal.values()) {
+            assertTrue(expected.add(IdentifiedObjects.toString(getSingleton(e.crs().getIdentifiers()))));
+        }
+        assertFalse(expected.isEmpty());
+        for (final String code : factory.getAuthorityCodes(TemporalCRS.class)) {
+            assertTrue(code, expected.remove(code));
+        }
+        for (final String remaining : expected) {
+            assertFalse(remaining, remaining.startsWith(Constants.OGC));
+        }
     }
 
     /**

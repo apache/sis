@@ -16,10 +16,11 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
 import java.io.Serializable;
-import javax.measure.quantity.Length;
 import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
 
 import org.opengis.parameter.ParameterValue;
@@ -37,6 +38,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -52,8 +54,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.io.wkt.Parser;
-import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.internal.util.URLs;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -472,7 +476,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 method = CoordinateOperations.getOperationMethod(methods, identifier);
             }
             if (method == null) {
-                throw new NoSuchIdentifierException(Resources.format(Resources.Keys.NoSuchOperationMethod_1, identifier), identifier);
+                throw new NoSuchIdentifierException(Resources.format(
+                        Resources.Keys.NoSuchOperationMethod_2, identifier, URLs.OPERATION_METHODS), identifier);
             }
             /*
              * Remember the method we just found, for faster check next time.
@@ -547,6 +552,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * or anything else related to datum. Datum changes have dedicated {@link OperationMethod},
      * for example <cite>"Longitude rotation"</cite> (EPSG:9601) for changing the prime meridian.
      *
+     * <h2>Scope</h2>
+     * Instances of this class should be short-lived
+     * (they exist only the time needed for creating a {@link MathTransform})
+     * and should not be shared (because they provide no immutability guarantees).
+     * This class is not thread-safe.
+     *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.7
@@ -557,7 +568,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 6963581151055917955L;
+        private static final long serialVersionUID = -239563539875674709L;
 
         /**
          * Coordinate system of the source or target points.
@@ -574,8 +585,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * The provider that created the parameterized {@link MathTransform} instance, or {@code null}
          * if this information does not apply. This field is used for transferring information between
          * {@code createParameterizedTransform(…)} and {@code swapAndScaleAxes(…)}.
-         *
-         * @todo We could make this information public as a replacement of {@link #getLastMethodUsed()}.
          */
         private OperationMethod provider;
 
@@ -587,9 +596,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         private ParameterValueGroup parameters;
 
         /**
+         * Names of parameters which have been inferred from context.
+         *
+         * @see #getContextualParameters()
+         */
+        private final Map<String,Boolean> contextualParameters;
+
+        /**
          * Creates a new context with all properties initialized to {@code null}.
          */
         public Context() {
+            contextualParameters = new HashMap<>();
         }
 
         /**
@@ -799,11 +816,66 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Returns the parameter values used for the math transform creation, including the parameters completed
-         * by the factory.
+         * Returns the operation method used for the math transform creation.
+         * This is the same information than {@link #getLastMethodUsed()} but more stable
+         * (not affected by transforms created with other contexts).
+         *
+         * @return the operation method used by the factory.
+         * @throws IllegalStateException if {@link #createParameterizedTransform(ParameterValueGroup, Context)}
+         *         has not yet been invoked.
+         *
+         * @see #getLastMethodUsed()
+         *
+         * @since 1.3
+         */
+        public OperationMethod getMethodUsed() {
+            if (provider != null) {
+                return provider;
+            }
+            throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
+        }
+
+        /**
+         * Returns the names of parameters that have been inferred from the context.
+         * The set of keys can contain any of {@code "dim"},
+         * {@code     "semi_major"}, {@code     "semi_minor"},
+         * {@code "src_semi_major"}, {@code "src_semi_minor"},
+         * {@code "tgt_semi_major"}, {@code "tgt_semi_minor"} and/or
+         * {@code "inverse_flattening"}, depending on the operation method used.
+         * The parameters named in that set are included in the parameters
+         * returned by {@link #getCompletedParameters()}.
+         *
+         * <h4>Associated boolean values</h4>
+         * The associated boolean in the map tells whether the named parameter value is really contextual.
+         * The boolean is {@code FALSE} if the user explicitly specified a value in the parameters given to
+         * the {@link #createParameterizedTransform(ParameterValueGroup, Context)} method,
+         * and that value is different than the value inferred from the context.
+         * Such inconsistencies are also logged at {@link Level#WARNING}.
+         * In all other cases
+         * (no value specified by the user, or a value was specified but is consistent with the context),
+         * the associated boolean in the map is {@code TRUE}.
+         *
+         * <h4>Mutability</h4>
+         * The returned map is modifiable for making easier for callers to amend the contextual information.
+         * This map is not used by {@code Context} except for information purposes (e.g. in {@link #toString()}).
+         * In particular, modifications of this map have no incidence on the created {@link MathTransform}.
+         *
+         * @return names of parameters inferred from context.
+         *
+         * @since 1.3
+         */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Modifiable by method contract.
+        public Map<String,Boolean> getContextualParameters() {
+            return contextualParameters;
+        }
+
+        /**
+         * Returns the parameter values used for the math transform creation,
+         * including the parameters completed by the factory.
+         * The parameters inferred from the context are listed by {@link #getContextualParameters()}.
          *
          * @return the parameter values used by the factory.
-         * @throws IllegalStateException if {@link DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, Context)}
+         * @throws IllegalStateException if {@link #createParameterizedTransform(ParameterValueGroup, Context)}
          *         has not yet been invoked.
          */
         public ParameterValueGroup getCompletedParameters() {
@@ -823,22 +895,31 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * parameter value validity. This may result in an {@link InvalidParameterNameException}
          * or {@link InvalidParameterValueException} to be thrown.</p>
          *
-         * @param  writable  {@code true} if this method should also check that the parameters group is not an
-         *                   instance of {@code UnmodifiableParameterValueGroup}. Current implementation assumes
-         *                   that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
+         * @param  writable  {@code true} if this method should also check that the parameters group is editable.
          * @throws IllegalArgumentException if the copy can not be performed because a parameter has
          *         a unrecognized name or an illegal value.
          */
         private void ensureCompatibleParameters(final boolean writable) throws IllegalArgumentException {
             final ParameterDescriptorGroup expected = provider.getParameters();
-            if (parameters.getDescriptor() != expected ||
-                    (writable &&  (parameters instanceof Parameters)
-                              && !(parameters instanceof DefaultParameterValueGroup)))
-            {
+            if (parameters.getDescriptor() != expected || (writable && Parameters.isUnmodifiable(parameters))) {
                 final ParameterValueGroup copy = expected.createValue();
                 Parameters.copy(parameters, copy);
                 parameters = copy;
             }
+        }
+
+        /**
+         * Gets a parameter for which to infer a value from the context.
+         * The consistency flag is initially set to {@link Boolean#TRUE}.
+         *
+         * @param  name  name of the contextual parameter.
+         * @return the parameter.
+         * @throws ParameterNotFoundException if the parameter was not found.
+         */
+        private ParameterValue<?> getContextualParameter(final String name) throws ParameterNotFoundException {
+            ParameterValue<?> parameter = parameters.parameter(name);
+            contextualParameters.put(name, Boolean.TRUE);               // Add only if above line succeeded.
+            return parameter;
         }
 
         /**
@@ -847,7 +928,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * <p><b>NOTE:</b> Do not merge this function with {@code ensureSet(…)}. We keep those two methods
          * separated in order to give to {@code createParameterizedTransform(…)} a "all or nothing" behavior.</p>
          */
-        private static double getValue(final ParameterValue<?> parameter, final Unit<Length> unit) {
+        private static double getValue(final ParameterValue<?> parameter, final Unit<?> unit) {
             return (parameter.getValue() != null) ? parameter.doubleValue(unit) : Double.NaN;
         }
 
@@ -908,8 +989,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 ParameterValue<?> mismatchedParam = null;
                 double mismatchedValue = 0;
                 try {
-                    final ParameterValue<?> ap = parameters.parameter(semiMajor);
-                    final ParameterValue<?> bp = parameters.parameter(semiMinor);
+                    final ParameterValue<?> ap = getContextualParameter(semiMajor);
+                    final ParameterValue<?> bp = getContextualParameter(semiMinor);
                     final Unit<Length> unit = ellipsoid.getAxisUnit();
                     /*
                      * The two calls to getValue(…) shall succeed before we write anything, in order to have a
@@ -920,10 +1001,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     final double b   = getValue(bp, unit);
                     final double tol = Units.METRE.getConverterTo(unit).convert(ELLIPSOID_PRECISION);
                     if (ensureSet(ap, a, ellipsoid.getSemiMajorAxis(), unit, tol)) {
+                        contextualParameters.put(semiMajor, Boolean.FALSE);
                         mismatchedParam = ap;
                         mismatchedValue = a;
                     }
                     if (ensureSet(bp, b, ellipsoid.getSemiMinorAxis(), unit, tol)) {
+                        contextualParameters.put(semiMinor, Boolean.FALSE);
                         mismatchedParam = bp;
                         mismatchedValue = b;
                     }
@@ -940,17 +1023,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                         failure.addSuppressed(e);
                     }
                 }
-                final boolean isIvfDefinitive;
-                if (mismatchedParam != null) {
-                    final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
-                            Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
-                            mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
-                    record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                    Logging.log(DefaultMathTransformFactory.class, "createParameterizedTransform", record);
-                    isIvfDefinitive = false;
-                } else {
-                    isIvfDefinitive = inverseFlattening && ellipsoid.isIvfDefinitive();
-                }
                 /*
                  * Following is specific to Apache SIS. We use this non-standard API for allowing the
                  * NormalizedProjection class (our base class for all map projection implementations)
@@ -958,8 +1030,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * instead of the semi-major axis length. It makes a small difference in the accuracy
                  * of the eccentricity parameter.
                  */
-                if (isIvfDefinitive) try {
-                    parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
+                if (mismatchedParam == null && inverseFlattening && ellipsoid.isIvfDefinitive()) try {
+                    final ParameterValue<?> ep = getContextualParameter(Constants.INVERSE_FLATTENING);
+                    final double e = getValue(ep, Units.UNITY);
+                    if (ensureSet(ep, e, ellipsoid.getInverseFlattening(), Units.UNITY, 1E-10)) {
+                        contextualParameters.put(Constants.INVERSE_FLATTENING, Boolean.FALSE);
+                        mismatchedParam = ep;
+                        mismatchedValue = e;
+                    }
                 } catch (ParameterNotFoundException e) {
                     /*
                      * Should never happen with Apache SIS implementation, but may happen if the given parameters come
@@ -968,6 +1046,18 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      */
                     Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
                             DefaultMathTransformFactory.class, "createParameterizedTransform", e);
+                }
+                /*
+                 * If a parameter was explicitly specified by user but has a value inconsistent with the context,
+                 * log a warning. In addition, the associated boolean value in `contextualParameters` map should
+                 * have been set to `Boolean.FALSE`.
+                 */
+                if (mismatchedParam != null) {
+                    final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
+                            Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
+                            mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
+                    record.setLoggerName(Loggers.COORDINATE_OPERATION);
+                    Logging.log(DefaultMathTransformFactory.class, "createParameterizedTransform", record);
                 }
             }
             return failure;
@@ -1054,7 +1144,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             RuntimeException failure = null;
             if (sourceCS != null) try {
                 ensureCompatibleParameters(true);
-                final ParameterValue<?> p = parameters.parameter("dim");    // Really `parameters`, not `userParams`.
+                final ParameterValue<?> p = getContextualParameter(Constants.DIM);
                 if (p.getValue() == null) {
                     p.setValue(sourceCS.getDimension());
                 }
@@ -1064,6 +1154,48 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             failure = setEllipsoid(getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
             failure = setEllipsoid(getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false, failure);
             return failure;
+        }
+
+        /**
+         * Returns a string representation of this context for debugging purposes.
+         * Current implementation write the name of source/target coordinate systems and ellipsoids.
+         * If {@linkplain #getContextualParameters() contextual parameters} have already been inferred,
+         * then their names are appended with inconsistent parameters (if any) written on a separated line.
+         *
+         * @return a string representation of this context.
+         */
+        @Override
+        public String toString() {
+            final Object[] properties = {
+                "sourceCS", sourceCS, "sourceEllipsoid", sourceEllipsoid,
+                "targetCS", targetCS, "targetEllipsoid", targetEllipsoid
+            };
+            for (int i=1; i<properties.length; i += 2) {
+                final IdentifiedObject value = (IdentifiedObject) properties[i];
+                if (value != null) properties[i] = value.getName();
+            }
+            String text = Strings.toString(getClass(), properties);
+            if (!contextualParameters.isEmpty()) {
+                final StringBuilder b = new StringBuilder(text);
+                boolean isContextual = true;
+                do {
+                    boolean first = true;
+                    for (final Map.Entry<String,Boolean> entry : contextualParameters.entrySet()) {
+                        if (entry.getValue() == isContextual) {
+                            if (first) {
+                                first = false;
+                                b.append(System.lineSeparator())
+                                 .append(isContextual ? "Contextual parameters" : "Inconsistencies").append(": ");
+                            } else {
+                                b.append(", ");
+                            }
+                            b.append(entry.getKey());
+                        }
+                    }
+                } while ((isContextual = !isContextual) == false);
+                text = b.toString();
+            }
+            return text;
         }
     }
 
@@ -1190,13 +1322,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throw e;
         } finally {
             lastMethod.set(method);     // May be null in case of failure, which is intended.
-            if (context != null) {
-                context.provider = null;
-                /*
-                 * For now we conservatively reset the provider information to null. But if we choose to
-                 * make that information public in a future SIS version, then we would remove this code.
-                 */
-            }
         }
         return transform;
     }
@@ -1463,7 +1588,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                         context.targetEllipsoid = ellipsoid;
                     }
                     final ParameterValueGroup pg = getDefaultParameters(operation);
-                    if (cs.getDimension() < 3) pg.parameter("dim").setValue(2);       // Apache SIS specific parameter.
+                    if (cs.getDimension() < 3) {
+                        pg.parameter(Constants.DIM).setValue(2);        // Apache SIS specific parameter.
+                    }
                     return createParameterizedTransform(pg, context);
                 }
             }
@@ -1660,6 +1787,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return the last method used by a {@code create(…)} constructor, or {@code null} if unknown of unsupported.
      *
      * @see #createParameterizedTransform(ParameterValueGroup, Context)
+     * @see Context#getMethodUsed()
      */
     @Override
     public OperationMethod getLastMethodUsed() {

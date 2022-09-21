@@ -38,7 +38,7 @@ import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**
@@ -98,6 +98,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Language(s) and character set(s) used within the catalogue.
      */
+    @SuppressWarnings("serial")
     private Map<Locale,Charset> locales;
 
     /**
@@ -108,11 +109,13 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Subset of feature types from cited feature catalogue occurring in resource.
      */
+    @SuppressWarnings("serial")
     private Collection<DefaultFeatureTypeInfo> featureTypes;
 
     /**
      * Complete bibliographic reference to one or more external feature catalogues.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> featureCatalogueCitations;
 
     /**

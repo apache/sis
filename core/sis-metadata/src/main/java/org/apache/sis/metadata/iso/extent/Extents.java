@@ -17,9 +17,13 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
 import javax.measure.Unit;
@@ -58,6 +62,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Static;
 
 import static java.lang.Math.*;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
@@ -80,7 +85,7 @@ import org.apache.sis.internal.geoapi.evolution.Interim;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see org.apache.sis.geometry.Envelopes
  *
@@ -117,6 +122,52 @@ public final class Extents extends Static {
                 Vocabulary.formatInternational(Vocabulary.Keys.World), box, null, null);
         world.transitionTo(DefaultExtent.State.FINAL);
         WORLD = world;
+    }
+
+    /**
+     * Returns the extents found in all {@code Identification} elements of the given metadata.
+     * If there is only one {@link Identification} element (which is the usual case), then its
+     * collection of extents is returned <em>as-is</em>; the collection is not copied.
+     *
+     * <p>In the less usual case where there is many {@link Identification} elements providing
+     * non-empty collection of extents, then this method returns the union of all collections
+     * without duplicated elements (duplication determined by {@link Object#equals(Object)}).
+     * In the special case where the first non-empty collection of extents contains all other
+     * collections, then that collection is returned <em>as-is</em>.</p>
+     *
+     * <div class="note"><b>Rational:</b>
+     * above policy makes a best effort for avoiding to create new collections.
+     * The reason is that collection implementations may perform lazy calculations of {@link Extent} elements.
+     * This method tries to preserve the lazy behavior (if any).</div>
+     *
+     * @param  metadata  the metadata, or {@code null} if none.
+     * @return extents found in all {@link Identification} elements, or an empty collection if none.
+     *
+     * @since 1.3
+     */
+    public static Collection<? extends Extent> fromIdentificationInfo(final Metadata metadata) {
+        Collection<? extends Extent> result = null;
+        if (metadata != null) {
+            Set<Extent> union = null;
+            for (final Identification id : nonNull(metadata.getIdentificationInfo())) {
+                if (id instanceof DataIdentification) {
+                    final Collection<? extends Extent> extents = ((DataIdentification) id).getExtents();
+                    if (extents != result && !isNullOrEmpty(extents)) {
+                        if (result == null) {
+                            result = extents;
+                        } else {
+                            if (union == null) {
+                                union = new LinkedHashSet<>(result);
+                            }
+                            if (union.addAll(extents)) {
+                                result = union;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return (result != null) ? result : Collections.emptyList();
     }
 
     /**

@@ -78,7 +78,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @param  <T>  the type of object to be selected.
  *
@@ -176,6 +176,22 @@ public final class ExtentSelector<T> {
      * This is equivalent to {@link #pseudoDistance} in the temporal domain.
      */
     private double temporalDistance;
+
+    /**
+     * Creates a selector for the given area and time of interest.
+     *
+     * @param  aoi  the area of interest, or {@code null} if unbounded.
+     * @param  toi  the time of interest, or {@code null} or empty if unbounded.
+     *              The first element is start time and the last element is end time.
+     */
+    public ExtentSelector(final GeographicBoundingBox aoi, final Instant[] toi) {
+        areaOfInterest = aoi;
+        final int n;
+        if (toi != null && (n = toi.length) != 0) {
+            minTOI = toi[0];
+            maxTOI = toi[n-1];
+        }
+    }
 
     /**
      * Creates a selector for the given area of interest.

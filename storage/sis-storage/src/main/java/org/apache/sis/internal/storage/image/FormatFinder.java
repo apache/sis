@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
+import javax.imageio.IIOException;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageInputStream;
@@ -34,6 +35,7 @@ import javax.imageio.stream.FileImageOutputStream;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -42,7 +44,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * It also helps to choose which {@link WorldFileStore} subclass to instantiate.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -212,7 +214,7 @@ final class FormatFinder implements AutoCloseable {
                     ImageInputStream stream = null;
                     for (final Map.Entry<ImageReaderSpi,Boolean> entry : deferred.entrySet()) {
                         if (entry.getValue()) {
-                            if (stream == null) {
+                            if (stream == null) try {
                                 if (isWritable) {
                                     // ImageOutputStream is both read and write.
                                     stream = ImageIO.createImageOutputStream(storage);
@@ -221,6 +223,8 @@ final class FormatFinder implements AutoCloseable {
                                     stream = ImageIO.createImageInputStream(storage);
                                     if (stream == null) break;
                                 }
+                            } catch (IIOException e) {
+                                throw unwrap(e);
                             }
                             final ImageReaderSpi p = entry.getKey();
                             if (p.canDecodeInput(stream)) {
@@ -259,9 +263,11 @@ final class FormatFinder implements AutoCloseable {
                                 final File file = connector.getStorageAs(File.class);
                                 if (file != null) {
                                     stream = new FileImageOutputStream(file);
-                                } else {
+                                } else try {
                                     stream = ImageIO.createImageOutputStream(storage);
                                     if (stream == null) break;
+                                } catch (IIOException e) {
+                                    throw unwrap(e);
                                 }
                             }
                             final ImageWriterSpi p = entry.getKey();
@@ -275,6 +281,28 @@ final class FormatFinder implements AutoCloseable {
             }
         }
         return writer;
+    }
+
+    /**
+     * Returns the cause of given exception if it exists, or the exception itself otherwise.
+     * This method is invoked in the {@code catch} block of a {@code try} block invoking
+     * {@link ImageIO#createImageInputStream(Object)} or
+     * {@link ImageIO#createImageOutputStream(Object)}.
+     *
+     * <h4>Rational</h4>
+     * As of Java 18, above-cited methods systematically catch all {@link IOException}s and wrap
+     * them in an {@link IIOException} with <cite>"Can't create cache file!"</cite> error message.
+     * This is conform to Image I/O specification but misleading if the stream provider throws an
+     * {@link IOException} for another reason. Even when the failure is really caused by a problem
+     * with cache file, we want to propagate the original exception to user because its message
+     * may tell that there is no space left on device or no write permission.
+     *
+     * @see org.apache.sis.storage.StorageConnector#unwrap(IIOException)
+     */
+    @Workaround(library = "JDK", version = "18")
+    private static IOException unwrap(final IIOException e) {
+        final Throwable cause = e.getCause();
+        return (cause instanceof IOException) ? (IOException) cause : e;
     }
 
     /**

@@ -14,19 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.gui.dataset;
+
+import org.apache.sis.internal.storage.folder.UnstructuredAggregate;
+
 
 /**
- * Resources which are aggregations of other resources.
+ * The different views (aggregation, etc.) which may be associated to a resource item.
  *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
  * @module
  */
-package org.apache.sis.internal.storage.aggregate;
+enum TreeViewType {
+    /**
+     * The original resource. Associated value shall never be {@code null}.
+     */
+    SOURCE,
+
+    /**
+     * The result of {@link UnstructuredAggregate#getStructuredView()}.
+     */
+    AGGREGATION
+}

@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -27,7 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * or other kinds of structure that are specific to some data formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @param <T>  the type of option values.
  *
@@ -59,6 +60,16 @@ public final class DataOptionKey<T> extends OptionKey<T> {
      */
     public static final OptionKey<FoliationRepresentation> FOLIATION_REPRESENTATION =
             new DataOptionKey<>("FOLIATION_REPRESENTATION", FoliationRepresentation.class);
+
+    /**
+     * The listeners to declare as the parent of the data store listeners.
+     * This option can be used when the {@link DataStore} to open is itself
+     * a child of an {@link Aggregate}.
+     *
+     * @since 1.3
+     */
+    public static final OptionKey<StoreListeners> PARENT_LISTENERS =
+            new DataOptionKey<>("PARENT_LISTENERS", StoreListeners.class);
 
     /**
      * Creates a new key of the given name.

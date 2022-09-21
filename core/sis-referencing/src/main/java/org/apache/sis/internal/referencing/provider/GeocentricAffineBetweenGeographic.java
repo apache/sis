@@ -161,7 +161,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         SRC_SEMI_MINOR = builder.addName("src_semi_minor").createStrictlyPositive(Double.NaN, Units.METRE);
         TGT_SEMI_MAJOR = builder.addName("tgt_semi_major").createStrictlyPositive(Double.NaN, Units.METRE);
         TGT_SEMI_MINOR = builder.addName("tgt_semi_minor").createStrictlyPositive(Double.NaN, Units.METRE);
-        DIMENSION      = builder.addName("dim").setRequired(false).createBounded(Integer.class, 2, 3, null);
+        DIMENSION      = builder.addName(Constants.DIM).setRequired(false).createBounded(Integer.class, 2, 3, null);
     }
 
     /**

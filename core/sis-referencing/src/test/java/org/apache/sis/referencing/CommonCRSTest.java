@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.Instant;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -33,6 +34,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.util.Constants;
@@ -52,7 +54,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests the {@link CommonCRS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -299,6 +301,39 @@ public final strictfp class CommonCRSTest extends TestCase {
     private static void assertNameContains(final IdentifiedObject object, final String word) {
         final String name = object.getName().getCode();
         assertTrue(name, name.contains(word));
+    }
+
+    /**
+     * Tests {@link CommonCRS.Temporal#forIdentifier(String, boolean)}.
+     */
+    @Test
+    public void testTemporalForIdentifier() {
+        assertSame(CommonCRS.Temporal.TRUNCATED_JULIAN, CommonCRS.Temporal.forIdentifier("TruncatedJulianDate", false));
+        assertSame(CommonCRS.Temporal.TRUNCATED_JULIAN, CommonCRS.Temporal.forIdentifier("TruncatedJulianDate", true));
+        assertSame(CommonCRS.Temporal.MODIFIED_JULIAN,  CommonCRS.Temporal.forIdentifier("ModifiedJulianDate",  false));
+        try {
+            CommonCRS.Temporal.forIdentifier("ModifiedJulianDate", true);
+            fail("Unexpected because not in OGC namespace.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message.contains("ModifiedJulianDate"));
+            assertTrue(message.contains("OGC"));
+        }
+        assertEquals("OGC:TruncatedJulianDate", getSingleton(CommonCRS.Temporal.TRUNCATED_JULIAN.crs().getIdentifiers()).toString());
+        assertEquals("SIS:ModifiedJulianDate",  getSingleton(CommonCRS.Temporal. MODIFIED_JULIAN.crs().getIdentifiers()).toString());
+    }
+
+    /**
+     * Tests the URN lookup on temporal CRS.
+     *
+     * @throws FactoryException if a call to {@link IdentifiedObjects#lookupURN lookupURN(…)} failed.
+     */
+    @Test
+    public void testLookupURN() throws FactoryException {
+        final TemporalCRS crs = CommonCRS.Temporal.TRUNCATED_JULIAN.crs();
+        assertNull(IdentifiedObjects.lookupEPSG(crs));                  // Not an EPSG code.
+        assertNull(IdentifiedObjects.lookupURN(crs, Citations.SIS));    // Not in SIS namespace.
+        assertEquals("urn:ogc:def:crs:OGC::TruncatedJulianDate", IdentifiedObjects.lookupURN(crs, Citations.OGC));
     }
 
     /**

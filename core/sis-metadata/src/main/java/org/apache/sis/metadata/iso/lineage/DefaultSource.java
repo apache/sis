@@ -116,46 +116,55 @@ public class DefaultSource extends ISOMetadata implements Source {
     /**
      * Detailed description of the level of the source data.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Spatial resolution expressed as a scale factor, an angle or a level of detail.
      */
+    @SuppressWarnings("serial")
     private Resolution sourceSpatialResolution;
 
     /**
      * Spatial reference system used by the source data.
      */
+    @SuppressWarnings("serial")
     private ReferenceSystem sourceReferenceSystem;
 
     /**
      * Recommended reference to be used for the source data.
      */
+    @SuppressWarnings("serial")
     private Citation sourceCitation;
 
     /**
      * Reference to metadata for the source.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> sourceMetadata;
 
     /**
      * Type and / or extent of the source.
      */
+    @SuppressWarnings("serial")
     private Scope scope;
 
     /**
      * Information about an event in the creation process for the source data.
      */
+    @SuppressWarnings("serial")
     private Collection<ProcessStep> sourceSteps;
 
     /**
      * Processing level of the source data.
      */
+    @SuppressWarnings("serial")
     private Identifier processedLevel;
 
     /**
      * Distance between consistent parts (centre, left side, right side) of two adjacent pixels.
      */
+    @SuppressWarnings("serial")
     private NominalResolution resolution;
 
     /**

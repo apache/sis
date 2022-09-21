@@ -37,7 +37,7 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.util.CollectionsExt;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -128,6 +128,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     /**
      * Definition of the extended element.
      */
+    @SuppressWarnings("serial")
     private InternationalString definition;
 
     /**
@@ -140,6 +141,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * Non-null value only if the {@linkplain #getObligation() obligation}
      * is {@linkplain Obligation#CONDITIONAL conditional}.
      */
+    @SuppressWarnings("serial")
     private InternationalString condition;
 
     /**
@@ -163,27 +165,32 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * {@linkplain Datatype#CODE_LIST code list} or {@linkplain Datatype#CODE_LIST_ELEMENT
      * code list element}.
      */
+    @SuppressWarnings("serial")
     private InternationalString domainValue;
 
     /**
      * Name of the metadata entity(s) under which this extended metadata element may appear.
      * The name(s) may be standard metadata element(s) or other extended metadata element(s).
      */
+    @SuppressWarnings("serial")
     private Collection<String> parentEntity;
 
     /**
      * Specifies how the extended element relates to other existing elements and entities.
      */
+    @SuppressWarnings("serial")
     private InternationalString rule;
 
     /**
      * Reason for creating the extended element.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> rationales;
 
     /**
      * Name of the person or organization creating the extended element.
      */
+    @SuppressWarnings("serial")
     private Collection<ResponsibleParty> sources;
 
     /**

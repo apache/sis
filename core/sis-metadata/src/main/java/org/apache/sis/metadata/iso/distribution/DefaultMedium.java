@@ -41,8 +41,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.CodeLists;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -96,6 +96,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Name of the medium on which the resource can be received.
      */
+    @SuppressWarnings("serial")
     private MediumName name;
 
     /**
@@ -107,6 +108,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Units of measure for the recording density.
      */
+    @SuppressWarnings("serial")
     private Unit<?> densityUnits;
 
     /**
@@ -117,11 +119,13 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Methods used to write to the medium.
      */
+    @SuppressWarnings("serial")
     private Collection<MediumFormat> mediumFormats;
 
     /**
      * Description of other limitations or requirements for using the medium.
      */
+    @SuppressWarnings("serial")
     private InternationalString mediumNote;
 
     /**

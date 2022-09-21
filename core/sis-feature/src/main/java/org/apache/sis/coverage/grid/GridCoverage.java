@@ -217,26 +217,6 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
-     * Returns the converted or package view, or {@code null} if not yet computed.
-     * It is caller responsibility to ensure that this method is invoked in a synchronized block.
-     */
-    final GridCoverage getView(final boolean converted) {
-        return converted ? convertedView : packedView;
-    }
-
-    /**
-     * Sets the converted or package view. The given view should not be null.
-     * It is caller responsibility to ensure that this method is invoked in a synchronized block.
-     */
-    final void setView(final boolean converted, final GridCoverage view) {
-        if (converted) {
-            convertedView = view;
-        } else {
-            packedView = view;
-        }
-    }
-
-    /**
      * Returns a grid coverage that contains real values or sample values, depending if {@code converted} is {@code true}
      * or {@code false} respectively. If there is no {@linkplain SampleDimension#getTransferFunction() transfer function}
      * defined by the {@linkplain #getSampleDimensions() sample dimensions}, then this method returns {@code this}.
@@ -252,22 +232,59 @@ public abstract class GridCoverage extends BandedCoverage {
      *       if {@code converted} is {@code false}.</li>
      * </ul>
      *
+     * The default implementation delegates to {@link #createConvertedValues(boolean)} when first needed,
+     * then caches the result for future invocations.
+     *
      * @param  converted  {@code true} for a coverage containing converted values,
      *                    or {@code false} for a coverage containing packed values.
      * @return a coverage containing converted or packed values, depending on {@code converted} argument value.
      *         May be {@code this} but never {@code null}.
+     * @throws CannotEvaluateException if an error occurred while conversion the values.
      *
      * @see SampleDimension#forConvertedValues(boolean)
      */
     public synchronized GridCoverage forConvertedValues(final boolean converted) {
-        GridCoverage view = getView(converted);
-        if (view == null) try {
-            view = ConvertedGridCoverage.create(this, converted);
-            setView(converted, view);
+        GridCoverage view = converted ? convertedView : packedView;
+        if (view == null) {
+            view = createConvertedValues(converted);
+            if (converted) {
+                convertedView = view;
+                if (view != this) {
+                    view.packedView = this;
+                }
+            } else {
+                packedView = view;
+                if (view != this) {
+                    view.convertedView = this;
+                }
+            }
+        }
+        return view;
+    }
+
+    /**
+     * Creates the grid coverage instance for the converted or packed values.
+     * This method is invoked by {@link #forConvertedValues(boolean)} when first needed.
+     * Then the result returned by this method is cached for future invocations
+     * of {@code forConvertedValues(converted)}.
+     *
+     * <p>Subclasses can override this method for customizing the converted coverages
+     * while leverage the caching done by {@link #forConvertedValues(boolean)}.</p>
+     *
+     * @param  converted  {@code true} for a coverage containing converted values,
+     *                    or {@code false} for a coverage containing packed values.
+     * @return a new coverage containing converted or packed values, depending on {@code converted} argument value.
+     *         May be {@code this} but never {@code null}.
+     * @throws CannotEvaluateException if an error occurred while conversion the values.
+     *
+     * @since 1.3
+     */
+    protected GridCoverage createConvertedValues(final boolean converted) {
+        try {
+            return ConvertedGridCoverage.create(this, converted);
         } catch (NoninvertibleTransformException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
-        return view;
     }
 
     /**

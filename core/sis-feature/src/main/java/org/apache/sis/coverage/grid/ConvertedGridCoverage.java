@@ -314,4 +314,12 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
     public GridCoverage forConvertedValues(final boolean converted) {
         return (converted == isConverted) ? this : source;
     }
+
+    /**
+     * Overridden as a matter of principle, but should not been invoked.
+     */
+    @Override
+    protected final GridCoverage createConvertedValues(final boolean converted) {
+        return forConvertedValues(converted);
+    }
 }

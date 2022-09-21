@@ -209,7 +209,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
             final int n = dim;                            // Unboxing.
             if (n != 2 && n != 3) {
                 throw new InvalidParameterValueException(Errors.format(
-                        Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
+                        Errors.Keys.IllegalArgumentValue_2, Constants.DIM, dim), Constants.DIM, dim);
             }
             sourceDimensions = targetDimensions = n;
         }

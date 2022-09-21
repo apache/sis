@@ -165,13 +165,13 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * The default implementation delegates to the source.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        return source().read(domain, range);
+    public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+        return source().read(domain, ranges);
     }
 
     /**

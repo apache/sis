@@ -805,7 +805,7 @@ public class GridDerivation {
      * They are not in units of cells of the size that we get after subsampling.
      *
      * @param  indices  the envelopes to intersect in units of {@link #base} grid coordinates.
-     *                  Shall contains at least one element.
+     *                  Shall contain at least one element.
      * @throws DisjointExtentException if the given envelope does not intersect the grid extent.
      *
      * @see #getBaseExtentExpanded(boolean)
@@ -1197,6 +1197,7 @@ public class GridDerivation {
      * <p>This method can be invoked after {@link #build()} for getting additional information.</p>
      *
      * @return intersection of grid geometry extents in units of {@link #base} grid cells.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent.
      */
     public GridExtent getIntersection() {
         return getBaseExtentExpanded(true);

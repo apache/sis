@@ -303,7 +303,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
 
     /**
      * Formats this descriptor as a pseudo-<cite>Well Known Text</cite> element. The WKT specification
-     * does not define any representation of parameter descriptors. Apache SIS fallback on a list of
+     * does not define any representation of parameter descriptors. Apache SIS fallbacks on a list of
      * {@linkplain DefaultParameterDescriptor#formatTo(Formatter) descriptors}.
      * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
      *

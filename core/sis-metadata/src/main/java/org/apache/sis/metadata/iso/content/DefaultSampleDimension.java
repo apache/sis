@@ -33,7 +33,7 @@ import org.apache.sis.internal.jaxb.gco.GO_Integer;
 import org.apache.sis.internal.jaxb.gco.GO_Record;
 import org.apache.sis.internal.jaxb.gco.GO_RecordType;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -137,6 +137,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Units of data in each dimension included in the resource.
      */
+    @SuppressWarnings("serial")
     private Unit<?> units;
 
     /**
@@ -169,12 +170,14 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Type of other attribute description.
      */
+    @SuppressWarnings("serial")
     private RecordType otherPropertyType;
 
     /**
      * Instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}.
      */
+    @SuppressWarnings("serial")
     private Record otherProperty;
 
     /**

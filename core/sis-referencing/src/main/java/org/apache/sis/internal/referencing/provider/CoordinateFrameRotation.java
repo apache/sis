@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Coordinate Frame Rotation (geocentric domain)"</cite> (EPSG:1032).
+ * The provider for <cite>"Coordinate Frame rotation (geocentric domain)"</cite> (EPSG:1032).
  * This is the same transformation than "{@link PositionVector7Param}"
  * except that the rotation angles have the opposite sign.
  *
@@ -44,12 +44,12 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     static {
         PARAMETERS = builder()
                 .addIdentifier("1032")
-                .addName("Coordinate Frame Rotation (geocentric domain)")
+                .addName("Coordinate Frame rotation (geocentric domain)")
                 .createGroupWithSameParameters(PositionVector7Param.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
-         * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
-         * We also omit "Coordinate Frame Rotation" alias for similar reason.
+         * to both "Coordinate Frame rotation" and "Position Vector 7-param. transformation"
+         * We also omit "Coordinate Frame rotation" alias for similar reason.
          */
     }
 

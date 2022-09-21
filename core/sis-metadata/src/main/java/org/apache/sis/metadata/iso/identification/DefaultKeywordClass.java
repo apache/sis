@@ -76,6 +76,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * A character string to label the keyword category in natural language.
      */
+    @SuppressWarnings("serial")
     private InternationalString className;
 
     /**
@@ -86,13 +87,13 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      */
+    @SuppressWarnings("serial")
     private Citation ontology;
 
     /**
      * Constructs an initially empty keyword class.
      */
     public DefaultKeywordClass() {
-        super();
     }
 
     /**

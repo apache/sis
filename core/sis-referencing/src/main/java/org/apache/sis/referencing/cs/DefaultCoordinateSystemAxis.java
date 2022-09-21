@@ -40,7 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Longitude;
@@ -898,7 +898,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (abbreviation == null) {
             abbreviation = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setAbbreviation", "abbreviation");
+            ImplementationHelper.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setAbbreviation", "abbreviation");
         }
     }
 
@@ -911,7 +911,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (direction == null) {
             direction = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setDirection", "direction");
+            ImplementationHelper.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setDirection", "direction");
         }
     }
 
@@ -924,7 +924,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (unit == null) {
             unit = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setUnit", "unit");
+            ImplementationHelper.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setUnit", "unit");
         }
     }
 
@@ -937,7 +937,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (rangeMeaning == null) {
             rangeMeaning = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setRangeMeaning", "rangeMeaning");
+            ImplementationHelper.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setRangeMeaning", "rangeMeaning");
         }
     }
 
@@ -963,7 +963,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 outOfRange("minimumValue", value);
             }
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMinimum", "minimumValue");
+            ImplementationHelper.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMinimum", "minimumValue");
         }
     }
 
@@ -989,7 +989,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 outOfRange("maximumValue", value);
             }
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMaximum", "maximumValue");
+            ImplementationHelper.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMaximum", "maximumValue");
         }
     }
 }

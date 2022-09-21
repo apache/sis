@@ -45,7 +45,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**
@@ -106,27 +106,32 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Date information associated with maintenance of resource.
      */
+    @SuppressWarnings("serial")
     private Collection<CitationDate> maintenanceDates;
 
     /**
      * Maintenance period other than those defined, in milliseconds.
      */
+    @SuppressWarnings("serial")
     private PeriodDuration userDefinedMaintenanceFrequency;
 
     /**
      * Type of resource and / or extent to which the maintenance information applies.
      */
+    @SuppressWarnings("serial")
     private Collection<Scope> maintenanceScopes;
 
     /**
      * Information regarding specific requirements for maintaining the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> maintenanceNotes;
 
     /**
      * Identification of, and means of communicating with, person(s) and organization(s)
      * with responsibility for maintaining the resource.
      */
+    @SuppressWarnings("serial")
     private Collection<ResponsibleParty> contacts;
 
     /**

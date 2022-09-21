@@ -153,35 +153,37 @@ public final class CRS extends Static {
      * The set of available codes depends on the {@link CRSAuthorityFactory} instances available on the classpath.
      * There is many thousands of <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">CRS
      * defined by EPSG authority or by other authorities</a>.
-     * The following table lists a very small subset of codes which are guaranteed to be available
+     * The following table lists a small subset of codes which are guaranteed to be available
      * on any installation of Apache SIS:
      *
      * <blockquote><table class="sis">
      *   <caption>Minimal set of supported authority codes</caption>
-     *   <tr><th>Code</th>      <th>Enum</th>                            <th>CRS Type</th>        <th>Description</th></tr>
-     *   <tr><td>CRS:27</td>    <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>CRS:83</td>    <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>CRS:84</td>    <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>EPSG:4230</td> <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
-     *   <tr><td>EPSG:4258</td> <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG:4267</td> <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>
-     *   <tr><td>EPSG:4269</td> <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>North American Datum 1983</td></tr>
-     *   <tr><td>EPSG:4322</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic</td>      <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG:4326</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:4936</td> <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geocentric</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG:4937</td> <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic 3D</td>   <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG:4978</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geocentric</td>      <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:4979</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic 3D</td>   <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:4984</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geocentric</td>      <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG:4985</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic 3D</td>   <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG:5041</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UPS North (E,N)</td></tr>
-     *   <tr><td>EPSG:5042</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UPS South (E,N)</td></tr>
-     *   <tr><td>EPSG:322##</td><td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Projected</td>       <td>WGS 72 / UTM zone ##N</td></tr>
-     *   <tr><td>EPSG:323##</td><td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Projected</td>       <td>WGS 72 / UTM zone ##S</td></tr>
-     *   <tr><td>EPSG:326##</td><td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UTM zone ##N</td></tr>
-     *   <tr><td>EPSG:327##</td><td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UTM zone ##S</td></tr>
-     *   <tr><td>EPSG:5715</td> <td>{@link CommonCRS.Vertical#DEPTH DEPTH}</td> <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
-     *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
+     *   <tr><th>Code</th>          <th>Enum</th>                            <th>CRS Type</th>        <th>Description</th></tr>
+     *   <tr><td>CRS:27</td>        <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:83</td>        <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:84</td>        <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>EPSG:4230</td>     <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
+     *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4267</td>     <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>
+     *   <tr><td>EPSG:4269</td>     <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>North American Datum 1983</td></tr>
+     *   <tr><td>EPSG:4322</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic</td>      <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:4326</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4936</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geocentric</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4937</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic 3D</td>   <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4978</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geocentric</td>      <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4979</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic 3D</td>   <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4984</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geocentric</td>      <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:4985</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic 3D</td>   <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:5041</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UPS North (E,N)</td></tr>
+     *   <tr><td>EPSG:5042</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UPS South (E,N)</td></tr>
+     *   <tr><td>EPSG:322##</td>    <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Projected</td>       <td>WGS 72 / UTM zone ##N</td></tr>
+     *   <tr><td>EPSG:323##</td>    <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Projected</td>       <td>WGS 72 / UTM zone ##S</td></tr>
+     *   <tr><td>EPSG:326##</td>    <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UTM zone ##N</td></tr>
+     *   <tr><td>EPSG:327##</td>    <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / UTM zone ##S</td></tr>
+     *   <tr><td>EPSG:5714</td>     <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
+     *   <tr><td>EPSG:5715</td>     <td>{@link CommonCRS.Vertical#DEPTH  DEPTH}</td>  <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>OGC:JulianDate</td><td>{@link CommonCRS.Temporal#JULIAN JULIAN}</td> <td>Temporal</td> <td>Julian date (days)</td></tr>
+     *   <tr><td>OGC:UnixTime</td>  <td>{@link CommonCRS.Temporal#UNIX   UNIX}</td>   <td>Unix</td>     <td>Unix time (seconds)</td></tr>
      * </table></blockquote>
      *
      * <h4>URI forms</h4>

@@ -75,6 +75,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> keywords;
 
     /**
@@ -85,19 +86,20 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Name of the formally registered thesaurus or a similar authoritative source of keywords.
      */
+    @SuppressWarnings("serial")
     private Citation thesaurusName;
 
     /**
      * User-defined categorization of groups of keywords that extend or are orthogonal
      * to the standardized {@linkplain #getType() keyword type} codes.
      */
+    @SuppressWarnings("serial")
     private DefaultKeywordClass keywordClass;
 
     /**
      * Constructs an initially empty keywords.
      */
     public DefaultKeywords() {
-        super();
     }
 
     /**

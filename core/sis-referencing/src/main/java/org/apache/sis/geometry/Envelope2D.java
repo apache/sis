@@ -173,7 +173,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * the minimal and maximal values respectively.
      * See the class javadoc about crossing the anti-meridian for more details.
      *
-     * @param  lowerCorner  the fist position.
+     * @param  lowerCorner  the first position.
      * @param  upperCorner  the second position.
      * @throws MismatchedReferenceSystemException if the two positions don't use the same CRS.
      * @throws MismatchedDimensionException if the two positions are not two-dimensional.

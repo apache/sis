@@ -231,12 +231,22 @@ public final class GCOM_C extends Convention {
      * The given parameter is a name from <cite>CF conventions</cite> or from <cite>Attribute Convention for Dataset Discovery
      * (ACDD)</cite>.
      *
-     * @param  name  an attribute name from CF or ACDD convention.
-     * @return the attribute name expected to be found in a netCDF file for GCOM-C, or {@code name} if unknown.
+     * @param  name   an attribute name from CF or ACDD convention.
+     * @param  index  index of the element to get from the list of names.
+     * @return the attribute name expected to be found in a netCDF file for GCOM-C, or {@code null} if none.
      */
     @Override
-    public String mapAttributeName(final String name) {
-        return ATTRIBUTES.getOrDefault(name, name);
+    public String mapAttributeName(final String name, final int index) {
+        switch (index) {
+            case 0: return name;
+            case 1: return ATTRIBUTES.get(name);
+            case 2: {
+                if (AttributeNames.TIME.MINIMUM.equalsIgnoreCase(name)) return "Image_start_time";
+                if (AttributeNames.TIME.MAXIMUM.equalsIgnoreCase(name)) return "Image_end_time";
+                break;
+            }
+        }
+        return null;
     }
 
     /**

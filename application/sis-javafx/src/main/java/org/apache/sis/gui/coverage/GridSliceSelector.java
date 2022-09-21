@@ -194,6 +194,7 @@ public class GridSliceSelector extends Widget {
     private void setGridGeometry(final GridGeometry gg) {
         final ObservableList<Node> children = view.getChildren();
         if (gg == null || gg.getDimension() <= BIDIMENSIONAL || !gg.isDefined(GridGeometry.EXTENT)) {
+            selectedExtent.set(null);
             children.clear();
             return;
         }

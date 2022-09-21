@@ -847,12 +847,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * depends on whether the authority is "AUTO" or "AUTO2". This works for now, but we may need a more
          * rigorous approach in a future SIS version.
          */
-        if (parameters != null || code.indexOf(CommonAuthorityFactory.SEPARATOR) >= 0) {
+        if (parameters != null || code.indexOf(CommonAuthorityCode.SEPARATOR) >= 0) {
             final StringBuilder buffer = new StringBuilder(authority.length() + code.length() + 1)
                     .append(authority).append(Constants.DEFAULT_SEPARATOR).append(code);
             if (parameters != null) {
                 for (final String p : parameters) {
-                    buffer.append(CommonAuthorityFactory.SEPARATOR).append(p);
+                    buffer.append(CommonAuthorityCode.SEPARATOR).append(p);
                 }
             }
             code = buffer.toString();

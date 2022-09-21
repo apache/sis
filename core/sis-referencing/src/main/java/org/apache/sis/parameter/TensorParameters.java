@@ -279,6 +279,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <p>The length of this array determine the tensor {@linkplain #rank() rank}.</p>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final ParameterDescriptor<Integer>[] dimensions;
 
     /**

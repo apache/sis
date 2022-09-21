@@ -70,27 +70,32 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Reference to document describing processing software.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> softwareReferences;
 
     /**
      * Additional details about the processing procedures.
      */
+    @SuppressWarnings("serial")
     private InternationalString procedureDescription;
 
     /**
      * Reference to documentation describing the processing.
      */
+    @SuppressWarnings("serial")
     private Collection<Citation> documentations;
 
     /**
      * Parameters to control the processing operations, entered at run time.
      */
+    @SuppressWarnings("serial")
     private InternationalString runTimeParameters;
 
     /**
      * Details of the methodology by which geographic information was derived from the
      * instrument readings.
      */
+    @SuppressWarnings("serial")
     private Collection<Algorithm> algorithms;
 
     /**

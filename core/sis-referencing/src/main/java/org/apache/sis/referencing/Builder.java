@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
@@ -276,8 +276,8 @@ public abstract class Builder<B extends Builder<B>> {
             properties.putAll(IdentifiedObjects.getProperties(object));
             final GenericName[] valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
             final ReferenceIdentifier[] valueIds = (ReferenceIdentifier[]) properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
-            if (valueAlias != null) aliases.addAll(Arrays.asList(valueAlias));
-            if (valueIds != null) identifiers.addAll(Arrays.asList(valueIds));
+            if (valueAlias != null) Collections.addAll(aliases, valueAlias);
+            if (valueIds   != null) Collections.addAll(identifiers, valueIds);
         }
     }
 

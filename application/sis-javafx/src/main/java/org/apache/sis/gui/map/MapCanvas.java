@@ -163,7 +163,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #requestRepaint()
      * @see Delayed
      */
-    private static final long REPAINT_DELAY = 500;
+    private static final long REPAINT_DELAY = 200;
 
     /**
      * Number of nanoseconds to wait before to set mouse cursor shape to {@link Cursor#WAIT} during rendering.
@@ -171,7 +171,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @see #renderingStartTime
      */
-    private static final long WAIT_CURSOR_DELAY = (1000 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
+    private static final long WAIT_CURSOR_DELAY = (500 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
 
     /**
      * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.
@@ -1410,8 +1410,8 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * The action to execute if rendering appear to be slow. If the rendering did not completed
-     * after about one second, the mouse cursor shaped will be set to the wait cursor. We do not
+     * The action to execute if rendering appears to be slow. If the rendering did not completed
+     * after about one second, the mouse cursor shape will be set to the wait cursor. We do not
      * do this change immediately because the mouse cursor changes become disturbing if applied
      * continuously for a series of fast renderings.
      */
@@ -1442,17 +1442,19 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Invoked in JavaFX thread {@link #WAIT_CURSOR_DELAY} nanoseconds after a rendering started.
      * If the same rendering is still under progress, the mouse cursor is set to {@link Cursor#WAIT}.
-     * If a different rendering is in progress, do not set the cursor because the GUI is fast enough
-     * but schedule a new {@link CursorChange} in case the next rendering is slow.
+     * If a different rendering is in progress, do not set the cursor because the GUI was fast enough
+     * for the rendering just done but scheduled a new {@link CursorChange} in case the next rendering
+     * will be slow.
      */
     private void setWaitCursor(final long startTime) {
         isCursorChangeScheduled = false;
         if (renderingInProgress != null) {
             if (startTime == renderingStartTime) {
                 floatingPane.setCursor(Cursor.WAIT);
+            } else {
+                DelayedExecutor.schedule(new CursorChange());
+                isCursorChangeScheduled = true;
             }
-            DelayedExecutor.schedule(new CursorChange());
-            isCursorChangeScheduled = true;
         }
     }
 

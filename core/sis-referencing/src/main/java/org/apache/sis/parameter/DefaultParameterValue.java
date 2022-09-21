@@ -44,7 +44,7 @@ import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.gml.MeasureList;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Loggers;
@@ -149,6 +149,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #getDescriptor()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private ParameterDescriptor<T> descriptor;
 
     /**
@@ -158,6 +159,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @since 0.7
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected T value;
 
     /**
@@ -167,6 +169,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @since 0.7
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected Unit<?> unit;
 
     /**
@@ -1216,7 +1219,7 @@ convert:            if (componentType != null) {
                 value = (T) xmlValue;
             }
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
+            ImplementationHelper.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
         }
     }
 }

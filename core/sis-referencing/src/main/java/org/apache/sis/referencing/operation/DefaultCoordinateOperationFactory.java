@@ -43,6 +43,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.URLs;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -84,7 +85,7 @@ import org.apache.sis.util.Utilities;
  * The second approach is the most frequently used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -292,7 +293,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             return method;
         }
         throw new NoSuchIdentifierException(Resources.forProperties(defaultProperties)
-                .getString(Resources.Keys.NoSuchOperationMethod_1, name), name);
+                .getString(Resources.Keys.NoSuchOperationMethod_2, name, URLs.OPERATION_METHODS), name);
     }
 
     /**

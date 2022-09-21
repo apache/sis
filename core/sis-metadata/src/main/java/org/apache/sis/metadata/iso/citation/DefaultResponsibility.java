@@ -95,11 +95,13 @@ public class DefaultResponsibility extends ISOMetadata {
     /**
      * Spatial or temporal extents of the role.
      */
+    @SuppressWarnings("serial")
     private Collection<Extent> extents;
 
     /**
      * Information about the parties.
      */
+    @SuppressWarnings("serial")
     private Collection<AbstractParty> parties;
 
     /**

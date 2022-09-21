@@ -115,27 +115,32 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Citation / URL of the specification format.
      */
+    @SuppressWarnings("serial")
     private Citation formatSpecificationCitation;
 
     /**
      * Amendment number of the format version.
      */
+    @SuppressWarnings("serial")
     private InternationalString amendmentNumber;
 
     /**
      * Recommendations of algorithms or processes that can be applied to read or
      * expand resources to which compression techniques have been applied.
      */
+    @SuppressWarnings("serial")
     private InternationalString fileDecompressionTechnique;
 
     /**
      * Media used by the format.
      */
+    @SuppressWarnings("serial")
     private Collection<Medium> media;
 
     /**
      * Provides information about the distributor's format.
      */
+    @SuppressWarnings("serial")
     private Collection<Distributor> formatDistributors;
 
     /**

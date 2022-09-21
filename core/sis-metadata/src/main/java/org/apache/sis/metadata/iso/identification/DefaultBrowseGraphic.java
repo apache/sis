@@ -84,6 +84,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Text description of the illustration.
      */
+    @SuppressWarnings("serial")
     private InternationalString fileDescription;
 
     /**
@@ -95,11 +96,13 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Restrictions on access and/or of browse graphic.
      */
+    @SuppressWarnings("serial")
     private Collection<Constraints> imageConstraints;
 
     /**
      * Links to browse graphic.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> linkages;
 
     /**

@@ -81,16 +81,19 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Identification of authority requesting target collection.
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Identification of the activity or activities that satisfy a plan.
      */
+    @SuppressWarnings("serial")
     private Collection<Operation> operations;
 
     /**
      * Requirement satisfied by the plan.
      */
+    @SuppressWarnings("serial")
     private Collection<Requirement> satisfiedRequirements;
 
     /**

@@ -775,7 +775,7 @@ public final class MathFunctions extends Static {
              */
             return Double.NaN;
         }
-        exp -= (16383 - 1023);     // Change from 15 bias to 11 bias.
+        exp -= (16383 - Double.MAX_EXPONENT);       // Change from 15 bias to 11 bias.
         // Check cases where mantissa excess what double can support.
         if (exp < 0)    return Double.NEGATIVE_INFINITY;
         if (exp > 2046) return Double.POSITIVE_INFINITY;

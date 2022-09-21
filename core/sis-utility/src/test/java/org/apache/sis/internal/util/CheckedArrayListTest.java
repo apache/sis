@@ -19,6 +19,7 @@ package org.apache.sis.internal.util;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -55,7 +56,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     public void testAddAll() {
         final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
-        assertTrue(list.addAll(Arrays.asList("Two", "Three")));
+        assertTrue(Collections.addAll(list, "Two", "Three"));
         assertEquals(Arrays.asList("One", "Two", "Three"), list);
     }
 

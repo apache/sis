@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -88,31 +88,37 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Telephone numbers at which the organization or individual may be contacted.
      */
+    @SuppressWarnings("serial")
     private Collection<Telephone> phones;
 
     /**
      * Physical and email addresses at which the organization or individual may be contacted.
      */
+    @SuppressWarnings("serial")
     private Collection<Address> addresses;
 
     /**
      * On-line information that can be used to contact the individual or organization.
      */
+    @SuppressWarnings("serial")
     private Collection<OnlineResource> onlineResources;
 
     /**
      * Time period (including time zone) when individuals can contact the organization or individual.
      */
+    @SuppressWarnings("serial")
     private InternationalString hoursOfService;
 
     /**
      * Supplemental instructions on how or when to contact the individual or organization.
      */
+    @SuppressWarnings("serial")
     private InternationalString contactInstructions;
 
     /**
      * Type of the contact.
      */
+    @SuppressWarnings("serial")
     private InternationalString contactType;
 
     /**
@@ -224,7 +230,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             }
             if (modified) {
                 phones.clear();
-                phones.addAll(Arrays.asList(p));
+                Collections.addAll(phones, p);
             }
         }
     }

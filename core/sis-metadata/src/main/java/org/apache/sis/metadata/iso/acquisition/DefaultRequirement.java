@@ -30,8 +30,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
+import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
 
 
 /**
@@ -88,16 +88,19 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Identification of reference or guidance material for the requirement.
      */
+    @SuppressWarnings("serial")
     private Citation citation;
 
     /**
      * Origin of requirement.
      */
+    @SuppressWarnings("serial")
     private Collection<ResponsibleParty> requestors;
 
     /**
      * Person(s), or body(ies), to receive results of requirement.
      */
+    @SuppressWarnings("serial")
     private Collection<ResponsibleParty> recipients;
 
     /**
@@ -108,6 +111,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Required or preferred acquisition date and time.
      */
+    @SuppressWarnings("serial")
     private RequestedDate requestedDate;
 
     /**
@@ -119,6 +123,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Plan that identifies solution to satisfy the requirement.
      */
+    @SuppressWarnings("serial")
     private Collection<Plan> satisfiedPlans;
 
     /**

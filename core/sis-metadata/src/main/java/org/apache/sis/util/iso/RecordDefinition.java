@@ -70,6 +70,7 @@ abstract class RecordDefinition {                                       // Inten
         /**
          * The wrapped record type.
          */
+        @SuppressWarnings("serial")                     // Not statically typed as Serializable.
         private final RecordType recordType;            // This is the only serialized field in this file.
 
         /**

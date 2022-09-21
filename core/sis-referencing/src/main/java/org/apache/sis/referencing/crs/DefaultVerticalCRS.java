@@ -27,7 +27,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -279,7 +279,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
         if (datum == null) {
             datum = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "verticalDatum");
+            ImplementationHelper.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "verticalDatum");
         }
     }
 

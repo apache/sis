@@ -22,6 +22,8 @@ import java.util.MissingResourceException;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.CheckMenuItem;
+import javafx.beans.value.ChangeListener;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -32,7 +34,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -66,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AccessedRegions = 65;
 
         /**
+         * Aggregated view
+         */
+        public static final short AggregatedView = 75;
+
+        /**
          * All files
          */
         public static final short AllFiles = 1;
@@ -79,6 +86,11 @@ public final class Resources extends IndexedResourceBundle {
          * Azimuthal equidistant
          */
         public static final short AzimuthalEquidistant = 42;
+
+        /**
+         * Can not create an aggregated view of “{0}”.
+         */
+        public static final short CanNotAggregate_1 = 76;
 
         /**
          * Can not close “{0}”. Data may be lost.
@@ -541,6 +553,21 @@ public final class Resources extends IndexedResourceBundle {
     public MenuItem menu(final short key, final EventHandler<ActionEvent> onAction) {
         final MenuItem item = new MenuItem(getString(key));
         item.setOnAction(onAction);
+        return item;
+    }
+
+    /**
+     * Creates a new check menu item with a localized text specified by the given key.
+     *
+     * @param  key       the key for the text of the menu item.
+     * @param  selected  initial state of the check menu item.
+     * @param  onAction  action to execute when the menu is selected or unselected.
+     * @return the menu item with the specified text and action.
+     */
+    public CheckMenuItem menu(final short key, final boolean selected, final ChangeListener<Boolean> onAction) {
+        final CheckMenuItem item = new CheckMenuItem(getString(key));
+        item.setSelected(selected);
+        item.selectedProperty().addListener(onAction);
         return item;
     }
 }

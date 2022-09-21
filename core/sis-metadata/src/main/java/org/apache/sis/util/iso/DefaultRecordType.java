@@ -109,6 +109,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @see #getTypeName()
      */
+    @SuppressWarnings("serial")
     private final TypeName typeName;
 
     /**
@@ -116,6 +117,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @see #getContainer()
      */
+    @SuppressWarnings("serial")
     private final RecordSchema container;
 
     /**

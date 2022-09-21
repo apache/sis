@@ -17,7 +17,6 @@
 package org.apache.sis.parameter;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -89,7 +88,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      */
     private DefaultParameterValueGroup createGroup(final int step) {
         final DefaultParameterValueGroup group = new DefaultParameterValueGroup(descriptor);
-        group.values().addAll(Arrays.asList(createValues(step)));
+        Collections.addAll(group.values(), createValues(step));
         return group;
     }
 
@@ -223,7 +222,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertEquals("Initial size", 2, values.size());
 
         final DefaultParameterValue<?>[] parameters = createValues(10);
-        assertTrue(values.addAll(Arrays.asList(parameters)));
+        assertTrue(Collections.addAll(values, parameters));
         assertEquals("Final size", parameters.length, values.size());
         for (int i=0; i<parameters.length; i++) {
             assertSame(parameters[i], values.get(i));

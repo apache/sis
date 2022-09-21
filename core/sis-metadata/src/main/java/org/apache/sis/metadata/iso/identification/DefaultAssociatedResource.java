@@ -85,6 +85,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Citation information about the associated resource.
      */
+    @SuppressWarnings("serial")
     private Citation name;
 
     /**
@@ -100,6 +101,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Reference to the metadata of the associated resource.
      */
+    @SuppressWarnings("serial")
     private Citation metadataReference;
 
     /**

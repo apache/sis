@@ -600,7 +600,7 @@ public class CoverageExplorer extends Widget {
                 isCoverageAdjusting = false;
             }
             // Indirectly start a background thread which will invoke `notifyDataChanged(…)` later.
-            setCoverage((resource != null || coverage != null) ? new ImageRequest(resource, coverage) : null);
+            setCoverage((resource != null || coverage != null) ? new ImageRequest(resource, coverage, null) : null);
         }
     }
 
@@ -659,7 +659,7 @@ public class CoverageExplorer extends Widget {
         final GridCoverageResource resource = getResource();
         final GridCoverage coverage = getCoverage();
         if (resource != null || coverage != null) {
-            final ImageRequest request = new ImageRequest(resource, coverage);
+            final ImageRequest request = new ImageRequest(resource, coverage, null);
             final CoverageControls c = (CoverageControls) views.get(View.IMAGE);
             if (c != null) try {
                 request.zoom = c.view.getGridGeometry();

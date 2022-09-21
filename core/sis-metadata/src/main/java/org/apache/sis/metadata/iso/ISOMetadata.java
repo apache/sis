@@ -36,13 +36,13 @@ import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.Containers;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**
@@ -74,6 +74,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * All identifiers associated with this metadata, or {@code null} if none.
      * This field is initialized to a non-null value when first needed.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected Collection<Identifier> identifiers;
 
     /**
@@ -268,7 +269,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     @XmlSchemaType(name = "ID")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
-        return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);
+        return isNullOrEmpty(identifiers) ? null : ImplementationHelper.getObjectID(this);
     }
 
     /**
@@ -276,7 +277,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * This method is invoked automatically by JAXB and should never be invoked explicitly.
      */
     private void setID(final String id) {
-        MetadataUtilities.setObjectID(this, id);
+        ImplementationHelper.setObjectID(this, id);
     }
 
     /**

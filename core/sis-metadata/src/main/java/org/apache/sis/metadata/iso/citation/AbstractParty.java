@@ -85,11 +85,13 @@ public class AbstractParty extends ISOMetadata {
     /**
      * Name of the party.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**
      * Contact information for the party.
      */
+    @SuppressWarnings("serial")
     private Collection<Contact> contactInfo;
 
     /**

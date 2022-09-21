@@ -83,37 +83,44 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Priority applied to the target.
      */
+    @SuppressWarnings("serial")
     private InternationalString priority;
 
     /**
      * Collection technique for the objective.
      */
+    @SuppressWarnings("serial")
     private Collection<ObjectiveType> types;
 
     /**
      * Role or purpose performed by or activity performed at the objective.
      */
+    @SuppressWarnings("serial")
     private Collection<InternationalString> functions;
 
     /**
      * Extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
      */
+    @SuppressWarnings("serial")
     private Collection<Extent> extents;
 
     /**
      * Event or events associated with objective completion.
      */
+    @SuppressWarnings("serial")
     private Collection<Event> objectiveOccurences;
 
     /**
      * Pass of the platform over the objective.
      */
+    @SuppressWarnings("serial")
     private Collection<PlatformPass> pass;
 
     /**
      * Instrument which senses the objective data.
      */
+    @SuppressWarnings("serial")
     private Collection<Instrument> sensingInstruments;
 
     /**

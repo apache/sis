@@ -79,17 +79,20 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Unique name or number that identifies attributes included in the coverage.
      */
+    @SuppressWarnings("serial")
     private MemberName sequenceIdentifier;
 
     /**
      * Description of the attribute.
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**
      * Identifiers for each attribute included in the resource. These identifiers
      * can be use to provide names for the attribute from a standard set of names.
      */
+    @SuppressWarnings("serial")
     private Collection<Identifier> names;
 
     /**

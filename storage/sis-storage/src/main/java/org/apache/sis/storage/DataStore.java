@@ -69,7 +69,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see DataStores#open(Object)
  *
@@ -136,7 +136,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         this.provider  = provider;
         this.name      = connector.getStorageName();
         this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        this.listeners = new StoreListeners(null, this);
+        this.listeners = new StoreListeners(connector.getOption(DataOptionKey.PARENT_LISTENERS), this);
         /*
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.

@@ -24,6 +24,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.*;
@@ -612,7 +613,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
                      31 * (doubleToLongBits(maximum) +
                      31 * (doubleToLongBits(sum) +
                      31 * (doubleToLongBits(squareSum)))));
-        return (int) code ^ (int) (code >>> 32) ^ count;
+        return Long.hashCode(code) ^ count;
     }
 
     /**
@@ -624,13 +625,13 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     @Override
     public boolean equals(final Object object) {
         if (object != null && getClass() == object.getClass()) {
-            final Statistics cast = (Statistics) object;
-            return count == cast.count && countNaN == cast.countNaN
-                    && doubleToLongBits(minimum)   == doubleToLongBits(cast.minimum)
-                    && doubleToLongBits(maximum)   == doubleToLongBits(cast.maximum)
-                    && doubleToLongBits(sum)       == doubleToLongBits(cast.sum)
-                    && doubleToLongBits(squareSum) == doubleToLongBits(cast.squareSum)
-                    && Objects.equals(name, cast.name);
+            final Statistics other = (Statistics) object;
+            return count == other.count && countNaN == other.countNaN
+                    && Numerics.equals(minimum,   other.minimum)
+                    && Numerics.equals(maximum,   other.maximum)
+                    && Numerics.equals(sum,       other.sum)
+                    && Numerics.equals(squareSum, other.squareSum)
+                    && Objects .equals(name,      other.name);
         }
         return false;
     }

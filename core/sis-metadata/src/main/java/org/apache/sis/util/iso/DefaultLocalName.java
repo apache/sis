@@ -86,6 +86,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * value for stopping iterative searches (using GLOBAL would have higher risk of never-ending
      * loops in case of bug), and in order to reduce the stream size during serialization.
      */
+    @SuppressWarnings("serial")
     final NameSpace scope;
 
     /**
@@ -112,6 +113,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      *   </gco:TypeName>
      * }
      */
+    @SuppressWarnings("serial")
     @XmlJavaTypeAdapter(CharSequenceAdapter.class)
     @XmlElement(name = "aName", namespace = Namespaces.GCO)
     final CharSequence name;

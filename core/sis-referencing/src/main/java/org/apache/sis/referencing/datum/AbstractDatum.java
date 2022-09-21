@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlElement;
@@ -36,16 +37,13 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -198,7 +196,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
-        realizationEpoch = MetadataUtilities.toMilliseconds(property(properties, REALIZATION_EPOCH_KEY, Date.class));
+        realizationEpoch = ImplementationHelper.toMilliseconds(property(properties, REALIZATION_EPOCH_KEY, Date.class));
         domainOfValidity = property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
         anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
         scope            = Types.toInternationalString(properties, SCOPE_KEY);
@@ -215,7 +213,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     protected AbstractDatum(final Datum datum) {
         super(datum);
-        realizationEpoch = MetadataUtilities.toMilliseconds(datum.getRealizationEpoch());
+        realizationEpoch = ImplementationHelper.toMilliseconds(datum.getRealizationEpoch());
         domainOfValidity = datum.getDomainOfValidity();
         scope            = datum.getScope();
         anchorDefinition = datum.getAnchorPoint();
@@ -303,7 +301,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     @XmlSchemaType(name = "date")
     @XmlElement(name = "realizationEpoch")
     public Date getRealizationEpoch() {
-        return MetadataUtilities.toDate(realizationEpoch);
+        return ImplementationHelper.toDate(realizationEpoch);
     }
 
     /**
@@ -507,7 +505,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (anchorDefinition == null) {
             anchorDefinition = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
+            ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
         }
     }
 
@@ -520,7 +518,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (realizationEpoch == Long.MIN_VALUE) {
             realizationEpoch = value.getTime();
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
+            ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }
     }
 
@@ -533,7 +531,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (domainOfValidity == null) {
             domainOfValidity = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
+            ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
         }
     }
 
@@ -546,7 +544,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (scope == null) {
             scope = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
+            ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
         }
     }
 }

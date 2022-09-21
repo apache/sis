@@ -80,6 +80,7 @@ public class DefaultMetadataScope extends ISOMetadata {
     /**
      * Description of the scope.
      */
+    @SuppressWarnings("serial")
     private InternationalString name;
 
     /**

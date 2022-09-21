@@ -250,12 +250,12 @@ final class MultiResolutionImage extends GridResourceWrapper implements Resource
      * Loads a subset of the grid coverage represented by this resource.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
+    public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
         final double[] request = getResolution(domain);
         int level = (request != null) ? resolutions.length : 1;
         synchronized (getSynchronizationLock()) {
@@ -275,7 +275,7 @@ finer:      while (--level > 0) {
                 throw levels[level].reader.store.errorIO(e);
             }
             image.setLoadingStrategy(getLoadingStrategy());
-            return image.read(domain, range);
+            return image.read(domain, ranges);
         }
     }
 }

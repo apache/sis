@@ -716,14 +716,18 @@ public final class DefinitionURI {
          * and "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG/9.1/27700&2=(…)/crs/EPSG/9.1/5701".
          */
         if (components != null) {
+            boolean first = true;
             for (int i=0; i<components.length;) {
                 final DefinitionURI c = components[i++];
-                if (isHTTP) {
-                    buffer.append(i == 1 ? COMPONENT_SEPARATOR_1
-                                         : COMPONENT_SEPARATOR_2)
-                          .append(i).append(KEY_VALUE_SEPARATOR);
+                if (c != null) {
+                    if (isHTTP) {
+                        buffer.append(first ? COMPONENT_SEPARATOR_1
+                                            : COMPONENT_SEPARATOR_2)
+                              .append(i).append(KEY_VALUE_SEPARATOR);
+                    }
+                    c.appendStringTo(buffer, COMPONENT_SEPARATOR);
+                    first = false;
                 }
-                c.appendStringTo(buffer, COMPONENT_SEPARATOR);
             }
         }
     }

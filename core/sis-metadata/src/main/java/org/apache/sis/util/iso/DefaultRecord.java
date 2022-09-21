@@ -74,6 +74,7 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * The type definition of this record. Can not be {@code null}.
      */
+    @SuppressWarnings("serial")
     final RecordDefinition definition;
 
     /**
@@ -81,6 +82,7 @@ public class DefaultRecord implements Record, Serializable {
      * which is why the type is not {@code Object[]}. Should never be {@code null}, except
      * temporarily during XML unmarshalling.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object values;
 
     /**

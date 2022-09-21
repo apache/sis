@@ -200,17 +200,17 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * Creates a {@link GridCoverage} which will load pixel data in the given domain.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public final GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
+    public final GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
         final long startTime = System.nanoTime();
         GridCoverage coverage;
         try {
             synchronized (getSynchronizationLock()) {
-                final Subset subset = new Subset(domain, range);
+                final Subset subset = new Subset(domain, ranges);
                 final Compression compression = getCompression();
                 if (compression == null) {
                     throw new DataStoreContentException(reader.resources().getString(

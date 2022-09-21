@@ -120,6 +120,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @see #getAuthority()
      */
+    @SuppressWarnings("serial")
     private Citation authority;
 
     /**
@@ -150,6 +151,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @see #getDescription()
      */
+    @SuppressWarnings("serial")
     private InternationalString description;
 
     /**

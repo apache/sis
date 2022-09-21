@@ -19,8 +19,8 @@ package org.apache.sis.referencing.operation.builder;
 import java.util.Map;
 import java.util.List;
 import java.util.Queue;
-import java.util.Arrays;
 import java.util.Locale;
+import java.util.Collections;
 import java.text.NumberFormat;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
@@ -287,7 +287,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
      */
     static void recycle(final double[][] arrays, final Queue<double[]> pool) {
         if (arrays != null) {
-            pool.addAll(Arrays.asList(arrays));
+            Collections.addAll(pool, arrays);
         }
     }
 

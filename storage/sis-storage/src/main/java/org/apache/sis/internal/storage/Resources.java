@@ -125,6 +125,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadPixel_3 = 68;
 
         /**
+         * Can not read slice at index {0}.
+         */
+        public static final short CanNotReadSlice_1 = 78;
+
+        /**
          * Can not remove resource “{1}” from aggregate “{0}”.
          */
         public static final short CanNotRemoveResource_2 = 49;
@@ -133,6 +138,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not render an image for the “{0}” coverage.
          */
         public static final short CanNotRenderImage_1 = 61;
+
+        /**
+         * Can not select a slice.
+         */
+        public static final short CanNotSelectSlice = 81;
 
         /**
          * Can not save resources of type ‘{1}’ in a “{0}” store.
@@ -317,6 +327,22 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingSchemeInURI_1 = 11;
 
         /**
+         * No feature type is common to all the features to aggregate.
+         */
+        public static final short NoCommonFeatureType = 75;
+
+        /**
+         * Index {1} in dimension “{0}” maps to {2} slices. This error can be avoided by specifying a
+         * merge strategy.
+         */
+        public static final short NoSliceMapped_3 = 79;
+
+        /**
+         * Extent in dimension “{0}” should be a slice, but {1} cells were specified.
+         */
+        public static final short NoSliceSpecified_2 = 80;
+
+        /**
          * No directory of resources found at “{0}”.
          */
         public static final short NoSuchResourceDirectory_1 = 46;
@@ -412,6 +438,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsWriteOnce_1 = 21;
 
         /**
+         * Query a subset of “{0}”.
+         */
+        public static final short SubsetQuery_1 = 77;
+
+        /**
          * Can not open {0} data store without “{1}” parameter.
          */
         public static final short UndefinedParameter_2 = 27;
@@ -420,6 +451,11 @@ public final class Resources extends IndexedResourceBundle {
          * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
          */
         public static final short UnexpectedNumberOfCoordinates_4 = 58;
+
+        /**
+         * Unfiltered data.
+         */
+        public static final short UnfilteredData = 76;
 
         /**
          * Format of “{0}” is not recognized.

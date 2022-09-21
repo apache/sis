@@ -50,7 +50,8 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Olivier Lhemann (OSDU)
- * @version 1.1
+ * @author  Michael Arneson (OSDU)
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -226,5 +227,34 @@ public final strictfp class CoordinateOperationTest extends MathTransformTestCas
         final double[] coordinate = target.getCoordinate();
         assertEquals("x", expectedX, coordinate[0], 0.01);
         assertEquals("y", expectedY, coordinate[1], 0.01);
+    }
+
+    /**
+     * Tests a Mercator projection that require wraparound of longitude values.
+     *
+     * @throws FactoryException if an error occurred while creating a test CRS.
+     * @throws TransformException if an error occurred while testing a coordinate conversion.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-547">SIS-547 on issue tracker</a>
+     */
+    @Test
+    public void testMercatorWraparound() throws FactoryException, TransformException {
+        CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
+        assumeTrue("EPSG authority factory is required for this test.",
+                   crsFactory instanceof CoordinateOperationAuthorityFactory);
+
+        CoordinateReferenceSystem sourceCRS = crsFactory.createCoordinateReferenceSystem("3001");
+        CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("4211");
+
+        CoordinateOperation operation = opFactory.createOperation(sourceCRS, targetCRS);
+        MathTransform transform = operation.getMathTransform();
+
+        double[] expectedXyValues = new double[] {-2.0, -71.0};
+        double[] sourceXyValues   = new double[] {23764105.84, 679490.646};
+        double[] actualXyValues   = new double[2];
+
+        transform.transform(sourceXyValues, 0, actualXyValues, 0, 1);
+        assertEquals("x", expectedXyValues[0], actualXyValues[0], 6E-7);
+        assertEquals("y", expectedXyValues[1], actualXyValues[1], 6E-7);
     }
 }

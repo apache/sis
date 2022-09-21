@@ -31,7 +31,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.gco.UnitAdapter;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -98,6 +98,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Units in which sensor wavelengths are expressed.
      */
+    @SuppressWarnings("serial")
     private Unit<Length> boundUnits;
 
     /**

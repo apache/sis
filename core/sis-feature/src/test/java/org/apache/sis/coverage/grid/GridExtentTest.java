@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -46,6 +47,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
  * @module
@@ -64,12 +66,14 @@ public final strictfp class GridExtentTest extends TestCase {
      * Verifies the low and high values in the specified dimension of the given extent
      */
     static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
-        assertEquals("low",  low,  extent.getLow (dimension));
-        assertEquals("high", high, extent.getHigh(dimension));
+        assertEquals("low",    low,  extent.getLow (dimension));
+        assertEquals("high",   high, extent.getHigh(dimension));
+        assertEquals("size",   high - low + 1, extent.getSize(dimension));
+        assertEquals("median", Numerics.ceilDiv(high + low, 2), extent.getMedian(dimension));
     }
 
     /**
-     * Tests the {@link GridExtent#subsample(int...)}.
+     * Tests {@link GridExtent#subsample(int...)}.
      */
     @Test
     public void testSubsample() {
@@ -78,6 +82,18 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 0, 25, 124);                 // 100 cells
         assertExtentEquals(extent, 1, 66, 265);                 // 200 cells
         assertExtentEquals(extent, 2,  4,   5);                 //   2 cells
+    }
+
+    /**
+     * Tests {@link GridExtent#upsample(int...)}.
+     */
+    @Test
+    public void testUpsample() {
+        GridExtent extent = create3D();
+        extent = extent.upsample(4, 3, 9);
+        assertExtentEquals(extent, 0, 400, 1999);               // 1600 cells
+        assertExtentEquals(extent, 1, 600, 2399);               // 1800 cells
+        assertExtentEquals(extent, 2, 360,  449);               //   90 cells
     }
 
     /**
@@ -279,6 +295,24 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 1, 200, 819);
         assertExtentEquals(extent, 2, 35,  49);
         assertSame(extent.union(domain), extent);
+    }
+
+    /**
+     * Tests {@link GridExtent#intersect(GridExtent)} with inconsistent axis types.
+     * An exception should be thrown.
+     */
+    @Test
+    public void testCombineInvalid() {
+        final GridExtent domain = createOther();
+        final GridExtent other = new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.TRACK, DimensionNameType.TIME},
+                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+        try {
+            domain.intersect(other);
+            fail("Should not be allowed");
+        } catch (IllegalArgumentException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**

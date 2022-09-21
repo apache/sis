@@ -108,7 +108,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -1053,7 +1053,7 @@ public class MetadataBuilder {
     public final void addLanguage(final Locale language, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
-            // No need to use 'addIfNotPresent(…)' because Locale collection is a Set by default.
+            // No need to use `addIfNotPresent(…)` because Locale collection is a Set by default.
             if (scope != Scope.RESOURCE) metadata().getLanguages().add(language);
             if (scope != Scope.METADATA) identification().getLanguages().add(language);
         }
@@ -1076,7 +1076,7 @@ public class MetadataBuilder {
     public final void addEncoding(final Charset encoding, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (encoding != null) {
-            // No need to use 'addIfNotPresent(…)' because Charset collection is a Set by default.
+            // No need to use `addIfNotPresent(…)` because Charset collection is a Set by default.
             if (scope != Scope.RESOURCE) metadata().getCharacterSets().add(encoding);
             if (scope != Scope.METADATA) identification().getCharacterSets().add(
                     Types.forCodeName(CharacterSet.class, encoding.toString(), true));
@@ -1085,7 +1085,8 @@ public class MetadataBuilder {
 
     /**
      * Adds information about the scope of the resource.
-     * The scope is typically {@link ScopeCode#DATASET}.
+     * The scope is typically (but not restricted to) {@link ScopeCode#COVERAGE},
+     * {@link ScopeCode#FEATURE} or the more generic {@link ScopeCode#DATASET}.
      * Storage locations are:
      *
      * <ul>
@@ -1201,7 +1202,7 @@ public class MetadataBuilder {
      * This operation does nothing if the title is already defined and the given
      * title is already used as an identifier (this policy is a complement of the
      * {@link #addTitleOrIdentifier(String, Scope)} behavior).
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/identificationInfo/citation/title} if not yet used</li>
@@ -1419,7 +1420,7 @@ public class MetadataBuilder {
      */
     public final void addTopicCategory(final TopicCategory topic) {
         if (topic != null) {
-            // No need to use 'addIfNotPresent(…)' for enumerations.
+            // No need to use `addIfNotPresent(…)` for enumerations.
             identification().getTopicCategories().add(topic);
         }
     }
@@ -1810,7 +1811,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addAccessConstraint(final Restriction restriction) {
         if (restriction != null) {
-            // No need to use 'addIfNotPresent(…)' for code lists.
+            // No need to use `addIfNotPresent(…)` for code lists.
             constraints().getAccessConstraints().add(restriction);
         }
     }
@@ -1985,7 +1986,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds descriptions for the given feature.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/featureTypes/featureTypeName}</li>
@@ -2014,7 +2015,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds descriptions for a feature of the given name.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/featureTypes/featureTypeName}</li>
@@ -2047,7 +2048,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addSpatialRepresentation(final SpatialRepresentationType type) {
         if (type != null) {
-            // No need to use 'addIfNotPresent(…)' for code lists.
+            // No need to use `addIfNotPresent(…)` for code lists.
             identification().getSpatialRepresentationTypes().add(type);
         }
     }
@@ -2176,7 +2177,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets whether parameters for transformation, control/check point(s) or orientation parameters are available.
-     * Storage location are:
+     * Storage locations are:
      *
      * <ul>
      *   <li>If georeferenceable:<ul>
@@ -2231,7 +2232,7 @@ parse:      for (int i = 0; i < length;) {
      * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
      * Ground control points (GCP) are large marked targets on the ground. GCP should not be used for storing the
      * localization grid (e.g. "model tie points" in a GeoTIFF file).
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/spatialRepresentationInfo/checkPoint/geographicCoordinates} if georectified</li>
@@ -2596,7 +2597,7 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Sets the scale factor and offset which have been applied to the cell value.
      * The transfer function type is declared {@linkplain TransferFunctionType#LINEAR linear}
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/scale}</li>
@@ -2884,8 +2885,35 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds a source described by the given metadata.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/source/description}</li>
+     *   <li>{@code metadata/resourceLineage/source/citation}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/extent}</li>
+     *   <li>{@code metadata/resourceLineage/source/sourceReferenceSystem}</li>
+     *   <li>{@code metadata/resourceLineage/source/sourceSpatialResolution}</li>
+     * </ul>
+     *
+     * @param  source  metadata about a source of the resource for which to describe the lineage.
+     *
+     * @see #addLineage(CharSequence)
+     * @see #addProcessDescription(CharSequence)
+     */
+    public final void addSource(final Metadata source) {
+        if (source != null) {
+            final ResourceLineage r = new ResourceLineage(source);
+            if (!r.isEmpty()) {
+                addIfNotPresent(lineage().getSources(), r.build());
+            }
+        }
+    }
+
+    /**
      * Adds information about a source of data used for producing the resource.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/resourceLineage/source/description}</li>
@@ -2901,6 +2929,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  level        hierarchical level of the source (e.g. model), or {@code null} if unspecified.
      * @param  feature      more detailed name for {@code level}, or {@code null} if none.
      *
+     * @see #addSource(Metadata)
      * @see #addProcessing(CharSequence, String)
      * @see #addProcessDescription(CharSequence)
      */
@@ -2922,7 +2951,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds information about a source of data used for producing the resource.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
@@ -2941,6 +2970,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  metadata  the metadata of the source, or {@code null} if none.
      * @param  level     hierarchical level of the source (e.g. feature). Should not be null.
      * @param  features  names of dataset, features or attributes used in the source.
+     *
+     * @see #addSource(Metadata)
      */
     public final void addSource(final Metadata metadata, final ScopeCode level, final CharSequence... features) {
         if (metadata != null) {

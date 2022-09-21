@@ -40,7 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -48,7 +48,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * The grid coverage specified at construction time.
      */
-    private final GridCoverage coverage;
+    public final GridCoverage coverage;
 
     /**
      * Creates a new coverage stored in memory.
@@ -73,7 +73,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns information about the <cite>range</cite> of wrapped grid coverage.
+     * Returns information about the <cite>ranges</cite> of wrapped grid coverage.
      *
      * @return ranges of sample values together with their mapping to "real values".
      */
@@ -89,19 +89,19 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
      * the original grid coverage.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for the whole domain.
-     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and range.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, final int... range) {
+    public GridCoverage read(GridGeometry domain, final int... ranges) {
         List<SampleDimension> bands = coverage.getSampleDimensions();
-        final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
+        final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), ranges, listeners);
         /*
          * The given `domain` may use arbitrary `gridToCRS` and `CRS` properties.
          * For this simple implementation we need the same `gridToCRS` and `CRS`
          * than the wrapped coverage; only domain `extent` is allowed to differ.
          * Subsampling is ignored for now because it is an expensive operation.
-         * Clipping and range selection are light and do not copy any data.
+         * Clipping and ranges selection are light and do not copy any data.
          *
          * TODO: a future implementation may apply subsampling efficiently,
          *       by adjusting the pixel stride in SampleModel.
@@ -171,7 +171,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
             }
         }
         if (!sameBands) {
-            data  = new ImageProcessor().selectBands(data, range);
+            data  = new ImageProcessor().selectBands(data, ranges);
             bands = UnmodifiableArrayList.wrap(rangeIndices.select(bands));
         }
         return new GridCoverageBuilder()

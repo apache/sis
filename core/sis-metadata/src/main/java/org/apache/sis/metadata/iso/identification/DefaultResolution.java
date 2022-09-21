@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -123,6 +123,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * Either the scale as a {@link RepresentativeFraction} instance, the distance, the angle,
      * or the level of details as an {@link InternationalString} instance.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object value;
 
     /**

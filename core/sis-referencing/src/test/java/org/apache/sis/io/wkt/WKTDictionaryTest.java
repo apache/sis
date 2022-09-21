@@ -129,7 +129,7 @@ public final strictfp class WKTDictionaryTest extends TestCase {
          */
         new SharedValuesCheck().verify(factory);
         /*
-         * "TEST" code space should be fist because it is the most frequently used
+         * "TEST" code space should be first because it is the most frequently used
          * in the test file. The authority should be "TEST" for the same reason.
          * Codes can be in any order. Code spaces are omitted when there is no ambiguity.
          */

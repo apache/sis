@@ -471,7 +471,7 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
-     * Returns a grid coverage that contains real values or sample values,
+     * Creates a grid coverage that contains real values or sample values,
      * depending if {@code converted} is {@code true} or {@code false} respectively.
      *
      * @param  converted  {@code true} for a coverage containing converted values,
@@ -479,23 +479,15 @@ public class GridCoverage2D extends GridCoverage {
      * @return a coverage containing converted or packed values, depending on {@code converted} argument value.
      */
     @Override
-    public synchronized GridCoverage forConvertedValues(final boolean converted) {
-        GridCoverage2D view = (GridCoverage2D) getView(converted);
-        if (view == null) try {
+    protected GridCoverage createConvertedValues(final boolean converted) {
+        try {
             final List<SampleDimension> sources = getSampleDimensions();
             final List<SampleDimension> targets = new ArrayList<>(sources.size());
             final MathTransform1D[]  converters = ConvertedGridCoverage.converters(sources, targets, converted);
-            if (converters != null) {
-                view = new GridCoverage2D(this, targets, converters, converted);
-                view.setView(!converted, this);
-            } else {
-                view = this;
-            }
-            setView(converted, view);
+            return (converters == null) ? this : new GridCoverage2D(this, targets, converters, converted);
         } catch (NoninvertibleTransformException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
-        return view;
     }
 
     /**

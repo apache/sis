@@ -16,10 +16,10 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 
@@ -80,10 +80,10 @@ abstract class MetadataScopeAdapter<L> extends LegacyPropertyAdapter<L,DefaultMe
                         remaining[n++] = it.next();
                         it.remove();
                     }
-                    if (n != remaining.length) { // Paranoiac check.
+                    if (n != remaining.length) {                        // Paranoiac check.
                         throw new ConcurrentModificationException();
                     }
-                    elements.addAll(Arrays.asList(remaining));
+                    Collections.addAll(elements, remaining);
                 }
             }
             return update(scope, newValue);

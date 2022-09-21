@@ -356,6 +356,7 @@ public final class DataStoreOpener extends Task<DataStore> {
     static void closeAll() throws Exception {
         final Closer closer = new Closer();
         do {
+            // Use `toArray()` because we need a snapshot.
             Stream.of(CACHE.keySet().toArray()).parallel().forEach(closer);
         } while (!CACHE.isEmpty());
         closer.rethrow();

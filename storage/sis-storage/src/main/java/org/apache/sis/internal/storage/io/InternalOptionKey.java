@@ -49,6 +49,9 @@ public final class InternalOptionKey<T> extends OptionKey<T> {
 
     /**
      * Creates a new key of the given name.
+     *
+     * @param name  the key name.
+     * @param type  the type of values.
      */
     public InternalOptionKey(final String name, final Class<T> type) {
         super(name, type);

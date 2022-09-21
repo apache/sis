@@ -1100,16 +1100,17 @@ class CoordinateOperationRegistry {
                     if (mtFactory instanceof DefaultMathTransformFactory) {
                         if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
                         else         targetCRS = toGeodetic3D(targetCRS, target3D);
+                        final DefaultMathTransformFactory.Context context;
                         final MathTransform mt;
                         try {
+                            context = ReferencingUtilities.createTransformContext(sourceCRS, targetCRS);
                             mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
-                                    ((SingleOperation) op).getParameterValues(),
-                                    ReferencingUtilities.createTransformContext(sourceCRS, targetCRS));
+                                    ((SingleOperation) op).getParameterValues(), context);
                         } catch (InvalidGeodeticParameterException e) {
                             log(null, e);
                             break;
                         }
-                        operations.set(recreate(op, sourceCRS, targetCRS, mt, mtFactory.getLastMethodUsed()));
+                        operations.set(recreate(op, sourceCRS, targetCRS, mt, context.getMethodUsed()));
                         return true;
                     }
                 }
