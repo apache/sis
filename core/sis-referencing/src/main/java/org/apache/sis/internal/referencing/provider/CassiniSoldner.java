@@ -26,7 +26,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for "<cite>Cassini-Soldner</cite>" projection (EPSG:9806).
+ * The provider for <cite>"Cassini-Soldner"</cite> projection (EPSG:9806).
  * This projection is similar to {@link TransverseMercator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
