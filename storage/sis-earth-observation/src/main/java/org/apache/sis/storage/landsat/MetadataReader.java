@@ -885,7 +885,7 @@ final class MetadataReader extends MetadataBuilder {
                         || projection.parameter(Constants.FALSE_NORTHING)  .doubleValue() != 0
                         || projection.parameter(Constants.CENTRAL_MERIDIAN).doubleValue() != 0)
                 {
-                    crs = new GeodeticObjectBuilder(listeners.getLocale())
+                    crs = new GeodeticObjectBuilder(factories, listeners.getLocale())
                             .addName("Polar stereographic").setConversion(projection)
                             .createProjectedCRS(datum.geographic(), crs.getCoordinateSystem());
                 }

@@ -643,7 +643,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 if (isUTM && crs != null) {
                     builder.addName(crs.getName());
                 } // else default to the conversion name, which is "Transverse Mercator".
-                builder.setTransverseMercator(isUTM ? Zoner.UTM : Zoner.ANY, latitude, longitude);
+                builder.applyTransverseMercator(isUTM ? Zoner.UTM : Zoner.ANY, latitude, longitude);
             } else {
                 builder.setConversionMethod(method)
                        .addName(PROJECTION_NAMES[projection - FIRST_PROJECTION_CODE])

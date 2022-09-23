@@ -1,0 +1,57 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.internal.referencing;
+
+import java.util.function.BiConsumer;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.measure.Units;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+
+/**
+ * Tests {@link GeodeticObjectBuilder}.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.3
+ * @since   1.3
+ * @module
+ */
+public final strictfp class GeodeticObjectBuilderTest extends TestCase {
+    /**
+     * Tests {@link GeodeticObjectBuilder#changeConversion(String, BiConsumer)}.
+     *
+     * @throws FactoryException if an operation method name is not supported.
+     */
+    @Test
+    public void testChangeConversion() throws FactoryException {
+        final GeodeticObjectBuilder b = new GeodeticObjectBuilder();
+        assertSame(b, b.setConversionName("Dummy projection"));
+        assertSame(b, b.setConversionMethod("Popular Visualisation Pseudo Mercator"));
+        assertSame(b, b.setParameter("Longitude of natural origin", 40, Units.DEGREE));
+        assertSame(b, b.setParameter("Scale factor at natural origin", 0.5, Units.UNITY));
+        assertSame(b, b.changeConversion("Mercator (Spherical)", null));
+        final ProjectedCRS crs = b.createProjectedCRS();
+        final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
+        assertEquals(40,  p.parameter("Longitude of natural origin").doubleValue(), STRICT);
+        assertEquals(0.5, p.parameter("Scale factor at natural origin").doubleValue(), STRICT);
+    }
+}

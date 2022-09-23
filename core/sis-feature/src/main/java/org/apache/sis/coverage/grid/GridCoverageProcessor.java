@@ -27,6 +27,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.RegionOfInterest;
@@ -478,6 +480,28 @@ public class GridCoverageProcessor implements Cloneable {
             throw new TransformException(e);
         }
         return resampled.forConvertedValues(isConverted);
+    }
+
+    /**
+     * Creates a new coverage with a different coordinate reference system.
+     * The grid extent and "grid to CRS" transform are determined automatically
+     * with default values preserving the resolution of source coverage at its
+     * {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest}.
+     *
+     * <p>See {@link #resample(GridCoverage, GridGeometry)} for more information
+     * about interpolation and allowed optimizations.</p>
+     *
+     * @param  source  the grid coverage to resample.
+     * @param  target  the desired coordinate reference system.
+     * @return a grid coverage with the given coordinate reference system.
+     * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
+     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     *
+     * @since 1.3
+     */
+    public GridCoverage resample(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
+        ArgumentChecks.ensureNonNull("target", target);
+        return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
     }
 
     /**
