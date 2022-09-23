@@ -58,6 +58,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.parameter.Parameters;
 
 
@@ -112,6 +113,13 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     private final Locale locale;
 
     /**
+     * Whether to use the axis order defined by {@link AxesConvention#NORMALIZED}.
+     *
+     * @see CommonCRS#normalizedGeographic()
+     */
+    private boolean normalizedAxisOrder;
+
+    /**
      * Creates a new builder with default locale and set of factories.
      */
     public GeodeticObjectBuilder() {
@@ -134,6 +142,21 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     private static Map<String,Object> name(final IdentifiedObject template) {
         return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+    }
+
+    /**
+     * Sets whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
+     * This flag applies to geographic CRS created by this builder.
+     *
+     * @param  normalized  whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
+     * @return {@code this}, for method call chaining.
+     *
+     * @see AxesConvention#NORMALIZED
+     * @see CommonCRS#normalizedGeographic()
+     */
+    public GeodeticObjectBuilder setNormalizedAxisOrder(final boolean normalized) {
+        normalizedAxisOrder = normalized;
+        return this;
     }
 
     /**
@@ -483,7 +506,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @throws FactoryException if an error occurred while building the projected CRS.
      */
     public ProjectedCRS createProjectedCRS() throws FactoryException {
-        GeographicCRS crs = CommonCRS.WGS84.geographic();
+        GeographicCRS crs = getBaseCRS();
         if (datum != null) {
             crs = factories.getCRSFactory().createGeographicCRS(name(datum), datum, crs.getCoordinateSystem());
         }
@@ -491,14 +514,22 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
+     * Returns the CRS to use as the base of a projected CRS.
+     *
+     * @todo {@code CommonCRS.WGS84} should be {@code CommonCRS.DEFAULT}, but the latter is not public.
+     */
+    private GeographicCRS getBaseCRS() {
+        return normalizedAxisOrder ? CommonCRS.defaultGeographic() : CommonCRS.WGS84.geographic();
+    }
+
+    /**
      * Creates a geographic CRS.
      *
-     * @param  normalized  whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
      * @return the geographic coordinate reference system.
      * @throws FactoryException if an error occurred while building the geographic CRS.
      */
-    public GeographicCRS createGeographicCRS(final boolean normalized) throws FactoryException {
-        final GeographicCRS crs = normalized ? CommonCRS.WGS84.geographic() : CommonCRS.defaultGeographic();
+    public GeographicCRS createGeographicCRS() throws FactoryException {
+        final GeographicCRS crs = getBaseCRS();
         if (datum != null) properties.putIfAbsent(GeographicCRS.NAME_KEY, datum.getName());
         return factories.getCRSFactory().createGeographicCRS(properties, datum, crs.getCoordinateSystem());
     }

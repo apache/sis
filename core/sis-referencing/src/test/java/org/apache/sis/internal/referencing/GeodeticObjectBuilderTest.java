@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import java.util.function.BiConsumer;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Units;
@@ -25,6 +26,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 
 
 /**
@@ -49,9 +51,11 @@ public final strictfp class GeodeticObjectBuilderTest extends TestCase {
         assertSame(b, b.setParameter("Longitude of natural origin", 40, Units.DEGREE));
         assertSame(b, b.setParameter("Scale factor at natural origin", 0.5, Units.UNITY));
         assertSame(b, b.changeConversion("Mercator (Spherical)", null));
-        final ProjectedCRS crs = b.createProjectedCRS();
+        final ProjectedCRS crs = b.setNormalizedAxisOrder(true).createProjectedCRS();
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(40,  p.parameter("Longitude of natural origin").doubleValue(), STRICT);
         assertEquals(0.5, p.parameter("Scale factor at natural origin").doubleValue(), STRICT);
+        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(),
+                                  AxisDirection.EAST, AxisDirection.NORTH);
     }
 }
