@@ -19,6 +19,7 @@ package org.apache.sis.internal.coverage.j2d;
 import java.util.Map;
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 import java.awt.Color;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.coverage.Category;
@@ -32,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
  * the time needed for {@link ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])
  *
@@ -118,7 +119,33 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      */
     @Override
     public String toString() {
-        return name.toString();
+        final StringBuilder buffer = new StringBuilder(name).append(": ").append(sampleRange);
+        if (colors != null) {
+            appendColorRange(buffer, colors.length, (i) -> colors[i].getRGB());
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Appends the range of ARGB codes as hexadecimal values.
+     * If the count of ARGB codes is 0, then this method does nothing.
+     * If the count is 1, then this method formats the single value.
+     * If the count is 2 or more, then this method formats the first and last values.
+     *
+     * @param  buffer  where to append the range of ARGB codes.
+     * @param  count   number of ARGB codes.
+     * @param  colors  providers of ARGB codes for given indices.
+     */
+    static void appendColorRange(final StringBuilder buffer, final int count, final IntUnaryOperator colors) {
+        if (count != 0) {
+            String s = " → ARGB[";
+            int i = 0;
+            do {
+                buffer.append(s).append(Integer.toHexString(colors.applyAsInt(i)).toUpperCase());
+                s = " … ";
+            } while (i < (i = count-1));
+            buffer.append(']');
+        }
     }
 
     /**
