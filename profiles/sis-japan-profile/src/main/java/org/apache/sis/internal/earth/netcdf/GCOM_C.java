@@ -47,6 +47,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.Workaround;
 import ucar.nc2.constants.CF;
 
 
@@ -171,21 +172,38 @@ public final class GCOM_C extends Convention {
 
     /**
      * Names of attributes for sample values having "no-data" meaning.
-     * All those names have {@value #SUFFIX} suffix.
+     * Pad values should be first, followed by missing values.
+     * All those names have the {@value #SUFFIX} suffix.
      *
      * @see #nodataValues(Variable)
      */
     private static final String[] NO_DATA = {
         "Error_DN",                                 // Must be first: will be used as "no data" value.
-        "Land_DN",
+        "Retrieval_error_DN",                       // First fallback if "Error_DN" is not found.
         "Cloud_error_DN",
-        "Retrieval_error_DN"
+        "Land_DN"
     };
+
+    /**
+     * Names of attributes for minimum and maximum valid sample values.
+     */
+    private static final String MINIMUM = "Minimum_valid_DN",
+                                MAXIMUM = "Maximum_valid_DN";
 
     /**
      * Suffix of all attribute names enumerated in {@link #NO_DATA}.
      */
     private static final String SUFFIX = "_DN";
+
+    /**
+     * A "No data" value which should be present in all GCOM files but appear to be missing.
+     * All values in the range {@value} to {@code 0xFFFF} will be "no data", unless the range
+     * of valid values overlap.
+     *
+     * <p>This hack may be removed after VGI data files fixed their missing "no data" attribute.</p>
+     */
+    @Workaround(library = "Vegetation Index (VGI)", version = "3 (2021)")
+    private static final int MISSING_NODATA = 0xFFFE;
 
     /**
      * Creates a new instance of GCOM-C conventions.
@@ -472,8 +490,8 @@ public final class GCOM_C extends Convention {
     public NumberRange<?> validRange(final Variable data) {
         NumberRange<?> range = super.validRange(data);
         if (range == null) {
-            final Number min = data.getAttributeAsNumber("Minimum_valid_DN");
-            final Number max = data.getAttributeAsNumber("Maximum_valid_DN");
+            final Number min = data.getAttributeAsNumber(MINIMUM);
+            final Number max = data.getAttributeAsNumber(MAXIMUM);
             if (min != null || max != null) {
                 range = NumberRange.createBestFit(min, true, max, true);
             }
@@ -484,13 +502,15 @@ public final class GCOM_C extends Convention {
     /**
      * Returns all no-data values declared for the given variable, or an empty map if none.
      * The map keys are the no-data values (pad sample values or missing sample values).
-     * The map values are {@link String} instances containing the description of the no-data value.
+     * The map values are {@link String} instances containing the description of the no-data value,
+     * except for {@code "Error_DN"} which is used as a more generic pad value.
      *
      * @param  data  the variable for which to get no-data values.
      * @return no-data values with textual descriptions.
      */
     @Override
     public Map<Number,Object> nodataValues(final Variable data) {
+        boolean addMissingNodata = true;
         final Map<Number, Object> pads = super.nodataValues(data);
         for (int i=0; i<NO_DATA.length; i++) {
             String name = NO_DATA[i];
@@ -505,7 +525,25 @@ public final class GCOM_C extends Convention {
                 } else {
                     label = FILL_VALUE_MASK | MISSING_VALUE_MASK;
                 }
-                pads.put(value, label);
+                if (pads.putIfAbsent(value, label) == null && addMissingNodata) {
+                    addMissingNodata = Math.floor(value.doubleValue()) > MISSING_NODATA;
+                }
+            }
+        }
+        /*
+         * Workaround for missing "no data" attribute in VGI files. As of September 2022, GCOM files have a
+         * "Land_DN" attribute for missing data caused by land, but no "Sea_DN" attribute for the converse.
+         * As an heuristic rule, if valid values are short integers and "no data" values are either absent
+         * of greater than `MISSING_NODATA`, add "missing values" category for all values up to 0xFFFF.
+         */
+        if (addMissingNodata) {
+            final double valid = data.getAttributeAsDouble(MAXIMUM);
+            if (valid >= 0x100 && valid < MISSING_NODATA) {
+                int label = FILL_VALUE_MASK | MISSING_VALUE_MASK;
+                for (int value=0xFFFF; value >= MISSING_NODATA; value--) {
+                    pads.putIfAbsent(value, label);
+                    label = MISSING_VALUE_MASK;
+                }
             }
         }
         return pads;
