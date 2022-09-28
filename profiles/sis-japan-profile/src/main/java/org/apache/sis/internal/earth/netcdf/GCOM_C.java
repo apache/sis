@@ -418,7 +418,7 @@ public final class GCOM_C extends Convention {
     public MathTransform gridToCRS(final Node node, final MathTransform baseToCRS) throws TransformException {
         final double[] corners = new double[CORNERS.length];
         for (int i=0; i<corners.length; i++) {
-            corners[i] = node.getAttributeAsNumber(CORNERS[i]);
+            corners[i] = node.getAttributeAsDouble(CORNERS[i]);
         }
         baseToCRS.transform(corners, 0, corners, 0, corners.length / 2);
         /*
@@ -431,8 +431,8 @@ public final class GCOM_C extends Convention {
         /*
          * Transform the spans into pixel sizes (resolution), then build the transform.
          */
-        sx /= (node.getAttributeAsNumber("Number_of_pixels") - 1);
-        sy /= (node.getAttributeAsNumber("Number_of_lines")  - 1);
+        sx /= (node.getAttributeAsDouble("Number_of_pixels") - 1);
+        sy /= (node.getAttributeAsDouble("Number_of_lines")  - 1);
         if (Double.isFinite(sx) && Double.isFinite(sy)) {
             final Matrix3 m = new Matrix3();
             m.m00 =  sx;
@@ -472,9 +472,9 @@ public final class GCOM_C extends Convention {
     public NumberRange<?> validRange(final Variable data) {
         NumberRange<?> range = super.validRange(data);
         if (range == null) {
-            final double min = data.getAttributeAsNumber("Minimum_valid_DN");
-            final double max = data.getAttributeAsNumber("Maximum_valid_DN");
-            if (Double.isFinite(min) && Double.isFinite(max)) {
+            final Number min = data.getAttributeAsNumber("Minimum_valid_DN");
+            final Number max = data.getAttributeAsNumber("Maximum_valid_DN");
+            if (min != null || max != null) {
                 range = NumberRange.createBestFit(min, true, max, true);
             }
         }
@@ -494,8 +494,8 @@ public final class GCOM_C extends Convention {
         final Map<Number, Object> pads = super.nodataValues(data);
         for (int i=0; i<NO_DATA.length; i++) {
             String name = NO_DATA[i];
-            final double value = data.getAttributeAsNumber(name);
-            if (Double.isFinite(value)) {
+            final Number value = data.getAttributeAsNumber(name);
+            if (value != null) {
                 final Object label;
                 if (i != 0) {
                     if (name.endsWith(SUFFIX)) {
@@ -522,8 +522,8 @@ public final class GCOM_C extends Convention {
     public TransferFunction transferFunction(final Variable data) {
         final TransferFunction tr = super.transferFunction(data);
         if (tr.isIdentity()) {
-            final double slope  = data.getAttributeAsNumber("Slope");
-            final double offset = data.getAttributeAsNumber("Offset");
+            final double slope  = data.getAttributeAsDouble("Slope");
+            final double offset = data.getAttributeAsDouble("Offset");
             if (Double.isFinite(slope))  tr.setScale (slope);
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }

@@ -30,7 +30,7 @@ import org.apache.sis.internal.util.Strings;
  * The common characteristic of those objects is to have attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -182,16 +182,16 @@ public abstract class Node extends NamedElement {
     }
 
     /**
-     * Returns the value of the given attribute as a number, or {@link Double#NaN}.
-     * If the number is stored with single-precision, it is assumed casted from a
-     * representation in base 10.
+     * Returns the value of the given attribute as a number, or {@code null}.
+     * This method returns a number of the type that most closely matches the
+     * type in the netCDF file.
      *
      * @param  attributeName  the name of the attribute for which to get the value.
-     * @return the singleton attribute value, or {@code NaN} if none or ambiguous.
+     * @return the singleton attribute value, or {@code null} if none or ambiguous.
      */
-    public final double getAttributeAsNumber(final String attributeName) {
-        final Object value = getAttributeValue(attributeName);
+    public final Number getAttributeAsNumber(final String attributeName) {
         Number singleton = null;
+        final Object value = getAttributeValue(attributeName);
         if (value instanceof Number) {
             singleton = (Number) value;
         } else if (value instanceof String) {
@@ -205,11 +205,24 @@ public abstract class Node extends NamedElement {
                     if (singleton == null) {
                         singleton = n;
                     } else if (!singleton.equals(n)) {
-                        return Double.NaN;
+                        return null;
                     }
                 }
             }
         }
+        return singleton;
+    }
+
+    /**
+     * Returns the value of the given attribute as a number, or {@link Double#NaN}.
+     * If the number is stored with single-precision, it is assumed casted from a
+     * representation in base 10.
+     *
+     * @param  attributeName  the name of the attribute for which to get the value.
+     * @return the singleton attribute value, or {@code NaN} if none or ambiguous.
+     */
+    public final double getAttributeAsDouble(final String attributeName) {
+        Number singleton = getAttributeAsNumber(attributeName);
         if (singleton == null) {
             return Double.NaN;
         }
