@@ -27,7 +27,7 @@ import java.awt.image.IndexColorModel;
  * for performance reasons.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -47,15 +47,16 @@ public enum ColorModelType {
     INDEXED(true, false),
 
     /**
-     * Color model use colors computed on the fly from floating point values.
+     * Color model uses colors computed on the fly from floating point values.
      * This model is inefficient and should be changed if possible.
      */
     SCALED(true, true),
 
     /**
-     * Unrecognized color model.
+     * Unrecognized color model. Includes the case where the color model is null.
+     * Must be flagged as "slow" for forcing the creation of a new color model.
      */
-    OTHER(false, false);
+    OTHER(false, true);
 
     /**
      * Whether the color model uses a color palette.
