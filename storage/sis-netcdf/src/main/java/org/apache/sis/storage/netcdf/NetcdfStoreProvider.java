@@ -30,6 +30,7 @@ import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.URIDataStore;
@@ -64,7 +65,7 @@ import org.apache.sis.util.Version;
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see NetcdfStore
  *
@@ -176,6 +177,20 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns {@code true} a file with the specified extension in its filename should be ignored.
+     * The goal is to skip the files generated automatically by the UCAR netCDF library when opening a GRID file.
+     * Those files have {@code "gbx9"} and {@code "ncx4"} extensions.
+     *
+     * @param  extension  the filename extension (without leading dot), or {@code null}.
+     * @return whether to ignore the specified storage.
+     */
+    private static boolean ignoredExtension(final String extension) {
+        return (extension != null) &&
+               (extension.regionMatches(true, 0, "gbx", 0, 3) ||
+                extension.regionMatches(true, 0, "ncx", 0, 3));
+    }
+
+    /**
      * Returns the MIME type if the given storage appears to be supported by {@link NetcdfStore}.
      * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
      * or writing will succeed, only that there appears to be a reasonable chance of success
@@ -188,6 +203,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
+        if (ignoredExtension(IOUtilities.extension(connector.getStorage()))) {
+            return ProbeResult.UNSUPPORTED_STORAGE;
+        }
         int     version     = 0;
         boolean hasVersion  = false;
         boolean isSupported = false;
