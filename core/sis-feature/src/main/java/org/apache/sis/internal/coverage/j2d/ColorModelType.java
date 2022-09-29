@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.IndexColorModel;
 
@@ -94,6 +96,12 @@ public enum ColorModelType {
             }
             if (model.getColorSpace() instanceof ScaledColorSpace) {
                 return SCALED;
+            }
+            if (model.getClass() == ComponentColorModel.class &&            // Must be tested after color space.
+                model.getColorSpace().getType() == ColorSpace.TYPE_RGB &&   // ARGB images stored on 3 or 4 bands.
+                ImageUtilities.isIntegerType(model.getTransferType()))      // Because TYPE_FLOAT|DOUBLE are slow.
+            {
+                return DIRECT;
             }
         }
         return OTHER;
