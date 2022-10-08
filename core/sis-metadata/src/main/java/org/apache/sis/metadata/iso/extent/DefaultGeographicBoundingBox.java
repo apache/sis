@@ -550,7 +550,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
 
     /*
      * IMPLEMENTATION NOTE: For the handling of anti-meridian crossing in union and intersection operations,
-     * this class applies a different strategy than GeneralEnvelope. Instead than trying to work directly with
+     * this class applies a different strategy than GeneralEnvelope. Instead of trying to work directly with
      * the coordinate values without adding or removing offset (which may cause rounding errors), we apply a ±360°
      * shift on longitude values. This simpler strategy is okay here because the range is fixed in the code (not
      * an arbitrarily high range), and GeographicBoundingBox are approximations by definition anyway.

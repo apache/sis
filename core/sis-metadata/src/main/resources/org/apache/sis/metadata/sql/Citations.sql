@@ -216,9 +216,9 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedRespon
 -- But we have to declare some organizations as "citations" because this is the kind of object required
 -- by the "authority" attribute of factories.
 --
--- Instead than repeating the organization name, the title should reference some naming authority
--- in that organization. The identifier should have no codespace, and the identifier code should be
--- the codespace of objects created by the authority represented by that organisation.
+-- Instead of repeating the organization name, the title should reference some naming authority
+-- in that organization. The identifier should have no codespace, and the identifier code should
+-- be the codespace of objects created by the authority represented by that organisation.
 --
 INSERT INTO metadata."Identifier" ("ID", "code") VALUES
   ('OGC',  'OGC'),
