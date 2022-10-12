@@ -18,44 +18,28 @@ package org.apache.sis.metadata.iso.quality;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import org.apache.sis.xml.Namespaces;
 import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.metadata.quality.TemporalValidity;
 import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
  * Accuracy of the temporal attributes and temporal relationships of features.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
- *
- * <div class="preformat">{@code DQ_TemporalAccuracy}
- * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
- *
- * <h2>Limitations</h2>
- * <ul>
- *   <li>Instances of this class are not synchronized for multi-threading.
- *       Synchronization, if needed, is caller's responsibility.</li>
- *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
- *       Serialization support is appropriate for short term storage or RMI between applications running the
- *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
- * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
+ *
+ * @deprecated Renamed {@link AbstractTemporalQuality} for following a renaming in ISO 19157:2013.
  */
-@XmlType(name = "AbstractDQ_TemporalAccuracy_Type", namespace = LegacyNamespaces.GMD)     // TODO: renamed TemporalQuality
-@XmlRootElement(name = "AbstractDQ_TemporalAccuracy", namespace = LegacyNamespaces.GMD)
-@XmlSeeAlso({
-    DefaultAccuracyOfATimeMeasurement.class,
-    DefaultTemporalConsistency.class,
-    DefaultTemporalValidity.class
-})
-public class AbstractTemporalAccuracy extends AbstractElement implements TemporalAccuracy {
+@Deprecated
+@XmlType(name = "AbstractDQ_TemporalAccuracy_Type", namespace = Namespaces.GMD)
+@XmlRootElement(name = "AbstractDQ_TemporalAccuracy", namespace = Namespaces.GMD)
+public class AbstractTemporalAccuracy extends AbstractTemporalQuality implements TemporalAccuracy {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -104,16 +88,6 @@ public class AbstractTemporalAccuracy extends AbstractElement implements Tempora
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractTemporalAccuracy castOrCopy(final TemporalAccuracy object) {
-        if (object instanceof AccuracyOfATimeMeasurement) {
-            return DefaultAccuracyOfATimeMeasurement.castOrCopy((AccuracyOfATimeMeasurement) object);
-        }
-        if (object instanceof TemporalConsistency) {
-            return DefaultTemporalConsistency.castOrCopy((TemporalConsistency) object);
-        }
-        if (object instanceof TemporalValidity) {
-            return DefaultTemporalValidity.castOrCopy((TemporalValidity) object);
-        }
-        // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof AbstractTemporalAccuracy) {
             return (AbstractTemporalAccuracy) object;
         }

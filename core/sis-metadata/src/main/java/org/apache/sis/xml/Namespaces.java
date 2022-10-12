@@ -60,6 +60,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *   <tr><td>mmi</td>    <td>Metadata for Maintenance Information</td>       <td>{@value #MMI}</td>   <td></td></tr>
  *   <tr><td>dqc</td>    <td>Data Quality Common Classes</td>                <td>{@value #DQC}</td>   <td></td></tr>
  *   <tr><td>mdq</td>    <td>Metadata for Data Quality</td>                  <td>{@value #MDQ}</td>   <td></td></tr>
+ *   <tr><td>dqm</td>    <td>Data Quality Measures</td>                      <td>{@value #DQM}</td>   <td></td></tr>
  *   <tr><td>mds</td>    <td>Metadata for Data and Services</td>             <td>{@value #MDS}</td>   <td></td></tr>
  *   <tr><td>srv</td>    <td>Metadata for Services</td>                      <td>{@value #SRV}</td>   <td>SIS 1.0</td></tr>
  *   <tr><td>mpc</td>    <td>Metadata for Portrayal Catalog</td>             <td>{@value #MPC}</td>   <td></td></tr>
@@ -87,7 +88,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal   (Geomatys)
  * @author  Cullen Rombach  (Image Matters)
- * @version 1.2
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -331,6 +333,16 @@ public final class Namespaces extends Static {
      * @since 1.0
      */
     public static final String MDQ = "http://standards.iso.org/iso/19157/-2/mdq/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19157/-2/dqm/1.0/index.html">Data Quality Measures (DQM) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "dqm"}.
+     *
+     * @category ISO
+     * @since 1.3
+     */
+    public static final String DQM = "http://standards.iso.org/iso/19157/-2/dqm/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of

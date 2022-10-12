@@ -20,77 +20,6 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.quality OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * <h2>Overview</h2>
- * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
- *
- * <table class="sis">
- * <caption>Package overview</caption>
- * <tr>
- *   <th>Class hierarchy</th>
- *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td style="width: 50%; white-space: nowrap">
- * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO 19115 metadata}<br>
- * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality                        Data quality}<br>
- * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.quality.AbstractElement                           Element} «abstract»<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractCompleteness                      Completeness} «abstract»<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultCompletenessCommission             Completeness commission}<br>
- * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultCompletenessOmission               Completeness omission}<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractLogicalConsistency                Logical consistency} «abstract»<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultConceptualConsistency              Conceptual consistency}<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency                  Domain consistency}<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultFormatConsistency                  Format consistency}<br>
- * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultTopologicalConsistency             Topological consistency}<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracy                Positional accuracy} «abstract»<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy Absolute external positional accuracy}<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultRelativeInternalPositionalAccuracy Relative internal positional accuracy}<br>
- * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultGriddedDataPositionalAccuracy      Gridded data positional accuracy}<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractTemporalAccuracy                  Temporal accuracy} «abstract»<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultAccuracyOfATimeMeasurement         Accuracy of a time measurement}<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultTemporalConsistency                Temporal consistency}<br>
- * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultTemporalValidity                   Temporal validity}<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractThematicAccuracy                  Thematic accuracy} «abstract»<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeAttributeAccuracy      Quantitative attribute accuracy}<br>
- * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultNonQuantitativeAttributeAccuracy   Non quantitative attribute accuracy}<br>
- * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultThematicClassificationCorrectness  Thematic classification correctness}<br>
- * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultUsability                          Usability}<br>
- * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.quality.AbstractResult                            Result} «abstract»<br>
- * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult                  Conformance result}<br>
- * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult                 Quantitative result}<br>
- * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultCoverageResult                     Coverage result}<br>
- * {@linkplain org.opengis.util.CodeList Code list}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.quality.EvaluationMethodType Evaluation method type}<br>
- * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality                        Data quality}<br>
- * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScope                          Scope}<br>
- * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.quality.AbstractElement                           Element} «abstract»<br>
- * {@code      ├─}     {@linkplain org.opengis.metadata.quality.EvaluationMethodType                             Evaluation method type} «code list»<br>
- * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractResult                            Result} «abstract»<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.AbstractCompleteness                      Completeness} «abstract»<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultCompletenessCommission             Completeness commission}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultCompletenessOmission               Completeness omission}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.AbstractLogicalConsistency                Logical consistency} «abstract»<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultConceptualConsistency              Conceptual consistency}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency                  Domain consistency}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultFormatConsistency                  Format consistency}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultTopologicalConsistency             Topological consistency}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracy                Positional accuracy} «abstract»<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy Absolute external positional accuracy}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultRelativeInternalPositionalAccuracy Relative internal positional accuracy}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultGriddedDataPositionalAccuracy      Gridded data positional accuracy}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.AbstractTemporalAccuracy                  Temporal accuracy} «abstract»<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultAccuracyOfATimeMeasurement         Accuracy of a time measurement}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultTemporalConsistency                Temporal consistency}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultTemporalValidity                   Temporal validity}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.AbstractThematicAccuracy                  Thematic accuracy} «abstract»<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeAttributeAccuracy      Quantitative attribute accuracy}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultNonQuantitativeAttributeAccuracy   Non quantitative attribute accuracy}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultThematicClassificationCorrectness  Thematic classification correctness}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultUsability                          Usability}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult                  Conformance result}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult                 Quantitative result}<br>
- *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultCoverageResult                     Coverage result}<br>
- * </td></tr></table>
- *
  * <h2>Null values, nil objects and collections</h2>
  * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
@@ -110,11 +39,9 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
- *
- * @see <a href="https://issues.apache.org/jira/browse/SIS-394">SIS-394</a>
- *
- * @since 0.3
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
+ * @since   0.3
  * @module
  */
 @XmlSchema(location="https://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd",
@@ -122,7 +49,7 @@
            xmlns = {
                 @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
                 @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
-           //   @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+                @XmlNs(prefix = "dqm", namespaceURI = Namespaces.DQM),      // Data Quality Measures
                 @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
                 @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
                 @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
@@ -131,16 +58,28 @@
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(DQ_Element.class),
+    @XmlJavaTypeAdapter(DQ_EvaluationMethod.class),
     @XmlJavaTypeAdapter(DQ_EvaluationMethodTypeCode.class),
+    @XmlJavaTypeAdapter(DQ_MeasureReference.class),
     @XmlJavaTypeAdapter(DQ_Result.class),
+    @XmlJavaTypeAdapter(DQ_StandaloneQualityReportInformation.class),
+    @XmlJavaTypeAdapter(DQM_BasicMeasure.class),
+    @XmlJavaTypeAdapter(DQM_Description.class),
+//  @XmlJavaTypeAdapter(DQM_Measure.class),             // Not directly referenced, but a "weak" association exists.
+    @XmlJavaTypeAdapter(DQM_Parameter.class),
+    @XmlJavaTypeAdapter(DQM_SourceReference.class),
+    @XmlJavaTypeAdapter(DQM_ValueStructure.class),
     @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
     @XmlJavaTypeAdapter(GO_Record.class),
     @XmlJavaTypeAdapter(GO_RecordType.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
+    @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
+//  @XmlJavaTypeAdapter(MD_RangeDimension.class),       // Pending new ISO 19157 revision.
     @XmlJavaTypeAdapter(MD_Scope.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentationTypeCode.class),

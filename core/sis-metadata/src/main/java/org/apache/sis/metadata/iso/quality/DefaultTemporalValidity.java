@@ -23,7 +23,8 @@ import org.opengis.metadata.quality.TemporalValidity;
 
 /**
  * Validity of data specified by the scope with respect to time.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link TemporalValidity} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_TemporalValidity}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -39,13 +40,14 @@ import org.opengis.metadata.quality.TemporalValidity;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @XmlType(name = "DQ_TemporalValidity_Type")
 @XmlRootElement(name = "DQ_TemporalValidity")
-public class DefaultTemporalValidity extends AbstractTemporalAccuracy implements TemporalValidity {
+public class DefaultTemporalValidity extends AbstractTemporalQuality implements TemporalValidity {
     /**
      * Serial number for inter-operability with different versions.
      */

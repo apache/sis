@@ -72,7 +72,7 @@ import junit.framework.AssertionFailedError;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -270,13 +270,13 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             }
             case "lineage": {
                 if (org.opengis.metadata.quality.DataQuality.class.isAssignableFrom(impl)) {
-                    return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
+                    return LegacyNamespaces.GMD;            // Deprecated property after upgrade to ISO 19157.
                 }
                 break;
             }
             case "errorStatistic": {
                 if (org.opengis.metadata.quality.QuantitativeResult.class.isAssignableFrom(impl)) {
-                    return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
+                    return LegacyNamespaces.GMD;            // Deprecated property after upgrade to ISO 19157.
                 }
                 break;
             }
@@ -287,7 +287,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             case "evaluationMethodDescription":
             case "evaluationProcedure": {
                 if (org.opengis.metadata.quality.Element.class.isAssignableFrom(impl)) {
-                    return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
+                    return LegacyNamespaces.GMD;            // Deprecated properties after upgrade to ISO 19157.
                 }
                 break;
             }
@@ -304,29 +304,20 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 break;
             }
         }
-        /*
-         * GeoAPI has not yet been upgraded to ISO 19157. Interfaces in the "org.opengis.metadata.quality"
-         * package are still defined according the old specification. Those types have the "DQ_" or "QE_"
-         * prefix. This issue applies also to properties (starting with a lower case).
-         */
         if (identifier.startsWith("DQ_")) {
-            assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
-            assertEquals("Specification version should be legacy ISO 19115.", (short) 2003, uml.version());
+            assertEquals("Unexpected @Specification value.", Specification.ISO_19157, uml.specification());
+            assertEquals("Specification version should be ISO 19157.", (short) 0, uml.version());
             return Namespaces.MDQ;
+        }
+        if (identifier.startsWith("DQM_")) {
+            assertEquals("Unexpected @Specification value.", Specification.ISO_19157, uml.specification());
+            assertEquals("Specification version should be ISO 19157.", (short) 0, uml.version());
+            return Namespaces.DQM;
         }
         if (identifier.startsWith("QE_")) {
             assertEquals("Unexpected @Specification value.", Specification.ISO_19115_2, uml.specification());
-            switch (uml.version()) {
-                case 0:    return Namespaces.MDQ;
-                case 2009: return LegacyNamespaces.GMI;
-                default: fail("Unexpected version number in " + uml);
-            }
-        }
-        if (org.opengis.metadata.quality.DataQuality.class.isAssignableFrom(impl) ||    // For properties in those types.
-            org.opengis.metadata.quality.Element.class.isAssignableFrom(impl) ||
-            org.opengis.metadata.quality.Result.class.isAssignableFrom(impl))
-        {
-            return Namespaces.MDQ;
+            assertEquals("Specification version should be legacy ISO 19115-2.", (short) 2009, uml.version());
+            return LegacyNamespaces.GMI;
         }
         /*
          * General cases (after we processed all the special cases)
@@ -344,6 +335,11 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             case ISO_19115_3: return CodeListUID.METADATA_ROOT;
             case ISO_19139:   return LegacyNamespaces.GMX;
             case ISO_19108:   return LegacyNamespaces.GMD;
+            case ISO_19157: {
+                // Case for a method. By contrast, above `identifier.startsWith(…)` checks were for types.
+                final UML parent = TestUtilities.getSingleton(impl.getInterfaces()).getAnnotation(UML.class);
+                return parent.identifier().startsWith("DQM_") ? Namespaces.DQM : Namespaces.MDQ;
+            }
             default: throw new IllegalArgumentException(uml.toString());
         }
     }
@@ -581,6 +577,28 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 final Class<?> dc = method.getDeclaringClass();
                 return org.opengis.metadata.content.SampleDimension.class.isAssignableFrom(dc)
                         && !org.opengis.metadata.content.Band.class.isAssignableFrom(dc);
+            }
+            /*
+             * `Metaquality` override `Element` with only a change of obligation.
+             * We do not duplicate the Java methods only for that.
+             */
+            case "getDerivedElements": {
+                return org.opengis.metadata.quality.Metaquality.class.isAssignableFrom(method.getDeclaringClass());
+            }
+            /*
+             * - "resultContent" is a property in the ISO 10157 model but not yet in the XML schema.
+             * - "resultFormat" and "resultFile" differ in XML schema compared to abstract model (different obligation).
+             */
+            case "getResultContent":
+            case "getResultFormat":
+            case "getResultFile": {
+                return org.opengis.metadata.quality.CoverageResult.class.isAssignableFrom(method.getDeclaringClass());
+            }
+            /*
+             * GeoAPI addition, not in standard model.
+             */
+            case "getMeasure": {
+                return org.opengis.metadata.quality.Element.class.isAssignableFrom(method.getDeclaringClass());
             }
             /*
              * Standard Java methods overridden in some GeoAPI interfaces for Javadoc purposes.

@@ -23,7 +23,8 @@ import org.opengis.metadata.quality.ConceptualConsistency;
 
 /**
  * Adherence to rules of the conceptual schema.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link ConceptualConsistency} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_ConceptualConsistency}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -45,9 +46,7 @@ import org.opengis.metadata.quality.ConceptualConsistency;
  */
 @XmlType(name = "DQ_ConceptualConsistency_Type")
 @XmlRootElement(name = "DQ_ConceptualConsistency")
-public class DefaultConceptualConsistency extends AbstractLogicalConsistency
-        implements ConceptualConsistency
-{
+public class DefaultConceptualConsistency extends AbstractLogicalConsistency implements ConceptualConsistency {
     /**
      * Serial number for inter-operability with different versions.
      */

@@ -24,7 +24,8 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
 /**
  * Closeness of the relative positions of features in the scope to their respective
  * relative positions accepted as or being true.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link RelativeInternalPositionalAccuracy} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_RelativeInternalPositionalAccuracy}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>

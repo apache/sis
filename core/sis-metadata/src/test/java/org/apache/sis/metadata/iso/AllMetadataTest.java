@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso;
 
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
+import org.opengis.annotation.Stereotype;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.MetadataStandard;
@@ -32,7 +33,7 @@ import org.junit.Test;
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -162,32 +163,54 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.maintenance.ScopeDescription.class,
             org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy.class,
             org.opengis.metadata.quality.AccuracyOfATimeMeasurement.class,
+            org.opengis.metadata.quality.AggregationDerivation.class,
+            org.opengis.metadata.quality.BasicMeasure.class,
             org.opengis.metadata.quality.Completeness.class,
             org.opengis.metadata.quality.CompletenessCommission.class,
             org.opengis.metadata.quality.CompletenessOmission.class,
             org.opengis.metadata.quality.ConceptualConsistency.class,
+            org.opengis.metadata.quality.Confidence.class,
             org.opengis.metadata.quality.ConformanceResult.class,
             org.opengis.metadata.quality.CoverageResult.class,
+            org.opengis.metadata.quality.DataEvaluation.class,
             org.opengis.metadata.quality.DataQuality.class,
+            org.opengis.metadata.quality.Description.class,
+            org.opengis.metadata.quality.DescriptiveResult.class,
             org.opengis.metadata.quality.DomainConsistency.class,
             org.opengis.metadata.quality.Element.class,
+            org.opengis.metadata.quality.EvaluationMethod.class,
             org.opengis.metadata.quality.EvaluationMethodType.class,
             org.opengis.metadata.quality.FormatConsistency.class,
+            org.opengis.metadata.quality.FullInspection.class,
             org.opengis.metadata.quality.GriddedDataPositionalAccuracy.class,
+            org.opengis.metadata.quality.Homogeneity.class,
+            org.opengis.metadata.quality.IndirectEvaluation.class,
             org.opengis.metadata.quality.LogicalConsistency.class,
+            org.opengis.metadata.quality.Measure.class,
+            org.opengis.metadata.quality.MeasureReference.class,
+            org.opengis.metadata.quality.Metaquality.class,
             org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy.class,
+            org.opengis.metadata.quality.NonQuantitativeAttributeCorrectness.class,
+            org.opengis.metadata.quality.Parameter.class,
             org.opengis.metadata.quality.PositionalAccuracy.class,
             org.opengis.metadata.quality.QuantitativeAttributeAccuracy.class,
             org.opengis.metadata.quality.QuantitativeResult.class,
             org.opengis.metadata.quality.RelativeInternalPositionalAccuracy.class,
+            org.opengis.metadata.quality.Representativity.class,
             org.opengis.metadata.quality.Result.class,
+            org.opengis.metadata.quality.SampleBasedInspection.class,
+            org.opengis.metadata.quality.SourceReference.class,
+            org.opengis.metadata.quality.StandaloneQualityReportInformation.class,
             org.opengis.metadata.quality.TemporalAccuracy.class,
             org.opengis.metadata.quality.TemporalConsistency.class,
+            org.opengis.metadata.quality.TemporalQuality.class,
             org.opengis.metadata.quality.TemporalValidity.class,
             org.opengis.metadata.quality.ThematicAccuracy.class,
             org.opengis.metadata.quality.ThematicClassificationCorrectness.class,
             org.opengis.metadata.quality.TopologicalConsistency.class,
             org.opengis.metadata.quality.Usability.class,
+            org.opengis.metadata.quality.UsabilityElement.class,
+            org.opengis.metadata.quality.ValueStructure.class,
             org.opengis.metadata.spatial.CellGeometry.class,
             org.opengis.metadata.spatial.Dimension.class,
             org.opengis.metadata.spatial.DimensionNameType.class,
@@ -207,7 +230,8 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
     }
 
     /**
-     * {@inheritDoc}
+     * For every properties in every non-{@code Codelist} types listed in the constructor,
+     * tests the property values. This method verifies initial conditions, then sets random values.
      * Once the test is completed, this method verifies that the expected warnings have been logged,
      * and no unexpected logging occurred.
      */
@@ -220,6 +244,30 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
         loggings.assertNextLogContains("equivalentScale", "levelOfDetail");
         loggings.assertNextLogContains("levelOfDetail", "vertical");
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Returns the name of the XML root element for an interface described by the given UML.
+     * This method does the generic work described in super-class, then applies special rules
+     * specific to the metadata package.
+     */
+    @Override
+    protected String getExpectedXmlRootElementName(final Stereotype stereotype, final UML uml) {
+        String name = super.getExpectedXmlRootElementName(stereotype, uml);
+        if (name.equals("DQ_CoverageResult")) name = "QE_CoverageResult";
+        return name;
+    }
+
+    /**
+     * Returns the name of the XML type for an interface described by the given UML.
+     * This method does the generic work described in super-class, then applies special rules
+     * specific to the metadata package.
+     */
+    @Override
+    protected String getExpectedXmlTypeName(final Stereotype stereotype, final UML uml) {
+        String name = super.getExpectedXmlTypeName(stereotype, uml);
+        if (name.equals("DQ_CoverageResult_Type")) name = "QE_CoverageResult_Type";
+        return name;
     }
 
     /**

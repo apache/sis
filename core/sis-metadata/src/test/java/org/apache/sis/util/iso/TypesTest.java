@@ -202,7 +202,7 @@ public final strictfp class TypesTest extends TestCase {
                 description.toString(Locale.ROOT));
         assertEquals("Online instructions for transferring data from one storage device or system to another.",
                 description.toString(Locale.ENGLISH));
-        assertEquals("Transfert de la ressource d'un système à un autre.",
+        assertEquals("Transfert de la ressource d’un système à un autre.",
                 description.toString(Locale.FRENCH));
     }
 

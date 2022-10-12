@@ -22,8 +22,9 @@ import org.opengis.metadata.quality.FormatConsistency;
 
 
 /**
- * Degree to which data is stored in accordance with the physical structure of the dataset, as described by the scope.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * Degree to which data are stored in accordance with the physical structure of the data set.
+ * See the {@link FormatConsistency} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_FormatConsistency}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
