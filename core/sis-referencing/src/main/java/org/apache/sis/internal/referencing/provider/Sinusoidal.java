@@ -57,6 +57,7 @@ public class Sinusoidal extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
      * </table>
      */
@@ -71,6 +72,7 @@ public class Sinusoidal extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> False_Easting </td></tr>
      *   <tr><td> OGC:     </td><td> false_easting </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> FalseEasting </td></tr>
      *   <tr><td> Proj4:   </td><td> x_0 </td></tr>
      * </table>
      */
@@ -85,6 +87,7 @@ public class Sinusoidal extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> False_Northing </td></tr>
      *   <tr><td> OGC:     </td><td> false_northing </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> FalseNorthing </td></tr>
      *   <tr><td> Proj4:   </td><td> y_0 </td></tr>
      * </table>
      */

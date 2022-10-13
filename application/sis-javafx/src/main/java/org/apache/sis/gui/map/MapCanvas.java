@@ -44,6 +44,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ToggleGroup;
@@ -1334,7 +1335,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         assert Platform.isFxApplicationThread();
         assert renderingInProgress == task : "Expected " + renderingInProgress + " but was " + task;
         // Keep cursor unchanged if contents changed, because caller will invoke `repaint()` again.
-        if (!contentsChanged() || task.getState() != Task.State.SUCCEEDED) {
+        if (!contentsChanged() || task.getState() != Worker.State.SUCCEEDED) {
             restoreCursorAfterPaint();
         }
         renderingInProgress = null;

@@ -456,12 +456,12 @@ public class GridCoverage2D extends GridCoverage {
      * @return the two-dimensional part of the grid geometry.
      *
      * @see #getGridGeometry()
-     * @see GridGeometry#reduce(int...)
+     * @see GridGeometry#selectDimensions(int[])
      */
     public GridGeometry getGridGeometry2D() {
         GridGeometry g = gridGeometry2D.get();
         if (g == null) {
-            g = gridGeometry.reduce(xDimension, yDimension);
+            g = gridGeometry.selectDimensions(xDimension, yDimension);
             if (!gridGeometry2D.compareAndSet(null, g)) {
                 GridGeometry other = gridGeometry2D.get();
                 if (other != null) return other;

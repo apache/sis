@@ -121,7 +121,7 @@ public final class DeferredProperty {
         @Override
         public GridGeometry apply(final RenderedImage image) {
             final GridExtent extent = grid.getExtent();
-            return grid.reduce(dimX, dimY).translate(
+            return grid.selectDimensions(dimX, dimY).shiftGrid(
                     Math.subtractExact(image.getMinX(), extent.getLow(dimX)),
                     Math.subtractExact(image.getMinY(), extent.getLow(dimY)));
         }

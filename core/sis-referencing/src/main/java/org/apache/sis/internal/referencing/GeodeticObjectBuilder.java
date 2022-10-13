@@ -20,12 +20,15 @@ import java.util.Map;
 import java.util.Date;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.function.BiConsumer;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.IdentifiedObject;
@@ -55,10 +58,15 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.parameter.Parameters;
 
 
 /**
  * Helper methods for building Coordinate Reference Systems and related objects.
+ *
+ * In current version, each builder instance should be used for creating only one CRS.
+ * Reusing the same builder for creating many CRS has unspecified behavior.
  *
  * <p>For now, this class is defined in the internal package because this API needs more experimentation.
  * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
@@ -105,30 +113,27 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     private final Locale locale;
 
     /**
-     * Creates a new builder.
+     * Whether to use the axis order defined by {@link AxesConvention#NORMALIZED}.
+     *
+     * @see CommonCRS#normalizedGeographic()
      */
-    public GeodeticObjectBuilder() {
-        this(null);
-    }
+    private boolean normalizedAxisOrder;
 
     /**
-     * Creates a new builder using the given locale for message in exceptions.
-     *
-     * @param  locale  the locale for error message in exceptions.
+     * Creates a new builder with default locale and set of factories.
      */
-    public GeodeticObjectBuilder(final Locale locale) {
-        factories = new ReferencingFactoryContainer();
-        this.locale = locale;
+    public GeodeticObjectBuilder() {
+        this(null, null);
     }
 
     /**
      * Creates a new builder using the given factories and locale.
      *
-     * @param  factories  the factories to use for geodetic objects creation.
-     * @param  locale     the locale for error message in exceptions.
+     * @param  factories  the factories to use for geodetic objects creation, or {@code null} for default.
+     * @param  locale     the locale for error message in exceptions, or {@code null} for default.
      */
     public GeodeticObjectBuilder(final ReferencingFactoryContainer factories, final Locale locale) {
-        this.factories = factories;
+        this.factories = (factories != null) ? factories : new ReferencingFactoryContainer();
         this.locale = locale;
     }
 
@@ -137,6 +142,21 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     private static Map<String,Object> name(final IdentifiedObject template) {
         return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+    }
+
+    /**
+     * Sets whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
+     * This flag applies to geographic CRS created by this builder.
+     *
+     * @param  normalized  whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
+     * @return {@code this}, for method call chaining.
+     *
+     * @see AxesConvention#NORMALIZED
+     * @see CommonCRS#normalizedGeographic()
+     */
+    public GeodeticObjectBuilder setNormalizedAxisOrder(final boolean normalized) {
+        normalizedAxisOrder = normalized;
+        return this;
     }
 
     /**
@@ -276,6 +296,73 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
+     * Replaces the current operation method by a new one with parameter values derived form the old method.
+     * This method can be invoked for replacing a projection by another one with a similar set of parameters.
+     *
+     * <p>If non-null, the given {@code mapper} is used for copying parameter values from the old projection.
+     * The {@code accept(ParameterValue<?> source, Parameters target)} method is invoked where {@code source}
+     * is a parameter value of the old projection and {@code target} is the group of parameters where to set
+     * the values for new projection. If {@code mapper} is null, then the default implementation is as below:</p>
+     *
+     * {@preformat java
+     *     target.getOrCreate(source.getDescriptor()).setValue(source.getValue());
+     * }
+     *
+     * @param  newMethod  name of the new operation method, or {@code null} if no change.
+     * @param  mapper     mapper from old parameters to new parameters, or {@code null} for verbatim copy.
+     * @return {@code this}, for method calls chaining.
+     * @throws IllegalStateException if {@link #setConversionMethod(String)} has not been invoked before this method.
+     * @throws FactoryException if the operation method of the given name can not be obtained.
+     * @throws ClassCastException if a parameter value of the old projection is not an instance of {@link ParameterValue}
+     *         (this restriction may change in a future version).
+     */
+    public GeodeticObjectBuilder changeConversion(final String newMethod,
+            BiConsumer<ParameterValue<?>, Parameters> mapper) throws FactoryException
+    {
+        ensureConversionMethodSet();
+        if (mapper == null) {
+            mapper = GeodeticObjectBuilder::copyParameterValue;
+        }
+        final ParameterValueGroup source = parameters;
+        if (newMethod != null) {
+            method = null;
+            setConversionMethod(newMethod);
+        }
+        final Parameters target = Parameters.castOrWrap(parameters);
+        for (final GeneralParameterValue param : source.values()) {
+            mapper.accept((ParameterValue<?>) param, target);       // ClassCastException is part of current method contract.
+        }
+        return this;
+    }
+
+    /**
+     * The default {@code mapper} of {@code changeConversion(String, BiConsumer)}.
+     *
+     * @param  source  parameter value of the old projection.
+     * @param  target  group of parameters of the new projection where to copy source parameter value.
+     */
+    private static void copyParameterValue(final ParameterValue<?> source, final Parameters target) {
+        target.getOrCreate(source.getDescriptor()).setValue(source.getValue());
+    }
+
+    /**
+     * Sets the operation method, parameters, conversion name and datum for the same projection than the given CRS.
+     * Metadata such as domain of validity are inherited, except identifiers.
+     *
+     * @param  crs  the projected CRS from which to inherit the properties.
+     * @return {@code this}, for method call chaining.
+     */
+    public GeodeticObjectBuilder apply(final ProjectedCRS crs) {
+        final Conversion c = crs.getConversionFromBase();
+        conversionName = c.getName().getCode();
+        method         = c.getMethod();
+        parameters     = c.getParameterValues();
+        datum          = crs.getDatum();
+        properties.putAll(IdentifiedObjects.getProperties(crs, ProjectedCRS.IDENTIFIERS_KEY));
+        return this;
+    }
+
+    /**
      * Sets the operation method, parameters and conversion name for a Transverse Mercator projection.
      * This convenience method delegates to the following methods:
      *
@@ -311,8 +398,8 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *
      * @see CommonCRS#universal(double, double)
      */
-    public GeodeticObjectBuilder setTransverseMercator(TransverseMercator.Zoner zoner, double latitude, double longitude)
-            throws FactoryException
+    public GeodeticObjectBuilder applyTransverseMercator(TransverseMercator.Zoner zoner,
+            double latitude, double longitude) throws FactoryException
     {
         ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
         ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
@@ -347,7 +434,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @throws FactoryException if the operation method for the Polar Stereographic (variant A)
      *         projection can not be obtained.
      */
-    public GeodeticObjectBuilder setPolarStereographic(final boolean north) throws FactoryException {
+    public GeodeticObjectBuilder applyPolarStereographic(final boolean north) throws FactoryException {
         setConversionMethod(PolarStereographicA.NAME);
         setConversionName(PolarStereographicA.setParameters(parameters, north));
         return this;
@@ -412,14 +499,14 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
-     * Creates a projected CRS with base CRS on the specified datum and with default axes.
+     * Creates a projected CRS with base CRS on the datum previously specified to this builder and with default axes.
      * The base CRS uses the ellipsoid specified by {@link #setFlattenedSphere(String, double, double, Unit)}.
      *
      * @return the projected CRS.
      * @throws FactoryException if an error occurred while building the projected CRS.
      */
     public ProjectedCRS createProjectedCRS() throws FactoryException {
-        GeographicCRS crs = CommonCRS.WGS84.geographic();
+        GeographicCRS crs = getBaseCRS();
         if (datum != null) {
             crs = factories.getCRSFactory().createGeographicCRS(name(datum), datum, crs.getCoordinateSystem());
         }
@@ -427,14 +514,22 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
+     * Returns the CRS to use as the base of a projected CRS.
+     *
+     * @todo {@code CommonCRS.WGS84} should be {@code CommonCRS.DEFAULT}, but the latter is not public.
+     */
+    private GeographicCRS getBaseCRS() {
+        return normalizedAxisOrder ? CommonCRS.defaultGeographic() : CommonCRS.WGS84.geographic();
+    }
+
+    /**
      * Creates a geographic CRS.
      *
-     * @param  normalized  whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
      * @return the geographic coordinate reference system.
      * @throws FactoryException if an error occurred while building the geographic CRS.
      */
-    public GeographicCRS createGeographicCRS(final boolean normalized) throws FactoryException {
-        final GeographicCRS crs = normalized ? CommonCRS.WGS84.geographic() : CommonCRS.defaultGeographic();
+    public GeographicCRS createGeographicCRS() throws FactoryException {
+        final GeographicCRS crs = getBaseCRS();
         if (datum != null) properties.putIfAbsent(GeographicCRS.NAME_KEY, datum.getName());
         return factories.getCRSFactory().createGeographicCRS(properties, datum, crs.getCoordinateSystem());
     }

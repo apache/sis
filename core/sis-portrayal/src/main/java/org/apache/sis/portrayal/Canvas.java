@@ -1087,7 +1087,7 @@ public class Canvas extends Observable implements Localized {
             analyzer.addSourceDimensions(displayDimensions);
             final LinearTransform           newObjectiveToDisplay = MathTransforms.tangent(analyzer.separate().inverse(), newPOI);
             final int[]                     objectiveDimensions   = analyzer.getTargetDimensions();
-            final CoordinateReferenceSystem newObjectiveCRS       = CRS.reduce(crs, objectiveDimensions);
+            final CoordinateReferenceSystem newObjectiveCRS       = CRS.selectDimensions(crs, objectiveDimensions);
             final MathTransform             dimensionSelect       = MathTransforms.linear(
                     Matrices.createDimensionSelect(newPOI.getDimension(), objectiveDimensions));
             /*

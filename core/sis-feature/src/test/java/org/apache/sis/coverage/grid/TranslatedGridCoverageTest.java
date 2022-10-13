@@ -72,7 +72,7 @@ public final strictfp class TranslatedGridCoverageTest extends TestCase {
     public void testUsingProcessor() {
         final GridCoverageProcessor processor = new GridCoverageProcessor();
         final GridCoverage source = createCoverage();
-        final GridCoverage target = processor.translateGrid(source, 30, -5);
+        final GridCoverage target = processor.shiftGrid(source, 30, -5);
         assertExtentStarts(source.getGridGeometry().getExtent(), -20, -10);
         assertExtentStarts(target.getGridGeometry().getExtent(),  10, -15);
         /*

@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * An alternative to {@link java.util.AbstractMap java.util.AbstractMap} using different implementation strategies.
- * Instead than providing default method implementations on top of {@link #entrySet()}, this base class uses more
+ * Instead of providing default method implementations on top of {@link #entrySet()}, this base class uses more
  * often the {@link #get(Object)} method with the assumption that the map can not contain null values, or use a
  * special-purpose {@link #entryIterator()} which can reduce the amount of object creations.
  *

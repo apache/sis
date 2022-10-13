@@ -533,14 +533,13 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             listeners.warning(e);
         }
         /*
-         * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
-         * as category name. If the sample values are already real values, then the "no data" values have been replaced by NaN
-         * values by Variable.replaceNaN(Object). The qualitative categories constructed below must be consistent with the NaN
-         * values created by `replaceNaN`.
+         * Adds the "missing value" or "fill value" as qualitative categories. If the sample values are already
+         * real values, then the "no data" values have been replaced by NaN values by Variable.replaceNaN(Object).
+         * The qualitative categories constructed below must be consistent with NaN values created by `replaceNaN`.
          */
         boolean setBackground = true;
+        int missingValueOrdinal = 0;
         int ordinal = band.hasRealValues() ? 0 : -1;
-        final CharSequence[] names = new CharSequence[2];
         for (final Map.Entry<Number,Object> entry : band.getNodataValues().entrySet()) {
             final Number n;
             if (ordinal >= 0) {
@@ -551,17 +550,15 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             CharSequence name;
             final Object label = entry.getValue();
             if (label instanceof Integer) {
-                final int role = (Integer) label;               // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
-                final int i = (role == Convention.FILL_VALUE_MASK) ? 1 : 0;   // i=1 if role is only pad value, i=0 otherwise.
-                name = names[i];
-                if (name == null) {
-                    name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
-                    names[i] = name;
-                }
-                if (setBackground & (role & Convention.FILL_VALUE_MASK) != 0) {
+                final boolean isFill = setBackground && (((Integer) label) & Convention.FILL_VALUE_MASK) != 0;
+                name = Vocabulary.formatInternational(isFill ? Vocabulary.Keys.FillValue : Vocabulary.Keys.MissingValue);
+                if (isFill) {
                     setBackground = false;                      // Declare only one fill value.
                     builder.setBackground(name, n);
                     continue;
+                }
+                if (++missingValueOrdinal >= 2) {
+                    name = name.toString() + " #" + missingValueOrdinal;
                 }
             } else {
                 name = (CharSequence) label;
@@ -776,7 +773,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     }
 
     /**
-     * Returns a string representation of this resource for debuging purposes.
+     * Returns a string representation of this resource for debugging purposes.
      */
     @Override
     public String toString() {

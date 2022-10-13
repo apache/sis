@@ -351,7 +351,7 @@ public class Convention {
      * @return the "grid indices to data indices" scale factor, or {@link Double#NaN} if none.
      */
     public double gridToDataIndices(final Variable axis) {
-        return axis.getAttributeAsNumber("resampling_interval");
+        return axis.getAttributeAsDouble("resampling_interval");
     }
 
     /**
@@ -755,8 +755,8 @@ public class Convention {
          * a "packed" variable. Otherwise the transfer function is the identity transform.
          */
         final TransferFunction tr = new TransferFunction();
-        final double scale  = data.getAttributeAsNumber(CDM.SCALE_FACTOR);
-        final double offset = data.getAttributeAsNumber(CDM.ADD_OFFSET);
+        final double scale  = data.getAttributeAsDouble(CDM.SCALE_FACTOR);
+        final double offset = data.getAttributeAsDouble(CDM.ADD_OFFSET);
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;

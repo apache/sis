@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.awt.image.RenderedImage;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -36,7 +37,6 @@ import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**

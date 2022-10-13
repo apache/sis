@@ -44,6 +44,7 @@ final class ESRI extends Static {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
      * </table>
      */
@@ -58,6 +59,7 @@ final class ESRI extends Static {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Latitude_Of_Origin </td></tr>
      *   <tr><td> OGC:     </td><td> latitude_of_origin </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLat </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      * </table>
      */
@@ -72,6 +74,7 @@ final class ESRI extends Static {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Standard_Parallel_1 </td></tr>
      *   <tr><td> OGC:     </td><td> standard_parallel_1 </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> StdParallel1 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_1 </td></tr>
      * </table>
      */
@@ -86,6 +89,7 @@ final class ESRI extends Static {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Standard_Parallel_2 </td></tr>
      *   <tr><td> OGC:     </td><td> standard_parallel_2 </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> StdParallel2 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_2 </td></tr>
      * </table>
      */
@@ -100,6 +104,7 @@ final class ESRI extends Static {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> False_Easting </td></tr>
      *   <tr><td> OGC:     </td><td> false_easting </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> FalseEasting </td></tr>
      *   <tr><td> Proj4:   </td><td> x_0 </td></tr>
      * </table>
      */
@@ -114,6 +119,7 @@ final class ESRI extends Static {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> False_Northing </td></tr>
      *   <tr><td> OGC:     </td><td> false_northing </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> FalseNorthing </td></tr>
      *   <tr><td> Proj4:   </td><td> y_0 </td></tr>
      * </table>
      */
@@ -145,8 +151,9 @@ final class ESRI extends Static {
      * @return the given {@code builder}, for method call chaining.
      */
     static ParameterBuilder copyNames(final ParameterBuilder builder, final ParameterDescriptor<Double> template) {
-        return builder.addNameAndIdentifier(Citations.ESRI,  template)
-                      .addNameAndIdentifier(Citations.OGC,   template)
-                      .addNameAndIdentifier(Citations.PROJ4, template);
+        return builder.addNameAndIdentifier(Citations.ESRI,    template)
+                      .addNameAndIdentifier(Citations.OGC,     template)
+                      .addNameAndIdentifier(Citations.GEOTIFF, template)
+                      .addNameAndIdentifier(Citations.PROJ4,   template);
     }
 }

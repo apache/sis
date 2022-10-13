@@ -202,8 +202,8 @@ public final class Exceptions extends Static {
      * because it is used in very specific contexts. Furthermore classes related to security manager are deprecated
      * since Java 17.</div>
      *
-     * This method uses only the exception class and the absence of {@linkplain Exception#getSuppressed() suppressed
-     * exceptions} as criterion; it does not verify if the exception messages are the same.
+     * This method uses only the exception class as criterion;
+     * it does not verify if the exception messages are the same.
      *
      * @param  exception  the exception to unwrap (may be {@code null}.
      * @return the unwrapped exception (may be the given argument itself).
@@ -212,24 +212,32 @@ public final class Exceptions extends Static {
      */
     public static Exception unwrap(Exception exception) {
         if (exception != null) {
-            while (exception.getSuppressed().length == 0 &&
-                  (exception instanceof InvocationTargetException ||
+            while (exception instanceof InvocationTargetException ||
                    exception instanceof ExecutionException ||
                    exception instanceof BackingStoreException ||
                    exception instanceof UncheckedIOException ||
-                   exception instanceof DirectoryIteratorException))
+                   exception instanceof DirectoryIteratorException)
             {
                 final Throwable cause = exception.getCause();
                 if (!(cause instanceof Exception)) break;
+                copySuppressed(exception, cause);
                 exception = (Exception) cause;
             }
             Throwable cause;
-            while (exception.getSuppressed().length == 0 &&
-                   exception.getClass().isInstance(cause = exception.getCause()))
-            {
+            while (exception.getClass().isInstance(cause = exception.getCause())) {
+                copySuppressed(exception, cause);
                 exception = (Exception) cause;      // Should never fail because of isInstance(…) check.
             }
         }
         return exception;
+    }
+
+    /**
+     * Unwraps and copies suppressed exceptions from the given source to the given target.
+     */
+    private static void copySuppressed(final Exception source, final Throwable target) {
+        for (final Throwable suppressed : source.getSuppressed()) {
+            target.addSuppressed(suppressed instanceof Exception ? unwrap((Exception) suppressed) : suppressed);
+        }
     }
 }

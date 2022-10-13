@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for "<cite>Albers Equal Area</cite>" projection (EPSG:9822).
+ * The provider for <cite>"Albers Equal Area"</cite> projection (EPSG:9822).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)

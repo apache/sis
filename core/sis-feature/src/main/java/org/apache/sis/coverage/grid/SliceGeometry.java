@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Builds a grid geometry for a slice in a {@link GridCoverage}. This is the implementation of
- * {@link GridGeometry#reduce(int...)} and {@link ImageRenderer#getImageGeometry(int)} methods.
+ * {@link GridGeometry#selectDimensions(int[])} and {@link ImageRenderer#getImageGeometry(int)} methods.
  *
  * <p>This class implements {@link Function} for allowing {@code apply(…)} to be invoked from outside this package.
  * That function is invoked (indirectly) by {@link org.apache.sis.internal.coverage.j2d.TiledImage#getProperty(String)}.</p>
@@ -130,7 +130,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
      * @param  dimCRS          desired number of CRS dimensions, or -1 for automatic.
      * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
      *
-     * @see GridGeometry#reduce(int...)
+     * @see GridGeometry#selectDimensions(int[])
      */
     final GridGeometry reduce(final GridExtent relativeExtent, final int dimCRS) throws FactoryException {
         GridExtent    extent      = geometry.extent;
@@ -177,7 +177,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             extent = sliceExtent;
         }
         if (extent != null) {
-            extent = extent.reduceDimension(gridDimensions);
+            extent = extent.selectDimensions(gridDimensions);
         }
         GeneralEnvelope subArea = null;
         if (useSubExtent && cornerToCRS != null) try {
@@ -195,7 +195,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         ImmutableEnvelope envelope = geometry.envelope;
         if (envelope != null) {
             if (subArea != null || envelope.getDimension() != n) {
-                final CoordinateReferenceSystem crs = CRS.reduce(envelope.getCoordinateReferenceSystem(), crsDimensions);
+                final CoordinateReferenceSystem crs = CRS.selectDimensions(envelope.getCoordinateReferenceSystem(), crsDimensions);
                 final double[] min = new double[n];
                 final double[] max = new double[n];
                 for (int i=0; i<n; i++) {

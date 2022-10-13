@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for "<cite>Hyperbolic Cassini-Soldner</cite>" projection (EPSG:9833).
+ * The provider for <cite>"Hyperbolic Cassini-Soldner"</cite> projection (EPSG:9833).
  * This is a slight modification of {@link CassiniSoldner} and shares the same parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)

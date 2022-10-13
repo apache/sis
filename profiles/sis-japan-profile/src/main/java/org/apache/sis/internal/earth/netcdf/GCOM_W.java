@@ -255,8 +255,8 @@ public final class GCOM_W extends Convention {
     public TransferFunction transferFunction(final Variable data) {
         final TransferFunction tr = super.transferFunction(data);
         if (tr.isIdentity()) {
-            final double slope  = data.getAttributeAsNumber("SCALE FACTOR");
-            final double offset = data.getAttributeAsNumber("OFFSET");
+            final double slope  = data.getAttributeAsDouble("SCALE FACTOR");
+            final double offset = data.getAttributeAsDouble("OFFSET");
             if (Double.isFinite(slope))  tr.setScale (slope);
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
