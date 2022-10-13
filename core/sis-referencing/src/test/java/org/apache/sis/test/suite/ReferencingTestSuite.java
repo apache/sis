@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.ExtentSelectorTest.class,
     org.apache.sis.internal.referencing.WKTKeywordsTest.class,
     org.apache.sis.internal.referencing.WKTUtilitiesTest.class,
+    org.apache.sis.internal.referencing.GeodeticObjectBuilderTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
 

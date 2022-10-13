@@ -958,8 +958,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addBandDescription(description);
         }
         setSampleUnits(variable.getUnit());
-        setTransferFunction(variable.getAttributeAsNumber(CDM.SCALE_FACTOR),
-                            variable.getAttributeAsNumber(CDM.ADD_OFFSET));
+        setTransferFunction(variable.getAttributeAsDouble(CDM.SCALE_FACTOR),
+                            variable.getAttributeAsDouble(CDM.ADD_OFFSET));
         addContentType(forCodeName(CoverageContentType.class, stringValue(ACDD.coverage_content_type)));
     }
 

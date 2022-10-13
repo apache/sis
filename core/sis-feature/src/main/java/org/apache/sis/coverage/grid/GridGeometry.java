@@ -233,6 +233,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CENTER
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final MathTransform gridToCRS;
 
     /**
@@ -242,6 +243,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final MathTransform cornerToCRS;
 
     /**
@@ -751,7 +753,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @return the number of grid dimensions.
      *
-     * @see #reduce(int...)
+     * @see #selectDimensions(int[])
      * @see GridExtent#getDimension()
      */
     public final int getDimension() {
@@ -1370,7 +1372,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
      * {@code GridDerivation} preserves the number of dimensions. For example {@linkplain GridDerivation#slice slicing}
      * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
-     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #reduce(int...)}.
+     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */
@@ -1444,7 +1446,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns a grid geometry translated by the given amount of cells compared to this grid.
+     * Translates grid coordinates by the given amount of cells without changing "real world" coordinates.
      * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
      * i.e. both low and high grid coordinates are displaced by the same amount of cells.
      * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
@@ -1463,9 +1465,9 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see GridExtent#translate(long...)
      *
-     * @since 1.1
+     * @since 1.3
      */
-    public GridGeometry translate(final long... translation) {
+    public GridGeometry shiftGrid(final long... translation) {
         ArgumentChecks.ensureNonNull("translation", translation);
         GridExtent newExtent = extent;
         if (newExtent != null) {
@@ -1487,6 +1489,22 @@ public class GridGeometry implements LenientComparable, Serializable {
             t2 = MathTransforms.concatenate(t, t2);
         }
         return new GridGeometry(newExtent, t1, t2, envelope, resolution, nonLinears);
+    }
+
+    /**
+     * Returns a grid geometry translated by the given amount of cells compared to this grid.
+     *
+     * @param  translation  translation to apply on each grid axis in order.
+     * @return a grid geometry whose coordinates and the "grid to CRS" transforms have been translated by given amounts.
+     *
+     * @since 1.1
+     *
+     * @deprecated Renamed {@link #shiftGrid(long...)} for making clearer that this method changes
+     *             grid coordinates without changing "real world" coordinates.
+     */
+    @Deprecated
+    public GridGeometry translate(final long... translation) {
+        return shiftGrid(translation);
     }
 
     /**
@@ -1536,10 +1554,12 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
      * @see GridExtent#getSubspaceDimensions(int)
-     * @see GridExtent#reduceDimension(int[])
-     * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
+     * @see GridExtent#selectDimensions(int[])
+     * @see org.apache.sis.referencing.CRS#selectDimensions(CoordinateReferenceSystem, int[])
+     *
+     * @since 1.3
      */
-    public GridGeometry reduce(int... dimensions) {
+    public GridGeometry selectDimensions(int... dimensions) {
         dimensions = GridExtent.verifyDimensions(dimensions, getDimension());
         if (dimensions != null) try {
             return new SliceGeometry(this, null, dimensions, null).reduce(null, -1);
@@ -1547,6 +1567,19 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
+    }
+
+    /**
+     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
+     *
+     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
+     *
+     * @deprecated Renamed {@link #selectDimensions(int...)} for clarity and consistency with {@link GridExtent}.
+     */
+    @Deprecated
+    public GridGeometry reduce(int... dimensions) {
+        return selectDimensions(dimensions);
     }
 
     /**

@@ -76,6 +76,12 @@ public final class StoreUtilities extends Static {
      * <p>This flag can be set to {@code true} for exploring data that we can not visualize otherwise.
      * But it should generally stay to {@code false}, because otherwise browsing resource metadata can
      * become as costly (slow and high memory usage) as visualizing the full raster.</p>
+     *
+     * <p>In addition of possible performance degradations, setting this flag to {@code true} can also prevent
+     * {@link org.apache.sis.storage.aggregate.CoverageAggregator} to group coverages that should be together.
+     * This is because using statistics may cause {@link org.apache.sis.coverage.SampleDimension} instances to
+     * have different sample value ranges for each coverage, which cause {@code CoverageAggregator} to consider
+     * that that can not be aggregated together.</p>
      */
     public static final boolean ALLOW_LAST_RESORT_STATISTICS = false;
 

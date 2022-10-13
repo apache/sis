@@ -359,7 +359,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     }
 
     /*
-     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
+     * NOTE: we do not bother to override the methods expecting a `float` array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
      *       this InterpolatedTransform is at the beginning or the end of a transformation chain, the methods
@@ -568,7 +568,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     if (SIMPLE) {
                         /*
                          * We want (xi, yi) such as the following conditions hold
-                         * (see next commnt for the simplification applied here):
+                         * (see next comment for the simplification applied here):
                          *
                          *     xi + vector[0] ≈ x      ⟶      xi ≈ x - vector[0]
                          *     yi + vector[1] ≈ y      ⟶      yi ≈ y - vector[1]
@@ -577,7 +577,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                         final double oy = yi;
                         xi = x - vector[0];
                         yi = y - vector[1];
-                        if (!(Math.abs(xi - ox) > tol || Math.abs(yi - oy) > tol)) break;       // Use '!' for catching NaN.
+                        if (!(Math.abs(xi - ox) > tol || Math.abs(yi - oy) > tol)) break;       // Use `!` for catching NaN.
                     } else {
                         /*
                          * The error between the new position (xi + tx) and the desired position x is measured
@@ -625,7 +625,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                          */
                         xi -= dx;
                         yi -= dy;
-                        if (!(Math.abs(ex) > tol || Math.abs(ey) > tol)) break;     // Use '!' for catching NaN.
+                        if (!(Math.abs(ex) > tol || Math.abs(ey) > tol)) break;     // Use `!` for catching NaN.
                     }
                     /*
                      * At this point we determined that we need to iterate more. If iteration does not converge, we may relax

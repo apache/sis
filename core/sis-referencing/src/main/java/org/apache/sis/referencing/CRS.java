@@ -907,9 +907,11 @@ public final class CRS extends Static {
      * @see #getComponentAt(CoordinateReferenceSystem, int, int)
      * @see #compound(CoordinateReferenceSystem...)
      *
-     * @since 1.0
+     * @since 1.3
      */
-    public static CoordinateReferenceSystem reduce(final CoordinateReferenceSystem crs, final int... dimensions) throws FactoryException {
+    public static CoordinateReferenceSystem selectDimensions(final CoordinateReferenceSystem crs,
+            final int... dimensions) throws FactoryException
+    {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
         if (crs == null) {
             return null;
@@ -931,6 +933,24 @@ public final class CRS extends Static {
         final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
         return compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
+    }
+
+    /**
+     * Gets or creates a coordinate reference system with a subset of the dimensions of the given CRS.
+     *
+     * @param  crs         the CRS to reduce the dimensionality.
+     * @param  dimensions  the dimensions to retain.
+     * @return a coordinate reference system for the given dimensions.
+     * @throws FactoryException if the geodetic factory failed to create a compound CRS.
+     *
+     * @since 1.0
+     *
+     * @deprecated Renamed {@link #selectDimensions(CoordinateReferenceSystem, int...)} for clarity and consistency with
+     *             {@link org.apache.sis.coverage.grid.GridExtent} and {@link org.apache.sis.coverage.grid.GridGeometry}.
+     */
+    @Deprecated
+    public static CoordinateReferenceSystem reduce(final CoordinateReferenceSystem crs, final int... dimensions) throws FactoryException {
+        return selectDimensions(crs, dimensions);
     }
 
     /**
@@ -1309,7 +1329,7 @@ public final class CRS extends Static {
      *         or can not be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
      * @throws IndexOutOfBoundsException if the given index are out of bounds.
      *
-     * @see #reduce(CoordinateReferenceSystem, int...)
+     * @see #selectDimensions(CoordinateReferenceSystem, int[])
      * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
      *
      * @since 0.5

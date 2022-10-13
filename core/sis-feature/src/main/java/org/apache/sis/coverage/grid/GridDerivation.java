@@ -73,14 +73,14 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * <p>All methods in this class preserve the number of dimensions. For example the {@link #slice(DirectPosition)} method sets
  * the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <cite>slice point</cite>,
  * but does not remove those dimensions from the grid geometry.
- * For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</p>
+ * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  *
  * @see GridGeometry#derive()
- * @see GridGeometry#reduce(int...)
+ * @see GridGeometry#selectDimensions(int[])
  *
  * @since 1.0
  * @module
@@ -457,7 +457,7 @@ public class GridDerivation {
      *       if different than default values, should be set before to invoke this method.</li>
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      * </ul>
      *
      * @param  areaOfInterest  the area of interest and desired resolution as a grid geometry.
@@ -563,7 +563,7 @@ public class GridDerivation {
      *       if different than default values, should be set before to invoke this method.</li>
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      *   <li>If the given envelope is known to be expressed in the same CRS than the grid geometry,
      *       then the {@linkplain Envelope#getCoordinateReferenceSystem() CRS of the envelope}
      *       can be left unspecified ({@code null}). It may give a slight performance improvement
@@ -846,7 +846,7 @@ public class GridDerivation {
      *       if different than default values, should be set before to invoke this method.</li>
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      * </ul>
      *
      * @param  areaOfInterest  the desired grid extent in unit of base grid cell (i.e. ignoring subsampling),
@@ -974,7 +974,7 @@ public class GridDerivation {
      *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      *   <li>If the given point is known to be expressed in the same CRS than the grid geometry,
      *       then the {@linkplain DirectPosition#getCoordinateReferenceSystem() CRS of the point}
      *       can be left unspecified ({@code null}). It may give a slight performance improvement

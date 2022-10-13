@@ -42,7 +42,7 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * The provider for "<cite>Molodensky transformation</cite>" (EPSG:9604).
+ * The provider for <cite>"Molodensky transformation"</cite> (EPSG:9604).
  * This provider constructs transforms between two geographic reference systems without passing though a geocentric one.
  * This class nevertheless extends {@link GeocentricAffineBetweenGeographic} because it is an approximation of
  * {@link GeocentricTranslation3D}.

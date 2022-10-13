@@ -85,7 +85,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
         }
         final GridGeometry gridGeometry = source.getGridGeometry();
         if (domain == null) {
-            domain = gridGeometry.translate(translation);
+            domain = gridGeometry.shiftGrid(translation);
         } else if (!domain.extent.isSameSize(gridGeometry.extent)) {
             return null;
         }

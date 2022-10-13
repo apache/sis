@@ -83,8 +83,8 @@ public abstract class ValuesUnderCursor {
 
         /**
          * Sets the result to the given value, then submits a task in JavaFX thread if no task is already waiting.
-         * If a task is already waiting to be executed, then that task will use the specified value instead than
-         * the value which was specified when the previous task was submitted.
+         * If a task is already waiting to be executed, then that task will use the specified value instead of the
+         * value which was specified when the previous task was submitted.
          */
         final void setLater(final String result) {
             if (getAndSet(result) == null) {

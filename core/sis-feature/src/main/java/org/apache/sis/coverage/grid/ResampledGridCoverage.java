@@ -377,15 +377,18 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
              */
             for (;;) {
                 double max = -1;
+                int sign   =  1;
                 int tgDim  = -1;                        // Grid dimension of maximal value.
                 int tcDim  = -1;                        // CRS dimension of maximal value.
                 for (int i=0; i<mappedDim; i++) {
                     // `ci` differs from `i` only if the source grid has "too much" dimensions.
                     final int ci = (dimSelect != null) ? dimSelect[i] : i;
                     for (int j=0; j<crsDim; j++) {
-                        final double m = Math.abs(vectors.getElement(j, ci));
+                        final double v = vectors.getElement(j, ci);
+                        final double m = Math.abs(v);
                         if (m > max) {
                             max   = m;
+                            sign  = (v < 0) ? -1 : 1;           // Like `Math.signum(…)` but without 0.
                             tcDim = j;
                             tgDim = ci;
                         }
@@ -399,7 +402,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
                     vectors.setElement(tcDim, i, Double.NaN);   // For preventing this row to be selected again.
                 }
                 final DoubleDouble m = DoubleDouble.castOrCopy(magnitudes.getNumber(0, tgDim));
-                m.inverseDivide(1);
+                m.inverseDivide(sign);
                 crsToGrid.setNumber(tgDim, tcDim, m);           // Scale factor from CRS coordinates to grid coordinates.
                 /*
                  * Move the point of interest in a place where conversion to source grid coordinates

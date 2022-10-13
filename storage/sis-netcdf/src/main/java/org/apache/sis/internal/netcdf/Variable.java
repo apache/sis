@@ -434,10 +434,10 @@ public abstract class Variable extends Node {
                 return convention.transferFunction(this).isIdentity();
             }
             // Shortcut for common case.
-            double c = getAttributeAsNumber(CDM.SCALE_FACTOR);
-            if (Double.isNaN(c) || c == 1) {
+            Number c = getAttributeAsNumber(CDM.SCALE_FACTOR);
+            if (c == null || c.doubleValue() == 1) {
                 c = getAttributeAsNumber(CDM.ADD_OFFSET);
-                return Double.isNaN(c) || c == 0;
+                return c == null || c.doubleValue() == 0;
             }
         }
         return false;

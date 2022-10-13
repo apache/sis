@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for "<cite>Lambert Azimuthal Equal Area (Spherical)</cite>" projection (EPSG:1027).
+ * The provider for <cite>"Lambert Azimuthal Equal Area (Spherical)"</cite> projection (EPSG:1027).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

@@ -1291,11 +1291,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
             for (final String codespace : getCodeSpaces()) {
                 if (regionMatches(codespace, code, start, end)) {
                     final int n = code.indexOf(Constants.DEFAULT_SEPARATOR, s + 1);
-                    if (n >= 0) {
+                    if (n >= 0 && code.indexOf(Constants.DEFAULT_SEPARATOR, n + 1) < 0) {
                         /*
                          * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.9:4326".
                          * The part between the two separators is the verion number, which we ignore in
-                         * this simple version.
+                         * this simple version provided that it is the last semi-colon.
                          */
                         s = n;
                     }

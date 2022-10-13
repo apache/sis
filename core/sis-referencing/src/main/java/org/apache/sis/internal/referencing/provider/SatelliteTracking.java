@@ -58,6 +58,7 @@ public class SatelliteTracking extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
      * </table>
      */
@@ -71,6 +72,7 @@ public class SatelliteTracking extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Latitude_Of_Origin </td></tr>
      *   <tr><td> OGC:     </td><td> latitude_of_origin </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLat </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      * </table>
      */
@@ -86,6 +88,7 @@ public class SatelliteTracking extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Standard_Parallel_1 </td></tr>
      *   <tr><td> OGC:     </td><td> standard_parallel_1 </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> StdParallel1 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_1 </td></tr>
      * </table>
      */
@@ -101,6 +104,7 @@ public class SatelliteTracking extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> ESRI:    </td><td> Standard_Parallel_2 </td></tr>
      *   <tr><td> OGC:     </td><td> standard_parallel_2 </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> StdParallel2 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_2 </td></tr>
      * </table>
      */

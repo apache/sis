@@ -18,6 +18,7 @@ package org.apache.sis.util.collection;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import org.apache.sis.util.Exceptions;
 
 
 /**
@@ -153,7 +154,7 @@ public class BackingStoreException extends RuntimeException {
      */
     private void copySuppressed(final Throwable cause) {
         for (final Throwable s : getSuppressed()) {
-            cause.addSuppressed(s);
+            cause.addSuppressed(s instanceof Exception ? Exceptions.unwrap((Exception) s) : s);
         }
     }
 }

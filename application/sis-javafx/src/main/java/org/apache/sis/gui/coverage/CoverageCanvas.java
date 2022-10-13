@@ -680,7 +680,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         Envelope bounds = null;
         if (domain != null) {
-            domain = domain.reduce(xyDimensions);
+            domain = domain.selectDimensions(xyDimensions);
             if (domain.isDefined(GridGeometry.ENVELOPE)) {
                 bounds = domain.getEnvelope();
             }

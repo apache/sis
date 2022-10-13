@@ -303,7 +303,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final GridCoverageProcessor processor = new GridCoverageProcessor();    // With all optimization enabled.
         final GridCoverage source   = createCoverage2D();
         final GridGeometry sourceGG = source.getGridGeometry();
-        final GridGeometry targetGG = sourceGG.translate(-10, 15);
+        final GridGeometry targetGG = sourceGG.shiftGrid(-10, 15);
         final GridCoverage target   = processor.resample(source, targetGG);
         assertInstanceOf("Expected fast path.", TranslatedGridCoverage.class, target);
         assertSame(targetGG, target.getGridGeometry());

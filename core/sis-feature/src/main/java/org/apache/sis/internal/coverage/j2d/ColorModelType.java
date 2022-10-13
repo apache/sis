@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.IndexColorModel;
 
@@ -27,7 +29,7 @@ import java.awt.image.IndexColorModel;
  * for performance reasons.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -47,15 +49,16 @@ public enum ColorModelType {
     INDEXED(true, false),
 
     /**
-     * Color model use colors computed on the fly from floating point values.
+     * Color model uses colors computed on the fly from floating point values.
      * This model is inefficient and should be changed if possible.
      */
     SCALED(true, true),
 
     /**
-     * Unrecognized color model.
+     * Unrecognized color model. Includes the case where the color model is null.
+     * Must be flagged as "slow" for forcing the creation of a new color model.
      */
-    OTHER(false, false);
+    OTHER(false, true);
 
     /**
      * Whether the color model uses a color palette.
@@ -93,6 +96,12 @@ public enum ColorModelType {
             }
             if (model.getColorSpace() instanceof ScaledColorSpace) {
                 return SCALED;
+            }
+            if (model.getClass() == ComponentColorModel.class &&            // Must be tested after color space.
+                model.getColorSpace().getType() == ColorSpace.TYPE_RGB &&   // ARGB images stored on 3 or 4 bands.
+                ImageUtilities.isIntegerType(model.getTransferType()))      // Because TYPE_FLOAT|DOUBLE are slow.
+            {
+                return DIRECT;
             }
         }
         return OTHER;

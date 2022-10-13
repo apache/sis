@@ -265,7 +265,7 @@ public strictfp class VariableTest extends TestCase {
         assertArrayEquals("getAttributeAsStrings", new String[] {t}, variable.getAttributeAsStrings(name, ' '));
         if (expected instanceof Number) {
             final double en = ((Number) expected).doubleValue();
-            assertEquals("getAttributeAsNumber", en, variable.getAttributeAsNumber(name), STRICT);
+            assertEquals("getAttributeAsDouble", en, variable.getAttributeAsDouble(name), STRICT);
             final Vector vector = variable.getAttributeAsVector(name);
             assertNotNull("getAttributeAsVector", vector);
             assertEquals(1, vector.size());
@@ -283,7 +283,7 @@ public strictfp class VariableTest extends TestCase {
         final Vector values = variable.getAttributeAsVector(name);
         assertNotNull(name, values);
         assertEquals ("size", expected.length, values.size());
-        assertTrue   ("getAttributeAsNumber", Double.isNaN(variable.getAttributeAsNumber(name)));
+        assertTrue   ("getAttributeAsDouble", Double.isNaN(variable.getAttributeAsDouble(name)));
         assertEquals ("getAttributeValue", values, variable.getAttributeValue(name));
         final Object[] texts = Arrays.stream(expected).map(Object::toString).toArray();
         assertArrayEquals("getAttributeAsStrings", texts, variable.getAttributeAsStrings(name, ' '));

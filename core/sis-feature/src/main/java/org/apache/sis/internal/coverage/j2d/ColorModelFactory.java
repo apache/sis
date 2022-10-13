@@ -30,10 +30,13 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.DataBuffer;
+import org.apache.sis.image.DataType;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.Debug;
@@ -45,7 +48,7 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -130,8 +133,8 @@ public final class ColorModelFactory {
      * end of the last piece. The indices are integers. Never {@code null} but may be empty.
      *
      * <div class="note"><b>Note:</b>
-     * indices as unsigned short are not sufficient since in the worst case the last next index will
-     * be 65536, which would be converted to 0 as a short, causing several exception afterward.</div>
+     * indices as unsigned short are not sufficient because in the worst case the last next index will be 65536,
+     * which would be converted to 0 as a short, causing several exceptions afterward.</div>
      */
     private final int[] pieceStarts;
 
@@ -176,9 +179,17 @@ public final class ColorModelFactory {
                         final int before = starts[count];
                         if (before != lower) {
                             if (before > lower) {
-                                // TODO: remove the overlapped colors in previous range.
+                                /*
+                                 * The range of sample values for current entry overlaps
+                                 * the range of sample values of previous entry.
+                                 *
+                                 * TODO: remove the overlapped colors in previous range.
+                                 */
                             } else {
-                                // TODO: we could reduce the amount of copies.
+                                /*
+                                 * There is a gap between this range of sample values and the previous range.
+                                 * Instruct to fill this gap with ARGB code 0 (fully transparent pixels).
+                                 */
                                 codes  = Arrays.copyOf(codes,   codes.length + 1);
                                 starts = Arrays.copyOf(starts, starts.length + 1);
                                 codes[count++] = ArraysExt.EMPTY_INT;
@@ -196,9 +207,9 @@ public final class ColorModelFactory {
             maximum = 1;
         }
         /*
-         * The length of 'pieceStarts' may differ from the expected length if there is holes between categories.
-         * We need to adjust the array length since it will determine the number of categories. Note that there
-         * is one more element than the number of categories.
+         * The length of `pieceStarts` may differ from the expected length if there is holes between categories.
+         * We need to adjust the array length because it will determine the number of categories.
+         * Note that there is one more element than the number of categories.
          */
         if (starts.length != 0) {
             starts = ArraysExt.resize(starts, count + 1);
@@ -678,6 +689,7 @@ public final class ColorModelFactory {
     /**
      * Copies {@code colors} into {@code ARGB} array from index {@code lower} inclusive to index {@code upper} exclusive.
      * If {@code upper-lower} is not equal to the length of {@code colors} array, then colors will be interpolated.
+     * The given {@code colors} array must be initialized with zero values in the {@code lower} … {@code upper} range.
      *
      * @param  colors  colors to copy into the {@code ARGB} array.
      * @param  ARGB    array of integer to write ARGB values into.
@@ -733,5 +745,30 @@ public final class ColorModelFactory {
      */
     private static int roundByte(final float value) {
         return Math.min(Math.max(Math.round(value), 0), 255);
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     *
+     * @return a string representation of this color factory.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(Strings.toString(getClass(),
+                "dataType", DataType.forDataBufferType(dataType), "numBands", numBands, "visibleBand", visibleBand,
+                "range", NumberRange.create(minimum, true, maximum, false)));
+        final int n = (pieceStarts != null) ? pieceStarts.length : 0;
+        for (int i=0; i<n; i++) {
+            final String start = Integer.toString(pieceStarts[i]);
+            buffer.append(System.lineSeparator()).append(CharSequences.spaces(9 - start.length())).append(start);
+            if (i < ARGB.length) {
+                buffer.append('…');
+                final int[] colors = ARGB[i];
+                if (colors != null) {
+                    ColorsForRange.appendColorRange(buffer, colors.length, (j) -> colors[j]);
+                }
+            }
+        }
+        return buffer.toString();
     }
 }

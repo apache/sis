@@ -184,19 +184,19 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#reduceDimension(int[])}.
+     * Tests {@link GridExtent#selectDimensions(int[])}.
      */
     @Test
-    public void testReduceDimension() {
+    public void testSelectDimensions() {
         final GridExtent extent = create3D();
-        GridExtent reduced = extent.reduceDimension(0, 1);
+        GridExtent reduced = extent.selectDimensions(0, 1);
         assertEquals("dimension", 2, reduced.getDimension());
         assertExtentEquals(reduced, 0, 100, 499);
         assertExtentEquals(reduced, 1, 200, 799);
         assertEquals(DimensionNameType.COLUMN, reduced.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    reduced.getAxisType(1).get());
 
-        reduced = extent.reduceDimension(2);
+        reduced = extent.selectDimensions(2);
         assertEquals("dimension", 1, reduced.getDimension());
         assertExtentEquals(reduced, 0, 40, 49);
         assertEquals(DimensionNameType.TIME, reduced.getAxisType(0).get());
