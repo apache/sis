@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Spliterator;
 import javafx.application.Platform;
 import javafx.collections.ObservableListBase;
+import javafx.concurrent.Worker;
 import org.opengis.feature.Feature;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.gui.BackgroundThreads;
@@ -316,7 +317,7 @@ final class FeatureList extends ObservableListBase<Feature> {
             throw new IndexOutOfBoundsException(index);
         }
         final FeatureLoader loader = nextPageLoader;
-        if (loader != null && loader.getState() == FeatureLoader.State.READY) {
+        if (loader != null && loader.getState() == Worker.State.READY) {
             BackgroundThreads.execute(loader);
         }
         return null;
