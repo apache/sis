@@ -67,7 +67,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd",
+@XmlSchema(location="https://schemas.isotc211.org/19115/-3/mmi/1.0/mmi.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MMI,
            xmlns = {
                 @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information

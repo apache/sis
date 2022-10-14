@@ -37,7 +37,7 @@ import org.apache.sis.util.StringBuilders;
 
 /**
  * Compares JAXB annotations against the ISO 19115 schemas. This test requires a connection to
- * <a href="https://standards.iso.org/iso/19115/-3/">https://standards.iso.org/iso/19115/-3/</a>.
+ * <a href="https://schemas.isotc211.org/19115/">https://schemas.isotc211.org/19115/</a>.
  * All classes in a given directory are scanned.
  *
  * <h2>Limitations</h2>

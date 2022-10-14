@@ -44,7 +44,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="https://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd",
+@XmlSchema(location="https://schemas.isotc211.org/19157/-2/mdq/1.0/mdq.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ,
            xmlns = {
                 @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
