@@ -134,7 +134,7 @@ final class NilObjectHandler implements InvocationHandler {
                 }
                 case "getIdentifiers": {
                     return (attribute instanceof IdentifierMapAdapter) ?
-                            ((IdentifierMapAdapter) attribute).identifiers : null;
+                            ((IdentifierMapAdapter) attribute).getIdentifiers(method.getReturnType()) : null;
                 }
                 case "toString": {
                     return Strings.bracket(getInterface(proxy), attribute);

@@ -106,7 +106,7 @@ final class Normalizer implements Comparable<Normalizer> {
      *
      * @see #order(AxisDirection)
      */
-    private static final int SHIFT = 2;
+    private static final int SHIFT = 3;
 
     /**
      * Custom code list values to handle as if the where defined between two GeoAPI values.
@@ -115,12 +115,15 @@ final class Normalizer implements Comparable<Normalizer> {
      */
     private static final Map<AxisDirection,Integer> ORDER = new HashMap<>();
     static {
-        final Map<AxisDirection,Integer> m = ORDER;
         // Get ordinal of last compass direction defined by GeoAPI. We will continue on the horizontal plane.
-        final int horizontal = (AxisDirection.NORTH.ordinal() + (AxisDirections.COMPASS_COUNT - 1)) << SHIFT;
-        m.put(AxisDirections.AWAY_FROM,         horizontal + 1);
-        m.put(AxisDirections.COUNTER_CLOCKWISE, horizontal + 2);
-        m.put(AxisDirections.CLOCKWISE,         horizontal + 3);
+        int code = (AxisDirection.NORTH.ordinal() + (AxisDirections.COMPASS_COUNT - 1)) << SHIFT;
+        for (final AxisDirection d : new AxisDirection[] {
+            AxisDirections.FORWARD,
+            AxisDirections.STARBOARD,
+            AxisDirections.COUNTER_CLOCKWISE,
+            AxisDirections.CLOCKWISE,
+            AxisDirections.AWAY_FROM
+        }) ORDER.put(d, ++code);
     }
 
     /**
@@ -170,8 +173,9 @@ final class Normalizer implements Comparable<Normalizer> {
         if (d == 0) {
             final AxisDirection d1 = this.axis.getDirection();
             final AxisDirection d2 = that.axis.getDirection();
-            d = AxisDirections.angleForCompass(d2, d1);
-            if (d == Integer.MIN_VALUE) {
+            if ((d = AxisDirections.angleForCompass(d2, d1)) == Integer.MIN_VALUE &&
+                (d = AxisDirections.angleForVehicle(d2, d1)) == Integer.MIN_VALUE)
+            {
                 if (meridian != null) {
                     if (that.meridian != null) {
                         d = meridian.compareTo(that.meridian);
@@ -445,10 +449,10 @@ final class Normalizer implements Comparable<Normalizer> {
      */
     static AbstractCS forConvention(final CoordinateSystem cs, final AxesConvention convention) {
         switch (convention) {
-            case NORMALIZED:              // Fall through
+            case NORMALIZED:       // Fall through
             case DISPLAY_ORIENTED: return normalize(cs, convention, true);
-            case RIGHT_HANDED:            return normalize(cs, null, true);
-            case POSITIVE_RANGE:          return shiftAxisRange(cs);
+            case RIGHT_HANDED:     return normalize(cs, null, true);
+            case POSITIVE_RANGE:   return shiftAxisRange(cs);
             default: throw new AssertionError(convention);
         }
     }

@@ -68,8 +68,8 @@ public class ReferenceResolver {
      *   <li>{@link IdentifiedObject#getIdentifierMap()} will return a {@link java.util.Map}
      *       view over the given identifiers.</li>
      *   <li>All other methods except the ones inherited from the {@link Object} class will return
-     *       an empty collection, an empty array, {@code null}, {@link Double#NaN NaN}, 0 or
-     *       {@code false}, depending on the method return type.</li>
+     *       an empty collection, an empty array, {@code null}, {@link Double#NaN}, 0 or {@code false},
+     *       depending on the method return type.</li>
      * </ul>
      *
      * @param  <T>          the compile-time type of the {@code type} argument.
@@ -135,10 +135,10 @@ public class ReferenceResolver {
                 return type.cast(object);
             } else {
                 final short key;
-                final Object args;
+                final Object[] args;
                 if (object == null) {
                     key = Errors.Keys.NotABackwardReference_1;
-                    args = id;
+                    args = new Object[] {id};
                 } else {
                     key = Errors.Keys.UnexpectedTypeForReference_3;
                     args = new Object[] {id, type, object.getClass()};

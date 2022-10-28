@@ -463,6 +463,12 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     @Override
     final void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         super.afterUnmarshal(unmarshaller, parent);
+        if (parameters == null && method != null) {
+            final ParameterDescriptorGroup descriptor = method.getParameters();
+            if (descriptor != null && descriptor.descriptors().isEmpty()) {
+                parameters = descriptor.createValue();
+            }
+        }
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {

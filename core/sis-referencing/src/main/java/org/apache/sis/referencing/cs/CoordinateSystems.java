@@ -240,6 +240,13 @@ public final class CoordinateSystems extends Static {
             return new Angle(c * 90);
         }
         /*
+         * Check for FORWARD, AFT, PORT, STARBOARD.
+         */
+        c = AxisDirections.angleForVehicle(source, target);
+        if (c != Integer.MIN_VALUE) {
+            return new Angle(c * 90);
+        }
+        /*
          * Check for DISPLAY_UP, DISPLAY_DOWN, etc. assuming a flat screen.
          * Note that we do not check for grid directions (COLUMN_POSITIVE,
          * ROW_POSITIVE, etc.) because the grid geometry may be anything.

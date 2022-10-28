@@ -693,7 +693,8 @@ public class ParameterFormat extends TabularFormat<Object> {
                 /*
                  * Writes the values, each on its own line, together with their unit of measurement.
                  */
-                final byte alignment = Number.class.isAssignableFrom(valueClass) ? TableAppender.ALIGN_RIGHT : TableAppender.ALIGN_LEFT;
+                final byte alignment = (valueClass != null && Number.class.isAssignableFrom(valueClass))
+                                     ? TableAppender.ALIGN_RIGHT : TableAppender.ALIGN_LEFT;
                 table.setCellAlignment(alignment);
                 final int length = row.values.size();
                 for (int i=0; i<length; i++) {

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Collections;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -117,7 +118,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see DefaultConversion
  * @see DefaultTransformation
@@ -192,7 +193,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The set of parameters, or {@code null} if none.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}</p>
+     * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}
+     * or {@link #afterUnmarshal(Unmarshaller, Object)}.</p>
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private ParameterDescriptorGroup parameters;
@@ -303,10 +305,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         targetDimensions = transform.getTargetDimensions();
         if (transform instanceof Parameterized) {
             parameters = ((Parameterized) transform).getParameterDescriptors();
-        } else {
-            parameters = null;
         }
-        formula = null;
     }
 
     /**
@@ -632,9 +631,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Returns the set of parameters.
      *
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
-     * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
-     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it
-     * or if this {@code OperationMethod} has been read from an incomplete GML document.</div>
+     * this property is mandatory according ISO 19111, but may be {@code null} in Apache SIS if the
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
      *
      * @return the parameters, or {@code null} if unknown.
      *
@@ -970,5 +968,17 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         final ParameterDescriptorGroup previous = parameters;
         parameters = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(previous),
                 previous.getMinimumOccurs(), previous.getMaximumOccurs(), descriptors);
+    }
+
+    /**
+     * Invoked by JAXB after unmarshalling. If the {@code <gml:OperationMethod>} element does not contain
+     * any {@code <gml:parameter>}, we assume that this is a valid parameterless operation (as opposed to
+     * an operation with unknown parameters). We need this assumption because, contrarily to GeoAPI model,
+     * the GML schema does not differentiate "no parameters" from "unspecified parameters".
+     */
+    private void afterUnmarshal(final Unmarshaller unmarshaller, final Object parent) {
+        if (parameters == null) {
+            parameters = CC_OperationMethod.group(super.getName(), new GeneralParameterDescriptor[0]);
+        }
     }
 }

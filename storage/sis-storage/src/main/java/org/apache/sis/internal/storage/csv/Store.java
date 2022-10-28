@@ -261,7 +261,7 @@ final class Store extends URIDataStore implements FeatureSet {
                             throw new DataStoreContentException(Resources.forLocale(getLocale())
                                     .getString(Resources.Keys.ShallBeDeclaredBefore_2, "@columns", "@stboundedby"));
                         }
-                        envelope = parseEnvelope(elements);     // Also set 'timeEncoding' and 'spatialDimensionCount'.
+                        envelope = parseEnvelope(elements);     // Also set `timeEncoding` and `spatialDimensionCount`.
                         dissociate |= (timeEncoding == null);   // Need to be updated before parseFeatureType(…) execution.
                         break;
                     }

@@ -44,7 +44,7 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -76,17 +76,28 @@ public final class AxisDirections extends Static {
     private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
 
     /**
-     * Distance from the origin in a polar coordinate system.
-     * Specified in ISO 19162 but not yet in ISO 19111.
+     * Forward direction.
+     * For an observer at the centre of the object this is will be towards its front, bow or nose.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      *
-     * @since 0.7
+     * @since 1.3
      */
-    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=UNSPECIFIED)
-    public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
+    @UML(identifier="forward", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    public static final AxisDirection FORWARD = AxisDirection.valueOf("FORWARD");
+
+    /**
+     * Starboard direction.
+     * For an observer at the centre of the object this will be towards its right.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
+     *
+     * @since 1.3
+     */
+    @UML(identifier="starboard", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    public static final AxisDirection STARBOARD = AxisDirection.valueOf("STARBOARD");
 
     /**
      * Direction of geographic angles (bearing).
-     * Specified in ISO 19162 but not yet in ISO 19111.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      *
      * @since 0.7
      */
@@ -95,12 +106,21 @@ public final class AxisDirections extends Static {
 
     /**
      * Direction of arithmetic angles. Used in polar coordinate systems.
-     * Specified in ISO 19162 but not yet in ISO 19111.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      *
      * @since 0.7
      */
     @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public static final AxisDirection COUNTER_CLOCKWISE = AxisDirection.valueOf("COUNTER_CLOCKWISE");
+
+    /**
+     * Distance from the origin in a polar coordinate system.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
+     *
+     * @since 0.7
+     */
+    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
 
     /**
      * For each direction, the opposite direction.
@@ -346,6 +366,20 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Arithmetic angle between forward/aft/port/starboard directions only.
+     * This is the angle as viewed from above the vehicle.
+     *
+     * @param  source  the start direction.
+     * @param  target  the final direction.
+     * @return the angle as a multiple of 90°, or {@link Integer#MIN_VALUE} if none.
+     */
+    public static int angleForVehicle(final AxisDirection source, final AxisDirection target) {
+        if (source == STARBOARD && target == FORWARD) return +1;
+        if (source == FORWARD && target == STARBOARD) return -1;
+        return Integer.MIN_VALUE;
+    }
+
+    /**
      * Angle between geocentric directions only.
      *
      * @param  source  the start direction.
@@ -367,7 +401,7 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Angle between compass directions only (not for angle between direction along meridians).
+     * Arithmetic angle between compass directions only (not for angle between direction along meridians).
      *
      * @param  source  the start direction.
      * @param  target  the final direction.
@@ -394,7 +428,7 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Angle between display directions only.
+     * Arithmetic angle between display directions only.
      *
      * @param  source  the start direction.
      * @param  target  the final direction.

@@ -559,7 +559,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
     /**
      * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
      * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
-     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
+     * except for the group identification (name, <i>etc.</i>) and for any optional parameters which
      * were not present in the above {@code GeneralParameterValue} array.
      *
      * @see #getDescriptor()
@@ -611,9 +611,9 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      * Appends all parameter values. In this process, we may need to update the descriptor of some values
      * if those descriptors changed as a result of the above merge process.
      *
-     * @param parameters   The parameters to add, or {@code null} for {@link #values}.
-     * @param replacements The replacements to apply in the {@code GeneralParameterValue} instances.
-     * @param addTo        Where to store the new values.
+     * @param parameters    the parameters to add, or {@code null} for {@link #values}.
+     * @param replacements  the replacements to apply in the {@code GeneralParameterValue} instances.
+     * @param addTo         where to store the new values.
      */
     @SuppressWarnings({"unchecked", "AssignmentToCollectionOrArrayFieldFromParameter"})
     private void setValues(GeneralParameterValue[] parameters,
