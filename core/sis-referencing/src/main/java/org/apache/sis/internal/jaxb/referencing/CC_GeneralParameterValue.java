@@ -24,7 +24,6 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -32,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -110,13 +109,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      * @param  parameter  the unmarshalled element.
      */
     public void setElement(final GeneralParameterValue parameter) {
-        if (!CC_GeneralOperationParameter.isValid(parameter.getDescriptor())) {
-            /*
-             * Descriptors are mandatory and SIS classes need them. Provide an error message
-             * here instead of waiting for a NullPointerException in some arbitrary place.
-             */
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "operationParameter"));
-        }
         metadata = parameter;
+        CC_GeneralOperationParameter.validate(parameter.getDescriptor(), "<gml:operationParameter>");
     }
 }

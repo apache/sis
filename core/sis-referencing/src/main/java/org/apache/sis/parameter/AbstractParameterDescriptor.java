@@ -121,7 +121,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The maximum number of times that values for this parameter group are required, as an unsigned short.
      * Value {@code 0xFFFF} (or -1) means an unrestricted number of occurrences.
      *
-     * <p>We use a short because this value is usually 1 or a very small number like 2 or 3. This also serve
+     * <p>We use a short because this value is usually 1 or a very small number like 2 or 3. It also serves
      * as a safety since a large number would be a bad idea with this parameter implementation.</p>
      *
      * <p><b>Consider this field as final!</b>
@@ -200,7 +200,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         maximumOccurs = crop(descriptor.getMaximumOccurs());
     }
 
-    // NOTE: There is no 'castOrCopy' static method in this class because AbstractParameterDescriptor is abstract.
+    // NOTE: There is no `castOrCopy` static method in this class because AbstractParameterDescriptor is abstract.
     // If nevertheless we choose to add such method in the future, then CC_GeneralOperationParameter.getElement()
     // should be simplified.
 

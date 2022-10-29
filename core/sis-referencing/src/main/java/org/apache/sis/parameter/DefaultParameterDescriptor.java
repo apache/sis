@@ -594,14 +594,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * instance should not have been given to user yet.
      *
      * @param  param  the parameter value from which to infer the value type.
-     * @return the parameter descriptor to assign to the given parameter value.
      */
     @SuppressWarnings("unchecked")
-    final DefaultParameterDescriptor<T> setValueClass(final DefaultParameterValue<?> param) {
+    final void setValueClass(final DefaultParameterValue<?> param) {
         valueClass = (Class) Classes.findCommonClass(valueClass, CC_OperationParameter.valueClass(param));
         if (valueDomain == null) {
             valueDomain = CC_OperationParameter.valueDomain(param);
         }
-        return this;
     }
 }

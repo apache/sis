@@ -60,6 +60,7 @@ public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Clon
      *
      * @see #getAuthority()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final IdentifierSpace<T> authority;
 
     /**
@@ -72,6 +73,7 @@ public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Clon
      * @see #getValue()
      * @see #getCode()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     T value;
 
     /**

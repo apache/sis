@@ -1134,8 +1134,11 @@ convert:            if (componentType != null) {
      *
      * @see #getDescriptor()
      */
-    final void setDescriptor(final ParameterDescriptor<T> p) {
-        descriptor = DefaultParameterDescriptor.castOrCopy(p).setValueClass(this);
+    final void setDescriptor(final ParameterDescriptor<T> descriptor) {
+        this.descriptor = descriptor;
+        if (descriptor instanceof DefaultParameterDescriptor<?>) {
+            ((DefaultParameterDescriptor<?>) descriptor).setValueClass(this);
+        }
         /*
          * A previous version was doing `assert descriptor.getValueClass().isInstance(value)`
          * where the value class was inferred by `DefaultParameterDescriptor()`. But it does

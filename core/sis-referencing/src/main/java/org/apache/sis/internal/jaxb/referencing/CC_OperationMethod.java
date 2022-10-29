@@ -32,7 +32,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.parameter.DefaultParameterValue;
@@ -48,7 +47,7 @@ import org.apache.sis.util.ArraysExt;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -108,14 +107,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * @param  method  the unmarshalled element.
      */
     public void setElement(final DefaultOperationMethod method) {
-        if (!CC_GeneralOperationParameter.isValid(method.getParameters())) {
-            /*
-             * Parameters are mandatory and SIS classes need them. Provide an error message
-             * here instead of waiting for a NullPointerException in some arbitrary place.
-             */
-            throw new IllegalArgumentException(Identifiers.missingValueForProperty(method.getName(), "parameters"));
-        }
         metadata = method;
+        CC_GeneralOperationParameter.validate(method.getParameters(), "<gml:parameter>");
     }
 
     /**

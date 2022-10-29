@@ -39,11 +39,15 @@ import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.xml.IdentifierSpace;
 
 
 /**
@@ -62,7 +66,7 @@ import org.apache.sis.internal.jaxb.Context;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -74,7 +78,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
 
     /**
      * The properties to ignore in the descriptor parsed from GML when this descriptor is merged with a
-     * pre-defined descriptor. Remarks:
+     * predefined descriptor. Remarks:
      *
      * <ul>
      *   <li>We ignore the name because the comparisons shall be performed by the caller with
@@ -108,7 +112,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
-     * Constructor for the {@link #wrap} method only.
+     * Constructor for the {@link #wrap(GeneralParameterDescriptor)} method only.
      */
     private CC_GeneralOperationParameter(final GeneralParameterDescriptor parameter) {
         super(parameter);
@@ -162,14 +166,35 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     /**
      * Verifies that the given descriptor is non-null and contains at least a name.
      * This method is used after unmarshalling.
+     * We do this validation because parameter descriptors are mandatory and SIS classes need them.
+     * So we provide an error message here instead of waiting for a {@link NullPointerException}
+     * to occur in some arbitrary place.
+     *
+     * @param  descriptor  the descriptor to validate.
+     * @param  property    the name of the property to report as missing if an exception is thrown.
+     * @throws GeodeticException if the parameters are missing or invalid.
      */
-    static boolean isValid(final GeneralParameterDescriptor descriptor) {
-        return descriptor != null && descriptor.getName() != null;
+    static void validate(final GeneralParameterDescriptor descriptor, String property) {
+        if (descriptor == null || descriptor.getName() == null) {
+            short key = Errors.Keys.MissingValueForProperty_1;
+            /*
+             * The exception thrown by this method must be unchecked,
+             * otherwise JAXB just reports is without propagating it.
+             */
+            if (descriptor instanceof IdentifiedObject) {
+                final String link = ((IdentifiedObject) descriptor).getIdentifierMap().get(IdentifierSpace.XLINK);
+                if (link != null) {
+                    key = Errors.Keys.NotABackwardReference_1;
+                    property = link;
+                }
+            }
+            throw new GeodeticException(Errors.format(key, property));
+        }
     }
 
     /**
      * Returns {@code true} if the given descriptor is restricted to a constant value.
-     * This constraint exists in some pre-defined map projections.
+     * This constraint exists in some predefined map projections.
      *
      * <div class="note"><b>Example:</b>
      * the <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
@@ -203,7 +228,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      *   <li>The descriptor for a {@code <gml:ParameterValue>} element. Those descriptors are more complete than the
      *       ones provided by {@code <gml:OperationParameter>} elements alone because the parameter value allows SIS
      *       to infer the {@code valueClass}.</li>
-     *   <li>A pre-defined parameter descriptor from the {@link org.apache.sis.internal.referencing.provider} package.</li>
+     *   <li>A predefined parameter descriptor from the {@link org.apache.sis.internal.referencing.provider} package.</li>
      * </ul>
      *
      * @param  provided  the descriptor unmarshalled from the GML document.
@@ -226,7 +251,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         } else {
             /*
              * Mismatched or unknown type. It should not happen with descriptors parsed by JAXB and with
-             * pre-defined descriptors provided by SIS. But it could happen with a pre-defined descriptor
+             * predefined descriptors provided by SIS. But it could happen with a predefined descriptor
              * found in a user-provided OperationMethod with malformed parameters.
              * Return the descriptor found in the GML document as-is.
              */
@@ -243,7 +268,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                                     && containsAll(complete.getIdentifiers(), provided.getIdentifiers());
         if (canSubstitute && !isGroup) {
             /*
-             * The pre-defined or ParameterValue descriptor contains at least all the information found
+             * The predefined or ParameterValue descriptor contains at least all the information found
              * in the descriptor parsed from the GML document. We can use the existing instance directly,
              * assuming that the additional properties are acceptable.
              *
@@ -260,7 +285,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
          * be invoked recursively for each parameter in the group.
          */
         final Map<String,Object> merged = new HashMap<>(expected);
-        merged.putAll(actual);  // May overwrite pre-defined properties.
+        merged.putAll(actual);                                      // May overwrite predefined properties.
         mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(), merged, complete.getName());
         mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, ReferenceIdentifier.class, provided.getIdentifiers(), merged, null);
         if (isGroup) {
@@ -374,7 +399,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 provided.getMinimumOccurs(),
                 provided.getMaximumOccurs(),
                 // Values below this point are not provided in GML documents,
-                // so they must be inferred from the pre-defined descriptor.
+                // so they must be inferred from the predefined descriptor.
                 valueClass,
                 Parameters.getValueDomain(complete),
                 CollectionsExt.toArray(complete.getValidValues(), valueClass),
@@ -431,7 +456,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                  * Add the `provided` values before `complete` for two reasons:
                  *   1) Use the same insertion order than the declaration order in the GML file.
                  *   2) Replace `provided` instances by `complete` instances, since the latter
-                 *      are sometime pre-defined instances defined as static final constants.
+                 *      are sometime predefined instances defined as static final constants.
                  */
                 final Map<NamedIdentifier,T> c = new LinkedHashMap<>();
                 for (final T e : provided) c.put(toNamedIdentifier(e), e);
