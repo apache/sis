@@ -110,6 +110,6 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      */
     public void setElement(final GeneralParameterValue parameter) {
         metadata = parameter;
-        CC_GeneralOperationParameter.validate(parameter.getDescriptor(), "<gml:operationParameter>");
+        CC_GeneralOperationParameter.validate(parameter.getDescriptor(), "ParameterValue", "operationParameter");
     }
 }

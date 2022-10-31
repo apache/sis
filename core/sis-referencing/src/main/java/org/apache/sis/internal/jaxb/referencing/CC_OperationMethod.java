@@ -108,7 +108,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      */
     public void setElement(final DefaultOperationMethod method) {
         metadata = method;
-        CC_GeneralOperationParameter.validate(method.getParameters(), "<gml:parameter>");
+        CC_GeneralOperationParameter.validate(method.getParameters(), "OperationMethod", "parameter");
     }
 
     /**

@@ -171,12 +171,14 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * to occur in some arbitrary place.
      *
      * @param  descriptor  the descriptor to validate.
+     * @param  parent      the name of the element to report as the parent of {@code property}.
      * @param  property    the name of the property to report as missing if an exception is thrown.
      * @throws GeodeticException if the parameters are missing or invalid.
      */
-    static void validate(final GeneralParameterDescriptor descriptor, String property) {
+    static void validate(final GeneralParameterDescriptor descriptor, final String parent, final String property) {
         if (descriptor == null || descriptor.getName() == null) {
-            short key = Errors.Keys.MissingValueForProperty_1;
+            short key = Errors.Keys.MissingComponentInElement_2;
+            String[] args = {parent, property};
             /*
              * The exception thrown by this method must be unchecked,
              * otherwise JAXB just reports is without propagating it.
@@ -185,10 +187,10 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 final String link = ((IdentifiedObject) descriptor).getIdentifierMap().get(IdentifierSpace.XLINK);
                 if (link != null) {
                     key = Errors.Keys.NotABackwardReference_1;
-                    property = link;
+                    args = new String[] {link};
                 }
             }
-            throw new GeodeticException(Errors.format(key, property));
+            throw new GeodeticException(Errors.format(key, args));
         }
     }
 

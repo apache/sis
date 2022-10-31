@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.ValidationException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
@@ -34,12 +33,12 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.metadata.Identifiers;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -54,7 +53,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
@@ -82,6 +81,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * @see #getConversionFromBase()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private C conversionFromBase;
 
     /**
@@ -161,9 +161,6 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         MathTransformFactory factory = null;
         if (properties != null) {
             factory = (MathTransformFactory) properties.get(ReferencingFactoryContainer.MT_FACTORY);
-        }
-        if (factory == null) {
-            factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         }
         try {
             return DefaultConversion.castOrCopy(conversion).specialize(getConversionType(), baseCRS, this, factory);
@@ -332,7 +329,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * coordinate system (CS). The CS information is required by {@code createConversionFromBase(…)}
      * in order to create a {@link MathTransform} with correct axis swapping and unit conversions.
      */
-    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) throws ValidationException {
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         String property = "conversion";
         if (conversionFromBase != null) {
             final SingleCRS baseCRS = CC_Conversion.setBaseCRS(conversionFromBase, null);  // Clear the temporary value now.
@@ -350,6 +347,6 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
          * and call to `getConversionFromBase()` will throw a ClassCastException if this instance is actually
          * a ProjectedCRS (because of the method overriding with return type covariance).
          */
-        throw new ValidationException(Identifiers.missingValueForProperty(getName(), property));
+        throw new GeodeticException(Identifiers.missingValueForProperty(getName(), property));
     }
 }

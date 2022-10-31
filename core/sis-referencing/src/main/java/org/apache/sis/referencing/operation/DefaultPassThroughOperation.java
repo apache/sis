@@ -19,36 +19,43 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Objects;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.util.UnsupportedImplementationException;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.Utilities.deepEquals;
+import org.opengis.referencing.operation.Conversion;
 
+// Branch-dependent imports
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+
 
 /**
  * Specifies that a subset of a coordinate tuple is subject to a specific coordinate operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -114,9 +121,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
                                        final int firstAffectedCoordinate,
                                        final int numTrailingCoordinates)
     {
-        super(properties, sourceCRS, targetCRS, null, MathTransforms.passThrough(
-                firstAffectedCoordinate, operation.getMathTransform(), numTrailingCoordinates));
-        ArgumentChecks.ensureNonNull("operation", operation);
+        super(properties, sourceCRS, targetCRS, null,
+              MathTransforms.passThrough(firstAffectedCoordinate, operation.getMathTransform(), numTrailingCoordinates));
         this.operation = operation;
     }
 
@@ -223,11 +229,11 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
         final MathTransform transform = super.getMathTransform();
         if (transform instanceof PassThroughTransform) {
             return ((PassThroughTransform) transform).getModifiedCoordinates();
-        } else {
+        } else if (operation != null) {
             /*
-             * Should not happen with objects created by public methods since the constructor created the transform
-             * itself. However may happen with operations parsed from GML. As a fallback, search in the components
-             * of CompoundCRS. This is not a universal fallback, but work for the most straightforward cases.
+             * Should not happen with objects created by public methods since the constructor created the transform itself.
+             * However may happen with operations parsed from GML. As a fallback, search in the components of CompoundCRS.
+             * This is not a universal fallback, but works for the most straightforward cases.
              */
             final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
             if (sourceCRS instanceof CompoundCRS) {
@@ -245,8 +251,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
                     firstAffectedCoordinate += dim;
                 }
             }
-            throw new UnsupportedImplementationException(transform.getClass());
         }
+        throw new UnsupportedImplementationException(transform.getClass());
     }
 
     /**
@@ -326,13 +332,13 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultPassThroughOperation() {
         /*
          * A sub-operation is mandatory for SIS working. We do not verify its presence here because the verification
-         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes the
-         * whole unmarshalling to fail. But the CC_CoordinateOperation adapter does some verifications.
+         * would have to be done in an `afterMarshal(…)` method and throwing an exception in that method causes the
+         * whole unmarshalling to fail. But the `CC_CoordinateOperation` adapter does some verifications.
          */
     }
 
@@ -358,37 +364,79 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      */
     @XmlElement(name = "modifiedCoordinate", required = true)
     private int[] getIndices() {
-        final int[] indices = getModifiedCoordinates();
-        for (int i=0; i<indices.length; i++) {
-            indices[i]++;
+        final int[] dimensions = getModifiedCoordinates();
+        for (int i=0; i<dimensions.length; i++) {
+            dimensions[i]++;
         }
-        return indices;
+        return dimensions;
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for setting the modified coordinates.
+     * This method needs to be invoked last, even if the {@code <gml:modifiedCoordinate>}
+     * elements are not last in the GML document. It is the case when using JAXB because
+     * multiple occurrences of {@code <gml:modifiedCoordinate>} are aggregated in an array.
      */
-    private void setIndices(final int[] coordinates) {
-        String missing = "sourceCRS";
-        final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
-        if (sourceCRS != null) {
-            missing = "modifiedCoordinate";
-            if (coordinates != null && coordinates.length != 0) {
-                missing = "coordOperation";
-                if (operation != null) {
-                    for (int i=1; i<coordinates.length; i++) {
-                        final int previous = coordinates[i-1];
-                        if (previous < 1 || coordinates[i] != previous + 1) {
-                            throw new IllegalArgumentException(Errors.format(
-                                    Errors.Keys.CanNotAssign_2, missing, Arrays.toString(coordinates)));
+    private void setIndices(final int[] dimensions) {
+        /*
+         * Argument and state validation.
+         */
+        String missing = "modifiedCoordinate";
+        FactoryException cause = null;
+        final int n = dimensions.length;
+        if (n != 0) {
+            if (!ArraysExt.isRange(dimensions[0], dimensions))  {
+                throw new GeodeticException(Errors.format(Errors.Keys.CanNotAssign_2, missing, Arrays.toString(dimensions)));
+            }
+            missing = "sourceCRS";
+            final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
+            if (sourceCRS != null) {
+                missing = "targetCRS";
+                final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
+                if (targetCRS != null) {
+                    missing = "coordOperation";
+                    if (operation != null) {
+                        /*
+                         * If the operation is a defining operation, we need to replace it by a full operation.
+                         * After that, we can store the modified coordinate indices in the transform field.
+                         */
+                        MathTransform subTransform = operation.getMathTransform();
+                        if (operation instanceof Conversion) {
+                            CoordinateReferenceSystem sourceSub = operation.getSourceCRS();
+                            CoordinateReferenceSystem targetSub = operation.getTargetCRS();
+                            if (subTransform == null || sourceSub == null || targetSub == null) try {
+                                final int[] zeroBased = dimensions.clone();
+                                for (int i=0; i<n; i++) zeroBased[i]--;
+                                if (sourceSub == null) sourceSub = CRS.selectDimensions(sourceCRS, zeroBased);
+                                if (targetSub == null) targetSub = CRS.selectDimensions(targetCRS, zeroBased);
+                                operation = DefaultConversion.castOrCopy((Conversion) operation)
+                                            .specialize(Conversion.class, sourceSub, targetSub, null);
+                                subTransform = operation.getMathTransform();
+                            } catch (FactoryException e) {
+                                cause = e;
+                            }
+                        }
+                        if (subTransform != null) {
+                            transform = MathTransforms.passThrough(dimensions[0] - 1, subTransform,
+                                    ReferencingUtilities.getDimension(sourceCRS) - dimensions[n-1]);
+                            return;
                         }
                     }
-                    transform = MathTransforms.passThrough(coordinates[0] - 1, operation.getMathTransform(),
-                            ReferencingUtilities.getDimension(sourceCRS) - coordinates[coordinates.length - 1]);
-                    return;
                 }
             }
         }
-        throw new IllegalStateException(Errors.format(Errors.Keys.MissingComponentInElement_2, missing, "PassThroughOperation"));
+        throw new GeodeticException(Errors.format(Errors.Keys.MissingComponentInElement_2, "PassThroughOperation", missing), cause);
+    }
+
+    /**
+     * Invoked by JAXB after unmarshalling. If needed, this method tries to infer source/target CRS
+     * of the nested operation from the source/target CRS if the enclosing pass-through operation.
+     */
+    @Override
+    void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        super.afterUnmarshal(unmarshaller, parent);
+        if (transform == null) {
+            setIndices(ArraysExt.EMPTY_INT);        // Cause an exception to be thrown.
+        }
     }
 }

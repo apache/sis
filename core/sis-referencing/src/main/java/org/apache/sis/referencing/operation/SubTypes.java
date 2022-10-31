@@ -179,7 +179,7 @@ final class SubTypes {
                     conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory, actual);
                 }
                 /*
-                 * The DefaultConversion constructor may have used by MathTransformFactory for creating the actual
+                 * The DefaultConversion constructor may have used MathTransformFactory for creating the actual
                  * MathTransform object. In such case, we can use the knownledge that the factory has about the
                  * coordinate operation for refining again the type of the object to be returned.
                  */
