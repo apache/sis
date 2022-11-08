@@ -4,6 +4,9 @@
     <title>Syntax of Rename files</title>
     <meta charset="UTF-8">
     <style>
+      p, code, pre {
+        font-size: 18px;
+      }
       p {
         text-align: justify;
       }
@@ -14,7 +17,7 @@
     </style>
   </head>
   <body>
-    <h1>Syntax of <code>RenameOnImport</code>/<code>Export</code> files</h1>
+    <h1>Syntax of RenameOnImport/Export files</h1>
     <p>
       <b>WARNING: the syntax documented in this page is not committed API and may change in any future SIS version.</b>
     </p>
@@ -37,16 +40,21 @@
           <var>Before</var> is the name before the renaming process and <var>after</var> is the name after the renaming process.</li>
       <li>The ":" character in "<var>Child</var> : <var>Parent</var>" means that a subclass inherits all properties from a parent class.
           The <var>parent</var> must be defined before the <var>child</var> (no forward references).
+          This is used for avoiding to repeat all super-class properties in sub-classes.
+          It has no other meaning, i.e. the class hierarchy is not retained at runtime.</li>
       <li>The "!" character in "<var>Class</var> !<var>reason</var>" skips the association of current namespace to that class
-          (but namespace will still be associated to the properties). <var>Reason</var> is a free text.</li>
+          (but namespace will still be associated to the properties). <var>Reason</var> is a free text.
+          This is used with deprecated classes that do not exist anymore in the new namespace
+          (often because the class has been renamed).</li>
     </ul>
     <p>
       For example the following snippet from <code>RenameOnImport.lst</code> declares that the <code>Citation.title</code>,
       <code>Citation.edition</code> and <code>Address.country</code> properties are defined in the <b><code>cit</code></b> namespace,
-      while the <code>Extent.description</code> property is defined in the <b><code>gex</code></b> namespace
-      and the <code>Georectified.centrePoint</code> property is defined in the <b><code>msr</code></b> namespace.
+      while the <code>Extent.description</code> property is defined in the <b><code>gex</code></b> namespace.
       Those information are required when reading a file encoded by the old standards
       because almost all properties where in the single <code>gmd</code> namespace.
+      Properties not listed will have their namespace unchanged (e.g. still in the old <code>gmd</code> namespace).
+      Classes that did not existed in old standard should not be listed.
     </p>
     <blockquote><pre># Legacy namespace containing elements to rename:
 * http://www.isotc211.org/2005/gmd

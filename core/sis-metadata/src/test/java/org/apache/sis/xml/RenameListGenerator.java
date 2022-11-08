@@ -37,9 +37,10 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
- * Creates a file in the {@value TransformingReader#FILENAME} format. This class can be executed if the content
- * has changed, or for verifying the current file. Output format contains namespaces first, then classes,
- * then properties. Example:
+ * Creates a file in the {@value TransformingReader#FILENAME} format.
+ * {@code RenameListGenerator} can be executed if ISO 19115 standards have changed.
+ * The format is described in the {@code readme.html} page in source code directory.
+ * Output format contains namespaces first, then classes, then properties. Example:
  *
  * {@preformat text
  * http://standards.iso.org/iso/19115/-3/cit/1.0
@@ -53,12 +54,21 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * This class can be used as a starting point for generating a new file from scratch.
  * It should not be used for updating the existing file (unless a lot of things have changed)
  * because some of {@value TransformingReader#FILENAME} content have been edited by hand.
+ * In particular:
+ *
+ * <ul>
+ *   <li>Current implementation lists all classes, including classes that should
+ *       not be listed because they did not existed in previous standard.</li>
+ *   <li>Current implementation repeats properties inherited from parent classes.
+ *       It does not use the "<var>Child</var> : <var>Parent</var>" syntax.</li>
+ * </ul>
+ *
  * For generating a new file:
  *
  * {@preformat java
  *     public static void main(String[] args) throws Exception {
- *         RenameListGenerator gen = new RenameListGenerator(Paths.get("/path/to/your/classes"));
- *         gen.add(Paths.get("root/package/of/classes/to/add"));
+ *         RenameListGenerator gen = new RenameListGenerator(Paths.get("/home/user/project/build/classes"));
+ *         gen.add(Paths.get("org/apache/sis/metadata/iso"));
  *         try (final BufferedWriter out = Files.newBufferedWriter(Paths.get("MyOutputFile.lst"))) {
  *             gen.print(out);
  *         }
@@ -186,6 +196,10 @@ public final class RenameListGenerator {
         }
     }
 
+    /**
+     * Returns the namespace declared on {@link XmlSchema} annotation.
+     * May be the namespace inherited from the package.
+     */
     private static String namespace(final Class<?> classe, String classNS) {
         if (classNS.equals(DEFAULT)) {
             classNS = classe.getPackage().getDeclaredAnnotation(XmlSchema.class).namespace();
