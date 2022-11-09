@@ -21,13 +21,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.metadata.quality.DescriptiveResult;
 import org.opengis.metadata.maintenance.Scope;
+import org.apache.sis.internal.jaxb.metadata.MD_Scope;
+import org.apache.sis.internal.jaxb.gco.GO_DateTime;
+import org.apache.sis.internal.metadata.ImplementationHelper;
 
 
 /**
@@ -155,6 +158,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      */
     @Override
     @XmlElement(name = "resultScope")
+    @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
     public Scope getResultScope() {
         return resultScope;
     }
@@ -179,6 +183,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      */
     @Override
     @XmlElement(name = "dateTime")
+    @XmlJavaTypeAdapter(GO_DateTime.Since2014.class)
     public Date getDateTime() {
         return ImplementationHelper.toDate(dateTime);
     }

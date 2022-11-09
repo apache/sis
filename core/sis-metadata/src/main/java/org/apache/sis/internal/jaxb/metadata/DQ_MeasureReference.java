@@ -26,6 +26,9 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
+ * <p>This adapter excludes the value when marshalling the older version of ISO 19115 standard.
+ * That exclusion is systematic because the type did not existed in the old standard version.</p>
+ *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -63,11 +66,12 @@ public final class DQ_MeasureReference extends PropertyType<DQ_MeasureReference,
      * in a {@code <mdq:DQ_MeasureReference>} XML element.
      *
      * @param  metadata  the metadata element to marshal.
-     * @return a {@code PropertyType} wrapping the given the metadata element.
+     * @return a {@code PropertyType} wrapping the given the metadata element,
+     *         or {@code null} if marshalling a too old version of the standard.
      */
     @Override
     protected DQ_MeasureReference wrap(final MeasureReference metadata) {
-        return new DQ_MeasureReference(metadata);
+        return accept2014() ? new DQ_MeasureReference(metadata) : null;
     }
 
     /**

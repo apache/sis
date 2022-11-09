@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
@@ -41,6 +42,7 @@ import org.opengis.metadata.quality.MeasureReference;
 import org.opengis.metadata.quality.Metaquality;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
@@ -84,7 +86,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
     "evaluationProcedure",
     "dates",
     "results",
-    "derivedElements"
+    "derivedElement"
 })
 @XmlRootElement(name = "AbstractDQ_Element")
 @XmlSeeAlso({
@@ -235,8 +237,9 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "standaloneQualityReportDetails")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     public InternationalString getStandaloneQualityReportDetails() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? standaloneQualityReportDetails : null;
+        return standaloneQualityReportDetails;
     }
 
     /**
@@ -261,11 +264,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     @Override
     @XmlElement(name = "measure", required = false)
     public MeasureReference getMeasureReference() {
-        if (FilterByVersion.CURRENT_METADATA.accept()) {
-            return (measureReference != null) ? measureReference : Element.super.getMeasureReference();
-        } else {
-            return null;
-        }
+        return (measureReference != null) ? measureReference : Element.super.getMeasureReference();
     }
 
     /**
@@ -405,7 +404,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     @Override
     @XmlElement(name = "evaluationMethod", required = false)
     public EvaluationMethod getEvaluationMethod() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? evaluationMethod : null;
+        return evaluationMethod;
     }
 
     /**
@@ -595,9 +594,8 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @since 1.3
      */
     @Override
-    @XmlElement(name = "derivedElement")
+    // @XmlElement at the end of this class.
     public Collection<Element> getDerivedElements() {
-        if (!FilterByVersion.CURRENT_METADATA.accept()) return null;
         return derivedElements = nonNullCollection(derivedElements, Element.class);
     }
 
@@ -610,5 +608,29 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     public void setDerivedElements(final Collection<? extends Element> newValues) {
         derivedElements = writeCollection(newValues, derivedElements, Element.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19157:2013 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "derivedElement")
+    private Collection<Element> getDerivedElement() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getDerivedElements() : null;
     }
 }

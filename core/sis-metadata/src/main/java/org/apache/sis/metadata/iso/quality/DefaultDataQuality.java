@@ -222,7 +222,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     @Override
     @XmlElement(name = "standaloneQualityReport")
     public StandaloneQualityReportInformation getStandaloneQualityReport() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? standaloneQualityReport : null;
+        return standaloneQualityReport;
     }
 
     /**
