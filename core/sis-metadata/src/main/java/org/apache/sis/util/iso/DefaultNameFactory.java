@@ -419,6 +419,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *
      * @see DefaultTypeName#toClass()
      * @see Names#toClass(TypeName)
+     * @see Names#createTypeName(Class)
      *
      * @since 0.5
      */

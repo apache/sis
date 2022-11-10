@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
+import org.opengis.util.TypeName;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
@@ -31,6 +32,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
@@ -65,7 +67,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.3
  *
  * @param <T>  the type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *
@@ -313,7 +315,19 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
-     * Returns the class that describe the type of the parameter.
+     * Returns the name that describes the type of parameter values.
+     *
+     * @return value type of the parameter.
+     *
+     * @since 1.3
+     */
+    @Override
+    public final TypeName getValueType() {
+        return Names.createTypeName(valueClass);
+    }
+
+    /**
+     * Returns the class that describes the type of parameter values.
      *
      * @return the parameter value class.
      */

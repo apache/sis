@@ -72,7 +72,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see DefaultNameFactory
  * @see DefaultNameSpace
@@ -251,6 +251,24 @@ public final class Names extends Static {
     }
 
     /**
+     * Suggests a type name for the given class. Apache SIS provides a mapping between {@code Class}
+     * and {@code TypeName} objects as documented in the {@link DefaultTypeName} javadoc.
+     * This is the converse of {@link #toClass(TypeName)} method.
+     *
+     * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
+     * @return a type name for values of the given type.
+     *
+     * @see DefaultNameFactory#toTypeName(Class)
+     *
+     * @since 1.3
+     */
+    public static TypeName createTypeName(final Class<?> valueClass) {
+        ensureNonNull("valueClass", valueClass);
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        return factory.toTypeName(valueClass);    // SIS-specific method.
+    }
+
+    /**
      * Creates a member name for values of the given class. A {@link TypeName} will be inferred
      * from the given {@code valueClass} as documented in the {@link DefaultTypeName} javadoc.
      *
@@ -353,8 +371,8 @@ public final class Names extends Static {
      * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
      *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the operation failed.
      *
+     * @see #createTypeName(Class)
      * @see DefaultTypeName#toClass()
-     * @see DefaultNameFactory#toTypeName(Class)
      *
      * @since 0.5
      */

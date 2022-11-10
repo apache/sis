@@ -34,10 +34,11 @@ import org.apache.sis.util.UnknownNameException;
  *
  * <h2>Mapping Java classes to type names</h2>
  * It is sometime useful to establish a mapping between {@link Class} and {@code TypeName}.
- * When an UML identifier from an OGC standard exists for a given {@code Class}, Apache SIS
- * uses that identifier prefixed by the {@code "OGC"} namespace.
+ * When an UML identifier from an OGC standard exists for a given {@code Class},
+ * Apache SIS uses that identifier prefixed by the {@code "OGC"} namespace.
  * Note that this is <strong>not</strong> a standard practice.
- * A more standard practice would be to use the <cite>definition identifiers in OGC namespace</cite>
+ * A more standard practice would be to use the
+ * <a href="https://schemas.opengis.net/definitions/1.1.0/dataType.xml">data type URN standard values</a>
  * (third column in the table below), but the set of data type identifiers defined by OGC is currently
  * small and is sometime not an exact match.
  *
@@ -45,68 +46,68 @@ import org.apache.sis.util.UnknownNameException;
  *   <caption>Mapping from Java classes to type names (non-exhaustive list)</caption>
  *   <tr>
  *     <th>Java class</th>
- *     <th>Type name (unofficial)</th>
- *     <th>Definition identifier in OGC namespace</th>
- *     <th>Recommended URL in Web Processing Services</th>
+ *     <th>Scoped type name</th>
+ *     <th class="sep">Data type URN standard values</th>
+ *     <th>URL in Web Services</th>
  *   </tr><tr>
  *     <td>{@link org.opengis.util.InternationalString}</td>
  *     <td>{@code OGC:FreeText}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link java.lang.String}</td>
  *     <td>{@code OGC:CharacterString}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::string}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::string}</td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#string}</td>
  *   </tr><tr>
  *     <td>{@link java.net.URI}</td>
  *     <td>{@code OGC:URI}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::anyURI}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::anyURI}</td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link java.lang.Boolean}</td>
  *     <td>{@code OGC:Boolean}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::boolean}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::boolean}</td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#boolean}</td>
  *   </tr><tr>
  *     <td>{@link java.lang.Integer}</td>
  *     <td>{@code OGC:Integer}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::nonNegativeInteger}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::nonNegativeInteger}</td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#integer}</td>
  *   </tr><tr>
  *     <td>{@link java.math.BigDecimal}</td>
  *     <td>{@code OGC:Decimal}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#decimal}</td>
  *   </tr><tr>
  *     <td>{@link java.lang.Double}</td>
  *     <td>{@code OGC:Real}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#double}</td>
  *   </tr><tr>
  *     <td>{@link java.lang.Float}</td>
  *     <td>{@code OGC:Real}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#float}</td>
  *   </tr><tr>
  *     <td>{@link java.util.Date}</td>
  *     <td>{@code OGC:DateTime}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link java.util.Locale}</td>
  *     <td>{@code OGC:PT_Locale}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link org.opengis.metadata.Metadata}</td>
  *     <td>{@code OGC:MD_Metadata}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>Unknown Java class</td>
  *     <td>{@code class:}&lt;the class name&gt;</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr>
  * </table>
