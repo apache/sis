@@ -316,14 +316,28 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * Returns the name that describes the type of parameter values.
+     * This is closely related to the {@link Class} returned by {@link #getValueClass()}:
      *
-     * @return value type of the parameter.
+     * <ul>
+     *   <li>If the value class is a collection ({@link java.util.Map}, {@link Set}, {@link java.util.List} or array),
+     *       then this method returns the type of <em>elements</em> in the collection.</li>
+     *   <li>Otherwise this method returns the value class using the mapping documented in
+     *       {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.</li>
+     * </ul>
+     *
+     * @return the type name of value component(s) in this parameter.
      *
      * @since 1.3
      */
     @Override
     public final TypeName getValueType() {
-        return Names.createTypeName(valueClass);
+        Class<?> type = valueClass;
+        if (Iterable.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {
+            type = Classes.boundOfParameterizedDeclaration(valueClass);
+        } else if (type.isArray()) {
+            type = type.getComponentType();
+        }
+        return Names.createTypeName(type);
     }
 
     /**

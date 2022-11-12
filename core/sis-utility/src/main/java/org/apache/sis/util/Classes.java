@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -25,8 +26,10 @@ import java.util.LinkedHashSet;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
@@ -53,7 +56,7 @@ import static org.apache.sis.internal.system.Modules.INTERNAL_CLASSNAME_PREFIX;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -140,23 +143,30 @@ public final class Classes extends Static {
     /**
      * Returns the upper bounds of the parameterized type of the given property.
      * If the property does not have a parameterized type, returns {@code null}.
-     *
-     * <p>This method is typically used for fetching the type of elements in a collection.
-     * We do not provide a method working from a {@link Class} instance because of the way
-     * parameterized types are implemented in Java (by erasure).</p>
-     *
-     * <b>Examples:</b> When invoking this method for a field of the type below:
+     * If the property has more than one parameterized type, then the parameter
+     * examined by this method depends on the property type:
      * <ul>
-     *   <li>{@code Set<Number>} returns {@code Number.class}.</li>
+     *   <li>If {@link Map}, then this method returns the type of keys in map entries.</li>
+     *   <li>For all other types, this method expects exactly one parameterized type
+     *       for avoiding ambiguity. If this is not the case, {@code null} is returned.</li>
+     * </ul>
      *
-     *   <li>{@code Set<? extends Number>} returns {@code Number.class} as well, since that
-     *       collection can not (in theory) contain instances of super-classes; {@code Number}
-     *       is the <cite>upper bound</cite>.</li>
+     * This method is used for fetching the type of elements in a collection.
+     * This information can not be obtained from a {@link Class} instance
+     * because of the way parameterized types are implemented in Java (by erasure).
      *
-     *   <li>{@code Set<? super Number>} returns {@code Object.class}, because that collection
-     *       is allowed to contain such elements.</li>
-     *
-     *   <li>{@code Set} returns {@code null} because that collection is un-parameterized.</li>
+     * <h4>Examples</h4>
+     * When invoking this method for a field of the following types:
+     * <ul>
+     *   <li>{@code Map<String,Number>}: returns {@code String.class}, the type of keys.</li>
+     *   <li>{@code Set<Number>}: returns {@code Number.class}.</li>
+     *   <li>{@code Set<? extends Number>}: returns {@code Number.class} as well,
+     *       because that collection can not contain instances of super-classes.
+     *       {@code Number} is the <cite>upper bound</cite>.</li>
+     *   <li>{@code Set<? super Number>}: returns {@code Object.class},
+     *       because that collection is allowed to contain such elements.</li>
+     *   <li>{@code Set}: returns {@code null} because that collection is declared with raw type.</li>
+     *   <li>{@code Long}: returns {@code null} because that type is not parameterized.</li>
      * </ul>
      *
      * @param  field  the field for which to obtain the parameterized type.
@@ -168,68 +178,146 @@ public final class Classes extends Static {
     }
 
     /**
-     * If the given method is a getter or a setter for a parameterized property, returns the
-     * upper bounds of the parameterized type. Otherwise returns {@code null}. This method
-     * provides the same semantic than {@link #boundOfParameterizedProperty(Field)}, but
-     * works on a getter or setter method rather then the field. See the javadoc of above
-     * method for more details.
+     * If the given method is a getter or a setter for a parameterized property,
+     * returns the upper bounds of the parameterized type.
+     * Otherwise returns {@code null}.
+     * This method provides the same semantic than {@link #boundOfParameterizedProperty(Field)},
+     * but works on a getter or setter method rather than a field.
+     * See {@link #boundOfParameterizedProperty(Field)} javadoc for details.
      *
-     * <p>This method is typically used for fetching the type of elements in a collection.
-     * We do not provide a method working from a {@link Class} instance because of the way
-     * parameterized types are implemented in Java (by erasure).</p>
+     * <p>This method is used for fetching the type of elements in a collection.
+     * This information can not be obtained from a {@link Class} instance
+     * because of the way parameterized types are implemented in Java (by erasure).</p>
      *
      * @param  method  the getter or setter method for which to obtain the parameterized type.
      * @return the upper bound of parameterized type, or {@code null} if the given method
-     *         does not operate on an object of a parameterized type.
+     *         is not a getter or setter for a property of a parameterized type.
      */
     public static Class<?> boundOfParameterizedProperty(final Method method) {
-        Class<?> c = getActualTypeArgument(method.getGenericReturnType());
-        if (c == null) {
-            final Type[] parameters = method.getGenericParameterTypes();
-            if (parameters != null && parameters.length == 1) {
-                c = getActualTypeArgument(parameters[0]);
-            }
+        final Type[] parameters = method.getGenericParameterTypes();
+        final Type type;
+        switch (parameters.length) {
+            case 0:  type = method.getGenericReturnType(); break;
+            case 1:  type = parameters[0]; break;
+            default: return null;
         }
-        return c;
+        return getActualTypeArgument(type);
     }
 
     /**
-     * Delegates to {@link ParameterizedType#getActualTypeArguments()} and returns the result as a
-     * {@link Class}, provided that every objects are of the expected classes and the result was
-     * an array of length 1 (so there is no ambiguity). Otherwise returns {@code null}.
+     * Returns a single bound declared in a parameterized class or a parameterized method.
+     * The {@code typeOrMethod} argument is usually a {@link Class} for a collection type.
+     * If the given argument is a non-parameterized class, then this method searches for
+     * the first parameterized super-class (see example below).
+     * If no parameterized declaration is found, then this method returns {@code null}.
+     * If the declaration has more than one parameterized type, then this method applies
+     * the same heuristic rule as {@link #boundOfParameterizedProperty(Field)}
+     * (see the javadoc of that method for details).
+     *
+     * <h4>Examples</h4>
+     * When invoking this method with the following {@link Class} argument values:
+     * <ul>
+     *   <li>{@code List.class}: returns {@code Object.class} because {@link java.util.List} is declared as
+     *       {@code List<E>} (implicitly {@code <E extends Object>}).</li>
+     *   <li>{@code Map.class}: returns {@code Object.class} because {@link java.util.Map} is declared as
+     *       {@code Map<K,V>} and, as an heuristic rule, we return the key type of map entry.</li>
+     *   <li>{@code PrinterStateReasons.class}: returns {@code PrinterStateReason.class} because
+     *       {@link javax.print.attribute.standard.PrinterStateReasons} is not parameterized but extends
+     *       {@code HashMap<PrinterStateReason,Severity>}.</li>
+     *   <li>{@code Long.class}: returns {@code null} because that type is not parameterized.</li>
+     * </ul>
+     *
+     * This method is used as a fallback when {@code boundOfParameterizedProperty(…)} can not be used.
+     *
+     * @param  typeOrMethod  the {@link Class} or {@link Method} from which to get the bounds of its parameter.
+     * @return the upper bound of parameterized class or method, or {@code null} if this method can not identify
+     *         a single parameterized type to return.
+     *
+     * @see #boundOfParameterizedProperty(Field)
+     * @see #boundOfParameterizedProperty(Method)
+     *
+     * @since 1.3
      */
-    private static Class<?> getActualTypeArgument(Type type) {
-        if (type instanceof ParameterizedType) {
-            Type[] p = ((ParameterizedType) type).getActualTypeArguments();
-            while (p != null && p.length == 1) {
-                type = p[0];
-                if (type instanceof WildcardType) {
-                    p = ((WildcardType) type).getUpperBounds();
-                    continue;
+    public static Class<?> boundOfParameterizedDeclaration(final GenericDeclaration typeOrMethod) {
+        final TypeVariable<?>[] parameters = typeOrMethod.getTypeParameters();
+        final int i = chooseSingleType(typeOrMethod, parameters.length);
+        if (i >= 0) {
+            Class<?> bounds = null;
+            for (final Type p : parameters[i].getBounds()) {
+                if (p instanceof Class<?>) {
+                    bounds = findCommonClass(bounds, (Class<?>) p);
+                }
+            }
+            return bounds;
+        }
+        return getActualTypeArgument(typeOrMethod);
+    }
+
+    /**
+     * Returns the type argument of the given type or the first parameterized parent type.
+     * For example if the given type is {@code List<String>}, then this method returns {@code String.class}.
+     * This method expects a fixed amount of parameterized types (currently 2 if the given type is {@code Map}
+     * and 1 for all other types), otherwise it returns {@code null}.
+     *
+     * @see ParameterizedType#getActualTypeArguments()
+     */
+    private static Class<?> getActualTypeArgument(Object typeOrMethod) {
+        while (typeOrMethod instanceof Class<?>) {
+            typeOrMethod = ((Class<?>) typeOrMethod).getGenericSuperclass();
+        }
+        if (typeOrMethod instanceof ParameterizedType) {
+            final ParameterizedType p = (ParameterizedType) typeOrMethod;
+            final Type[] parameters = p.getActualTypeArguments();
+            final int i = chooseSingleType(p.getRawType(), parameters.length);
+            if (i >= 0) {
+                Type type = parameters[i];
+                while (type instanceof WildcardType) {
+                    final Type[] bounds = ((WildcardType) type).getUpperBounds();
+                    if (bounds.length != 1) return null;
+                    type = bounds[0];
                 }
                 /*
-                 * At this point we are not going to continue the loop anymore.
-                 * Check if we have an array, then check the (component) class.
+                 * If we have an array, unroll it until we get the class of array components.
+                 * The array will be reconstructed at the end of this method, but as a class
+                 * instead of as a generic type (i.e. we convert Type[][]… to Class[][]…).
                  */
-                if (type instanceof ParameterizedType) {
-                    /*
-                     * Example: replace ParameterDescriptor<?> by ParameterDescriptor
-                     * before we test if (type instanceof Class<?>).
-                     */
-                    type = ((ParameterizedType) type).getRawType();
-                }
                 int dimension = 0;
                 while (type instanceof GenericArrayType) {
                     type = ((GenericArrayType) type).getGenericComponentType();
                     dimension++;
                 }
+                /*
+                 * Then replace (for example) `ParameterDescriptor<?>` by `ParameterDescriptor`
+                 * in order to get an instance of `Class` instead of other kind of `Type`.
+                 */
+                if (type instanceof ParameterizedType) {
+                    type = ((ParameterizedType) type).getRawType();
+                }
                 if (type instanceof Class<?>) {
                     return changeArrayDimension((Class<?>) type, dimension);
                 }
-                break;                                      // Unknown type.
             }
         }
         return null;
+    }
+
+    /**
+     * Chooses (using heuristic rules) a single element in an array of type arguments.
+     * The given raw type should be a {@link Class} instance when possible, usually a collection type.
+     * The given count shall be the number of parameters, for example 2 in {@code Map<String,Integer>}.
+     *
+     * @param  rawType  the parameterized class, as a {@link Class} instance if possible.
+     * @param  count    length of the array of type parameters in which to select a single type.
+     * @return index of the parameter to select in an array of length {@code count}, or -1 if none.
+     */
+    @SuppressWarnings("fallthrough")
+    private static int chooseSingleType(final Object rawType, final int count) {
+        switch (count) {
+            case 2: if (!(rawType instanceof Class<?>) && Map.class.isAssignableFrom((Class<?>) rawType)) break;
+                    // Else fallthrough.
+            case 1: return 0;
+        }
+        return -1;
     }
 
     /**

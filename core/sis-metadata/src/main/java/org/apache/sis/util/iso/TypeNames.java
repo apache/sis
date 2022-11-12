@@ -37,7 +37,7 @@ import org.apache.sis.util.Numbers;
  * Implements the mapping between {@link Class} and {@link TypeName} documented in {@link DefaultTypeName}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -97,9 +97,9 @@ final class TypeNames {
     final TypeName toTypeName(final NameFactory factory, final Class<?> valueClass) {
         String name;
         NameSpace ns = ogcNS;
-        if (CharSequence.class.isAssignableFrom(valueClass)) {
+search: if (CharSequence.class.isAssignableFrom(valueClass)) {
             name = InternationalString.class.isAssignableFrom(valueClass) ? "FreeText" : "CharacterString";
-        } else if (Number.class.isAssignableFrom(valueClass)) {
+        } else if (Numbers.isNumber(valueClass) || Number.class.isAssignableFrom(valueClass)) {
             name = Numbers.isInteger(valueClass) ? "Integer" : "Real";
         } else {
             /*
@@ -113,7 +113,7 @@ final class TypeNames {
                 base = entry.getValue();
                 if (base.isAssignableFrom(valueClass)) {
                     name = entry.getKey();
-                    return factory.createTypeName(ns, name);
+                    break search;
                 }
             } while (base != Boolean.class);    // See MAPPING javadoc for the role of Boolean as a sentinel value.
             /*
