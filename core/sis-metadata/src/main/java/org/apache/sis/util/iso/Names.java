@@ -17,6 +17,7 @@
 package org.apache.sis.util.iso;
 
 import java.util.Collections;
+import java.lang.reflect.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
@@ -292,7 +293,7 @@ public final class Names extends Static {
         ensureNonNull("valueClass", valueClass);
         final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart,
-                factory.toTypeName(valueClass));    // SIS-specific method.
+               factory.toTypeName(valueClass));     // SIS-specific method.
     }
 
     /**
@@ -338,8 +339,7 @@ public final class Names extends Static {
      *
      * <ul>
      *   <li>If the given type name is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Else if the given type name is an instance of {@code DefaultTypeName},
-     *       then this method delegates to {@link DefaultTypeName#toClass()}.</li>
+     *   <li>Else if the value returned by {@link DefaultTypeName#toJavaType()} is a {@link Class}, returns that class.</li>
      *   <li>Else if the type name {@linkplain DefaultTypeName#scope() scope} is {@code "OGC"}, then:
      *     <ul>
      *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
@@ -358,21 +358,21 @@ public final class Names extends Static {
      *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
      *           then the corresponding class is returned.</li>
      *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
-     *           could be anything, so we can not be sure that the given name was wrong.</li>
+     *           could be anything; this method can not be sure that the given name was wrong.</li>
      *     </ul>
      *   </li>
-     *   <li>Otherwise {@code null} is returned, since this method can not check the validity of names in other
-     *       namespaces.</li>
+     *   <li>Otherwise {@code null} is returned,
+     *       because this method can not check the validity of names in other namespaces.</li>
      * </ul>
      *
      * @param  type  the type name from which to infer a Java class.
      * @return the Java class associated to the given {@code TypeName},
      *         or {@code null} if there is no mapping from the given name to a Java class.
      * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
-     *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the operation failed.
+     *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the lookup failed.
      *
      * @see #createTypeName(Class)
-     * @see DefaultTypeName#toClass()
+     * @see DefaultTypeName#toJavaType()
      *
      * @since 0.5
      */
@@ -380,21 +380,18 @@ public final class Names extends Static {
         if (type == null) {
             return null;
         }
-        Class<?> c;
-        if (type instanceof DefaultTypeName) {
-            c = ((DefaultTypeName) type).toClass();
-        } else {
-            try {
-                c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
-            } catch (ClassNotFoundException e) {
-                throw new UnknownNameException(TypeNames.unknown(type), e);
-            }
-            if (c == null) {
-                throw new UnknownNameException(TypeNames.unknown(type));
-            }
-            if (c == Void.TYPE) {
-                c = null;
-            }
+        final Type t = type.toJavaType().orElse(null);
+        if (t instanceof Class<?>) {
+            return (Class<?>) t;
+        }
+        final Class<?> c;
+        try {
+            c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
+        } catch (ClassNotFoundException e) {
+            throw new UnknownNameException(TypeNames.unknown(type), e);
+        }
+        if (c == Void.TYPE) {
+            throw new UnknownNameException(TypeNames.unknown(type));
         }
         return c;
     }

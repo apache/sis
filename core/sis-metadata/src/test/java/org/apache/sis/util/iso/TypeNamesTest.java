@@ -38,7 +38,7 @@ import static org.apache.sis.internal.util.Constants.OGC;
  * Tests are performed through the {@link DefaultNameFactory#toTypeName(Class)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -57,7 +57,7 @@ public final strictfp class TypeNamesTest extends TestCase {
         final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         final TypeName type = factory.toTypeName(valueClass);
         assertNotNull(name, type);
-        assertSame   (name, valueClass, ((DefaultTypeName) type).toClass());
+        assertSame   (name, valueClass, type.toJavaType().get());
         assertEquals (name, namespace,  type.scope().name().toString());
         assertEquals (name, name,       type.toString());
         assertEquals (name, valueClass, TypeNames.toClass(namespace, name));
@@ -127,10 +127,10 @@ public final strictfp class TypeNamesTest extends TestCase {
      */
     @Test
     public void testInvalidNames() throws ClassNotFoundException {
-        assertEquals("Dummy:Real", Void.TYPE,    TypeNames.toClass("Dummy", "Real"));
+        assertNull  ("Dummy:Real",               TypeNames.toClass("Dummy", "Real"));
         assertEquals(OGC+":Real",  Double.class, TypeNames.toClass(OGC,     "Real"));
         assertEquals("Real",       Double.class, TypeNames.toClass(null,    "Real"));
-        assertEquals("Dummy",      Void.TYPE,    TypeNames.toClass(null,    "Dummy")); // Considered not an error.
-        assertNull  (OGC+":Dummy",               TypeNames.toClass(OGC,     "Dummy")); // Considered an error.
+        assertNull  ("Dummy",                    TypeNames.toClass(null,    "Dummy"));    // Considered not an error.
+        assertEquals(OGC+":Dummy", Void.TYPE,    TypeNames.toClass(OGC,     "Dummy"));    // Considered an error.
     }
 }
