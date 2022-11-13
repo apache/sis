@@ -99,7 +99,7 @@ final class TypeNames {
         NameSpace ns = ogcNS;
 search: if (CharSequence.class.isAssignableFrom(valueClass)) {
             name = InternationalString.class.isAssignableFrom(valueClass) ? "FreeText" : "CharacterString";
-        } else if (Numbers.isNumber(valueClass) || Number.class.isAssignableFrom(valueClass)) {
+        } else if (Numbers.isNumber(valueClass)) {
             name = Numbers.isInteger(valueClass) ? "Integer" : "Real";
         } else {
             /*
