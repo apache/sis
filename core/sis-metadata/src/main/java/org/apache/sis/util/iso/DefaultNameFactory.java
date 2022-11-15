@@ -246,9 +246,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  scope  the {@linkplain AbstractName#scope() scope} of the member name to create,
      *                or {@code null} for a global namespace.
      * @param  name   the member name as a string or an international string.
-     * @param  attributeType  the type of the data associated with the record member.
+     * @param  attributeType  the type of the data associated with the member.
      * @return the member name for the given character sequence.
      *
+     * @see Names#createMemberName(CharSequence, String, CharSequence, TypeName)
      * @see Names#createMemberName(CharSequence, String, CharSequence, Class)
      */
     @Override

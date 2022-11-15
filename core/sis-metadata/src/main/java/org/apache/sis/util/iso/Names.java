@@ -27,8 +27,8 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.UnknownNameException;
+import org.apache.sis.internal.system.DefaultFactories;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -226,7 +226,7 @@ public final class Names extends Static {
     }
 
     /**
-     * Creates a type name which is local in the given namespace.
+     * Creates a type name from the given character sequence and automatically inferred Java type.
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
@@ -252,13 +252,14 @@ public final class Names extends Static {
     }
 
     /**
-     * Suggests a type name for the given class. Apache SIS provides a mapping between {@code Class}
-     * and {@code TypeName} objects as documented in the {@link DefaultTypeName} javadoc.
-     * This is the converse of {@link #toClass(TypeName)} method.
+     * Creates a type name for the given class using naming convention documented in {@link DefaultTypeName}.
+     * This method is a shortcut for {@link DefaultNameFactory#toTypeName(Class)}
+     * and is the converse of {@link #toClass(TypeName)}.
      *
-     * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
+     * @param  valueClass  the type of values for which to infer a {@link TypeName} instance.
      * @return a type name for values of the given type.
      *
+     * @see #createMemberName(CharSequence, String, CharSequence, Class)
      * @see DefaultNameFactory#toTypeName(Class)
      *
      * @since 1.3
@@ -283,8 +284,6 @@ public final class Names extends Static {
      * @param  localPart  the name which is locale in the given namespace.
      * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
      * @return a member name in the given namespace for values of the given type.
-     *
-     * @see DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)
      */
     public static MemberName createMemberName(final CharSequence namespace, final String separator,
             final CharSequence localPart, final Class<?> valueClass)
@@ -294,6 +293,29 @@ public final class Names extends Static {
         final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart,
                factory.toTypeName(valueClass));     // SIS-specific method.
+    }
+
+    /**
+     * Creates a member name for attribute values of the given type.
+     * This is a shortcut for {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}.
+     * See {@linkplain #createMemberName(CharSequence, String, CharSequence, Class) performance note}.
+     *
+     * @param  namespace  the namespace, or {@code null} for the global namespace.
+     * @param  separator  the separator between the namespace and the local part, or {@code null}
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  localPart  the name which is locale in the given namespace.
+     * @param  attributeType  the type of the data associated with the member.
+     * @return a member name in the given namespace for values of the given type.
+     *
+     * @since 1.3
+     */
+    public static MemberName createMemberName(final CharSequence namespace, final String separator,
+            final CharSequence localPart, final TypeName attributeType)
+    {
+        ensureNonNull("localPart", localPart);
+        ensureNonNull("attributeType", attributeType);
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart, attributeType);
     }
 
     /**
@@ -324,7 +346,7 @@ public final class Names extends Static {
             name = createMemberName(namespace, separator, Integer.toString(localPart), Integer.class);
             if (cached) synchronized (SEQUENCE_NUMBERS) {
                 /*
-                 * No need to check if a value has been set concurrently because Names.createMemberName(…)
+                 * No need to check if a value has been set concurrently because `createMemberName(…)`
                  * already checked if an equal instance exists in the current JVM.
                  */
                 SEQUENCE_NUMBERS[localPart] = name;
