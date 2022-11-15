@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.Description;
 import org.opengis.metadata.identification.BrowseGraphic;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -74,6 +75,15 @@ public class DefaultDescription extends ISOMetadata implements Description {
      * Constructs an initially empty description.
      */
     public DefaultDescription() {
+    }
+
+    /**
+     * Constructs a description initialized with the given text.
+     *
+     * @param  text  text description, or {@code null} if none.
+     */
+    public DefaultDescription(final CharSequence text) {
+        textDescription = Types.toInternationalString(text);
     }
 
     /**

@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.DescriptiveResult;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -71,10 +72,10 @@ public class DefaultDescriptiveResult extends AbstractResult implements Descript
     /**
      * Creates a conformance result initialized to the given values.
      *
-     * @param statement  statement against which data is being evaluated, or {@code null}.
+     * @param text  statement against which data is being evaluated, or {@code null}.
      */
-    public DefaultDescriptiveResult(final InternationalString statement) {
-        this.statement = statement;
+    public DefaultDescriptiveResult(final CharSequence text) {
+        statement = Types.toInternationalString(text);
     }
 
     /**

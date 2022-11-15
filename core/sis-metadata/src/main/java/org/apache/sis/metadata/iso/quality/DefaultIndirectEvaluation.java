@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.IndirectEvaluation;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -73,8 +74,8 @@ public class DefaultIndirectEvaluation extends AbstractDataEvaluation implements
      *
      * @param  source  information on which data are used as sources, or {@code null}.
      */
-    public DefaultIndirectEvaluation(final InternationalString source) {
-        deductiveSource = source;
+    public DefaultIndirectEvaluation(final CharSequence source) {
+        deductiveSource = Types.toInternationalString(source);
     }
 
     /**
