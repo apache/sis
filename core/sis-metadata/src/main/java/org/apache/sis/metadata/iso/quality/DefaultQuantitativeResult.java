@@ -253,4 +253,18 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
         checkWritePermission(errorStatistic);
         errorStatistic = newValue;
     }
+
+    /**
+     * Returns {@code true} if this metadata contains only {@code null}, nil or empty properties.
+     * The deprecated {@code errorStatistic} is also verified because there is no non-deprecated
+     * replacement receiving a value that {@code super.isEmpty()} would recognize.
+     *
+     * @return {@code true} if this metadata is empty.
+     *
+     * @hidden
+     */
+    @Override
+    public boolean isEmpty() {
+        return super.isEmpty() && errorStatistic == null;
+    }
 }

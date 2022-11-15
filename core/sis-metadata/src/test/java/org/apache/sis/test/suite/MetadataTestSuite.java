@@ -120,6 +120,8 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultServiceIdentificationTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
     org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
+    org.apache.sis.metadata.iso.quality.DefaultDomainConsistencyTest.class,
+    org.apache.sis.metadata.iso.quality.DefaultQuantitativeResultTest.class,
     org.apache.sis.metadata.iso.quality.ScopeCodeTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultLineageTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultProcessStepTest.class,
