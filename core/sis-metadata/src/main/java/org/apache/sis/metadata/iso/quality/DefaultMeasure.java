@@ -22,11 +22,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Measure;
 import org.opengis.metadata.quality.BasicMeasure;
 import org.opengis.metadata.quality.Description;
-import org.opengis.metadata.quality.Parameter;
 import org.opengis.metadata.quality.SourceReference;
 import org.opengis.metadata.quality.ValueStructure;
 import org.apache.sis.xml.Namespaces;
@@ -145,7 +145,7 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      * Auxiliary variable used by the data quality measure, including its name, definition and optionally its description.
      */
     @SuppressWarnings("serial")
-    private Collection<Parameter> parameters;
+    private Collection<ParameterDescriptor<?>> parameters;
 
     /**
      * Illustration of the use of a data quality measure.
@@ -168,7 +168,7 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      *
      * @see #castOrCopy(Measure)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public DefaultMeasure(final Measure object) {
         super(object);
         if (object != null) {
@@ -183,7 +183,7 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
             examples          = copyCollection(object.getExamples(), Description.class);
             basicMeasure      = object.getBasicMeasure();
             sourceReferences  = copyCollection(object.getSourceReferences(), SourceReference.class);
-            parameters        = copyCollection(object.getParameters(), Parameter.class);
+            parameters        = copyCollection(object.getParameters(), (Class) ParameterDescriptor.class);
         }
     }
 
@@ -432,8 +432,9 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      */
     @Override
     @XmlElement(name = "parameter")
-    public Collection<Parameter> getParameters() {
-        return parameters = nonNullCollection(parameters, Parameter.class);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public Collection<ParameterDescriptor<?>> getParameters() {
+        return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
 
     /**
@@ -441,8 +442,9 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      *
      * @param  newValues  the new measure parameters.
      */
-    public void setParameters(final Collection<? extends Parameter> newValues) {
-        parameters = writeCollection(newValues, parameters, Parameter.class);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void setParameters(final Collection<? extends ParameterDescriptor<?>> newValues) {
+        parameters = writeCollection(newValues, parameters, (Class) ParameterDescriptor.class);
     }
 
     /**

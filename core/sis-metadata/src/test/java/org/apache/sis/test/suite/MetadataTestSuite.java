@@ -116,6 +116,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
     org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest.class,
+    org.apache.sis.internal.jaxb.metadata.replace.QualityParameterTest.class,
     org.apache.sis.metadata.iso.identification.DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.identification.DefaultServiceIdentificationTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,

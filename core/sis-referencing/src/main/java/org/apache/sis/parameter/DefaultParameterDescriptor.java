@@ -32,13 +32,13 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
 
@@ -319,25 +319,22 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * This is closely related to the {@link Class} returned by {@link #getValueClass()}:
      *
      * <ul>
-     *   <li>If the value class is a collection ({@link java.util.Map}, {@link Set}, {@link java.util.List} or array),
+     *   <li>If the value class is a collection (e.g. {@link java.util.List} or array),
      *       then this method returns the type of <em>elements</em> in the collection.</li>
      *   <li>Otherwise this method returns the value class using the mapping documented in
      *       {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.</li>
      * </ul>
+     *
+     * {@code TypeName} is used for encoding parameters in XML or JSON documents,
+     * while {@link #getValueClass()} is used for programmatic purposes.
      *
      * @return the type name of value component(s) in this parameter.
      *
      * @since 1.3
      */
     @Override
-    public final TypeName getValueType() {
-        Class<?> type = valueClass;
-        if (Iterable.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {
-            type = Classes.boundOfParameterizedDeclaration(valueClass);
-        } else if (type.isArray()) {
-            type = type.getComponentType();
-        }
-        return Names.createTypeName(type);
+    public TypeName getValueType() {
+        return QualityParameter.getValueType(valueClass);
     }
 
     /**
@@ -511,11 +508,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                     return getMinimumOccurs() == that.getMinimumOccurs() &&
                            getMaximumOccurs() == that.getMaximumOccurs() &&
                            getValueClass()    == that.getValueClass()    &&
-                           Objects.    equals(getValidValues(),  that.getValidValues())  &&
-                           Objects.    equals(getMinimumValue(), that.getMinimumValue()) &&
-                           Objects.    equals(getMaximumValue(), that.getMaximumValue()) &&
-                           Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
-                           Utilities.deepEquals(getUnit(),       that.getUnit(), mode);
+                           Utilities.deepEquals(getValueType(),    that.getValueType(), mode) &&
+                           Objects.      equals(getValidValues(),  that.getValidValues())  &&
+                           Objects.      equals(getMinimumValue(), that.getMinimumValue()) &&
+                           Objects.      equals(getMaximumValue(), that.getMaximumValue()) &&
+                           Objects  .deepEquals(getDefaultValue(), that.getDefaultValue()) &&
+                           Utilities.deepEquals(getUnit(),         that.getUnit(), mode);
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;

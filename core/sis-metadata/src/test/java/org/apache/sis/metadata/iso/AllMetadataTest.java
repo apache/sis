@@ -191,7 +191,6 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.quality.Metaquality.class,
             org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy.class,
             org.opengis.metadata.quality.NonQuantitativeAttributeCorrectness.class,
-            org.opengis.metadata.quality.Parameter.class,
             org.opengis.metadata.quality.PositionalAccuracy.class,
             org.opengis.metadata.quality.QuantitativeAttributeAccuracy.class,
             org.opengis.metadata.quality.QuantitativeResult.class,

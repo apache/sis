@@ -17,9 +17,9 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.quality.Parameter;
-import org.apache.sis.metadata.iso.quality.DefaultParameter;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
 
 
 /**
@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @since   1.3
  * @module
  */
-public final class DQM_Parameter extends PropertyType<DQM_Parameter, Parameter> {
+public final class DQM_Parameter extends PropertyType<DQM_Parameter, ParameterDescriptor<?>> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -43,17 +43,18 @@ public final class DQM_Parameter extends PropertyType<DQM_Parameter, Parameter> 
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code Parameter.class}
+     * @return {@code ParameterDescriptor.class}
      */
     @Override
-    protected Class<Parameter> getBoundType() {
-        return Parameter.class;
+    @SuppressWarnings("unchecked")
+    protected Class<ParameterDescriptor<?>> getBoundType() {
+        return (Class) ParameterDescriptor.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQM_Parameter(final Parameter metadata) {
+    private DQM_Parameter(final ParameterDescriptor<?> metadata) {
         super(metadata);
     }
 
@@ -65,7 +66,7 @@ public final class DQM_Parameter extends PropertyType<DQM_Parameter, Parameter> 
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected DQM_Parameter wrap(final Parameter metadata) {
+    protected DQM_Parameter wrap(final ParameterDescriptor<?> metadata) {
         return new DQM_Parameter(metadata);
     }
 
@@ -77,16 +78,16 @@ public final class DQM_Parameter extends PropertyType<DQM_Parameter, Parameter> 
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultParameter getElement() {
-        return DefaultParameter.castOrCopy(metadata);
+    public QualityParameter getElement() {
+        return QualityParameter.castOrCopy(metadata);
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultParameter metadata) {
-        this.metadata = metadata;
+    public void setElement(final QualityParameter value) {
+        metadata = value;
     }
 }

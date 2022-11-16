@@ -45,7 +45,7 @@ import org.apache.sis.internal.system.Modules;
  * <cite>"referencing by coordinates"</cite> but needed by metadata.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -253,13 +253,14 @@ public class ReferencingServices extends OptionalDependency {
     /**
      * Returns a fully implemented parameter descriptor.
      *
+     * @param  <T>        the type of values.
      * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
      * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      *
      * @since 0.5
      */
-    public ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter) {
+    public <T> ParameterDescriptor<T> toImplementation(ParameterDescriptor<T> parameter) {
         throw moduleNotFound();
     }
 

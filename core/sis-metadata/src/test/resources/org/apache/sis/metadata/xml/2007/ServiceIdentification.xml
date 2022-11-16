@@ -66,7 +66,7 @@
         <srv:SV_Parameter>
           <srv:name>
             <gco:aName>
-              <gco:CharacterString>Version</gco:CharacterString>
+              <gco:CharacterString>My service parameter</gco:CharacterString>
             </gco:aName>
             <gco:attributeType>
               <gco:TypeName>

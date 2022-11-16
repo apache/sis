@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
-import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,30 +25,25 @@ import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 
 /**
  * Parameter information conform to the ISO 19115:2014 specification.
  * GeoAPI tries to provides a single API for the parameter classes defined in various specifications
- * (ISO 19111, ISO 19115, Web Processing Service). But we still need separated representations at XML
- * (un)marshalling time. This class is for the ISO 19115:2014 case.
+ * (ISO 19111, ISO 19115, ISO 19157, Web Processing Service).
+ * But we still need separated representations at XML (un)marshalling time.
+ * This class is for the ISO 19115:2014 case.
  *
  * <p>Note that this implementation is simple and serves no other purpose than being a container for XML
  * parsing and formatting. For real parameter framework, consider using {@link org.apache.sis.parameter}
@@ -59,16 +53,16 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * We use raw type (i.e. we implement {@code ParameterDescriptor} instead of {@code ParameterDescriptor<T>})
  * because there is no way we can know {@code <T>} for sure at unmarshalling time. This is not a recommended
  * practice, so <strong>this class shall not be in public API</strong>.  However it should be okay to create
- * {@code ServiceMetadata} instances in Apache SIS internal code if all methods creating such instances declare
- * {@code ParameterDescriptor<?>} as their return type.
+ * {@code ServiceParameter} instances in Apache SIS internal code if all methods creating such instances
+ * declare {@code ParameterDescriptor<?>} as their return type.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.5
  * @module
  */
-@SuppressWarnings("rawtypes")               // For the omission of <T> in ParameterDescriptor<T> - see javadoc.
+@SuppressWarnings("rawtypes")   // For the omission of <T> in Parameter<T> - see javadoc.
 @XmlType(name = "SV_Parameter_Type", namespace = Namespaces.SRV, propOrder = {
     "memberName",           // The  ISO 19115-3:2016 way to marshal name.
     "legacyName",           // Legacy ISO 19139:2007 way to marshal name.
@@ -77,15 +71,10 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
     "optionality",
     "optionalityLabel",     // Legacy ISO 19139:2007 way to marshal optionality.
     "repeatability",
-    "valueType"
+    "legacyValueType"
 })
 @XmlRootElement(name = "SV_Parameter", namespace = Namespaces.SRV)
-public final class ServiceParameter extends SimpleIdentifiedObject implements ParameterDescriptor {
-    /**
-     * Serial number for compatibility with different versions.
-     */
-    private static final long serialVersionUID = -5335736212313243889L;
-
+public final class ServiceParameter extends Parameter {
     /**
      * The name, as used by the service for this parameter. Note that in ISO 19115-3:2016, this element is
      * inside a {@code <gco:MemberName>} element  (i.e. ISO inserts the same kind of {@code Property_Type}
@@ -102,6 +91,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      *   </srv:name>
      * }
      *
+     * @see #getName()
      * @see #getLegacyName()
      * @see #getValueType()
      */
@@ -111,12 +101,16 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
 
     /**
      * Indication if the parameter is an input to the service, an output or both.
+     *
+     * @see #getDirection()
      */
     @XmlElement(required = true)
     ParameterDirection direction;
 
     /**
      * A narrative explanation of the role of the parameter.
+     *
+     * @see #getDescription()
      */
     @XmlElement
     InternationalString description;
@@ -131,24 +125,21 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      *
      * @see #getOptionality()
      * @see #setOptionality(Boolean)
+     * @see #getMinimumOccurs()
      */
-    public boolean optionality;
+    boolean optionality;
 
     /**
      * Indication if more than one value of the parameter may be provided.
+     *
+     * @see #getMaximumOccurs()
      */
     @XmlElement(required = true)
-    public boolean repeatability;
-
-    /**
-     * A copy of {@code this} as a fully-implemented parameter descriptor.
-     * This is created when first needed for implementation of {@link #createValue()}.
-     */
-    private transient ParameterDescriptor descriptor;
+    boolean repeatability;
 
     /**
      * Creates an initially empty parameter.
-     * This constructor is needed by JAXB.
+     * This constructor is needed by JAXB at unmarshalling time.
      *
      * <p><strong>Consider this constructor as private</strong> except for testing purpose.
      * See <cite>Note about raw-type usage</cite> in class javadoc.</p>
@@ -158,7 +149,11 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
 
     /**
      * Creates a parameter initialized to the values of the given one.
+     * This is used for marshalling an arbitrary parameter as an ISO 19115 parameter.
+     *
+     * @see #castOrCopy(ParameterDescriptor)
      */
+    @SuppressWarnings("unchecked")
     private ServiceParameter(final ParameterDescriptor<?> parameter) {
         super(parameter);
         memberName    = getMemberName(parameter);
@@ -182,9 +177,22 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * Gets the parameter name as a {@code MemberName}. This method first checks if the primary name is an instance of
-     * {@code MemberName}. If not, this method searches for the first alias which is an instance of {@code MemberName}.
-     * If none is found, then this method tries to build a member name from the primary name and value class.
+     * Gets the parameter name as an instance of {@code MemberName}.
+     * This method performs the following checks:
+     *
+     * <ul>
+     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
+     *       returns that primary name.</li>
+     *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
+     *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
+     *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
+     *       {@linkplain ParameterDescriptor#getValueType() value type} (if available) or the
+     *       {@linkplain ParameterDescriptor#getValueClass() value class}.</li>
+     * </ul>
+     *
+     * This method can be used as a bridge between the parameter object
+     * defined by ISO 19111 (namely {@code CC_OperationParameter}) and the one
+     * defined by ISO 19115 (namely {@code SV_Parameter}).
      *
      * @param  parameter  the parameter from which to get the name (may be {@code null}).
      * @return the member name, or {@code null} if none.
@@ -201,16 +209,42 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 }
             }
             if (id != null) {
-                final Class<?> valueClass = parameter.getValueClass();
-                if (valueClass != null) {
-                    final String code = id.getCode();
-                    if (code != null) {
-                        return Names.createMemberName(id.getCodeSpace(), null, code, valueClass);
+                final String code = id.getCode();
+                if (code != null) {
+                    final String namespace = id.getCodeSpace();
+                    final TypeName type = parameter.getValueType();
+                    if (type != null) {
+                        return Names.createMemberName(namespace, null, code, type);
+                    } else {
+                        final Class<?> valueClass = parameter.getValueClass();
+                        if (valueClass != null) {
+                            return Names.createMemberName(namespace, null, code, valueClass);
+                        }
                     }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the name as an {@code Identifier}, which is the type requested by ISO 19111.
+     * Note that this is different than the type requested by ISO 19115, which is {@link MemberName}.
+     *
+     * This method is the converse of {@link #getMemberName(ParameterDescriptor)}.
+     *
+     * @return the parameter name as an identifier (the type specified by ISO 19111).
+     */
+    @Override
+    public synchronized Identifier getName() {
+        if (name == null && memberName != null) {
+            if (memberName instanceof Identifier) {
+                name = (Identifier) memberName;
+            } else {
+                name = new NameToIdentifier(memberName);
+            }
+        }
+        return name;
     }
 
     /**
@@ -240,67 +274,49 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      */
     @SuppressWarnings("unused")
     private void setLegacyName(final DefaultMemberName value) {
-        ensureUndefined();
-        memberName = value;
-    }
-
-    /**
-     * Ensures that the {@linkplain #memberName} is not already defined.
-     *
-     * @throws IllegalStateException if a name is already defined.
-     */
-    private void ensureUndefined() throws IllegalStateException {
-        if (memberName != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "name"));
+        if (memberName == null) {
+            memberName = value;
         }
     }
 
     /**
-     * Returns the name as an {@code Identifier}, which is the type requested by ISO 19111.
-     * Note that this is different than the type requested by ISO 19115, which is {@link MemberName}.
+     * For JAXB marshalling of ISO 19139:2007 document only.
+     * Note that there is not setter method, because we expect that
+     * the same information is provided in the {@link #memberName} attribute type.
+     */
+    @XmlElement(name = "valueType", namespace = LegacyNamespaces.SRV)
+    @XmlJavaTypeAdapter(GO_GenericName.class)    // Not in package-info because shall not be applied to getLegacyName().
+    private TypeName getLegacyValueType() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getValueType() : null;
+    }
+
+    /**
+     * Returns the name that describes the type of parameter values.
      *
-     * This method is the converse of {@link #getMemberName(ParameterDescriptor)}.
-     *
-     * @return the parameter name as an identifier (the type specified by ISO 19111).
+     * @return the type name of value component(s) in this parameter.
      */
     @Override
-    public synchronized Identifier getName() {
-        if (name == null && memberName != null) {
-            if (memberName instanceof Identifier) {
-                name = (Identifier) memberName;
-            } else {
-                name = new NameToIdentifier(memberName);
-            }
+    public TypeName getValueType() {
+        TypeName type = super.getValueType();
+        if (type == null && memberName != null) {
+            type = memberName.getAttributeType();
         }
-        return name;
+        return type;
     }
 
     /**
      * Infers the value class from the attribute type.
      * This method is the reason why we can not parameterize this {@code ServiceParameter} class
-     * (see <cite>Note about raw-type usage</cite> in class javadoc), since there is no way we
-     * can ensure that the returned class is really for type {@code <T>}.
+     * (see <cite>Note about raw-type usage</cite> in class javadoc), because there is no way we
+     * can ensure that the class inferred from {@link MemberName#getAttributeType()} is really
+     * for type {@code <T>}.
      *
      * @return the value class inferred from the attribute type, or {@code null} if unknown.
      */
     @Override
     public Class<?> getValueClass() {
-        return (memberName != null) ? Names.toClass(memberName.getAttributeType()) : null;
-    }
-
-    /**
-     * For JAXB marshalling of ISO 19139:2007 document only.
-     * Note that there is not setter method, since we expect the same information
-     * to be provided in the {@link #name} attribute type.
-     */
-    @Override
-    @XmlElement(name = "valueType", namespace = LegacyNamespaces.SRV)
-    @XmlJavaTypeAdapter(GO_GenericName.class)    // Not in package-info because shall not be applied to getLegacyName().
-    public final TypeName getValueType() {
-        if (memberName != null && FilterByVersion.LEGACY_METADATA.accept()) {
-            return memberName.getAttributeType();
-        }
-        return null;
+        final Class<?> type = super.getValueClass();
+        return (type != null) ? type : Names.toClass(getValueType());
     }
 
     /**
@@ -374,66 +390,5 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     @Override
     public int getMaximumOccurs() {
         return repeatability ? Integer.MAX_VALUE : 1;
-    }
-
-    /**
-     * Creates a new instance of {@code ParameterValue}.
-     * This method delegates the work to {@link org.apache.sis.parameter.DefaultParameterDescriptor}
-     * since this {@code ServiceParameter} class is not a full-featured parameter descriptor implementation.
-     *
-     * @return a new instance of {@code ParameterValue}.
-     */
-    @Override
-    public ParameterValue<?> createValue() {
-        ParameterDescriptor<?> desc;
-        synchronized (this) {
-            desc = descriptor;
-            if (desc == null) {
-                descriptor = desc = ReferencingServices.getInstance().toImplementation(this);
-            }
-        }
-        return desc.createValue();
-    }
-
-    /**
-     * Compares this object with the given one for equality.
-     *
-     * @param  object  the object to compare with this reference system.
-     * @param  mode    the strictness level of the comparison.
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true;
-        }
-        if (super.equals(object, mode) && object instanceof ParameterDescriptor<?>) {
-            final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
-            if (that.getUnit()         == null &&
-                that.getDefaultValue() == null &&
-                that.getValueClass()   == getValueClass())
-            {
-                if (mode.isIgnoringMetadata()) {
-                    return Objects.equals(toString(getName()), toString(that.getName()));
-                    // super.equals(…) already compared 'getName()' in others mode.
-                }
-                return deepEquals(that.getDescription(), getDescription(), mode) &&
-                                  that.getDirection()     == getDirection()     &&
-                                  that.getMinimumOccurs() == getMinimumOccurs() &&
-                                  that.getMaximumOccurs() == getMaximumOccurs() &&
-                                  that.getValidValues()   == null &&
-                                  that.getMinimumValue()  == null &&
-                                  that.getMaximumValue()  == null;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Null-safe string representation of the given identifier, for comparison purpose.
-     * We ignore codespace because they can not be represented in ISO 19139 XML documents.
-     */
-    private static String toString(final Identifier identifier) {
-        return (identifier != null) ? identifier.toString() : null;
     }
 }
