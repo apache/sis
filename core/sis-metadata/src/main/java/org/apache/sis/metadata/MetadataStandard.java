@@ -123,7 +123,7 @@ public class MetadataStandard implements Serializable {
      * <p>The current implementation does not yet contains the user-defined instances.
      * However it may be something that we will need to do in the future.</p>
      */
-    private static final MetadataStandard[] INSTANCES;
+    static final MetadataStandard[] INSTANCES;
 
     /**
      * An instance working on ISO 19115 standard as defined by GeoAPI interfaces
@@ -153,7 +153,6 @@ public class MetadataStandard implements Serializable {
     static {
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
-        // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
         ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null, (MetadataStandard[]) null);
         ISO_19157 = new StandardImplementation("ISO 19157", "org.opengis.metadata.quality.", "org.apache.sis.metadata.iso.quality.", null, ISO_19115);
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms, ISO_19157, ISO_19115);

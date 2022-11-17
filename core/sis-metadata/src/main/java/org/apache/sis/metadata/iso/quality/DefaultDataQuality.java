@@ -24,11 +24,13 @@ import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.StandaloneQualityReportInformation;
-import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+
+// Branch-dependent imports
+import org.opengis.metadata.maintenance.Scope;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
 
 /**

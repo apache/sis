@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.quality.Description;
-import org.opengis.metadata.quality.ValueStructure;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -37,6 +35,8 @@ import org.apache.sis.xml.Namespaces;
 
 // Branch-dependent imports
 import org.opengis.coverage.Coverage;
+import org.opengis.metadata.quality.Description;
+import org.opengis.metadata.quality.ValueStructure;
 
 
 /**

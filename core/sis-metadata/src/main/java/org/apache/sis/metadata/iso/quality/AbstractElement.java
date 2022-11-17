@@ -298,7 +298,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     private <V> void setMeasureReferenceProperty(final BiConsumer<DefaultMeasureReference,V> setter, final V newValue) {
         if (newValue != null) {
-            if (!(measureReference instanceof DefaultEvaluationMethod)) {
+            if (!(measureReference instanceof DefaultMeasureReference)) {
                 measureReference = new DefaultMeasureReference(measureReference);
             }
             setter.accept((DefaultMeasureReference) measureReference, newValue);

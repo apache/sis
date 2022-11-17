@@ -24,7 +24,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.metadata.Identifier;
 import org.opengis.util.TypeName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -38,6 +37,9 @@ import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.metadata.Identifier;
 
 
 /**
