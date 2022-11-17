@@ -24,32 +24,19 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 /**
  * Degree of adherence of a dataset to a specific set of user requirements.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
- *
- * <div class="preformat">{@code QE_Usability}
- * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
- *
- * <h2>Limitations</h2>
- * <ul>
- *   <li>Instances of this class are not synchronized for multi-threading.
- *       Synchronization, if needed, is caller's responsibility.</li>
- *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
- *       Serialization support is appropriate for short term storage or RMI between applications running the
- *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
- * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  *
- * @deprecated Not found in ISO 19115-3:2016 schemas.
+ * @deprecated Renamed {@link DefaultUsabilityElement} for following a renaming in ISO 19157:2013.
  */
 @Deprecated
 @XmlType(name = "QE_Usability_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "QE_Usability", namespace = LegacyNamespaces.GMI)
-public class DefaultUsability extends AbstractElement implements Usability {
+public class DefaultUsability extends DefaultUsabilityElement implements Usability {
     /**
      * Serial number for inter-operability with different versions.
      */

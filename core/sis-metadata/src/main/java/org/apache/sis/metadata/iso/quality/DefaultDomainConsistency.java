@@ -23,7 +23,8 @@ import org.opengis.metadata.quality.DomainConsistency;
 
 /**
  * Adherence of values to the value domains.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link DomainConsistency} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_DomainConsistency}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>

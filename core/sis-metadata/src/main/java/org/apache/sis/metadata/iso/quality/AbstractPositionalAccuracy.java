@@ -28,7 +28,7 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
 
 /**
  * Accuracy of the position of features.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_PositionalAccuracy}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -52,8 +52,8 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
 @XmlRootElement(name = "AbstractDQ_PositionalAccuracy")
 @XmlSeeAlso({
     DefaultAbsoluteExternalPositionalAccuracy.class,
-    DefaultGriddedDataPositionalAccuracy.class,
-    DefaultRelativeInternalPositionalAccuracy.class
+    DefaultRelativeInternalPositionalAccuracy.class,
+    DefaultGriddedDataPositionalAccuracy.class
 })
 public class AbstractPositionalAccuracy extends AbstractElement implements PositionalAccuracy {
     /**
@@ -117,11 +117,11 @@ public class AbstractPositionalAccuracy extends AbstractElement implements Posit
         if (object instanceof AbsoluteExternalPositionalAccuracy) {
             return DefaultAbsoluteExternalPositionalAccuracy.castOrCopy((AbsoluteExternalPositionalAccuracy) object);
         }
-        if (object instanceof GriddedDataPositionalAccuracy) {
-            return DefaultGriddedDataPositionalAccuracy.castOrCopy((GriddedDataPositionalAccuracy) object);
-        }
         if (object instanceof RelativeInternalPositionalAccuracy) {
             return DefaultRelativeInternalPositionalAccuracy.castOrCopy((RelativeInternalPositionalAccuracy) object);
+        }
+        if (object instanceof GriddedDataPositionalAccuracy) {
+            return DefaultGriddedDataPositionalAccuracy.castOrCopy((GriddedDataPositionalAccuracy) object);
         }
         // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof AbstractPositionalAccuracy) {

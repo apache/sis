@@ -17,40 +17,42 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Collection;
-import java.util.AbstractList;
-import java.io.Serializable;
+import java.util.Collections;
+import java.util.function.Function;
+import java.util.function.BiConsumer;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.Usability;
+import org.opengis.metadata.quality.UsabilityElement;
 import org.opengis.metadata.quality.Completeness;
-import org.opengis.metadata.quality.TemporalAccuracy;
+import org.opengis.metadata.quality.TemporalQuality;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.LogicalConsistency;
 import org.opengis.metadata.quality.EvaluationMethodType;
+import org.opengis.metadata.quality.EvaluationMethod;
+import org.opengis.metadata.quality.MeasureReference;
+import org.opengis.metadata.quality.Metaquality;
 import org.opengis.util.InternationalString;
-import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
 
 /**
- * Type of test applied to the data specified by a data quality scope.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * Aspect of quantitative quality information.
+ * See the {@link Element} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_Element}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -67,11 +69,15 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
+    "standaloneQualityReportDetails",
+    "measureReference",
+    "evaluationMethod",
     "namesOfMeasure",
     "measureIdentification",
     "measureDescription",
@@ -79,7 +85,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
     "evaluationMethodDescription",
     "evaluationProcedure",
     "dates",
-    "results"
+    "results",
+    "derivedElement"
 })
 @XmlRootElement(name = "AbstractDQ_Element")
 @XmlSeeAlso({
@@ -87,226 +94,46 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
     AbstractLogicalConsistency.class,
     AbstractPositionalAccuracy.class,
     AbstractThematicAccuracy.class,
-    AbstractTemporalAccuracy.class,
-    DefaultUsability.class
+    AbstractTemporalQuality.class,
+    DefaultUsabilityElement.class,
+    AbstractMetaquality.class,
+    DefaultMeasure.class            // Not a subclass, but "weakly" associated.
 })
 public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3963454452767190970L;
+    private static final long serialVersionUID = -406229448295586970L;
 
     /**
-     * Name of the test applied to the data.
+     * Clause in the standalone quality report where this data quality element is described.
      */
     @SuppressWarnings("serial")
-    private Collection<InternationalString> namesOfMeasure;
+    private InternationalString standaloneQualityReportDetails;
 
     /**
-     * Code identifying a registered standard procedure, or {@code null} if none.
+     * Reference to measure used.
      */
     @SuppressWarnings("serial")
-    private Identifier measureIdentification;
+    private MeasureReference measureReference;
 
     /**
-     * Description of the measure being determined.
+     * Evaluation information.
      */
     @SuppressWarnings("serial")
-    private InternationalString measureDescription;
+    private EvaluationMethod evaluationMethod;
 
     /**
-     * Type of method used to evaluate quality of the dataset, or {@code null} if unspecified.
-     */
-    @SuppressWarnings("serial")
-    private EvaluationMethodType evaluationMethodType;
-
-    /**
-     * Description of the evaluation method.
-     */
-    @SuppressWarnings("serial")
-    private InternationalString evaluationMethodDescription;
-
-    /**
-     * Reference to the procedure information, or {@code null} if none.
-     */
-    @SuppressWarnings("serial")
-    private Citation evaluationProcedure;
-
-    /**
-     * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure was applied.
-     *
-     * @todo Needs to be made unmodifiable after transition to {@link State#FINAL}.
-     */
-    private Dates dates;
-
-    /**
-     * The start and end times as a list of O, 1 or 2 elements.
-     */
-    private static final class Dates extends AbstractList<Date>
-            implements CheckedContainer<Date>, Cloneable, Serializable
-    {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = 1210175223467194009L;
-
-        /**
-         * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure
-         * was applied. Value is {@link Long#MIN_VALUE} if this information is not available.
-         */
-        private long date1, date2;
-
-        /**
-         * Creates a new list initialized with no dates.
-         */
-        Dates() {
-            clear();
-        }
-
-        /**
-         * Returns the type of elements in this list.
-         */
-        @Override
-        public Class<Date> getElementType() {
-            return Date.class;
-        }
-
-        /**
-         * Removes all dates in this list.
-         */
-        @Override
-        public void clear() {
-            date1 = Long.MIN_VALUE;
-            date2 = Long.MIN_VALUE;
-        }
-
-        /**
-         * Returns the number of elements in this list.
-         */
-        @Override
-        public int size() {
-            if (date2 != Long.MIN_VALUE) return 2;
-            if (date1 != Long.MIN_VALUE) return 1;
-            return 0;
-        }
-
-        /**
-         * Returns the value at the given index.
-         */
-        @Override
-        @SuppressWarnings("fallthrough")
-        public Date get(final int index) {
-            long date = date1;
-            switch (index) {
-                case 1:  date = date2;                                          // Fall through
-                case 0:  if (date != Long.MIN_VALUE) return new Date(date);     // else fallthrough.
-                default: throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
-            }
-        }
-
-        /**
-         * Sets the value at the given index.
-         * Null values are not allowed.
-         */
-        @Override
-        public Date set(final int index, final Date value) {
-            final long date = value.getTime();
-            final Date previous = get(index);
-            switch (index) {
-                case 0: date1 = date; break;
-                case 1: date2 = date; break;
-            }
-            modCount++;
-            return previous;
-        }
-
-        /**
-         * Removes the value at the given index.
-         */
-        @Override
-        @SuppressWarnings("fallthrough")
-        public Date remove(final int index) {
-            final Date previous = get(index);
-            switch (index) {
-                case 0: date1 = date2;                      // Fallthrough
-                case 1: date2 = Long.MIN_VALUE; break;
-            }
-            modCount++;
-            return previous;
-        }
-
-        /**
-         * Adds a date at the given position.
-         * Null values are not allowed.
-         */
-        @Override
-        public void add(final int index, final Date value) {
-            final long date = value.getTime();
-            if (date2 == Long.MIN_VALUE) {
-                switch (index) {
-                    case 0: {
-                        date2 = date1;
-                        date1 = date;
-                        modCount++;
-                        return;
-                    }
-                    case 1: {
-                        if (date1 == Long.MIN_VALUE) {
-                            break; // Exception will be thrown below.
-                        }
-                        date2 = date;
-                        modCount++;
-                        return;
-                    }
-                }
-            }
-            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
-        }
-
-        /**
-         * Adds all content from the given collection into this collection.
-         */
-        @Override
-        @SuppressWarnings("fallthrough")
-        public boolean addAll(final Collection<? extends Date> dates) {
-            final int c = modCount;
-            if (dates != null) {
-                final Iterator<? extends Date> it = dates.iterator();
-                switch (size()) { // Fallthrough everywhere.
-                    case 0:  if (!it.hasNext()) break;
-                             date1 = it.next().getTime();
-                             modCount++;
-                    case 1:  if (!it.hasNext()) break;
-                             date2 = it.next().getTime();
-                             modCount++;
-                    default: if (!it.hasNext()) break;
-                             throw new IllegalArgumentException(Errors.format(
-                                     Errors.Keys.TooManyCollectionElements_3, "dates", 2, dates.size()));
-                }
-            }
-            return modCount != c;
-        }
-
-        /**
-         * Returns a clone of this list.
-         */
-        @Override
-        public Object clone() {
-            try {
-                return super.clone();
-            } catch (CloneNotSupportedException e) {
-                throw new AssertionError(e);
-            }
-        }
-    }
-
-    /**
-     * Value (or set of values) obtained from applying a data quality measure or the out
-     * come of evaluating the obtained value (or set of values) against a specified
-     * acceptable conformance quality level.
+     * Value (or set of values) obtained from applying a data quality measure.
      */
     @SuppressWarnings("serial")
     private Collection<Result> results;
+
+    /**
+     * In case of aggregation or derivation, indicates the original element.
+     */
+    @SuppressWarnings("serial")
+    private Collection<Element> derivedElements;
 
     /**
      * Constructs an initially empty element.
@@ -336,14 +163,14 @@ public class AbstractElement extends ISOMetadata implements Element {
     public AbstractElement(final Element object) {
         super(object);
         if (object != null) {
-            namesOfMeasure              = copyCollection(object.getNamesOfMeasure(), InternationalString.class);
-            measureIdentification       = object.getMeasureIdentification();
-            measureDescription          = object.getMeasureDescription();
-            evaluationMethodType        = object.getEvaluationMethodType();
-            evaluationMethodDescription = object.getEvaluationMethodDescription();
-            evaluationProcedure         = object.getEvaluationProcedure();
-            results                     = copyCollection(object.getResults(), Result.class);
-            writeDates(object.getDates());
+            standaloneQualityReportDetails = object.getStandaloneQualityReportDetails();
+            if ((measureReference = object.getMeasureReference()) == null) {
+                DefaultMeasureReference candidate = new DefaultMeasureReference();
+                if (candidate.setLegacy(object)) measureReference = candidate;
+            }
+            evaluationMethod = object.getEvaluationMethod();
+            results          = copyCollection(object.getResults(), Result.class);
+            derivedElements  = copyCollection(object.getDerivedElements(), Element.class);
         }
     }
 
@@ -354,16 +181,16 @@ public class AbstractElement extends ISOMetadata implements Element {
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is an instance of {@link PositionalAccuracy},
-     *       {@link TemporalAccuracy}, {@link ThematicAccuracy}, {@link LogicalConsistency},
-     *       {@link Completeness} or {@link Usability}, then this method delegates to the
-     *       {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       {@link TemporalQuality}, {@link ThematicAccuracy}, {@link LogicalConsistency},
+     *       {@link Completeness}, {@link UsabilityElement} or {@link Metaquality},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code AbstractElement}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractElement} instance is created using the
-     *       {@linkplain #AbstractElement(Element) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       {@linkplain #AbstractElement(Element) copy constructor} and returned.
+     *       Note that this is a <cite>shallow</cite> copy operation, since the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -375,8 +202,8 @@ public class AbstractElement extends ISOMetadata implements Element {
         if (object instanceof PositionalAccuracy) {
             return AbstractPositionalAccuracy.castOrCopy((PositionalAccuracy) object);
         }
-        if (object instanceof TemporalAccuracy) {
-            return AbstractTemporalAccuracy.castOrCopy((TemporalAccuracy) object);
+        if (object instanceof TemporalQuality) {
+            return AbstractTemporalQuality.castOrCopy((TemporalQuality) object);
         }
         if (object instanceof ThematicAccuracy) {
             return AbstractThematicAccuracy.castOrCopy((ThematicAccuracy) object);
@@ -387,8 +214,11 @@ public class AbstractElement extends ISOMetadata implements Element {
         if (object instanceof Completeness) {
             return AbstractCompleteness.castOrCopy((Completeness) object);
         }
-        if (object instanceof Usability) {
-            return DefaultUsability.castOrCopy((Usability) object);
+        if (object instanceof UsabilityElement) {
+            return DefaultUsabilityElement.castOrCopy((UsabilityElement) object);
+        }
+        if (object instanceof Metaquality) {
+            return AbstractMetaquality.castOrCopy((Metaquality) object);
         }
         // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof AbstractElement) {
@@ -398,26 +228,118 @@ public class AbstractElement extends ISOMetadata implements Element {
     }
 
     /**
+     * Returns the clause in the standalone quality report where this data quality element is described.
+     * May apply to any related data quality element (original results in case of derivation or aggregation).
+     *
+     * @return clause where this data quality element is described, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "standaloneQualityReportDetails")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
+    public InternationalString getStandaloneQualityReportDetails() {
+        return standaloneQualityReportDetails;
+    }
+
+    /**
+     * Sets the clause in the standalone quality report where this data quality element is described.
+     *
+     * @param  newValue  the clause in the standalone quality report.
+     *
+     * @since 1.3
+     */
+    public void setStandaloneQualityReportDetails(final InternationalString newValue)  {
+        checkWritePermission(standaloneQualityReportDetails);
+        standaloneQualityReportDetails = newValue;
+    }
+
+    /**
+     * Returns an identifier of a measure fully described elsewhere.
+     *
+     * @return reference to the measure used, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "measure", required = false)
+    public MeasureReference getMeasureReference() {
+        return (measureReference != null) ? measureReference : Element.super.getMeasureReference();
+    }
+
+    /**
+     * Sets an identifier of a measure fully described elsewhere.
+     *
+     * @param  newValues  the new measure identifier.
+     *
+     * @since 1.3
+     */
+    public void setMeasureReference(final MeasureReference newValues) {
+        checkWritePermission(measureReference);
+        measureReference = newValues;
+    }
+
+    /**
+     * Returns the value of a {@link #measureReference} property.
+     * This is used only for deprecated setter methods from older ISO 19115 version.
+     *
+     * @see #getEvaluationMethodProperty(Function)
+     */
+    private <V> V getMeasureReferenceProperty(final Function<MeasureReference,V> getter) {
+        final MeasureReference m = measureReference;
+        return (m != null) && FilterByVersion.LEGACY_METADATA.accept() ? getter.apply(m) : null;
+    }
+
+    /**
+     * Sets the value of a {@link #measureReference} property.
+     * This is used only for deprecated setter methods from older ISO 19115 version.
+     *
+     * @see #setEvaluationMethodProperty(BiConsumer, Object)
+     */
+    private <V> void setMeasureReferenceProperty(final BiConsumer<DefaultMeasureReference,V> setter, final V newValue) {
+        if (newValue != null) {
+            if (!(measureReference instanceof DefaultEvaluationMethod)) {
+                measureReference = new DefaultMeasureReference(measureReference);
+            }
+            setter.accept((DefaultMeasureReference) measureReference, newValue);
+        }
+    }
+
+    /**
      * Returns the name of the test applied to the data.
      *
      * @return name of the test applied to the data.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Replaced by {@link DefaultMeasureReference#getNamesOfMeasure()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "nameOfMeasure", namespace = LegacyNamespaces.GMD)
     public Collection<InternationalString> getNamesOfMeasure() {
-        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
-        return namesOfMeasure = nonNullCollection(namesOfMeasure, InternationalString.class);
+        if (!FilterByVersion.LEGACY_METADATA.accept()) {
+            return null;
+        }
+        if (measureReference == null) {
+            measureReference = new DefaultMeasureReference();
+        }
+        if (measureReference instanceof DefaultMeasureReference) {
+            return ((DefaultMeasureReference) measureReference).getNamesOfMeasure();
+        }
+        return Collections.unmodifiableCollection(measureReference.getNamesOfMeasure());
     }
 
     /**
      * Sets the name of the test applied to the data.
      *
      * @param  newValues  the new name of measures.
+     *
+     * @deprecated Replaced by {@link DefaultMeasureReference#setNamesOfMeasure(Collection)}.
      */
+    @Deprecated
     public void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
-        namesOfMeasure = writeCollection(newValues, namesOfMeasure, InternationalString.class);
+        if (!isNullOrEmpty(newValues)) {
+            setMeasureReferenceProperty(DefaultMeasureReference::setNamesOfMeasure, newValues);
+        }
     }
 
     /**
@@ -425,22 +347,25 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return code identifying a registered standard procedure, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Replaced by {@link DefaultMeasureReference#getMeasureIdentification()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "measureIdentification", namespace = LegacyNamespaces.GMD)
     public Identifier getMeasureIdentification() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? measureIdentification : null;
+        return getMeasureReferenceProperty(MeasureReference::getMeasureIdentification);
     }
 
     /**
      * Sets the code identifying a registered standard procedure.
      *
      * @param  newValue  the new measure identification.
+     *
+     * @deprecated Replaced by {@link DefaultMeasureReference#setMeasureIdentification(Identifier)}.
      */
+    @Deprecated
     public void setMeasureIdentification(final Identifier newValue)  {
-        checkWritePermission(measureIdentification);
-        measureIdentification = newValue;
+        setMeasureReferenceProperty(DefaultMeasureReference::setMeasureIdentification, newValue);
     }
 
     /**
@@ -448,22 +373,76 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return description of the measure being determined, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Replaced by {@link DefaultMeasureReference#getMeasureDescription()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "measureDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getMeasureDescription() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? measureDescription : null;
+        return getMeasureReferenceProperty(MeasureReference::getMeasureDescription);
     }
 
     /**
      * Sets the description of the measure being determined.
      *
      * @param  newValue  the new measure description.
+     *
+     * @deprecated Replaced by {@link DefaultMeasureReference#setMeasureDescription(InternationalString)}.
      */
+    @Deprecated
     public void setMeasureDescription(final InternationalString newValue)  {
-        checkWritePermission(measureDescription);
-        measureDescription = newValue;
+        setMeasureReferenceProperty(DefaultMeasureReference::setMeasureDescription, newValue);
+    }
+
+    /**
+     * Returns the evaluation information.
+     *
+     * @return information about the evaluation method, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "evaluationMethod", required = false)
+    public EvaluationMethod getEvaluationMethod() {
+        return evaluationMethod;
+    }
+
+    /**
+     * Sets the evaluation information.
+     *
+     * @param  newValue  the new evaluation information.
+     *
+     * @since 1.3
+     */
+    public void setEvaluationMethod(final EvaluationMethod newValue) {
+        checkWritePermission(evaluationMethod);
+        evaluationMethod = newValue;
+    }
+
+    /**
+     * Returns the value of a {@link #evaluationMethod} property.
+     * This is used only for deprecated setter methods from older ISO 19115 version.
+     *
+     * @see #getMeasureReferenceProperty(Function)
+     */
+    private <V> V getEvaluationMethodProperty(final Function<EvaluationMethod,V> getter) {
+        final EvaluationMethod m = evaluationMethod;
+        return (m != null) && FilterByVersion.LEGACY_METADATA.accept() ? getter.apply(m) : null;
+    }
+
+    /**
+     * Sets the value of a {@link #evaluationMethod} property.
+     * This is used only for deprecated setter methods from older ISO 19115 version.
+     *
+     * @see #setMeasureReferenceProperty(BiConsumer, Object)
+     */
+    private <V> void setEvaluationMethodProperty(final BiConsumer<DefaultEvaluationMethod,V> setter, final V newValue) {
+        if (newValue != null) {
+            if (!(evaluationMethod instanceof DefaultEvaluationMethod)) {
+                evaluationMethod = new DefaultEvaluationMethod(evaluationMethod);
+            }
+            setter.accept((DefaultEvaluationMethod) evaluationMethod, newValue);
+        }
     }
 
     /**
@@ -471,22 +450,25 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return type of method used to evaluate quality, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationMethodType()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "evaluationMethodType", namespace = LegacyNamespaces.GMD)
     public EvaluationMethodType getEvaluationMethodType() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? evaluationMethodType : null;
+        return getEvaluationMethodProperty(EvaluationMethod::getEvaluationMethodType);
     }
 
     /**
      * Sets the type of method used to evaluate quality of the dataset.
      *
      * @param  newValue  the new evaluation method type.
+     *
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationMethodType(EvaluationMethodType)}.
      */
+    @Deprecated
     public void setEvaluationMethodType(final EvaluationMethodType newValue)  {
-        checkWritePermission(evaluationMethodType);
-        evaluationMethodType = newValue;
+        setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationMethodType, newValue);
     }
 
     /**
@@ -494,22 +476,25 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return description of the evaluation method, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationMethodDescription()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "evaluationMethodDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getEvaluationMethodDescription() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? evaluationMethodDescription : null;
+        return getEvaluationMethodProperty(EvaluationMethod::getEvaluationMethodDescription);
     }
 
     /**
      * Sets the description of the evaluation method.
      *
      * @param  newValue  the new evaluation method description.
+     *
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationMethodDescription(InternationalString)}.
      */
+    @Deprecated
     public void setEvaluationMethodDescription(final InternationalString newValue)  {
-        checkWritePermission(evaluationMethodDescription);
-        evaluationMethodDescription = newValue;
+        setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationMethodDescription, newValue);
     }
 
     /**
@@ -517,22 +502,25 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return reference to the procedure information, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationProcedure()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "evaluationProcedure", namespace = LegacyNamespaces.GMD)
     public Citation getEvaluationProcedure() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? evaluationProcedure : null;
+        return getEvaluationMethodProperty(EvaluationMethod::getEvaluationProcedure);
     }
 
     /**
      * Sets the reference to the procedure information.
      *
      * @param  newValue  the new evaluation procedure.
+     *
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationProcedure(Citation)}.
      */
+    @Deprecated
     public void setEvaluationProcedure(final Citation newValue) {
-        checkWritePermission(evaluationProcedure);
-        evaluationProcedure = newValue;
+        setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationProcedure, newValue);
     }
 
     /**
@@ -541,18 +529,24 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns an empty collection if this information is not available.
      *
      * @return date or range of dates on which a data quality measure was applied.
+     *
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#getDates()}.
      */
     @Override
+    @Deprecated
+    @Dependencies("getEvaluationMethod")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Date> getDates() {
-        if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
-            return isNullOrEmpty(dates) ? null : dates;
+        if (!FilterByVersion.LEGACY_METADATA.accept()) {
+            return null;
         }
-        if (dates == null) {
-            dates = new Dates();
+        if (evaluationMethod == null) {
+            evaluationMethod = new DefaultEvaluationMethod();
         }
-        return dates;
+        if (evaluationMethod instanceof DefaultEvaluationMethod) {
+            return ((DefaultEvaluationMethod) evaluationMethod).getDates();
+        }
+        return Collections.unmodifiableCollection(evaluationMethod.getDates());
     }
 
     /**
@@ -560,33 +554,20 @@ public class AbstractElement extends ISOMetadata implements Element {
      * The collection size is 1 for a single date, or 2 for a range.
      *
      * @param  newValues  the new dates, or {@code null}.
+     *
+     * @deprecated Replaced by {@link DefaultEvaluationMethod#setDates(Collection)}.
      */
+    @Deprecated
     public void setDates(final Collection<? extends Date> newValues) {
-        if (newValues != dates) {               // Mandatory check for avoiding the call to 'dates.clear()'.
-            checkWritePermission(valueIfDefined(dates));
-            writeDates(newValues);
+        if (!isNullOrEmpty(newValues)) {
+            setEvaluationMethodProperty(DefaultEvaluationMethod::setDates, newValues);
         }
     }
 
     /**
-     * Implementation of {@link #setDates(Collection)}.
-     */
-    private void writeDates(final Collection<? extends Date> newValues) {
-        if (isNullOrEmpty(newValues)) {
-            dates = null;
-        } else {
-            if (dates == null) {
-                dates = new Dates();
-            }
-            dates.clear();
-            dates.addAll(newValues);
-        }
-    }
-
-    /**
-     * Returns the value (or set of values) obtained from applying a data quality measure or
-     * the out come of evaluating the obtained value (or set of values) against a specified
-     * acceptable conformance quality level.
+     * Returns the value(s) obtained from applying a data quality measure.
+     * May be an outcome of evaluating the obtained value (or set of values)
+     * against a specified acceptable conformance quality level.
      *
      * @return set of values obtained from applying a data quality measure.
      */
@@ -597,13 +578,59 @@ public class AbstractElement extends ISOMetadata implements Element {
     }
 
     /**
-     * Sets the value (or set of values) obtained from applying a data quality measure or
-     * the out come of evaluating the obtained value (or set of values) against a specified
-     * acceptable conformance quality level.
+     * Sets the value(s) obtained from applying a data quality measure.
      *
-     * @param  newValues  the new results.
+     * @param  newValues  the new set of value.
      */
     public void setResults(final Collection<? extends Result> newValues) {
         results = writeCollection(newValues, results, Result.class);
+    }
+
+    /**
+     * Returns the original elements in case of aggregation or derivation.
+     *
+     * @return original element(s) when there is an aggregation or derivation.
+     *
+     * @since 1.3
+     */
+    @Override
+    // @XmlElement at the end of this class.
+    public Collection<Element> getDerivedElements() {
+        return derivedElements = nonNullCollection(derivedElements, Element.class);
+    }
+
+    /**
+     * Sets the original elements in case of aggregation or derivation.
+     *
+     * @param  newValues  the new elements.
+     *
+     * @since 1.3
+     */
+    public void setDerivedElements(final Collection<? extends Element> newValues) {
+        derivedElements = writeCollection(newValues, derivedElements, Element.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19157:2013 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "derivedElement")
+    private Collection<Element> getDerivedElement() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getDerivedElements() : null;
     }
 }

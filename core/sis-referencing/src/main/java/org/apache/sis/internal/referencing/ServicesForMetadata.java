@@ -75,7 +75,7 @@ import static java.util.logging.Logger.getLogger;
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -461,11 +461,12 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns a fully implemented parameter descriptor.
      *
+     * @param  <T>        the type of values.
      * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
      * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
      */
     @Override
-    public ParameterDescriptor<?> toImplementation(final ParameterDescriptor<?> parameter) {
+    public <T> ParameterDescriptor<T> toImplementation(final ParameterDescriptor<T> parameter) {
         return DefaultParameterDescriptor.castOrCopy(parameter);
     }
 

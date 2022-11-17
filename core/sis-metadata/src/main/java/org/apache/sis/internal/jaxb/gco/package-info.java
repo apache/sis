@@ -78,7 +78,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.3
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *

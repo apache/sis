@@ -97,10 +97,10 @@ public final strictfp class DefaultServiceIdentificationTest extends TestUsingFi
         assertEquals("connectPoints", NilReason.MISSING, NilReason.forObject(getSingleton(op.getConnectPoints())));
 
         final ParameterDescriptor<?> param = getSingleton(op.getParameters());
-        assertEquals("name",          "Version",             String.valueOf(param.getName()));
-        assertEquals("minimumOccurs", 0,                     param.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1,                     param.getMaximumOccurs());
-        assertEquals("direction",     ParameterDirection.IN, param.getDirection());
+        assertEquals("name", "My service parameter", String.valueOf(param.getName()));
+        assertEquals("minimumOccurs", 0, param.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1, param.getMaximumOccurs());
+        assertEquals("direction", ParameterDirection.IN, param.getDirection());
     }
 
     /**

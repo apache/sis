@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.lang.reflect.Type;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
@@ -32,6 +33,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
+import org.apache.sis.util.UnknownNameException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -70,7 +72,7 @@ import org.apache.sis.internal.util.Strings;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  *
  * @see Names
  * @see DefaultNameSpace
@@ -198,32 +200,56 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     }
 
     /**
-     * Creates a type name from the given character sequence.
+     * Creates a type name from the given character sequence and automatically inferred Java type.
      * The default implementation returns a new or an existing {@link DefaultTypeName} instance.
+     * See {@link DefaultTypeName} javadoc for the list of recognized type names.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the type name to be created,
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the type name create,
      *                or {@code null} for a global namespace.
      * @param  name   the type name as a string or an international string.
-     * @return the type name for the given character sequence.
+     * @return the type name for the given scope and character sequence.
+     * @throws UnknownNameException if a mapping from the name to a Java class was expected to exist
+     *         (because the specified scope is "OGC" or "class") but the associated Java class can not be found.
      *
      * @see #toTypeName(Class)
+     * @see DefaultTypeName#DefaultTypeName(NameSpace, CharSequence)
      * @see Names#createTypeName(CharSequence, String, CharSequence)
      */
     @Override
-    public TypeName createTypeName(final NameSpace scope, final CharSequence name) {
+    public TypeName createTypeName(final NameSpace scope, final CharSequence name) throws UnknownNameException {
         return pool.unique(new DefaultTypeName(scope, name));
+    }
+
+    /**
+     * Creates a type name from the given character sequence and explicit Java type.
+     * The default implementation returns a new or an existing {@link DefaultTypeName} instance.
+     *
+     * @param  scope     the {@linkplain AbstractName#scope() scope} of the type name to create,
+     *                   or {@code null} for a global namespace.
+     * @param  name      the type name as a string or an international string.
+     * @param  javaType  the value type to be returned by {@link #toJavaType()}, or {@code null} if none.
+     * @return the type name for the given scope, character sequence and Java type.
+     *
+     * @see #toTypeName(Class)
+     * @see DefaultTypeName#DefaultTypeName(NameSpace, CharSequence, Type)
+     *
+     * @since 1.3
+     */
+    public TypeName createTypeName(final NameSpace scope, final CharSequence name, final Type javaType) {
+        return pool.unique(new DefaultTypeName(scope, name, javaType));
     }
 
     /**
      * Creates a member name from the given character sequence and attribute type.
      * The default implementation returns a new or an existing {@link DefaultMemberName} instance.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the member name to be created,
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the member name to create,
      *                or {@code null} for a global namespace.
      * @param  name   the member name as a string or an international string.
-     * @param  attributeType  the type of the data associated with the record member.
+     * @param  attributeType  the type of the data associated with the member.
      * @return the member name for the given character sequence.
      *
+     * @see Names#createMemberName(CharSequence, String, CharSequence, TypeName)
      * @see Names#createMemberName(CharSequence, String, CharSequence, Class)
      */
     @Override
@@ -235,7 +261,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a local name from the given character sequence.
      * The default implementation returns a new or an existing {@link DefaultLocalName} instance.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the local name to be created,
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the local name to create,
      *                or {@code null} for a global namespace.
      * @param  name   the local name as a string or an international string.
      * @return the local name for the given character sequence.
@@ -261,7 +287,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * array is 1, or an instance of {@link DefaultScopedName} if the length of the array is 2
      * or more.
      *
-     * @param  scope        the {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     * @param  scope        the {@linkplain AbstractName#scope() scope} of the generic name to create,
      *                      or {@code null} for a global namespace.
      * @param  parsedNames  the local names as an array of {@link String} or {@link InternationalString} instances.
      *                      This array shall contain at least one element.
@@ -283,7 +309,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * This method splits the given name around a separator inferred from the given scope, or the
      * {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator if the given scope is null.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the generic name to create,
      *                or {@code null} for a global namespace.
      * @param  name   the qualified name, as a sequence of names separated by a scope-dependent separator.
      * @return a name parsed from the given string.
@@ -409,16 +435,14 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
      * Suggests a type name for the given class. Apache SIS provides a mapping between {@code Class}
      * and {@code TypeName} objects as documented in the {@link DefaultTypeName} javadoc.
-     *
-     * <p>In order to protect against potential changes in the {@code Class} ↔ {@code TypeName} mapping, users are
-     * encouraged to retrieve the {@code valueClass} by invoking the {@link Names#toClass(TypeName)} method instead
-     * than parsing the name.</p>
+     * The given {@code valueClass} can be fetched back by {@link DefaultTypeName#toJavaType()}.
      *
      * @param  valueClass  the Java class for which to get a type name, or {@code null}.
      * @return a suggested type name, or {@code null} if the given class was null.
      *
-     * @see DefaultTypeName#toClass()
+     * @see DefaultTypeName#toJavaType()
      * @see Names#toClass(TypeName)
+     * @see Names#createTypeName(Class)
      *
      * @since 0.5
      */
@@ -430,26 +454,26 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
          * Note: we do not cache the TypeName for the valueClass argument because:
          *
          *  - It is not needed (at least in the default implementation) for getting unique instance.
-         *  - It is not the best place for performance improvement, since TypeName are usually only
-         *    a step in the creation of bigger object (typically AttributeType). Users are better to
-         *    cache the bigger object instead.
+         *  - It is not the best place for performance improvement, because `TypeName` is usually
+         *    only a step in the creation of bigger object (typically `AttributeType`).
+         *    Callers should cache the bigger object instead.
          */
-        TypeNames t = typeNames;
-        if (t == null) {
+        TypeNames mapper = typeNames;
+        if (mapper == null) {
             /*
-             * Create TypeNames outide the synchronized block because the TypeNames constructor will call back
-             * methods from this class. Since those methods are overrideable, this could invoke user's code.
-             * Note also that methods in this class use the `pool`, which is itself synchronized, so we are
-             * better to avoid double synchronization for reducing the risk of dead-lock.
+             * Create TypeNames outside the synchronized block because the TypeNames constructor will call back
+             * methods from this class. Since those methods are overrideable, they could invoke user's code.
+             * Note also that methods in this class use the `pool`, which is itself synchronized,
+             * so we are better to avoid double synchronization for reducing the risk of dead-lock.
              */
             final TypeNames c = new TypeNames(this);
             synchronized (this) {                       // Double-check strategy is ok if `typeNames` is volatile.
-                t = typeNames;
-                if (t == null) {
-                    typeNames = t = c;
+                mapper = typeNames;
+                if (mapper == null) {
+                    typeNames = mapper = c;
                 }
             }
         }
-        return t.toTypeName(this, valueClass);
+        return mapper.toTypeName(this, valueClass);
     }
 }

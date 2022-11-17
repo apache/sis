@@ -31,7 +31,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 /**
  * Information about the value (or set of values) obtained from applying a data quality measure.
- * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link QuantitativeResult} GeoAPI interface for more details.
+ * The following properties are mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_QuantitativeResult}
  * {@code   ├─valueUnit……………………} Value unit for reporting a data quality result.
@@ -49,7 +50,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -86,7 +88,10 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
 
     /**
      * Statistical method used to determine the value, or {@code null} if none.
+     *
+     * @deprecated Removed from ISO 19157:2013.
      */
+    @Deprecated
     @SuppressWarnings("serial")
     private InternationalString errorStatistic;
 
@@ -161,7 +166,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Return the value type for reporting a data quality result.
+     * Returns the value type for reporting a data quality result.
      *
      * <h4>Default value</h4>
      * If no type has been set but all {@linkplain #getValues() values} are of the same type,
@@ -227,9 +232,10 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @return statistical method used to determine the value, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Removed from ISO_19157:2013.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "errorStatistic", namespace = LegacyNamespaces.GMD)
     public InternationalString getErrorStatistic()  {
         return FilterByVersion.LEGACY_METADATA.accept() ? errorStatistic : null;
@@ -239,9 +245,26 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * Sets the statistical method used to determine the value, or {@code null} if none.
      *
      * @param  newValue  the new error statistic.
+     *
+     * @deprecated Removed from ISO_19157:2013.
      */
+    @Deprecated
     public void setErrorStatistic(final InternationalString newValue) {
         checkWritePermission(errorStatistic);
         errorStatistic = newValue;
+    }
+
+    /**
+     * Returns {@code true} if this metadata contains only {@code null}, nil or empty properties.
+     * The deprecated {@code errorStatistic} is also verified because there is no non-deprecated
+     * replacement receiving a value that {@code super.isEmpty()} would recognize.
+     *
+     * @return {@code true} if this metadata is empty.
+     *
+     * @hidden
+     */
+    @Override
+    public boolean isEmpty() {
+        return super.isEmpty() && errorStatistic == null;
     }
 }

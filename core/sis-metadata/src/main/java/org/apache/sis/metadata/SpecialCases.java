@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -29,7 +30,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * which are returned as {@link Longitude} or {@link Latitude} instances instead of {@link Double}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -65,6 +66,18 @@ final class SpecialCases extends PropertyAccessor {
      */
     static boolean isSpecialCase(final Class<?> type) {
         return type == GeographicBoundingBox.class;
+    }
+
+    /**
+     * Returns {@code true} if the given method should be excluded in current Apache SIS version.
+     * A future SIS version may handle that property as a special case instead.
+     *
+     * @param  type    the class or interface containing the method.
+     * @param  method  the method to test for exclusion.
+     * @return {@code true} if the given method should be excluded.
+     */
+    static boolean exclude(final Class<?> type, final String method) {
+        return method.equals("getMeasure") && Element.class.isAssignableFrom(type);
     }
 
     /**
@@ -166,8 +179,8 @@ final class SpecialCases extends PropertyAccessor {
 
     /**
      * Returns the identifier to use in replacement of the identifier given in {@link org.opengis.annotation.UML} annotations.
-     * We usually want to use those identifiers as-is because they were specified by ISO standards, but we may an exception if
-     * the identifier is actually a construction of two or more identifiers like {@code "defaultLocale+otherLocale"}.
+     * We usually want to use those identifiers as-is because they were specified by ISO standards, but we may do an exception
+     * if the identifier is actually a construction of two or more identifiers like {@code "defaultLocale+otherLocale"}.
      *
      * @param  name  the UML identifier(s) from ISO specification.
      * @return the potentially simplified identifier to use for displaying purpose.

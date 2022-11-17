@@ -38,16 +38,16 @@
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink = "http://www.w3.org/1999/xlink"
     xsi:schemaLocation =
-        "http://standards.iso.org/iso/19115/-3/mdb/1.0 https://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd
-         http://standards.iso.org/iso/19115/-3/mrs/1.0 https://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd
-         http://standards.iso.org/iso/19115/-3/msr/1.0 https://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd
-         http://standards.iso.org/iso/19115/-3/mrc/1.0 https://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd
-         http://standards.iso.org/iso/19115/-3/mrd/1.0 https://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd
-         http://standards.iso.org/iso/19115/-3/mco/1.0 https://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd
-         http://standards.iso.org/iso/19115/-3/mmi/1.0 https://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd
-         http://standards.iso.org/iso/19115/-3/mex/1.0 https://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd
-         http://standards.iso.org/iso/19115/-3/gcx/1.0 https://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd
-         http://standards.iso.org/iso/19115/-3/srv/2.0 https://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd">
+        "http://standards.iso.org/iso/19115/-3/mdb/1.0 https://schemas.isotc211.org/19115/-3/mdb/1.0/mdb.xsd
+         http://standards.iso.org/iso/19115/-3/mrs/1.0 https://schemas.isotc211.org/19115/-3/mrs/1.0/mrs.xsd
+         http://standards.iso.org/iso/19115/-3/msr/1.0 https://schemas.isotc211.org/19115/-3/msr/1.0/msr.xsd
+         http://standards.iso.org/iso/19115/-3/mrc/1.0 https://schemas.isotc211.org/19115/-3/mrc/1.0/mrc.xsd
+         http://standards.iso.org/iso/19115/-3/mrd/1.0 https://schemas.isotc211.org/19115/-3/mrd/1.0/mrd.xsd
+         http://standards.iso.org/iso/19115/-3/mco/1.0 https://schemas.isotc211.org/19115/-3/mco/1.0/mco.xsd
+         http://standards.iso.org/iso/19115/-3/mmi/1.0 https://schemas.isotc211.org/19115/-3/mmi/1.0/mmi.xsd
+         http://standards.iso.org/iso/19115/-3/mex/1.0 https://schemas.isotc211.org/19115/-3/mex/1.0/mex.xsd
+         http://standards.iso.org/iso/19115/-3/gcx/1.0 https://schemas.isotc211.org/19115/-3/gcx/1.0/gcx.xsd
+         http://standards.iso.org/iso/19115/-3/srv/2.0 https://schemas.isotc211.org/19115/-3/srv/2.0/srv.xsd">
 
   <!--
     WARNING: this file is not yet compliant with ISO schema.

@@ -24,7 +24,6 @@ import org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest;
 import org.apache.sis.util.Version;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -37,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -55,11 +54,9 @@ public final strictfp class AbstractPositionalAccuracyTest extends TestUsingFile
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      * @see FreeTextMarshallingTest
      */
     @Test
-    @Ignore("Depends on SIS-394")
     public void testXML() throws JAXBException {
         roundtrip(XML2016+FILENAME, VERSION_2014);
     }
@@ -78,16 +75,16 @@ public final strictfp class AbstractPositionalAccuracyTest extends TestUsingFile
      * Unmarshals the given file and verify the content.
      * Then marshals the object and verify that we get equivalent XML.
      */
+    @SuppressWarnings("deprecation")
     private void roundtrip(final String filename, final Version version) throws JAXBException {
         final AbstractElement metadata = unmarshalFile(AbstractElement.class, filename);
         final InternationalString nameOfMeasure = getSingleton(metadata.getNamesOfMeasure());
         /*
          * Programmatic verification of the text group.
          */
-        assertEquals("Quantitative quality measure focusing on the effective class percent "
-                + "regarded to the total surface size", nameOfMeasure.toString(Locale.ENGLISH));
-        assertEquals("Mesure qualité quantitative de type pourcentage de représentation de la "
-                + "classe par rapport à la surface totale", nameOfMeasure.toString(Locale.FRENCH));
+        assertEquals("Name of a measure used for testing accuracy", nameOfMeasure.toString(Locale.ENGLISH));
+        assertEquals("Nom d'une mesure utilisée pour tester la précision", nameOfMeasure.toString(Locale.FRENCH));
+        assertEquals("An identifier", metadata.getMeasureIdentification().getCode());
         /*
          * Opportunist test. While it was not the purpose of this test, the above metadata
          * needs to contain a "result" element in order to pass XML validation test.

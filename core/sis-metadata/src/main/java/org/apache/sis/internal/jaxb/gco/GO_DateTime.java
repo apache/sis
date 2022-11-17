@@ -25,6 +25,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConstants;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.XmlUtilities;
 
 
@@ -48,7 +49,7 @@ import org.apache.sis.internal.xml.XmlUtilities;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see org.apache.sis.internal.jaxb.gml.DateAdapter
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
@@ -57,7 +58,7 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * @module
  */
 @XmlType(name = "Date_PropertyType")
-public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
+public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     /**
      * The date and time value using the {@code code "DateTime"} name.
      * Only one of {@code date} and {@link #dateTime} shall be non-null.
@@ -122,7 +123,7 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      * @return a {@linkplain Date date} which represents the metadata value.
      */
     @Override
-    public Date unmarshal(final GO_DateTime value) {
+    public final Date unmarshal(final GO_DateTime value) {
         return (value != null) ? value.getDate() : null;
     }
 
@@ -137,5 +138,24 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     @Override
     public GO_DateTime marshal(final Date value) {
         return (value != null) ? new GO_DateTime(value) : null;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends GO_DateTime {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_DateTime marshal(final Date value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+        }
     }
 }

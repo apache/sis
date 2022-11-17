@@ -23,7 +23,8 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
 
 /**
  * Correctness of the temporal references of an item (reporting of error in time measurement).
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link AccuracyOfATimeMeasurement} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_AccuracyOfATimeMeasurement}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -39,15 +40,14 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @XmlType(name = "DQ_AccuracyOfATimeMeasurement_Type")
 @XmlRootElement(name = "DQ_AccuracyOfATimeMeasurement")
-public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalAccuracy
-        implements AccuracyOfATimeMeasurement
-{
+public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalQuality implements AccuracyOfATimeMeasurement {
     /**
      * Serial number for inter-operability with different versions.
      */

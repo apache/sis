@@ -42,10 +42,11 @@ import org.opengis.geoapi.SchemaException;
 import org.opengis.geoapi.SchemaInformation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
+import static org.opengis.geoapi.SchemaInformation.ROOT_NAMESPACE;
+import static org.opengis.geoapi.SchemaInformation.SCHEMA_ROOT_URL;
 import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
 
 
@@ -54,7 +55,7 @@ import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
  * {@link SchemaCompliance#verify(java.nio.file.Path)} for each Java package to be verified.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -173,9 +174,8 @@ final strictfp class PackageVerifier {
                 String location = schema.location();
                 if (!XmlSchema.NO_LOCATION.equals(location)) {
                     String expected = location;
-                    if (expected.startsWith(Constants.HTTPS)) {
-                        // Replace "https" (used for schema location) by "http" (used for namespace).
-                        expected = Constants.HTTP + expected.substring(Constants.HTTPS.length());
+                    if (expected.startsWith(SCHEMA_ROOT_URL)) {
+                        expected = ROOT_NAMESPACE + expected.substring(SCHEMA_ROOT_URL.length());
                     }
                     if (!expected.startsWith(schema.namespace())) {
                         throw new SchemaException("XML schema location inconsistent with namespace in package " + name);

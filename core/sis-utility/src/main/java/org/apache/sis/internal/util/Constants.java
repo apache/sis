@@ -53,14 +53,9 @@ public final class Constants extends Static {
     public static final byte DEFAULT_INDENTATION = 2;
 
     /**
-     * The {@value} protocol.
+     * The {@value} protocol. Used in XML namespaces.
      */
     public static final String HTTP = "http:";
-
-    /**
-     * The {@value} protocol.
-     */
-    public static final String HTTPS = "https:";
 
     /**
      * The {@value} code space.

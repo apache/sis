@@ -23,7 +23,8 @@ import org.opengis.metadata.quality.TemporalConsistency;
 
 /**
  * Correctness of ordered events or sequences, if reported.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link TemporalConsistency} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_TemporalConsistency}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -39,13 +40,14 @@ import org.opengis.metadata.quality.TemporalConsistency;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @XmlType(name = "DQ_TemporalConsistency_Type")
 @XmlRootElement(name = "DQ_TemporalConsistency")
-public class DefaultTemporalConsistency extends AbstractTemporalAccuracy implements TemporalConsistency {
+public class DefaultTemporalConsistency extends AbstractTemporalQuality implements TemporalConsistency {
     /**
      * Serial number for inter-operability with different versions.
      */

@@ -49,7 +49,7 @@ import org.junit.Test;
  * package-private classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -209,6 +209,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
          * Try to instantiate the implementation. Every implementation should
          * have a no-args constructor, and their instantiation should never fail.
          */
+        testingMethod = null;
         testingClass = accessor.implementation.getCanonicalName();
         final Object instance;
         try {

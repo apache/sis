@@ -83,8 +83,14 @@ import org.apache.sis.internal.jaxb.Context;
 @XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
 public final class CodeListUID {
     /**
-     * The root directory of ISO 19115 metadata schemas.
-     * This is the schema used by default in Apache SIS.
+     * The namespace root of ISO 19115 objects.
+     * This is the namespace used by default in Apache SIS.
+     *
+     * <h4>Historical note</h4>
+     * The XSD files can be downloaded from that URL as well, but we sometime experiment unexpected end of file.
+     * The same files can be downloaded from <a href="https://schemas.isotc211.org/">ISO/TC 211 repository</a>,
+     * which seems more stable. The TC 211 repository is used for downloads, while the standard ISO URL is sill
+     * used for namespaces.
      */
     public static final String METADATA_ROOT = "http://standards.iso.org/iso/19115/";
 

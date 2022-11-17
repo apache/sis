@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test.xml;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
@@ -36,7 +37,7 @@ import org.apache.sis.util.StringBuilders;
 
 /**
  * Compares JAXB annotations against the ISO 19115 schemas. This test requires a connection to
- * <a href="https://standards.iso.org/iso/19115/-3/">https://standards.iso.org/iso/19115/-3/</a>.
+ * <a href="https://schemas.isotc211.org/19115/">https://schemas.isotc211.org/19115/</a>.
  * All classes in a given directory are scanned.
  *
  * <h2>Limitations</h2>
@@ -52,7 +53,7 @@ import org.apache.sis.util.StringBuilders;
  * implementation easier, by reducing the amount of {@link Map}s that we need to manage.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   1.0
  * @module
  */
@@ -132,7 +133,7 @@ public final strictfp class SchemaCompliance extends SchemaInformation {
                         path = classRootDirectory.relativize(path);
                         buffer.setLength(0);
                         buffer.append(path.toString()).setLength(buffer.length() - 6);      // Remove ".class" suffix.
-                        StringBuilders.replace(buffer, '/', '.');
+                        StringBuilders.replace(buffer, File.separatorChar, '.');
                         final Class<?> c = Class.forName(buffer.toString());
                         if (verifier == null) {
                             verifier = new PackageVerifier(this, c.getPackage());

@@ -23,24 +23,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+
+// Branch-dependent imports
+import org.opengis.metadata.quality.Scope;
 
 
 /**
  * Quality information for the data specified by a data quality scope.
- * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ * The following properties are mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_DataQuality}
- * {@code   └─scope………………} The specific data to which the data quality information applies.
- * {@code       └─level……} Hierarchical level of the data specified by the scope.</div>
- *
- * In addition, ISO requires that at least one of {@linkplain #getLineage() lineage}
- * and {@linkplain #getReports() reports} is provided. Those properties are declared
- * {@linkplain org.opengis.annotation.Obligation#CONDITIONAL conditional}.
+ * {@code   ├─scope………………} The specific data to which the data quality information applies.
+ * {@code   │   └─level……} Hierarchical level of the data specified by the scope.
+ * {@code   └─report……………} Quantitative quality information for the data specified by the scope.</div>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -53,13 +52,15 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {
     "scope",
     "reports",
+    "standaloneQualityReport",
     "lineage"
 })
 @XmlRootElement(name = "DQ_DataQuality")
@@ -76,20 +77,26 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     private Scope scope;
 
     /**
-     * Quantitative quality information for the data specified by the scope.
-     * Should be provided only if {@linkplain Scope#getLevel scope level} is
-     * {@linkplain org.opengis.metadata.maintenance.ScopeCode#DATASET dataset}.
+     * Quality information for the data specified by the scope.
      */
     @SuppressWarnings("serial")
     private Collection<Element> reports;
 
     /**
      * Non-quantitative quality information about the lineage of the data specified by the scope.
-     * Should be provided only if {@linkplain Scope#getLevel scope level} is
-     * {@linkplain org.opengis.metadata.maintenance.ScopeCode#DATASET dataset}.
+     *
+     * @deprecated Removed from ISO 19157:2013.
      */
+    @Deprecated
     @SuppressWarnings("serial")
     private Lineage lineage;
+
+    /**
+     * Reference to an external standalone quality report.
+     * Can be used for providing more details than reported as standard metadata.
+     */
+    @SuppressWarnings("serial")
+    private StandaloneQualityReportInformation standaloneQualityReport;
 
     /**
      * Constructs an initially empty data quality.
@@ -132,9 +139,10 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     public DefaultDataQuality(final DataQuality object) {
         super(object);
         if (object != null) {
-            scope   = object.getScope();
-            reports = copyCollection(object.getReports(), Element.class);
-            lineage = object.getLineage();
+            scope                   = object.getScope();
+            reports                 = copyCollection(object.getReports(), Element.class);
+            standaloneQualityReport = object.getStandaloneQualityReport();
+            lineage                 = object.getLineage();
         }
     }
 
@@ -166,7 +174,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Returns the specific data to which the data quality information applies.
      *
-     * @return the specific data to which the data quality information applies, or {@code null}.
+     * @return the specific data to which the data quality information applies.
      */
     @Override
     @XmlElement(name = "scope", required = true)
@@ -185,9 +193,9 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Returns the quantitative quality information for the data specified by the scope.
+     * Returns the quality information for the data specified by the scope.
      *
-     * @return quantitative quality information for the data.
+     * @return quality information for the data specified by the scope.
      */
     @Override
     @XmlElement(name = "report", required = true)
@@ -196,7 +204,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Sets the quantitative quality information for the data specified by the scope.
+     * Sets the quality information for the data specified by the scope.
      *
      * @param  newValues  the new reports.
      */
@@ -205,13 +213,40 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
+     * Returns the reference to an external standalone quality report.
+     * Can be used for providing more details than reported as standard metadata.
+     *
+     * @return reference to an external standalone quality report, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "standaloneQualityReport")
+    public StandaloneQualityReportInformation getStandaloneQualityReport() {
+        return standaloneQualityReport;
+    }
+
+    /**
+     * Sets the quality of the reported information.
+     *
+     * @param  newValue  the new quality information.
+     *
+     * @since 1.3
+     */
+    public void setStandaloneQualityReport(final StandaloneQualityReportInformation newValue) {
+        checkWritePermission(standaloneQualityReport);
+        standaloneQualityReport = newValue;
+    }
+
+    /**
      * Returns non-quantitative quality information about the lineage of the data specified by the scope.
      *
      * @return non-quantitative quality information about the lineage of the data specified, or {@code null}.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
+     * @deprecated Removed from ISO 19157:2013.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "lineage", namespace = LegacyNamespaces.GMD)
     public Lineage getLineage() {
         return FilterByVersion.LEGACY_METADATA.accept() ? lineage : null;
@@ -221,7 +256,10 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * Sets the non-quantitative quality information about the lineage of the data specified by the scope.
      *
      * @param  newValue  the new lineage.
+     *
+     * @deprecated Removed from ISO 19157:2013.
      */
+    @Deprecated
     public void setLineage(final Lineage newValue) {
         checkWritePermission(lineage);
         lineage = newValue;

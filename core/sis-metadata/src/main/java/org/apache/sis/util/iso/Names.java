@@ -17,6 +17,7 @@
 package org.apache.sis.util.iso;
 
 import java.util.Collections;
+import java.lang.reflect.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
@@ -26,8 +27,8 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.UnknownNameException;
+import org.apache.sis.internal.system.DefaultFactories;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -72,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see DefaultNameFactory
  * @see DefaultNameSpace
@@ -225,7 +226,7 @@ public final class Names extends Static {
     }
 
     /**
-     * Creates a type name which is local in the given namespace.
+     * Creates a type name from the given character sequence and automatically inferred Java type.
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
@@ -251,6 +252,25 @@ public final class Names extends Static {
     }
 
     /**
+     * Creates a type name for the given class using naming convention documented in {@link DefaultTypeName}.
+     * This method is a shortcut for {@link DefaultNameFactory#toTypeName(Class)}
+     * and is the converse of {@link #toClass(TypeName)}.
+     *
+     * @param  valueClass  the type of values for which to infer a {@link TypeName} instance.
+     * @return a type name for values of the given type.
+     *
+     * @see #createMemberName(CharSequence, String, CharSequence, Class)
+     * @see DefaultNameFactory#toTypeName(Class)
+     *
+     * @since 1.3
+     */
+    public static TypeName createTypeName(final Class<?> valueClass) {
+        ensureNonNull("valueClass", valueClass);
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        return factory.toTypeName(valueClass);    // SIS-specific method.
+    }
+
+    /**
      * Creates a member name for values of the given class. A {@link TypeName} will be inferred
      * from the given {@code valueClass} as documented in the {@link DefaultTypeName} javadoc.
      *
@@ -264,8 +284,6 @@ public final class Names extends Static {
      * @param  localPart  the name which is locale in the given namespace.
      * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
      * @return a member name in the given namespace for values of the given type.
-     *
-     * @see DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)
      */
     public static MemberName createMemberName(final CharSequence namespace, final String separator,
             final CharSequence localPart, final Class<?> valueClass)
@@ -274,7 +292,30 @@ public final class Names extends Static {
         ensureNonNull("valueClass", valueClass);
         final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart,
-                factory.toTypeName(valueClass));    // SIS-specific method.
+               factory.toTypeName(valueClass));     // SIS-specific method.
+    }
+
+    /**
+     * Creates a member name for attribute values of the given type.
+     * This is a shortcut for {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}.
+     * See {@linkplain #createMemberName(CharSequence, String, CharSequence, Class) performance note}.
+     *
+     * @param  namespace  the namespace, or {@code null} for the global namespace.
+     * @param  separator  the separator between the namespace and the local part, or {@code null}
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  localPart  the name which is locale in the given namespace.
+     * @param  attributeType  the type of the data associated with the member.
+     * @return a member name in the given namespace for values of the given type.
+     *
+     * @since 1.3
+     */
+    public static MemberName createMemberName(final CharSequence namespace, final String separator,
+            final CharSequence localPart, final TypeName attributeType)
+    {
+        ensureNonNull("localPart", localPart);
+        ensureNonNull("attributeType", attributeType);
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart, attributeType);
     }
 
     /**
@@ -305,7 +346,7 @@ public final class Names extends Static {
             name = createMemberName(namespace, separator, Integer.toString(localPart), Integer.class);
             if (cached) synchronized (SEQUENCE_NUMBERS) {
                 /*
-                 * No need to check if a value has been set concurrently because Names.createMemberName(…)
+                 * No need to check if a value has been set concurrently because `createMemberName(…)`
                  * already checked if an equal instance exists in the current JVM.
                  */
                 SEQUENCE_NUMBERS[localPart] = name;
@@ -320,8 +361,7 @@ public final class Names extends Static {
      *
      * <ul>
      *   <li>If the given type name is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Else if the given type name is an instance of {@code DefaultTypeName},
-     *       then this method delegates to {@link DefaultTypeName#toClass()}.</li>
+     *   <li>Else if the value returned by {@link DefaultTypeName#toJavaType()} is a {@link Class}, returns that class.</li>
      *   <li>Else if the type name {@linkplain DefaultTypeName#scope() scope} is {@code "OGC"}, then:
      *     <ul>
      *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
@@ -340,21 +380,21 @@ public final class Names extends Static {
      *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
      *           then the corresponding class is returned.</li>
      *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
-     *           could be anything, so we can not be sure that the given name was wrong.</li>
+     *           could be anything; this method can not be sure that the given name was wrong.</li>
      *     </ul>
      *   </li>
-     *   <li>Otherwise {@code null} is returned, since this method can not check the validity of names in other
-     *       namespaces.</li>
+     *   <li>Otherwise {@code null} is returned,
+     *       because this method can not check the validity of names in other namespaces.</li>
      * </ul>
      *
      * @param  type  the type name from which to infer a Java class.
      * @return the Java class associated to the given {@code TypeName},
      *         or {@code null} if there is no mapping from the given name to a Java class.
      * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
-     *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the operation failed.
+     *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the lookup failed.
      *
-     * @see DefaultTypeName#toClass()
-     * @see DefaultNameFactory#toTypeName(Class)
+     * @see #createTypeName(Class)
+     * @see DefaultTypeName#toJavaType()
      *
      * @since 0.5
      */
@@ -362,21 +402,18 @@ public final class Names extends Static {
         if (type == null) {
             return null;
         }
-        Class<?> c;
-        if (type instanceof DefaultTypeName) {
-            c = ((DefaultTypeName) type).toClass();
-        } else {
-            try {
-                c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
-            } catch (ClassNotFoundException e) {
-                throw new UnknownNameException(TypeNames.unknown(type), e);
-            }
-            if (c == null) {
-                throw new UnknownNameException(TypeNames.unknown(type));
-            }
-            if (c == Void.TYPE) {
-                c = null;
-            }
+        final Type t = type.toJavaType().orElse(null);
+        if (t instanceof Class<?>) {
+            return (Class<?>) t;
+        }
+        final Class<?> c;
+        try {
+            c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
+        } catch (ClassNotFoundException e) {
+            throw new UnknownNameException(TypeNames.unknown(type), e);
+        }
+        if (c == Void.TYPE) {
+            throw new UnknownNameException(TypeNames.unknown(type));
         }
         return c;
     }

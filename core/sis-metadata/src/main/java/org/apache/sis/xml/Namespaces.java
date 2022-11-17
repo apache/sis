@@ -60,6 +60,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *   <tr><td>mmi</td>    <td>Metadata for Maintenance Information</td>       <td>{@value #MMI}</td>   <td></td></tr>
  *   <tr><td>dqc</td>    <td>Data Quality Common Classes</td>                <td>{@value #DQC}</td>   <td></td></tr>
  *   <tr><td>mdq</td>    <td>Metadata for Data Quality</td>                  <td>{@value #MDQ}</td>   <td></td></tr>
+ *   <tr><td>dqm</td>    <td>Data Quality Measures</td>                      <td>{@value #DQM}</td>   <td></td></tr>
  *   <tr><td>mds</td>    <td>Metadata for Data and Services</td>             <td>{@value #MDS}</td>   <td></td></tr>
  *   <tr><td>srv</td>    <td>Metadata for Services</td>                      <td>{@value #SRV}</td>   <td>SIS 1.0</td></tr>
  *   <tr><td>mpc</td>    <td>Metadata for Portrayal Catalog</td>             <td>{@value #MPC}</td>   <td></td></tr>
@@ -87,7 +88,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal   (Geomatys)
  * @author  Cullen Rombach  (Image Matters)
- * @version 1.2
+ * @author  Alexis Gaillard (Geomatys)
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -100,7 +102,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/lan/1.0/index.html">Language localization (LAN) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/lan/1.0/index.html">Language localization (LAN) version 1.0</a>.
      * The usual prefix for this namespace is {@code "lan"}.
      *
      * @category ISO
@@ -110,7 +112,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/gco/1.0/index.html">Geographic COmmon (GCO) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/gco/1.0/index.html">Geographic COmmon (GCO) version 1.0</a>.
      * The usual prefix for this namespace is {@code "gco"}.
      *
      * <p>History</p>
@@ -127,7 +129,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mcc/1.0/index.html">Metadata Common Classes (MCC) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mcc/1.0/index.html">Metadata Common Classes (MCC) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mcc"}.
      *
      * @category ISO
@@ -137,7 +139,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19110/fcc/1.0/index.html">Feature Catalog Common (FCC) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19110/fcc/1.0/index.html">Feature Catalog Common (FCC) version 1.0</a>.
      * The usual prefix for this namespace is {@code "fcc"}.
      *
      * @category ISO
@@ -147,7 +149,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19110/gfc/1.1/index.html">General Feature Catalog (GFC) version 1.1</a>.
+     * <a href="https://schemas.isotc211.org/19110/gfc/1.1/index.html">General Feature Catalog (GFC) version 1.1</a>.
      * The usual prefix for this namespace is {@code "gfc"}.
      *
      * <p>History</p>
@@ -164,7 +166,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/cat/1.0/index.html">CATalogue (CAT) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/cat/1.0/index.html">CATalogue (CAT) version 1.0</a>.
      * The usual prefix for this namespace is {@code "cat"}.
      *
      * @category ISO
@@ -174,7 +176,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mdb/1.0/index.html">Metadata Base (MDB) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mdb/1.0/index.html">Metadata Base (MDB) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mdb"}.
      *
      * @category ISO
@@ -184,7 +186,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/cit/1.0/index.html">Citation and responsible party information (CIT) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/cit/1.0/index.html">Citation and responsible party information (CIT) version 1.0</a>.
      * The usual prefix for this namespace is {@code "cit"}.
      *
      * @category ISO
@@ -194,7 +196,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/gex/1.0/index.html">Geospatial EXtent (GEX) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/gex/1.0/index.html">Geospatial EXtent (GEX) version 1.0</a>.
      * The usual prefix for this namespace is {@code "gex"}.
      *
      * @category ISO
@@ -204,7 +206,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mrs/1.0/index.html">Metadata for Reference System (MRS) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mrs/1.0/index.html">Metadata for Reference System (MRS) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mrs"}.
      *
      * @category ISO
@@ -214,7 +216,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19111/rce/1.0/index.html">Referencing By Coordinates Common (RCE) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19111/rce/1.0/index.html">Referencing By Coordinates Common (RCE) version 1.0</a>.
      * The usual prefix for this namespace is {@code "rce"}.
      *
      * @category ISO
@@ -224,7 +226,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/msr/1.0/index.html">Metadata for Spatial Representation (MSR) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/msr/1.0/index.html">Metadata for Spatial Representation (MSR) version 1.0</a>.
      * The usual prefix for this namespace is {@code "msr"}.
      *
      * @category ISO
@@ -234,7 +236,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mrc/1.0/index.html">Metadata for Resource Content (MRC) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mrc/1.0/index.html">Metadata for Resource Content (MRC) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mrc"}.
      *
      * @category ISO
@@ -244,7 +246,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mri/1.0/index.html">Metadata for Resource Identification (MRI) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mri/1.0/index.html">Metadata for Resource Identification (MRI) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mri"}.
      *
      * @category ISO
@@ -254,7 +256,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mrd/1.0/index.html">Metadata for Resource Distribution (MRD) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mrd/1.0/index.html">Metadata for Resource Distribution (MRD) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mrd"}.
      *
      * @category ISO
@@ -264,7 +266,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mdt/1.0/index.html">Metadata for Data Transfer (MDT) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mdt/1.0/index.html">Metadata for Data Transfer (MDT) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mdt"}.
      *
      * @category ISO
@@ -274,7 +276,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mco/1.0/index.html">Metadata for Constraints (MCO) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mco/1.0/index.html">Metadata for Constraints (MCO) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mco"}.
      *
      * @category ISO
@@ -284,7 +286,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mac/1.0/index.html">Metadata for Acquisition (MAC) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mac/1.0/index.html">Metadata for Acquisition (MAC) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mac"}.
      *
      * @category ISO
@@ -294,7 +296,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mrl/1.0/index.html">Metadata for Resource Lineage (MRL) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mrl/1.0/index.html">Metadata for Resource Lineage (MRL) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mrl"}.
      *
      * @category ISO
@@ -304,7 +306,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mmi/1.0/index.html">Metadata for Maintenance Information (MMI) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mmi/1.0/index.html">Metadata for Maintenance Information (MMI) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mmi"}.
      *
      * @category ISO
@@ -314,7 +316,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19157/-2/dqc/1.0/index.html">Data Quality Common Classes (DQC) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19157/-2/dqc/1.0/index.html">Data Quality Common Classes (DQC) version 1.0</a>.
      * The usual prefix for this namespace is {@code "dqc"}.
      *
      * @category ISO
@@ -324,7 +326,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19157/-2/mdq/1.0/index.html">Metadata for Data Quality (MDQ) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19157/-2/mdq/1.0/index.html">Metadata for Data Quality (MDQ) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mdq"}.
      *
      * @category ISO
@@ -334,7 +336,17 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mds/1.0/index.html">Metadata for Data and Services (MDS) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19157/-2/dqm/1.0/index.html">Data Quality Measures (DQM) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "dqm"}.
+     *
+     * @category ISO
+     * @since 1.3
+     */
+    public static final String DQM = "http://standards.iso.org/iso/19157/-2/dqm/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="https://schemas.isotc211.org/19115/-3/mds/1.0/index.html">Metadata for Data and Services (MDS) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mds"}.
      *
      * @category ISO
@@ -344,7 +356,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/srv/2.0/index.html">Metadata for Services (SRV) version 2.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/srv/2.0/index.html">Metadata for Services (SRV) version 2.0</a>.
      * The usual prefix for this namespace is {@code "srv"}.
      *
      * <p>History</p>
@@ -362,7 +374,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mpc/1.0/index.html">Metadata for Portrayal Catalog (MPC) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mpc/1.0/index.html">Metadata for Portrayal Catalog (MPC) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mpc"}.
      *
      * @category ISO
@@ -372,7 +384,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mda/1.0/index.html">MetaData Application (MDA) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mda/1.0/index.html">MetaData Application (MDA) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mda"}.
      *
      * @category ISO
@@ -382,7 +394,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mas/1.0/index.html">Metadata for Application Schema (MAS) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mas/1.0/index.html">Metadata for Application Schema (MAS) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mas"}.
      *
      * @category ISO
@@ -392,7 +404,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/mex/1.0/index.html">Metadata with Schema Extensions (MEX) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/mex/1.0/index.html">Metadata with Schema Extensions (MEX) version 1.0</a>.
      * The usual prefix for this namespace is {@code "mex"}.
      *
      * @category ISO
@@ -402,7 +414,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/gcx/1.0/index.html">Geospatial Common eXtension (GCX) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/gcx/1.0/index.html">Geospatial Common eXtension (GCX) version 1.0</a>.
      * The usual prefix for this namespace is {@code "gcx"}.
      *
      * @category ISO
@@ -412,7 +424,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/md1/1.0/index.html">Metadata for Data and Services with Geospatial Common Extensions (MD1) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/md1/1.0/index.html">Metadata for Data and Services with Geospatial Common Extensions (MD1) version 1.0</a>.
      * The usual prefix for this namespace is {@code "md1"}.
      *
      * @category ISO
@@ -422,7 +434,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/md2/1.0/index.html">Metadata for Data and Services with Geospatial Common Extensions (MD2) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/md2/1.0/index.html">Metadata for Data and Services with Geospatial Common Extensions (MD2) version 1.0</a>.
      * The usual prefix for this namespace is {@code "md2"}.
      *
      * @category ISO
@@ -432,7 +444,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
-     * <a href="http://standards.iso.org/iso/19115/-3/gmw/1.0/index.html">Geographic Markup Wrappers (GMW) version 1.0</a>.
+     * <a href="https://schemas.isotc211.org/19115/-3/gmw/1.0/index.html">Geographic Markup Wrappers (GMW) version 1.0</a>.
      * The usual prefix for this namespace is {@code "gmw"}.
      *
      * @category ISO
@@ -504,7 +516,7 @@ public final class Namespaces extends Static {
     public static final String XLINK = "http://www.w3.org/1999/xlink";
 
     /**
-     * URLs for which the prefix to use directly follows them.
+     * URLs for which the XML prefix to use directly follows an URL starts given in this array.
      */
     private static final String[] GENERIC_URLS = {
         "http://standards.iso.org/iso/19115/-3/",

@@ -16,6 +16,9 @@
  */
 package org.apache.sis.util.iso;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.lang.reflect.Type;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
@@ -33,11 +36,12 @@ import org.apache.sis.util.UnknownNameException;
  * </ul>
  *
  * <h2>Mapping Java classes to type names</h2>
- * It is sometime useful to establish a mapping between {@link Class} and {@code TypeName}.
- * When an UML identifier from an OGC standard exists for a given {@code Class}, Apache SIS
- * uses that identifier prefixed by the {@code "OGC"} namespace.
+ * A bidirectional mapping is defined between {@code TypeName} and Java {@link Class}.
+ * When an UML identifier from an OGC standard exists for a given {@code Class},
+ * Apache SIS uses that identifier prefixed by the {@code "OGC"} namespace.
  * Note that this is <strong>not</strong> a standard practice.
- * A more standard practice would be to use the <cite>definition identifiers in OGC namespace</cite>
+ * A more standard practice would be to use the
+ * <a href="https://schemas.opengis.net/definitions/1.1.0/dataType.xml">data type URN standard values</a>
  * (third column in the table below), but the set of data type identifiers defined by OGC is currently
  * small and is sometime not an exact match.
  *
@@ -45,75 +49,75 @@ import org.apache.sis.util.UnknownNameException;
  *   <caption>Mapping from Java classes to type names (non-exhaustive list)</caption>
  *   <tr>
  *     <th>Java class</th>
- *     <th>Type name (unofficial)</th>
- *     <th>Definition identifier in OGC namespace</th>
- *     <th>Recommended URL in Web Processing Services</th>
+ *     <th>Scoped type name</th>
+ *     <th class="sep">Data type URN standard values</th>
+ *     <th>URL in Web Services</th>
  *   </tr><tr>
  *     <td>{@link org.opengis.util.InternationalString}</td>
  *     <td>{@code OGC:FreeText}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link java.lang.String}</td>
  *     <td>{@code OGC:CharacterString}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::string}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::string}</td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#string}</td>
  *   </tr><tr>
  *     <td>{@link java.net.URI}</td>
  *     <td>{@code OGC:URI}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::anyURI}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::anyURI}</td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link java.lang.Boolean}</td>
  *     <td>{@code OGC:Boolean}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::boolean}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::boolean}</td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#boolean}</td>
  *   </tr><tr>
  *     <td>{@link java.lang.Integer}</td>
  *     <td>{@code OGC:Integer}</td>
- *     <td>{@code urn:ogc:def:dataType:OGC::nonNegativeInteger}</td>
+ *     <td class="sep">{@code urn:ogc:def:dataType:OGC::nonNegativeInteger}</td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#integer}</td>
  *   </tr><tr>
  *     <td>{@link java.math.BigDecimal}</td>
  *     <td>{@code OGC:Decimal}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#decimal}</td>
  *   </tr><tr>
  *     <td>{@link java.lang.Double}</td>
  *     <td>{@code OGC:Real}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#double}</td>
  *   </tr><tr>
  *     <td>{@link java.lang.Float}</td>
  *     <td>{@code OGC:Real}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td>{@code http://www.w3.org/2001/XMLSchema#float}</td>
  *   </tr><tr>
  *     <td>{@link java.util.Date}</td>
  *     <td>{@code OGC:DateTime}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link java.util.Locale}</td>
  *     <td>{@code OGC:PT_Locale}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>{@link org.opengis.metadata.Metadata}</td>
  *     <td>{@code OGC:MD_Metadata}</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>Unknown Java class</td>
  *     <td>{@code class:}&lt;the class name&gt;</td>
- *     <td></td>
+ *     <td class="sep"></td>
  *     <td></td>
  *   </tr>
  * </table>
  *
  * The mapping defined by Apache SIS may change in any future version depending on standardization progress.
  * To protect against such changes, users are encouraged to rely on methods or constructors like
- * {@link DefaultNameFactory#toTypeName(Class)} or {@link #toClass()} instead of parsing the name.
+ * {@link #toJavaType()} or {@link DefaultNameFactory#toTypeName(Class)} instead of parsing the name.
  *
  *
  * <h2>Immutability and thread safety</h2>
@@ -124,7 +128,7 @@ import org.apache.sis.util.UnknownNameException;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  *
  * @see DefaultMemberName
  * @see DefaultNameFactory
@@ -138,33 +142,85 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7182126541436753582L;
+    private static final long serialVersionUID = 7571710679743017926L;
 
     /**
-     * The value class to be returned by {@link #toClass()}, or {@code null} if not yet computed.
-     * {@link Void#TYPE} is used as a sentinel value meaning explicit {@code null}.
-     *
-     * <p>This value is only computed. We do not allow the user to explicitly specify it, because we
-     * need that {@code DefaultTypeName}s having identical name also have the same {@code valueClass}.
-     * This is necessary {@link DefaultNameFactory#pool} cache integrity. Users who want to explicitly
-     * specify their own value class can override {@link #toClass()} instead.</p>
-     *
-     * @see #setValueClass(NameSpace, String, Class)
-     * @see #toClass()
+     * The value returned by {@link #toJavaType()}, or {@code null} if none.
+     * This is usually a {@link Class}, which is serializable.
      */
-    private transient Class<?> valueClass;
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    private final Type javaType;
 
     /**
-     * Constructs a type name from the given character sequence. The argument are given unchanged to the
+     * Constructs a type name from the given character sequence and infers automatically a Java type.
+     * The scope and name arguments are given unchanged to the
      * {@linkplain DefaultLocalName#DefaultLocalName(NameSpace,CharSequence) super-class constructor}.
+     * Then the Java type is inferred in a way that depends on the specified scope:
      *
-     * @param scope  the scope of this name, or {@code null} for a global scope.
-     * @param name   the local name (never {@code null}).
+     * <ul>
+     *   <li>If the scope is {@code "OGC"}, then:
+     *     <ul>
+     *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
+     *           (see {@linkplain DefaultTypeName class javadoc}),
+     *           then the corresponding Java class is associated to this type name.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope is {@code "class"}, then:
+     *     <ul>
+     *       <li>If the name is accepted by {@link Class#forName(String)},
+     *           then that Java class is associated to this type name.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope {@linkplain DefaultNameSpace#isGlobal() is global}, then:
+     *     <ul>
+     *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
+     *           then the corresponding class is associated to this type name.</li>
+     *       <li>Otherwise no Java class is associated to this type name.
+     *           No exception is thrown because names in the global namespace could be anything;
+     *           this constructor can not know if the given name was wrong.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise no Java class is associated to this type name,
+     *       because this method can not check the validity of names in other namespaces.</li>
+     * </ul>
+     *
+     * @param  scope  the scope of this name, or {@code null} for a global scope.
+     * @param  name   the local name (never {@code null}).
+     * @throws UnknownNameException if a mapping from this name to a Java class was expected to exist
+     *         (because the specified scope is "OGC" or "class") but the associated Java class can not be found.
      *
      * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */
-    protected DefaultTypeName(final NameSpace scope, final CharSequence name) {
+    protected DefaultTypeName(final NameSpace scope, final CharSequence name) throws UnknownNameException {
         super(scope, name);
+        try {
+            javaType = TypeNames.toClass(TypeNames.namespace(scope), super.toString());
+        } catch (ClassNotFoundException e) {
+            throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()), e);
+        }
+        if (javaType == Void.TYPE) {
+            throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()));
+        }
+    }
+
+    /**
+     * Constructs a type name from the given character sequence and explicit Java type.
+     * The scope and name arguments are given unchanged to the
+     * {@linkplain DefaultLocalName#DefaultLocalName(NameSpace,CharSequence) super-class constructor}.
+     *
+     * @param scope     the scope of this name, or {@code null} for a global scope.
+     * @param name      the local name (never {@code null}).
+     * @param javaType  the value type to be returned by {@link #toJavaType()}, or {@code null} if none.
+     *
+     * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence, Type)
+     *
+     * @since 1.3
+     */
+    protected DefaultTypeName(final NameSpace scope, final CharSequence name, final Type javaType) {
+        super(scope, name);
+        this.javaType = javaType;
     }
 
     /**
@@ -189,88 +245,59 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
         if (object == null || object instanceof DefaultTypeName) {
             return (DefaultTypeName) object;
         }
-        return new DefaultTypeName(object.scope(), object.toInternationalString());
+        return new DefaultTypeName(object.scope(), object.toInternationalString(), object.toJavaType().orElse(null));
     }
 
     /**
-     * Sets {@link #valueClass} to the given value, only if the scope and the name of this {@code TypeName}
-     * are equal to the given values. The check for scope and name is a protection against renaming that user
-     * could apply if they subclass {@link DefaultNameFactory}. If the user performed such renaming, then the
-     * value class may be wrong, so we will ignore the given value class and let {@link #toClass()} computes
-     * the class itself.
+     * Returns the Java type represented by this name.
+     * This is the type either specified explicitly at construction time or inferred from the type name.
+     *
+     * @return the Java type (usually a {@link Class}) for this type name.
+     *
+     * @see Names#toClass(TypeName)
+     *
+     * @since 1.3
      */
-    final void setValueClass(final NameSpace scope, final String name, final Class<?> valueClass) {
-        if (scope == super.scope() && name.equals(super.toString())) {
-            this.valueClass = valueClass;
-        }
+    @Override
+    public Optional<Type> toJavaType() {
+        return Optional.ofNullable(javaType);
     }
 
     /**
      * Returns the Java class associated to this type name.
-     * The default implementation parses this name in different ways depending on the {@linkplain #scope() scope}:
      *
-     * <ul>
-     *   <li>If the scope is {@code "OGC"}, then:
-     *     <ul>
-     *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
-     *           (see {@linkplain DefaultTypeName class javadoc}), then the corresponding class is returned.</li>
-     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
-     *     </ul>
-     *   </li>
-     *   <li>Else if the scope is {@code "class"}, then:
-     *     <ul>
-     *       <li>If the name is accepted by {@link Class#forName(String)}, then that class is returned.</li>
-     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
-     *     </ul>
-     *   </li>
-     *   <li>Else if the scope {@linkplain DefaultNameSpace#isGlobal() is global}, then:
-     *     <ul>
-     *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
-     *           then the corresponding class is returned.</li>
-     *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
-     *           could be anything, so we can not be sure that the given name was wrong.</li>
-     *     </ul>
-     *   </li>
-     *   <li>Otherwise {@code null} is returned, since this method can not check the validity of names in other
-     *       namespaces.</li>
-     * </ul>
+     * @deprecated Replaced by {@link #toJavaType()}.
      *
      * @return the Java class associated to this {@code TypeName},
      *         or {@code null} if there is no mapping from this name to a Java class.
-     * @throws UnknownNameException if a mapping from this name to a Java class was expected to exist
-     *         (typically because of the {@linkplain #scope() scope}) but the operation failed.
-     *
-     * @see Names#toClass(TypeName)
-     * @see DefaultNameFactory#toTypeName(Class)
      *
      * @since 0.5
      */
-    public Class<?> toClass() throws UnknownNameException {
-        /*
-         * No synchronization, because it is not a problem if two threads compute the same value concurrently.
-         * No volatile field neither, because instances of Class are safely published (well, I presume...).
-         */
-        Class<?> c = valueClass;
-        if (c == Void.TYPE) {
-            return null;
+    @Deprecated
+    public Class<?> toClass() {
+        return (javaType instanceof Class<?>) ? (Class<?>) javaType : null;
+    }
+
+    /**
+     * Compares this type name with the specified object for equality.
+     *
+     * @param  object  the object to compare with this type for equality.
+     * @return {@code true} if the given object is equal to this name.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (super.equals(object)) {
+            return Objects.equals(javaType, ((DefaultTypeName) object).javaType);
         }
-        if (c == null) {
-            /*
-             * Invoke super.foo() instead of this.foo() because we do not want to invoke any overridden method.
-             * This is for ensuring that two TypeNames constructed with the same name will map to the same class.
-             * See `valueClass` javadoc for more information.
-             */
-            try {
-                c = TypeNames.toClass(TypeNames.namespace(super.scope()), super.toString());
-            } catch (ClassNotFoundException e) {
-                throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()), e);
-            }
-            if (c == null) {
-                throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()));
-            }
-            valueClass = c;
-        }
-        return (c != Void.TYPE) ? c : null;
+        return false;
+    }
+
+    /**
+     * Invoked by {@link #hashCode()} for computing the hash code value when first needed.
+     */
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() ^ Objects.hashCode(javaType);
     }
 
 
@@ -292,5 +319,6 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      * the {@link #name} field will be set by JAXB during unmarshalling.
      */
     private DefaultTypeName() {
+        javaType = null;
     }
 }

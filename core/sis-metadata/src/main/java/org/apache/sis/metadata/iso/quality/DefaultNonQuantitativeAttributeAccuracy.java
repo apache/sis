@@ -24,28 +24,18 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 /**
  * Accuracy of non-quantitative attributes.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
- *
- * <div class="preformat">{@code DQ_NonQuantitativeAttributeAccuracy}
- * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
- *
- * <h2>Limitations</h2>
- * <ul>
- *   <li>Instances of this class are not synchronized for multi-threading.
- *       Synchronization, if needed, is caller's responsibility.</li>
- *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
- *       Serialization support is appropriate for short term storage or RMI between applications running the
- *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
- * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
+ *
+ * @deprecated Renamed {@link DefaultNonQuantitativeAttributeCorrectness} for following a renaming in ISO 19157:2013.
  */
-@XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = LegacyNamespaces.GMD)     // TODO: renamed NonQuantitativeAttributeCorrectness
+@Deprecated
+@XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = LegacyNamespaces.GMD)
 @XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy", namespace = LegacyNamespaces.GMD)
-public class DefaultNonQuantitativeAttributeAccuracy extends AbstractThematicAccuracy
+public class DefaultNonQuantitativeAttributeAccuracy extends DefaultNonQuantitativeAttributeCorrectness
         implements NonQuantitativeAttributeAccuracy
 {
     /**

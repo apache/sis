@@ -21,14 +21,13 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.ThematicClassificationCorrectness;
-import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
+import org.opengis.metadata.quality.NonQuantitativeAttributeCorrectness;
 import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
 
 
 /**
- * Accuracy of quantitative attributes and the correctness of non-quantitative attributes
- * and of the classifications of features and their relationships.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * Accuracy and correctness of attributes and classification of features.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_ThematicAccuracy}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -44,7 +43,7 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -52,7 +51,7 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
 @XmlRootElement(name = "AbstractDQ_ThematicAccuracy")
 @XmlSeeAlso({
     DefaultThematicClassificationCorrectness.class,
-    DefaultNonQuantitativeAttributeAccuracy.class,
+    DefaultNonQuantitativeAttributeCorrectness.class,
     DefaultQuantitativeAttributeAccuracy.class
 })
 public class AbstractThematicAccuracy extends AbstractElement implements ThematicAccuracy {
@@ -87,7 +86,7 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is an instance of {@link QuantitativeAttributeAccuracy},
-     *       {@link NonQuantitativeAttributeAccuracy} or {@link ThematicClassificationCorrectness},
+     *       {@link NonQuantitativeAttributeCorrectness} or {@link ThematicClassificationCorrectness},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding
      *       SIS subclass. Note that if the given object implements more than one of the above-cited
      *       interfaces, then the {@code castOrCopy(…)} method to be used is unspecified.</li>
@@ -107,8 +106,8 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
         if (object instanceof QuantitativeAttributeAccuracy) {
             return DefaultQuantitativeAttributeAccuracy.castOrCopy((QuantitativeAttributeAccuracy) object);
         }
-        if (object instanceof NonQuantitativeAttributeAccuracy) {
-            return DefaultNonQuantitativeAttributeAccuracy.castOrCopy((NonQuantitativeAttributeAccuracy) object);
+        if (object instanceof NonQuantitativeAttributeCorrectness) {
+            return DefaultNonQuantitativeAttributeCorrectness.castOrCopy((NonQuantitativeAttributeCorrectness) object);
         }
         if (object instanceof ThematicClassificationCorrectness) {
             return DefaultThematicClassificationCorrectness.castOrCopy((ThematicClassificationCorrectness) object);

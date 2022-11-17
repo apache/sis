@@ -32,7 +32,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.3
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  * @see org.opengis.util.CodeList
@@ -49,6 +49,7 @@
     @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
     @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition
     @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
+    @XmlNs(prefix = "dqm", namespaceURI = Namespaces.DQM),      // Metadata for Data Quality Measures
     @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
     @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),      // Metadata for Services
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information

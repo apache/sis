@@ -32,7 +32,7 @@ import static org.junit.Assume.*;
  * Tests conformance of JAXB annotations with XML schemas if those schemas are available.
  * This tests requires the {@code $SIS_DATA/Schemas/iso/19115/-3} directory to exists.
  * Those files must be installed manually; they are not distributed with Apache SIS for licensing reasons.
- * Content can be downloaded as ZIP files from <a href="https://standards.iso.org/iso/19115/">ISO portal</a>.
+ * Content can be downloaded as ZIP files from <a href="https://schemas.isotc211.org/19115/">ISO portal</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -45,7 +45,7 @@ public final strictfp class SchemaComplianceTest extends TestCase {
      *
      * @throws Exception if an error occurred while checking the schema.
      *
-     * @see <a href="https://standards.iso.org/iso/19115/-3/">ISO schemas for metadata</a>
+     * @see <a href="https://schemas.isotc211.org/19115/">ISO schemas for metadata</a>
      */
     @Test
     public void verifyMetadata() throws Exception {

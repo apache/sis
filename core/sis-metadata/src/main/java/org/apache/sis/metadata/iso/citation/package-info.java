@@ -91,7 +91,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="https://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd",
+@XmlSchema(location="https://schemas.isotc211.org/19115/-3/cit/1.0/cit.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.CIT,
            xmlns = {
                 @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information

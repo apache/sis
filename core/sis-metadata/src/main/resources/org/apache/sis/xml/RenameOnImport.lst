@@ -673,11 +673,17 @@ http://standards.iso.org/iso/19157/-2/dqc/1.0
   dateTime
 http://standards.iso.org/iso/19157/-2/mdq/1.0
  AbstractDQ_Element
+  derivedElement
+  evaluationMethod
+  measure
   result
+  standaloneQualityReportDetails
  AbstractDQ_Completeness : AbstractDQ_Element
  AbstractDQ_LogicalConsistency : AbstractDQ_Element
  AbstractDQ_PositionalAccuracy : AbstractDQ_Element
  AbstractDQ_Result
+  dateTime
+  resultScope
  AbstractDQ_TemporalAccuracy : AbstractDQ_Element !other namespace
  AbstractDQ_ThematicAccuracy : AbstractDQ_Element
  DQ_AbsoluteExternalPositionalAccuracy : AbstractDQ_PositionalAccuracy
@@ -685,20 +691,21 @@ http://standards.iso.org/iso/19157/-2/mdq/1.0
  DQ_CompletenessCommission : AbstractDQ_Completeness
  DQ_CompletenessOmission : AbstractDQ_Completeness
  DQ_ConceptualConsistency : AbstractDQ_LogicalConsistency
- DQ_ConformanceResult
+ DQ_ConformanceResult : AbstractDQ_Result
   explanation
   pass
   specification
  DQ_DataQuality
   report
   scope
+  standaloneQualityReport
  DQ_DomainConsistency : AbstractDQ_LogicalConsistency
  DQ_EvaluationMethodTypeCode
  DQ_FormatConsistency : AbstractDQ_LogicalConsistency
  DQ_GriddedDataPositionalAccuracy : AbstractDQ_PositionalAccuracy
  DQ_NonQuantitativeAttributeAccuracy : AbstractDQ_ThematicAccuracy !other namespace
  DQ_QuantitativeAttributeAccuracy : AbstractDQ_ThematicAccuracy
- DQ_QuantitativeResult
+ DQ_QuantitativeResult : AbstractDQ_Result
   value
   valueType/valueRecordType
   valueUnit
@@ -707,8 +714,7 @@ http://standards.iso.org/iso/19157/-2/mdq/1.0
  DQ_TemporalValidity : AbstractDQ_TemporalAccuracy
  DQ_ThematicClassificationCorrectness : AbstractDQ_ThematicAccuracy
  DQ_TopologicalConsistency : AbstractDQ_LogicalConsistency
- QE_CoverageResult
-  resultContentDescription
+ QE_CoverageResult : AbstractDQ_Result
   resultFile
   resultFormat
   resultSpatialRepresentation

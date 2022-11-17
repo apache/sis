@@ -25,8 +25,8 @@
     xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0"
     xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://standards.iso.org/iso/19157/-2/mdq/1.0 https://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd
-                          http://standards.iso.org/iso/19115/-3/lan/1.0 https://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19157/-2/mdq/1.0 https://schemas.isotc211.org/19157/-2/mdq/1.0/mdq.xsd
+                          http://standards.iso.org/iso/19115/-3/lan/1.0 https://schemas.isotc211.org/19115/-3/lan/1.0/lan.xsd">
 
   <!--
     The <measure> element below is the main purpose of MetadataMarshallingTest.testPositionalAccuracy().
@@ -34,20 +34,23 @@
     of an opportunist check of xsi:type declaration.
   -->
   <mdq:measure>
-   <mdq:DQ_MeasureReference>
+    <mdq:DQ_MeasureReference>
       <mdq:measureIdentification>
-         <mcc:MD_Identifier>
-            <mcc:code xsi:type="lan:PT_FreeText_PropertyType">
-              <gco:CharacterString>Quantitative quality measure focusing on the effective class percent regarded to the total surface size</gco:CharacterString>
-              <lan:PT_FreeText>
-                <lan:textGroup>
-                  <lan:LocalisedCharacterString locale="#locale-fra">Mesure qualité quantitative de type pourcentage de représentation de la classe par rapport à la surface totale</lan:LocalisedCharacterString>
-                </lan:textGroup>
-              </lan:PT_FreeText>
-            </mcc:code>
-         </mcc:MD_Identifier>
+        <mcc:MD_Identifier>
+          <mcc:code>
+            <gco:CharacterString>An identifier</gco:CharacterString>
+          </mcc:code>
+        </mcc:MD_Identifier>
       </mdq:measureIdentification>
-   </mdq:DQ_MeasureReference>
+      <mdq:nameOfMeasure xsi:type="lan:PT_FreeText_PropertyType">
+        <gco:CharacterString>Name of a measure used for testing accuracy</gco:CharacterString>
+        <lan:PT_FreeText>
+          <lan:textGroup>
+            <lan:LocalisedCharacterString locale="#locale-fra">Nom d'une mesure utilisée pour tester la précision</lan:LocalisedCharacterString>
+          </lan:textGroup>
+        </lan:PT_FreeText>
+      </mdq:nameOfMeasure>
+    </mdq:DQ_MeasureReference>
   </mdq:measure>
   <mdq:result>
     <!--
@@ -67,7 +70,7 @@
                 <gco:DateTime>2009-08-12T19:40:17.653+02:00</gco:DateTime>
               </cit:date>
               <cit:dateType>
-                <cit:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">Creation</cit:CI_DateTypeCode>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation">Creation</cit:CI_DateTypeCode>
               </cit:dateType>
             </cit:CI_Date>
           </cit:date>
