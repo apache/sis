@@ -37,7 +37,7 @@ import org.apache.sis.util.Numbers;
  * Implements the mapping between {@link Class} and {@link TypeName} documented in {@link DefaultTypeName}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -97,9 +97,9 @@ final class TypeNames {
     final TypeName toTypeName(final NameFactory factory, final Class<?> valueClass) {
         String name;
         NameSpace ns = ogcNS;
-        if (CharSequence.class.isAssignableFrom(valueClass)) {
+search: if (CharSequence.class.isAssignableFrom(valueClass)) {
             name = InternationalString.class.isAssignableFrom(valueClass) ? "FreeText" : "CharacterString";
-        } else if (Number.class.isAssignableFrom(valueClass)) {
+        } else if (Numbers.isNumber(valueClass)) {
             name = Numbers.isInteger(valueClass) ? "Integer" : "Real";
         } else {
             /*
@@ -113,7 +113,7 @@ final class TypeNames {
                 base = entry.getValue();
                 if (base.isAssignableFrom(valueClass)) {
                     name = entry.getKey();
-                    return factory.createTypeName(ns, name);
+                    break search;
                 }
             } while (base != Boolean.class);    // See MAPPING javadoc for the role of Boolean as a sentinel value.
             /*
@@ -127,34 +127,29 @@ final class TypeNames {
                 name = valueClass.getName();    // See above comment.
             }
         }
-        /*
-         * Now create the name and remember the `valueClass` for that name if the implementation allows that.
-         */
-        final TypeName t = factory.createTypeName(ns, name);
-        if (t instanceof DefaultTypeName) {
-            ((DefaultTypeName) t).setValueClass(ns, name, valueClass);
+        if (factory instanceof DefaultNameFactory) {
+            return ((DefaultNameFactory) factory).createTypeName(ns, name, valueClass);
         }
-        return t;
+        return factory.createTypeName(ns, name);
     }
 
     /**
      * Returns the class for a {@code TypeName} made of the given scope and name.
      * This method is the converse of {@link #toTypeName(NameFactory, Class)}.
-     * This method returns 3 kind of values:
+     * There is 3 kinds of return value:
      *
      * <ul>
-     *   <li>{@code Void.TYPE} if the namespace or the name is unrecognized, without considering that as an error.
-     *       This is a sentinel value expected by {@link DefaultTypeName#toClass()} for such case.</li>
-     *   <li>{@code null} if {@code namespace} is recognized, but not the {@code name}.
-     *       This will be considered as an error by {@link DefaultTypeName#toClass()}.</li>
+     *   <li>{@code null} if the namespace or the name is unrecognized, without considering that as an error.</li>
+     *   <li>{@code Void.TYPE} if {@code namespace} is recognized, but not the {@code name}.
+     *       This is a sentinel value to be considered as an error by {@link DefaultTypeName} constructor.</li>
      *   <li>Otherwise the class for the given name.</li>
      * </ul>
      *
      * @param  namespace  the namespace, case-insensitive. Can be any value, but this method recognizes
      *         only {@code "OGC"}, {@code "class"} and {@code null}. Other namespaces will be ignored.
-     * @param  name  the name, case-sensitive.
-     * @return the class, or {@code Void.TYPE} if the given namespace is not recognized,
-     *         or {@code null} if the namespace is recognized but not the name.
+     * @param  name  the type name, case-sensitive.
+     * @return the class, or {@code null} if the given namespace is not recognized,
+     *         or {@code Void.TYPE} if the namespace is recognized but not the type name.
      * @throws ClassNotFoundException if {@code namespace} is {@code "class"} but {@code name} is not
      *         the name of a reachable class.
      */
@@ -164,20 +159,20 @@ final class TypeNames {
             c = MAPPING.get(name);
             if (c == null) {
                 c = Types.forStandardName(name);
-                if (c == null && namespace == null) {
-                    c = Void.TYPE;          // Unknown name not considered an error if not in "OGC" namespace.
+                if (c == null && namespace != null) {
+                    c = Void.TYPE;          // Unknown name in OGC namespace.
                 }
             }
         } else if (namespace.equalsIgnoreCase("class")) {
             c = Class.forName(name);
         } else {
-            c = Void.TYPE;                  // Not an "OGC" or "class" namespace.
+            c = null;                   // Not an "OGC" or "class" namespace.
         }
         return c;
     }
 
     /**
-     * Ensures that the given class is not {@link Void#TYPE}.
+     * Ensures that the given class is non-null and not {@link Void#TYPE}.
      * This is a helper method for callers of {@link #toTypeName(NameFactory, Class)}.
      */
     static boolean isValid(final Class<?> valueClass) {

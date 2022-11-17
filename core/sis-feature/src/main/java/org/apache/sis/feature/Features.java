@@ -20,15 +20,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.feature.Resources;
 
 
@@ -203,8 +202,7 @@ public final class Features extends Static {
             // Tested first because this is the main interest for this method.
             return DefaultAssociationRole.getValueTypeName((DefaultAssociationRole) property);
         } else if (property instanceof DefaultAttributeType<?>) {
-            final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
-            return factory.toTypeName(((DefaultAttributeType<?>) property).getValueClass());
+            return Names.createTypeName(((DefaultAttributeType<?>) property).getValueClass());
         } else if (property instanceof AbstractOperation) {
             final AbstractIdentifiedType result = ((AbstractOperation) property).getResult();
             if (result != null) {

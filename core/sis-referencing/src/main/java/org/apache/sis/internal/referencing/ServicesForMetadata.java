@@ -89,12 +89,15 @@ import org.apache.sis.util.Utilities;
 
 import static java.util.logging.Logger.getLogger;
 
+// Branch-dependent imports
+import org.opengis.util.TypeName;
+
 
 /**
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -478,13 +481,23 @@ public final class ServicesForMetadata extends ReferencingServices {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns the name of the type of values.
+     */
+    @Override
+    public TypeName getValueType(final ParameterDescriptor<?> parameter) {
+        return (parameter instanceof DefaultParameterDescriptor<?>)
+                ? ((DefaultParameterDescriptor<?>) parameter).getValueType() : null;
+    }
+
+    /**
      * Returns a fully implemented parameter descriptor.
      *
+     * @param  <T>        the type of values.
      * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
      * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
      */
     @Override
-    public ParameterDescriptor<?> toImplementation(final ParameterDescriptor<?> parameter) {
+    public <T> ParameterDescriptor<T> toImplementation(final ParameterDescriptor<T> parameter) {
         return DefaultParameterDescriptor.castOrCopy(parameter);
     }
 

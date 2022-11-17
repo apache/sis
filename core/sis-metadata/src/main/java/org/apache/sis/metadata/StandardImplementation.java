@@ -75,8 +75,8 @@ final class StandardImplementation extends MetadataStandard {
     private final transient Map<Class<?>,Class<?>> implementations;     // written by reflection on deserialization.
 
     /**
-     * Creates a new instance working on implementation of interfaces defined in the
-     * specified package. This constructor is used only for the pre-defined constants.
+     * Creates a new instance working on implementation of interfaces defined in the specified package.
+     * This constructor is used only for the predefined constants.
      *
      * @param citation               the title of the standard.
      * @param interfacePackage       the root package for metadata interfaces, with a trailing {@code '.'}.
@@ -86,7 +86,7 @@ final class StandardImplementation extends MetadataStandard {
      * @param dependencies           the dependencies to other metadata standards, or {@code null} if none.
      */
     StandardImplementation(final String citation, final String interfacePackage, final String implementationPackage,
-            final String[] prefix, final String[] acronyms, final MetadataStandard[] dependencies)
+            final String[] prefix, final String[] acronyms, final MetadataStandard... dependencies)
     {
         super(citation, interfacePackage, dependencies);
         this.implementationPackage = implementationPackage;

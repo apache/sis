@@ -32,7 +32,7 @@ import org.junit.Test;
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -195,7 +195,8 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
     }
 
     /**
-     * {@inheritDoc}
+     * For every properties in every non-{@code Codelist} types listed in the constructor,
+     * tests the property values. This method verifies initial conditions, then sets random values.
      * Once the test is completed, this method verifies that the expected warnings have been logged,
      * and no unexpected logging occurred.
      */
@@ -208,6 +209,36 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
         loggings.assertNextLogContains("equivalentScale", "levelOfDetail");
         loggings.assertNextLogContains("levelOfDetail", "vertical");
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Returns the name of the XML root element for an interface described by the given UML.
+     * This method does the generic work described in super-class, then applies special rules
+     * specific to the metadata package.
+     *
+     * @deprecated the complete function is available only on development branch because it depends on GeoAPI 3.1.
+     */
+    @Override
+    @Deprecated
+    protected String getExpectedXmlRootElementName(final UML uml) {
+        String name = super.getExpectedXmlRootElementName(uml);
+        if (name.equals("DQ_CoverageResult")) name = "QE_CoverageResult";
+        return name;
+    }
+
+    /**
+     * Returns the name of the XML type for an interface described by the given UML.
+     * This method does the generic work described in super-class, then applies special rules
+     * specific to the metadata package.
+     *
+     * @deprecated the complete function is available only on development branch because it depends on GeoAPI 3.1.
+     */
+    @Override
+    @Deprecated
+    protected String getExpectedXmlTypeName(final UML uml) {
+        String name = super.getExpectedXmlTypeName(uml);
+        if (name.equals("DQ_CoverageResult_Type")) name = "QE_CoverageResult_Type";
+        return name;
     }
 
     /**

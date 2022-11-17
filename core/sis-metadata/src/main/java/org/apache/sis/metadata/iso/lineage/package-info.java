@@ -70,7 +70,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd",
+@XmlSchema(location="https://schemas.isotc211.org/19115/-3/mrl/1.0/mrl.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRL,
            xmlns = {
                 @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),      // Metadata for Resource Lineage

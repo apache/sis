@@ -24,14 +24,15 @@ package org.apache.sis.util;
  * or any other objects with similar purpose.
  *
  * <p><b>Note:</b> in the particular case of objects created from a {@link org.opengis.util.Factory},
- * the exception for unrecognized identifiers is rather {@link org.opengis.util.NoSuchIdentifierException}.</p>
+ * the exception for unrecognized identifiers is rather {@link org.opengis.util.NoSuchIdentifierException}.
+ * This {@code UnknownNameException} differs in being an unchecked exception.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  * @since   0.5
  * @module
  */
-public class UnknownNameException extends RuntimeException {
+public class UnknownNameException extends IllegalArgumentException {
     /**
      * For cross-version compatibility.
      */

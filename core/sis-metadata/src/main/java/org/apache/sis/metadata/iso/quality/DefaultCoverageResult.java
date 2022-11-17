@@ -16,26 +16,28 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.opengis.metadata.content.CoverageDescription;
-import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.quality.CoverageResult;
+import org.opengis.metadata.content.CoverageDescription;
+import org.opengis.metadata.content.RangeDimension;
+import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
  * Result of a data quality measure organising the measured values as a coverage.
- * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ * The following properties are mandatory or conditional in a well-formed metadata according ISO 19157:
  *
- * <div class="preformat">{@code QE_CoverageResult}
+ * <div class="preformat">{@code DQ_CoverageResult}
  * {@code   ├─spatialRepresentationType……………………} Method used to spatially represent the coverage result.
  * {@code   ├─resultSpatialRepresentation………………} Digital representation of data quality measures composing the coverage result.
- * {@code   ├─resultContentDescription………………………} Description of the content of the result coverage, i.e. semantic definition of the data quality measures.
- * {@code   │   └─attributeDescription………………………} Description of the attribute described by the measurement value.
+ * {@code   ├─resultContent……………………………………………………} Description of the content of the result coverage, i.e. semantic definition of the data quality measures.
  * {@code   ├─resultFormat………………………………………………………} Information about the format of the result coverage data.
  * {@code   │   └─formatSpecificationCitation……} Citation/URL of the specification format.
  * {@code   │       ├─title……………………………………………………} Name by which the cited resource is known.
@@ -54,7 +56,7 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -65,7 +67,7 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
     "resultFormat",
     "resultFile"
 })
-@XmlRootElement(name = "QE_CoverageResult")
+@XmlRootElement(name = "QE_CoverageResult")     // "DQ_" in abstract model but "QE_" in XML.
 public class DefaultCoverageResult extends AbstractResult implements CoverageResult {
     /**
      * Serial number for inter-operability with different versions.
@@ -84,9 +86,17 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     private SpatialRepresentation resultSpatialRepresentation;
 
     /**
-     * Provides the description of the content of the result coverage, i.e. semantic definition
-     * of the data quality measures.
+     * Provides the description of the content of the result coverage.
      */
+    @SuppressWarnings("serial")
+    private Collection<RangeDimension> resultContent;
+
+    /**
+     * Provides the description of the content of the result coverage.
+     *
+     * @deprecated Replaced by {@link #resultContent}.
+     */
+    @Deprecated
     @SuppressWarnings("serial")
     private CoverageDescription resultContentDescription;
 
@@ -117,6 +127,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @see #castOrCopy(CoverageResult)
      */
+    @SuppressWarnings("deprecation")
     public DefaultCoverageResult(final CoverageResult object) {
         super(object);
         if (object != null) {
@@ -125,6 +136,9 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
             resultContentDescription    = object.getResultContentDescription();
             resultFormat                = object.getResultFormat();
             resultFile                  = object.getResultFile();
+            if (object instanceof DefaultCoverageResult) {
+                resultContent = copyCollection(((DefaultCoverageResult) object).getResultContent(), RangeDimension.class);
+            }
         }
     }
 
@@ -156,7 +170,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the method used to spatially represent the coverage result.
      *
-     * @return spatial representation of the coverage result, or {@code null}.
+     * @return spatial representation of the coverage result.
      */
     @Override
     @XmlElement(name = "spatialRepresentationType", required = true)
@@ -177,7 +191,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the digital representation of data quality measures composing the coverage result.
      *
-     * @return digital representation of data quality measures composing the coverage result, or {@code null}.
+     * @return digital representation of data quality measures composing the coverage result.
      */
     @Override
     @XmlElement(name = "resultSpatialRepresentation", required = true)
@@ -196,13 +210,40 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     }
 
     /**
+     * Provides the description of the content of the result coverage.
+     * This is the semantic definition of the data quality measures.
+     *
+     * @return description of the content of the result coverage.
+     *
+     * @since 1.3
+     */
+//  @XmlElement(name = "resultContent")     // Pending new ISO 19157 version.
+    public Collection<RangeDimension> getResultContent() {
+        return resultContent = nonNullCollection(resultContent, RangeDimension.class);
+    }
+
+    /**
+     * Sets the description of the content of the result coverage.
+     *
+     * @param  newValues  the new descriptions.
+     *
+     * @since 1.3
+     */
+    public void setResultContent(final Collection<RangeDimension> newValues) {
+        resultContent = writeCollection(newValues, resultContent, RangeDimension.class);
+    }
+
+    /**
      * Returns the description of the content of the result coverage, i.e. semantic definition
      * of the data quality measures.
      *
      * @return description of the content of the result coverage, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getResultContent()}.
      */
     @Override
-    @XmlElement(name = "resultContentDescription", required = true)
+    @Deprecated
+    @XmlElement(name = "resultContentDescription", namespace = LegacyNamespaces.GMI)
     public CoverageDescription getResultContentDescription() {
         return resultContentDescription;
     }
@@ -212,7 +253,10 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * of the data quality measures.
      *
      * @param  newValue  the new content description value.
+     *
+     * @deprecated Replaced by {@link #setResultContent(Collection)}.
      */
+    @Deprecated
     public void setResultContentDescription(final CoverageDescription newValue) {
         checkWritePermission(resultContentDescription);
         resultContentDescription = newValue;

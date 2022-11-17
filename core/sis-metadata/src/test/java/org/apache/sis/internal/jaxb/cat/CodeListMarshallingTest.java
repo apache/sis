@@ -116,7 +116,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
      *
-     * @see <a href="https://standards.iso.org/iso/19115/-3/">ISO schemas</a>
+     * @see <a href="https://schemas.isotc211.org/19115/">ISO schemas for metadata</a>
      */
     @Test
     public void testLegacyISO_URL() throws JAXBException {

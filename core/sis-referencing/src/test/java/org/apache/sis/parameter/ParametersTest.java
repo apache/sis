@@ -22,7 +22,6 @@ import java.util.Collections;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -37,12 +36,15 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  * Tests the static methods in the {@link Parameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.4
  * @module
  */

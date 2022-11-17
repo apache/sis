@@ -42,7 +42,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultParameterDescriptor} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.4
  * @module
  */
@@ -159,6 +159,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     public void testOptionalInteger() {
         final ParameterDescriptor<Integer> descriptor = createSimpleOptional("Simple param", Integer.class);
         assertEquals("name",      "Simple param", descriptor.getName().getCode());
+        assertEquals("valueType",  "Integer",     ((DefaultParameterDescriptor<?>) descriptor).getValueType().toString());
         assertEquals("valueClass", Integer.class, descriptor.getValueClass());
         assertNull  ("validValues",               descriptor.getValidValues());
         assertNull  ("defaultValue",              descriptor.getDefaultValue());
@@ -184,6 +185,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         }
         final ParameterDescriptor<Integer> descriptor = create("Test range", 4, 20, 12);
         assertEquals("name",          "Test range",        descriptor.getName().getCode());
+        assertEquals("valueType",     "Integer",           ((DefaultParameterDescriptor<?>) descriptor).getValueType().toString());
         assertEquals("valueClass",    Integer.class,       descriptor.getValueClass());
         assertNull  ("validValues",                        descriptor.getValidValues());
         assertEquals("defaultValue",  Integer.valueOf(12), descriptor.getDefaultValue());
@@ -215,11 +217,12 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     public void testDoubleType() {
         final ParameterDescriptor<Double> descriptor = create("Length measure", 4, 20, 12, Units.METRE);
         assertEquals("name",         "Length measure",   descriptor.getName().getCode());
-        assertEquals("unit",         Units.METRE,           descriptor.getUnit());
+        assertEquals("valueType",    "Real",             ((DefaultParameterDescriptor<?>) descriptor).getValueType().toString());
         assertEquals("class",        Double.class,       descriptor.getValueClass());
         assertEquals("defaultValue", Double.valueOf(12), descriptor.getDefaultValue());
         assertEquals("minimum",      Double.valueOf( 4), descriptor.getMinimumValue());
         assertEquals("maximum",      Double.valueOf(20), descriptor.getMaximumValue());
+        assertEquals("unit",         Units.METRE,        descriptor.getUnit());
         validate(descriptor);
     }
 
@@ -231,16 +234,17 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         final Range<String> valueDomain = new Range<>(String.class, "AAA", true, "BBB", true);
         final DefaultParameterDescriptor<String> descriptor = new DefaultParameterDescriptor<>(
                 properties("String param"), 0, 1, String.class, valueDomain, null, "ABC");
-        assertEquals("name", "String param",     descriptor.getName().getCode());
-        assertEquals("valueClass", String.class, descriptor.getValueClass());
-        assertNull  ("validValues",              descriptor.getValidValues());
-        assertSame  ("valueDomain", valueDomain, descriptor.getValueDomain());
-        assertEquals("defaultValue",  "ABC",     descriptor.getDefaultValue());
-        assertEquals("minimumValue",  "AAA",     descriptor.getMinimumValue());
-        assertEquals("maximumValue",  "BBB",     descriptor.getMaximumValue());
-        assertEquals("minimumOccurs", 0,         descriptor.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1,         descriptor.getMaximumOccurs());
-        assertNull  ("unit",                     descriptor.getUnit());
+        assertEquals("name", "String param",         descriptor.getName().getCode());
+        assertEquals("valueType", "CharacterString", descriptor.getValueType().toString());
+        assertEquals("valueClass", String.class,     descriptor.getValueClass());
+        assertNull  ("validValues",                  descriptor.getValidValues());
+        assertSame  ("valueDomain",   valueDomain,   descriptor.getValueDomain());
+        assertEquals("defaultValue",  "ABC",         descriptor.getDefaultValue());
+        assertEquals("minimumValue",  "AAA",         descriptor.getMinimumValue());
+        assertEquals("maximumValue",  "BBB",         descriptor.getMaximumValue());
+        assertEquals("minimumOccurs", 0,             descriptor.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,             descriptor.getMaximumOccurs());
+        assertNull  ("unit",                         descriptor.getUnit());
     }
 
     /**
@@ -252,15 +256,16 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         final String[] enumeration = {"Apple", "Orange", "りんご"};
         final ParameterDescriptor<String> descriptor = create(
                 "Enumeration param", String.class, enumeration, "Apple");
-        assertEquals     ("name", "Enumeration param", descriptor.getName().getCode());
-        assertEquals     ("valueClass", String.class,  descriptor.getValueClass());
-        assertArrayEquals("validValues", enumeration,  descriptor.getValidValues().toArray());
-        assertEquals     ("defaultValue",  "Apple",    descriptor.getDefaultValue());
-        assertNull       ("minimumValue",              descriptor.getMinimumValue());
-        assertNull       ("maximumValue",              descriptor.getMaximumValue());
-        assertEquals     ("minimumOccurs", 1,          descriptor.getMinimumOccurs());
-        assertEquals     ("maximumOccurs", 1,          descriptor.getMaximumOccurs());
-        assertNull       ("unit",                      descriptor.getUnit());
+        assertEquals     ("name", "Enumeration param",    descriptor.getName().getCode());
+        assertEquals     ("valueType", "CharacterString", ((DefaultParameterDescriptor<?>) descriptor).getValueType().toString());
+        assertEquals     ("valueClass", String.class,     descriptor.getValueClass());
+        assertArrayEquals("validValues", enumeration,     descriptor.getValidValues().toArray());
+        assertEquals     ("defaultValue", "Apple",        descriptor.getDefaultValue());
+        assertNull       ("minimumValue",                 descriptor.getMinimumValue());
+        assertNull       ("maximumValue",                 descriptor.getMaximumValue());
+        assertEquals     ("minimumOccurs", 1,             descriptor.getMinimumOccurs());
+        assertEquals     ("maximumOccurs", 1,             descriptor.getMaximumOccurs());
+        assertNull       ("unit",                         descriptor.getUnit());
         /*
          * Invalid operation: element not in the list of valid elements.
          */
@@ -281,8 +286,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     public void testArrayType() {
         final DefaultParameterDescriptor<double[]> descriptor = createForArray("Array param", 4, 9, Units.METRE);
         assertEquals("name",       "Array param",  descriptor.getName().getCode());
+        assertEquals("valueType",  "Real",         descriptor.getValueType().toString());
         assertEquals("valueClass", double[].class, descriptor.getValueClass());
-        assertEquals("unit",       Units.METRE,       descriptor.getUnit());
+        assertEquals("unit",       Units.METRE,    descriptor.getUnit());
         assertNull  ("validValues",                descriptor.getValidValues());
         assertNull  ("defaultValue",               descriptor.getDefaultValue());
         assertNull  ("minimumValue",               descriptor.getMinimumValue());

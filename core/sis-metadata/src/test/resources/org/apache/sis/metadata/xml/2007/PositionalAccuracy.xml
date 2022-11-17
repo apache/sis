@@ -30,13 +30,20 @@
     opportunist check of xsi:type declaration.
   -->
   <gmd:nameOfMeasure xsi:type="gmd:PT_FreeText_PropertyType">
-    <gco:CharacterString>Quantitative quality measure focusing on the effective class percent regarded to the total surface size</gco:CharacterString>
+    <gco:CharacterString>Name of a measure used for testing accuracy</gco:CharacterString>
     <gmd:PT_FreeText>
       <gmd:textGroup>
-        <gmd:LocalisedCharacterString locale="#locale-fra">Mesure qualité quantitative de type pourcentage de représentation de la classe par rapport à la surface totale</gmd:LocalisedCharacterString>
+        <gmd:LocalisedCharacterString locale="#locale-fra">Nom d'une mesure utilisée pour tester la précision</gmd:LocalisedCharacterString>
       </gmd:textGroup>
     </gmd:PT_FreeText>
   </gmd:nameOfMeasure>
+  <gmd:measureIdentification>
+    <gmd:MD_Identifier>
+      <gmd:code>
+        <gco:CharacterString>An identifier</gco:CharacterString>
+      </gmd:code>
+    </gmd:MD_Identifier>
+  </gmd:measureIdentification>
   <gmd:result>
     <!--
       The xsi:type declaration below is useless, but we put it

@@ -79,7 +79,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * {@link ModifiableMetadata} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -419,7 +419,7 @@ class PropertyAccessor {
         for (Method candidate : getters) {
             if (Classes.isPossibleGetter(candidate)) {
                 final String name = candidate.getName();
-                if (name.startsWith(SET)) {                         // Paranoiac check.
+                if (name.startsWith(SET) || SpecialCases.exclude(type, name)) {
                     continue;
                 }
                 /*

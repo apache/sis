@@ -19,18 +19,19 @@
  * Classes that are normally omitted from public API because they duplicate existing classes,
  * but still temporarily used at XML (un)marshalling time for standards compliance.
  *
- * <p>Some objects defined in various standards have overlapping functionalities. For example the
- * Metadata (ISO 19115), Referencing by Coordinates (ISO 19111) and Web Processing Service (WPS)
- * all define their own parameter objects. An other example is ISO 19115 defining basic referencing
- * information, which is clearly ISO 19111 subject. GeoAPI tries to provide a uniform API by merging
- * objects, or by omitting an object from one standard in favor of the equivalent object of another
- * standard. However at XML (un)marshalling time, we still need to temporarily recreate the omitted
- * object as defined in the original standard. This package is used for such replacement.</p>
+ * <p>Some objects defined in various standards have overlapping functionalities.
+ * For example the Metadata (ISO 19115), Referencing by Coordinates (ISO 19111),
+ * Data Quality (ISO 19157) and Web Processing Service (WPS) standards all define their own parameter objects.
+ * An other example is ISO 19115 defining basic referencing information, which is clearly ISO 19111 work.
+ * GeoAPI tries to provide an uniform API by merging objects, or by omitting an object from one standard
+ * in favor of the equivalent object of another standard. However at XML (un)marshalling time,
+ * we still need to temporarily recreate the omitted object as defined in the original standard.
+ * This package is used for such replacement.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @since   1.0
+ * @since   1.3
  * @since   0.5
  * @module
  */
@@ -45,6 +46,7 @@
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
+    @XmlJavaTypeAdapter(DQM_Description.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(StringAdapter.class),
@@ -62,5 +64,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.internal.jaxb.metadata.DQM_Description;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.xml.Namespaces;

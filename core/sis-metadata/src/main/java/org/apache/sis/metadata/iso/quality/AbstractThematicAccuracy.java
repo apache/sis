@@ -21,14 +21,13 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.ThematicClassificationCorrectness;
-import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
+import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 
 
 /**
- * Accuracy of quantitative attributes and the correctness of non-quantitative attributes
- * and of the classifications of features and their relationships.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * Accuracy and correctness of attributes and classification of features.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_ThematicAccuracy}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -44,7 +43,7 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -52,7 +51,7 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
 @XmlRootElement(name = "AbstractDQ_ThematicAccuracy")
 @XmlSeeAlso({
     DefaultThematicClassificationCorrectness.class,
-    DefaultNonQuantitativeAttributeAccuracy.class,
+    DefaultNonQuantitativeAttributeCorrectness.class,
     DefaultQuantitativeAttributeAccuracy.class
 })
 public class AbstractThematicAccuracy extends AbstractElement implements ThematicAccuracy {
@@ -108,7 +107,7 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
             return DefaultQuantitativeAttributeAccuracy.castOrCopy((QuantitativeAttributeAccuracy) object);
         }
         if (object instanceof NonQuantitativeAttributeAccuracy) {
-            return DefaultNonQuantitativeAttributeAccuracy.castOrCopy((NonQuantitativeAttributeAccuracy) object);
+            return DefaultNonQuantitativeAttributeCorrectness.castOrCopy((NonQuantitativeAttributeAccuracy) object);
         }
         if (object instanceof ThematicClassificationCorrectness) {
             return DefaultThematicClassificationCorrectness.castOrCopy((ThematicClassificationCorrectness) object);

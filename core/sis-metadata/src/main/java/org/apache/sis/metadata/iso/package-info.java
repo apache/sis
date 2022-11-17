@@ -86,7 +86,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd",
+@XmlSchema(location="https://schemas.isotc211.org/19115/-3/mdb/1.0/mdb.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDB,
            xmlns = {
                 @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base

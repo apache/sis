@@ -65,7 +65,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  *   <li>All properties are <cite>readable</cite>.</li>
  *   <li>A property is also <cite>writable</cite> if a {@code set*(…)} method is defined
  *       <strong>in the implementation class</strong> for the corresponding getter method.
- *       The setter method doesn't need to be defined in the interface.</li>
+ *       The setter method does not need to be defined in the interface.</li>
  * </ul>
  *
  * An instance of {@code MetadataStandard} is associated to every {@link AbstractMetadata} objects.
@@ -73,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * can also be used for other standards.
  *
  * <h2>Defining new {@code MetadataStandard} instances</h2>
- * Users should use the pre-defined constants when applicable.
+ * Users should use the predefined constants when applicable.
  * However if new instances need to be defined, then there is a choice:
  *
  * <ul>
@@ -91,7 +91,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @see AbstractMetadata
  *
@@ -117,23 +117,34 @@ public class MetadataStandard implements Serializable {
     static final boolean IMPLEMENTATION_CAN_ALTER_API = true;
 
     /**
-     * Metadata instances defined in this class. The current implementation does not yet
-     * contains the user-defined instances. However this may be something we will need to
-     * do in the future.
+     * Metadata instances defined in this class. Standards will be tested in the order they appear in this array.
+     * So if {@link #isSupported(String)} may return {@code true} for two or more standards, the standard which
+     * should have precedence should be declared first.
+     *
+     * <p>The current implementation does not yet contains the user-defined instances.
+     * However it may be something that we will need to do in the future.</p>
      */
     private static final MetadataStandard[] INSTANCES;
+
+    /**
+     * An instance working on ISO 19115 standard as defined by GeoAPI interfaces
+     * in the {@link org.opengis.metadata} package and sub-packages, except {@code quality}.
+     */
+    public static final MetadataStandard ISO_19115;
+
+    /**
+     * An instance working on ISO 19157 standard as defined by GeoAPI interfaces
+     * in the {@link org.opengis.metadata.quality} package.
+     *
+     * @since 1.3
+     */
+    public static final MetadataStandard ISO_19157;
 
     /**
      * An instance working on ISO 19111 standard as defined by GeoAPI interfaces
      * in the {@link org.opengis.referencing} package and sub-packages.
      */
     public static final MetadataStandard ISO_19111;
-
-    /**
-     * An instance working on ISO 19115 standard as defined by GeoAPI interfaces
-     * in the {@link org.opengis.metadata} package and sub-packages.
-     */
-    public static final MetadataStandard ISO_19115;
 
     /**
      * An instance working on ISO 19123 standard as defined by GeoAPI interfaces
@@ -144,13 +155,14 @@ public class MetadataStandard implements Serializable {
         final String[] prefix = {"Default", "Abstract"};
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
-        // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
-        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null, null);
-        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms, new MetadataStandard[] {ISO_19115});
-        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.", new MetadataStandard[] {ISO_19111});
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null, (MetadataStandard[]) null);
+        ISO_19157 = new StandardImplementation("ISO 19157", "org.opengis.metadata.quality.", "org.apache.sis.metadata.iso.quality.", prefix, null, ISO_19115);
+        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms, ISO_19157, ISO_19115);
+        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.", ISO_19111);
         INSTANCES = new MetadataStandard[] {
-            ISO_19111,
+            ISO_19157,      // Need to be declared before ISO 19115.
             ISO_19115,
+            ISO_19111,
             ISO_19123
         };
         SystemListener.add(new SystemListener(Modules.METADATA) {
@@ -175,8 +187,11 @@ public class MetadataStandard implements Serializable {
 
     /**
      * The dependencies, or {@code null} if none.
+     * If non-null, dependencies will be tested in the order they appear in this array.
+     * Consequently if {@link #isMetadata(Class)} may return {@code true} for two or more
+     * dependencies, then the dependency which should have precedence should be declared first.
      *
-     * Note: the {@code null} value is for serialization compatibility.
+     * <p>Note: the {@code null} value is for serialization compatibility.</p>
      */
     private final MetadataStandard[] dependencies;
 
@@ -190,13 +205,18 @@ public class MetadataStandard implements Serializable {
      *   <li>{@link PropertyAccessor} otherwise.</li>
      * </ul>
      */
-    private final transient ConcurrentMap<CacheKey,Object> accessors;      // written by reflection on deserialization.
+    private final transient ConcurrentMap<CacheKey,Object> accessors;      // Written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
+     * If this {@code MetadataStandard} does not support a given class, then the dependencies will be
+     * tested in the order declared to this constructor. Consequently if {@link #isMetadata(Class)} may
+     * return {@code true} for two or more dependencies, then the dependency which should have precedence
+     * should be declared first.
      *
-     * <div class="note"><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
-     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</div>
+     * <div class="note"><b>Example:</b>: For the ISO 19157 standard reflected by GeoAPI interfaces,
+     * {@code interfacePackage} shall be the {@link org.opengis.metadata.quality} package.
+     * Its dependency is {@link #ISO_19115} in the {@link org.opengis.metadata} package.</div>
      *
      * @param  citation          bibliographical reference to the international standard.
      * @param  interfacePackage  the root package for metadata interfaces.
@@ -227,7 +247,7 @@ public class MetadataStandard implements Serializable {
      * @param  interfacePackage  the root package for metadata interfaces.
      * @param  dependencies      the dependencies to other metadata standards, or {@code null} if none.
      */
-    MetadataStandard(final String citation, final String interfacePackage, final MetadataStandard[] dependencies) {
+    MetadataStandard(final String citation, final String interfacePackage, final MetadataStandard... dependencies) {
         this.citation         = new SimpleCitation(citation);
         this.interfacePackage = interfacePackage;
         this.accessors        = new ConcurrentHashMap<>();

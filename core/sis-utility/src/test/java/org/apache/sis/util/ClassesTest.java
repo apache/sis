@@ -17,6 +17,8 @@
 package org.apache.sis.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.GenericDeclaration;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
@@ -28,6 +30,7 @@ import static org.apache.sis.util.Classes.*;
  * The are used only as various Class<?> arguments
  * given to the methods to test.
  */
+import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
@@ -44,6 +47,8 @@ import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.awt.geom.Point2D;
+import javax.print.attribute.standard.PrinterStateReason;
+import javax.print.attribute.standard.PrinterStateReasons;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -60,7 +65,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  * Tests the {@link Classes} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -92,7 +97,7 @@ public final strictfp class ClassesTest extends TestCase {
      * Tests {@link Classes#getAllInterfaces(Class)}.
      */
     @Test
-    @SuppressWarnings("")
+    @SuppressWarnings("rawtypes")
     public void testGetAllInterfaces() {
         assertArrayEquals(new Class[] {
             GeographicCRS.class,
@@ -216,25 +221,39 @@ public final strictfp class ClassesTest extends TestCase {
     /**
      * Tests the {@link Classes#boundOfParameterizedProperty(Field)} method.
      *
-     * @throws NoSuchFieldException  if there is an error in a field name.
+     * @throws NoSuchFieldException if there is an error in a field name.
+     */
+    @Test
+    public void testBoundOfParameterizedField() throws NoSuchFieldException {
+        final Class<Parameterized> c = Parameterized.class;
+        assertNull(                boundOfParameterizedProperty(c.getField("attrib1")));
+        assertEquals(Long  .class, boundOfParameterizedProperty(c.getField("attrib2")));
+        assertEquals(String.class, boundOfParameterizedProperty(c.getField("attrib3")));
+    }
+
+    /**
+     * Tests the {@link Classes#boundOfParameterizedProperty(Method)} method.
+     *
      * @throws NoSuchMethodException if there is an error in a method name.
      */
     @Test
-    public void testBoundOfParameterizedProperty() throws NoSuchFieldException, NoSuchMethodException {
-        final Class<?>[] g = null;
-        final Class<?>[] s = new Class<?>[] {Set.class};
+    public void testBoundOfParameterizedProperty() throws NoSuchMethodException {
+        final Class<?>[] getter = null;
+        final Class<?>[] setter = new Class<?>[] {Set.class};
         final Class<Parameterized> c = Parameterized.class;
-        assertNull(                    boundOfParameterizedProperty(c.getMethod("getter0", g)));
-        assertNull(                    boundOfParameterizedProperty(c.getMethod("setter0", s)));
-        assertEquals(Long      .class, boundOfParameterizedProperty(c.getField ("attrib2"   )));
-        assertEquals(Integer   .class, boundOfParameterizedProperty(c.getMethod("getter1", g)));
-        assertEquals(Byte      .class, boundOfParameterizedProperty(c.getMethod("getter2", g)));
-        assertEquals(Object    .class, boundOfParameterizedProperty(c.getMethod("getter3", g)));
-        assertEquals(short[]   .class, boundOfParameterizedProperty(c.getMethod("getter4", g)));
-        assertEquals(Comparable.class, boundOfParameterizedProperty(c.getMethod("getter5", g)));
-        assertEquals(String    .class, boundOfParameterizedProperty(c.getMethod("setter1", s)));
-        assertEquals(Short     .class, boundOfParameterizedProperty(c.getMethod("setter2", s)));
-        assertEquals(Object    .class, boundOfParameterizedProperty(c.getMethod("setter3", s)));
+        assertNull(                      boundOfParameterizedProperty(c.getMethod("getter0", getter)));
+        assertNull(                      boundOfParameterizedProperty(c.getMethod("setter0", setter)));
+        assertEquals(Integer     .class, boundOfParameterizedProperty(c.getMethod("getter1", getter)));
+        assertEquals(Byte        .class, boundOfParameterizedProperty(c.getMethod("getter2", getter)));
+        assertEquals(Object      .class, boundOfParameterizedProperty(c.getMethod("getter3", getter)));
+        assertEquals(short[]     .class, boundOfParameterizedProperty(c.getMethod("getter4", getter)));
+        assertEquals(Comparable  .class, boundOfParameterizedProperty(c.getMethod("getter5", getter)));
+        assertEquals(Comparable[].class, boundOfParameterizedProperty(c.getMethod("getter6", getter)));
+        assertEquals(String      .class, boundOfParameterizedProperty(c.getMethod("setter1", setter)));
+        assertEquals(Short       .class, boundOfParameterizedProperty(c.getMethod("setter2", setter)));
+        assertEquals(Object      .class, boundOfParameterizedProperty(c.getMethod("setter3", setter)));
+
+        assertEquals(PrinterStateReason.class, boundOfParameterizedProperty(c.getMethod("getter7", getter)));
     }
 
     /**
@@ -242,18 +261,33 @@ public final strictfp class ClassesTest extends TestCase {
      */
     @SuppressWarnings("rawtypes")
     private static final class Parameterized {
-        public Set<? extends Long> attrib2 = null;
-        public Set                 getter0() {return null;}         // Intentionnaly unparameterized.
-        public Set<       Integer> getter1() {return null;}
-        public Set<? extends Byte> getter2() {return null;}
-        public Set<? super  Float> getter3() {return null;}
-        public Set<       short[]> getter4() {return null;}
-        public Set<Comparable<?>>  getter5() {return null;}
+        public Long                 attrib1;
+        public Set<? extends Long>  attrib2;
+        public Map<String,Integer>  attrib3;
+        public Set                  getter0() {return null;}        // Intentionnaly unparameterized.
+        public Set<       Integer>  getter1() {return null;}
+        public Set<? extends Byte>  getter2() {return null;}
+        public Set<? super  Float>  getter3() {return null;}
+        public Set<       short[]>  getter4() {return null;}
+        public Set<Comparable<?>>   getter5() {return null;}
+        public Set<Comparable<?>[]> getter6() {return null;}
+        public PrinterStateReasons  getter7() {return null;}
 
-        public void setter0(Set                  dummy) {}          // Intentionnaly unparameterized.
+        public void setter0(Set                  dummy) {}         // Intentionnaly unparameterized.
         public void setter1(Set<         String> dummy) {}
         public void setter2(Set<? extends Short> dummy) {}
         public void setter3(Set<? super  Double> dummy) {}
+    }
+
+    /**
+     * Tests the {@link Classes#boundOfParameterizedDeclaration(GenericDeclaration)} method.
+     */
+    @Test
+    public void testBoundOfParameterizedDeclaration() {
+        assertNull  (              boundOfParameterizedDeclaration(Long.class));
+        assertEquals(Object.class, boundOfParameterizedDeclaration(List.class));
+        assertEquals(Object.class, boundOfParameterizedDeclaration(Map.class));
+        assertEquals(PrinterStateReason.class, boundOfParameterizedDeclaration(PrinterStateReasons.class));
     }
 
     /**

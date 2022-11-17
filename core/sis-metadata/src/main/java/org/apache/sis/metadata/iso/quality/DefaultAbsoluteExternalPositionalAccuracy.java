@@ -24,7 +24,8 @@ import org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy;
 
 /**
  * Closeness of reported coordinate values to values accepted as or being true.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * See the {@link AbsoluteExternalPositionalAccuracy} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_AbsoluteExternalPositionalAccuracy}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -47,7 +48,7 @@ import org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy;
 @XmlType(name = "DQ_AbsoluteExternalPositionalAccuracy_Type")
 @XmlRootElement(name = "DQ_AbsoluteExternalPositionalAccuracy")
 public class DefaultAbsoluteExternalPositionalAccuracy extends AbstractPositionalAccuracy
-       implements AbsoluteExternalPositionalAccuracy
+        implements AbsoluteExternalPositionalAccuracy
 {
     /**
      * Serial number for inter-operability with different versions.

@@ -35,6 +35,9 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.internal.system.Modules;
 
+// Branch-dependent imports
+import org.opengis.util.TypeName;
+
 
 /**
  * Provides access to services defined in the {@code "sis-referencing"} module.
@@ -45,7 +48,7 @@ import org.apache.sis.internal.system.Modules;
  * <cite>"referencing by coordinates"</cite> but needed by metadata.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -251,15 +254,26 @@ public class ReferencingServices extends OptionalDependency {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns the name of the type of values.
+     *
+     * @param  parameter  parameter for which to get the name of type of values, or {@code null}.
+     * @return name of type of values, or {@code null} if not supported by given implementation.
+     */
+    public TypeName getValueType(ParameterDescriptor<?> parameter) {
+        return null;
+    }
+
+    /**
      * Returns a fully implemented parameter descriptor.
      *
+     * @param  <T>        the type of values.
      * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
      * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      *
      * @since 0.5
      */
-    public ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter) {
+    public <T> ParameterDescriptor<T> toImplementation(ParameterDescriptor<T> parameter) {
         throw moduleNotFound();
     }
 

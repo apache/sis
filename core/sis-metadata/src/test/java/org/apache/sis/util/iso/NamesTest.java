@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Names} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -84,8 +84,12 @@ public final strictfp class NamesTest extends TestCase {
         assertValueClassEquals(Random.class, type);
         assertValueClassEquals(DefaultNameFactoryTest.class,
                 new DefaultTypeName(type.scope(), DefaultNameFactoryTest.class.getName()));
-        assertValueClassEquals(UnknownNameException.class,
-                new DefaultTypeName(type.scope(), "org.apache.sis.Dummy"));
+        try {
+            new DefaultTypeName(type.scope(), "org.apache.sis.Dummy");
+            fail("Expected UnknownNameException.");
+        } catch (UnknownNameException e) {
+            assertTrue(e.getMessage().contains("org.apache.sis.Dummy"));
+        }
     }
 
     /**
@@ -100,7 +104,12 @@ public final strictfp class NamesTest extends TestCase {
         assertValueClassEquals(String.class,               type);
         assertValueClassEquals(Double.class,               new DefaultTypeName(type.scope(), "Real"));
         assertValueClassEquals(InternationalString.class,  new DefaultTypeName(type.scope(), "FreeText"));
-        assertValueClassEquals(UnknownNameException.class, new DefaultTypeName(type.scope(), "Dummy"));
+        try {
+            new DefaultTypeName(type.scope(), "Dummy");
+            fail("Expected UnknownNameException.");
+        } catch (UnknownNameException e) {
+            assertTrue(e.getMessage().contains("OGC:Dummy"));
+        }
     }
 
     /**
@@ -117,28 +126,14 @@ public final strictfp class NamesTest extends TestCase {
     }
 
     /**
-     * Invokes {@link Names#toClass(TypeName)}, but catch {@link UnknownNameException}.
-     * If the latter exception is caught, then this method returns {@code UnknownNameException.class}.
-     */
-    private static Class<?> toClass(final TypeName type) {
-        try {
-            return Names.toClass(type);
-        } catch (UnknownNameException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(type.toFullyQualifiedName().toString()));
-            return UnknownNameException.class;
-        }
-    }
-
-    /**
      * Asserts that calls to {@link Names#toClass(TypeName)} returns the expected value class.
      */
     private static void assertValueClassEquals(final Class<?> expected, final TypeName type) {
-        assertEquals(expected, toClass(type));
+        assertEquals(expected, Names.toClass(type));
         /*
          * Tests detection with an implementation which is not the SIS one.
          */
-        assertEquals(expected, toClass(new TypeName() {
+        assertEquals(expected, Names.toClass(new TypeName() {
             @Override public int                       depth()                  {return type.depth();}
             @Override public List<? extends LocalName> getParsedNames()         {return type.getParsedNames();}
             @Override public LocalName                 head()                   {return type.head();}

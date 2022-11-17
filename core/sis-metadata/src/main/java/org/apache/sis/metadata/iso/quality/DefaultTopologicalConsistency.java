@@ -22,8 +22,9 @@ import org.opengis.metadata.quality.TopologicalConsistency;
 
 
 /**
- * Correctness of the explicitly encoded topological characteristics of the dataset as described by the scope.
- * The following property is mandatory in a well-formed metadata according ISO 19115:
+ * Correctness of the explicitly encoded topological characteristics of the data set.
+ * See the {@link TopologicalConsistency} GeoAPI interface for more details.
+ * The following property is mandatory in a well-formed metadata according ISO 19157:
  *
  * <div class="preformat">{@code DQ_TopologicalConsistency}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
@@ -45,9 +46,7 @@ import org.opengis.metadata.quality.TopologicalConsistency;
  */
 @XmlType(name = "DQ_TopologicalConsistency_Type")
 @XmlRootElement(name = "DQ_TopologicalConsistency")
-public class DefaultTopologicalConsistency extends AbstractLogicalConsistency
-        implements TopologicalConsistency
-{
+public class DefaultTopologicalConsistency extends AbstractLogicalConsistency implements TopologicalConsistency {
     /**
      * Serial number for inter-operability with different versions.
      */

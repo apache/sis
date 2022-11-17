@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.metadata.replace;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.util.MemberName;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.test.xml.TestCase;
@@ -31,7 +32,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -42,9 +43,9 @@ public final strictfp class ServiceParameterTest extends TestCase {
      * @return the test parameter.
      */
     public static ServiceParameter create() {
-        final MemberName paramName = Names.createMemberName(null, null, "Version", String.class);
+        final MemberName name = Names.createMemberName("TestSpace", null, "My service parameter", String.class);
         final ServiceParameter param = new ServiceParameter();
-        param.memberName    = paramName;
+        param.memberName    = name;
         param.optionality   = true;
         param.repeatability = false;
         return param;
@@ -56,8 +57,11 @@ public final strictfp class ServiceParameterTest extends TestCase {
     @Test
     public void testGetName() {
         final ServiceParameter param = create();
-        assertEquals("name", "Version", String.valueOf(param.getName()));
-        assertEquals("valueClass", String.class, param.getValueClass());
+        final ReferenceIdentifier name = param.getName();
+        assertEquals("codeSpace", "TestSpace", name.getCodeSpace());
+        assertEquals("code", "My service parameter", name.getCode());
+        assertEquals("name", "TestSpace:My service parameter", String.valueOf(name));
+        assertNull  ("description", param.getDescription());
     }
 
     /**
