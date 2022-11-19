@@ -140,7 +140,7 @@ public class DomainLinearizer {
      *
      * @param  coverage  the grid coverage in which to make the <cite>grid to CRS</cite> conversion linear.
      * @return a grid coverage with a linear approximation of the <cite>grid to CRS</cite> conversion.
-     * @throws TransformException if some cell coordinates can not be computed.
+     * @throws TransformException if some cell coordinates cannot be computed.
      */
     public GridCoverage apply(final GridCoverage coverage) throws TransformException {
         ArgumentChecks.ensureNonNull("coverage", coverage);
@@ -162,7 +162,7 @@ public class DomainLinearizer {
      *
      * @param  gg  the grid geometry in which to make the <cite>grid to CRS</cite> conversion linear.
      * @return a grid geometry with a linear approximation of the <cite>grid to CRS</cite> conversion.
-     * @throws TransformException if some cell coordinates can not be computed.
+     * @throws TransformException if some cell coordinates cannot be computed.
      */
     public GridGeometry apply(final GridGeometry gg) throws TransformException {
         ArgumentChecks.ensureNonNull("gg", gg);

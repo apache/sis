@@ -133,7 +133,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      * Returns the geometry coordinate reference system, or {@code null} if none.
      *
      * @return the coordinate reference system, or {@code null} if none.
-     * @throws BackingStoreException if the CRS can not be created from the SRID code.
+     * @throws BackingStoreException if the CRS cannot be created from the SRID code.
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -549,7 +549,7 @@ add:    for (Geometry next = geometry;;) {
      *
      * @param  target  the desired type.
      * @return the converted geometry.
-     * @throws IllegalArgumentException if the geometry can not be converted to the specified type.
+     * @throws IllegalArgumentException if the geometry cannot be converted to the specified type.
      */
     @Override
     public GeometryWrapper<Geometry> toGeometryType(final GeometryType target) {
@@ -570,7 +570,7 @@ add:    for (Geometry next = geometry;;) {
      *
      * @param  target  the desired type.
      * @return the converted geometry.
-     * @throws IllegalArgumentException if the geometry can not be converted to the specified type.
+     * @throws IllegalArgumentException if the geometry cannot be converted to the specified type.
      */
     private Geometry convert(final GeometryType target) {
         final GeometryFactory factory = geometry.getFactory();
@@ -678,8 +678,8 @@ add:    for (Geometry next = geometry;;) {
      *
      * @param  operation  the coordinate operation to apply, or {@code null}.
      * @param  validate   whether to validate the operation source CRS.
-     * @throws FactoryException if transformation to the target CRS can not be found.
-     * @throws TransformException if the geometry can not be transformed.
+     * @throws FactoryException if transformation to the target CRS cannot be found.
+     * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
     public GeometryWrapper<Geometry> transform(final CoordinateOperation operation, final boolean validate)
@@ -695,7 +695,7 @@ add:    for (Geometry next = geometry;;) {
      *
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws TransformException if this geometry can not be transformed.
+     * @throws TransformException if this geometry cannot be transformed.
      */
     @Override
     public GeometryWrapper<Geometry> transform(final CoordinateReferenceSystem targetCRS) throws TransformException {

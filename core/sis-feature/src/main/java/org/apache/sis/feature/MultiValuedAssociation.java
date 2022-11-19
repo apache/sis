@@ -23,7 +23,7 @@ import org.apache.sis.internal.feature.Resources;
 
 
 /**
- * An instance of an {@linkplain DefaultAssociationRole association role} containing an arbitrary amount of values.
+ * An instance of an {@linkplain DefaultAssociationRole association role} containing an arbitrary number of values.
  *
  * <div class="note"><b>Note:</b> in the common case where the {@linkplain DefaultAssociationRole association role}
  * restricts the cardinality to [0 … 1], the {@link SingletonAssociation} implementation consumes less memory.</div>
@@ -147,7 +147,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * the association {@linkplain #getValues() values} are <strong>not</strong> cloned.
      *
      * @return a clone of this association.
-     * @throws CloneNotSupportedException if this association can not be cloned.
+     * @throws CloneNotSupportedException if this association cannot be cloned.
      */
     @Override
     @SuppressWarnings("unchecked")

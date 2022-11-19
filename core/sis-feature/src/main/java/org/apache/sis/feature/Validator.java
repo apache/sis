@@ -66,7 +66,7 @@ final class Validator {
      *
      * <div class="note"><b>Note:</b>
      * setting {@code measureIdentification} to the property name may look like a departure from ISO intent,
-     * since the former should be an identification of the <em>quality measurement</em> rather then the measure itself.
+     * since the former should be an identification of the <em>quality measurement</em> rather than the measure itself.
      * (setting {@code measureDescription} to {@code type.getDescription()} would probably be wrong for that reason).
      * However {@code measureIdentification} is only an identifier, not a full description of the quality measurement
      * We are not strictly forbidden to use the same identifier for both the quality measurement than the measurement
@@ -155,7 +155,7 @@ final class Validator {
         for (final Object value : values) {
             /*
              * In theory, the following check is unnecessary since the type was constrained by the Attribute.setValue(V)
-             * method signature. However in practice the call to Attribute.setValue(…) is sometime done after type erasure,
+             * method signature. However in practice the call to Attribute.setValue(…) is sometimes done after type erasure,
              * so we are better to check.
              */
             final Class<?> valueClass = type.getValueClass();

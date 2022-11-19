@@ -40,7 +40,7 @@ import static java.util.logging.Logger.getLogger;
 
 /**
  * The central point from which all unit services (parsing, formatting, listing, <i>etc</i>) can be obtained.
- * Apache SIS does not use this class (SIS rather uses {@link Units} pre-defined constants and {@link UnitFormat}
+ * Apache SIS does not use this class (SIS rather uses {@link Units} predefined constants and {@link UnitFormat}
  * directly since they are designed specifically for SIS needs).
  * This class is provided for allowing other applications to discover Apache SIS implementation of JSR-363
  * without direct dependency. A {@code UnitServices} instance can be obtained by call to {@link #current()}.

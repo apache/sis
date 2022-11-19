@@ -63,7 +63,7 @@ import java.util.EnumSet;
  */
 public enum FunctionProperty {
     /**
-     * A function is <cite>invertible</cite> if it can provide an other function mapping
+     * A function is <cite>invertible</cite> if it can provide another function mapping
      * <var>T</var> values to <var>S</var> values.
      *
      * <p>While other values defined in this enumeration are more about the mathematical aspects
@@ -100,7 +100,7 @@ public enum FunctionProperty {
      * <div class="note"><b>Example:</b>
      * An {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link String} to {@link Integer}
      * is a surjective function, since there is always at least one string for each integer value. Note that such
-     * function can not be injective since many different strings can represent the same integer value.</div>
+     * function cannot be injective since many different strings can represent the same integer value.</div>
      *
      * A function which is both {@linkplain #INJECTIVE injective} and surjective is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship

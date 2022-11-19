@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * <h2>WKT 1 variants</h2>
  * The WKT 2 format should be parsed and formatted consistently by all software products.
  * But the WKT 1 format has been interpreted differently by various implementers.
- * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
+ * Apache SIS can adapt itself to different WKT variants, sometimes automatically. But some aspects cannot be guessed.
  * One noticeable source of confusion is the unit of measurement of {@code PRIMEM[…]} and {@code PARAMETER[…]} elements:
  *
  * <ul>

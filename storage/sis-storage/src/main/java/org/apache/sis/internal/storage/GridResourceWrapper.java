@@ -67,7 +67,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * This method is invoked in a synchronized block when first needed and the result is cached.
      *
      * @return the resource on which to delegate operations.
-     * @throws DataStoreException if the resource can not be created.
+     * @throws DataStoreException if the resource cannot be created.
      */
     protected abstract GridCoverageResource createSource() throws DataStoreException;
 
@@ -76,7 +76,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * This method invokes {@link #createSource()} when first needed and caches the result.
      *
      * @return the resource on which to delegate operations.
-     * @throws DataStoreException if the resource can not be created.
+     * @throws DataStoreException if the resource cannot be created.
      */
     protected final GridCoverageResource source() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
@@ -202,7 +202,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to notify about events.
-     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} to listen (cannot be {@code null}).
      */
     @Override
     public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
@@ -221,7 +221,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to stop notifying about events.
-     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} which were listened (cannot be {@code null}).
      */
     @Override
     public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {

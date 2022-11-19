@@ -24,7 +24,7 @@
  *
  * <h2>Outputs configuration</h2>
  * By default, successful tests do not produce any output. However it is possible to ask for
- * verbose outputs, which is sometime useful for debugging purpose. This behavior is controlled
+ * verbose outputs, which is sometimes useful for debugging purpose. This behavior is controlled
  * from the command line by defining {@linkplain java.lang.System#getProperties() system properties}
  * values like below:
  *

@@ -129,7 +129,7 @@ abstract class FieldType extends AbstractIdentifiedType {
      *
      * @param deprecated  whether the type to format is deprecated.
      * @param className   the interface name of the object on which {@code toString()} is invoked.
-     * @param name        the property type name, sometime {@link #getName()} or sometime the name of another object.
+     * @param name        the property type name, sometimes {@link #getName()} or sometimes the name of another object.
      * @param valueType   the name of value class (attribute), or the feature type name (association).
      */
     static StringBuilder toString(final boolean deprecated, final String className, final GenericName name, final Object valueType) {
@@ -158,7 +158,7 @@ abstract class FieldType extends AbstractIdentifiedType {
      *
      * @param deprecated  whether the type to format is deprecated.
      * @param className   the interface name of the object on which {@code toString()} is invoked.
-     * @param name        the property type name, sometime {@link #getName()} or sometime the name of another object.
+     * @param name        the property type name, sometimes {@link #getName()} or sometimes the name of another object.
      * @param valueType   the name of value class (attribute), or the feature type name (association).
      * @param values      the actual values.
      */

@@ -326,7 +326,7 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<AbstractFeat
     /**
      * Safety for data stores that do not implement the {@link FeatureSet#getType()} method.
      * That method is mandatory and implementations should not be allowed to return null, but
-     * incomplete implementations exist so we are better to be safe. If we can not get the type
+     * incomplete implementations exist so we are better to be safe. If we cannot get the type
      * from the first feature instances, we will give up.
      */
     private void setMissingType(final boolean isTypeKnown) throws DataStoreException {

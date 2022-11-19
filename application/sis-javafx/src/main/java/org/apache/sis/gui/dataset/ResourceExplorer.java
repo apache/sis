@@ -59,7 +59,7 @@ import org.apache.sis.internal.gui.LogHandler;
 
 /**
  * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata and data views.
- * This panel contains also a "new window" button for creating new windows showing the same data but potentially
+ * This panel also contains a "new window" button for creating new windows showing the same data but potentially
  * a different locations and times. {@code ResourceExplorer} contains a list of windows created by this widget.
  *
  * @author  Smaniotto Enzo (GSoC)
@@ -334,7 +334,7 @@ public class ResourceExplorer extends Widget {
 
     /**
      * Removes the given resource from the tree and eventually closes it.
-     * If the given resource is not in this tree explorer or can not be removed,
+     * If the given resource is not in this tree explorer or cannot be removed,
      * then this method does nothing.
      *
      * @param  resource  the resource to remove, or {@code null}.
@@ -566,7 +566,7 @@ public class ResourceExplorer extends Widget {
                     }
                 }
 
-                /** Invoked in JavaFX thread if children can not be loaded. */
+                /** Invoked in JavaFX thread if children cannot be loaded. */
                 @Override protected void failed() {
                     warning("updateDataTabWithDefault", resource, getException());
                 }

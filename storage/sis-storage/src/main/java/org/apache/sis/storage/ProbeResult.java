@@ -35,7 +35,7 @@ import org.apache.sis.internal.util.Strings;
  * {@code DataStoreProvider} instance has reasonable chances to be able to handle the given storage.
  *
  * <p>Whether a storage appears to be supported or not is given by the {@link #isSupported()} property.
- * Other properties like {@link #getVersion()} are sometime available for both supported and unsupported storages.
+ * Other properties like {@link #getVersion()} are sometimes available for both supported and unsupported storages.
  * For example a file may be encoded in a known format, but may be using an unsupported version of that format.</p>
  *
  * <h2>Special values</h2>
@@ -89,7 +89,7 @@ public class ProbeResult implements Serializable {
     public static final ProbeResult UNSUPPORTED_STORAGE = new Constant(false, "UNSUPPORTED_STORAGE");
 
     /**
-     * The open capability can not be determined because the {@link java.nio.ByteBuffer} contains an insufficient
+     * The open capability cannot be determined because the {@link java.nio.ByteBuffer} contains an insufficient
      * amount of bytes. This value can be returned by {@link DataStoreProvider#probeContent(StorageConnector)}
      * implementations as below:
      *
@@ -110,7 +110,7 @@ public class ProbeResult implements Serializable {
      * if at least one {@code DataStoreProvider} returns {@code INSUFFICIENT_BYTES}, then:
      *
      * <ol>
-     *   <li>SIS will continue to search for an other provider for which {@code probeContent(…)}
+     *   <li>SIS will continue to search for another provider for which {@code probeContent(…)}
      *       declares to support the storage, using only the available bytes.</li>
      *   <li>Only if no such provider can be found, then SIS will fetch more bytes and query again
      *       the providers that returned {@code INSUFFICIENT_BYTES} in the previous iteration.</li>
@@ -121,7 +121,7 @@ public class ProbeResult implements Serializable {
     public static final ProbeResult INSUFFICIENT_BYTES = new Constant(false, "INSUFFICIENT_BYTES");
 
     /**
-     * The open capability can not be determined.
+     * The open capability cannot be determined.
      * This value may be returned by {@code DataStore} implementations that could potentially open anything,
      * for example the RAW image format.
      *

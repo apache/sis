@@ -92,7 +92,7 @@ final class PathAction implements EventHandler<ActionEvent> {
          * The file path can be given in two forms: as an URI or as a text (named "file" below).
          * The textual form is the one that will usually be pasted. We try to provide paths on
          * the local file system if possible, converting "file:///" URI if needed. Only if URI
-         * can not be converted to a local file path, we keep the URI form.
+         * cannot be converted to a local file path, we keep the URI form.
          *
          * The `uri` is determined in a way opposite to `file`: we convert local path to URI.
          * That form is provided in case the path is pasted in applications expecting URI.

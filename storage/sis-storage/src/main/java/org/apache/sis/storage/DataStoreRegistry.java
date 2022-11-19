@@ -249,7 +249,7 @@ search:     for (int ci=0; ci < categories.length; ci++) {
                             /*
                              * If a provider doesn't have enough bytes for answering the question,
                              * try again after this loop with more bytes in the buffer, unless we
-                             * found an other provider.
+                             * found another provider.
                              */
                             needMoreBytes.add(new ProbeProviderPair(provider, probe));
                         } else if (ProbeResult.UNDETERMINED.equals(probe)) {

@@ -125,7 +125,7 @@ final class LookupInfo {
      * The expected value is an instance of a class outside the metadata package, for example
      * {@link String}, {@link org.opengis.util.InternationalString}, {@link java.net.URI}, <i>etc.</i>
      *
-     * @throws UnconvertibleObjectException if the value can not be converter.
+     * @throws UnconvertibleObjectException if the value cannot be converter.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     final Object convert(final Class<?> targetType, Object value) {

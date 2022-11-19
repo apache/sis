@@ -241,7 +241,7 @@ public class FileService extends FileSystemProvider {
     /**
      * Returns the file system associated to the {@link #DEFAULT_ACCESS_KEY}.
      *
-     * @throws SdkException if the file system can not be created.
+     * @throws SdkException if the file system cannot be created.
      */
     private ClientFileSystem getDefaultFileSystem() {
         return fileSystems.computeIfAbsent(DEFAULT_ACCESS_KEY, (key) -> new ClientFileSystem(this, S3Client.create()));
@@ -278,7 +278,7 @@ public class FileService extends FileSystemProvider {
      * @param  uri  a URI of the form {@code "s3://accessKey@bucket/key"}.
      * @return the resulting {@code Path}.
      * @throws IllegalArgumentException if the URI is not supported by this provider.
-     * @throws FileSystemNotFoundException if the file system does not exist and can not be created automatically.
+     * @throws FileSystemNotFoundException if the file system does not exist and cannot be created automatically.
      */
     @Override
     public Path getPath(final URI uri) {

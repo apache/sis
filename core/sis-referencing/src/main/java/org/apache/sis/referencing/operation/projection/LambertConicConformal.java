@@ -151,7 +151,7 @@ public class LambertConicConformal extends ConformalProjection {
      * <p><b>Note:</b></p>
      * <ul>
      *   <li>If φ₁ = -φ₂, then the cone become a cylinder and this {@code n} value become 0.
-     *       This limiting case is the Mercator projection, but we can not use this class because
+     *       This limiting case is the Mercator projection, but we cannot use this class because
      *       {@code n=0} causes indetermination like 0 × ∞ in the equations of this class.</li>
      *   <li>If φ₁ = φ₂ = ±90°, then this {@code n} value become ±1. The formulas in the transform and
      *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
@@ -251,7 +251,7 @@ public class LambertConicConformal extends ConformalProjection {
         double φ2 = initializer.getAndStore(LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
         if (abs(φ1 + φ2) < Formulas.ANGULAR_TOLERANCE) {
             /*
-             * We can not allow that because if φ1 = -φ2, then n = 0 and the equations
+             * We cannot allow that because if φ1 = -φ2, then n = 0 and the equations
              * in this class break down with indetermination like 0 × ∞.
              * The caller should use the Mercator projection instead for such cases.
              */
@@ -438,7 +438,7 @@ public class LambertConicConformal extends ConformalProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -491,7 +491,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

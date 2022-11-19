@@ -202,7 +202,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      * @param  addTo      where to add the type of properties evaluated by this expression.
      * @return builder of type resulting from expression evaluation (never null).
      * @throws IllegalArgumentException if the given feature type does not contain the expected properties,
-     *         or if this method can not determine the result type of the expression.
+     *         or if this method cannot determine the result type of the expression.
      *         It may be because that expression is backed by an unsupported implementation.
      */
     @Override

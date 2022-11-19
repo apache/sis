@@ -152,7 +152,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     }
 
     /**
-     * Sets the line separator. Can not be a null or empty string.
+     * Sets the line separator. Cannot be a null or empty string.
      *
      * @param  separator  the new line separator.
      */

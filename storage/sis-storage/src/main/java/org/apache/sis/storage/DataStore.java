@@ -210,7 +210,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * <p>In the event a data store must be closed and reopened later, those parameters can be stored in a file or
      * database and used for {@linkplain DataStoreProvider#open(ParameterValueGroup) creating a new store} later.</p>
      *
-     * <p>In some cases, for stores reading in-memory data or other inputs that can not fit with
+     * <p>In some cases, for stores reading in-memory data or other inputs that cannot fit with
      * {@code ParameterDescriptorGroup} requirements (for example an {@link java.io.InputStream}
      * connected to unknown or no {@link java.net.URL}), this method may return an empty value.</p>
      *
@@ -377,7 +377,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * Returns implementation-specific metadata. The structure of those metadata varies for each file format.
      * The {@linkplain #getMetadata() standard metadata} should be preferred since they allow abstraction of
-     * format details, but those native metadata are sometime useful when an information is not provided by
+     * format details, but those native metadata are sometimes useful when an information is not provided by
      * the standard metadata.
      *
      * <p>The tree table should contain at least the following columns:</p>
@@ -491,7 +491,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * warnings in its own way, for example by showing warnings in a widget.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} to listen (cannot be {@code null}).
      * @param  listener   listener to notify about events.
      *
      * @since 1.0
@@ -518,7 +518,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * then this {@code DataStore} will send future warnings to the loggers.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} which were listened (cannot be {@code null}).
      * @param  listener   listener to stop notifying about events.
      *
      * @since 1.0

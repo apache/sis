@@ -309,7 +309,7 @@ class PropertyAccessor {
                 /*
                  * If we found no setter method expecting an argument of the same type than the
                  * argument returned by the GeoAPI method,  try again with the type returned by
-                 * the implementation class. It is typically the same type, but sometime it may
+                 * the implementation class. It is typically the same type, but sometimes it may
                  * be a parent type.
                  *
                  * It is a necessary condition that the type returned by the getter is assignable
@@ -442,7 +442,7 @@ class PropertyAccessor {
                 }
                 /*
                  * At this point, we are ready to accept the method. Before doing so, check if the method override
-                 * an other method defined in a parent class with a covariant return type. The JVM considers such
+                 * another method defined in a parent class with a covariant return type. The JVM considers such
                  * cases as two different methods, while from a Java developer point of view this is the same method.
                  */
                 final Integer pi = indices.put(name, count);
@@ -786,7 +786,7 @@ class PropertyAccessor {
      *   <li>APPEND:           Set the value only if it does not overwrite an existing value, then returns
      *                         {@link Boolean#TRUE} if the metadata changed as a result of this method call,
      *                         {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
-     *                         value can not be set because an other value already exists.</li>
+     *                         value cannot be set because another value already exists.</li>
      *   <li>IGNORE_READ_ONLY: Set the value and returns {@code null} on success. If the property is read-only,
      *                         do not throw an exception; returns exception class instead.</li>
      * </ul>

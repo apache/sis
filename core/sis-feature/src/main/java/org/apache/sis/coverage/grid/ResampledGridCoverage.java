@@ -46,7 +46,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
 
 /**
  * A multi-dimensional grid coverage where each two-dimensional slice is the resampling
- * of data from another grid coverage. This class is used when the resampling can not be
+ * of data from another grid coverage. This class is used when the resampling cannot be
  * stored in a {@link GridCoverage2D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -72,7 +72,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      * Mapping from dimensions in this {@code ResampledGridCoverage} to dimensions in the {@linkplain #source source} coverage.
      * The mapping is represented by a bitmask. For a target dimension <var>i</var>, {@code toSourceDimensions[i]}
      * has a bit set to 1 for all source dimensions used in the computation of that target dimension.
-     * This array may be {@code null} if the mapping can not be computed or if it is not needed.
+     * This array may be {@code null} if the mapping cannot be computed or if it is not needed.
      */
     private final long[] toSourceDimensions;
 
@@ -130,7 +130,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      * @param  mt      the transform (mapping pixel centers) for which to determine dimension dependencies.
      * @param  domain  domain of this {@code}.
      * @return for each source dimension, a bitmask of target dependent dimensions.
-     *         May be {@code null} if the mapping can not be computed or if it is not needed.
+     *         May be {@code null} if the mapping cannot be computed or if it is not needed.
      */
     private static long[] findDependentDimensions(final MathTransform mt, final GridGeometry domain) {
         final int srcDim = mt.getSourceDimensions();
@@ -294,7 +294,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      * @param  allowOperationReplacement  whether to allow the replacement of this operation by a more efficient one.
      * @return a grid coverage with the characteristics specified in the given grid geometry.
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
-     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
      */
     static GridCoverage create(final GridCoverage source, final GridGeometry target, final ImageProcessor processor,
                                final boolean allowOperationReplacement)
@@ -306,7 +306,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
         /*
          * Compute the transform from source pixels to target CRS (to be completed to target pixels later).
          * The following lines may throw IncompleteGridGeometryException, which is desired because if that
-         * transform is missing, we can not continue (we have no way to guess it).
+         * transform is missing, we cannot continue (we have no way to guess it).
          */
         // Finder is initialized to PixelInCell.CELL_CORNER.
         final MathTransform sourceCornerToCRS = changeOfCRS.gridToCRS();
@@ -521,7 +521,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
     /**
      * Returns a two-dimensional slice of resampled grid data as a rendered image.
      *
-     * @throws CannotEvaluateException if this method can not produce the rendered image.
+     * @throws CannotEvaluateException if this method cannot produce the rendered image.
      */
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
@@ -538,7 +538,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             height = Math.toIntExact(sliceExtent.getSize(resampledDimensions[1]));
             /*
              * Convert the given `sliceExtent` (in units of this grid) to units of the source grid.
-             * If a dimension can not be converted (e.g. because a `gridToCRS` transform has a NaN
+             * If a dimension cannot be converted (e.g. because a `gridToCRS` transform has a NaN
              * factor in that dimension), the corresponding source grid coordinates will be copied.
              */
             final GeneralEnvelope sourceBounds = sliceExtent.toEnvelope(toSourceCorner, toSourceCenter, null);
@@ -614,7 +614,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             final int[] requiredSources = sep.getSourceDimensions();
             if (requiredSources.length > BIDIMENSIONAL) {
                 /*
-                 * If we enter in this block, TransformSeparator can not create a MathTransform with only the 2
+                 * If we enter in this block, TransformSeparator cannot create a MathTransform with only the 2
                  * requested source dimensions; it needs more sources. In such case, if coordinates in missing
                  * dimensions can be set to constant values (grid low == grid high), create a transform which
                  * will add new dimensions with coordinates set to those constant values. The example below

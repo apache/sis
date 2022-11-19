@@ -193,7 +193,7 @@ public final class Measure {
      * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time.
      *
      * @param  uom  the unit of measure as a string.
-     * @throws URISyntaxException if the {@code uom} looks like a URI, but can not be parsed.
+     * @throws URISyntaxException if the {@code uom} looks like a URI, but cannot be parsed.
      */
     public void setUOM(String uom) throws URISyntaxException {
         final Context context = Context.current();
@@ -223,7 +223,7 @@ public final class Measure {
      * The SIS adapter forces the unit to {@link Units#UNITY}, but we want to let the user
      * know that he probably did something wrong.</div>
      *
-     * @param  newUnit  the new unit (can not be null).
+     * @param  newUnit  the new unit (cannot be null).
      * @return {@code true} if a different unit was defined before this method call.
      */
     public boolean setUnit(final Unit<?> newUnit) {

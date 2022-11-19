@@ -215,7 +215,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * We could improve accuracy by continuing from here with Newton's iterative method
          * (see MeridianArcTest.inverse(…) for implementation). However those iterations requires
          * calls to distance(double, …), which is itself an approximation based on series expansion.
-         * Consequently the accuracy of iterative method can not be better than distance(…) accuracy.
+         * Consequently the accuracy of iterative method cannot be better than distance(…) accuracy.
          */
         return φ;
     }

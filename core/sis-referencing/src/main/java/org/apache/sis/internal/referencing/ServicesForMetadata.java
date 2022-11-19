@@ -151,13 +151,13 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  normalizedCRS  the horizontal component of the given CRS, or null if the {@code crs} argument is null.
      * @param  findOpCaller   non-null for replacing some (not all) exceptions by {@code null} return value.
      * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
-     * @throws TransformException if the given envelope can not be transformed.
+     * @throws TransformException if the given envelope cannot be transformed.
      */
     private static DefaultGeographicBoundingBox setGeographicExtent(Envelope envelope, DefaultGeographicBoundingBox target,
             final CoordinateReferenceSystem crs, final GeographicCRS normalizedCRS, final String findOpCaller) throws TransformException
     {
         if (normalizedCRS != null) {
-            // No need to check for dimension, since GeodeticCRS can not have less than 2.
+            // No need to check for dimension, since GeodeticCRS cannot have less than 2.
             final CoordinateSystem cs1 = crs.getCoordinateSystem();
             final CoordinateSystem cs2 = normalizedCRS.getCoordinateSystem();
             if (!Utilities.equalsIgnoreMetadata(cs2.getAxis(0), cs1.getAxis(0)) ||
@@ -271,7 +271,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  target        the target bounding box, or {@code null} for creating it automatically.
      * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
      * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
-     * @throws TransformException if the given envelope can not be transformed.
+     * @throws TransformException if the given envelope cannot be transformed.
      */
     @Override
     public DefaultGeographicBoundingBox setBounds(final Envelope envelope, final DefaultGeographicBoundingBox target,

@@ -104,7 +104,7 @@ public final strictfp class PropertySingletonTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not add more than 1 element.
+     * Ensures that we cannot add more than 1 element.
      */
     @Test
     @DependsOnMethod("testSingleton")

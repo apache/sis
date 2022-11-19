@@ -333,7 +333,7 @@ public final class CoordinateOperations extends SystemListener {
              * For each "wrap around" axis in the target CRS, search a matching axis in the source CRS
              * which is also "wrap around", is colinear and uses compatible unit of measurement. There
              * is usually at most one "wrap around" axis, but this code is nevertheless generic enough
-             * for an arbitrary amount of axes.
+             * for an arbitrary number of axes.
              */
             final int dim = Math.min(Long.SIZE, target.getDimension());
 compare:    for (int i=0; i<dim; i++) {

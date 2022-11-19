@@ -178,7 +178,7 @@ class MathTransformParser extends AbstractParser {
      *
      * @param  element  the element to be parsed.
      * @return the parsed object, or {@code null} if the element is not recognized.
-     * @throws ParseException if the element can not be parsed.
+     * @throws ParseException if the element cannot be parsed.
      */
     @Override
     Object buildFromTree(final Element element) throws ParseException {
@@ -191,7 +191,7 @@ class MathTransformParser extends AbstractParser {
      * @param  element    the parent element.
      * @param  mandatory  {@code true} if a math transform must be present, or {@code false} if optional.
      * @return the next element as a {@code MathTransform} object, or {@code null}.
-     * @throws ParseException if the next element can not be parsed.
+     * @throws ParseException if the next element cannot be parsed.
      */
     final MathTransform parseMathTransform(final Element element, final boolean mandatory) throws ParseException {
         lastMethod = null;
@@ -220,12 +220,12 @@ class MathTransformParser extends AbstractParser {
      * in the cited identifier be in conflict with attributes or values given explicitly in the WKT description,
      * the WKT values shall prevail."</cite> But some units can hardly be expressed by the {@code UNIT} element,
      * because the latter can contain only a conversion factor. For example sexagesimal units (EPSG:9108, 9110
-     * and 9111) can hardly be expressed in an other way than by their EPSG code. Thankfully, identifiers in
+     * and 9111) can hardly be expressed in another way than by their EPSG code. Thankfully, identifiers in
      * {@code UNIT} elements are rare, so risk of conflicts should be low.</div>
      *
      * @param  parent  the parent {@code "UNIT"} element.
      * @return the unit from the identifier code, or {@code null} if none.
-     * @throws ParseException if the {@code "ID"} can not be parsed.
+     * @throws ParseException if the {@code "ID"} cannot be parsed.
      */
     final Unit<?> parseUnitID(final Element parent) throws ParseException {
         final Element element = parent.pullElement(OPTIONAL, ID_KEYWORDS);
@@ -254,7 +254,7 @@ class MathTransformParser extends AbstractParser {
      *
      * @param  parent  the parent element.
      * @return the {@code "UNIT"} element, or {@code null} if none.
-     * @throws ParseException if the {@code "UNIT"} can not be parsed.
+     * @throws ParseException if the {@code "UNIT"} cannot be parsed.
      *
      * @see GeodeticObjectParser#parseScaledUnit(Element, String, Unit)
      */
@@ -274,7 +274,7 @@ class MathTransformParser extends AbstractParser {
         /*
          * Conversion factor can be applied only if the base dimension (angle, linear, scale, etc.) is known.
          * However before to apply that factor, we may need to fix rounding errors found in some WKT strings.
-         * In particular, the conversion factor for degrees is sometime written as 0.01745329252 instead of
+         * In particular, the conversion factor for degrees is sometimes written as 0.01745329252 instead of
          * 0.017453292519943295.
          */
         if (index >= 0 && index < BASE_UNITS.length) {
@@ -283,7 +283,7 @@ class MathTransformParser extends AbstractParser {
             }
             return BASE_UNITS[index].multiply(factor);
         }
-        // If we can not infer the base type, we have to rely on the name.
+        // If we cannot infer the base type, we have to rely on the name.
         try {
             return parseUnit(name);
         } catch (ParserException e) {
@@ -345,7 +345,7 @@ class MathTransformParser extends AbstractParser {
      * @param  defaultUnit         the default unit (for arbitrary quantity, including angular), or {@code null}.
      * @param  defaultAngularUnit  the default angular unit, or {@code null} if none. This is determined by the context,
      *                             especially when {@link GeodeticObjectParser} parses a {@code ProjectedCRS} element.
-     * @throws ParseException if the {@code "PARAMETER"} element can not be parsed.
+     * @throws ParseException if the {@code "PARAMETER"} element cannot be parsed.
      */
     final void parseParameters(final Element element, final ParameterValueGroup parameters,
             final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
@@ -411,7 +411,7 @@ class MathTransformParser extends AbstractParser {
      *
      * @param  parent  the parent element.
      * @return the {@code "PARAM_MT"} element as an {@link MathTransform} object.
-     * @throws ParseException if the {@code "PARAM_MT"} element can not be parsed.
+     * @throws ParseException if the {@code "PARAM_MT"} element cannot be parsed.
      */
     private MathTransform parseParamMT(final Element parent) throws ParseException {
         final Element element = parent.pullElement(FIRST, WKTKeywords.Param_MT);
@@ -454,7 +454,7 @@ class MathTransformParser extends AbstractParser {
      *
      * @param  parent  the parent element.
      * @return the {@code "INVERSE_MT"} element as an {@link MathTransform} object.
-     * @throws ParseException if the {@code "INVERSE_MT"} element can not be parsed.
+     * @throws ParseException if the {@code "INVERSE_MT"} element cannot be parsed.
      */
     private MathTransform parseInverseMT(final Element parent) throws ParseException {
         final Element element = parent.pullElement(FIRST, WKTKeywords.Inverse_MT);
@@ -480,7 +480,7 @@ class MathTransformParser extends AbstractParser {
      *
      * @param  parent  the parent element.
      * @return the {@code "PASSTHROUGH_MT"} element as an {@link MathTransform} object.
-     * @throws ParseException if the {@code "PASSTHROUGH_MT"} element can not be parsed.
+     * @throws ParseException if the {@code "PASSTHROUGH_MT"} element cannot be parsed.
      */
     private MathTransform parsePassThroughMT(final Element parent) throws ParseException {
         final Element element = parent.pullElement(FIRST, WKTKeywords.PassThrough_MT);
@@ -507,7 +507,7 @@ class MathTransformParser extends AbstractParser {
      *
      * @param  parent  the parent element.
      * @return the {@code "CONCAT_MT"} element as an {@link MathTransform} object.
-     * @throws ParseException if the {@code "CONCAT_MT"} element can not be parsed.
+     * @throws ParseException if the {@code "CONCAT_MT"} element cannot be parsed.
      */
     private MathTransform parseConcatMT(final Element parent) throws ParseException {
         final Element element = parent.pullElement(FIRST, WKTKeywords.Concat_MT);

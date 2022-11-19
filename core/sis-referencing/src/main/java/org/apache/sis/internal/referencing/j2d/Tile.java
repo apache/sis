@@ -402,7 +402,7 @@ public class Tile implements Serializable {
     }
 
     /**
-     * If the user-supplied transform is waiting for processing by {@link TileOrganizer}, returns it.
+     * If the user supplied transform is waiting for processing by {@link TileOrganizer}, returns it.
      * Otherwise returns {@code null}. This method is for internal usage by {@link TileOrganizer} only.
      *
      * <p>This method clears the {@link #gridToCRS} field before to return. This is a way to tell that
@@ -549,7 +549,7 @@ public class Tile implements Serializable {
                   .append(',').append(subsampling.height).append(')');
         } else {
             /*
-             * Location and subsampling not yet computed, so don't display it. We can not
+             * Location and subsampling not yet computed, so don't display it. We cannot
              * invoke `getRegion()` neither since it would throw an IllegalStateException.
              * Since we have to read the fields directly, make sure that this instance is
              * not a subclass, otherwise those values may be wrong.

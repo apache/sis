@@ -92,7 +92,7 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point.
      * The point used for this test is given by {@link #samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
      * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */

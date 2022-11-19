@@ -139,7 +139,7 @@ public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Clon
     }
 
     /**
-     * Invoked by {@link #parse(Citation,String)} when a string can not be parsed.
+     * Invoked by {@link #parse(Citation,String)} when a string cannot be parsed.
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
      *

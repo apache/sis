@@ -82,7 +82,7 @@ class GeoKeysLoader {
 
     /**
      * References the {@link GeoKeys} needed for building the Coordinate Reference System.
-     * Can not be null when invoking {@link #load(Map)}.
+     * Cannot be null when invoking {@link #load(Map)}.
      *
      * @see Tags#GeoKeyDirectory
      */

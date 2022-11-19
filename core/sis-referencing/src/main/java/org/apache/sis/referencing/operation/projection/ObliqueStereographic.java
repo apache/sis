@@ -52,10 +52,10 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  *
  * <p>This projection involves two steps: first a conversion of <em>geodetic</em> coordinates to <em>conformal</em>
  * coordinates (i.e. latitudes and longitudes on a conformal sphere), then a spherical stereographic projection.
- * For this reason this projection method is sometime known as <cite>"Double Stereographic"</cite>.</p>
+ * For this reason this projection method is sometimes known as <cite>"Double Stereographic"</cite>.</p>
  *
  * <div class="note"><b>Note:</b>
- * there is another method known as <cite>"Oblique Stereographic Alternative"</cite> or sometime just
+ * there is another method known as <cite>"Oblique Stereographic Alternative"</cite> or sometimes just
  * <cite>"Stereographic"</cite>. That alternative uses a simplified conversion computing the conformal latitude
  * of each point on the ellipsoid. Both methods are considered valid but produce slightly different results.
  * For this reason EPSG considers them as different projection methods.</div>
@@ -83,7 +83,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Parameters used in the conformal sphere definition. Those parameters are used in both the
      * {@linkplain #transform(double[], int, double[], int, boolean) forward} and
      * {@linkplain #inverseTransform(double[], int, double[], int) inverse} projection.
-     * If the user-supplied ellipsoid is already a sphere, then those parameters are equal to 1.
+     * If the user supplied ellipsoid is already a sphere, then those parameters are equal to 1.
      */
     private final double c, n;
 
@@ -229,7 +229,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         if (Double.isNaN(χ0)) {
             /*
-             * The oblique stereographic formulas can not handle the polar case.
+             * The oblique stereographic formulas cannot handle the polar case.
              * If the user gave us a latitude of origin of ±90°, delegate to the
              * polar stereographic which is designed especially for those cases.
              */
@@ -252,7 +252,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -336,7 +336,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the result in {@code dstPts}
      * (angles in radians).
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

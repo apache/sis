@@ -81,7 +81,7 @@ public final class Mercator2SP extends AbstractMercator {
      * parameter value. Valid values range is (0 … ∞) and default value is 1.
      *
      * <p>This parameter is used by {@link Mercator1SP} and is not formally a parameter of {@code Mercator2SP}
-     * projection. Nevertheless we declare it is as an optional parameter because it is sometime used in Well
+     * projection. Nevertheless we declare it is as an optional parameter because it is sometimes used in Well
      * Known Text (WKT). However it shall be interpreted as a <cite>Scale factor at the standard parallel</cite>
      * rather than at the natural origin.</p>
      *
@@ -107,7 +107,7 @@ public final class Mercator2SP extends AbstractMercator {
         final ParameterBuilder builder = builder();
         /*
          * "Latitude of natural origin" and "Scale factor" are not formally parameters of the "Mercator (variant B)"
-         * projection according EPSG. But we declare them as optional parameters because they are sometime used in
+         * projection according EPSG. But we declare them as optional parameters because they are sometimes used in
          * Well Known Text (WKT).
          */
         builder.setRequired(false);         // Will apply to all remaining parameters.

@@ -133,13 +133,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Creates a new envelope from the given bounding box. This constructor can not be public,
+     * Creates a new envelope from the given bounding box. This constructor cannot be public,
      * because the {@code xmax} and {@code ymax} arguments are not the ones usually expected for
      * {@link Rectangle2D} objects (the standard arguments are {@code width} and {@code height}).
      * Making this constructor public would probably be a too high risk of confusion.
      *
      * <p>This constructor is needed because the other constructors (expecting envelopes or other
-     * rectangles) can not query directly the {@link Envelope#getSpan(int)} or equivalent methods,
+     * rectangles) cannot query directly the {@link Envelope#getSpan(int)} or equivalent methods,
      * because the return value is not the one expected by this class when the envelope spans the
      * anti-meridian.</p>
      */
@@ -186,9 +186,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Constructs a two-dimensional envelope defined by an other {@link Envelope}.
+     * Constructs a two-dimensional envelope defined by another {@link Envelope}.
      *
-     * @param  envelope  the envelope to copy (can not be {@code null}).
+     * @param  envelope  the envelope to copy (cannot be {@code null}).
      * @throws MismatchedDimensionException if the given envelope is not two-dimensional.
      */
     public Envelope2D(final Envelope envelope) throws MismatchedDimensionException {
@@ -201,7 +201,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
-     * @param box The bounding box to copy (can not be {@code null}).
+     * @param box The bounding box to copy (cannot be {@code null}).
      */
     public Envelope2D(final GeographicBoundingBox box) {
         this(box.getWestBoundLongitude(),
@@ -220,12 +220,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Constructs two-dimensional envelope defined by an other {@link Rectangle2D}.
+     * Constructs two-dimensional envelope defined by another {@link Rectangle2D}.
      * If the given rectangle has negative width or height, they will be interpreted
      * as an envelope crossing the anti-meridian.
      *
      * @param crs   the coordinate reference system, or {@code null}.
-     * @param rect  the rectangle to copy (can not be {@code null}).
+     * @param rect  the rectangle to copy (cannot be {@code null}).
      * @throws MismatchedDimensionException if the given CRS is not two-dimensional.
      */
     public Envelope2D(final CoordinateReferenceSystem crs, final Rectangle2D rect)
@@ -969,7 +969,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Adds an other rectangle to this rectangle. The resulting rectangle is the union of the
+     * Adds another rectangle to this rectangle. The resulting rectangle is the union of the
      * two {@code Rectangle} objects.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>

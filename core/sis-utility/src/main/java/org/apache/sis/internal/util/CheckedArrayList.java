@@ -70,7 +70,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Constructs a list of the specified type.
      *
-     * @param type  the element type (can not be null).
+     * @param type  the element type (cannot be null).
      */
     public CheckedArrayList(final Class<E> type) {
         super();

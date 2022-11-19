@@ -227,7 +227,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     }
 
     /**
-     * Verifies that we can not assign unit of measurements to non-numerical values.
+     * Verifies that we cannot assign unit of measurements to non-numerical values.
      */
     @Test
     public void testStringType() {
@@ -273,7 +273,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             DefaultParameterDescriptor<String> p = create("Enumeration param", String.class, enumeration, "Pear");
             fail("Should not be allowed to create " + p);
         } catch (IllegalArgumentException e) {
-            assertEquals("Parameter “Enumeration param” can not take the “Pear” value.", e.getMessage());
+            assertEquals("Parameter “Enumeration param” cannot take the “Pear” value.", e.getMessage());
         }
     }
 
@@ -309,7 +309,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
                     0, 1, double[].class, NumberRange.create(4, true, 9, true), null, null);
             fail("Should not be allowed to create " + p);
         } catch (IllegalArgumentException e) {
-            assertEquals("Argument ‘valueDomain’ can not be an instance of ‘Range<Integer>’.", e.getMessage());
+            assertEquals("Argument ‘valueDomain’ cannot be an instance of ‘Range<Integer>’.", e.getMessage());
         }
     }
 

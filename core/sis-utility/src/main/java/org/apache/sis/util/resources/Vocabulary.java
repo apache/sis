@@ -1448,7 +1448,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      *
      * @param  properties  the map of properties, or {@code null} if none.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      *
      * @since 0.7
      */

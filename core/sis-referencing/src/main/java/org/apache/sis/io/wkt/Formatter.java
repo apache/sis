@@ -188,7 +188,7 @@ public class Formatter implements Localized {
     /**
      * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
      * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
+     * except {@code REMARKS["…"]}. May also be a user supplied transliterator.
      *
      * @see #getTransliterator()
      */
@@ -473,7 +473,7 @@ public class Formatter implements Localized {
      *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
      *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
-     *   <li>Any other user-supplied mapping.</li>
+     *   <li>Any other user supplied mapping.</li>
      * </ul>
      *
      * @return the mapper between Java character sequences and the characters to write in WKT.
@@ -814,7 +814,7 @@ public class Formatter implements Localized {
         } else {
             /*
              * Except for the special cases of OperationMethod and Parameters, ISO 19162 recommends to format the
-             * ID only for the root element.  But Apache SIS adds an other exception to this rule by handling the
+             * ID only for the root element.  But Apache SIS adds another exception to this rule by handling the
              * components of CompoundCRS as if they were root elements. The reason is that users often create their
              * own CompoundCRS from standard components, for example by adding a time axis to some standard CRS like
              * "WGS84". The resulting CompoundCRS usually have no identifier. Then the users often need to extract a
@@ -1454,7 +1454,7 @@ public class Formatter implements Localized {
             }
             /*
              * The EPSG code in UNIT elements is generally not recommended. But we make an exception for sexagesimal
-             * units (EPSG:9108, 9110 and 9111) because they can not be represented by a simple scale factor in WKT.
+             * units (EPSG:9108, 9110 and 9111) because they cannot be represented by a simple scale factor in WKT.
              * Those units are identified by a conversion factor set to NaN since the conversion is non-linear.
              */
             if (convention == Convention.INTERNAL || Double.isNaN(conversion)) {
@@ -1750,7 +1750,7 @@ public class Formatter implements Localized {
     public boolean isInvalidWKT() {
         return (warnings != null) || (buffer != null && buffer.length() == 0);
         /*
-         * Note: we really use a "and" condition (not an other "or") for the buffer test because
+         * Note: we really use a "and" condition (not another "or") for the buffer test because
          *       the buffer is reset to `null` by WKTFormat after a successfull formatting.
          */
     }
@@ -1771,7 +1771,7 @@ public class Formatter implements Localized {
      * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
      *
-     * @param  unformattable  the object that can not be formatted,
+     * @param  unformattable  the object that cannot be formatted,
      * @param  cause  the cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final IdentifiedObject unformattable, final Exception cause) {
@@ -1789,7 +1789,7 @@ public class Formatter implements Localized {
      * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject, Exception)} when the
      * problematic object is not an instance of {@code IdentifiedObject}.
      *
-     * @param  unformattable  the class of the object that can not be formatted,
+     * @param  unformattable  the class of the object that cannot be formatted,
      * @param  cause  the cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final Class<?> unformattable, final Exception cause) {

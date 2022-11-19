@@ -235,7 +235,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Optimi
     }
 
     /**
-     * Returns the value to return when a test can not be applied.
+     * Returns the value to return when a test cannot be applied.
      */
     protected abstract boolean negativeResult();
 }

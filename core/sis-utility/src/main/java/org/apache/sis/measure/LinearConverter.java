@@ -67,7 +67,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * The complete formula used by Apache SIS is {@code y = (x*scale + offset) / divisor}.
      * This division is mathematically unneeded since we could divide the offset and scale factor directly,
      * but we keep it for accuracy reasons because most unit conversion factors are defined in base 10 and
-     * IEEE 754 can not represent fractional values in base 10 accurately.
+     * IEEE 754 cannot represent fractional values in base 10 accurately.
      */
     private final double divisor;
 

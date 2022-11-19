@@ -50,7 +50,7 @@ public class MovingFeatures {
     public static final DefaultAttributeType<Instant> TIME_AS_INSTANTS;
 
     /**
-     * An alternative to {@link #TIME_AS_INSTANTS} used when times can not be mapped to calendar dates.
+     * An alternative to {@link #TIME_AS_INSTANTS} used when times cannot be mapped to calendar dates.
      * This characteristic uses the same name than {@code TIME_AS_INSTANTS}. Consequently at most one
      * of {@code TIME_AS_INSTANTS} and {@code TIME_AS_NUMBERS} can be used on the same property.
      */

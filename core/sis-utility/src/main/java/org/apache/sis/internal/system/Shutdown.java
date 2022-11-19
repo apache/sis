@@ -193,7 +193,7 @@ public final class Shutdown extends Thread {
         }
         /*
          * Following is usually fast, but may potentially take a little while.
-         * If an other thread invoked Thread.interrupt() while we were waiting
+         * If another thread invoked Thread.interrupt() while we were waiting
          * for the threads to terminate, maybe not all threads have terminated
          * but continue the shutdown process anyway.
          */

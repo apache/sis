@@ -37,7 +37,7 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * in order to disable optimization paths in some tests.
  *
  * <strong>Do not implement {@link MathTransform2D} in this base class</strong>.
- * This wrapper is sometime used for hiding the fact that a transform implements
+ * This wrapper is sometimes used for hiding the fact that a transform implements
  * the {@code MathTransform2D} interface, typically for testing a different code
  * path in a JUnit test.
  *
@@ -88,7 +88,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
      *
      * @throws MismatchedDimensionException if {@code ptSrc} or
      *         {@code ptDst} doesn't have the expected dimension.
-     * @throws TransformException if the point can not be transformed.
+     * @throws TransformException if the point cannot be transformed.
      */
     @Override
     public final DirectPosition transform(final DirectPosition ptSrc, final DirectPosition ptDst)

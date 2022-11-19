@@ -21,7 +21,7 @@ import org.apache.sis.internal.storage.Resources;
 
 
 /**
- * Thrown when an operation can not be performed while a write operation is in progress.
+ * Thrown when an operation cannot be performed while a write operation is in progress.
  * This exception is thrown for example if a read operation is attempted on a data store
  * that does not support concurrent read and write operations.
  *
@@ -65,7 +65,7 @@ public class ConcurrentWriteException extends DataStoreException {
     }
 
     /**
-     * Creates a localized exception for an operation that can not be executed while a write operation is in progress.
+     * Creates a localized exception for an operation that cannot be executed while a write operation is in progress.
      * Arguments given to this constructor are hints for building an error message.
      *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.

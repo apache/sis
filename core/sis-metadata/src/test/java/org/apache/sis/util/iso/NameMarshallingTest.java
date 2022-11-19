@@ -162,15 +162,15 @@ public final strictfp class NameMarshallingTest extends TestCase {
     @Test
     public void testTypeName() throws JAXBException {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final TypeName name = factory.createTypeName(null, "An other local name");
-        assertEquals("An other local name", name.toString());
+        final TypeName name = factory.createTypeName(null, "Another local name");
+        assertEquals("Another local name", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
                                         " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:TypeName>\n" +
                 "      <gco:aName>\n" +
-                "        <gco:CharacterString>An other local name</gco:CharacterString>\n" +
+                "        <gco:CharacterString>Another local name</gco:CharacterString>\n" +
                 "      </gco:aName>\n" +
                 "    </gco:TypeName>\n" +
                 "  </gml:alias>\n" +

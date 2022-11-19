@@ -352,7 +352,7 @@ public final strictfp class TreeNodeTest extends TestCase {
         final DefaultCitation citation = metadataWithHierarchy();
         final TreeNode node = create(citation, Citation.class);
         /*
-         * Ensure that we can not overwrite existing nodes.
+         * Ensure that we cannot overwrite existing nodes.
          */
         TreeTable.Node child = node.newChild();
         child.setValue(TableColumn.IDENTIFIER, "title");

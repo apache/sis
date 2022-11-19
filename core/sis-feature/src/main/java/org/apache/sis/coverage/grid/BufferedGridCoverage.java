@@ -49,7 +49,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * Those data can be shown as an untiled {@link RenderedImage}.
  * Images are created when {@link #render(GridExtent)} is invoked instead of at construction time.
  * This delayed construction makes this class better suited to <var>n</var>-dimensional grids since
- * those grids can not be wrapped into a single {@link RenderedImage}.
+ * those grids cannot be wrapped into a single {@link RenderedImage}.
  *
  * <div class="note"><b>Comparison with alternatives:</b>
  * this class expects all data to reside in-memory and does not support tiling.

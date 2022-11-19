@@ -48,7 +48,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  */
 public final strictfp class FeatureQueryTest extends TestCase {
     /**
-     * An arbitrary amount of features, all of the same type.
+     * An arbitrary number of features, all of the same type.
      */
     private final AbstractFeature[] features;
 

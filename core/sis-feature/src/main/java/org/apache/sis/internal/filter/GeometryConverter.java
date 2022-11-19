@@ -137,7 +137,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      *
      * @todo Try to change the class parameterized type for restricting to geometries {@code <G>}.
      *       If we can do that, remove all {@code if} statements for doing only geometry wrapping.
-     *       If we can not do that, check how to propagate the wrap-around policy from some context.
+     *       If we cannot do that, check how to propagate the wrap-around policy from some context.
      *
      * @param  input  the geometry to evaluate with this expression.
      * @return the geometry wrapper, or {@code null} if the evaluated value is null.

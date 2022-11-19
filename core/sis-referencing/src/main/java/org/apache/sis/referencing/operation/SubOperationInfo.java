@@ -136,7 +136,7 @@ final class SubOperationInfo {
     /**
      * Searches in given list of source components for operations capable to transform coordinates to each target CRS.
      * There is one {@code SubOperationInfo} per target CRS because we need to satisfy all target dimensions, while it
-     * is okay to ignore some source dimensions. If an operation can not be found, then this method returns {@code null}.
+     * is okay to ignore some source dimensions. If an operation cannot be found, then this method returns {@code null}.
      *
      * @param  caller   the object which is inferring a coordinate operation.
      * @param  sources  all components of the source CRS.
@@ -232,7 +232,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
              * If we reach this point, we have not been able to find a source CRS that we can map to the target CRS.
              * Usually this is fatal; returning null will instruct the caller to throw `OperationNotFoundException`.
              * However in some contexts (e.g. when searching for an operation between two `GridGeometry` instances)
-             * it is possible to assign a constant value to the target coordinates. Those values can not be guessed
+             * it is possible to assign a constant value to the target coordinates. Those values cannot be guessed
              * by `sis-referencing`; they must be provided by caller. If such constants are specified, then we will
              * try to apply them.
              */
@@ -312,7 +312,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
      *   <li>An operation for (<var>x</var>, <var>y</var>), because those coordinates are next in target CRS.</li>
      * </ol>
      *
-     * Since {@link DefaultPassThroughOperation} can not take coordinates before the "first affected coordinate"
+     * Since {@link DefaultPassThroughOperation} cannot take coordinates before the "first affected coordinate"
      * dimension and move them into the "trailing coordinates" dimension, we have to reorder coordinates before
      * to create the pass-through operations. This is done by the following matrix:
      *

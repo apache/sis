@@ -407,7 +407,7 @@ public final strictfp class MetadataTest extends TestCase {
                      "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">4326</gmx:Anchor>");
         replace(xml, "License", "Licence");
         /*
-         * The <gmd:EX_TemporalExtent> block can not be marshalled es expected yet (need a "sis-temporal" module).
+         * The <gmd:EX_TemporalExtent> block cannot be marshalled es expected yet (need a "sis-temporal" module).
          * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
          * now the "gml:id" attribute since SIS generates different values than the ones in our test XML file,
          * and those values may change in future SIS version.
@@ -422,7 +422,7 @@ public final strictfp class MetadataTest extends TestCase {
     }
 
     /**
-     * Replaces the first occurrence of the given string by an other one.
+     * Replaces the first occurrence of the given string by another one.
      *
      * @param  buffer     the buffer in which to perform the replacement.
      * @param  toSearch   the string to search.

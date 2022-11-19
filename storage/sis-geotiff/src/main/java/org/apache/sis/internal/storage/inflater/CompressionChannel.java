@@ -77,7 +77,7 @@ abstract class CompressionChannel extends PixelChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     @Override
     public void setInputRegion(final long start, final long byteCount) throws IOException {

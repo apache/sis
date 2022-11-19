@@ -221,7 +221,7 @@ public class ReferencingFactoryContainer {
      * Currently only EPSG codes are supported.
      *
      * @return the Coordinate Reference System authority factory (never {@code null}).
-     * @throws FactoryException if the authority factory can not be obtained.
+     * @throws FactoryException if the authority factory cannot be obtained.
      */
     public final CRSAuthorityFactory getCRSAuthorityFactory() throws FactoryException {
         if (crsAuthorityFactory == null) {
@@ -235,7 +235,7 @@ public class ReferencingFactoryContainer {
      * Currently only EPSG codes are supported.
      *
      * @return the Coordinate System authority factory (never {@code null}).
-     * @throws FactoryException if the authority factory can not be obtained.
+     * @throws FactoryException if the authority factory cannot be obtained.
      */
     public final CSAuthorityFactory getCSAuthorityFactory() throws FactoryException {
         final CRSAuthorityFactory factory = getCRSAuthorityFactory();
@@ -250,7 +250,7 @@ public class ReferencingFactoryContainer {
      * Currently only EPSG codes are supported.
      *
      * @return the Datum authority factory (never {@code null}).
-     * @throws FactoryException if the authority factory can not be obtained.
+     * @throws FactoryException if the authority factory cannot be obtained.
      */
     public final DatumAuthorityFactory getDatumAuthorityFactory() throws FactoryException {
         final CRSAuthorityFactory factory = getCRSAuthorityFactory();
@@ -265,7 +265,7 @@ public class ReferencingFactoryContainer {
      * Currently only EPSG codes are supported.
      *
      * @return the Coordinate Operation authority factory (never {@code null}).
-     * @throws FactoryException if the authority factory can not be obtained.
+     * @throws FactoryException if the authority factory cannot be obtained.
      */
     public final CoordinateOperationAuthorityFactory getCoordinateOperationAuthorityFactory() throws FactoryException {
         final CRSAuthorityFactory factory = getCRSAuthorityFactory();

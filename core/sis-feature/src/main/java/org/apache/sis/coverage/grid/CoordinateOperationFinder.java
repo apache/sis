@@ -310,7 +310,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * @return operation from source CRS to target CRS, or {@code null} if a CRS is not specified.
      * @throws FactoryException if no operation can be found between the source and target CRS.
-     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
      */
     private CoordinateOperation changeOfCRS() throws FactoryException, TransformException {
         if (!knowChangeOfCRS) {
@@ -353,7 +353,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * @return operation from source grid indices to target grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
-     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
      * @throws IncompleteGridGeometryException if required CRS or a "grid to CRS" information is missing.
      */
     final MathTransform gridToGrid() throws FactoryException, TransformException {
@@ -385,14 +385,14 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * @return operation from source grid indices to target geospatial coordinates.
      * @throws FactoryException if no operation can be found between the source and target CRS.
-     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
      * @throws IncompleteGridGeometryException if required CRS or a "grid to CRS" information is missing.
      */
     final MathTransform gridToCRS() throws FactoryException, TransformException {
         if (gridToCRS == null) {
             /*
              * The following line may throw IncompleteGridGeometryException, which is desired because
-             * if that transform is missing, we can not continue (we have no way to guess it).
+             * if that transform is missing, we cannot continue (we have no way to guess it).
              */
             gridToCRS = source.getGridToCRS(anchor);
             final CoordinateOperation changeOfCRS = changeOfCRS();
@@ -432,7 +432,7 @@ apply:          if (forwardChangeOfCRS == null) {
      *
      * @return operation from target geospatial coordinates to source grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
-     * @throws TransformException if some coordinates can not be transformed.
+     * @throws TransformException if some coordinates cannot be transformed.
      */
     final MathTransform inverse() throws FactoryException, TransformException {
         final MathTransform sourceCrsToGrid = source.getGridToCRS(anchor).inverse();
@@ -595,7 +595,7 @@ apply:          if (forwardChangeOfCRS == null) {
      *
      * @param  sourceCrsToGrid  value of {@code source.getGridToCRS(anchor).inverse()}.
      * @return whether at least one wraparound step has been added.
-     * @throws TransformException if some coordinates can not be transformed.
+     * @throws TransformException if some coordinates cannot be transformed.
      */
     private boolean applyWraparound(final MathTransform sourceCrsToGrid) throws FactoryException, TransformException {
         if (!isWraparoundApplied) {

@@ -217,7 +217,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     public static List<Resource> create(final Decoder decoder, final DataStore lock) throws IOException, DataStoreException {
         assert Thread.holdsLock(lock);
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
-        final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometime 2.
+        final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometimes 2.
         final List<Resource> resources = new ArrayList<>(variables.length);     // The raster resources to be returned.
         final Map<GenericName,List<RasterResource>> byName = new HashMap<>();   // For detecting name collisions.
         for (int i=0; i<variables.length; i++) {
@@ -254,7 +254,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                      * One of the following restrictions it not met for the requested data:
                      *
                      *   - Only 1 dimension can be used for bands. Variables with 2 or more band dimensions are not supported.
-                     *   - The dimension for bands shall be either the first or the last dimension; it can not be in the middle.
+                     *   - The dimension for bands shall be either the first or the last dimension; it cannot be in the middle.
                      */
                     throw new DataStoreContentException(Resources.forLocale(decoder.listeners.getLocale())
                             .getString(Resources.Keys.UnmappedDimensions_4, name, decoder.getFilename(), dataDimension, gridDimension));
@@ -508,7 +508,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             }
             /*
              * Range may be empty if min/max values declared in the netCDF files are erroneous,
-             * or if we have not read them correctly (edu.ucar:cdm:4.6.13 sometime confuses an
+             * or if we have not read them correctly (edu.ucar:cdm:4.6.13 sometimes confuses an
              * unsigned integer with a signed one).
              */
             if (range.isEmpty()) {

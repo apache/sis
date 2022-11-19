@@ -119,11 +119,11 @@ public final class Axis extends NamedElement {
      *
      * <p>The array length should be equal to {@link Variable#getNumDimensions()}. However this {@code Axis} class
      * is tolerant to situations where the array length is shorter, which may happen if some grid dimensions where
-     * not recognized or can not be handled for whatever reason that {@link Grid} decided.</p>
+     * not recognized or cannot be handled for whatever reason that {@link Grid} decided.</p>
      *
      * <p>This field is {@code null} if this {@code Axis} instance is not built for a {@link Grid}.
      * In particular, this field has no meaning for CRS of geometries in a {@link FeatureSet}.
-     * See {@link #Axis(Variable)} for a list of methods than can not be used in such case.</p>
+     * See {@link #Axis(Variable)} for a list of methods than cannot be used in such case.</p>
      *
      * @suu #getNumDimensions()
      * @see #getMainDirection()
@@ -143,7 +143,7 @@ public final class Axis extends NamedElement {
      * not all operations in this {@code Axis} class support values greater than the signed integer range.</p>
      *
      * <p>This array is {@code null} if {@link #gridDimensionIndices} is {@code null}, i.e. if this axis is not
-     * used for building a {@link Grid}. See {@link #Axis(Variable)} for a list of methods than can not be used.</p>
+     * used for building a {@link Grid}. See {@link #Axis(Variable)} for a list of methods than cannot be used.</p>
      *
      * @see #getMainSize()
      * @see #getSizeProduct(int)
@@ -404,7 +404,7 @@ public final class Axis extends NamedElement {
      *
      * @param  i  index of the first size to include in the product.
      * @return the product of all {@link #gridSizes} values starting at the given index.
-     * @throws ArithmeticException if the product can not be represented as a signed 32 bits integer.
+     * @throws ArithmeticException if the product cannot be represented as a signed 32 bits integer.
      */
     private int getSizeProduct(int i) {
         int length = 1;
@@ -419,7 +419,7 @@ public final class Axis extends NamedElement {
      * signed integer value. This method is invoked by operations not designed for unsigned integers.
      *
      * @param  i  index of the desired dimension, in the same order than {@link #gridDimensionIndices}.
-     * @throws ArithmeticException if the size can not be represented as a signed 32 bits integer.
+     * @throws ArithmeticException if the size cannot be represented as a signed 32 bits integer.
      */
     private int getSize(final int i) {
         final int n = gridSizes[i];
@@ -597,7 +597,7 @@ public final class Axis extends NamedElement {
          * We provide default values for the most well-identified axes.
          *
          * The default values are SI base units except degrees, which is the usual angular units for netCDF files.
-         * Providing default units is a little bit dangerous, but we can not create CRS otherwise. Note that wrong
+         * Providing default units is a little bit dangerous, but we cannot create CRS otherwise. Note that wrong
          * defaults become harmless if the CRS is overwritten by GridMapping attributes in Variable.getGridGeometry().
          */
         Unit<?> unit = getUnit();
@@ -661,7 +661,7 @@ public final class Axis extends NamedElement {
      * @param  gridToCRS   the matrix in which to set scale and offset coefficient.
      * @param  lastSrcDim  number of source dimensions (grid dimensions) - 1. Used for conversion from netCDF to "natural" order.
      * @param  tgtDim      the target dimension, which is a dimension of the CRS. Identifies the matrix row of scale factor to set.
-     * @param  nonLinears  where to add a non-linear transform if we can not compute a linear one. {@code null} may be added.
+     * @param  nonLinears  where to add a non-linear transform if we cannot compute a linear one. {@code null} may be added.
      * @return whether this method successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
@@ -696,7 +696,7 @@ public final class Axis extends NamedElement {
                 }
             }
             /*
-             * In netCDF files, axes are sometime associated to two-dimensional localization grids.
+             * In netCDF files, axes are sometimes associated to two-dimensional localization grids.
              * If this is the case, then the following block checks if we can reduce those grids to
              * one-dimensional vector. For example the following localisation grids:
              *
@@ -788,7 +788,7 @@ public final class Axis extends NamedElement {
          * Found two axes for the same set of dimensions, which implies that they have the same
          * shape (width and height) unless the two axes ignored a different amount of NaN values.
          * Negative width and height means that their actual values overflow the `int` capacity,
-         * which we can not process here.
+         * which we cannot process here.
          */
         final int ri = (xd <= yd) ? 0 : 1;          // Take in account that mainDimensionFirst(…) may have reordered values.
         final int ro = (xo <= yo) ? 0 : 1;
@@ -829,7 +829,7 @@ public final class Axis extends NamedElement {
                 grid.setControlPoints(vx, vy);
                 /*
                  * At this point we finished to set values in the localization grid, but did not computed the transform yet.
-                 * Before to use the grid for calculation, we need to repair discontinuities sometime found with longitudes.
+                 * Before to use the grid for calculation, we need to repair discontinuities sometimes found with longitudes.
                  * If the grid crosses the anti-meridian, some values may suddenly jump from +180° to -180° or conversely.
                  * Even when not crossing the anti-meridian, we still observe apparently random 360° jumps in some files,
                  * especially close to poles. The methods invoked below try to make the longitude grid more continuous.

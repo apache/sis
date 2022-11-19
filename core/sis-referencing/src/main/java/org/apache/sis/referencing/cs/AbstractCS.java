@@ -377,7 +377,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * <p>This method returns a coordinate system of the same type if the number of axes is unchanged.
      * But if the given {@code axes} array has less elements than this coordinate system dimension, then
-     * this method may return an other kind of coordinate system. See {@link AxisFilter} for an example.</p>
+     * this method may return another kind of coordinate system. See {@link AxisFilter} for an example.</p>
      *
      * @param  axes  the set of axes to give to the new coordinate system.
      * @return a new coordinate system of the same type than {@code this}, but using the given axes.
@@ -558,7 +558,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     /**
      * Constructs a new object in which every attributes are set to a null or empty value.
      * <strong>This is not a valid object.</strong> This constructor is strictly reserved
-     * to JAXB, which will assign values to the fields using reflexion.
+     * to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCS() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);

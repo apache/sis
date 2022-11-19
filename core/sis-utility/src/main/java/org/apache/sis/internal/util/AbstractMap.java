@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * An alternative to {@link java.util.AbstractMap java.util.AbstractMap} using different implementation strategies.
  * Instead of providing default method implementations on top of {@link #entrySet()}, this base class uses more
- * often the {@link #get(Object)} method with the assumption that the map can not contain null values, or use a
+ * often the {@link #get(Object)} method with the assumption that the map cannot contain null values, or use a
  * special-purpose {@link #entryIterator()} which can reduce the amount of object creations.
  *
  * <p><strong>This base class is for Apache SIS internal purpose only. Do not use!</strong>
@@ -40,8 +40,8 @@ import org.apache.sis.util.resources.Errors;
  * <p>This {@code AbstractMap} implementation makes the following assumptions.
  * <strong>Do not use this class if any of those assumptions do not hold!</strong></p>
  * <ul>
- *   <li>The map can not contain {@code null} value.</li>
- *   <li>The map can not contain references to itself, directly or indirectly, in the keys or in the values.</li>
+ *   <li>The map cannot contain {@code null} value.</li>
+ *   <li>The map cannot contain references to itself, directly or indirectly, in the keys or in the values.</li>
  * </ul>
  *
  * <p>Read-only subclasses need to implement the following methods:</p>
@@ -284,7 +284,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
 
     /**
      * Returns {@code true} if this map contains a value for the given name.
-     * The default implementation assumes that the map can not contain {@code null} values.
+     * The default implementation assumes that the map cannot contain {@code null} values.
      *
      * @param  key  the key for which to test the presence of a value.
      * @return {@code true} if the map contains a non-null value for the given key.
@@ -314,7 +314,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
 
     /**
      * Returns the value for the given key, or {@code defaultValue} if none.
-     * The default implementation assumes that the map can not contain {@code null} values.
+     * The default implementation assumes that the map cannot contain {@code null} values.
      *
      * @param  key  the key for which to get the value.
      * @param  defaultValue  the value to return if this map does not have an entry for the given key.

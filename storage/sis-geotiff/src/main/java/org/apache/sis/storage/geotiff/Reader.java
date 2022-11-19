@@ -112,7 +112,7 @@ final class Reader extends GeoTIFF {
     private final List<GridCoverageResource> images = new ArrayList<>();
 
     /**
-     * Entries having a value that can not be read immediately, but instead have a pointer
+     * Entries having a value that cannot be read immediately, but instead have a pointer
      * to a value stored elsewhere in the file. Those values will be read only when needed.
      *
      * <div class="note"><b>Implementation note:</b>
@@ -429,10 +429,10 @@ final class Reader extends GeoTIFF {
     }
 
     /**
-     * Logs a warning about a tag that can not be read, but does not interrupt the TIFF reading.
+     * Logs a warning about a tag that cannot be read, but does not interrupt the TIFF reading.
      *
-     * @param tag    the tag than can not be read.
-     * @param error  the value than can not be understand, or the exception that we got while trying to parse it.
+     * @param tag    the tag than cannot be read.
+     * @param error  the value than cannot be understand, or the exception that we got while trying to parse it.
      */
     private void warning(final short tag, final Object error) {
         final short key;

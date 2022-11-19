@@ -511,7 +511,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  axis  the axis for the span dimension, or {@code null}.
      * @param  span  the negative span.
-     * @return a positive span, or NaN if the span can not be fixed.
+     * @return a positive span, or NaN if the span cannot be fixed.
      */
     static double fixSpan(final CoordinateSystemAxis axis, double span) {
         if (isWrapAround(axis)) {

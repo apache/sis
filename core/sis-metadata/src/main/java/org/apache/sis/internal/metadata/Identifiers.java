@@ -243,7 +243,7 @@ public final class Identifiers extends Static {
      * @param  id1  the first collection of identifiers, or {@code null}.
      * @param  id2  the second collection of identifiers, or {@code null}.
      * @return {@code TRUE} or {@code FALSE} on match or mismatch respectively, or {@code null} if this method
-     *         can not determine if there is a match or mismatch.
+     *         cannot determine if there is a match or mismatch.
      */
     public static Boolean hasCommonIdentifier(final Iterable<? extends ReferenceIdentifier> id1,
                                               final Iterable<? extends ReferenceIdentifier> id2)

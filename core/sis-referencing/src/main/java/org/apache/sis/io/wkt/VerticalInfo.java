@@ -84,7 +84,7 @@ final class VerticalInfo {
      * @param next     the existing {@code VerticalInfo} instance. Will become the next instance
      *                 to process after {@code this} in a chain of {@code VerticalInfo}.
      * @param extents  where to add the vertical extent.
-     * @param unit     the unit to assign to the {@code extent}. Can not be null.
+     * @param unit     the unit to assign to the {@code extent}. Cannot be null.
      */
     VerticalInfo(final VerticalInfo next, final DefaultExtent extents, final double minimum, final double maximum, final Unit<Length> unit) {
         this.next   = next;
@@ -143,7 +143,7 @@ final class VerticalInfo {
      *   <li>axis unit of measurement is the given linear unit.</li>
      * </ul>
      *
-     * If this method can not propose a suitable CRS, then it returns {@code this}.
+     * If this method cannot propose a suitable CRS, then it returns {@code this}.
      */
     final VerticalInfo complete(final CRSFactory crsFactory, final CSFactory csFactory) throws FactoryException {
         if (next != null) {
@@ -171,7 +171,7 @@ final class VerticalInfo {
          *     names are constrained by the ISO 19111 specification in a way that do not include the units
          *     of measurement. Examples: "Gravity-related height", "Depth".
          *
-         *   - We can not reuse the previous Coordinate System name, because it often contains the axis
+         *   - We cannot reuse the previous Coordinate System name, because it often contains the axis
          *     abbreviation and unit. Examples: "Vertical CS. Axis: height (H). Orientation: up. UoM: m.".
          *     Since we are lazy, we will reuse the axis name instead, which is more neutral.
          *

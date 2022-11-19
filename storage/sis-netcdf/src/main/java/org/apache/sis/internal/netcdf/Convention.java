@@ -222,7 +222,7 @@ public class Convention {
      *       They may have more dimensions, in which case a slice will be taken later.</li>
      *   <li>Exclude axes. Axes are often already excluded by the above condition because axis are usually 1-dimensional,
      *       but some axes are 2-dimensional (e.g. a localization grid).</li>
-     *   <li>Excludes characters, strings and structures, which can not be easily mapped to an image type.
+     *   <li>Excludes characters, strings and structures, which cannot be easily mapped to an image type.
      *       In addition, 2-dimensional character arrays are often used for annotations and we do not want
      *       to confuse them with images.</li>
      * </ul>
@@ -763,13 +763,13 @@ public class Convention {
     }
 
     /**
-     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     * Returns the unit of measurement to use as a fallback if it cannot be determined in a standard way.
      * Default implementation returns {@code null}. Subclasses can override if the unit can be determined
      * in a way specific to this convention.
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol can not be parsed.
+     * @throws ParserException if the unit symbol cannot be parsed.
      */
     public Unit<?> getUnitFallback(final Variable data) throws ParserException {
         return null;

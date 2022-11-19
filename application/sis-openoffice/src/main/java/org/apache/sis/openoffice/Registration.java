@@ -66,7 +66,7 @@ public final class Registration {
      */
     private static void classpathException(final String method, final Throwable exception) {
         final String lineSeparator = System.lineSeparator();
-        final StringBuilder message = new StringBuilder("Can not find Apache SIS classes.").append(lineSeparator)
+        final StringBuilder message = new StringBuilder("Cannot find Apache SIS classes.").append(lineSeparator)
                 .append("Classpath = ").append(System.getProperty("java.class.path"));
         final ClassLoader loader = ReferencingFunctions.class.getClassLoader();
         if (loader instanceof URLClassLoader) {

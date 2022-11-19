@@ -497,7 +497,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             formatter.indent(+1);
         }
         if (!isWKT1 || formatter.getConvention() != Convention.WKT1_IGNORE_AXES) {
-            if (cs != null) {                       // Should never be null, except sometime temporarily during construction.
+            if (cs != null) {                       // Should never be null, except sometimes temporarily during construction.
                 final int dimension = cs.getDimension();
                 for (int i=0; i<dimension; i++) {
                     formatter.newLine();
@@ -531,7 +531,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCRS() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);

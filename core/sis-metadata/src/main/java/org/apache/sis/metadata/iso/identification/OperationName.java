@@ -23,7 +23,7 @@ import org.apache.sis.internal.util.Strings;
 
 
 /**
- * An {@code OperationMetadata} placeholder to be replaced later by a reference to an other {@code OperationMetadata}.
+ * An {@code OperationMetadata} placeholder to be replaced later by a reference to another {@code OperationMetadata}.
  * This temporary place holder is used when the operation name is unmarshalled before the actual operation definition.
  *
  * @author  Martin Desruisseaux (Geomatys)

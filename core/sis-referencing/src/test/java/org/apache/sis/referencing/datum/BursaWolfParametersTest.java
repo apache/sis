@@ -140,7 +140,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         assertFalse("equals(Object) before to set the values.", actual.equals(expected));
         actual.setValues(values);
         assertArrayEquals("getValues() after setting the values.", values, actual.getValues(), STRICT);
-        // Can not test assertEquals(expected, actual) because of different geographic extent.
+        // Cannot test assertEquals(expected, actual) because of different geographic extent.
     }
 
     /**

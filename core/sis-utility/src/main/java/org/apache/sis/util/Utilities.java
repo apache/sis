@@ -275,7 +275,7 @@ public final class Utilities extends Static {
     /**
      * Returns {@code true} if the given mode is not {@link ComparisonMode#DEBUG}. In debug mode,
      * the expected behavior of {@link #deepEquals(Object, Object, ComparisonMode)} is to thrown
-     * an exception (rather then returning {@code false}) when two objects are not equal.
+     * an exception (rather than returning {@code false}) when two objects are not equal.
      */
     private static boolean isNotDebug(final ComparisonMode mode) {
         return mode != ComparisonMode.DEBUG;

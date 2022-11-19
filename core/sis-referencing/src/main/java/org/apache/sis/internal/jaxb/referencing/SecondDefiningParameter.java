@@ -93,7 +93,7 @@ public final class SecondDefiningParameter {
      * Stores the semi-minor axis or the inverse of the flattening value.
      *
      * @param  ellipsoid  the ellipsoid from which to get the semi-minor or inverse flattening value.
-     * @param  nested     {@code true} if the element should be nested in an other XML type.
+     * @param  nested     {@code true} if the element should be nested in another XML type.
      */
     public SecondDefiningParameter(final Ellipsoid ellipsoid, final boolean nested) {
         if (nested) {

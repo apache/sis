@@ -60,7 +60,7 @@ final class ConversionKeys implements ObjectConverter<String,String> {
      * Provides a map without the {@code "conversion."} prefix in the keys.
      *
      * @param  <V>         type of values in the map.
-     * @param  properties  the user-supplied properties.
+     * @param  properties  the user supplied properties.
      */
     @SuppressWarnings("unchecked")
     static <V> Map<String,V> unprefix(final Map<String,V> properties) {
@@ -73,7 +73,7 @@ final class ConversionKeys implements ObjectConverter<String,String> {
     }
 
     /**
-     * Returns the type of keys in the user-supplied properties map.
+     * Returns the type of keys in the user supplied properties map.
      */
     @Override
     public Class<String> getSourceClass() {
@@ -101,7 +101,7 @@ final class ConversionKeys implements ObjectConverter<String,String> {
      * Adds or removes the prefix from the specified key.
      * In the removal case if the key does not begin with the prefix, then this method returns {@code null}.
      *
-     * @param  key  a key from the user-supplied properties map.
+     * @param  key  a key from the user supplied properties map.
      * @return the key to show in the derived map.
      */
     @Override

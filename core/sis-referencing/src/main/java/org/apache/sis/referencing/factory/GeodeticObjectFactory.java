@@ -71,7 +71,7 @@ import org.apache.sis.xml.XML;
  * This factory serves two purposes:
  *
  * <ul>
- *   <li><b>For users</b>, allows the creation of complex objects that can not be created by the authority factories,
+ *   <li><b>For users</b>, allows the creation of complex objects that cannot be created by the authority factories,
  *       without explicit dependency to Apache SIS (when using the GeoAPI interfaces implemented by this class).</li>
  *   <li><b>For providers</b>, allows <cite>inversion of control</cite> by overriding methods in this class,
  *       then specifying the customized instance to other services that consume {@code CRSFactory} (for example
@@ -822,7 +822,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>A {@code createFooCS(…)} method for Cartesian, spherical, ellipsoidal, vertical, temporal, linear, affine, polar, cylindrical or user-defined CS.</li>
-     *   <li>An other {@code createFooCRS(…)} method for geocentric, geographic, vertical, temporal or engineering CRS.</li>
+     *   <li>Another {@code createFooCRS(…)} method for geocentric, geographic, vertical, temporal or engineering CRS.</li>
      *   <li>{@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createDefiningConversion(Map, OperationMethod, ParameterValueGroup)}</li>
      * </ol></div>
      *
@@ -1573,7 +1573,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             object = XML.unmarshal(xml);
         } catch (JAXBException e) {
             /*
-             * The JAXB exception if often a wrapper around other exceptions, sometime InvocationTargetException.
+             * The JAXB exception if often a wrapper around other exceptions, sometimes InvocationTargetException.
              * The exception cause is called "linked exception" by JAXB, presumably because it predates standard
              * chained exception mechanism introduced in Java 1.4. The JAXB linked exceptions do not propagate the
              * error message, so we have to take it from the cause, skipping InvocationTargetException since they

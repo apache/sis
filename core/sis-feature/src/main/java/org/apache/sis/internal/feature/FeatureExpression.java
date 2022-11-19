@@ -61,7 +61,7 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      *
      * @param  valueType  the type of features to be evaluated by the given expression.
      * @param  addTo      where to add the type of properties evaluated by this expression.
-     * @return builder of the added property, or {@code null} if this method can not add a property.
+     * @return builder of the added property, or {@code null} if this method cannot add a property.
      * @throws IllegalArgumentException if this method can operate only on some feature types
      *         and the given type is not one of them.
      */
@@ -69,7 +69,7 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
 
     /**
      * Tries to cast or convert the given expression to a {@link FeatureExpression}.
-     * If the given expression can not be casted, then this method creates a copy
+     * If the given expression cannot be casted, then this method creates a copy
      * provided that the expression is one of the following type:
      *
      * <ol>
@@ -82,7 +82,7 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      * We leave that responsibility to the caller because (s)he may be able to provide better error messages.
      *
      * @param  candidate  the expression to cast or copy. Can be null.
-     * @return the given expression as a feature expression, or {@code null} if it can not be casted or converted.
+     * @return the given expression as a feature expression, or {@code null} if it cannot be casted or converted.
      */
     public static FeatureExpression<?,?> castOrCopy(final Expression<?,?> candidate) {
         if (candidate instanceof FeatureExpression<?,?>) {

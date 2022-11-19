@@ -560,7 +560,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * </ul>
      *
      * @throws IllegalStateException if the distance or azimuth has not been set.
-     * @throws GeodeticException if an azimuth or the distance can not be computed.
+     * @throws GeodeticException if an azimuth or the distance cannot be computed.
      */
     @Override
     final void computeDistance() {
@@ -617,7 +617,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              */
             if (Δλ > axisRatio * PI) {
                 // Karney's special case documented before equation 45.
-                throw new GeodeticException("Can not compute geodesics for antipodal points on equator.");
+                throw new GeodeticException("Cannot compute geodesics for antipodal points on equator.");
             }
             super.computeDistance();
             return;
@@ -792,7 +792,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             }
             final double dα1 = Δλ_error / dΔλ_dα1;                  // Opposite sign of Karney δα₁ term.
             /*
-             * We need to compute α₁ -= dα₁ then iterate again. But sometime the subtraction has no effect
+             * We need to compute α₁ -= dα₁ then iterate again. But sometimes the subtraction has no effect
              * because dα₁ ≪ α₁ and iteration continues with unchanged α₁ value until no convergence error.
              * If we detect this situation, assume that we have the best accuracy that we can get.
              *

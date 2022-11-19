@@ -64,12 +64,12 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     /**
      * The type of quantity that uses this unit, or {@code null} if unknown.
      * This field should be null only when this unit is the result of an arithmetic
-     * operation and that result can not be mapped to a known {@link Quantity} subtype.
+     * operation and that result cannot be mapped to a known {@link Quantity} subtype.
      */
     final Class<Q> quantity;
 
     /**
-     * The dimension of this unit of measurement. Can not be null.
+     * The dimension of this unit of measurement. Cannot be null.
      */
     final UnitDimension dimension;
 
@@ -142,7 +142,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         }
         /*
          * Try to create a unit symbol as the concatenation of the symbols of the two units,
-         * with the operation symbol between them. If we can not, `symbol` will stay null.
+         * with the operation symbol between them. If we cannot, `symbol` will stay null.
          */
         String symbol = null;
         if (operation != 0) {
@@ -303,7 +303,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         /*
          * Verifies what are the expected dimensions of the given type by searching for the corresponding unit.
          * If we find that unit, returns it on the assumption that its symbol is right while the symbol of this
-         * unit may no longer be right for the given type.  If we can not find a pre-defined units, then create
+         * unit may no longer be right for the given type.  If we cannot find a predefined units, then create
          * a new unit with the requested type but no symbol since we do not know yet what the symbol should be
          * for the new quantity.
          */
@@ -350,7 +350,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * @param  unit  the unit of same type to which to convert the numeric values.
      * @return the converter from this unit to {@code that} unit.
-     * @throws UnconvertibleException if the converter can not be constructed.
+     * @throws UnconvertibleException if the converter cannot be constructed.
      */
     @Override
     public UnitConverter getConverterTo(final Unit<Q> unit) throws UnconvertibleException {

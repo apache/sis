@@ -23,7 +23,7 @@ import org.apache.sis.util.CharSequences;
 
 /**
  * The SQL dialect used by a connection. This class defines also a few driver-specific operations
- * that can not (to our knowledge) be inferred from the {@link DatabaseMetaData}.
+ * that cannot (to our knowledge) be inferred from the {@link DatabaseMetaData}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -110,7 +110,7 @@ public enum Dialect {
 
     /**
      * Returns the presumed SQL dialect.
-     * If this method can not guess the dialect, than {@link #ANSI} is presumed.
+     * If this method cannot guess the dialect, than {@link #ANSI} is presumed.
      *
      * @param  metadata  the database metadata.
      * @return the presumed SQL dialect (never {@code null}).

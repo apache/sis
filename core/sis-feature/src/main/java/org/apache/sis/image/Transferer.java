@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.Numerics;
  * an intermediate buffer. This class has the following constraints:
  *
  * <ul>
- *   <li>Source values can not be modified. Calculations must be done either directly in the
+ *   <li>Source values cannot be modified. Calculations must be done either directly in the
  *       target raster, or in a temporary buffer.</li>
  *   <li>Direct access to the {@link DataBuffer} arrays may disable video card acceleration.
  *       This class assumes that it is acceptable for {@code float} and {@code double} types,
@@ -222,7 +222,7 @@ abstract class Transferer {
      *
      * <div class="note"><b>Note:</b>
      * having a source raster with {@code double} data type does not remove the need to use a temporary buffer,
-     * because we can not modify the source data. We still need to allocate a temporary array for collecting the
+     * because we cannot modify the source data. We still need to allocate a temporary array for collecting the
      * operation results before final writing in the target array.</div>
      */
     private static final class DoubleToDouble extends Transferer {

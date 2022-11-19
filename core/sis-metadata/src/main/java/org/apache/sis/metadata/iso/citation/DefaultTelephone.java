@@ -56,9 +56,9 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  *
  * <ul>
  *   <li>In ISO 19115:2003, each {@code Contact} had only one {@code Telephone} instance, but that instance
- *       could have an arbitrary amount of "voice" and "facsimile" numbers. The methods (now deprecated) were
+ *       could have an arbitrary number of "voice" and "facsimile" numbers. The methods (now deprecated) were
  *       {@link DefaultContact#getPhone()}, {@link #getVoices()} and {@link #getFacsimiles()}.</li>
- *   <li>In ISO 19115:2014, each {@code Contact} has an arbitrary amount of {@code Telephone} instances, and
+ *   <li>In ISO 19115:2014, each {@code Contact} has an arbitrary number of {@code Telephone} instances, and
  *       each telephone has exactly one number. The new methods are {@link DefaultContact#getPhones()},
  *       {@link #getNumber()} and {@link #getNumberType()}.</li>
  * </ul>

@@ -533,8 +533,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * @param  text       the string in which to perform the search (can not be null).
-     * @param  fromIndex  the index from which to start the search (can not be negative).
+     * @param  text       the string in which to perform the search (cannot be null).
+     * @param  fromIndex  the index from which to start the search (cannot be negative).
      * @param  toIndex    the index after the last character where to perform the search.
      * @return the index within the text of the first occurrence of a non-space character, starting
      *         at the specified index, or a value equals or greater than {@code toIndex} if none.
@@ -571,8 +571,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * @param  text       the string in which to perform the search (can not be null).
-     * @param  fromIndex  the index from which to start the search (can not be negative).
+     * @param  text       the string in which to perform the search (cannot be null).
+     * @param  fromIndex  the index from which to start the search (cannot be negative).
      * @param  toIndex    the index after the last character where to perform the search.
      * @return the index within the text of the last occurrence of a non-space character, starting
      *         at the specified index, or a value equals or lower than {@code fromIndex} if none.
@@ -790,7 +790,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  separator  the delimiting character (typically the coma).
      * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     public static double[] parseDoubles(final CharSequence values, final char separator)
             throws NumberFormatException
@@ -814,7 +814,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  separator  the delimiting character (typically the coma).
      * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     public static float[] parseFloats(final CharSequence values, final char separator)
             throws NumberFormatException
@@ -838,7 +838,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  radix      the radix to be used for parsing. This is usually 10.
      * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     public static long[] parseLongs(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -861,7 +861,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  radix      the radix to be used for parsing. This is usually 10.
      * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     public static int[] parseInts(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -884,7 +884,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  radix      the radix to be used for parsing. This is usually 10.
      * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     public static short[] parseShorts(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -907,7 +907,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  radix      the radix to be used for parsing. This is usually 10.
      * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     public static byte[] parseBytes(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -1211,7 +1211,7 @@ searchWordBreak:    while (true) {
      *     <cite>"transfer function type"</cite>. This works fine for ISO 19115 identifiers.</li>
      *
      *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
-     *     an other common naming convention, which uses {@code '_'} as a word separator. This
+     *     another common naming convention, which uses {@code '_'} as a word separator. This
      *     convention is used by netCDF attributes like {@code "project_name"}.</li>
      *
      *   <li>Finally ensure that the first character is upper-case.</li>
@@ -1462,7 +1462,7 @@ cmp:    while (ia < lga) {
             }
         }
         /*
-         * Now that we have processed all acronym letters, the complete name can not have
+         * Now that we have processed all acronym letters, the complete name cannot have
          * any additional word. We can only finish the current word and skip trailing non-
          * letter characters.
          */
@@ -1612,7 +1612,7 @@ cmp:    while (ia < lga) {
 
     /**
      * Returns {@code true} if the given texts are equal, optionally ignoring case and filtered-out characters.
-     * This method is sometime used for comparing identifiers in a lenient way.
+     * This method is sometimes used for comparing identifiers in a lenient way.
      *
      * <p><b>Example:</b> the following call compares the two strings ignoring case and any
      * characters which are not {@linkplain Character#isLetterOrDigit(int) letter or digit}.

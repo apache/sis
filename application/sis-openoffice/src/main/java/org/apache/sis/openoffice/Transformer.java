@@ -168,7 +168,7 @@ final class Transformer {
                 } catch (TransformException exception) {
                     /*
                      * The coordinate operation failed for this particular point. But maybe it will
-                     * succeed for an other point. Set the values to NaN and continue the loop. Note:
+                     * succeed for another point. Set the values to NaN and continue the loop. Note:
                      * we will report the failure for logging purpose, but only the first one since
                      * all subsequent failures are likely to be the same one.
                      */

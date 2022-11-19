@@ -295,7 +295,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
 
     /**
      * Handler for converting an {@code AND}, {@code OR} or {@code NOT} filter into SQL clauses.
-     * The filter can contain an arbitrary amount of operands, all separated by the same keyword.
+     * The filter can contain an arbitrary number of operands, all separated by the same keyword.
      * All operands are grouped between parenthesis.
      */
     private final class Logic implements BiConsumer<Filter<AbstractFeature>, SelectionClause> {
@@ -393,7 +393,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
 
     /**
      * Appends a function name with an arbitrary number of parameters (potentially zero).
-     * This method stops immediately if a parameter can not be expressed in SQL, leaving
+     * This method stops immediately if a parameter cannot be expressed in SQL, leaving
      * the trailing part of the SQL in an invalid state.
      */
     private final class Function implements BiConsumer<Filter<AbstractFeature>, SelectionClause> {

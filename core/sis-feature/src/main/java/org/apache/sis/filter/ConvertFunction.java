@@ -129,12 +129,12 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
 
     /**
      * Evaluates the expression for producing a result of the given type.
-     * If this method can not produce a value of the given type, then it returns {@code null}.
+     * If this method cannot produce a value of the given type, then it returns {@code null}.
      * This implementation evaluates the expression {@linkplain Expression#apply(Object) in the default way},
      * then tries to convert the result to the target type.
      *
      * @param  feature  the value or feature to evaluate with this expression.
-     * @return the result, or {@code null} if it can not be of the specified type.
+     * @return the result, or {@code null} if it cannot be of the specified type.
      */
     @Override
     public V apply(final R feature) {
@@ -157,7 +157,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
 
     /**
      * Provides the type of values produced by this expression when a feature of the given type is evaluated.
-     * May return {@code null} if the type can not be determined.
+     * May return {@code null} if the type cannot be determined.
      */
     @Override
     public PropertyTypeBuilder expectedType(final DefaultFeatureType valueType, final FeatureTypeBuilder addTo) {

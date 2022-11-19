@@ -357,7 +357,7 @@ final class BandedIterator extends WritablePixelIterator {
                 } while (--subHeight != 0);
                 return target;
             }
-            // Fallback for all cases that we can not handle with above loop.
+            // Fallback for all cases that we cannot handle with above loop.
             return raster.getPixels(subX, subY, subWidth, subHeight, target);
         }
 
@@ -426,7 +426,7 @@ final class BandedIterator extends WritablePixelIterator {
                 } while (--subHeight != 0);
                 return target;
             }
-            // Fallback for all cases that we can not handle with above loop.
+            // Fallback for all cases that we cannot handle with above loop.
             return raster.getPixels(subX, subY, subWidth, subHeight, target);
         }
 

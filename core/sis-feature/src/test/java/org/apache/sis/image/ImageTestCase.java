@@ -96,7 +96,7 @@ public abstract strictfp class ImageTestCase extends TestCase {
     }
 
     /**
-     * Saves the current image as a PNG image in the given file. This is sometime useful for visual
+     * Saves the current image as a PNG image in the given file. This is sometimes useful for visual
      * check purpose, and is used only as a helper tools for tuning the test suites. Floating-point
      * images are converted to grayscale before to be saved.
      *
@@ -124,7 +124,7 @@ public abstract strictfp class ImageTestCase extends TestCase {
 
     /**
      * Saves the first band of the given raster as a PNG image in the given file.
-     * This is sometime useful for visual check purpose, and is used only as a helper tools
+     * This is sometimes useful for visual check purpose, and is used only as a helper tools
      * for tuning the test suites. The raster is converted to grayscale before to be saved.
      *
      * @param  raster  the raster to write in PNG format.

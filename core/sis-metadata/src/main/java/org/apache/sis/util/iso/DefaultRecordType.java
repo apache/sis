@@ -49,7 +49,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
 /**
  * An immutable definition of the type of a {@linkplain DefaultRecord record}.
  * A {@code RecordType} is identified by a {@linkplain #getTypeName() type name} and contains an
- * arbitrary amount of {@linkplain #getMembers() members} (fields) as (<var>name</var>, <var>type</var>) pairs.
+ * arbitrary number of {@linkplain #getMembers() members} (fields) as (<var>name</var>, <var>type</var>) pairs.
  * A {@code RecordType} may therefore contain another {@code RecordType} as a field.
  *
  * <div class="note"><b>Comparison with Java reflection:</b>

@@ -131,7 +131,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * <div class="note"><b>Implementation note:</b>
      * {@code ConcatenatedTransform} implementations are available in two versions: direct and non-direct.
      * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
-     * and consume more memory. They are used only as a fallback when a "direct" version can not be created.</div>
+     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.</div>
      *
      * @param  tr1      the first math transform.
      * @param  tr2      the second math transform.
@@ -154,7 +154,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             return mt;
         }
         /*
-         * Can not avoid the creation of a ConcatenatedTransform object.
+         * Cannot avoid the creation of a ConcatenatedTransform object.
          * Check for the type to create (1D, 2D, general case...)
          */
         final int dimSource = tr1.getSourceDimensions();
@@ -950,7 +950,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@code create(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this
      * class directly instead of using a factory method, or in case the given math transforms
-     * are mutable (they should not, be we can not control what the user gave to us).</div>
+     * are mutable (they should not, be we cannot control what the user gave to us).</div>
      */
     @Override
     public boolean isIdentity() {

@@ -41,7 +41,7 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
     private static final double TOLERANCE = 1E-12;
 
     /**
-     * Converts the given value to an other unit, compares with the expected value, and verify
+     * Converts the given value to another unit, compares with the expected value, and verify
      * the inverse conversion. Then tries again with the negative of the given values.
      */
     private static <Q extends Quantity<Q>> void checkConversion(
@@ -104,7 +104,7 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
             fail("Conversion of illegal value should not be allowed.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
-            assertNotNull(message);     // Can not test message content because it is locale-sensitive.
+            assertNotNull(message);     // Cannot test message content because it is locale-sensitive.
         }
     }
 

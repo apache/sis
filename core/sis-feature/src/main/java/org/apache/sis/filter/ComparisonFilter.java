@@ -47,7 +47,7 @@ import org.apache.sis.internal.geoapi.filter.BetweenComparisonOperator;
 
 /**
  * Comparison operators between two values. Values are converted to the same type before comparison, using a widening
- * conversion (for example from {@link Integer} to {@link Double}). If values can not be compared because they can not
+ * conversion (for example from {@link Integer} to {@link Double}). If values cannot be compared because they cannot
  * be converted to a common type, or because a value is null or NaN, then the comparison result if {@code false}.
  * A consequence of this rule is that the conditions {@literal A < B} and {@literal A ≥ B} may be false at the same time.
  *
@@ -379,7 +379,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
                 return ((Date) value).toInstant();
             } catch (UnsupportedOperationException e) {
                 /*
-                 * java.sql.Date and java.sql.Time can not be converted to Instant because a part
+                 * java.sql.Date and java.sql.Time cannot be converted to Instant because a part
                  * of their coordinates on the timeline is undefined.  For example in the case of
                  * java.sql.Date the hours, minutes and seconds are unspecified (which is not the
                  * same thing than assuming that those values are zero).

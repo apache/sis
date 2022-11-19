@@ -35,7 +35,7 @@ import org.apache.sis.internal.geoapi.filter.SortBy;
 /**
  * The result of {@link FeatureQuery#execute(FeatureSet)} executed using Java {@link Stream} methods.
  * Queries executed by this class do not benefit from accelerations provided for example by databases.
- * This class should be used only as a fallback when the query can not be executed natively by
+ * This class should be used only as a fallback when the query cannot be executed natively by
  * {@link FeatureSet#subset(Query)}.
  *
  * @author  Johann Sorel (Geomatys)

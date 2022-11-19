@@ -30,7 +30,7 @@ import org.opengis.geometry.Envelope;
  * <div class="note"><b>Example:</b>
  * the features contained in a {@code DataSet} could be all bridges in a city. A {@code DataSet} can be associated to
  * one {@code FeatureType} which specifies that all bridges shall have {@code "construction date"} and {@code "height"}
- * attributes, and an arbitrary amount of {@code Feature} instances which contains the actual values for all bridges in
+ * attributes, and an arbitrary number of {@code Feature} instances which contains the actual values for all bridges in
  * the dataset.</div>
  *
  * <h2>Metadata</h2>

@@ -129,7 +129,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                 if (home != null) try {
                     path = Paths.get(home).relativize(path);
                 } catch (IllegalArgumentException | SecurityException e) {
-                    // The path can not be relativized. This is okay.
+                    // The path cannot be relativized. This is okay.
                     Logging.recoverableException(getLogger(Loggers.SQL), LocalDataSource.class, "<init>", e);
                 }
                 path   = path.normalize();

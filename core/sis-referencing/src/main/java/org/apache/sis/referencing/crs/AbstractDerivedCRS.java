@@ -280,7 +280,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractDerivedCRS() {
     }
@@ -309,7 +309,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * when this method is invoked.</p>
      *
      * @param  name  the property name, used only in case of error message to format.
-     * @throws IllegalStateException if the base CRS can not be set.
+     * @throws IllegalStateException if the base CRS cannot be set.
      */
     @SuppressWarnings("unchecked")
     final void setBaseCRS(final String name, final SingleCRS baseCRS) {

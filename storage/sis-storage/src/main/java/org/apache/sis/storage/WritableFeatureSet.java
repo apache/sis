@@ -67,7 +67,7 @@ public interface WritableFeatureSet extends FeatureSet {
      * but not necessarily; ordering is {@link DataStore} specific.
      *
      * <div class="note"><b>API note:</b>
-     * this method expects an {@link Iterator} rather then a {@link Stream} for easing
+     * this method expects an {@link Iterator} rather than a {@link Stream} for easing
      * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
      * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
      * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>

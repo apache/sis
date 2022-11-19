@@ -120,8 +120,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
 
     /**
-     * Sentinel value when {@link #authority} can not be determined because the data access object
-     * can not be constructed.
+     * Sentinel value when {@link #authority} cannot be determined because the data access object
+     * cannot be constructed.
      */
     private static final Citation UNAVAILABLE = new SimpleCitation("unavailable");
 
@@ -250,7 +250,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * However the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
      * because this field is set to {@code true} only when a worker factory is {@linkplain #release released}.
      *
-     * <p>Note that we can not use {@code !availableDAOs.isEmpty()} as a replacement of {@code isCleanScheduled}
+     * <p>Note that we cannot use {@code !availableDAOs.isEmpty()} as a replacement of {@code isCleanScheduled}
      * because the queue is empty if all Data Access Objects are currently in use.</p>
      *
      * <p>Every access to this field must be performed in a block synchronized on {@link #availableDAOs}.</p>
@@ -652,7 +652,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Invoked when an exception occurred while closing a factory and we can not propagate the exception to the user.
+     * Invoked when an exception occurred while closing a factory and we cannot propagate the exception to the user.
      * This situation happen when the factories are closed in a background thread. There is not much we can do except
      * logging the problem. {@code ConcurrentAuthorityFactory} should be able to continue its work normally since the
      * factory that we failed to close will not be used anymore.
@@ -726,7 +726,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   </li>
      * </ul>
      *
-     * If this method can not get a Data Access Object (for example because no database connection is available),
+     * If this method cannot get a Data Access Object (for example because no database connection is available),
      * then this method returns {@code null}.
      *
      * @return the organization responsible for definition of the database, or {@code null} if unavailable.
@@ -1337,7 +1337,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a 2- or 3-dimensional coordinate system for geodetic latitude and longitude, sometime with ellipsoidal height.
+     * Returns a 2- or 3-dimensional coordinate system for geodetic latitude and longitude, sometimes with ellipsoidal height.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1765,7 +1765,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * The default implementation delegates lookup to the underlying Data Access Object and caches the result.
      *
      * @return a finder to use for looking up unidentified objects.
-     * @throws FactoryException if the finder can not be created.
+     * @throws FactoryException if the finder cannot be created.
      */
     @Override
     public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {

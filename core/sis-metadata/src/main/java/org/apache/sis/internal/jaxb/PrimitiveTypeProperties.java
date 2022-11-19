@@ -24,7 +24,7 @@ import org.apache.sis.xml.NilReason;
 
 /**
  * A workaround for attaching properties ({@code nilreason}, {@code href}, <i>etc.</i>) to primitive type wrappers.
- * The normal approach in SIS is to implement the {@link org.apache.sis.xml.NilObject} interface. However we can not
+ * The normal approach in SIS is to implement the {@link org.apache.sis.xml.NilObject} interface. However we cannot
  * do so when the object is a final Java class like {@link Boolean}, {@link Integer}, {@link Double} or {@link String}.
  * This class provides a workaround using specific instances of those wrappers.
  *
@@ -48,7 +48,7 @@ public final class PrimitiveTypeProperties {
      * but only the specific {@code Integer} instance used as sentinel value for nil.
      *
      * <h4>Weak references</h4>
-     * We can not use weak value references, because we don't want the {@link NilReason} (the map value) to be lost
+     * We cannot use weak value references, because we don't want the {@link NilReason} (the map value) to be lost
      * while the sentinel value (the map key) is still in use. We could use weak references for the keys, but JDK 7
      * does not provides any map implementation which is both an {@code IdentityHashMap} and a {@code WeakHashMap}.
      *
@@ -104,7 +104,7 @@ public final class PrimitiveTypeProperties {
      */
     public static Object property(final Object primitive) {
         /*
-         * No 'assert isValidKey(primitive)' because this method is sometime invoked
+         * No 'assert isValidKey(primitive)' because this method is sometimes invoked
          * only after a brief inspection (e.g. 'NilReason.mayBeNil(Object)' method).
          */
         synchronized (SENTINEL_VALUES) {

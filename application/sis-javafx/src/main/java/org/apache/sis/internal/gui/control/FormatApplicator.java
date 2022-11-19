@@ -146,7 +146,7 @@ final class FormatApplicator<T> extends StringConverter<T>
      *
      * @param  text  the text to parse, or {@code null}.
      * @return the parsed value, or {@code null} if the given text was null.
-     * @throws IllegalArgumentException if the given text can not be parsed.
+     * @throws IllegalArgumentException if the given text cannot be parsed.
      */
     @Override
     public final T fromString(String text) {

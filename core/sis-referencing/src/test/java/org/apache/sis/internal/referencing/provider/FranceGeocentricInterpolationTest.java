@@ -108,7 +108,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends DatumShift
     /**
      * Tests a small grid file with interpolations in geocentric coordinates.
      *
-     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -125,7 +125,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends DatumShift
      * The next method is {@link #testGridAsShorts(DatumShiftGridFile)}.</p>
      *
      * @return the loaded grid with values as {@code float}.
-     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -218,7 +218,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends DatumShift
     /**
      * Tests the {@link FranceGeocentricInterpolation#getOrLoad(Path, double[], double)} method and its cache.
      *
-     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope.
      */

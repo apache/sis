@@ -76,14 +76,14 @@ import org.opengis.referencing.ReferenceIdentifier;
  * <ul class="verbose">
  *   <li>On input, the {@link #transform(double[], int, double[], int, boolean) transform(…)} method
  *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>,
- *   sometime pre-multiplied by other projection-specific factors (see point #3 below).
+ *   sometimes pre-multiplied by other projection-specific factors (see point #3 below).
  *   Longitudes have the <cite>central meridian</cite> (λ₀) removed before the transform method is invoked.
  *   The conversion from degrees to radians and the longitude rotation are applied by the
  *   {@linkplain ContextualParameters#normalizeGeographicInputs normalization} affine transform.</li>
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1,
- *   sometime divided by other projection-specific factors (see point #3 below).
+ *   sometimes divided by other projection-specific factors (see point #3 below).
  *   The multiplication by the scale factor (<var>k₀</var>) and the translation by false easting (FE) and false
  *   northing (FN) are applied by the {@linkplain ContextualParameters#getMatrix denormalization} affine transform.</li>
  *
@@ -573,7 +573,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * If this map projection can not handle the parameters given by the user but an other projection could, delegates
+     * If this map projection cannot handle the parameters given by the user but another projection could, delegates
      * to the other projection. This method can be invoked by some {@link #createMapProjection(MathTransformFactory)}
      * implementations when the other projection can be seen as a special case.
      *
@@ -780,7 +780,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public abstract Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate)
@@ -807,7 +807,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
      *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     protected abstract void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff)
             throws ProjectionException;
@@ -884,7 +884,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
 
         /**
-         * Inverse transforms an arbitrary amount of coordinates. This method optimizes the
+         * Inverse transforms an arbitrary number of coordinate tuples. This method optimizes the
          * case where conversions can be applied by a loop with indices in increasing order.
          */
         @Override

@@ -23,7 +23,7 @@ import org.apache.sis.util.ObjectConverter;
 /**
  * An iterator which performs conversions on the fly using the given converter.
  * If a value is converted into a null value, then this iterator skips that value.
- * Consequently this iterator can not return null value.
+ * Consequently this iterator cannot return null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3

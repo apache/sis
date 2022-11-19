@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a resources can not be filtered with a given query.
+ * Thrown when a resources cannot be filtered with a given query.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8

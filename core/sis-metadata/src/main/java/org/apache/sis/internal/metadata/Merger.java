@@ -111,7 +111,7 @@ public class Merger {
      * @param  source  the source metadata to merge into the target. Will never be modified.
      * @param  target  the target metadata where to merge values. Will be modified as a result of this call.
      * @throws ClassCastException if the source and target are not instances of the same metadata standard.
-     * @throws InvalidMetadataException if the {@code target} metadata can not hold all {@code source} properties,
+     * @throws InvalidMetadataException if the {@code target} metadata cannot hold all {@code source} properties,
      *         for example because the source class is a more specialized type than the target class.
      * @throws IllegalArgumentException if this method detects a cross-reference between source and target metadata.
      */
@@ -410,7 +410,7 @@ distribute:                 while (it.hasNext()) {
     }
 
     /**
-     * Invoked when {@code Merger} can not merge a metadata value by itself.
+     * Invoked when {@code Merger} cannot merge a metadata value by itself.
      * The default implementation throws an {@link InvalidMetadataException}.
      * Subclasses can override this method if they want to perform a different processing.
      *

@@ -24,7 +24,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 
 
 /**
- * Wraps an existing operation. This package can not create new operations, except for a few special cases.
+ * Wraps an existing operation. This package cannot create new operations, except for a few special cases.
  * The user need to specify fully formed objects.
  *
  * @author  Johann Sorel (Geomatys)

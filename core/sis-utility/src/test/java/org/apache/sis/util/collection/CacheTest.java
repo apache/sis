@@ -126,7 +126,7 @@ public final strictfp class CacheTest extends TestCase {
             }
 
             /**
-             * Reads the value added by the main thread, then adds an other value.
+             * Reads the value added by the main thread, then adds another value.
              * The first operation shall block while the main thread holds the lock.
              */
             @Override public void run() {
@@ -265,7 +265,7 @@ public final strictfp class CacheTest extends TestCase {
         /*
          * If verbose test output is enabled, report the number of cache hits.
          * The numbers below are for tuning the test only. The output is somewhat
-         * random so we can not check it in a test suite.  However if the test is
+         * random so we cannot check it in a test suite.  However if the test is
          * properly tuned, most values should be non-zero.
          */
         final PrintWriter out = CacheTest.out;

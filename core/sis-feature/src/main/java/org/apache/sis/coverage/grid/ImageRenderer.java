@@ -88,7 +88,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  *                 renderer.setData(data);
  *                 return renderer.createImage();
  *             } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
- *                 throw new CannotEvaluateException("Can not create an image.", e);
+ *                 throw new CannotEvaluateException("Cannot create an image.", e);
  *             }
  *         }
  *     }
@@ -297,7 +297,7 @@ public class ImageRenderer {
      *
      * @param  coverage     the source coverage for which to build an image.
      * @param  sliceExtent  the domain from which to create an image, or {@code null} for the {@code coverage} extent.
-     * @throws SubspaceNotSpecifiedException if this method can not infer a two-dimensional slice from {@code sliceExtent}.
+     * @throws SubspaceNotSpecifiedException if this method cannot infer a two-dimensional slice from {@code sliceExtent}.
      * @throws DisjointExtentException if the given extent does not intersect the given coverage.
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
@@ -671,7 +671,7 @@ public class ImageRenderer {
      *     } : null);
      * }
      *
-     * @param colors  the colors to use for each category. The {@code colors} argument can not be null,
+     * @param colors  the colors to use for each category. The {@code colors} argument cannot be null,
      *                but {@code colors.apply(Category)} can return null.
      *
      * @since 1.2
@@ -702,7 +702,7 @@ public class ImageRenderer {
             strideFactor = isInterleaved ? getNumBands() : 1;
         }
         final int ls = multiplyExact(scanlineStride, strideFactor);     // Real scanline stride.
-        final int ps = pixelStride * strideFactor;                      // Can not fail if above operation did not fail.
+        final int ps = pixelStride * strideFactor;                      // Cannot fail if above operation did not fail.
         /*
          * Number of data elements from the first element of the bank to the first sample of the band.
          * This is usually 0 for all bands, unless the upper-left corner (minX, minY) is not (0,0).
@@ -821,7 +821,7 @@ public class ImageRenderer {
          * If the key is {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY},
          * then the {@link GridGeometry} will be computed when first needed.
          *
-         * @throws ImagingOpException if the property value can not be computed.
+         * @throws ImagingOpException if the property value cannot be computed.
          */
         @Override
         public Object getProperty(final String key) {

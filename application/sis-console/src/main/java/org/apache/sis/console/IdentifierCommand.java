@@ -157,7 +157,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
         String identifier = IdentifiedObjects.lookupURN(rs, null);
         if (identifier == null) {
             /*
-             * If we can not find an identifier matching the EPSG or WMS definitions,
+             * If we cannot find an identifier matching the EPSG or WMS definitions,
              * look at the identifiers declared in the CRS and verify their validity.
              */
             for (final Identifier id : rs.getIdentifiers()) {

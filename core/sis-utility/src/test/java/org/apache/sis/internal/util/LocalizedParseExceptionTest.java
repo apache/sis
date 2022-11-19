@@ -50,7 +50,7 @@ public final strictfp class LocalizedParseExceptionTest extends TestCase {
                 Locale.CANADA, Angle.class, "Some text to parse", pos);
         String message = e.getLocalizedMessage();
         assertTrue(message, message.contains("Some text to parse"));
-        assertTrue(message, message.contains("can not be parsed"));
+        assertTrue(message, message.contains("cannot be parsed"));
         assertTrue(message, message.contains("Angle"));
 
         assertEquals(message, Exceptions.getLocalizedMessage(e, Locale.CANADA));

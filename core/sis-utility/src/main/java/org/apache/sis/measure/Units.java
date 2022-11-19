@@ -1125,7 +1125,7 @@ public final class Units extends Static {
 
     /**
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
-     * is sometime added to PSS-78 measurement. However this is officially discouraged.
+     * is sometimes added to PSS-78 measurement. However this is officially discouraged.
      *
      * @since 0.8
      */
@@ -1376,7 +1376,7 @@ public final class Units extends Static {
      * The only exception is for creating the {@link #DECIBEL} unit base on the bel conventional unit.</p>
      *
      * <p>If the {@code target} unit holds a list of {@linkplain SystemUnit#related() related units}
-     * (i.e. conventional units that can not be computed easily by appending a SI prefix), then the new
+     * (i.e. conventional units that cannot be computed easily by appending a SI prefix), then the new
      * conventional unit is added to that list of related units. For example "foot" is related to "metre"
      * and "degree Celsius" is related to "Kelvin", but "kilometre" is not recorded as related to "metre"
      * because this relationship can be inferred automatically without the need of a {@code related} table.
@@ -1396,7 +1396,7 @@ public final class Units extends Static {
 
     /**
      * Returns the system unit for the given dimension, or {@code null} if none.
-     * Note that this method can not distinguish the different kinds of dimensionless units.
+     * Note that this method cannot distinguish the different kinds of dimensionless units.
      * If the symbol or the quantity type is known, use {@link #get(String)} or {@link #get(Class)} instead.
      *
      * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
@@ -1420,7 +1420,7 @@ public final class Units extends Static {
     /**
      * Returns the system unit for the given symbol, or {@code null} if none.
      * This method does not perform any parsing (prefix, exponents, <i>etc</i>).
-     * It is only for getting one of the pre-defined constants, for example after deserialization.
+     * It is only for getting one of the predefined constants, for example after deserialization.
      *
      * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
      * in order to force a class initialization before use.</p>
@@ -1472,7 +1472,7 @@ public final class Units extends Static {
     /**
      * Returns {@code true} if the given unit is a pressure unit.
      * Pressure units are convertible to {@link #PASCAL}.
-     * Those units are sometime used instead of linear units for altitude measurements.
+     * Those units are sometimes used instead of linear units for altitude measurements.
      *
      * @param  unit  the unit to check (may be {@code null}).
      * @return {@code true} if the given unit is non-null and a pressure unit.
@@ -1608,13 +1608,13 @@ public final class Units extends Static {
      * must be multiplied by 1000 in order to give the equivalent measurement in the "standard" units
      * (here {@link #METRE}).</div>
      *
-     * If the given unit is {@code null} or if the conversion to the "standard" unit can not be expressed
+     * If the given unit is {@code null} or if the conversion to the "standard" unit cannot be expressed
      * by a single multiplication factor, then this method returns {@link Double#NaN}.
      *
      * @param  <Q>   the quantity measured by the unit, or {@code null}.
      * @param  unit  the unit for which we want the multiplication factor to standard unit, or {@code null}.
      * @return the factor by which to multiply a measurement in the given unit in order to get an equivalent
-     *         measurement in the standard unit, or NaN if the conversion can not be expressed by a scale factor.
+     *         measurement in the standard unit, or NaN if the conversion cannot be expressed by a scale factor.
      */
     public static <Q extends Quantity<Q>> double toStandardUnit(final Unit<Q> unit) {
         return AbstractConverter.scale(unit == null ? null : unit.getConverterTo(unit.getSystemUnit()));
@@ -1647,11 +1647,11 @@ public final class Units extends Static {
      *       length 2 containing the offset and scale factor, in that order.</li>
      * </ul>
      *
-     * This method returns {@code null} if it can not get the polynomial equation coefficients from the given converter.
+     * This method returns {@code null} if it cannot get the polynomial equation coefficients from the given converter.
      *
      * @param  converter  the converter from which to get the coefficients of the polynomial equation, or {@code null}.
      * @return the polynomial equation coefficients (may be any length, including zero), or {@code null} if the given
-     *         converter is {@code null} or if this method can not get the coefficients.
+     *         converter is {@code null} or if this method cannot get the coefficients.
      *
      * @since 0.8
      */
@@ -1681,7 +1681,7 @@ public final class Units extends Static {
 
     /**
      * Returns the derivative of the given converter at the given value,
-     * or {@code NaN} if this method can not compute it.
+     * or {@code NaN} if this method cannot compute it.
      *
      * @param  converter  the converter for which we want the derivative at a given point, or {@code null}.
      * @param  value      the point at which to compute the derivative.
@@ -1713,7 +1713,7 @@ public final class Units extends Static {
      *
      * @param  uom  the symbol to parse, or {@code null}.
      * @return the parsed symbol, or {@code null} if {@code uom} was null.
-     * @throws ParserException if the given symbol can not be parsed.
+     * @throws ParserException if the given symbol cannot be parsed.
      *
      * @see UnitFormat#parse(CharSequence)
      */

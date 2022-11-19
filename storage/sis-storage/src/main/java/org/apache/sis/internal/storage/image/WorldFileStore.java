@@ -91,7 +91,7 @@ import org.apache.sis.setup.OptionKey;
  * <h2>Type of input objects</h2>
  * The {@link StorageConnector} input should be an instance of the following types:
  * {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}.
- * Other types such as {@link ImageInputStream} are also accepted but in those cases the auxiliary files can not be read.
+ * Other types such as {@link ImageInputStream} are also accepted but in those cases the auxiliary files cannot be read.
  * For any input of unknown type, this data store first checks if an {@link ImageReader} accepts the input type directly.
  * If none is found, this data store tries to {@linkplain ImageIO#createImageInputStream(Object) create an input stream}
  * from the input object.
@@ -103,7 +103,7 @@ import org.apache.sis.setup.OptionKey;
  * and its input closed (if {@link AutoCloseable}) when this data store is {@linkplain #close() closed}.</p>
  *
  * <h2>Handling of multi-image files</h2>
- * Because some image formats can store an arbitrary amount of images,
+ * Because some image formats can store an arbitrary number of images,
  * this data store is considered as an aggregate with one resource per image.
  * All image should have the same size and all resources will share the same {@link GridGeometry}.
  * However this base class does not implement the {@link Aggregate} interface directly in order to
@@ -126,7 +126,7 @@ public class WorldFileStore extends PRJDataStore {
     };
 
     /**
-     * Index of the main image. This is relevant only with formats capable to store an arbitrary amount of images.
+     * Index of the main image. This is relevant only with formats capable to store an arbitrary number of images.
      * Current implementation assumes that the main image is always the first one, but it may become configurable
      * in a future version if useful.
      *
@@ -136,7 +136,7 @@ public class WorldFileStore extends PRJDataStore {
     static final int MAIN_IMAGE = 0;
 
     /**
-     * The default World File suffix when it can not be determined from {@link #location}.
+     * The default World File suffix when it cannot be determined from {@link #location}.
      * This is a GDAL convention.
      */
     private static final String DEFAULT_SUFFIX = "wld";
@@ -225,7 +225,7 @@ public class WorldFileStore extends PRJDataStore {
 
     /**
      * Identifiers used by a resource. Identifiers must be unique in the data store,
-     * so after an identifier has been used it can not be reused anymore even if the
+     * so after an identifier has been used it cannot be reused anymore even if the
      * resource having that identifier has been removed.
      * Values associated to identifiers tell whether the resource still exist.
      *
@@ -310,7 +310,7 @@ public class WorldFileStore extends PRJDataStore {
                     lower = !Character.isUpperCase(c); if (!lower) break;
                     i -= Character.charCount(c);
                 }
-                // If the case can not be determined, `lower` will default to `true`.
+                // If the case cannot be determined, `lower` will default to `true`.
                 return new StringBuilder(3)
                         .appendCodePoint(suffix.codePointAt(0))
                         .appendCodePoint(suffix.codePointBefore(length))
@@ -333,7 +333,7 @@ public class WorldFileStore extends PRJDataStore {
      *
      * @return the "World file" content as an affine transform, or {@code null} if none was found.
      * @throws IOException if an I/O error occurred.
-     * @throws DataStoreException if the auxiliary file content can not be parsed.
+     * @throws DataStoreException if the auxiliary file content cannot be parsed.
      */
     private AffineTransform2D readWorldFile() throws IOException, DataStoreException {
         IOException warning = null;
@@ -372,7 +372,7 @@ loop:   for (int convention=0;; convention++) {
      * @param  wld  suffix of the auxiliary file.
      * @return the "World file" content as an affine transform.
      * @throws IOException if an I/O error occurred.
-     * @throws DataStoreException if the file content can not be parsed.
+     * @throws DataStoreException if the file content cannot be parsed.
      */
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
         final AuxiliaryContent content  = readAuxiliaryFile(wld);
@@ -445,7 +445,7 @@ loop:   for (int convention=0;; convention++) {
      * Returns paths to the main file together with auxiliary files.
      *
      * @return paths to the main file and auxiliary files, or an empty array if unknown.
-     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
     public synchronized Path[] getComponentFiles() throws DataStoreException {
@@ -465,7 +465,7 @@ loop:   for (int convention=0;; convention++) {
      * @return grid geometry of the image at the given index.
      * @throws IndexOutOfBoundsException if the image index is out of bounds.
      * @throws IOException if an I/O error occurred.
-     * @throws DataStoreException if the {@code *.prj} or {@code *.tfw} auxiliary file content can not be parsed.
+     * @throws DataStoreException if the {@code *.prj} or {@code *.tfw} auxiliary file content cannot be parsed.
      */
     final GridGeometry getGridGeometry(final int index) throws IOException, DataStoreException {
         assert Thread.holdsLock(this);
@@ -482,7 +482,7 @@ loop:   for (int convention=0;; convention++) {
             final int w = reader.getWidth (index);
             final int h = reader.getHeight(index);
             if (w != width || h != height) {
-                // Can not use `gridToCRS` and `crs` because they may not apply.
+                // Cannot use `gridToCRS` and `crs` because they may not apply.
                 return new GridGeometry(new GridExtent(w, h), CELL_ANCHOR, null, null);
             }
         }
@@ -495,7 +495,7 @@ loop:   for (int convention=0;; convention++) {
      *
      * @param  index  index of the image for which to set the grid geometry.
      * @param  gg     the new grid geometry.
-     * @return suffix of the "world file", or {@code null} if the image can not be written.
+     * @return suffix of the "world file", or {@code null} if the image cannot be written.
      */
     String setGridGeometry(final int index, final GridGeometry gg) throws IOException, DataStoreException {
         if (index != MAIN_IMAGE) {

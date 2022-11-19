@@ -85,7 +85,7 @@ public final strictfp class OptionKeyTest extends TestCase {
     }
 
     /**
-     * Tests the serialization of a custom subclass. {@link OptionKey} can not resolve
+     * Tests the serialization of a custom subclass. {@link OptionKey} cannot resolve
      * to a unique instance, unless the subclass provides its own resolution mechanism.
      */
     @Test

@@ -96,7 +96,7 @@ public final strictfp class CRSTest extends TestCase {
      * The codes tested by this method shall be in the list of EPSG codes
      * for which Apache SIS has hard-coded fallbacks to use if no EPSG database is available.
      *
-     * @throws FactoryException if a CRS can not be constructed.
+     * @throws FactoryException if a CRS cannot be constructed.
      *
      * @see EPSGFactoryFallbackTest#testCreateCRS()
      */
@@ -129,7 +129,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with CRS codes.
      *
-     * @throws FactoryException if a CRS can not be constructed.
+     * @throws FactoryException if a CRS cannot be constructed.
      *
      * @see EPSGFactoryFallbackTest#testCreateCRS()
      */
@@ -146,7 +146,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with temporal CRS codes.
      *
-     * @throws FactoryException if a CRS can not be constructed.
+     * @throws FactoryException if a CRS cannot be constructed.
      */
     @Test
     public void testForTemporalCode() throws FactoryException {
@@ -186,7 +186,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with compound CRS codes.
      *
-     * @throws FactoryException if a CRS can not be constructed.
+     * @throws FactoryException if a CRS cannot be constructed.
      */
     @Test
     public void testForCompoundCode() throws FactoryException {

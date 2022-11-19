@@ -99,7 +99,7 @@ public final class MeasureList {
      * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time.
      *
      * @param  uom  the unit of measure as a string.
-     * @throws URISyntaxException if the {@code uom} looks like a URI, but can not be parsed.
+     * @throws URISyntaxException if the {@code uom} looks like a URI, but cannot be parsed.
      */
     public void setUOM(String uom) throws URISyntaxException {
         final Context context = Context.current();

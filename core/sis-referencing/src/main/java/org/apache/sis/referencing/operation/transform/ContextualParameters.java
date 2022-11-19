@@ -99,7 +99,7 @@ import static java.util.logging.Logger.getLogger;
  *     instantiate the same {@link org.apache.sis.referencing.operation.projection.Mercator} class,
  *     but with different ways to represent the parameters.</li>
  *
- *   <li>The map projection constructor fetches all parameters that it needs from the user-supplied
+ *   <li>The map projection constructor fetches all parameters that it needs from the user supplied
  *     {@link org.apache.sis.parameter.Parameters}, initializes the projection, then saves the parameter values that
  *     it actually used in a new {@code ContextualParameters} instance.</li>
  *
@@ -898,7 +898,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Note on rounding error: the coefficients are often either 0 or 1 since the transform
          * is often for changing axis order. Thanks to double-double arithmetic in SIS matrices,
          * the non-zero values are usually accurate. But the values that should be zero are much
-         * harder to get right. Sometime we see small values (around 1E-12) in the last column of
+         * harder to get right. Sometimes we see small values (around 1E-12) in the last column of
          * the `before` matrix below. Since this column contains translation terms, those numbers
          * are in the unit of measurement of input values of the MathTransform after the matrix.
          *

@@ -450,7 +450,7 @@ select: if (commonCRS == null) {
     }
 
     /**
-     * The value to return when a test can not be applied. This method is defined for
+     * The value to return when a test cannot be applied. This method is defined for
      * having a single place to update if more operator types need to be recognized.
      *
      * @param   type  the test that could not be applied.
@@ -461,7 +461,7 @@ select: if (commonCRS == null) {
     }
 
     /**
-     * The value to return when a test can not be applied. This method is defined for
+     * The value to return when a test cannot be applied. This method is defined for
      * having a single place to update if more operator types need to be recognized.
      *
      * @param   type  the test that could not be applied.

@@ -132,7 +132,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      *
      * @param  node  the node on which to set the parent (never {@code null}).
      * @param  mode  one of the {@link #NULL}, {@link #THIS} or {@link #DRY_RUN} constants.
-     * @throws IllegalArgumentException if this method can not set the parent of the given node.
+     * @throws IllegalArgumentException if this method cannot set the parent of the given node.
      */
     protected abstract void setParentOf(TreeTable.Node node, int mode) throws IllegalArgumentException;
 
@@ -172,9 +172,9 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * Sets the node at the specified index in this list.
      *
      * @param  index  the index of the node to set.
-     * @param  node   the node to store at the given index (can not be {@code null}).
+     * @param  node   the node to store at the given index (cannot be {@code null}).
      * @return the node which was previously stored at the given index (never {@code null}).
-     * @throws IllegalArgumentException if this list can not add the given node, for example
+     * @throws IllegalArgumentException if this list cannot add the given node, for example
      *         if the node is already an element of another {@code TreeNodeList}.
      */
     @Override
@@ -202,8 +202,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * and after the given index.
      *
      * @param  index  the index where to insert the node.
-     * @param  node   the node to store at the given index (can not be {@code null}).
-     * @throws IllegalArgumentException if this list can not add the given node, for example
+     * @param  node   the node to store at the given index (cannot be {@code null}).
+     * @throws IllegalArgumentException if this list cannot add the given node, for example
      *         if the node is already an element of another {@code TreeNodeList}.
      */
     @Override
@@ -304,7 +304,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * @param  node  the node to remove. {@code null} values are ignored.
      * @return {@code true} if the node has been removed, or {@code false} if this list does not
      *         contain the given node.
-     * @throws IllegalArgumentException if the node has been found but this list can not remove it.
+     * @throws IllegalArgumentException if the node has been found but this list cannot remove it.
      */
     @Override
     public boolean remove(final Object node) throws IllegalArgumentException {

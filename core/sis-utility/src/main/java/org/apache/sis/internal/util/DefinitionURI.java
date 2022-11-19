@@ -55,7 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>an {@linkplain #authority}</li>
  *   <li>an optional {@linkplain #version} number (often omitted)</li>
  *   <li>the {@linkplain #code}</li>
- *   <li>an arbitrary amount of {@linkplain #parameters}</li>
+ *   <li>an arbitrary number of {@linkplain #parameters}</li>
  * </ul>
  *
  * The <cite>object type</cite> can be one of the following name.

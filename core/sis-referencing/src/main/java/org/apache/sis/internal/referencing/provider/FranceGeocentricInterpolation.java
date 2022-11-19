@@ -281,7 +281,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * @param  semiMajor  the descriptor for locating the semi-major axis parameter.
      * @param  semiMinor  the descriptor for locating the semi-minor axis parameter.
      * @param  candidate  an ellipsoid to return if the axis lengths match the lengths found in the parameters,
-     *                    or {@code null} if none. The intent is to use the pre-defined "GRS 1980" ellipsoid if
+     *                    or {@code null} if none. The intent is to use the predefined "GRS 1980" ellipsoid if
      *                    we can, because that ellipsoid is defined by inverse flattening factor instead of by
      *                    semi-minor axis length.
      * @return a temporary ellipsoid encapsulating the axis lengths found in the parameters.
@@ -400,7 +400,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * @param  in    reader of the RGF93 datum shift file.
      * @param  file  path to the file being read, used for parameter declaration and error reporting.
      * @throws IOException if an I/O error occurred.
-     * @throws NumberFormatException if a number can not be parsed.
+     * @throws NumberFormatException if a number cannot be parsed.
      * @throws NoSuchElementException if a data line is missing a value.
      * @throws FactoryException if an problem is found with the file content.
      * @throws ArithmeticException if the width or the height exceed the integer capacity.

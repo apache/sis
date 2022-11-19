@@ -48,7 +48,7 @@
  * <ul class="verbose">
  *   <li>The {@code Abstract} prefix means that the class is abstract in the sense of the implemented standard.
  *       It it not necessarily abstract in the sense of Java. Because incomplete metadata are common in practice,
- *       sometime we wish to instantiate an "abstract" class despite the lack of knowledge about the exact sub-type.</li>
+ *       sometimes we wish to instantiate an "abstract" class despite the lack of knowledge about the exact sub-type.</li>
  *   <li>The properties are determined by the getter methods declared in the interfaces.
  *       Getter methods declared in the implementation classes are ignored.</li>
  *   <li>Setter methods, if any, can be declared in the implementation classes without the need for declarations
@@ -107,7 +107,7 @@
  * The SIS library supports XML marshalling and unmarshalling with JAXB annotations.
  *
  * <p>Only the implementation classes defined in the {@link org.apache.sis.metadata.iso} packages and sub-packages
- * are annotated for JAXB marshalling. If a metadata is implemented by an other package (for example
+ * are annotated for JAXB marshalling. If a metadata is implemented by another package (for example
  * {@link org.apache.sis.metadata.sql}), then it shall be converted to an annotated class before to be marshalled.
  * All SIS annotated classes provide a copy constructor for this purpose. A shallow copy is sufficient;
  * JAXB adapters will convert the elements on-the-fly when needed.</p>

@@ -72,7 +72,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
      *
      * @param scope          the scope of this name, or {@code null} for a global scope.
      * @param name           the local name (never {@code null}).
-     * @param attributeType  the type of the data associated with the record member (can not be {@code null}).
+     * @param attributeType  the type of the data associated with the record member (cannot be {@code null}).
      */
     protected DefaultMemberName(final NameSpace scope, final CharSequence name, final TypeName attributeType) {
         super(scope, name);

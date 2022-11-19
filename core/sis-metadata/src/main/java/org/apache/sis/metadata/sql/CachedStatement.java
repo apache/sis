@@ -37,7 +37,7 @@ import org.apache.sis.internal.system.Loggers;
  *
  * <h2>Synchronization</h2>
  * This class is <strong>not</strong> thread-safe. Callers must perform their own synchronization in such a way
- * that only one query is executed on the same connection (JDBC connections can not be assumed thread-safe).
+ * that only one query is executed on the same connection (JDBC connections cannot be assumed thread-safe).
  * The synchronization lock shall be the {@link MetadataSource} which contain this entry.
  *
  * <h2>Closing</h2>
@@ -69,7 +69,7 @@ final class CachedStatement implements AutoCloseable {
 
     /**
      * The statement associated with this entry. The SQL query depends on the {@link #type},
-     * which can not be changed, and the {@link #identifier}, which can be changed at any time.
+     * which cannot be changed, and the {@link #identifier}, which can be changed at any time.
      * The first parameter of the statement shall be the identifier.
      */
     private final PreparedStatement statement;
@@ -163,7 +163,7 @@ final class CachedStatement implements AutoCloseable {
 
     /**
      * Closes the statement and free all resources.
-     * After this method has been invoked, this object can not be used anymore.
+     * After this method has been invoked, this object cannot be used anymore.
      *
      * <p>This method is not invoked by the method or thread that created this {@code CachedStatement} instance.
      * This method is invoked by {@link MetadataSource#close()} instead.</p>

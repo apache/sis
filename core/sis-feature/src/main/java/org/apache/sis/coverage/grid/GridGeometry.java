@@ -124,7 +124,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * but non-linear conversions should not be used for expressing map projections (projections should be specified
  * in the {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS) instead).
  *
- * <p>Some applications can not handle non-linear "grid to CRS" conversions.
+ * <p>Some applications cannot handle non-linear "grid to CRS" conversions.
  * For example encoding an image in a GeoTIFF file is much simpler if the "grid to CRS" conversion is linear.
  * The {@link DomainLinearizer} class can be used for replacing non-linear conversions by linear approximations.</p>
  *
@@ -186,7 +186,7 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * A bitmask to specify the validity of the geographic bounding box.
-     * This information can sometime be derived from the envelope and the CRS.
+     * This information can sometimes be derived from the envelope and the CRS.
      * It is an optional element even with a complete grid geometry since the
      * coordinate reference system is not required to have an horizontal component.
      *
@@ -196,7 +196,7 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * A bitmask to specify the validity of the temporal period.
-     * This information can sometime be derived from the envelope and the CRS.
+     * This information can sometimes be derived from the envelope and the CRS.
      * It is an optional element even with a complete grid geometry since the
      * coordinate reference system is not required to have a temporal component.
      *
@@ -290,7 +290,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     /**
      * An "empty" grid geometry with no value defined. All getter methods invoked on this instance will cause
      * {@link IncompleteGridGeometryException} to be thrown. This instance can be used as a place-holder when
-     * the grid geometry can not be obtained.
+     * the grid geometry cannot be obtained.
      */
     public static final GridGeometry UNDEFINED = new GridGeometry();
 
@@ -345,7 +345,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
      * @param  toOther  transform from this grid coordinates to {@code other} grid coordinates, or {@code null} if none.
      * @throws NullPointerException if {@code extent} is {@code null} and the other grid geometry contains no other information.
-     * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
+     * @throws TransformException if the math transform cannot compute the geospatial envelope from the grid extent.
      *
      * @see GridDerivation#subgrid(Envelope, double...)
      *
@@ -438,7 +438,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
      * @throws NullPointerException if {@code extent}, {@code gridToCRS} and {@code crs} arguments are all null.
      * @throws MismatchedDimensionException if the math transform and the CRS do not have consistent dimensions.
-     * @throws IllegalGridGeometryException if the math transform can not compute the geospatial envelope or resolution from the grid extent.
+     * @throws IllegalGridGeometryException if the math transform cannot compute the geospatial envelope or resolution from the grid extent.
      */
     public GridGeometry(final GridExtent extent, final PixelInCell anchor, final MathTransform gridToCRS, final CoordinateReferenceSystem crs) {
         if (gridToCRS != null) {
@@ -497,7 +497,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * of the rightmost cell and similarly along other axes. This constructor tries to store a geospatial envelope close
      * to the specified envelope, but there is no guarantee that the envelope returned by {@link #getEnvelope()} will be
      * equal to the given envelope. The envelope stored in the new {@code GridGeometry} may be slightly smaller, larger or
-     * shifted because the floating point values used in geospatial envelope can not always be mapped to the integer
+     * shifted because the floating point values used in geospatial envelope cannot always be mapped to the integer
      * coordinates used in {@link GridExtent}.
      * The rules for deciding whether coordinates should be rounded toward nearest integers,
      * to {@linkplain Math#floor(double) floor} or to {@linkplain Math#ceil(double) ceil} values
@@ -521,7 +521,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *                    There is no guarantee that the envelope actually stored in the {@code GridGeometry}
      *                    will be equal to this specified envelope.
      * @param  rounding   controls behavior of rounding from floating point values to integers.
-     * @throws IllegalGridGeometryException if the math transform can not compute the grid extent or the resolution.
+     * @throws IllegalGridGeometryException if the math transform cannot compute the grid extent or the resolution.
      */
     @SuppressWarnings("null")
     public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope, final GridRoundingMode rounding) {
@@ -548,7 +548,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
-                // `gridToCRS` can not be null if `cornerToCRS` is non-null.
+                // `gridToCRS` cannot be null if `cornerToCRS` is non-null.
                 scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor)));
                 numToIgnore = 0;
             } catch (TransformException e) {
@@ -938,7 +938,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  crs  the desired coordinate reference system for the returned envelope.
      * @return the bounding box in "real world" coordinates (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no extent and no envelope.
-     * @throws TransformException if the envelope can not be transformed to the specified CRS.
+     * @throws TransformException if the envelope cannot be transformed to the specified CRS.
      *
      * @since 1.2
      */
@@ -1517,7 +1517,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  newExtent  extent of the grid geometry to return.
      * @return grid geometry with the given extent. May be {@code this} if there is no change.
-     * @throws TransformException if the geospatial envelope can not be recomputed with the new grid extent.
+     * @throws TransformException if the geospatial envelope cannot be recomputed with the new grid extent.
      *
      * @since 1.3
      */
@@ -1547,7 +1547,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite>.
-     * This method can not be used for changing dimension order.</p>
+     * This method cannot be used for changing dimension order.</p>
      *
      * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
      * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
@@ -1630,7 +1630,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  anchor  {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
      *                 {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
      * @return transform from cell coordinates in this grid to cell coordinates in the given grid.
-     * @throws TransformException if the math transform can not be created.
+     * @throws TransformException if the math transform cannot be created.
      *
      * @since 1.1
      */

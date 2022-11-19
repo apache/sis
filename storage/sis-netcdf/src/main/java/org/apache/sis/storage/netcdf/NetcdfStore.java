@@ -137,7 +137,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * Returns the parameters used to open this netCDF data store.
      * If non-null, the parameters are described by {@link NetcdfStoreProvider#getOpenParameters()} and contains at
      * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * This method may return {@code null} if the storage input can not be described by a URI
+     * This method may return {@code null} if the storage input cannot be described by a URI
      * (for example a netCDF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
      * @return parameters used for opening this data store.
@@ -204,7 +204,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     /**
      * Returns netCDF attributes. The meaning of those attributes may vary depending on data provider.
      * The {@linkplain #getMetadata() standard metadata} should be preferred since they allow abstraction of
-     * data format details, but those native metadata are sometime useful when an information is not provided
+     * data format details, but those native metadata are sometimes useful when an information is not provided
      * by the standard metadata.
      *
      * @return resources information structured in an implementation-specific way.

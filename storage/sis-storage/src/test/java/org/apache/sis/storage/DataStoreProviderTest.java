@@ -171,7 +171,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
      */
     private void testProbeWithInputStream(final boolean asStream) throws DataStoreException {
         /*
-         * Read a few bytes and verify that user can not overwrite the mark.
+         * Read a few bytes and verify that user cannot overwrite the mark.
          */
         final StorageConnector connector = StorageConnectorTest.create(asStream);
         assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, InputStream.class, stream -> {
@@ -251,7 +251,7 @@ public final strictfp class DataStoreProviderTest extends TestCase {
             connector = new StorageConnector(new InputStreamReader(stream, StandardCharsets.US_ASCII));
         }
         /*
-         * Read a few bytes and verify that user can not overwrite the mark.
+         * Read a few bytes and verify that user cannot overwrite the mark.
          */
         assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector, Reader.class, stream -> {
             assertEquals(buffered, stream instanceof BufferedReader);

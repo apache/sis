@@ -141,7 +141,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
          * were known to fail in an earlier version of deltaForDoubleToDecimal, then uses random values.
          * The expected values were computed with BigDecimal. The tolerance thresholds were determined
          * empirically. Comments on the right side give the tolerance thresholds in ULP of the delta.
-         * The latter are sometime hight, but it does not really matter. What matter is the tolerance
+         * The latter are sometimes high, but it does not really matter. What matter is the tolerance
          * relative to the given value, not to the returned delta.
          */
         assertEquals(-1.9216378778219224E-23, deltaForDoubleToDecimal(3.3446045755169960E-7), STRICT);

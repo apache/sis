@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A set of pre-defined operations expecting a {@code Feature} as input and producing an {@code Attribute} as output.
+ * A set of predefined operations expecting a {@code Feature} as input and producing an {@code Attribute} as output.
  * Those operations can be used for creating <cite>dynamic properties</cite> which compute their value on-the-fly
  * from the values of other properties.
  *
@@ -180,7 +180,7 @@ public final class FeatureOperations extends Static {
      *   <li>The single properties can be either attributes or operations that produce attributes;
      *       feature associations are not allowed, unless they have an {@code "sis:identifier"} property.</li>
      *   <li>Each attribute shall contain at most one value; multi-valued attributes are not allowed.</li>
-     *   <li>The delimiter can not contain the {@code '\'} escape character.</li>
+     *   <li>The delimiter cannot contain the {@code '\'} escape character.</li>
      * </ul>
      *
      * <h4>Read/write behavior</h4>
@@ -261,7 +261,7 @@ public final class FeatureOperations extends Static {
      * @param  geometryAttributes  the operation or attribute type from which to get geometry values.
      *                             Any element which is {@code null} or has a non-geometric value class will be ignored.
      * @return an operation which will compute the envelope encompassing all geometries in the given attributes.
-     * @throws FactoryException if a coordinate operation to the target CRS can not be created.
+     * @throws FactoryException if a coordinate operation to the target CRS cannot be created.
      */
     public static AbstractOperation envelope(final Map<String,?> identification, final CoordinateReferenceSystem crs,
             final AbstractIdentifiedType... geometryAttributes) throws FactoryException

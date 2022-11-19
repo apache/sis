@@ -252,7 +252,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     /**
      * Tests the projection of point where the difference between the given longitude value and central meridian
      * is close to 360°. In most map other map projection implementations, we rely on range reductions performed
-     * automatically by trigonometric functions. However we can not rely on that effect in the particular case of
+     * automatically by trigonometric functions. However we cannot rely on that effect in the particular case of
      * {@link AlbersEqualArea} because the longitude is pre-multiplied by a <var>n</var> factor before to be used
      * in trigonometric functions. The range reduction must be performed explicitly in map projection code.
      *

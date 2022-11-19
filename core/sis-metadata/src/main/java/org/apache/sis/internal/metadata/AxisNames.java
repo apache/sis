@@ -72,7 +72,7 @@ public final class AxisNames {
      * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
      *
      * <p>Axis name <cite>"Geocentric longitude"</cite> can also be used.
-     * In astronomy, <cite>"Planetocentric longitude"</cite> is sometime used.</p>
+     * In astronomy, <cite>"Planetocentric longitude"</cite> is sometimes used.</p>
      *
      * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
      * @see <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
@@ -87,7 +87,7 @@ public final class AxisNames {
      * axis named "elevation".
      *
      * <p>Axis name <cite>"Geocentric latitude"</cite> can also be used.
-     * In astronomy, <cite>"Planetocentric latitude"</cite> is sometime used.</p>
+     * In astronomy, <cite>"Planetocentric latitude"</cite> is sometimes used.</p>
      */
     public static final String SPHERICAL_LATITUDE = "Spherical latitude";
 

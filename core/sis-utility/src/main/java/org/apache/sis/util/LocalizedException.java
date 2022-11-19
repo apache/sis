@@ -77,7 +77,7 @@ public interface LocalizedException {
      * If this exception is capable to return the message in various locales, returns that message.
      * Otherwise returns {@code null}.
      *
-     * @return the exception message, or {@code null} if this exception can not produce international message.
+     * @return the exception message, or {@code null} if this exception cannot produce international message.
      */
     InternationalString getInternationalMessage();
 }

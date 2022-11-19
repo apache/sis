@@ -171,9 +171,9 @@ public final strictfp class ElementTest extends TestCase {
         element = parse("B[6.5]");
         try {
             element.pullInteger("forth");
-            fail("Double value can not be parsed as an integer.");
+            fail("Double value cannot be parsed as an integer.");
         } catch (ParseException e) {
-            assertEquals("Text “6.5” can not be parsed as an object of type ‘Integer’.", e.getLocalizedMessage());
+            assertEquals("Text “6.5” cannot be parsed as an object of type ‘Integer’.", e.getLocalizedMessage());
         }
     }
 
@@ -272,7 +272,7 @@ public final strictfp class ElementTest extends TestCase {
             parse("BracketTest(“text”]");
             fail("Should complain about missing bracket.");
         } catch (ParseException e) {
-            assertEquals("Can not parse “]” in element “BracketTest”.", e.getLocalizedMessage());
+            assertEquals("Cannot parse “]” in element “BracketTest”.", e.getLocalizedMessage());
         }
         try {
             parse("BracketTest(“text”");

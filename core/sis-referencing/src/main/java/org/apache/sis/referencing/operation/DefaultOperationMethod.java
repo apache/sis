@@ -85,7 +85,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property. However it is
  * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
- * since names can sometime be ambiguous or be spelled in different ways.
+ * since names can sometimes be ambiguous or be spelled in different ways.
  *
  * <h2>Departure from the ISO 19111 standard</h2>
  * The following properties are mandatory according ISO 19111,
@@ -93,13 +93,13 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * <ul>
  *   <li>The {@linkplain #getFormula() formula} if it has not been provided to the
  *     {@linkplain #DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup) constructor}, or if it
- *     can not be {@linkplain #DefaultOperationMethod(MathTransform) inferred from the given math transform}.</li>
+ *     cannot be {@linkplain #DefaultOperationMethod(MathTransform) inferred from the given math transform}.</li>
  *   <li>The {@linkplain #getParameters() parameters} if the {@link #DefaultOperationMethod(MathTransform)}
- *     constructor can not infer them.</li>
+ *     constructor cannot infer them.</li>
  * </ul>
  *
  * <h2>Relationship with other classes or interfaces</h2>
- * {@code OperationMethod} describes parameters without providing any value (except sometime default values).
+ * {@code OperationMethod} describes parameters without providing any value (except sometimes default values).
  * When values have been assigned to parameters, the result is a {@link SingleOperation}.
  * Note that there is different kinds of {@code SingleOperation} depending on the nature and accuracy of the
  * coordinate operation. See {@link #getOperationType()} for more information.
@@ -818,7 +818,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Creates a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultOperationMethod() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
@@ -943,10 +943,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Invoked by JAXB for setting the unmarshalled parameters.
      * This method wraps the given descriptors in a {@link DefaultParameterDescriptorGroup}.
      *
-     * <p>The parameter descriptors created by this method are incomplete since we can not
+     * <p>The parameter descriptors created by this method are incomplete since we cannot
      * provide a non-null value for {@link ParameterDescriptor#getValueClass()}. The value
      * class will be provided either by replacing this {@code OperationMethod} by one of the
-     * pre-defined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
+     * predefined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
      *
      * <p><b>Maintenance note:</b> the {@code "setDescriptors"} method name is also hard-coded in
      * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>

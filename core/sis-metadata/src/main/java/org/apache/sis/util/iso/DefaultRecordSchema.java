@@ -62,7 +62,7 @@ import org.apache.sis.internal.util.Strings;
  * Subclasses should make sure that any overridden methods remain safe to call from multiple threads.
  *
  * <h2>Limitations</h2>
- * This class is currently not serializable because {@code RecordSchema} contain an arbitrary amount of record
+ * This class is currently not serializable because {@code RecordSchema} contain an arbitrary number of record
  * types in its {@linkplain #getDescription() description} map. Since each {@code RecordType} has a reference
  * to its schema, serializing a single {@code RecordType} could imply serializing all of them.
  * In order to reduce the risk of unexpected behavior, serialization is currently left to subclasses.

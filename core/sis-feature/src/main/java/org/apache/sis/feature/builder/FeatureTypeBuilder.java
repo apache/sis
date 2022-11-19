@@ -376,7 +376,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Returns {@code true} if the feature type to create will act as an abstract super-type.
-     * Abstract types can not be {@linkplain DefaultFeatureType#newInstance() instantiated}.
+     * Abstract types cannot be {@linkplain DefaultFeatureType#newInstance() instantiated}.
      *
      * @return {@code true} if the feature type to create will act as an abstract super-type.
      *
@@ -674,11 +674,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *     builder.addAttribute(String.class).setName("City").setDefaultValue("Metropolis");
      * }
      *
-     * The value class can not be {@code Feature.class} since features shall be handled
+     * The value class cannot be {@code Feature.class} since features shall be handled
      * as {@linkplain #addAssociation(DefaultFeatureType) associations} instead of attributes.
      *
      * @param  <V>         the compile-time value of {@code valueClass} argument.
-     * @param  valueClass  the class of attribute values (can not be {@code Feature.class}).
+     * @param  valueClass  the class of attribute values (cannot be {@code Feature.class}).
      * @return a builder for an {@code AttributeType}.
      *
      * @see #properties()

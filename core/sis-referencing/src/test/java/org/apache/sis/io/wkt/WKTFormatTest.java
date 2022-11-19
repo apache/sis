@@ -196,7 +196,7 @@ public final strictfp class WKTFormatTest extends TestCase {
      * This information lost was considered unimportant in WKT 2 because the ISO 19111 ProjectedCRS model
      * does not have a MathTransform. But in the Apache SIS case, this causes the 'conversionFromBase'
      * property to have a different MathTransform, and consequently cause a test failure.
-     * In brief, the tests in this class can not be run on those WKT using the WKT 2 format.
+     * In brief, the tests in this class cannot be run on those WKT using the WKT 2 format.
      *
      * @throws ParseException if a parsing failed.
      */

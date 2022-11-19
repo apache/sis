@@ -322,7 +322,7 @@ public final class NTv2 extends AbstractProvider {
          * @param  file     path to the longitude and latitude difference file.
          *                  Used for parameter declaration and error reporting.
          * @param  version  the expected version (1 or 2).
-         * @throws FactoryException if a data record can not be parsed.
+         * @throws FactoryException if a data record cannot be parsed.
          */
         Loader(final ReadableByteChannel channel, final Path file, int version) throws IOException, FactoryException {
             super(channel, ByteBuffer.allocate(4096), file);

@@ -75,7 +75,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
-     * The class of attribute values. Can not be changed after construction
+     * The class of attribute values. Cannot be changed after construction
      * because this value determines the parameterized type {@code <V>}.
      */
     private final Class<V> valueClass;
@@ -110,7 +110,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * Creates a new builder initialized to the values of the given builder.
      * This constructor is for {@link #setValueClass(Class)} implementation only.
      *
-     * @throws UnconvertibleObjectException if the default value can not be converted to the given class.
+     * @throws UnconvertibleObjectException if the default value cannot be converted to the given class.
      */
     private AttributeTypeBuilder(final AttributeTypeBuilder<?> builder, final Class<V> valueClass)
             throws UnconvertibleObjectException
@@ -282,7 +282,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @param  type  the new class of attribute values.
      * @return the attribute builder — <em>not necessarily this instance.</em>
      * @throws UnconvertibleObjectException if the {@linkplain #getDefaultValue() default value}
-     *         can not be converted to the given {@code <N>} class.
+     *         cannot be converted to the given {@code <N>} class.
      *
      * @see #getValueClass()
      */
@@ -555,11 +555,11 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Returns the roles that the attribute play in the pre-defined operations managed by {@code AttributeTypeBuilder}.
+     * Returns the roles that the attribute play in the predefined operations managed by {@code AttributeTypeBuilder}.
      * The set returned by this method is <cite>live</cite>: additions or removal on that set are reflected back on
      * this builder, and conversely.
      *
-     * @return the roles that the attribute play in the pre-defined operations managed by {@code AttributeTypeBuilder}.
+     * @return the roles that the attribute play in the predefined operations managed by {@code AttributeTypeBuilder}.
      */
     public Set<AttributeRole> roles() {
         return new SetOfUnknownSize<AttributeRole>() {
@@ -623,7 +623,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Flags this attribute as an input of one of the pre-defined operations managed by {@code AttributeTypeBuilder}.
+     * Flags this attribute as an input of one of the predefined operations managed by {@code AttributeTypeBuilder}.
      * Invoking this method is equivalent to invoking <code>{@linkplain #roles()}.add(role)</code>.
      *
      * @param  role the role to add to the attribute (shall not be null).

@@ -127,7 +127,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * Appends the given {@code converter} in the given tree of fallback converters.
      * This method may create a new {@code FallbackConverter} if the given converter
-     * can not be inserted in the given tree.
+     * cannot be inserted in the given tree.
      *
      * <p>This method has no information about {@code <T>} type because of parameterized types
      * erasure, and should not need that information if we didn't made a mistake in this class.
@@ -189,7 +189,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
         }
         /*
          * We perform an unchecked cast because in theory <T> is the common super class.
-         * However we can not check at run time because generic types are implemented by
+         * However we cannot check at run time because generic types are implemented by
          * erasure. If there is no logical error in our algorithm, the cast should be ok.
          * Nevertheless callers are encouraged to verify as documented in the Javadoc.
          */
@@ -253,7 +253,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Merge {@code this} with an other converter whose target class is a subtype of
+     * Merge {@code this} with another converter whose target class is a subtype of
      * this {@link #targetClass}. If either {@link #fallback} or {@link #primary} are
      * other {@code FallbackConverter} instances, then this method will follow those
      * branches.
@@ -282,7 +282,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                 newFallback = converter;
             } else {
                 /*
-                 * If the we can not follow any of the 'primary' and 'fallback' branch,
+                 * If the we cannot follow any of the 'primary' and 'fallback' branch,
                  * and if the target class of this FallbackConverter is the same than
                  * the target class of the parent, then do not create. We will let the
                  * parent FallbackConverter do the creation itself in order to chain the

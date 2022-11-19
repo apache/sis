@@ -54,7 +54,7 @@ import org.apache.sis.internal.simple.SimpleAttributeType;
 @XmlTransient
 abstract class RecordDefinition {                                       // Intentionally not Serializable.
     /**
-     * {@code RecordDefinition} implementation used as a fallback when the user-supplied {@link RecordType}
+     * {@code RecordDefinition} implementation used as a fallback when the user supplied {@link RecordType}
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
      * with other implementations.
      *

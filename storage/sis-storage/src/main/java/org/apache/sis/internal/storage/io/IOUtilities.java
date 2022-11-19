@@ -51,7 +51,7 @@ import org.apache.sis.internal.storage.Resources;
 /**
  * Utility methods related to I/O operations. Many methods in this class accept arbitrary {@link Object} argument
  * and perform a sequence of {@code instanceof} checks. Since this approach provides no type safety and since the
- * sequence of {@code instanceof} checks is somewhat arbitrary, those methods can not be in public API.
+ * sequence of {@code instanceof} checks is somewhat arbitrary, those methods cannot be in public API.
  *
  * <p>Unless otherwise specified, giving an instance of unknown type or a {@code null} value cause the methods to
  * return {@code null}. No exception is thrown for unknown type - callers must check that the return value is not
@@ -177,7 +177,7 @@ public final class IOUtilities extends Static {
     public static String toString(final Object path) {
         /*
          * For the following types, the string that we want can be obtained only by toString(),
-         * or the class is final so we know that the toString(à behavior can not be changed.
+         * or the class is final so we know that the toString(à behavior cannot be changed.
          */
         if (path instanceof CharSequence || path instanceof Path || path instanceof URL || path instanceof URI) {
             return path.toString();
@@ -193,10 +193,10 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns the given path as a {@link File}, or {@code null} if it can not be converted.
+     * Returns the given path as a {@link File}, or {@code null} if it cannot be converted.
      *
      * @param  path  the object to convert to a {@link File}. Can be {@code null}.
-     * @return the given path as a {@link File}, or {@code null} if it can not be converted.
+     * @return the given path as a {@link File}, or {@code null} if it cannot be converted.
      */
     public static File toFile(final Object path) {
         if (path instanceof File) {
@@ -340,7 +340,7 @@ public final class IOUtilities extends Static {
      *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
      *                   then {@code null}.
      * @return the URI for the given URL, or {@code null} if the given URL was null.
-     * @throws IOException if the URL can not be converted to a URI.
+     * @throws IOException if the URL cannot be converted to a URI.
      *
      * @see URI#URI(String)
      */
@@ -387,7 +387,7 @@ public final class IOUtilities extends Static {
      *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
      *                   then {@code null}.
      * @return the file for the given URL, or {@code null} if the given URL was null.
-     * @throws IOException if the URL can not be converted to a file.
+     * @throws IOException if the URL cannot be converted to a file.
      *
      * @see File#File(URI)
      */
@@ -406,7 +406,7 @@ public final class IOUtilities extends Static {
         } catch (IllegalArgumentException cause) {
             /*
              * Typically happen when the URI scheme is not "file". But may also happen if the
-             * URI contains fragment that can not be represented in a File (e.g. a Query part).
+             * URI contains fragment that cannot be represented in a File (e.g. a Query part).
              * The IllegalArgumentException does not allow us to distinguish those cases.
              */
             throw new IOException(Exceptions.formatChainedMessages(null,
@@ -429,7 +429,7 @@ public final class IOUtilities extends Static {
      *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
      *                   then {@code null}.
      * @return the path for the given URL, or {@code null} if the given URL was null.
-     * @throws IOException if the URL can not be converted to a path.
+     * @throws IOException if the URL cannot be converted to a path.
      *
      * @see Paths#get(URI)
      */
@@ -516,8 +516,8 @@ public final class IOUtilities extends Static {
      *
      * @param  path  the object to convert to a path.
      * @return the given object as a path, or {@code null}.
-     * @throws IllegalArgumentException if the given object is an instance of a supported type but can not be converted.
-     * @throws FileSystemNotFoundException if the file system identified by URI can not be used.
+     * @throws IllegalArgumentException if the given object is an instance of a supported type but cannot be converted.
+     * @throws FileSystemNotFoundException if the file system identified by URI cannot be used.
      */
     public static Path toPathOrNull(final Object path) {
         if (path instanceof Path) {
@@ -543,7 +543,7 @@ public final class IOUtilities extends Static {
      * not be closed neither since the returned input stream may be backed by the same channel.</p>
      *
      * @param  stream  the input or output stream to converts to an {@code InputStream}.
-     * @return the input stream, or {@code null} if the given stream can not be converted.
+     * @return the input stream, or {@code null} if the given stream cannot be converted.
      * @throws IOException if an error occurred during input stream creation.
      *
      * @since 0.8
@@ -579,7 +579,7 @@ public final class IOUtilities extends Static {
      * not be closed neither since the returned output stream may be backed by the same channel.</p>
      *
      * @param  stream  the input or output stream to converts to an {@code OutputStream}.
-     * @return the output stream, or {@code null} if the given stream can not be converted.
+     * @return the output stream, or {@code null} if the given stream cannot be converted.
      * @throws IOException if an error occurred during output stream creation.
      *
      * @since 0.8
@@ -607,7 +607,7 @@ public final class IOUtilities extends Static {
 
     /**
      * Truncates the given output stream at its current position.
-     * This method works with Apache SIS implementations backed (sometime indirectly) by {@link SeekableByteChannel}.
+     * This method works with Apache SIS implementations backed (sometimes indirectly) by {@link SeekableByteChannel}.
      * Callers may need to {@linkplain java.io.Flushable#flush() flush} the stream before to invoke this method.
      *
      * @param  stream  the output stream or writable channel to truncate.
@@ -635,7 +635,7 @@ public final class IOUtilities extends Static {
      *
      * <ul>
      *   <li>The array contains {@link StandardOpenOption#WRITE}.</li>
-     *   <li>The array does not contain {@link StandardOpenOption#READ}, unless the array contains also
+     *   <li>The array does not contain {@link StandardOpenOption#READ}, unless the array also contains
      *       {@link StandardOpenOption#CREATE_NEW} or {@link StandardOpenOption#TRUNCATE_EXISTING} in which
      *       case the {@code READ} option is ignored (because the caller would have no data to read).</li>
      * </ul>
@@ -689,14 +689,14 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns the error message for a file that can not be parsed.
+     * Returns the error message for a file that cannot be parsed.
      * The error message will contain the line number if available.
      *
      * @param  locale    the language for the error message.
      * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
      * @param  filename  name of the file or the data store.
      * @param  store     the input or output object, or {@code null}.
-     * @return the parameters for a localized error message for a file that can not be processed.
+     * @return the parameters for a localized error message for a file that cannot be processed.
      *
      * @since 0.8
      */
@@ -727,7 +727,7 @@ public final class IOUtilities extends Static {
      * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
      * @param  filename  name of the file or the data store.
      * @param  store     the input or output object, or {@code null}.
-     * @return the parameters for a localized error message for a file that can not be processed.
+     * @return the parameters for a localized error message for a file that cannot be processed.
      *
      * @since 0.8
      */

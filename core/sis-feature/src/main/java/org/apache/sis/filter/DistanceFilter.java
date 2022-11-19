@@ -170,7 +170,7 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> {
     }
 
     /**
-     * Returns the value to return when a test can not be applied.
+     * Returns the value to return when a test cannot be applied.
      */
     @Override
     protected boolean negativeResult() {

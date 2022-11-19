@@ -276,7 +276,7 @@ public class AttributeNames {
     /**
      * The set of attribute names for a long descriptive name for the variable taken from a controlled
      * vocabulary of variable names. This is actually a {@linkplain VariableSimpleIF variable} attribute,
-     * but sometime appears also in {@linkplain NetcdfFile#findGlobalAttribute(String) global attributes}.
+     * but sometimes appears also in {@linkplain NetcdfFile#findGlobalAttribute(String) global attributes}.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /

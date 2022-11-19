@@ -121,7 +121,7 @@ public final class ZonedTransverseMercator extends AbstractProvider {
      * @param  parameters  the group of parameter values.
      * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
-     * @throws FactoryException if the map projection can not be created.
+     * @throws FactoryException if the map projection cannot be created.
      */
     @Override
     public final MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)

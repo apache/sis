@@ -342,7 +342,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final Datum targetDatum = ((SingleCRS) targetCRS).getDatum();
             if (equalsIgnoreMetadata(sourceDatum, targetDatum)) try {
                 /*
-                 * Because the CRS type is determined by the datum type (sometime completed by the CS type),
+                 * Because the CRS type is determined by the datum type (sometimes completed by the CS type),
                  * having equivalent datum and compatible CS should be a sufficient criterion.
                  */
                 return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
@@ -382,7 +382,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return coordinate operations from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     protected List<CoordinateOperation> createOperationStep(final SingleCRS sourceCRS,
                                                             final GeneralDerivedCRS targetCRS)
@@ -418,7 +418,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     protected List<CoordinateOperation> createOperationStep(final GeneralDerivedCRS sourceCRS,
                                                             final SingleCRS targetCRS)
@@ -460,7 +460,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     protected List<CoordinateOperation> createOperationStep(final GeneralDerivedCRS sourceCRS,
                                                             final GeneralDerivedCRS targetCRS)
@@ -506,7 +506,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     @SuppressWarnings("null")
     protected List<CoordinateOperation> createOperationStep(final GeodeticCRS sourceCRS,
@@ -616,7 +616,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 context.setTarget(normalized);
                 /*
                  * The name of the `parameters` group determines the `OperationMethod` later in this method.
-                 * We can not leave that name to "Affine" if `before` or `after` transforms are not identity.
+                 * We cannot leave that name to "Affine" if `before` or `after` transforms are not identity.
                  * Note: we check for identity transforms instead of relaxing to general `LinearTransform`
                  * because otherwise, we would have to update values declared in `parameters`. It is doable
                  * but not done yet.
@@ -716,7 +716,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     protected List<CoordinateOperation> createOperationStep(final GeodeticCRS sourceCRS,
                                                             final VerticalCRS targetCRS)
@@ -819,7 +819,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      *
      * @todo Needs to implement vertical datum shift.
      */
@@ -855,7 +855,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     protected List<CoordinateOperation> createOperationStep(final TemporalCRS sourceCRS,
                                                             final TemporalCRS targetCRS)
@@ -911,7 +911,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  targetCRS         output coordinate reference system.
      * @param  targetComponents  components of the target CRS.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     protected List<CoordinateOperation> createOperationStep(
             final CoordinateReferenceSystem sourceCRS, final List<? extends SingleCRS> sourceComponents,
@@ -1063,7 +1063,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  targetCRS  the target coordinate reference system.
      * @param  matrix     the matrix which describe an affine transform operation.
      * @return the conversion or transformation.
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      */
     private CoordinateOperation createFromAffineTransform(final Identifier                name,
                                                           final CoordinateReferenceSystem sourceCRS,
@@ -1147,7 +1147,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
         }
         /*
-         * Sometime we get a concatenated operation made of an operation followed by its inverse.
+         * Sometimes we get a concatenated operation made of an operation followed by its inverse.
          * We can identify thoses case when the associated MathTransform is the identity transform.
          * In such case, simplify by replacing the ConcatenatedTransform by a SingleTransform.
          */
@@ -1174,7 +1174,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  step2  the second step, or {@code null} for the identity operation.
      * @param  step3  the third  step, or {@code null} for the identity operation.
      * @return a concatenated operation, or {@code null} if all arguments were null.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     private CoordinateOperation concatenate(final CoordinateOperation step1,
                                             final CoordinateOperation step2,
@@ -1267,7 +1267,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     }
 
     /**
-     * Returns the given operation as a list of one element. We can not use {@link Collections#singletonList(Object)}
+     * Returns the given operation as a list of one element. We cannot use {@link Collections#singletonList(Object)}
      * because the list needs to be modifiable, as required by {@link #createOperations(CoordinateReferenceSystem,
      * CoordinateReferenceSystem)} method contract.
      */
@@ -1290,10 +1290,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     }
 
     /**
-     * Returns an error message for "Can not invert operation XYZ.".
+     * Returns an error message for "Cannot invert operation XYZ.".
      * This is used for the construction of {@link OperationNotFoundException}.
      *
-     * @param  crs  the CRS having a conversion that can not be inverted.
+     * @param  crs  the CRS having a conversion that cannot be inverted.
      * @return a default error message.
      */
     private static String canNotInvert(final GeneralDerivedCRS crs) {

@@ -72,7 +72,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  */
 
 /*
- * JAXB annotation would be @XmlType(name = "CodeType"), but this can not be used here
+ * JAXB annotation would be @XmlType(name = "CodeType"), but this cannot be used here
  * since "CodeType" is used for various classes (including LocalName and ScopedName).
  */
 @XmlTransient

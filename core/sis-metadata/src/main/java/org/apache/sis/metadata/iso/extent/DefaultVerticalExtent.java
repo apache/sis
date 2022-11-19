@@ -57,7 +57,7 @@ import org.apache.sis.xml.NilReason;
  *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
  *       Serialization support is appropriate for short term storage or RMI between applications running the
  *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
- *   <li>Coordinate Reference System can not be specified by identifier only; they have to be specified in full.
+ *   <li>Coordinate Reference System cannot be specified by identifier only; they have to be specified in full.
  *       See <a href="https://issues.apache.org/jira/browse/SIS-397">SIS-397</a>.</li>
  * </ul>
  *
@@ -250,7 +250,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * @param  envelope  the envelope to use for setting this vertical extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can not be transformed to a vertical extent.
+     * @throws TransformException if the envelope cannot be transformed to a vertical extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)

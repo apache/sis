@@ -72,7 +72,7 @@ import org.apache.sis.util.Classes;
  * randomly distributed coordinates.
  *
  * <p>Builders are not thread-safe. Builders can be used only once;
- * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
+ * points cannot be added or modified after {@link #create(MathTransformFactory)} has been invoked.
  * The transform coefficients are determined using a <cite>least squares</cite> estimation method,
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
  *
@@ -257,7 +257,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
      * @param  domain  domain of integer source coordinates for which to get a linear approximation.
      * @return a linear approximation of given transform for the specified domain.
-     * @throws FactoryException if the transform approximation can not be computed.
+     * @throws FactoryException if the transform approximation cannot be computed.
      *
      * @see #setControlPoints(MathTransform)
      * @see org.apache.sis.coverage.grid.DomainLinearizer
@@ -286,7 +286,7 @@ public class LinearTransformBuilder extends TransformBuilder {
 
     /**
      * Allocates memory for a builder created for source positions distributed on a grid.
-     * All target values need to be initialized to NaN because we can not rely on {@link #numPoints}.
+     * All target values need to be initialized to NaN because we cannot rely on {@link #numPoints}.
      *
      * <p>If this builder has been created for randomly distributed source points, then the allocation
      * should rather be performed as below:</p>
@@ -316,12 +316,12 @@ public class LinearTransformBuilder extends TransformBuilder {
     /**
      * Returns the offset of the given source grid coordinate, or -1 if none. The algorithm implemented in this
      * method is inefficient, but should rarely be used. This is only a fallback when {@link #flatIndex(int[])}
-     * can not be used. Callers is responsible to ensure that the number of dimensions match.
+     * cannot be used. Callers is responsible to ensure that the number of dimensions match.
      *
      * @see ControlPoints#search(double[][], double[])
      */
     private int search(final int[] source) {
-        assert gridSize == null;         // This method can not be invoked for points distributed on a grid.
+        assert gridSize == null;         // This method cannot be invoked for points distributed on a grid.
 search: for (int j=numPoints; --j >= 0;) {
             for (int i=0; i<source.length; i++) {
                 if (source[i] != sources[i][j]) {
@@ -341,7 +341,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @throws IllegalArgumentException if a coordinate value is illegal.
      */
     private int flatIndex(final int[] source) {
-        assert sources == null;               // This method can not be invoked for randomly distributed points.
+        assert sources == null;               // This method cannot be invoked for randomly distributed points.
         int offset = 0;
         for (int i = gridSize.length; i != 0;) {
             final int size = gridSize[--i];
@@ -364,7 +364,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @see ControlPoints#flatIndex(DirectPosition)
      */
     private int flatIndex(final DirectPosition source) {
-        assert sources == null;               // This method can not be invoked for randomly distributed points.
+        assert sources == null;               // This method cannot be invoked for randomly distributed points.
         int offset = 0;
         for (int i = gridSize.length; i != 0;) {
             final int size = gridSize[--i];
@@ -389,7 +389,7 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Throws {@link IllegalStateException} if this builder can not be modified anymore.
+     * Throws {@link IllegalStateException} if this builder cannot be modified anymore.
      */
     private void ensureModifiable() throws IllegalStateException {
         if (transform != null) {
@@ -566,7 +566,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * the results of transforming all source coordinates with the given {@code gridToCRS} transform.
      *
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
-     * @throws TransformException if a coordinate value can not be transformed.
+     * @throws TransformException if a coordinate value cannot be transformed.
      *
      * @see #approximate(MathTransform, Envelope)
      *
@@ -757,7 +757,7 @@ search: for (int j=numPoints; --j >= 0;) {
 
         /**
          * Returns the number of points to consider when searching in {@link #sources} or {@link #targets} arrays.
-         * For gridded data we can not rely on {@link #numPoints} because the coordinate values may be at any index,
+         * For gridded data we cannot rely on {@link #numPoints} because the coordinate values may be at any index,
          * not necessarily at consecutive indices.
          */
         int domain() {
@@ -1221,7 +1221,7 @@ search:         for (int j=domain(); --j >= 0;) {
         /*
          * If some coordinates have been shifted, the range may become unreasonable. For example we may get a range
          * of [-440 … -160]° of longitude. Shift again in the direction that provide the best intersection with the
-         * original range. Note that original range itself is sometime "unreasonable". In that case we fallback on
+         * original range. Note that original range itself is sometimes "unreasonable". In that case we fallback on
          * values centered around zero, which matches common practice and reduces the risk of rounding errors.
          */
         double shift = 0;
@@ -1375,7 +1375,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *                  The {@link MathTransformFactory#createAffineTransform(Matrix)} method of that factory
      *                  shall return {@link LinearTransform} instances.
      * @return the fitted linear transform.
-     * @throws FactoryException if the transform can not be created,
+     * @throws FactoryException if the transform cannot be created,
      *         for example because the source or target points have not be specified.
      *
      * @since 0.8

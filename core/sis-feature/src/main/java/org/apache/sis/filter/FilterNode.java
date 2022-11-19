@@ -23,7 +23,7 @@ import org.apache.sis.internal.filter.Node;
 /**
  * Base class of some (not all) nodes that are filters. This base class overrides {@link Predicate}
  * methods for building other {@link Filter} objects instead of default Java implementations that
- * Apache SIS can not recognize.
+ * Apache SIS cannot recognize.
  *
  * <p><b>Note:</b> this class duplicates the method definition in {@link Optimization.OnFilter}.
  * This duplication exists because not all filter implementations extends this class, and not all

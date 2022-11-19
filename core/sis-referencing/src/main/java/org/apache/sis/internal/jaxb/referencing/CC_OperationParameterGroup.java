@@ -107,7 +107,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * descriptors are said "incomplete" (from SIS point of view) because they are missing the
      * {@link ParameterDescriptor#getValueClass()} property, which does not exist in GML but
      * is mandatory for us. However an exception to this "incompleteness" happen when SIS has
-     * been able to match the {@code <gml:OperationMethod>} parent to one of the pre-defined
+     * been able to match the {@code <gml:OperationMethod>} parent to one of the predefined
      * operations in the {@link org.apache.sis.internal.referencing.provider} package.</p>
      *
      * <p>The {@code fromValues} argument gives the descriptors declared in each {@code <gml:ParameterValue>}
@@ -117,7 +117,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      *
      * <p>So the preferred descriptors from more complete to less complete are:</p>
      * <ol>
-     *   <li>{@code descriptors} if and only if they contain pre-defined parameters inferred by SIS from the {@code <gml:OperationMethod>} name.</li>
+     *   <li>{@code descriptors} if and only if they contain predefined parameters inferred by SIS from the {@code <gml:OperationMethod>} name.</li>
      *   <li>{@code fromValues}, which contain the descriptors declared in the {@code <gml:ParameterValue>} instances.</li>
      *   <li>{@code descriptors}, which contain the descriptor listed in {@code <gml:OperationParameterGroup>} or {@code <gml:OperationMethod>}.</li>
      * </ol>
@@ -173,7 +173,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
                     final Class<?> valueClass = ((ParameterDescriptor<?>) previous).getValueClass();
                     if (valueClass != null) {
                         /*
-                         * This may happen if the 'descriptors' argument contain the parameters of a pre-defined
+                         * This may happen if the 'descriptors' argument contain the parameters of a predefined
                          * method from the 'org.apache.sis.internal.referencing.provider' package instead of a
                          * descriptor from the GML file.  In such case, presume that 'previous' is actually more
                          * complete than 'complete'.

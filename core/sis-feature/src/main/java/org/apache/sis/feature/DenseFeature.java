@@ -127,7 +127,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      *
      * @param  property  the property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature, or if the property can not be set or another reason.
+     *         known to this feature, or if the property cannot be set or another reason.
      */
     @Override
     public void setProperty(final Object property) throws IllegalArgumentException {
@@ -221,7 +221,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * @param  name   the attribute name.
      * @param  value  the new value for the given attribute (may be {@code null}).
      * @throws ClassCastException if the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException if the given value can not be assigned for another reason.
+     * @throws IllegalArgumentException if the given value cannot be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
@@ -282,7 +282,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * property {@code clone()} methods.
      *
      * @return a clone of this attribute.
-     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
+     * @throws CloneNotSupportedException if this feature cannot be cloned, typically because
      *         {@code clone()} on a property instance failed.
      */
     @Override

@@ -151,7 +151,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
 
     /**
      * Creates a new projection initialized to the values of the given one. This constructor may be invoked after
-     * we determined that the default implementation can be replaced by an other one, for example using spherical
+     * we determined that the default implementation can be replaced by another one, for example using spherical
      * formulas instead of the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */

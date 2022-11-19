@@ -109,7 +109,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * </ol>
  *
  * <h2>Location of data to display</h2>
- * In addition of above-cited Coordinate Reference Systems, a {@code Canvas} contains also a point of interest.
+ * In addition of above-cited Coordinate Reference Systems, a {@code Canvas} also contains a point of interest.
  * The point of interest is often, but not necessarily, at the center of display area.
  * It defines the position where {@linkplain #getSpatialResolution() resolutions} will be computed,
  * and the position to keep fixed when scales and rotations are applied.
@@ -391,7 +391,7 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * Creates a new canvas for a display device using the given coordinate reference system.
-     * The display CRS of a canvas can not be changed after construction.
+     * The display CRS of a canvas cannot be changed after construction.
      * Its coordinate system depends on the display device shape
      * (for example a two-dimensional Cartesian coordinate system for flat screens,
      * or a polar or spherical coordinate system for planetarium domes).
@@ -515,7 +515,7 @@ public class Canvas extends Observable implements Localized {
      *                   If non-null, the anchor must be associated to a CRS.
      * @throws NullPointerException if the given CRS is null.
      * @throws MismatchedDimensionException if the given CRS does not have the number of dimensions of the display device.
-     * @throws RenderException if the objective CRS can not be set to the given value for another reason.
+     * @throws RenderException if the objective CRS cannot be set to the given value for another reason.
      */
     public void setObjectiveCRS(final CoordinateReferenceSystem newValue, DirectPosition anchor) throws RenderException {
         ArgumentChecks.ensureNonNull(OBJECTIVE_CRS_PROPERTY, newValue);
@@ -716,7 +716,7 @@ public class Canvas extends Observable implements Localized {
      *
      * @param  newValue  the new <cite>objective to display</cite> conversion.
      * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
-     * @throws RenderException if the <cite>objective to display</cite> transform can not be set to the given value for another reason.
+     * @throws RenderException if the <cite>objective to display</cite> transform cannot be set to the given value for another reason.
      */
     public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(OBJECTIVE_TO_DISPLAY_PROPERTY, newValue);
@@ -790,7 +790,7 @@ public class Canvas extends Observable implements Localized {
      *
      * @param  newValue  the new display bounds.
      * @throws IllegalArgumentException if the given envelope does not have the expected CRS or number of dimensions.
-     * @throws RenderException if the display bounds can not be set to the given value for another reason.
+     * @throws RenderException if the display bounds cannot be set to the given value for another reason.
      */
     public void setDisplayBounds(final Envelope newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(DISPLAY_BOUNDS_PROPERTY, newValue);
@@ -849,7 +849,7 @@ public class Canvas extends Observable implements Localized {
      * @param  newValue  the new coordinates of a representative point.
      * @throws NullPointerException if the given position is null.
      * @throws IllegalArgumentException if the given position does not have a CRS.
-     * @throws RenderException if the point of interest can not be set to the given value.
+     * @throws RenderException if the point of interest cannot be set to the given value.
      */
     public void setPointOfInterest(final DirectPosition newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(POINT_OF_INTEREST_PROPERTY, newValue);
@@ -867,7 +867,7 @@ public class Canvas extends Observable implements Localized {
             if (objectiveCRS == null) {
                 final CoordinateReferenceSystem newObjectiveCRS = CRS.getComponentAt(crs, 0, getDisplayDimensions());
                 if (newObjectiveCRS == null) {
-                    throw new IllegalArgumentException("Can not infer objective CRS.");
+                    throw new IllegalArgumentException("Cannot infer objective CRS.");
                     // Message not localized yet because we should probably try harder.
                 }
                 operationContext.setObjectiveToGeographic(objectiveToGeographic(newObjectiveCRS));
@@ -879,12 +879,12 @@ public class Canvas extends Observable implements Localized {
              *
              * Note 1: in the CoordinateOperationContext used for selecting a MathTransform, the geographic area is
              * still the same but the spatial resolution could be slightly different because computed at a new point
-             * of interest. But we can not use the new point of interest now, because we need the MathTransform for
+             * of interest. But we cannot use the new point of interest now, because we need the MathTransform for
              * computing it. However in practice the resolution is often ignored, or does not vary a lot in regions
              * where it matter. So we assume it is okay to keep the CoordinateOperationContext with old resolution
              * in the following call to `findTransform(…)` or usage of `multidimToObjective`.
              *
-             * Note 2: `oldValue` can not be null if `multidimToObjective` is non-null.
+             * Note 2: `oldValue` cannot be null if `multidimToObjective` is non-null.
              */
             MathTransform mt = multidimToObjective;
             if (mt == null || !Utilities.equalsIgnoreMetadata(crs, oldValue.getCoordinateReferenceSystem())) {
@@ -949,11 +949,11 @@ public class Canvas extends Observable implements Localized {
      * </table>
      *
      * The {@link GridGeometry#getGridToCRS(PixelInCell)} transform built by this method is always a {@link LinearTransform}.
-     * This linearity implies that the grid geometry CRS can not be the Point Of Interest (POI) CRS, unless conversion
+     * This linearity implies that the grid geometry CRS cannot be the Point Of Interest (POI) CRS, unless conversion
      * from POI CRS to objective CRS is linear.
      *
      * @return a grid geometry encapsulating canvas properties, including supplemental dimensions if possible.
-     * @throws RenderException if the grid geometry can not be computed.
+     * @throws RenderException if the grid geometry cannot be computed.
      */
     public GridGeometry getGridGeometry() throws RenderException {
         if (gridGeometry == null) try {
@@ -1039,7 +1039,7 @@ public class Canvas extends Observable implements Localized {
      * to this method. For example the {@link GridExtent} in supplemental dimensions may be different.</p>
      *
      * @param  newValue  the grid geometry from which to get new canvas properties.
-     * @throws RenderException if the given grid geometry can not be converted to canvas properties.
+     * @throws RenderException if the given grid geometry cannot be converted to canvas properties.
      */
     public void setGridGeometry(final GridGeometry newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(GRID_GEOMETRY_PROPERTY, newValue);

@@ -75,7 +75,7 @@ public class ReferenceResolver {
      * @param  <T>          the compile-time type of the {@code type} argument.
      * @param  context      context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  type         the type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  identifiers  an arbitrary amount of identifiers. For each identifier,
+     * @param  identifiers  an arbitrary number of identifiers. For each identifier,
      *         the {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority}
      *         is typically (but not necessarily) one of the constants defined in {@link IdentifierSpace}.
      * @return an object of the given type for the given identifiers, or {@code null} if none.
@@ -190,7 +190,7 @@ public class ReferenceResolver {
      * Returns {@code true} if the marshaller can use a reference to the given object
      * instead of writing the full XML element. This method is invoked when an object to
      * be marshalled has a UUID identifier. Because those object may be defined externally,
-     * SIS can not know if the object shall be fully marshalled or not.
+     * SIS cannot know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
      * <p>The default implementation returns {@code true} in the following cases:</p>
@@ -217,7 +217,7 @@ public class ReferenceResolver {
      * Returns {@code true} if the marshaller can use a {@code xlink:href} reference to the given
      * object instead of writing the full XML element. This method is invoked when an object to be
      * marshalled has a {@link XLink} identifier. Because those object may be defined externally,
-     * SIS can not know if the object shall be fully marshalled or not.
+     * SIS cannot know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
      * <p>The default implementation returns {@code true} in the following cases:</p>

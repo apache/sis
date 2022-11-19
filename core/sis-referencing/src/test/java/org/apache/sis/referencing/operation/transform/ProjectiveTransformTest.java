@@ -198,7 +198,7 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
      * Tests {@link ProjectiveTransform#optimize()}. In particular this method verifies that a non-square matrix
      * that looks like diagonal is not confused with a real diagonal matrix.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
      *
      * @since 0.7
@@ -227,7 +227,7 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
      * Tests {@link ProjectiveTransform#optimize()} when the matrix defines a constant value.
      * Older SIS versions wrongly optimized this case as a translation.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
      *
      * @since 1.1

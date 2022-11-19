@@ -273,7 +273,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      *
      * @param  file  the property file to load.
      * @return the properties.
-     * @throws IOException if the file can not be read.
+     * @throws IOException if the file cannot be read.
      */
     private static Properties loadRawProperties(final File file) throws IOException {
         final Properties properties;
@@ -437,7 +437,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
     private void writeUTF(final File file) throws IOException {
         final File directory = file.getParentFile();
         if (!directory.isDirectory() && !directory.mkdirs()) {
-            throw new IOException("Can not create the " + directory + " directory.");
+            throw new IOException("Cannot create the " + directory + " directory.");
         }
         final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet());
         try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {

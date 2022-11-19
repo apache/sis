@@ -238,7 +238,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     }
 
     /**
-     * Compares this version with an other version object, up to the specified limit. A limit
+     * Compares this version with another version object, up to the specified limit. A limit
      * of 1 compares only the {@linkplain #getMajor() major} version number. A limit of 2 compares
      * the major and {@linkplain #getMinor() minor} version numbers, <i>etc</i>.
      * The comparisons are performed as {@link Integer} object if possible, or as {@link String}
@@ -291,7 +291,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     }
 
     /**
-     * Compares this version with an other version object. This method performs the same
+     * Compares this version with another version object. This method performs the same
      * comparison than {@link #compareTo(Version, int)} with no limit.
      *
      * @param  other  the other version object to compare with.

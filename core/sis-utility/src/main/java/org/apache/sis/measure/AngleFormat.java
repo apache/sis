@@ -308,7 +308,7 @@ public class AngleFormat extends Format implements Localized {
      * {@code true} if the {@link #parse(String, ParsePosition)} method is allowed to fallback
      * on the build-in default symbols if the string to parse doesn't match the pattern.
      *
-     * <p>This field can not be set by the pattern string,
+     * <p>This field cannot be set by the pattern string,
      * so it needs to be initialized separately.</p>
      *
      * @see #isFallbackAllowed()
@@ -1522,7 +1522,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                  * STRING ANALYSIS FOLLOWING PRESUMED DEGREES
                  * ------------------------------------------
                  * The degrees value is followed by the prefix for angles.
-                 * Stop parsing, since the remaining characters are for an other angle.
+                 * Stop parsing, since the remaining characters are for another angle.
                  */
                 case PREFIX_FIELD: {
                     pos.setIndex(indexEndField);
@@ -1622,7 +1622,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED MINUTES
                          * ------------------------------------------
-                         * Found the prefix of an other angle. Accept the number that
+                         * Found the prefix of another angle. Accept the number that
                          * we have just parsed despite the missing minutes suffix, and
                          * stop parsing before the prefix.
                          */
@@ -1685,7 +1685,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                          * STRING ANALYSIS FOLLOWING PRESUMED SECONDS
                          * ------------------------------------------
                          * Found the degrees or minutes suffix instead of the seconds suffix.
-                         * This means that the number we have just read belong to an other angle.
+                         * This means that the number we have just read belong to another angle.
                          * Stop the parsing before that number.
                          */
                         case MINUTES_FIELD:
@@ -1697,7 +1697,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED SECONDS
                          * ------------------------------------------
-                         * Found the prefix of an other angle. Accept the number that
+                         * Found the prefix of another angle. Accept the number that
                          * we have just parsed despite the missing seconds suffix, and
                          * stop parsing before the prefix.
                          */
@@ -1810,7 +1810,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      *
      * @param  source  the string to parse.
      * @return the parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
-     * @throws ParseException if the string can not be fully parsed.
+     * @throws ParseException if the string cannot be fully parsed.
      *
      * @see #isFallbackAllowed()
      */
@@ -1844,7 +1844,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      *
      * @param  source  the string to parse.
      * @return the parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
-     * @throws ParseException if the string can not been fully parsed.
+     * @throws ParseException if the string cannot be fully parsed.
      */
     @Override
     public Object parseObject(final String source) throws ParseException {

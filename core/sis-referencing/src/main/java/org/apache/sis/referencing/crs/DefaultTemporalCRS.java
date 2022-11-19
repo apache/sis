@@ -365,7 +365,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * This method is the converse of {@link #toValue(Duration)}.
      *
      * @param  delta  a difference of values in this axis. Unit of measurement is given by {@link #getUnit()}.
-     * @return the value difference as a duration, or {@code null} if the duration can not be computed.
+     * @return the value difference as a duration, or {@code null} if the duration cannot be computed.
      *
      * @since 1.3
      */
@@ -431,7 +431,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * This method is the converse of {@link #toDuration(double)}.
      *
      * @param  delta  the difference of values as a duration, or {@code null}.
-     * @return the value difference in this axis unit, or {@link Double#NaN} if it can not be computed.
+     * @return the value difference in this axis unit, or {@link Double#NaN} if it cannot be computed.
      *         Unit of measurement is given by {@link #getUnit()}.
      *
      * @since 1.3
@@ -484,7 +484,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultTemporalCRS() {
         /*

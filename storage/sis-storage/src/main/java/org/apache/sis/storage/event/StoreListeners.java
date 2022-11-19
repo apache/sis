@@ -289,10 +289,10 @@ public class StoreListeners implements Localized {
      * <h4>Permitted even types</h4>
      * If the parent restricts the usable event types to a subset of {@link StoreEvent} subtypes,
      * then this {@code StoreListeners} inherits those restrictions. The list of usable types can
-     * be {@linkplain #setUsableEventTypes rectricted more} but can not be relaxed.
+     * be {@linkplain #setUsableEventTypes rectricted more} but cannot be relaxed.
      *
      * @param parent  the manager to notify in addition to this manager, or {@code null} if none.
-     * @param source  the source of events. Can not be null.
+     * @param source  the source of events. Cannot be null.
      */
     public StoreListeners(final StoreListeners parent, Resource source) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -390,7 +390,7 @@ public class StoreListeners implements Localized {
     /**
      * Returns the logger where to send warnings when no other destination is specified.
      * This method tries to get the logger from {@link DataStoreProvider#getLogger()}.
-     * If that logger can not be found, then this method infers a logger name from the
+     * If that logger cannot be found, then this method infers a logger name from the
      * package name of the source data store. The returned logger is used when:
      *
      * <ul>
@@ -744,7 +744,7 @@ public class StoreListeners implements Localized {
      * warnings in its own way, for example by showing warnings in a widget.
      *
      * @param  <E>        compile-time value of the {@code eventType} argument.
-     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} to listen (cannot be {@code null}).
      * @param  listener   listener to notify about events.
      *
      * @see Resource#addListener(Class, StoreListener)
@@ -803,7 +803,7 @@ public class StoreListeners implements Localized {
      * warnings to the loggers.
      *
      * @param  <E>        compile-time value of the {@code eventType} argument.
-     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} which were listened (cannot be {@code null}).
      * @param  listener   listener to stop notifying about events.
      *
      * @see Resource#removeListener(Class, StoreListener)
@@ -834,7 +834,7 @@ public class StoreListeners implements Localized {
      * ignore the listeners for those types.
      *
      * @param  <E>        compile-time value of the {@code eventType} argument.
-     * @param  eventType  type of {@link StoreEvent} to check (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent} to check (cannot be {@code null}).
      * @param  listener   listener to check for registration.
      * @return {@code true} if this object contains the specified listener for given event type, {@code false} otherwise.
      *

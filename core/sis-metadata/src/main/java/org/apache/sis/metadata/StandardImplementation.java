@@ -170,14 +170,15 @@ final class StandardImplementation extends MetadataStandard {
     }
 
     /**
-     * Invoked on deserialization. Returns one of the pre-existing constants if possible.
+     * Invoked on deserialization. Returns one of the preexisting constants if possible.
      */
     Object readResolve() throws ObjectStreamException {
-        if (ISO_19111.citation.equals(citation)) return ISO_19111;
-        if (ISO_19115.citation.equals(citation)) return ISO_19115;
+        for (final MetadataStandard standard : MetadataStandard.INSTANCES) {
+            if (standard.citation.equals(citation)) return standard;
+        }
         /*
-         * Following should not occurs, unless we are deserializing an instance created by a
-         * newer version of the Apache SIS library. The newer version could contains constants
+         * Following should not occur, unless we are deserializing an instance created by a
+         * newer version of the Apache SIS library. The newer version could contain constants
          * not yet declared in this older SIS version, so we have to use this instance.
          */
         setMapForField(StandardImplementation.class, this, "implementations");

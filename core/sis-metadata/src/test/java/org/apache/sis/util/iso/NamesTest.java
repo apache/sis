@@ -116,7 +116,7 @@ public final strictfp class NamesTest extends TestCase {
      * Tests {@link Names#toClass(TypeName)} with in a scope different than {@code "OGC"}.
      * If the name is not recognized, then {@code toClass(TypeName)} is expected to return
      * {@code null} rather than throwing an exception because the namespace is used for too
-     * many things - we can not said that the name is wrong.
+     * many things - we cannot said that the name is wrong.
      */
     @Test
     public void testClassFromOtherNamespaces() {

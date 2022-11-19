@@ -74,7 +74,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
 
     /**
      * Tests {@link TreeTableView#toString()}.
-     * Since the result is locale-dependent, we can not compare against an exact string.
+     * Since the result is locale-dependent, we cannot compare against an exact string.
      * We will only compare the beginning of each line.
      */
     @Test

@@ -89,7 +89,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * May be {@code null} if this list has no non-{@code NaN} category.
      *
      * <p>A {@link NumberRange} object gives more information than a (minimum, maximum) tuple since
-     * it contains also the type (integer, float, etc.) and inclusion/exclusion information.</p>
+     * it also contains the type (integer, float, etc.) and inclusion/exclusion information.</p>
      */
     final NumberRange<?> range;
 
@@ -172,7 +172,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         categories     = new Category[0];
         converseRanges = null;
         converse       = this;
-        fallback       = Double.NaN;        // Specify that NaN values can not be converted to a sample value.
+        fallback       = Double.NaN;        // Specify that NaN values cannot be converted to a sample value.
     }
 
     /**
@@ -341,7 +341,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                 }
             } else {
                 /*
-                 * If a NaN value can not be mapped to a sample value, keep the NaN value only if the 0 value
+                 * If a NaN value cannot be mapped to a sample value, keep the NaN value only if the 0 value
                  * (the result of casting NaN to integers) would not conflict with an existing category range.
                  * This check is important for "unit to sample" conversions, because we typically expect all
                  * results to be convertible to integers (ignoring rounding errors).
@@ -357,7 +357,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
         }
         /*
-         * If we can not let NaN value be propagated, use the background value if available.
+         * If we cannot let NaN value be propagated, use the background value if available.
          * Note that the background value given in argument is a sample value, so it can be
          * used only for the "unit to sample" conversion. If that background value is zero,
          * it will be interpreted as "let NaN values propagate" but it should be okay since
@@ -476,7 +476,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         }
         /*
          * If we reach this point and the sample is NaN, then it is not one of the NaN values known
-         * to CategoryList constructor and can not be mapped to a category.  Otherwise we found the
+         * to CategoryList constructor and cannot be mapped to a category.  Otherwise we found the
          * index of "insertion point" (~i). This means that `sample` is lower than category minimum
          * at that index. Consequently if the sample value is inside the range of some category, it
          * can only be the previous category (~i-1).
@@ -497,14 +497,14 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Invoked when a value can not be located in the {@link #minimums} array. It should happen
+     * Invoked when a value cannot be located in the {@link #minimums} array. It should happen
      * only for NaN input values, which in turn should happen only in "unit to sample" conversions.
      * In such case we fallback on zero value if non ambiguous, or on the background value if available,
      * or throw an exception otherwise.
      *
-     * @param  value  the (usually NaN) value that we can not map to a category range.
+     * @param  value  the (usually NaN) value that we cannot map to a category range.
      * @return the value to use as converted value.
-     * @throws TransformException if the value can not be converted.
+     * @throws TransformException if the value cannot be converted.
      */
     private double unmappedValue(final double value) throws TransformException {
         if (MathFunctions.isPositiveZero(fallback)) {
@@ -700,7 +700,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      *
      * @param  value  the value to transform.
      * @return the transformed value.
-     * @throws TransformException if the value can not be transformed.
+     * @throws TransformException if the value cannot be transformed.
      */
     @Override
     public final double transform(double value) throws TransformException {
@@ -730,7 +730,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      *
      * @param  value  the value where to evaluate the derivative.
      * @return the derivative at the specified point.
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public final double derivative(final double value) throws TransformException {
@@ -844,7 +844,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * may fail if an object is too complex for the WKT format capability.
      *
      * @return the Well Know Text for this object.
-     * @throws UnsupportedOperationException if this object can not be formatted as WKT.
+     * @throws UnsupportedOperationException if this object cannot be formatted as WKT.
      *
      * @todo Not yet implemented.
      */

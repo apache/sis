@@ -376,6 +376,10 @@ public class DefaultMeasure extends ISOMetadata {
      * Returns auxiliary variable(s) used by the data quality measure.
      * It shall include its name, definition and value type.
      *
+     * <h4>Unified parameter API</h4>
+     * In GeoAPI, the {@code DQM_Parameter} type defined by ISO 19157 is replaced by {@link ParameterDescriptor}
+     * in order to provide a single parameter API. See {@link org.opengis.parameter} for more information.
+     *
      * @return auxiliary variable(s) used by data quality measure.
      */
     @XmlElement(name = "parameter")

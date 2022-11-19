@@ -131,7 +131,7 @@ public abstract class Bezier {
      *
      * <p>This method shall store the point coordinates in the {@link #point} array with <var>x</var> coordinate in the
      * first element and <var>y</var> coordinate in the second element. This method shall also store derivative (∂y/∂x)
-     * at that location in the {@link #dx} and {@link #dy} fields. If this method can not compute a coordinate, it can
+     * at that location in the {@link #dx} and {@link #dy} fields. If this method cannot compute a coordinate, it can
      * store {@link Double#NaN} values except for <var>t</var>=0, ½ and 1 where finite coordinates are mandatory.</p>
      *
      * <p>Subclasses can optionally update the {@link #εx} and {@link #εy} values if the tolerance thresholds change as a
@@ -139,7 +139,7 @@ public abstract class Bezier {
      * curve are the ones computed at <var>t</var>=¼ and <var>t</var>=¾ of that curve.</p>
      *
      * @param  t  desired point on the curve, from 0 (start point) to 1 (end point) inclusive.
-     * @throws TransformException if the point coordinates can not be computed.
+     * @throws TransformException if the point coordinates cannot be computed.
      */
     protected abstract void evaluateAt(double t) throws TransformException;
 
@@ -149,7 +149,7 @@ public abstract class Bezier {
      * the precision requested by the {@code εx} and {@code εy} parameters given at construction time.
      *
      * @return the sequence of Bézier curves.
-     * @throws TransformException if the coordinates of a point can not be computed.
+     * @throws TransformException if the coordinates of a point cannot be computed.
      */
     public final Path2D build()  throws TransformException {
         evaluateAt(0);
@@ -187,7 +187,7 @@ public abstract class Bezier {
      * @param  y4    <var>y</var> coordinate at <var>t</var>=1 (end point).
      * @param  dx4   <var>x</var> component of the derivative (∂y/∂x) at end point.
      * @param  dy4   <var>y</var> component of the derivative (∂y/∂x) at end point.
-     * @throws TransformException if the coordinates of a point can not be computed.
+     * @throws TransformException if the coordinates of a point cannot be computed.
      */
     private void sequence(final double tmin, final double tmax,
             final double x2, final double y2, final double dx2, final double dy2,
@@ -281,7 +281,7 @@ public abstract class Bezier {
             /*
              * Verify that all points are on the line joining P₀ to P₄. If any coordinate tested below is NaN,
              * ignore it since they are not used in Line2D computation. This allows `evaluateAt(t)` method to
-             * return NaN if it can not provide a point for a given `t` value.
+             * return NaN if it cannot provide a point for a given `t` value.
              */
             if (depth < DEPTH_LIMIT) {
                 if (abs(Δx) >= abs(Δy)) {
@@ -354,7 +354,7 @@ public abstract class Bezier {
          *     P(¾) = (   P₀ +  9⋅A + 27⋅B + 27⋅P₄)/64
          *
          * If any of (x₁,y₁) and (x₃,y₃) coordinates is NaN, then this method accepts the curve as valid.
-         * This allows `evaluateAt(t)` to return NaN if it can not provide a point for a given `t` value.
+         * This allows `evaluateAt(t)` to return NaN if it cannot provide a point for a given `t` value.
          */
         if (depth < DEPTH_LIMIT) {
             double x = 27./64*ax + 9./64*bx + 1./64*Δx;
@@ -443,7 +443,7 @@ public abstract class Bezier {
     /**
      * Returns {@code true} if the point specified by the ({@code xp}, {@code yp}) coordinates is close to the Bézier curve
      * specified by the given control points. All given control points shall be shifted as if (x₀,y₀) coordinates are (0,0).
-     * If this method can not determine for sure that the given point is close, it conservatively returns {@code false}.
+     * If this method cannot determine for sure that the given point is close, it conservatively returns {@code false}.
      * This is okay since failure to determine whether the point is close may mean that the curvature is strong, in which
      * case we should probably split the curves in two smaller curves again.
      *

@@ -619,7 +619,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             /*
              * Wait for objective CRS to be known before to register listeners.
              * The canvas "objective CRS" is null only for unitialized canvas.
-             * After the canvas has been initialized, it can not be null anymore.
+             * After the canvas has been initialized, it cannot be null anymore.
              * We delay listeners registration because if listeners were enabled
              * on uninitialized canvas, the status bar would show irrelevant coordinates.
              */
@@ -740,7 +740,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Implementation of {@link #applyCanvasGeometry(GridGeometry)} without changing {@link #position} visibility state.
-     * Invoking this method usually invalidate the coordinates shown in this status bar. The new coordinates can not be
+     * Invoking this method usually invalidate the coordinates shown in this status bar. The new coordinates cannot be
      * easily recomputed because the {@link #lastX} and {@link #lastY} values may not be valid anymore, as a result of
      * possible changes in JavaFX local coordinate system. Consequently the coordinates should be temporarily hidden
      * until a new {@link MouseEvent} gives us the new local coordinates, unless this method is invoked in a context
@@ -769,8 +769,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             /*
              * Compute the precision of coordinates to format. We use the finest resolution,
              * looking only at axes having the same units of measurement than the first axis.
-             * This will be used as a fallback if we can not compute the precision specific
-             * to a coordinate, for example if we can not compute the derivative.
+             * This will be used as a fallback if we cannot compute the precision specific
+             * to a coordinate, for example if we cannot compute the derivative.
              */
             if (geometry.isDefined(GridGeometry.RESOLUTION)) {
                 double[] resolutions = geometry.getResolution(true);
@@ -819,7 +819,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * dimensions may have changed. The `lastX` and `lastY` coordinates are local to the
          * JavaFX view and considered invalid  because they depend on the transforms applied
          * on JavaFX node, which may have changed together with `localToObjectiveCRS` change.
-         * So we can not use those values for updating the coordinates shown in status bar.
+         * So we cannot use those values for updating the coordinates shown in status bar.
          * Instead we will wait for the next mouse event to provide new local coordinates.
          */
         ((LocalToObjective) localToObjectiveCRS).setNoCheck(localToCRS);
@@ -1687,7 +1687,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Shows an error message for a reference system that can not be set.
+     * Shows an error message for a reference system that cannot be set.
      * The previous reference system is kept unchanged but the coordinates
      * will appear in red for telling user that there is a problem.
      *

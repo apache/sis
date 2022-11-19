@@ -285,7 +285,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
      * Sets the number of feature instances to skip from the beginning.
      * Offset and limit are often combined to obtain paging.
-     * The offset can not be negative.
+     * The offset cannot be negative.
      *
      * <p>Note that setting this property can be costly on parallelized streams.
      * See {@link java.util.stream.Stream#skip(long)} for more information.</p>
@@ -543,7 +543,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * This method is invoked by the default implementation of {@link FeatureSet#subset(Query)}.
      * The default implementation executes the query using the default {@link java.util.stream.Stream} methods.
      * Queries executed by this method may not benefit from accelerations provided for example by databases.
-     * This method should be used only as a fallback when the query can not be executed natively
+     * This method should be used only as a fallback when the query cannot be executed natively
      * by {@link FeatureSet#subset(Query)}.
      *
      * <p>The returned {@code FeatureSet} does not cache the resulting {@code Feature} instances;
@@ -583,7 +583,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @return type resulting from expressions evaluation (never null).
      * @throws IllegalArgumentException if this method can operate only on some feature types
      *         and the given type is not one of them.
-     * @throws IllegalArgumentException if this method can not determine the result type of an expression
+     * @throws IllegalArgumentException if this method cannot determine the result type of an expression
      *         in this query. It may be because that expression is backed by an unsupported implementation.
      */
     final DefaultFeatureType expectedType(final DefaultFeatureType valueType) {

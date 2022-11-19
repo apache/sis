@@ -254,7 +254,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Returns the parameters used to open this GeoTIFF data store.
      * The parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at least
      * a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * The return value may be empty if the storage input can not be described by a URI
+     * The return value may be empty if the storage input cannot be described by a URI
      * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
      * @return parameters used for opening this data store.
@@ -372,7 +372,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Returns the exception to throw when an I/O error occurred.
-     * This method wraps the exception with a {@literal "Can not read <filename>"} message.
+     * This method wraps the exception with a {@literal "Cannot read <filename>"} message.
      */
     final DataStoreException errorIO(final IOException e) {
         return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
@@ -473,7 +473,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @param  sequence  string representation of the image index, starting at 1.
      * @return image at the given index.
-     * @throws DataStoreException if the requested image can not be obtained.
+     * @throws DataStoreException if the requested image cannot be obtained.
      */
     @Override
     public synchronized GridCoverageResource findResource(final String sequence) throws DataStoreException {

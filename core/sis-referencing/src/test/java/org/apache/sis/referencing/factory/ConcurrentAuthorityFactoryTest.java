@@ -158,7 +158,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
         sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
         assertEquals("Expected no new DAO.",        createdDAOs, factory.createdDAOs());
         assertEquals("Worker should be disposed.",  0, factory.countAvailableDataAccess());
-        assertTrue  ("Worker should be disposed.",  createdDAOs.get(1).isClosed());             // TODO: sometime not yet disposed.
+        assertTrue  ("Worker should be disposed.",  createdDAOs.get(1).isClosed());
         assertTrue  ("Worker should be disposed.",  createdDAOs.get(0).isClosed());
     }
 

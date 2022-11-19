@@ -122,7 +122,7 @@ public final strictfp class MeridianArcTest extends MapProjectionTestCase {
     /**
      * Computes the latitude of a given distance along meridian arc using Newton's method. This method is described in
      * <a href="https://en.wikipedia.org/wiki/Meridian_arc#The_inverse_meridian_problem_for_the_ellipsoid">Wikipedia</a>.
-     * This method depends on the forward method and can not be more accurate than that method. For testing purposes, we
+     * This method depends on the forward method and cannot be more accurate than that method. For testing purposes, we
      * use the {@linkplain #referenceMoreAccurate must accurate method implemented in this class} regardless performance.
      *
      * @param  m  the distance on ellipsoid of semi-major axis length of 1.

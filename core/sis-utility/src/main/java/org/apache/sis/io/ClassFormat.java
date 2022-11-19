@@ -63,7 +63,7 @@ final class ClassFormat extends Format {
     }
 
     /**
-     * Can not parse unqualified class name.
+     * Cannot parse unqualified class name.
      */
     @Override
     public Object parseObject(final String source, final ParsePosition pos) {

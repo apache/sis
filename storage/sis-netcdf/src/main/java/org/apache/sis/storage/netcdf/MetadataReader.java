@@ -359,7 +359,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates a URI form the given path, or returns {@code null} if the given URL is null or can not be parsed.
+     * Creates a URI form the given path, or returns {@code null} if the given URL is null or cannot be parsed.
      * In the latter case, a warning will be emitted.
      */
     private URI createURI(final String url) {
@@ -467,7 +467,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * Verify if we can share the existing `pointOfContact` instance. This is often the case in practice.
-         * If we can not share the whole existing instance, we usually can share parts of it like the address.
+         * If we cannot share the whole existing instance, we usually can share parts of it like the address.
          */
         ResponsibleParty responsibility = pointOfContact;
         Contact          contact        = null;
@@ -500,7 +500,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         /*
-         * If we can not share the exiting instance, we have to build a new one. If there is both
+         * If we cannot share the exiting instance, we have to build a new one. If there is both
          * an individual and organisation name, then the individual is considered a member of the
          * organisation. This structure shall be kept consistent with the check in the above block.
          */

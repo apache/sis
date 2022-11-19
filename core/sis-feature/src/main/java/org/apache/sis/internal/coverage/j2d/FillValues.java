@@ -151,7 +151,7 @@ public final class FillValues {
         /*
          * Read the data that we just wrote, but allowing Java2D to use an opaque, potentially packed, format.
          * The chunk below will contain the same data than previous `chunk` but may be encoded differently.
-         * It allows (sometime) faster copies. We use that packed array for the remaining of first row and
+         * It allows (sometimes) faster copies. We use that packed array for the remaining of first row and
          * all next rows.
          */
         chunk = tile.getDataElements(xmin, y, chunkWidth, 1, null);

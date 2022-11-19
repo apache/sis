@@ -36,14 +36,14 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * Grid coordinates specify the location of a cell within a {@link GridCoverage}.
  * They are normally integer numbers, but fractional parts may exist for example
  * after converting a geospatial {@link DirectPosition} to grid coordinates.
- * Preserving that fractional part is sometime useful, e.g. for interpolations.
+ * Preserving that fractional part is sometimes useful, e.g. for interpolations.
  * This class can store such fractional part and can also compute a {@link GridExtent}
  * containing the coordinates, which can be used for requesting data for interpolations.
  *
  * <p>Current implementation stores coordinate values as {@code double} precision floating-point numbers
  * and {@linkplain Math#round(double) rounds} them to 64-bits integers on the fly. If a {@code double}
- * can not be {@linkplain #getCoordinateValue(int) returned} as a {@code long}, or if a {@code long}
- * can not be {@linkplain #setCoordinateValue(int, long) stored} as a {@code double}, then an
+ * cannot be {@linkplain #getCoordinateValue(int) returned} as a {@code long}, or if a {@code long}
+ * cannot be {@linkplain #setCoordinateValue(int, long) stored} as a {@code double}, then an
  * {@link ArithmeticException} is thrown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -163,7 +163,7 @@ public class FractionalGridCoordinates implements Serializable {
      * @param  value      the new value.
      * @throws IndexOutOfBoundsException if the given index is negative or is
      *         equal or greater than the {@linkplain #getDimension grid dimension}.
-     * @throws ArithmeticException if this method can not store the given grid coordinate
+     * @throws ArithmeticException if this method cannot store the given grid coordinate
      *         without precision lost.
      */
     public void setCoordinateValue(final int dimension, final long value) {
@@ -341,7 +341,7 @@ public class FractionalGridCoordinates implements Serializable {
      *
      * @param  gridToCRS  the transform to apply on grid coordinates.
      * @return the grid coordinates converted using the given transform.
-     * @throws TransformException if the grid coordinates can not be converted by {@code gridToCRS}.
+     * @throws TransformException if the grid coordinates cannot be converted by {@code gridToCRS}.
      *
      * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
      */

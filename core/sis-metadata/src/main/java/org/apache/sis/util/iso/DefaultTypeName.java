@@ -43,7 +43,7 @@ import org.apache.sis.util.UnknownNameException;
  * A more standard practice would be to use the
  * <a href="https://schemas.opengis.net/definitions/1.1.0/dataType.xml">data type URN standard values</a>
  * (third column in the table below), but the set of data type identifiers defined by OGC is currently
- * small and is sometime not an exact match.
+ * small and is sometimes not an exact match.
  *
  * <table class="sis">
  *   <caption>Mapping from Java classes to type names (non-exhaustive list)</caption>
@@ -179,17 +179,17 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *           then the corresponding class is associated to this type name.</li>
      *       <li>Otherwise no Java class is associated to this type name.
      *           No exception is thrown because names in the global namespace could be anything;
-     *           this constructor can not know if the given name was wrong.</li>
+     *           this constructor cannot know if the given name was wrong.</li>
      *     </ul>
      *   </li>
      *   <li>Otherwise no Java class is associated to this type name,
-     *       because this method can not check the validity of names in other namespaces.</li>
+     *       because this method cannot check the validity of names in other namespaces.</li>
      * </ul>
      *
      * @param  scope  the scope of this name, or {@code null} for a global scope.
      * @param  name   the local name (never {@code null}).
      * @throws UnknownNameException if a mapping from this name to a Java class was expected to exist
-     *         (because the specified scope is "OGC" or "class") but the associated Java class can not be found.
+     *         (because the specified scope is "OGC" or "class") but the associated Java class cannot be found.
      *
      * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */

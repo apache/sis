@@ -337,7 +337,7 @@ public class DefaultAssociationRole extends FieldType {
     /**
      * Returns the type of feature values.
      *
-     * <p>This method can not be invoked if {@link #isResolved()} returns {@code false}.
+     * <p>This method cannot be invoked if {@link #isResolved()} returns {@code false}.
      * However it is still possible to {@linkplain Features#getValueTypeName
      * get the associated feature type name}.</p>
      *

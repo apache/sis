@@ -84,7 +84,7 @@ final class FeatureAdapter {
     final String[] associationNames;
 
     /**
-     * Name of the property where to store the association that we can not handle with other {@link #dependencies}.
+     * Name of the property where to store the association that we cannot handle with other {@link #dependencies}.
      * This deferred association may exist because of circular dependency.
      */
     final String deferredAssociation;
@@ -261,7 +261,7 @@ final class FeatureAdapter {
             if (componentOf.useFullKey()) {
                 instances = table.instanceForPrimaryKeys();
             } else {
-                instances = new WeakValueHashMap<>(Object.class);       // Can not share the table cache.
+                instances = new WeakValueHashMap<>(Object.class);       // Cannot share the table cache.
             }
         }
         this.sql = sql.toString();

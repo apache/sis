@@ -89,102 +89,102 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAddToExclusiveSet_2 = 2;
 
         /**
-         * Can not assign units “{1}” to dimension “{0}”.
+         * Cannot assign units “{1}” to dimension “{0}”.
          */
         public static final short CanNotAssignUnitToDimension_2 = 3;
 
         /**
-         * Can not assign units “{1}” to variable “{0}”.
+         * Cannot assign units “{1}” to variable “{0}”.
          */
         public static final short CanNotAssignUnitToVariable_2 = 183;
 
         /**
-         * Can not assign “{1}” to “{0}”.
+         * Cannot assign “{1}” to “{0}”.
          */
         public static final short CanNotAssign_2 = 4;
 
         /**
-         * Can not compute “{0}”.
+         * Cannot compute “{0}”.
          */
         public static final short CanNotCompute_1 = 5;
 
         /**
-         * Can not connect to “{0}”.
+         * Cannot connect to “{0}”.
          */
         public static final short CanNotConnectTo_1 = 6;
 
         /**
-         * Can not convert from type ‘{0}’ to type ‘{1}’.
+         * Cannot convert from type ‘{0}’ to type ‘{1}’.
          */
         public static final short CanNotConvertFromType_2 = 7;
 
         /**
-         * Can not convert value “{0}” to type ‘{1}’.
+         * Cannot convert value “{0}” to type ‘{1}’.
          */
         public static final short CanNotConvertValue_2 = 8;
 
         /**
-         * Can not copy “{0}”.
+         * Cannot copy “{0}”.
          */
         public static final short CanNotCopy_1 = 169;
 
         /**
-         * Can not open “{0}”.
+         * Cannot open “{0}”.
          */
         public static final short CanNotOpen_1 = 9;
 
         /**
-         * Can not parse “{0}”.
+         * Cannot parse “{0}”.
          */
         public static final short CanNotParse_1 = 180;
 
         /**
-         * Can not process property “{1}” located at path “{0}”. The reason is: {2}
+         * Cannot process property “{1}” located at path “{0}”. The reason is: {2}
          */
         public static final short CanNotProcessPropertyAtPath_3 = 184;
 
         /**
-         * Can not process property “{0}”. The reason is: {1}
+         * Cannot process property “{0}”. The reason is: {1}
          */
         public static final short CanNotProcessProperty_2 = 152;
 
         /**
-         * Can not read property “{1}” in file “{0}”.
+         * Cannot read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 11;
 
         /**
-         * Can not read “{0}”.
+         * Cannot read “{0}”.
          */
         public static final short CanNotRead_1 = 12;
 
         /**
-         * Can not represent “{1}” in a strictly standard-compliant {0} format.
+         * Cannot represent “{1}” in a strictly standard-compliant {0} format.
          */
         public static final short CanNotRepresentInFormat_2 = 13;
 
         /**
-         * Can not set a value for parameter “{0}”.
+         * Cannot set a value for parameter “{0}”.
          */
         public static final short CanNotSetParameterValue_1 = 14;
 
         /**
-         * Can not set a value for property “{0}”.
+         * Cannot set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 15;
 
         /**
-         * Can not store the {0} value in this vector.
+         * Cannot store the {0} value in this vector.
          */
         public static final short CanNotStoreInVector_1 = 175;
 
         /**
-         * Can not transform envelope.
+         * Cannot transform envelope.
          */
         public static final short CanNotTransformEnvelope = 16;
 
         /**
-         * Can not write “{1}” as a file in the {0} format.
+         * Cannot write “{1}” as a file in the {0} format.
          */
         public static final short CanNotWriteFile_2 = 17;
 
@@ -199,7 +199,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ClassNotFinal_1 = 19;
 
         /**
-         * Can not clone an object of type ‘{0}’.
+         * Cannot clone an object of type ‘{0}’.
          */
         public static final short CloneNotSupported_1 = 20;
 
@@ -334,18 +334,18 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IdentifierNotInNamespace_2 = 199;
 
         /**
-         * Argument ‘{0}’ can not be an instance of ‘{1}’.
+         * Argument ‘{0}’ cannot be an instance of ‘{1}’.
          */
         public static final short IllegalArgumentClass_2 = 42;
 
         /**
-         * Argument ‘{0}’ can not be an instance of ‘{2}’. Expected an instance of ‘{1}’ or derived
+         * Argument ‘{0}’ cannot be an instance of ‘{2}’. Expected an instance of ‘{1}’ or derived
          * type.
          */
         public static final short IllegalArgumentClass_3 = 43;
 
         /**
-         * Argument ‘{0}’ can not take the “{1}” value.
+         * Argument ‘{0}’ cannot take the “{1}” value.
          */
         public static final short IllegalArgumentValue_2 = 45;
 
@@ -355,7 +355,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalBitsPattern_1 = 46;
 
         /**
-         * Coordinate reference system can not be of type ‘{0}’.
+         * Coordinate reference system cannot be of type ‘{0}’.
          */
         public static final short IllegalCRSType_1 = 47;
 
@@ -365,7 +365,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalCharacterForFormat_3 = 48;
 
         /**
-         * The “{1}” character can not be used for “{0}”.
+         * The “{1}” character cannot be used for “{0}”.
          */
         public static final short IllegalCharacter_2 = 49;
 
@@ -380,12 +380,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalCoordinateRange_3 = 57;
 
         /**
-         * Coordinate system can not be “{0}”.
+         * Coordinate system cannot be “{0}”.
          */
         public static final short IllegalCoordinateSystem_1 = 51;
 
         /**
-         * The “{1}” pattern can not be applied to formatting of objects of type ‘{0}’.
+         * The “{1}” pattern cannot be applied to formatting of objects of type ‘{0}’.
          */
         public static final short IllegalFormatPatternForClass_2 = 52;
 
@@ -405,12 +405,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalMapping_2 = 185;
 
         /**
-         * Member “{0}” can not be associated to type “{1}”.
+         * Member “{0}” cannot be associated to type “{1}”.
          */
         public static final short IllegalMemberType_2 = 55;
 
         /**
-         * Option ‘{0}’ can not take the “{1}” value.
+         * Option ‘{0}’ cannot take the “{1}” value.
          */
         public static final short IllegalOptionValue_2 = 56;
 
@@ -425,7 +425,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalPropertyValueClass_3 = 59;
 
         /**
-         * Property “{0}” can not take the “{1}” value.
+         * Property “{0}” cannot take the “{1}” value.
          */
         public static final short IllegalPropertyValue_2 = 198;
 
@@ -435,8 +435,8 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalRange_2 = 60;
 
         /**
-         * Sexagesimal angle {0,number} is illegal because the {1,choice,0#minutes|1#seconds} field can
-         * not take the {2,number} value.
+         * Sexagesimal angle {0,number} is illegal because the {1,choice,0#minutes|1#seconds} field
+         * cannot take the {2,number} value.
          */
         public static final short IllegalSexagesimalField_3 = 44;
 
@@ -451,7 +451,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalValueForProperty_2 = 196;
 
         /**
-         * Can not use the {1} format with “{0}”.
+         * Cannot use the {1} format with “{0}”.
          */
         public static final short IncompatibleFormat_2 = 62;
 
@@ -502,7 +502,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IndicesOutOfBounds_2 = 72;
 
         /**
-         * Argument ‘{0}’ can not take an infinite value.
+         * Argument ‘{0}’ cannot take an infinite value.
          */
         public static final short InfiniteArgumentValue_1 = 73;
 
@@ -624,8 +624,8 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingValueInColumn_1 = 90;
 
         /**
-         * Can not return a single value for “{0}” because there is at least two occurrences, at
-         * indices {1} and {2}.
+         * Cannot return a single value for “{0}” because there is at least two occurrences, at indices
+         * {1} and {2}.
          */
         public static final short MultiOccurenceValueAtIndices_3 = 173;
 
@@ -645,7 +645,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NegativeArgument_2 = 92;
 
         /**
-         * Can not create a “{0}” array of negative length.
+         * Cannot create a “{0}” array of negative length.
          */
         public static final short NegativeArrayLength_1 = 93;
 
@@ -660,7 +660,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NoSuchValue_1 = 95;
 
         /**
-         * Node “{0}” can not be a child of itself.
+         * Node “{0}” cannot be a child of itself.
          */
         public static final short NodeChildOfItself_1 = 96;
 
@@ -897,7 +897,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedEndOfString_1 = 138;
 
         /**
-         * File “{1}” seems to be encoded in an other format than {0}.
+         * File “{1}” seems to be encoded in another format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 139;
 
@@ -977,17 +977,17 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnmodifiableObject_1 = 153;
 
         /**
-         * Text “{1}” can not be parsed as an object of type ‘{0}’.
+         * Text “{1}” cannot be parsed as an object of type ‘{0}’.
          */
         public static final short UnparsableStringForClass_2 = 154;
 
         /**
-         * Text “{1}” can not be parsed as an object of type ‘{0}’, because of the “{2}” characters.
+         * Text “{1}” cannot be parsed as an object of type ‘{0}’, because of the “{2}” characters.
          */
         public static final short UnparsableStringForClass_3 = 155;
 
         /**
-         * Can not parse “{1}” in element “{0}”.
+         * Cannot parse “{1}” in element “{0}”.
          */
         public static final short UnparsableStringInElement_2 = 156;
 
@@ -1032,7 +1032,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnsupportedFormat_1 = 181;
 
         /**
-         * Can not handle this instance of ‘{0}’ because arbitrary implementations are not yet
+         * Cannot handle this instance of ‘{0}’ because arbitrary implementations are not yet
          * supported.
          */
         public static final short UnsupportedImplementation_1 = 160;
@@ -1098,7 +1098,7 @@ public final class Errors extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Errors getResources(final Locale locale) throws MissingResourceException {
         return getBundle(Errors.class, locale);

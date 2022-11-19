@@ -297,7 +297,7 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
         }
 
         /**
-         * Inverse transforms an arbitrary amount of coordinates. This method optimizes the
+         * Inverse transforms an arbitrary number of coordinate tuples. This method optimizes the
          * case where conversions can be applied by a loop with indices in increasing order.
          */
         @Override
@@ -323,7 +323,7 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
 
     /*
      * We do not implement `tryConcatenate` yet because the result of invoking `projection.tryConcatenate(…)`
-     * is either null or a linear transform. In the latter case, the linear transform can not be wrapped by
+     * is either null or a linear transform. In the latter case, the linear transform cannot be wrapped by
      * this `longitudeWraparound` class. Even if we could, it would block concatenation with surrounding
      * affine transforms. We have no easy solution for now.
      */

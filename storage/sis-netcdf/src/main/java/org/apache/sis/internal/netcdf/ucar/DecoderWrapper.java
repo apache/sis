@@ -254,7 +254,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.</p>
      *
      * @param  group  the group in which to search the attribute, or {@code null} for global attributes.
-     * @param  name   the name of the attribute to search (can not be null).
+     * @param  name   the name of the attribute to search (cannot be null).
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {

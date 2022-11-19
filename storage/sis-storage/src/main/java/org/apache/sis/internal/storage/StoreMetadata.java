@@ -66,7 +66,7 @@ public @interface StoreMetadata {
      *
      * <div class="note"><b>Example:</b>
      * GeoTIFF data are contained in files with the {@code ".tif"} or {@code ".tiff"} suffix,
-     * sometime accompanied by auxiliary files with {@code ".prj"} and {@code ".tfw"} suffixes.
+     * sometimes accompanied by auxiliary files with {@code ".prj"} and {@code ".tfw"} suffixes.
      * This method should return an array containing only {@code "tif"} or {@code "tiff"} strings,
      * without the leading dot.</div>
      *

@@ -294,7 +294,7 @@ public class GridCoverage2D extends GridCoverage {
      * location than the image and will have the same size.
      *
      * @param  domain  the domain to complete. May be {@code null}.
-     * @param  data    user-supplied image, or {@code null} if missing.
+     * @param  data    user supplied image, or {@code null} if missing.
      * @return the potentially completed domain (may be {@code null}).
      */
     static GridGeometry addExtentIfAbsent(GridGeometry domain, final RenderedImage data) {
@@ -314,7 +314,7 @@ public class GridCoverage2D extends GridCoverage {
      * This verification should be done by the caller.</p>
      *
      * @param  domain  the domain to complete. May be {@code null}.
-     * @param  bounds  image or raster bounds (can not be {@code null}).
+     * @param  bounds  image or raster bounds (cannot be {@code null}).
      * @return the potentially completed domain (may be {@code null}).
      */
     static GridGeometry addExtentIfAbsent(GridGeometry domain, final Rectangle bounds) {
@@ -558,7 +558,7 @@ public class GridCoverage2D extends GridCoverage {
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
      * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
-     * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.
+     * @throws CannotEvaluateException if this method cannot produce the rendered image for another reason.
      *
      * @see BufferedImage#getSubimage(int, int, int, int)
      */
@@ -627,7 +627,7 @@ public class GridCoverage2D extends GridCoverage {
                     }
                     /*
                      * Workaround for https://bugs.openjdk.java.net/browse/JDK-8166038
-                     * If BufferedImage can not be used, fallback on ReshapedImage
+                     * If BufferedImage cannot be used, fallback on ReshapedImage
                      * at the cost of returning an image larger than necessary.
                      * This workaround can be removed on JDK17.
                      */

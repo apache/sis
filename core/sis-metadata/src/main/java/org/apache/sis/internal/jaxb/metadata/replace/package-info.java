@@ -22,7 +22,7 @@
  * <p>Some objects defined in various standards have overlapping functionalities.
  * For example the Metadata (ISO 19115), Referencing by Coordinates (ISO 19111),
  * Data Quality (ISO 19157) and Web Processing Service (WPS) standards all define their own parameter objects.
- * An other example is ISO 19115 defining basic referencing information, which is clearly ISO 19111 work.
+ * Another example is ISO 19115 defining basic referencing information, which is clearly ISO 19111 work.
  * GeoAPI tries to provide an uniform API by merging objects, or by omitting an object from one standard
  * in favor of the equivalent object of another standard. However at XML (un)marshalling time,
  * we still need to temporarily recreate the omitted object as defined in the original standard.

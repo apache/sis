@@ -67,7 +67,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * (e.g. for all temperature measurements in the same dataset), but this is not mandatory.
  *
  * <div class="note"><b>Design note:</b>
- * Such accuracy could be stored as an ordinary, independent, attribute (like an other column in a table),
+ * Such accuracy could be stored as an ordinary, independent, attribute (like another column in a table),
  * but storing accuracy as a {@linkplain #characteristics() characteristic} of the measurement attribute instead
  * provides the following advantages:
  *

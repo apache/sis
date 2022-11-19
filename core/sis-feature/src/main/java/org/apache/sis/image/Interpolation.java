@@ -116,7 +116,7 @@ public abstract class Interpolation {
      * we could interpolate if we knew that all index values, without exception (i.e. no index for missing values),
      * are related to measurements by a linear function. In practice it rarely happens, because there is usually
      * at least one index value reserved for missing values. Scientific data in SIS are usually stored as floating
-     * point type (with missing values mapped to NaN), which can not be associated to {@link IndexColorModel}.
+     * point type (with missing values mapped to NaN), which cannot be associated to {@link IndexColorModel}.
      * For now we do not try to perform a more sophisticated detection of which interpolations are allowed,
      * but a future SIS version may revisit this policy if needed.</div>
      *

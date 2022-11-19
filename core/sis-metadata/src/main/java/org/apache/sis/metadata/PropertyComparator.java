@@ -39,7 +39,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *       then this comparator complies to that order.</li>
  *   <li>Otherwise this comparator sorts mandatory methods first, followed by
  *       conditional methods, then optional ones.</li>
- *   <li>If the order can not be inferred from the above, then the comparator
+ *   <li>If the order cannot be inferred from the above, then the comparator
  *       fallbacks on alphabetical order.</li>
  * </ol>
  *
@@ -103,7 +103,7 @@ final class PropertyComparator implements Comparator<Method> {
             /*
              * We enter in this block only if the user specified its own metadata implementation and that
              * custom implementation does not have any JAXB @XmlType annotation. In such case this method
-             * can not sort the properties. So we will use the class defined by org.apache.sis.metadata.iso
+             * cannot sort the properties. So we will use the class defined by org.apache.sis.metadata.iso
              * instead.
              */
             implementation = standardImpl;
@@ -297,7 +297,7 @@ final class PropertyComparator implements Comparator<Method> {
      * by the property name {@code "title"}. We will perform this operation only if there is
      * at least 1 character after the prefix.
      *
-     * @param  name  the method name (can not be {@code null}).
+     * @param  name  the method name (cannot be {@code null}).
      * @param  base  must be the result of {@code prefix(name).length()}.
      * @return the property name (never {@code null}).
      */

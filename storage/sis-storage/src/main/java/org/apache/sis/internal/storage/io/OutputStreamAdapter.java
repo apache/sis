@@ -97,7 +97,7 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
     /**
      * Resets this stream to the position at the time the {@code mark} method was last called.
      *
-     * @throws IOException if this stream can not move to the last mark position.
+     * @throws IOException if this stream cannot move to the last mark position.
      */
     @Override
     public void reset() throws IOException {
@@ -108,7 +108,7 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
      * Moves to the given position in the stream and discards all marks at or after that position.
      *
      * @param  mark  position where to seek.
-     * @throws IOException if this stream can not move to the specified mark position.
+     * @throws IOException if this stream cannot move to the specified mark position.
      */
     @Override
     public void reset(final long mark) throws IOException {
@@ -119,7 +119,7 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
      * Returns the current byte position of the stream.
      *
      * @return the position of the stream.
-     * @throws IOException if the position can not be obtained.
+     * @throws IOException if the position cannot be obtained.
      */
     @Override
     public long getStreamPosition() throws IOException {

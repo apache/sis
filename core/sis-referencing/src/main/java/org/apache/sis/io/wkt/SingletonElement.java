@@ -54,7 +54,7 @@ final class SingletonElement extends AbstractSet<Element> {
     }
 
     /**
-     * Returns the number of elements in this set, which can not be greater than 1.
+     * Returns the number of elements in this set, which cannot be greater than 1.
      */
     @Override
     public int size() {

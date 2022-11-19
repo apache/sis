@@ -73,7 +73,7 @@ import org.apache.sis.util.Debug;
  * An important aspect of sample dimensions is the {@linkplain #getBackground() background value}.
  * It defines how to initialize an empty image or canvas with respect to the sample definition.
  * It can be thought as the value for "lack of data" (fill value, no-data, missing value) category
- * when the missing value can not be categorized more precisely (cloud, instrument error, <i>etc</i>).
+ * when the missing value cannot be categorized more precisely (cloud, instrument error, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
@@ -244,7 +244,7 @@ public class SampleDimension implements Serializable {
      * then the "no data values" are NaN values.
      *
      * @return the values to indicate no data values for this sample dimension, or an empty set if none.
-     * @throws IllegalStateException if this method can not expand the range of no data values, for example
+     * @throws IllegalStateException if this method cannot expand the range of no data values, for example
      *         because some ranges contain an infinite amount of values.
      *
      * @see #allowsNaN()
@@ -350,7 +350,7 @@ public class SampleDimension implements Serializable {
      * For a more generic transfer function, see {@link #getTransferFunction()}.
      *
      * @return a description of the part of the transfer function working on real numbers.
-     * @throws IllegalStateException if the transfer function can not be simplified in a form representable
+     * @throws IllegalStateException if the transfer function cannot be simplified in a form representable
      *         by {@link TransferFunction}.
      */
     public Optional<TransferFunction> getTransferFunctionFormula() {
@@ -504,8 +504,8 @@ public class SampleDimension implements Serializable {
      * <ul>
      *   <li>An optional name for the {@code SampleDimension}.</li>
      *   <li>A single optional category for the background value.</li>
-     *   <li>An arbitrary amount of <cite>qualitative</cite> categories.</li>
-     *   <li>An arbitrary amount of <cite>quantitative</cite> categories.</li>
+     *   <li>An arbitrary number of <cite>qualitative</cite> categories.</li>
+     *   <li>An arbitrary number of <cite>quantitative</cite> categories.</li>
      * </ul>
      *
      * <p>A <cite>qualitative category</cite> is a range of sample values associated to a label.
@@ -779,7 +779,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -801,7 +801,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -822,7 +822,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -843,7 +843,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -863,7 +863,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -890,7 +890,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -917,7 +917,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * <div class="note"><b>Implementation note:</b>
@@ -943,7 +943,7 @@ public class SampleDimension implements Serializable {
          *
          * <div class="note"><b>Usage note:</b>
          * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
-         * when the aim is to define a default "no data" category to use when the missing value can not
+         * when the aim is to define a default "no data" category to use when the missing value cannot
          * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,

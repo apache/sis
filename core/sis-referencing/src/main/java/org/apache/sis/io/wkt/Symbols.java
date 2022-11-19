@@ -263,7 +263,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The {@code WKTFormat.getLocale(Locale.DISPLAY)} property specifies the language to use when
      * formatting {@link org.opengis.util.InternationalString} instances and can be set to any value.
      * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
-     * the decimal format symbols and is very rarely set to an other locale than {@code Locale.ROOT}.
+     * the decimal format symbols and is very rarely set to another locale than {@code Locale.ROOT}.
      *
      * @return the locale for dates and numbers.
      *
@@ -605,7 +605,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *   <li>The search is case-insensitive.</li>
      *   <li>Characters between {@linkplain #getOpeningQuote(int) opening quotes} and
      *       {@linkplain #getClosingQuote(int) closing quotes} are ignored.</li>
-     *   <li>The element found in the given WKT can not be preceded by other
+     *   <li>The element found in the given WKT cannot be preceded by other
      *       {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier characters}.</li>
      *   <li>The element found in the given WKT must be followed, ignoring space, by an
      *       {@linkplain #getOpeningBracket(int) opening bracket}.</li>

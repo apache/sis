@@ -255,7 +255,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  text       the Well-Known Text (WKT) to parse.
      * @param  position   index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object.
-     * @throws ParseException if the string can not be parsed.
+     * @throws ParseException if the string cannot be parsed.
      */
     @Override
     final Object createFromWKT(final String text, final ParsePosition position) throws ParseException {
@@ -300,7 +300,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  element  the element to be parsed.
      * @return the parsed object.
-     * @throws ParseException if the element can not be parsed.
+     * @throws ParseException if the element cannot be parsed.
      */
     @Override
     final Object buildFromTree(final Element element) throws ParseException {
@@ -337,7 +337,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  element    the parent element.
      * @param  mandatory  {@code true} if a CRS must be present, or {@code false} if optional.
      * @return the next element as a {@code CoordinateReferenceSystem} object.
-     * @throws ParseException if the next element can not be parsed.
+     * @throws ParseException if the next element cannot be parsed.
      */
     private CoordinateReferenceSystem parseCoordinateReferenceSystem(final Element element, final boolean mandatory)
             throws ParseException
@@ -367,7 +367,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode     {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  keyword  "SourceCRS", "TargetCRS" or "InterpolationCRS".
      * @return the coordinate reference system, or {@code null} if none.
-     * @throws ParseException if the CRS can not be parsed.
+     * @throws ParseException if the CRS cannot be parsed.
      */
     private CoordinateReferenceSystem parseCoordinateReferenceSystem(final Element parent, final int mode,
             final String keyword) throws ParseException
@@ -411,7 +411,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  name      the name of the parent object being parsed.
      * @param  fallback  the fallback to use if {@code name} is empty.
      * @return a properties map with the parent name and the optional authority code.
-     * @throws ParseException if an element can not be parsed.
+     * @throws ParseException if an element cannot be parsed.
      *
      * @see #parseParametersAndClose(Element, String, OperationMethod)
      */
@@ -472,7 +472,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         /*
          * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
-         * but our parser accepts an arbitrary amount of some kinds of metadata. They can be recognized by the
+         * but our parser accepts an arbitrary number of some kinds of metadata. They can be recognized by the
          * `while` loop.
          *
          * Most WKT do not contain any of those metadata, so we perform an `isEmpty()` check as an optimization
@@ -597,7 +597,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  keyword   the unit keyword (e.g. {@code "LengthUnit"} or {@code "AngleUnit"}).
      * @param  baseUnit  the base unit, usually {@code Units.METRE} or {@code Units.RADIAN}.
      * @return the {@code "UNIT"} element as an {@link Unit} object, or {@code null} if none.
-     * @throws ParseException if the {@code "UNIT"} can not be parsed.
+     * @throws ParseException if the {@code "UNIT"} cannot be parsed.
      *
      * @see #parseUnit(Element)
      *
@@ -693,8 +693,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
      * @param  datum        the datum of the enclosing CRS, or {@code null} if unknown.
      * @return the {@code "CS"}, {@code "UNIT"} and/or {@code "AXIS"} elements as a Coordinate System, or {@code null}.
-     * @throws ParseException if an element can not be parsed.
-     * @throws FactoryException if the factory can not create the coordinate system.
+     * @throws ParseException if an element cannot be parsed.
+     * @throws FactoryException if the factory cannot create the coordinate system.
      */
     private CoordinateSystem parseCoordinateSystem(final Element parent, String type, int dimension,
             final boolean isWKT1, final Unit<?> defaultUnit, final Datum datum) throws ParseException, FactoryException
@@ -788,7 +788,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.LengthUnit);
                     }
-                    if (is3D) {  // If dimension can not be 2, then CRS can not be Projected.
+                    if (is3D) {  // If dimension cannot be 2, then CRS cannot be Projected.
                         return Legacy.standard(defaultUnit);
                     }
                     nx = AxisNames.EASTING;  x = "E";
@@ -848,7 +848,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                             z  = "D";
                         } else if (vt == VerticalDatumTypes.ELLIPSOIDAL) {
                             // Not allowed by ISO 19111 as a standalone axis, but SIS is
-                            // tolerant to this case since it is sometime hard to avoid.
+                            // tolerant to this case since it is sometimes hard to avoid.
                             nz = AxisNames.ELLIPSOIDAL_HEIGHT;
                         }
                     }
@@ -879,7 +879,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     break;
                 }
                 /*
-                 * Unknown CS type — we can not guess which axes to create.
+                 * Unknown CS type — we cannot guess which axes to create.
                  */
                 default: {
                     throw parent.missingComponent(WKTKeywords.Axis);
@@ -1005,7 +1005,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
      * @return the {@code "AXIS"} element as a {@link CoordinateSystemAxis} object,
      *         or {@code null} if the axis was not required and there are no axis objects.
-     * @throws ParseException if the {@code "AXIS"} element can not be parsed.
+     * @throws ParseException if the {@code "AXIS"} element cannot be parsed.
      */
     private CoordinateSystemAxis parseAxis(final int mode, final Element parent, final String csType,
             final Unit<?> defaultUnit) throws ParseException
@@ -1142,7 +1142,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  isWKT1       {@code true} if this method is invoked while parsing a WKT 1 element.
      * @param  angularUnit  the contextual unit.
      * @return the {@code "PrimeMeridian"} element as a {@link PrimeMeridian} object.
-     * @throws ParseException if the {@code "PrimeMeridian"} element can not be parsed.
+     * @throws ParseException if the {@code "PrimeMeridian"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#formatTo(Formatter)
      */
@@ -1184,7 +1184,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent  the parent element.
      * @return the {@code "TOWGS84"} element as a {@link org.apache.sis.referencing.datum.BursaWolfParameters} object,
      *         or {@code null} if no {@code "TOWGS84"} has been found.
-     * @throws ParseException if the {@code "TOWGS84"} can not be parsed.
+     * @throws ParseException if the {@code "TOWGS84"} cannot be parsed.
      */
     private Object parseToWGS84(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ToWGS84);
@@ -1217,7 +1217,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "Ellipsoid"} element as an {@link Ellipsoid} object.
-     * @throws ParseException if the {@code "Ellipsoid"} element can not be parsed.
+     * @throws ParseException if the {@code "Ellipsoid"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#formatTo(Formatter)
      */
@@ -1253,7 +1253,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode       {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent     the parent element.
      * @param  method     the operation method, or {@code null} if unknown.
-     * @throws ParseException if the {@code "GeodeticCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "GeodeticCRS"} element cannot be parsed.
      */
     private SingleCRS parseBaseCRS(final int mode, final Element parent, final OperationMethod method)
             throws ParseException
@@ -1277,7 +1277,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent    the parent element.
      * @param  keywords  the element keywords.
      * @return the operation method.
-     * @throws ParseException if the {@code "Method"} element can not be parsed.
+     * @throws ParseException if the {@code "Method"} element cannot be parsed.
      */
     private OperationMethod parseMethod(final Element parent, final String... keywords) throws ParseException {
         final Element element    = parent.pullElement(MANDATORY, keywords);
@@ -1331,7 +1331,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  defaultUnit         the unit (usually linear) of the parent element, or {@code null}.
      * @param  defaultAngularUnit  the angular unit of the sibling {@code GeographicCRS} element, or {@code null}.
      * @return the {@code "Method"} element and its parameters as a defining conversion.
-     * @throws ParseException if the {@code "Method"} element can not be parsed.
+     * @throws ParseException if the {@code "Method"} element cannot be parsed.
      */
     private Conversion parseDerivingConversion(final int mode, Element parent, final String wrapper,
             final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
@@ -1400,7 +1400,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent    the parent element.
      * @param  meridian  the prime meridian, or {@code null} for Greenwich.
      * @return the {@code "Datum"} element as a {@link GeodeticDatum} object.
-     * @throws ParseException if the {@code "Datum"} element can not be parsed.
+     * @throws ParseException if the {@code "Datum"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#formatTo(Formatter)
      */
@@ -1441,7 +1441,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent  the parent element.
      * @param  isWKT1  {@code true} if the parent is a WKT 1 element.
      * @return the {@code "VerticalDatum"} element as a {@link VerticalDatum} object.
-     * @throws ParseException if the {@code "VerticalDatum"} element can not be parsed.
+     * @throws ParseException if the {@code "VerticalDatum"} element cannot be parsed.
      */
     private VerticalDatum parseVerticalDatum(final int mode, final Element parent, final boolean isWKT1)
             throws ParseException
@@ -1479,7 +1479,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "TimeDatum"} element as a {@link TemporalDatum} object.
-     * @throws ParseException if the {@code "TimeDatum"} element can not be parsed.
+     * @throws ParseException if the {@code "TimeDatum"} element cannot be parsed.
      */
     private TemporalDatum parseTimeDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.TimeDatum, WKTKeywords.TDatum);
@@ -1508,7 +1508,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "ParametricDatum"} element as a {@code ParametricDatum} object.
-     * @throws ParseException if the {@code "ParametricDatum"} element can not be parsed.
+     * @throws ParseException if the {@code "ParametricDatum"} element cannot be parsed.
      */
     private Datum parseParametricDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ParametricDatum, WKTKeywords.PDatum);
@@ -1540,7 +1540,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent  the parent element.
      * @param  isWKT1  {@code true} if the parent is a WKT 1 element.
      * @return the {@code "EngineeringDatum"} element as an {@link EngineeringDatum} object.
-     * @throws ParseException if the {@code "EngineeringDatum"} element can not be parsed.
+     * @throws ParseException if the {@code "EngineeringDatum"} element cannot be parsed.
      */
     private EngineeringDatum parseEngineeringDatum(final int mode, final Element parent, final boolean isWKT1) throws ParseException {
         final Element element = parent.pullElement(mode,
@@ -1569,7 +1569,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "ImageDatum"} element as an {@link ImageDatum} object.
-     * @throws ParseException if the {@code "ImageDatum"} element can not be parsed.
+     * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
     private ImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
@@ -1601,7 +1601,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent     the parent element.
      * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
      * @return the {@code "EngineeringCRS"} element as an {@link EngineeringCRS} object.
-     * @throws ParseException if the {@code "EngineeringCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "EngineeringCRS"} element cannot be parsed.
      */
     private SingleCRS parseEngineeringCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
@@ -1674,7 +1674,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
-     * @throws ParseException if the {@code "ImageCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "ImageCRS"} element cannot be parsed.
      */
     private ImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
@@ -1719,7 +1719,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  csType     the default coordinate system type, or {@code null} if unknown.
      *                    Should be non-null only when parsing a {@link GeneralDerivedCRS#getBaseCRS()} component.
      * @return the {@code "GeodeticCRS"} element as a {@link GeographicCRS} or {@link GeocentricCRS} object.
-     * @throws ParseException if the {@code "GeodeticCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "GeodeticCRS"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS#formatTo(Formatter)
      * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS#formatTo(Formatter)
@@ -1886,7 +1886,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent     the parent element.
      * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
      * @return the {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
-     * @throws ParseException if the {@code "VerticalCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "VerticalCRS"} element cannot be parsed.
      */
     @SuppressWarnings("null")
     private SingleCRS parseVerticalCRS(final int mode, final Element parent, final boolean isBaseCRS)
@@ -1940,7 +1940,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 }
                 /*
                  * The `parseVerticalDatum(…)` method may have been unable to resolve the datum type.
-                 * But sometime the axis (which was not available when we created the datum) provides
+                 * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
                 if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
@@ -1973,7 +1973,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent     the parent element.
      * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
      * @return the {@code "TimeCRS"} element as a {@link TemporalCRS} object.
-     * @throws ParseException if the {@code "TimeCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "TimeCRS"} element cannot be parsed.
      */
     private SingleCRS parseTimeCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
@@ -2034,7 +2034,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent     the parent element.
      * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
      * @return the {@code "ParametricCRS"} object.
-     * @throws ParseException if the {@code "ParametricCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "ParametricCRS"} element cannot be parsed.
      */
     private SingleCRS parseParametricCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
@@ -2103,7 +2103,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent     the parent element.
      * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
      * @return the {@code "ProjectedCRS"} element as a {@link ProjectedCRS} object.
-     * @throws ParseException if the {@code "ProjectedCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "ProjectedCRS"} element cannot be parsed.
      */
     private ProjectedCRS parseProjectedCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
@@ -2187,7 +2187,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "CompoundCRS"} element as a {@link CompoundCRS} object.
-     * @throws ParseException if the {@code "CompoundCRS"} element can not be parsed.
+     * @throws ParseException if the {@code "CompoundCRS"} element cannot be parsed.
      */
     private CoordinateReferenceSystem parseCompoundCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.CompoundCRS, WKTKeywords.Compd_CS);
@@ -2220,7 +2220,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "FITTED_CS"} element as a {@link CompoundCRS} object.
-     * @throws ParseException if the {@code "COMPD_CS"} element can not be parsed.
+     * @throws ParseException if the {@code "COMPD_CS"} element cannot be parsed.
      */
     private DerivedCRS parseFittedCS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.Fitted_CS);
@@ -2258,7 +2258,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
             /*
              * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
-             * This coordinate system can not be easily constructed from the information provided by
+             * This coordinate system cannot be easily constructed from the information provided by
              * the WKT 1 format, which block us from using the standard Coordinate System factory.
              * Note that we do not know which name to give to the conversion method; for now we use the CRS name.
              */
@@ -2275,7 +2275,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "GeogTran"} element as a {@link CoordinateOperation} object.
-     * @throws ParseException if the {@code "GeogTran"} element can not be parsed.
+     * @throws ParseException if the {@code "GeogTran"} element cannot be parsed.
      */
     private CoordinateOperation parseGeogTranslation(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.GeogTran);
@@ -2302,7 +2302,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "CoordinateOperation"} element as a {@link CoordinateOperation} object.
-     * @throws ParseException if the {@code "CoordinateOperation"} element can not be parsed.
+     * @throws ParseException if the {@code "CoordinateOperation"} element cannot be parsed.
      */
     private CoordinateOperation parseOperation(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.CoordinateOperation);
@@ -2336,7 +2336,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  name    the name of the parent object being parsed.
      * @param  method  the operation method, also the fallback to use if {@code name} is empty.
      * @return a properties map with the parent name, the optional authority code and the parameters.
-     * @throws ParseException if an element can not be parsed.
+     * @throws ParseException if an element cannot be parsed.
      *
      * @see #parseMetadataAndClose(Element, String, IdentifiedObject)
      */

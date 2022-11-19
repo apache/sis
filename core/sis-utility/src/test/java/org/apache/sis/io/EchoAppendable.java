@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 /**
  * An {@link Appendable} that forward all output to two {@code Appendable}s.
- * This writer can be used for performing an exact copy of what is sent to an other writer.
+ * This writer can be used for performing an exact copy of what is sent to another writer.
  * For example, it may be used for echoing to the standard output the content sent to a file.
  * This writer is useful for debugging purpose.
  *

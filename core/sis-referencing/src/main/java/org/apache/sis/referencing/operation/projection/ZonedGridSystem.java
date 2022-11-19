@@ -54,7 +54,7 @@ import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercat
  *
  * <p>This map projection is not suitable for geometric calculations like distances and angles,
  * since there is discontinuities (gaps) between zones. Actually this operation is not handled
- * as a map projection by Apache SIS, as can been seen from the different class hierarchy.</p>
+ * as a map projection by Apache SIS, as can be seen from the different class hierarchy.</p>
  *
  * <div class="note"><b>Note:</b>
  * current implementation can only be backed by the Transverse Mercator projection,
@@ -171,7 +171,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException if the coordinates can not be converted.
+     * @throws TransformException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

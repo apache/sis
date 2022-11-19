@@ -115,7 +115,7 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * library (map projections, <i>etc.</i>) aims for an one centimetre accuracy anyway.
  *
  * <h2>Limitations</h2>
- * Current implementation can not compute the geodesics in some cases.
+ * Current implementation cannot compute the geodesics in some cases.
  * In particular, calculation may fail for antipodal points on an ellipsoid.
  * Karney's algorithm should cover those cases,
  * but this {@code GeodeticCalculator} implementation may not be sufficiently tuned.
@@ -386,7 +386,7 @@ public class GeodeticCalculator {
      *
      * @return the starting point represented in the CRS specified at construction time.
      * @throws IllegalStateException if the start point has not yet been specified.
-     * @throws GeodeticException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
+     * @throws GeodeticException if the coordinates cannot be transformed to {@linkplain #getPositionCRS() position CRS}.
      *
      * @see #getEndPoint()
      */
@@ -407,7 +407,7 @@ public class GeodeticCalculator {
      * the CRS specified at construction time.
      *
      * @param  point  the starting point in any coordinate reference system.
-     * @throws IllegalArgumentException if the given coordinates can not be transformed.
+     * @throws IllegalArgumentException if the given coordinates cannot be transformed.
      *
      * @see #setEndPoint(Position)
      */
@@ -452,7 +452,7 @@ public class GeodeticCalculator {
      *
      * @return the destination (end point) represented in the CRS specified at construction time.
      * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
-     * @throws GeodeticException if the coordinates can not be computed.
+     * @throws GeodeticException if the coordinates cannot be computed.
      *
      * @see #getStartPoint()
      */
@@ -474,7 +474,7 @@ public class GeodeticCalculator {
      * the CRS specified at construction time.
      *
      * @param  position  the destination (end point) in any coordinate reference system.
-     * @throws IllegalArgumentException if the given coordinates can not be transformed.
+     * @throws IllegalArgumentException if the given coordinates cannot be transformed.
      *
      * @see #setStartPoint(Position)
      */
@@ -519,7 +519,7 @@ public class GeodeticCalculator {
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
      * @throws IllegalStateException if the end point, azimuth or distance have not been set.
-     * @throws GeodeticException if the azimuth can not be computed.
+     * @throws GeodeticException if the azimuth cannot be computed.
      */
     public double getStartingAzimuth() {
         if (isInvalid(STARTING_AZIMUTH)) {
@@ -557,7 +557,7 @@ public class GeodeticCalculator {
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
      * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
-     * @throws GeodeticException if the azimuth can not be computed.
+     * @throws GeodeticException if the azimuth cannot be computed.
      */
     public double getEndingAzimuth() {
         if (isInvalid(ENDING_AZIMUTH)) {
@@ -576,7 +576,7 @@ public class GeodeticCalculator {
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
      * @throws IllegalStateException if the start point or end point has not been set.
-     * @throws GeodeticException if the azimuth can not be computed.
+     * @throws GeodeticException if the azimuth cannot be computed.
      */
     public double getConstantAzimuth() {
         if (isInvalid(RHUMBLINE_LENGTH)) {
@@ -586,14 +586,14 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Returns or computes the shortest distance from start point to end point. This is sometime called "great circle"
+     * Returns or computes the shortest distance from start point to end point. This is sometimes called "great circle"
      * or "orthodromic" distance. This method returns the value given in last call to {@link #setGeodesicDistance(double)},
      * unless the {@link #setEndPoint(Position) setEndPoint(…)} method has been invoked more recently. In the latter case,
      * the distance will be computed from the {@linkplain #getStartPoint() start point} and current end point.
      *
      * @return the shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.
      * @throws IllegalStateException if the start point or end point has not been set.
-     * @throws GeodeticException if the distance can not be computed.
+     * @throws GeodeticException if the distance cannot be computed.
      *
      * @see #getDistanceUnit()
      */
@@ -622,7 +622,7 @@ public class GeodeticCalculator {
 
     /**
      * Returns or computes the length of rhumb line (part of constant heading) from start point to end point.
-     * This is sometime called "loxodrome". This is <strong>not</strong> the shortest path between two points.
+     * This is sometimes called "loxodrome". This is <strong>not</strong> the shortest path between two points.
      * The rhumb line distance may be up to 50% longer than the geodesic distance.
      *
      * @return length of rhumb line in the unit of measurement given by {@link #getDistanceUnit()}.
@@ -723,7 +723,7 @@ public class GeodeticCalculator {
      * </ul>
      *
      * @throws IllegalStateException if the distance or azimuth has not been set.
-     * @throws GeodeticException if an azimuth or the distance can not be computed.
+     * @throws GeodeticException if an azimuth or the distance cannot be computed.
      */
     void computeDistance() {
         canComputeDistance();
@@ -774,7 +774,7 @@ public class GeodeticCalculator {
      * spherical formulas. Subclasses should override if they can provide ellipsoidal formulas.</p>
      *
      * @throws IllegalStateException if the start point, azimuth or distance has not been set.
-     * @throws GeodeticException if the end point or ending azimuth can not be computed.
+     * @throws GeodeticException if the end point or ending azimuth cannot be computed.
      */
     void computeEndPoint() {
         canComputeEndPoint();                   // May throw IllegalStateException.
@@ -805,7 +805,7 @@ public class GeodeticCalculator {
      * some of them will need to be specified again.
      *
      * @see #setStartGeographicPoint(double, double)
-     * @throws GeodeticException if the end point or ending azimuth can not be computed.
+     * @throws GeodeticException if the end point or ending azimuth cannot be computed.
      */
     public void moveToEndPoint() {
         if (isInvalid(END_POINT)) {
@@ -852,7 +852,7 @@ public class GeodeticCalculator {
      *                    This is approximate; the actual errors may vary around that value.
      * @return an approximation of geodesic track as Bézier curves in a Java2D object.
      * @throws IllegalStateException if some required properties have not been specified.
-     * @throws GeodeticException if some coordinates can not be computed.
+     * @throws GeodeticException if some coordinates cannot be computed.
      */
     public Shape createGeodesicPath2D(final double tolerance) {
         ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
@@ -901,7 +901,7 @@ public class GeodeticCalculator {
      *                    This is approximate; the actual errors may vary around that value.
      * @return an approximation of circular region as a Java2D object.
      * @throws IllegalStateException if some required properties have not been specified.
-     * @throws GeodeticException if some coordinates can not be computed.
+     * @throws GeodeticException if some coordinates cannot be computed.
      */
     public Shape createGeodesicCircle2D(final double tolerance) {
         ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
@@ -967,7 +967,7 @@ public class GeodeticCalculator {
          * derivative (∂y/∂x) in the {@linkplain #dx dx} and {@linkplain #dy dy} fields.
          *
          * @param  t  desired point on the curve, from 0 (start point) to 1 (end point) inclusive.
-         * @throws TransformException if the point coordinates can not be computed.
+         * @throws TransformException if the point coordinates cannot be computed.
          */
         @Override
         protected void evaluateAt(final double t) throws TransformException {
@@ -1055,7 +1055,7 @@ public class GeodeticCalculator {
          * in the {@link #point} array and the derivative (∂y/∂x) in the {@linkplain #dx dx} and {@linkplain #dy dy} fields.
          *
          * @param  t  angle fraction from 0 to 1 inclusive.
-         * @throws TransformException if the point coordinates can not be computed.
+         * @throws TransformException if the point coordinates cannot be computed.
          */
         @Override
         protected void evaluateAt(final double t) throws TransformException {
@@ -1173,7 +1173,7 @@ public class GeodeticCalculator {
      * @return transform from {@linkplain #getPositionCRS() position CRS} to <cite>Azimuthal Equidistant</cite>
      *         projected CRS centered on current {@linkplain #getStartPoint() start point}.
      * @throws IllegalStateException if the start point has not been set.
-     * @throws GeodeticException if the projection can not be computed.
+     * @throws GeodeticException if the projection cannot be computed.
      *
      * @see #moveToEndPoint()
      * @see org.apache.sis.referencing.operation.projection.AzimuthalEquidistant

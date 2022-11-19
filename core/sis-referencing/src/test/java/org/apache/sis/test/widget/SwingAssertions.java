@@ -38,7 +38,7 @@ public final strictfp class SwingAssertions {
     }
 
     /**
-     * Ensures that a tree is equal to an other tree.
+     * Ensures that a tree is equal to another tree.
      * This method invokes itself recursively for every child nodes.
      *
      * @param  expected  the expected tree, or {@code null}.

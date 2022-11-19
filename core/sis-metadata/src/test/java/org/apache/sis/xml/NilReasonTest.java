@@ -41,7 +41,7 @@ public final strictfp class NilReasonTest extends TestCase {
     /**
      * Tests the {@link NilReason#valueOf(String)} method on constants.
      *
-     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
+     * @throws URISyntaxException if a test URI cannot be parsed (should not happen).
      */
     @Test
     public void testValueOfConstant() throws URISyntaxException {
@@ -58,7 +58,7 @@ public final strictfp class NilReasonTest extends TestCase {
     /**
      * Tests the {@link NilReason#valueOf(String)} method on "other".
      *
-     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
+     * @throws URISyntaxException if a test URI cannot be parsed (should not happen).
      */
     @Test
     public void testValueOfOther() throws URISyntaxException {
@@ -79,7 +79,7 @@ public final strictfp class NilReasonTest extends TestCase {
     /**
      * Tests the {@link NilReason#valueOf(String)} method on a URI.
      *
-     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
+     * @throws URISyntaxException if a test URI cannot be parsed (should not happen).
      */
     @Test
     public void testValueOfURI() throws URISyntaxException {

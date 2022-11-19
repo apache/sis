@@ -348,12 +348,12 @@ public abstract strictfp class FeatureTestCase extends TestCase {
                 false, null, DefaultAttributeTypeTest.universities()));
         /*
          * The value below is an instance of Collection<String>. But as of Java 8, the <String> parameterized type
-         * can not be verified at runtime. The best check we can have is Collection<?>, which does not allow addition
+         * cannot be verified at runtime. The best check we can have is Collection<?>, which does not allow addition
          * of new values.
          */
         Collection<?> values = (Collection<?>) feature.getPropertyValue("universities");
         assertTrue("isEmpty", values.isEmpty());
-        // Can not perform values.add("something") here.
+        // Cannot perform values.add("something") here.
 
         feature.setPropertyValue("universities", Arrays.asList("UCAR", "Marie-Curie"));
         values = (Collection<?>) feature.getPropertyValue("universities");

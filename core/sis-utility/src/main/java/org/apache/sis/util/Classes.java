@@ -152,7 +152,7 @@ public final class Classes extends Static {
      * </ul>
      *
      * This method is used for fetching the type of elements in a collection.
-     * This information can not be obtained from a {@link Class} instance
+     * This information cannot be obtained from a {@link Class} instance
      * because of the way parameterized types are implemented in Java (by erasure).
      *
      * <h4>Examples</h4>
@@ -161,7 +161,7 @@ public final class Classes extends Static {
      *   <li>{@code Map<String,Number>}: returns {@code String.class}, the type of keys.</li>
      *   <li>{@code Set<Number>}: returns {@code Number.class}.</li>
      *   <li>{@code Set<? extends Number>}: returns {@code Number.class} as well,
-     *       because that collection can not contain instances of super-classes.
+     *       because that collection cannot contain instances of super-classes.
      *       {@code Number} is the <cite>upper bound</cite>.</li>
      *   <li>{@code Set<? super Number>}: returns {@code Object.class},
      *       because that collection is allowed to contain such elements.</li>
@@ -186,7 +186,7 @@ public final class Classes extends Static {
      * See {@link #boundOfParameterizedProperty(Field)} javadoc for details.
      *
      * <p>This method is used for fetching the type of elements in a collection.
-     * This information can not be obtained from a {@link Class} instance
+     * This information cannot be obtained from a {@link Class} instance
      * because of the way parameterized types are implemented in Java (by erasure).</p>
      *
      * @param  method  the getter or setter method for which to obtain the parameterized type.
@@ -227,10 +227,10 @@ public final class Classes extends Static {
      *   <li>{@code Long.class}: returns {@code null} because that type is not parameterized.</li>
      * </ul>
      *
-     * This method is used as a fallback when {@code boundOfParameterizedProperty(…)} can not be used.
+     * This method is used as a fallback when {@code boundOfParameterizedProperty(…)} cannot be used.
      *
      * @param  typeOrMethod  the {@link Class} or {@link Method} from which to get the bounds of its parameter.
-     * @return the upper bound of parameterized class or method, or {@code null} if this method can not identify
+     * @return the upper bound of parameterized class or method, or {@code null} if this method cannot identify
      *         a single parameterized type to return.
      *
      * @see #boundOfParameterizedProperty(Field)
@@ -428,7 +428,7 @@ public final class Classes extends Static {
      *       {@link Class#getInterfaces()}).</li>
      *   <li>Because arrays in Java are covariant, while the {@code Set} are not.
      *       Consequently callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
-     *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
+     *       while they cannot cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
      *
      * See {@link #getInterfaceSet(Class, Set)} javadoc for a note about elements order.
@@ -550,7 +550,7 @@ next:       for (final Class<?> candidate : candidates) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         /*
-         * Removes every classes in the types collection which are assignable from an other
+         * Removes every classes in the types collection which are assignable from another
          * class from the same collection. As a result, the collection should contain only
          * leaf classes.
          */
@@ -652,7 +652,7 @@ next:       for (final Class<?> candidate : candidates) {
         interfaces.retainAll(buffer);
         for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
-            buffer.clear();     // Safe because the buffer can not be Collections.EMPTY_SET at this point.
+            buffer.clear();     // Safe because the buffer cannot be Collections.EMPTY_SET at this point.
             getInterfaceSet(candidate, buffer);
             if (interfaces.removeAll(buffer)) {
                 it = interfaces.iterator();
@@ -714,7 +714,7 @@ cmp:    for (final Class<?> c : c1) {
      * Returns the name of the given class without package name, but including the names of enclosing
      * classes if any. This method is similar to the {@link Class#getSimpleName()} method, except that
      * if the given class is an inner class, then the returned value is prefixed with the outer class
-     * name. An other difference is that if the given class is local or anonymous, then this method
+     * name. Another difference is that if the given class is local or anonymous, then this method
      * returns the name of the parent class.
      *
      * <p>The following table compares the various kind of names for some examples:</p>

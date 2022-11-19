@@ -140,7 +140,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
 
     /**
      * Returns {@code true} if either {@link #count} or {@link #offset} is set.
-     * In such case, we can not continue to build the SQL statement because the
+     * In such case, we cannot continue to build the SQL statement because the
      * {@code OFFSET ... FETCH NEXT} clauses in SQL are executed last.
      * Consequently in order to have consistent results, the {@link #offset(long)} and
      * {@link #limit(long)} methods need to be the last methods invoked on this stream.
@@ -161,7 +161,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         if (predicate == Filter.exclude()) return empty();
         if (isPagined()) {
             /*
-             * Offset/limit executed before the filter. Can not continue to build an SQL statement
+             * Offset/limit executed before the filter. Cannot continue to build an SQL statement
              * because the SQL `OFFSET ... FETCH NEXT` clause would be executed after the filter.
              */
             return delegate().filter(predicate);
@@ -187,7 +187,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
             if (filter == Filter.include()) continue;
             if (filter == Filter.exclude()) return empty();
             if (!selection.tryAppend(filterToSQL, filter)) {
-                // Delegate to Java code all filters that we can not translate to SQL statement.
+                // Delegate to Java code all filters that we cannot translate to SQL statement.
                 stream = super.filter(filter);
                 hasPredicates = true;
             }
@@ -305,7 +305,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
     public long count() {
         /*
          * If at least one filter is implemented by Java code (i.e. has not been translated to SQL statement),
-         * then we can not count using SQL only. We have to rely on the more costly default implementation.
+         * then we cannot count using SQL only. We have to rely on the more costly default implementation.
          */
         if (hasPredicates || count != 0) {
             return super.count();

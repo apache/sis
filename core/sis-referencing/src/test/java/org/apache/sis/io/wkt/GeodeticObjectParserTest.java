@@ -815,7 +815,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * Tests parsing a WKT with a missing Geographic CRS name.
      * This should be considered invalid, but happen in practice.
      *
-     * <p>The WKT tested in this method contains also some other oddities compared to the usual WKT:</p>
+     * <p>The WKT tested in this method also contains some other oddities compared to the usual WKT:</p>
      * <ul>
      *   <li>The prime meridian is declared in the {@code "central_meridian"} projection parameter instead
      *       than in the {@code PRIMEM[…]} element.</li>

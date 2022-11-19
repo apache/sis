@@ -296,7 +296,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  coordinate  coordinate in this {@code TiledGridCoverage} domain.
      * @param  dimension   dimension of the coordinate.
      * @return coordinate in this {@code TiledGridCoverage} as if no subsampling was applied.
-     * @throws ArithmeticException if the coordinate can not be represented as a long integer.
+     * @throws ArithmeticException if the coordinate cannot be represented as a long integer.
      */
     private long toFullResolution(final long coordinate, final int dimension) {
         return addExact(multiplyExact(coordinate, subsampling[dimension]), subsamplingOffsets[dimension]);
@@ -309,7 +309,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  coordinate  coordinate in the {@code TiledGridResource} domain.
      * @param  dimension   dimension of the coordinate.
      * @return coordinates in this subsampled {@code TiledGridCoverage} domain.
-     * @throws ArithmeticException if the coordinate can not be represented as a long integer.
+     * @throws ArithmeticException if the coordinate cannot be represented as a long integer.
      */
     private long toSubsampledPixel(final long coordinate, final int dimension) {
         return floorDiv(subtractExact(coordinate, subsamplingOffsets[dimension]), subsampling[dimension]);
@@ -324,7 +324,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  coordinate  coordinates in this {@code TiledGridCoverage} domain.
      * @param  dimension   dimension of the coordinate.
      * @return Tile Matrix Coordinate (TMC) of the tile which contains the specified cell.
-     * @throws ArithmeticException if the coordinate can not be represented as an integer.
+     * @throws ArithmeticException if the coordinate cannot be represented as an integer.
      */
     private long toTileMatrixCoordinate(final long coordinate, final int dimension) {
         return floorDiv(toFullResolution(coordinate, dimension), tileSize[dimension]);
@@ -827,7 +827,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * Stores the given raster in the cache. If another raster existed previously in the cache,
          * the old raster will be reused if it has the same size and model, or discarded otherwise.
          * The latter case may happen if {@link AOI#getCachedTile()} determined that a cached raster
-         * exists but can not be reused.
+         * exists but cannot be reused.
          *
          * @param  tile  the raster to cache.
          * @return the cached raster. Should be the given {@code raster} instance,
@@ -884,7 +884,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @return tiles decoded from the {@link TiledGridResource}.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if a logical error occurred.
-     * @throws RuntimeException if the Java2D image can not be created for another reason
+     * @throws RuntimeException if the Java2D image cannot be created for another reason
      *         (too many exception types to list them all).
      */
     protected abstract Raster[] readTiles(AOI iterator) throws IOException, DataStoreException;

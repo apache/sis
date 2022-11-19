@@ -117,7 +117,7 @@ abstract class EvaluatorWrapper implements GridCoverage.Evaluator {
      * doing some on-the-fly conversion of sample values.
      *
      * @param  point  the position where to evaluate.
-     * @throws CannotEvaluateException if the values can not be computed.
+     * @throws CannotEvaluateException if the values cannot be computed.
      */
     @Override
     public double[] apply(final DirectPosition point) throws CannotEvaluateException {

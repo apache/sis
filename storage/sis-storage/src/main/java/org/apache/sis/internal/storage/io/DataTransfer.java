@@ -83,7 +83,7 @@ interface DataTransfer {
      * Moves to the given position in the stream.
      *
      * @param  position  the position where to move.
-     * @throws IOException if the stream can not be moved to the given position.
+     * @throws IOException if the stream cannot be moved to the given position.
      */
     void seek(long position) throws IOException;
 

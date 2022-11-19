@@ -84,7 +84,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * For example choosing an approximated fraction for π value is quite arbitrary, and searching the fraction
      * closer than any other fraction representable by this class is computationally expansive.
      * Even with common fractions, the algorithm currently implemented in this class can detect that 1.6666666666666667
-     * {@linkplain Double#equals(Object) is equal to} 5⁄3 but can not detect easily that 1.66666666666666 (same number
+     * {@linkplain Double#equals(Object) is equal to} 5⁄3 but cannot detect easily that 1.66666666666666 (same number
      * with two decimal digits dropped) is close to 5⁄3.</div>
      *
      * This method accepts only values between {@value Integer#MIN_VALUE} and {@value Integer#MAX_VALUE} inclusive,
@@ -93,7 +93,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      *
      * @param  value  the double-precision value to convert to a fraction.
      * @return a fraction such as {@link #doubleValue()} is equal to the given value.
-     * @throws IllegalArgumentException if the given value can not be converted to a fraction.
+     * @throws IllegalArgumentException if the given value cannot be converted to a fraction.
      *
      * @since 1.0
      */
@@ -121,7 +121,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
             /*
              * Build the fraction using arithmetic in base 2. This path is also executed for all integer values,
              * because they have exact representation in base 2. We do not need to simplify the fraction because
-             * the denominator is always a power of 2 while the numerator is always odd; such fractions can not
+             * the denominator is always a power of 2 while the numerator is always odd; such fractions cannot
              * be simplified. Since we do not need to invoke `simplify(…)`, this is the fatest path.
              */
             final int den;
@@ -137,7 +137,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
             }
         } else {
             /*
-             * Can not build the fraction using exact arithmetic in base 2. Try approximations using arithmetic in other bases,
+             * Cannot build the fraction using exact arithmetic in base 2. Try approximations using arithmetic in other bases,
              * starting with base 10. We will multiply the numerator and denominator by the largest power of 10 (or other base)
              * that can be used without causing an overflow, then simplify the fraction.
              */
@@ -200,7 +200,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * Returns a fraction equivalent to {@code this} but represented by the smallest possible numerator
-     * and denominator values. If this fraction can not be simplified, then this method returns {@code this}.
+     * and denominator values. If this fraction cannot be simplified, then this method returns {@code this}.
      *
      * @return the simplest fraction equivalent to this fraction.
      */
@@ -213,7 +213,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * If the simplified fraction is equal to {@code this}, then this method returns {@code this}.
      *
      * <p>The arguments given to this method are the results of multiplications and additions of {@code int} values.
-     * This method fails if any argument value is {@link Long#MIN_VALUE} because that value can not be made positive.
+     * This method fails if any argument value is {@link Long#MIN_VALUE} because that value cannot be made positive.
      * However it should never happen. Even in the worst scenario:</p>
      *
      * {@prefomat java
@@ -461,7 +461,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Returns this fraction rounded toward zero, if the result can be represented as a short integer.
      *
      * @return this fraction rounded toward zero.
-     * @throws ArithmeticException if the result can not be represented as a short integer.
+     * @throws ArithmeticException if the result cannot be represented as a short integer.
      */
     @Override
     public short shortValue() {
@@ -474,7 +474,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Returns this fraction rounded toward zero, if the result can be represented as a signed byte.
      *
      * @return this fraction rounded toward zero.
-     * @throws ArithmeticException if the result can not be represented as a signed byte.
+     * @throws ArithmeticException if the result cannot be represented as a signed byte.
      */
     @Override
     public byte byteValue() {
@@ -517,7 +517,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Fractions with different values are not considered equal even if the two fraction are equivalent.
      *
      * @param  other  the object to compare with this fraction for equality.
-     * @return {@code true} if the given object is an other fraction with the same numerator and denominator values.
+     * @return {@code true} if the given object is another fraction with the same numerator and denominator values.
      */
     @Override
     public boolean equals(final Object other) {
@@ -600,7 +600,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * "∞" and "−∞". The given text shall not contain spaces.
      *
      * @param  s  the text to parse.
-     * @throws NumberFormatException if the given text can not be parsed.
+     * @throws NumberFormatException if the given text cannot be parsed.
      *
      * @since 1.0
      */

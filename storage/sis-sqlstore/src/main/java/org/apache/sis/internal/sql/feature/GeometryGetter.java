@@ -64,7 +64,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     private final Geometries<G> geometryFactory;
 
     /**
-     * The Coordinate Reference System if {@link InfoStatements} can not map the SRID.
+     * The Coordinate Reference System if {@link InfoStatements} cannot map the SRID.
      * This is {@code null} if there is no default.
      */
     private final CoordinateReferenceSystem defaultCRS;

@@ -127,7 +127,7 @@ public final class StandardDateFormat extends DateFormat {
      *
      * @param  text  the character string to parse, or {@code null}.
      * @return a temporal object for the given text, or {@code null} if the given text was null.
-     * @throws DateTimeParseException if the text can not be parsed as a date.
+     * @throws DateTimeParseException if the text cannot be parsed as a date.
      *
      * @since 0.8
      */
@@ -141,7 +141,7 @@ public final class StandardDateFormat extends DateFormat {
      *
      * @param  text   the text to parse as an instant in UTC timezone by default, or {@code null}.
      * @return the instant for the given text, or {@code null} if the given text was null.
-     * @throws DateTimeParseException if the text can not be parsed as a date.
+     * @throws DateTimeParseException if the text cannot be parsed as a date.
      */
     public static Instant parseInstantUTC(final CharSequence text) {
         return (text != null) ? parseInstantUTC(text, 0, text.length()) : null;
@@ -154,7 +154,7 @@ public final class StandardDateFormat extends DateFormat {
      * @param  lower  index of the first character to parse.
      * @param  upper  index after the last character to parse.
      * @return the instant for the given text.
-     * @throws DateTimeParseException if the text can not be parsed as a date.
+     * @throws DateTimeParseException if the text cannot be parsed as a date.
      */
     public static Instant parseInstantUTC(final CharSequence text, final int lower, final int upper) {
         TemporalAccessor date = FORMAT.parseBest(toISO(text, lower, upper), QUERIES);

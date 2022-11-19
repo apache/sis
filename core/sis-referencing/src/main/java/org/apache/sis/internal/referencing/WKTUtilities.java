@@ -216,7 +216,7 @@ public final class WKTUtilities extends Static {
     /**
      * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the
      * given object is not already an instance of {@code FormattableObject} before to invoke this method.
-     * This method returns {@code null} if it can not convert the object.
+     * This method returns {@code null} if it cannot convert the object.
      *
      * @param  object    the object to wrap.
      * @param  internal  {@code true} if the formatting convention is {@code Convention.INTERNAL}.
@@ -245,7 +245,7 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * If the given unit is one of the unit that can not be formatted without ambiguity in WKT format,
+     * If the given unit is one of the unit that cannot be formatted without ambiguity in WKT format,
      * return a proposed replacement. Otherwise returns {@code unit} unchanged.
      *
      * @param  <Q>   the unit dimension.
@@ -489,7 +489,7 @@ public final class WKTUtilities extends Static {
          *     }
          * }
          *
-         * Since we can not have a varying number of nested loops in the code, we achieve the same effect with
+         * Since we cannot have a varying number of nested loops in the code, we achieve the same effect with
          * GOTO-like statements. It would be possible to achieve the same effect with recursive method calls,
          * but the GOTO-like approach is a little bit more compact.
          */

@@ -179,7 +179,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * @param  factory  the factory to use for creating concatenated transforms.
      * @param  values   the group of parameter values.
      * @return the created Molodensky transform.
-     * @throws FactoryException if a transform can not be created.
+     * @throws FactoryException if a transform cannot be created.
      */
     @Override
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
@@ -199,7 +199,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * @param  targetDimensions  number of target dimensions (2 or 3) of the operation method.
      * @param  isAbridged        {@code true} for the abridged form.
      * @return the created (abridged) Molodensky transform.
-     * @throws FactoryException if a transform can not be created.
+     * @throws FactoryException if a transform cannot be created.
      */
     static MathTransform createMathTransform(final MathTransformFactory factory, final Parameters values,
             int sourceDimensions, int targetDimensions, final boolean isAbridged) throws FactoryException

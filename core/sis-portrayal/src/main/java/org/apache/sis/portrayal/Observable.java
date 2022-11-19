@@ -145,7 +145,7 @@ abstract class Observable {
      * Notifies all registered listeners that a property changed its value.
      * It is caller responsibility to verify that the event source and property name are valid.
      *
-     * @param  event  the event to forward. Can not be null.
+     * @param  event  the event to forward. Cannot be null.
      *
      * @see PropertyChangeEvent
      * @see PropertyChangeListener

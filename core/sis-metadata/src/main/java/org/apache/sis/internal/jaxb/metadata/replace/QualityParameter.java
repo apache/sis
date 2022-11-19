@@ -164,7 +164,7 @@ public final class QualityParameter extends Parameter {
 
     /**
      * Infers the value class from the type name.
-     * This method is the reason why we can not parameterize this {@code QualityParameter} class
+     * This method is the reason why we cannot parameterize this {@code QualityParameter} class
      * (see <cite>Note about raw-type usage</cite> in class javadoc), because there is no way we
      * can ensure that the class inferred from {@link #valueType} is really for type {@code <T>}.
      *

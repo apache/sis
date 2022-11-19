@@ -439,7 +439,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
 
     /**
      * Merges the property of type {@code Collection} identified by the given key.
-     * This is used when we can not just substitute one collection by the other.
+     * This is used when we cannot just substitute one collection by the other.
      *
      * @param <T>            the type of elements in the array or collection.
      * @param key            the key where to fetch or store the array in the {@code merged} map.
@@ -458,7 +458,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                  * Add the `provided` values before `complete` for two reasons:
                  *   1) Use the same insertion order than the declaration order in the GML file.
                  *   2) Replace `provided` instances by `complete` instances, since the latter
-                 *      are sometime predefined instances defined as static final constants.
+                 *      are sometimes predefined instances defined as static final constants.
                  */
                 final Map<NamedIdentifier,T> c = new LinkedHashMap<>();
                 for (final T e : provided) c.put(toNamedIdentifier(e), e);

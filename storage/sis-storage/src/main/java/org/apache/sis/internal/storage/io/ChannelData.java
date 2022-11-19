@@ -285,7 +285,7 @@ public abstract class ChannelData implements Markable {
         buffer.compact().position(p).limit(r);
         /*
          * Discard trailing obsolete marks. Note that obsolete marks between valid marks
-         * can not be discarded - only the trailing obsolete marks can be removed.
+         * cannot be discarded - only the trailing obsolete marks can be removed.
          */
         Mark lastValid = null;
         for (Mark m = mark; m != null; m = m.next) {
@@ -314,7 +314,7 @@ public abstract class ChannelData implements Markable {
      * Moves to the given position in the stream, relative to the stream position at construction time.
      *
      * @param  position  the position where to move.
-     * @throws IOException if the stream can not be moved to the given position.
+     * @throws IOException if the stream cannot be moved to the given position.
      */
     public abstract void seek(final long position) throws IOException;
 
@@ -339,7 +339,7 @@ public abstract class ChannelData implements Markable {
      * is considered too dangerous. This is a departure from {@code ImageInputStream} but is consistent with
      * {@link java.io.InputStream#reset()} contract.
      *
-     * @throws IOException if this stream can not move to the last mark position.
+     * @throws IOException if this stream cannot move to the last mark position.
      */
     @Override
     public final void reset() throws IOException {
@@ -357,7 +357,7 @@ public abstract class ChannelData implements Markable {
      * If a mark exists at the given position, the bit offset is also restored.
      *
      * @param  position  position where to seek.
-     * @throws IOException if this stream can not move to the specified mark position.
+     * @throws IOException if this stream cannot move to the specified mark position.
      */
     @Override
     public final void reset(final long position) throws IOException {
@@ -380,7 +380,7 @@ public abstract class ChannelData implements Markable {
      * A return value of 0 happen for example if the channel is a socket in non-blocking mode and the socket buffer
      * has not yet transferred new data.
      *
-     * <p>The current implementation sleeps an arbitrary amount of time before to allow a new try.
+     * <p>The current implementation sleeps an arbitrary number of time before to allow a new try.
      * We do that in order to avoid high CPU consumption when data are expected to take more than
      * a few nanoseconds to arrive.</p>
      *

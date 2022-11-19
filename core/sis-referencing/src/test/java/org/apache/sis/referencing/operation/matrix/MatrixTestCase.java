@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * This class uses the following {@code Matrices} factory methods:
  *
  * <ul>
- *   <li>{@link Matrices#createDiagonal(int, int)} (sometime delegates to {@link Matrices#createIdentity(int)})</li>
+ *   <li>{@link Matrices#createDiagonal(int, int)} (sometimes delegates to {@link Matrices#createIdentity(int)})</li>
  *   <li>{@link Matrices#create(int, int, double[])}</li>
  *   <li>{@link Matrices#createZero(int, int)}</li>
  * </ul>
@@ -613,7 +613,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tests {@link MatrixSIS#solve(org.opengis.referencing.operation.Matrix)}.
      *
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
     @DependsOnMethod("testMultiply")
@@ -626,7 +626,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
-                continue; // To close to a singular matrix - search an other one.
+                continue;               // Too close to a singular matrix - search another one.
             }
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
             /*
@@ -654,7 +654,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#inverse()}.
      * SIS implements the {@code inverse} operation as a special case of the {@code solve} operation.
      *
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
     @DependsOnMethod("testSolve")
@@ -667,7 +667,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
-                continue; // To close to a singular matrix - search an other one.
+                continue;               // Too close to a singular matrix - search another one.
             }
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
             assertEqualsJAMA(reference.inverse(), matrix.inverse(), TOLERANCE);

@@ -209,7 +209,7 @@ public final class AxisDirections extends Static {
                 dir = opposite;
             }
             // Below is a temporary patch pending integration of code list values into GeoAPI.
-            // We need this patch because we can not rely on ordinal() value for custom codes.
+            // We need this patch because we cannot rely on ordinal() value for custom codes.
             if (dir == CLOCKWISE) {
                 dir = COUNTER_CLOCKWISE;
             }
@@ -593,14 +593,14 @@ next:       for (int i=0; i <= limit; i++) {
     /**
      * Returns the indices of {@code cs} axes presumed covariant with {@code subCS} axes.
      * The mapping is based on axis directions only, with colinear axes mapped in priority.
-     * If some axes can not be mapped using collinearity criterion, then directions from poles
+     * If some axes cannot be mapped using collinearity criterion, then directions from poles
      * (e.g. <cite>"South along 90°E"</cite>) are arbitrarily handled as if they were covariant
      * with East and North directions, in that order.
      *
      * @param  cs     the coordinate system which contains all axes, or {@code null}.
      * @param  subCS  the coordinate system for which to search axes into {@code cs}.
      * @return indices in {@code cs} of axes covariant with {@code subCS} axes in the order they appear in {@code subCS},
-     *         or {@code null} if at least one {@code subCS} axis can not be mapped to a {@code cs} axis.
+     *         or {@code null} if at least one {@code subCS} axis cannot be mapped to a {@code cs} axis.
      *
      * @see #indexOfColinear(CoordinateSystem, CoordinateSystem)
      *
@@ -643,7 +643,7 @@ next:       for (int i=0; i <= limit; i++) {
     }
 
     /**
-     * Searches pre-defined {@link AxisDirection} for a given name. This method searches for a match in the set
+     * Searches predefined {@link AxisDirection} for a given name. This method searches for a match in the set
      * of known axis directions as returned by {@link AxisDirection#values()}, plus a few special cases like
      * <cite>"Geocentre &gt; equator/90°E"</cite>. The latter are used in the EPSG database for geocentric CRS.
      *
@@ -660,7 +660,7 @@ next:       for (int i=0; i <= limit; i++) {
         AxisDirection candidate = find(name, directions);
         if (candidate == null) {
             /*
-             * No match found when using the pre-defined axis name. Searches among
+             * No match found when using the predefined axis name. Searches among
              * the set of geocentric directions. Expected directions are:
              *
              *    Geocentre > equator/PM      or    Geocentre > equator/0°E

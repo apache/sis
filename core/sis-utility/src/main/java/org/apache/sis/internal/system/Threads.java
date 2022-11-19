@@ -97,7 +97,7 @@ public final class Threads extends Static {
      *
      * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.
-     * @throws InterruptedException if an other thread invoked {@link Thread#interrupt()} while
+     * @throws InterruptedException if another thread invoked {@link Thread#interrupt()} while
      *         we were waiting for the daemon threads to die.
      */
     static synchronized void shutdown(final long stopWaitingAt) throws InterruptedException {

@@ -739,7 +739,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * parameter values from the {@linkplain #transform}, if possible.
      *
      * @return the parameter values (never {@code null}).
-     * @throws UnsupportedOperationException if the parameter values can not
+     * @throws UnsupportedOperationException if the parameter values cannot
      *         be determined for the current math transform implementation.
      */
     ParameterValueGroup getParameterValues() throws UnsupportedOperationException {
@@ -774,7 +774,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * and the target CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
      *
      * <div class="note"><b>Inverse relationship:</b>
-     * sometime the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
+     * sometimes the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
      * but this is not always the case. For example consider the following operation chain:
      *
      * <div style="text-align:center">source projected CRS ⟶ base CRS ⟶ target geographic CRS</div>
@@ -930,7 +930,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Formats this coordinate operation in Well Known Text (WKT) version 2 format.
      *
      * <h4>ESRI extension</h4>
-     * Coordinate operations can not be formatted in standard WKT 1 format, but an ESRI variant of WKT 1
+     * Coordinate operations cannot be formatted in standard WKT 1 format, but an ESRI variant of WKT 1
      * allows a subset of coordinate operations with the ESRI-specific {@code GEOGTRAN} keyword.
      * To enabled this variant, {@link org.apache.sis.io.wkt.WKTFormat} can be configured as below:
      *
@@ -1087,7 +1087,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Creates a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCoordinateOperation() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);

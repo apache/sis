@@ -181,7 +181,7 @@ public final class Factory extends Geometries<Shape> {
         }
         /*
          * Shortcut (for performance reason) when building a single line segment.
-         * Note: Point2D is not an instance of Shape, so we can not make a special case for it.
+         * Note: Point2D is not an instance of Shape, so we cannot make a special case for it.
          */
         length /= BIDIMENSIONAL;
         if (length == 2 && coordinates.length == 1) {

@@ -54,7 +54,7 @@ public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> 
 
     /**
      * Transforms a rectangle using the given math transform.
-     * This transformation can not handle poles.
+     * This transformation cannot handle poles.
      */
     @Override
     Rectangle2D transform(CoordinateReferenceSystem targetCRS, MathTransform2D transform, Rectangle2D envelope) throws TransformException {

@@ -22,8 +22,8 @@ import org.apache.sis.internal.util.AbstractMap;
 
 
 /**
- * A map which first looks for values in a user-supplied map, then looks in a default map if no value where found
- * in the user-supplied one. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} and
+ * A map which first looks for values in a user supplied map, then looks in a default map if no value where found
+ * in the user supplied one. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} and
  * other SIS factories internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.AbstractMap;
  */
 public class MergedProperties extends AbstractMap<String,Object> {
     /**
-     * The user-supplied properties.
+     * The user supplied properties.
      */
     private final Map<String,?> properties;
 
@@ -52,7 +52,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
     /**
      * Creates a new map which will merge the given properties on the fly.
      *
-     * @param properties         the user-supplied properties.
+     * @param properties         the user supplied properties.
      * @param defaultProperties  fallback for values not found in {@code properties}.
      */
     public MergedProperties(final Map<String,?> properties, final Map<String,?> defaultProperties) {
@@ -61,7 +61,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
     }
 
     /**
-     * Returns an iterator over the user-supplied properties together with
+     * Returns an iterator over the user supplied properties together with
      * the default properties which were not specified in the user's ones.
      *
      * @return iterator over merged properties.
@@ -77,7 +77,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
     }
 
     /**
-     * Returns the value for the given key by first looking in the user-supplied map,
+     * Returns the value for the given key by first looking in the user supplied map,
      * then by looking in the default properties if no value were specified in the user map.
      * If there is no default value, invokes {@link #invisibleEntry(Object)} in last resort.
      *
@@ -97,7 +97,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
     }
 
     /**
-     * Returns the value for an "invisible" entry if no user-supplied values were found for that key.
+     * Returns the value for an "invisible" entry if no user supplied values were found for that key.
      * This is used only for "secret" keys used for SIS internal purpose (not for public API).
      *
      * <div class="note"><b>Example:</b>

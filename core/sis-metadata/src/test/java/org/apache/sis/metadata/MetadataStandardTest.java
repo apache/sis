@@ -244,7 +244,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
 
         final DefaultPlatform   platform   = (DefaultPlatform)   getSingleton(p2.getPlatforms());
         final DefaultInstrument instrument = (DefaultInstrument) getSingleton(platform.getInstruments());
-        instrument.setType(new SimpleInternationalString("An other instrument type."));
+        instrument.setType(new SimpleInternationalString("Another instrument type."));
         assertFalse("equals", p1.equals(p2));
     }
 
@@ -323,7 +323,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests serialization of pre-defined constants.
+     * Tests serialization of predefined constants.
      */
     @Test
     public void testSerialization() {

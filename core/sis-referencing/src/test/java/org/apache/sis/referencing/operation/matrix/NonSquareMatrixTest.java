@@ -77,7 +77,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link NonSquareMatrix#inverse()} with a non-square matrix.
      *
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
     @Override
@@ -90,7 +90,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Tests inversion of a matrix with a column containing only a translation term.
      * The purpose is to test the algorithm that selects the rows to omit.
      *
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
     public void testInverseWithTranslationTerm() throws NoninvertibleMatrixException {
@@ -115,7 +115,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
             0, 0, 1}), inverse.inverse(), STRICT);
         /*
          * Change the [0 0 3] row into [1 0 3]. The NonSquareMarix class should no longer omit that row.
-         * As a consequence, the matrix can not be inverted anymore.
+         * As a consequence, the matrix cannot be inverted anymore.
          */
         m.setElement(3, 0, 1);
         try {
@@ -129,7 +129,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link NonSquareMatrix#solve(Matrix)} with a non-square matrix.
      *
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
     @Override
@@ -152,7 +152,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      *
      * @param  Y   the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
      * @param  sf  the scale factor by which to multiply all expected scale elements.
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     private static void testDimensionReduction(final MatrixSIS Y, final double sf) throws NoninvertibleMatrixException {
         final MatrixSIS matrix = Matrices.create(3, 5, new double[] {
@@ -177,7 +177,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      *
      * @param  Y   the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
      * @param  sf  the scale factor by which to multiply all expected scale elements.
-     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     private static void testDimensionIncrease(final MatrixSIS Y, final double sf)
             throws NoninvertibleMatrixException

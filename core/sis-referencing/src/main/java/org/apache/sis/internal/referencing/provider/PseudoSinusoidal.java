@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 /**
  * The provider for <cite>"Pseudo sinusoidal equal-area"</cite> projection.
  * This is similar to Pseudo-Mercator: uses spherical formulas but apply the result on an ellipsoid.
- * This is sometime used with remote sensing data.
+ * This is sometimes used with remote sensing data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

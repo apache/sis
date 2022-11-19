@@ -33,7 +33,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 /**
  * An immutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
- * This class is final in order to ensure that the immutability contract can not be broken
+ * This class is final in order to ensure that the immutability contract cannot be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
  * <h2>Immutability and thread safety</h2>
@@ -147,7 +147,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      *
      * @param  crs  the coordinate reference system, or {@code null} if none.
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws IllegalArgumentException if the given string cannot be parsed.
      * @throws MismatchedDimensionException if the dimension of the given CRS is not equals
      *         to the dimension of the parsed envelope.
      */

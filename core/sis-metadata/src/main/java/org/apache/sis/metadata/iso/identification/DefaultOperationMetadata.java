@@ -300,6 +300,10 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Returns the parameters that are required for this interface.
      *
+     * <h4>Unified parameter API</h4>
+     * In GeoAPI, the {@code SV_Parameter} type defined by ISO 19115 is replaced by {@code ParameterDescriptor}
+     * in order to provide a single parameter API. See {@link org.opengis.parameter} for more information.
+     *
      * @return the parameters that are required for this interface, or an empty collection if none.
      */
     @XmlElement(name = "parameter")

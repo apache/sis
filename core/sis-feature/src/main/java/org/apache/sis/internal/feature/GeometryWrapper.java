@@ -111,7 +111,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * the CRS is stored only in this {@code GeometryWrapper} instance.
      *
      * @return the geometry CRS, or {@code null} if unknown.
-     * @throws BackingStoreException if the CRS is defined by a SRID code and that code can not be used.
+     * @throws BackingStoreException if the CRS is defined by a SRID code and that code cannot be used.
      */
     public abstract CoordinateReferenceSystem getCoordinateReferenceSystem();
 
@@ -161,7 +161,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * it does not separate the sequence of coordinates for different polygons in a multi-polygon.
      *
      * @return the sequence of all coordinate values in the wrapped geometry,
-     *         or {@code null} if they can not be obtained.
+     *         or {@code null} if they cannot be obtained.
      *
      * @todo Replace by a {@code toJava2D()} method returning a {@link java.awt.Shape},
      *       so we can use the path iterator instead of this array.
@@ -192,7 +192,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  distance  the buffer distance around the geometry of the second expression.
      * @param  context   the preferred CRS and other context to use if geometry transformations are needed.
      * @return result of applying the specified predicate.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws IllegalArgumentException if an error occurred while executing the operation on given geometries.
      */
     public final boolean predicate(final DistanceOperatorName type, final GeometryWrapper<G> other,
@@ -230,7 +230,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  other    the other geometry to test with this geometry.
      * @param  context  the preferred CRS and other context to use if geometry transformations are needed.
      * @return result of applying the specified predicate.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws IllegalArgumentException if an error occurred while executing the operation on given geometries.
      */
     public final boolean predicate(final SpatialOperatorName type, final GeometryWrapper<G> other,
@@ -258,7 +258,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *
      * @param  operation  the SQLMM operation to apply.
      * @return result of the specified operation.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      */
@@ -277,7 +277,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  operation  the SQLMM operation to apply.
      * @param  other      the other geometry. It is caller's responsibility to check that this value is non-null.
      * @return result of the specified operation.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      * @throws TransformException if it was necessary to transform the other geometry and that transformation failed.
@@ -298,7 +298,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  operation  the SQLMM operation to apply.
      * @param  argument   an operation-specific argument.
      * @return result of the specified operation.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      */
@@ -322,7 +322,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  other      the other geometry. It is caller's responsibility to check that this value is non-null.
      * @param  argument   an operation-specific argument.
      * @return result of the specified operation.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      * @throws TransformException if it was necessary to transform the other geometry and that transformation failed.
@@ -350,7 +350,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *
      * @param  other  the other geometry.
      * @return the other geometry in the same CRS than this geometry.
-     * @throws TransformException if the other geometry can not be transformed.
+     * @throws TransformException if the other geometry cannot be transformed.
      *         If may be because the other geometry does not define its CRS.
      */
     private GeometryWrapper<G> toSameCRS(final GeometryWrapper<G> other) throws TransformException {
@@ -379,7 +379,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  type   the predicate operation to apply.
      * @param  other  the other geometry to test with this geometry.
      * @return result of applying the specified predicate.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      */
     protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<G> other) {
         throw new UnsupportedOperationException(Geometries.unsupported(type.name()));
@@ -394,7 +394,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  other     the other geometry to test with this geometry.
      * @param  distance  distance to test between the geometries.
      * @return result of applying the specified predicate.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      */
     protected boolean predicateSameCRS(final DistanceOperatorName type, final GeometryWrapper<G> other, final double distance) {
         throw new UnsupportedOperationException(Geometries.unsupported(type.name()));
@@ -407,7 +407,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
      * @param  argument   an operation-specific argument, or {@code null} if not applicable.
      * @return result of the specified operation.
-     * @throws UnsupportedOperationException if the operation can not be performed with current implementation.
+     * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      */
@@ -435,7 +435,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *
      * @param  target  the desired type.
      * @return the converted geometry.
-     * @throws IllegalArgumentException if the geometry can not be converted to the specified type.
+     * @throws IllegalArgumentException if the geometry cannot be converted to the specified type.
      */
     public GeometryWrapper<G> toGeometryType(GeometryType target) {
         final Class<?> type = factory().getGeometryClass(target);
@@ -460,8 +460,8 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  validate   whether to validate the operation source CRS.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
-     * @throws FactoryException if transformation to the target CRS can not be found.
-     * @throws TransformException if the geometry can not be transformed.
+     * @throws FactoryException if transformation to the target CRS cannot be found.
+     * @throws TransformException if the geometry cannot be transformed.
      */
     public GeometryWrapper<G> transform(final CoordinateOperation operation, final boolean validate)
             throws FactoryException, TransformException
@@ -481,7 +481,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry (may be the same geometry but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
-     * @throws TransformException if the given geometry has no CRS or can not be transformed.
+     * @throws TransformException if the given geometry has no CRS or cannot be transformed.
      *
      * @see #getCoordinateReferenceSystem()
      */

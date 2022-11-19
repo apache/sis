@@ -77,7 +77,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
      * that the given array is non-null and does not contain null elements.
      *
-     * @throws IllegalArgumentException if CRS can not be constructed from the second expression.
+     * @throws IllegalArgumentException if CRS cannot be constructed from the second expression.
      */
     ST_Transform(final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
         super(SQLMM.ST_Transform, parameters, PRESENT);

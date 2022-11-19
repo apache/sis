@@ -112,7 +112,7 @@ public final class Code {
              * would suggest).
              *
              * The GML document may also provide a 'codeSpace' attribute separated from the URN, which we take
-             * as the authority.  This is the opposite of what the names would suggest, but we can not map the
+             * as the authority.  This is the opposite of what the names would suggest, but we cannot map the
              * 'codeSpace' attribute to Identifier.codeSpace  because the 'codeSpace' attribute value found in
              * practice is often "IOGP" while the 'Identifier.description' example provided in ISO 19115-1 for
              * an EPSG code has the "EPSG" codespace. Example:
@@ -137,7 +137,7 @@ public final class Code {
             c       = parsed.code;
         } else if (cs != null) {
             /*
-             * Case where the URN can not be parsed but a 'codeSpace' attribute exists. We take this 'codeSpace'
+             * Case where the URN cannot be parsed but a 'codeSpace' attribute exists. We take this 'codeSpace'
              * as both the code space and the authority. As a special case, if there is a semi-colon, we take all
              * text after that semi-color as the version number.
              */
@@ -191,7 +191,7 @@ public final class Code {
             /*
              * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
              * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
-             * can not be converted to a "urn:" form, then it will be returned as-is.
+             * cannot be converted to a "urn:" form, then it will be returned as-is.
              */
             if (fallback != null) {
                 if (!isHTTP) {

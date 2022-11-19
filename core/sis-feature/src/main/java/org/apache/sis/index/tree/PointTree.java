@@ -411,7 +411,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
                 return true;                                // Leaf node can take the data — done.
             }
             /*
-             * Leaf can not add the given element because the leaf has reached its maximal capacity.
+             * Leaf cannot add the given element because the leaf has reached its maximal capacity.
              * Replace the leaf node by a parent node and add all previous elements into it. After
              * data has been copied, continue attempts to insert the element given to this method.
              */
@@ -503,7 +503,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * Returns all elements in the given bounding box. The given envelope shall be in the same CRS
      * than the points in this tree (this is currently not verified). The returned stream may be
      * parallel by default, depending on the argument given to the constructor.
-     * If the action to be applied on the stream can not be parallel,
+     * If the action to be applied on the stream cannot be parallel,
      * then user should invoke {@link Stream#sequential()} explicitly.
      *
      * @param  searchRegion  envelope representing the rectangular search region.

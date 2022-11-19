@@ -93,7 +93,7 @@ public final strictfp class ConsistencyTest extends TestCase {
      * This is used for debugging purposes only; not included in normal test execution because it is redundant
      * with {@link #testCoordinateReferenceSystems()}.
      *
-     * @throws FactoryException if the coordinate reference system can not be created.
+     * @throws FactoryException if the coordinate reference system cannot be created.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-433">SIS-433</a>
      * @see <a href="https://issues.apache.org/jira/browse/SIS-434">SIS-434</a>
@@ -134,9 +134,9 @@ public final strictfp class ConsistencyTest extends TestCase {
                 lookup(parseAndFormat(v2,  code, crs), crs);
                 lookup(parseAndFormat(v2s, code, crs), crs);
                 /*
-                 * There is more information lost in WKT 1 than in WKT 2, so we can not test everything.
-                 * For example we can not format fully three-dimensional geographic CRS because the unit
-                 * is not the same for all axes. We can not format neither some axis directions.
+                 * There is more information lost in WKT 1 than in WKT 2, so we cannot test everything.
+                 * For example we cannot format fully three-dimensional geographic CRS because the unit
+                 * is not the same for all axes. We cannot format neither some axis directions.
                  */
                 try {
                     parseAndFormat(v1, code, crs);
@@ -186,7 +186,7 @@ public final strictfp class ConsistencyTest extends TestCase {
         try {
             parsed = (CoordinateReferenceSystem) f.parseObject(wkt);
         } catch (ParseException e) {
-            print(code, "ERROR", "Can not parse the WKT below.");
+            print(code, "ERROR", "Cannot parse the WKT below.");
             out.println(wkt);
             out.println();
             e.printStackTrace(out);

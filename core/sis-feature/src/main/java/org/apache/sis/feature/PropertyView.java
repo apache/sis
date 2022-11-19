@@ -113,7 +113,7 @@ final class PropertyView {
     /**
      * Returns the values as a collection. This method tries to verify that the collection
      * contains elements of the expected type, but this verification is not always possible.
-     * Consequently this method may, sometime, be actually unsafe.
+     * Consequently this method may, sometimes, be actually unsafe.
      */
     @SuppressWarnings("unchecked")              // Actually not 100% safe, but we have done our best.
     static <V> Collection<V> getValues(final AbstractFeature feature, final String name, final Class<V> expected) {

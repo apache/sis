@@ -156,8 +156,8 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
     /**
      * Tests a transformation between 2D projected CRS which implies a change of prime meridian.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -204,8 +204,8 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
      * <p>This tests requires the EPSG database, because it requires the coordinate operation
      * path which is defined there.</p>
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -288,8 +288,8 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
      * Tests the conversion from Mercator projection to the Google projection. The referencing module
      * should detects that the conversion is something more complex that an identity transform.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -331,8 +331,8 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
      * EPSG geodetic dataset may be used. The result however should be the same because of the {@code TOWGS84}
      * parameter in the WKT used for the test.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      *
      * @see CoordinateOperationFinderTest#testPositionVectorTransformation()

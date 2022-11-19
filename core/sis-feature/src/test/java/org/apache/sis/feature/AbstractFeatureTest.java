@@ -124,7 +124,7 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
                 }
                 for (final Object element : (isMultiValued ? (Iterable<?>) value : PropertyView.singletonOrEmpty(value))) {
                     if (!base.isInstance(element)) {
-                        throw new ClassCastException("Can not cast " + value.getClass() + " to " + base + " in " + name + '.');
+                        throw new ClassCastException("Cannot cast " + value.getClass() + " to " + base + " in " + name + '.');
                     }
                 }
             }

@@ -392,7 +392,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     /**
      * An operator that tests if an expression's value is nil.
      * The difference with {@code NullOperator} is that a value should exist
-     * but can not be provided for the reason given by {@code nilReason}.
+     * but cannot be provided for the reason given by {@code nilReason}.
      * Possible reasons are:
      *
      * <ul>

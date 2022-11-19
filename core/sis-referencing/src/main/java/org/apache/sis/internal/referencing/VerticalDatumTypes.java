@@ -122,12 +122,12 @@ public final class VerticalDatumTypes implements CodeList.Filter {
     }
 
     /**
-     * Guesses the type of a datum from its name, aliases or a given vertical axis. This is sometime needed
+     * Guesses the type of a datum from its name, aliases or a given vertical axis. This is sometimes needed
      * after XML unmarshalling or WKT parsing, since GML 3.2 and ISO 19162 do not contain any attribute for
      * the datum type.
      *
      * <p>This method uses heuristic rules and may be changed in any future SIS version.
-     * If the type can not be determined, defaults to {@link VerticalDatumType#OTHER_SURFACE}.</p>
+     * If the type cannot be determined, defaults to {@link VerticalDatumType#OTHER_SURFACE}.</p>
      *
      * @param  name     the name of the datum for which to guess a type, or {@code null} if unknown.
      * @param  aliases  the aliases of the datum for which to guess a type, or {@code null} if unknown.
@@ -174,7 +174,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
 
     /**
      * Guesses the type of a datum of the given name. This method attempts to guess only if the given name
-     * contains at least one letter. If the type can not be determined, returns {@code null}.
+     * contains at least one letter. If the type cannot be determined, returns {@code null}.
      *
      * @param  name  name of the datum for which to guess a type, or {@code null}.
      * @return a datum type, or {@code null} if none can be guessed.

@@ -84,7 +84,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
             new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.SPHERE);
             fail("Should not allow construction with two horizontal components.");
         } catch (IllegalArgumentException e) {
-            assertEquals("Compound coordinate reference systems can not contain two horizontal components.", e.getMessage());
+            assertEquals("Compound coordinate reference systems cannot contain two horizontal components.", e.getMessage());
         }
         /*
          * Try again with duplicated vertical components, opportunistically

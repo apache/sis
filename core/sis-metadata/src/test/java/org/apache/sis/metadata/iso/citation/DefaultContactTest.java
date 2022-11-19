@@ -92,7 +92,7 @@ public final strictfp class DefaultContactTest extends TestCase implements Filte
         assertArrayEquals("getPhones", tels, contact.getPhones().toArray());
         /*
          * Test the deprecated 'getPhone()' method. Invoking that method shall emit
-         * a warning, since the ISO 19115:2003 methods can not represent SMS numbers.
+         * a warning, since the ISO 19115:2003 methods cannot represent SMS numbers.
          */
         assertSame("getPhone", tel2, contact.getPhone()); // Shall ignore the TelephoneType.SMS.
         assertEquals("warningOccured", "IgnoredPropertyAssociatedTo_1", resourceKey);
@@ -131,7 +131,7 @@ public final strictfp class DefaultContactTest extends TestCase implements Filte
 
     /**
      * Same as {@link #testSetPhone()}, but hiding to {@link DefaultContact} the fact that we
-     * are using a SIS implementation of {@code Telephone}. This will test an other code path.
+     * are using a SIS implementation of {@code Telephone}. This will test another code path.
      */
     @Test
     @DependsOnMethod("testSetPhones")

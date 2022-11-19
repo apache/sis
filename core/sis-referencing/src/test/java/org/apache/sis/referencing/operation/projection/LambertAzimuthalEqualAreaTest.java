@@ -243,7 +243,7 @@ public final strictfp class LambertAzimuthalEqualAreaTest extends MapProjectionT
         /*
          * Project the origin. Result should be (0,0). Do not test the reverse projection
          * because the longitude could be anything and still be the North pole. We test that
-         * by projecting again with an other longitude, set to 45°, and expect the same result.
+         * by projecting again with another longitude, set to 45°, and expect the same result.
          */
         final double[] point    = new double[] {0, 90};
         final double[] expected = new double[] {0,  0};

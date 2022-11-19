@@ -144,7 +144,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     final Format format;
 
     /**
-     * The user-supplied CRS with (<var>longitude</var>, <var>latitude</var>) axis order in degrees.
+     * The user supplied CRS with (<var>longitude</var>, <var>latitude</var>) axis order in degrees.
      */
     final DefaultGeographicCRS normalizedCRS;
 
@@ -174,7 +174,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      *
      * @param  format  the format used by the {@code GeohashReferenceSystem.Coder}.
      * @param  crs     the coordinate reference system. This is usually {@link CommonCRS#defaultGeographic()}.
-     * @throws GazetteerException if the reference system can not be created.
+     * @throws GazetteerException if the reference system cannot be created.
      */
     public GeohashReferenceSystem(final Format format, final GeographicCRS crs) throws GazetteerException {
         super(properties(IDENTIFIER, IDENTIFIER, null), types());
@@ -303,7 +303,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          * Returns an approximate precision of the geohashes formatted by this coder.
          * Values are in units of ellipsoid axis length (typically metres). If the location is unspecified,
          * then this method returns a value for the "worst case" scenario, which is at equator.
-         * The actual precision is sometime (but not always) better for coordinates closer to a pole.
+         * The actual precision is sometimes (but not always) better for coordinates closer to a pole.
          *
          * @param  position  where to evaluate the precision, or {@code null} for equator.
          * @return approximate precision of formatted geohashes.

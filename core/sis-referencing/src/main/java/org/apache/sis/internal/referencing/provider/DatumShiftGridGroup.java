@@ -149,7 +149,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      *
      * @param  file      filename to report in case of error.
      * @param  subgrids  the sub-grids to put under a common root.
-     * @throws FactoryException if the sub-grid can not be combined in a single mosaic or pyramid.
+     * @throws FactoryException if the sub-grid cannot be combined in a single mosaic or pyramid.
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
     static <C extends Quantity<C>, T extends Quantity<T>> DatumShiftGridGroup<C,T> create(

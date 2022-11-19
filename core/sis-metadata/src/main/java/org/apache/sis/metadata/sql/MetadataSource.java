@@ -80,7 +80,7 @@ import org.apache.sis.internal.geoapi.evolution.Interim;
 
 /**
  * A connection to a metadata database in read-only mode. It can be either the database
- * {@linkplain #getProvided() provided by Apache SIS} with pre-defined ISO 19115 metadata,
+ * {@linkplain #getProvided() provided by Apache SIS} with predefined ISO 19115 metadata,
  * or another database specified at construction time.
  * Metadata instances can be obtained as in the example below:
  *
@@ -177,7 +177,7 @@ public class MetadataSource implements AutoCloseable {
      *
      * Every access to this array <strong>must</strong> be synchronized on {@code MetadataSource.this}.
      * Execution of a prepared statement may also need to be done inside the synchronized block,
-     * because a single JDBC connection can not be assumed thread-safe.
+     * because a single JDBC connection cannot be assumed thread-safe.
      *
      * <p>Usage example:</p>
      * {@preformat java
@@ -296,15 +296,15 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * Returns the metadata source connected to the {@code "jdbc/SpatialMetadata"} database.
-     * In a default Apache SIS installation, this metadata source contains pre-defined records
+     * In a default Apache SIS installation, this metadata source contains predefined records
      * for some commonly used {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation
      * citations} and {@linkplain org.apache.sis.metadata.iso.distribution.DefaultFormat formats}
      * among others.
      *
-     * <p>If connection to the metadata database can not be established, then this method returns
+     * <p>If connection to the metadata database cannot be established, then this method returns
      * a fallback with a few hard-coded values.</p>
      *
-     * @return source of pre-defined metadata records from the {@code "jdbc/SpatialMetadata"} database.
+     * @return source of predefined metadata records from the {@code "jdbc/SpatialMetadata"} database.
      */
     public static synchronized MetadataSource getProvided() {
         MetadataSource ms = instance;
@@ -323,7 +323,7 @@ public class MetadataSource implements AutoCloseable {
             } catch (Exception e) {
                 ms = MetadataFallback.INSTANCE;
                 /*
-                 * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+                 * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
                  * little bit simpler, keep only the root cause provided that the exception type is compatible.
                  * If the Derby driver was not found at all, reduce the logging level since Derby is optional.
                  */
@@ -437,7 +437,7 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * If the metadata schema does not exist in the database, creates it and inserts the pre-defined metadata values.
+     * If the metadata schema does not exist in the database, creates it and inserts the predefined metadata values.
      * The current implementation has the following restrictions:
      *
      * <ul>
@@ -914,7 +914,7 @@ public class MetadataSource implements AutoCloseable {
              * At this point, a null value means that the given type is a class rather than an interface.
              * This may happen when a new type defined by a standard has not yet been defined in GeoAPI.
              * In such case, we only have the implementation class in Apache SIS, not yet the interface.
-             * Since we can not create a Proxy, we have to fetch all property values now. This is not
+             * Since we cannot create a Proxy, we have to fetch all property values now. This is not
              * very efficient and may waste a little bit of memory, but it should not happen too often.
              */
             if (value == null) {
@@ -968,7 +968,7 @@ public class MetadataSource implements AutoCloseable {
      * @param  toSearch  contains the identifier and preferred index of the record to search.
      * @return the value of the requested attribute, or {@code null} if none.
      * @throws SQLException if the SQL query failed.
-     * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
+     * @throws MetadataStoreException if a value was not found or cannot be converted to the expected type.
      */
     final Object readColumn(final LookupInfo info, final Method method, final Dispatcher toSearch)
             throws SQLException, MetadataStoreException
@@ -994,7 +994,7 @@ public class MetadataSource implements AutoCloseable {
                 /*
                  * Prepares the statement and executes the SQL query in this synchronized block.
                  * Note that the usage of `result` must stay inside this synchronized block
-                 * because we can not assume that JDBC connections are thread-safe.
+                 * because we cannot assume that JDBC connections are thread-safe.
                  */
                 CachedStatement result = prepareStatement(type, tableName, toSearch.preferredIndex);
                 value = result.getValue(toSearch.identifier, columnName);
@@ -1222,7 +1222,7 @@ public class MetadataSource implements AutoCloseable {
             }
         }
         if (delay > 0) {
-            // Some statements can not be disposed yet.
+            // Some statements cannot be disposed yet.
             DelayedExecutor.schedule(new CloseTask(currentTime + delay + EXTRA_DELAY));
             isCloseScheduled = true;
         } else {
@@ -1237,7 +1237,7 @@ public class MetadataSource implements AutoCloseable {
     /**
      * Closes the given resource without throwing exception. In case of failure while closing the resource,
      * the message is logged but the process continue since we are not supposed to use the resource anymore.
-     * This method is invoked from methods that can not throw a SQL exception.
+     * This method is invoked from methods that cannot throw a SQL exception.
      */
     private void closeQuietly(final AutoCloseable resource) {
         if (resource != null) try {

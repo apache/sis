@@ -35,7 +35,7 @@ import org.opengis.geometry.Envelope;
  *
  * Compared to the SQL language, {@code Query} contains the information in the {@code SELECT} and
  * {@code WHERE} clauses of a SQL statement. A {@code Query} typically contains filtering capabilities
- * and (sometime) simple attribute transformations. Well known query languages include SQL and CQL.
+ * and (sometimes) simple attribute transformations. Well known query languages include SQL and CQL.
  *
  * <h2>Optional values</h2>
  * All aspects of this query are optional and initialized to "none".

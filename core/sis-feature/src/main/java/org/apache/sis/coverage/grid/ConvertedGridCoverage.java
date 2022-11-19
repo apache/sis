@@ -116,7 +116,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      * @param  converted  {@code true} for a coverage containing converted values,
      *                    or {@code false} for a coverage containing packed values.
      * @return the converted coverage. May be {@code source}.
-     * @throws NoninvertibleTransformException if this constructor can not build a full conversion chain to target.
+     * @throws NoninvertibleTransformException if this constructor cannot build a full conversion chain to target.
      */
     static GridCoverage create(final GridCoverage source, final boolean converted) throws NoninvertibleTransformException {
         final List<SampleDimension> sources = source.getSampleDimensions();
@@ -136,7 +136,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      * @param  targets    where to add {@link SampleDimension#forConvertedValues(boolean)} results.
      * @param  converted  {@code true} for transforms to converted values, or {@code false} for transforms to packed values.
      * @return the transforms, or {@code null} if all transforms are identity transform.
-     * @throws NoninvertibleTransformException if this method can not build a full conversion chain.
+     * @throws NoninvertibleTransformException if this method cannot build a full conversion chain.
      */
     static MathTransform1D[] converters(final List<SampleDimension> sources,
                                         final List<SampleDimension> targets,
@@ -173,7 +173,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      *
      * @param  targets    the sample dimensions for which to get the data type.
      * @param  converted  whether the image will hold converted or packed values.
-     * @param  source     if the type can not be determined, coverage from which to inherit the type as a fallback.
+     * @param  source     if the type cannot be determined, coverage from which to inherit the type as a fallback.
      * @return the data type (never null).
      *
      * @see GridCoverage#getBandType()
@@ -267,7 +267,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
          * This method delegates to the source coverage, then converts the values.
          *
          * @param  point  the position where to evaluate.
-         * @throws CannotEvaluateException if the values can not be computed.
+         * @throws CannotEvaluateException if the values cannot be computed.
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {

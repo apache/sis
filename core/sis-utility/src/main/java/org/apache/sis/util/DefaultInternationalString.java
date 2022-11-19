@@ -35,7 +35,7 @@ import org.apache.sis.util.collection.Containers;
 /**
  * An international string using a map of strings for different locales.
  * Strings for new locales can be {@linkplain #add(Locale, String) added},
- * but existing strings can not be removed or modified.
+ * but existing strings cannot be removed or modified.
  * This behavior is a compromise between making constructions easier, and being suitable for
  * use in immutable objects.
  *
@@ -69,7 +69,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     private transient Set<Locale> localeSet;
 
     /**
-     * Creates an initially empty international string. Localized strings can been added
+     * Creates an initially empty international string. Localized strings can be added
      * using one of {@link #add add(…)} methods.
      */
     public DefaultInternationalString() {
@@ -78,7 +78,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * Creates an international string initialized with the given string.
-     * Additional localized strings can been added using one of {@link #add add(…)} methods.
+     * Additional localized strings can be added using one of {@link #add add(…)} methods.
      * The string specified to this constructor is the one that will be returned if no localized
      * string is found for the {@code Locale} argument in a call to {@link #toString(Locale)}.
      *
@@ -111,7 +111,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 localeMap = Collections.singletonMap(entry.getKey(), entry.getValue());
             } else {
                 localeMap = new LinkedHashMap<>(strings);
-                // If HashMap is replaced by an other type, please revisit 'getLocales()'.
+                // If HashMap is replaced by another type, please revisit 'getLocales()'.
             }
         }
         final boolean nullMapKey = localeMap.containsKey(null);
@@ -139,7 +139,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 return;
             }
             case 1: {
-                // If HashMap is replaced by an other type, please revisit 'getLocales()'.
+                // If HashMap is replaced by another type, please revisit 'getLocales()'.
                 localeMap = new LinkedHashMap<>(localeMap);
                 localeSet = null;
                 break;

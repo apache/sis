@@ -25,7 +25,7 @@ import org.apache.sis.measure.MeasurementRange;
 /**
  * Range of real values computed from the range of the sample values.
  * The {@link Category#toConverse} conversion is used by the caller for computing the inclusive and exclusive
- * minimum and maximum values of this range. We compute both the inclusive and exclusive values because we can not
+ * minimum and maximum values of this range. We compute both the inclusive and exclusive values because we cannot
  * rely on the default implementation, which looks for the nearest representable number. For example if the range
  * of sample values is 0 to 10 exclusive (or 0 to 9 inclusive) and the scale is 2, then the range of real values
  * is 0 to 20 exclusive or 0 to 18 inclusive, not 0 to 19.9999… The numbers between 18 and 20 is a "gray area"

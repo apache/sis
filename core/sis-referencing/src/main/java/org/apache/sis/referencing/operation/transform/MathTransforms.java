@@ -696,7 +696,7 @@ public final class MathTransforms extends Static {
      * @param  dstPts     the array into which the transformed coordinate is returned.
      * @param  dstOff     the offset to the location of the transformed point that is stored in the destination array.
      * @return the matrix of the transform derivative at the given source position.
-     * @throws TransformException if the point can not be transformed
+     * @throws TransformException if the point cannot be transformed
      *         or if a problem occurred while calculating the derivative.
      *
      * @see #tangent(MathTransform, DirectPosition)
@@ -734,7 +734,7 @@ public final class MathTransforms extends Static {
      * @param  toApproximate  the non-linear transform to approximate by a linear transform.
      * @param  tangentPoint   the point where to compute a linear approximation.
      * @return linear approximation of the given math transform at the given position.
-     * @throws TransformException if the point can not be transformed
+     * @throws TransformException if the point cannot be transformed
      *         or if a problem occurred while calculating the derivative.
      *
      * @since 1.1
@@ -776,7 +776,7 @@ public final class MathTransforms extends Static {
      *
      * @param  evaluated  transform for which to evaluate a domain, or {@code null}.
      * @return estimation of a domain where this transform is considered numerically applicable.
-     * @throws TransformException if the domain can not be estimated.
+     * @throws TransformException if the domain cannot be estimated.
      *
      * @see AbstractMathTransform#getDomain(DomainDefinition)
      * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()

@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
  * The provider for <cite>"Geographic2D with Height Offsets"</cite> (EPSG:9618).
  * This is not the same than a <cite>"Geographic3D offsets"</cite> because this
  * operation also performs a simplified transformation from ellipsoidal height
- * to geoidal height, as can been seen from the difference in parameter name.
+ * to geoidal height, as can be seen from the difference in parameter name.
  * For a "Geographic3D offsets" with ellipsoidal heights, see the parent class.
  *
  * <p>Examples of coordinate transformations using this method:</p>

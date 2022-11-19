@@ -207,7 +207,7 @@ public final class StoreProvider extends DataStoreProvider {
             }
         } else {
             componentProvider = null;
-            options.clear();                // Can not write if we don't know the components format.
+            options.clear();                // Cannot write if we don't know the components format.
         }
         final Path path = connector.getStorageAs(Path.class);
         final Store store;

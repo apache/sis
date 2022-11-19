@@ -72,7 +72,7 @@ public class DefaultRecord implements Record, Serializable {
     private static final long serialVersionUID = -5293250754663538325L;
 
     /**
-     * The type definition of this record. Can not be {@code null}.
+     * The type definition of this record. Cannot be {@code null}.
      */
     @SuppressWarnings("serial")
     final RecordDefinition definition;
@@ -106,7 +106,7 @@ public class DefaultRecord implements Record, Serializable {
      * Creates a new record initialized to a shallow copy of the given record.
      * The fields contained in the given record are <strong>not</strong> recursively copied.
      *
-     * @param  record  the record to copy (can not be null).
+     * @param  record  the record to copy (cannot be null).
      *
      * @since 0.8
      */

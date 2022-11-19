@@ -170,7 +170,7 @@ abstract class Parameter<T> extends SimpleIdentifiedObject implements ParameterD
 
     /**
      * Null-safe string representation of the given identifier, for comparison purpose.
-     * We ignore codespace because they can not be represented in ISO 19139 XML documents.
+     * We ignore codespace because they cannot be represented in ISO 19139 XML documents.
      */
     private static String toString(final Identifier identifier) {
         return (identifier != null) ? identifier.toString() : null;

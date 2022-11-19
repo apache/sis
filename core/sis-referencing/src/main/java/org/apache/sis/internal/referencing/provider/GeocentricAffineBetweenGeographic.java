@@ -188,7 +188,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * @param  factory  the factory to use for creating concatenated transforms.
      * @param  values   the group of parameter values.
      * @return the created math transform.
-     * @throws FactoryException if a transform can not be created.
+     * @throws FactoryException if a transform cannot be created.
      */
     @Override
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)

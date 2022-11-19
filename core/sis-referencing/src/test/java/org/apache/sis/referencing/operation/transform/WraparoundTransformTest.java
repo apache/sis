@@ -45,7 +45,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     /**
      * Tests {@link WraparoundTransform#inverse()}.
      *
-     * @throws TransformException if a coordinate can not be computed.
+     * @throws TransformException if a coordinate cannot be computed.
      */
     @Test
     public void testInverse() throws TransformException {
@@ -81,7 +81,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     /**
      * Tests wraparound on one axis.
      *
-     * @throws TransformException if a coordinate can not be computed.
+     * @throws TransformException if a coordinate cannot be computed.
      */
     @Test
     public void testOneAxis() throws TransformException {
@@ -139,7 +139,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
      * transform between them. The absence of separation between the two {@link WraparoundTransform}s is an
      * indirect test of {@link WraparoundTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
      *
-     * @throws TransformException if a coordinate can not be computed.
+     * @throws TransformException if a coordinate cannot be computed.
      */
     @Test
     public void testTwoAxes() throws TransformException {

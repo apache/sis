@@ -135,7 +135,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
     /**
      * Returns the names of the authorities providing data that can be installed.
      * The default implementation returns the authorities listed in class javadoc,
-     * or a subset of those authorities if some of them can not be installed
+     * or a subset of those authorities if some of them cannot be installed
      * (for example because the {@code SIS_DATA} environment variable is not set).
      *
      * @return authorities of data that can be installed (may be an empty set).

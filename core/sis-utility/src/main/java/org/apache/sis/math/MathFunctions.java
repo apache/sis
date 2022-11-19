@@ -726,7 +726,7 @@ public final class MathFunctions extends Static {
      * to a double precision floating point number. About 17 decimal digits of precision may be lost
      * due to the {@code double} type having only half the capacity of quadruple precision type.
      *
-     * <p>Some quadruple precision values can not be represented in double precision and are mapped
+     * <p>Some quadruple precision values cannot be represented in double precision and are mapped
      * to {@code double} values as below:</p>
      * <ul>
      *   <li>Values having a magnitude less than {@link Double#MIN_VALUE} are mapped to
@@ -753,7 +753,7 @@ public final class MathFunctions extends Static {
         if (exp == 0) {
             /*
              * Subnormal number.
-             * Since we convert them to double precision, subnormal numbers can not be represented
+             * Since we convert them to double precision, subnormal numbers cannot be represented
              * as they are smaller than Double.MIN_VALUE. We map them to zero preserving the sign.
              */
             return Double.longBitsToDouble(sig);
@@ -950,7 +950,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
         }
         /*
          * Get the smallest value. We will compute the divisors only for this value,
-         * since we know that any value greater that the minimal value can not be a
+         * since we know that any value greater that the minimal value cannot be a
          * common divisor.
          */
         int minValue = Integer.MAX_VALUE;
@@ -1018,7 +1018,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
                 /*
                  * c = 0
                  *
-                 * Can not compute x. We could return an arbitrary value if c = 0, but we rather return
+                 * Cannot compute x. We could return an arbitrary value if c = 0, but we rather return
                  * an empty array for keeping the number of root equals to the highest exponent.
                  */
                 case 0: {

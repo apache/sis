@@ -208,7 +208,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
 
     /**
      * Creates a descriptor for a latitude parameter in degrees without default value.
-     * This method is used for latitude of origin that can not be zero, of for standard parallels
+     * This method is used for latitude of origin that cannot be zero, of for standard parallels
      * where the default value should be the value of another parameter instead of 0°.
      */
     static ParameterDescriptor<Double> createMandatoryLatitude(final ParameterBuilder builder) {

@@ -267,10 +267,10 @@ public final class ImageUtilities extends Static {
      * Returns names of bands based on inspection of the sample model and color model.
      * The bands are identified by {@link Vocabulary.Keys} values for
      * red, green, blue, cyan, magenta, yellow, black, gray, <i>etc</i>.
-     * If a band can not be identified, then its corresponding value is 0.
+     * If a band cannot be identified, then its corresponding value is 0.
      *
      * @param  cm  the color model for which to get band names, or {@code null} if unknown.
-     * @param  sm  the image sample model (can not be null).
+     * @param  sm  the image sample model (cannot be null).
      * @return {@link Vocabulary.Keys} identifying the bands.
      */
     @SuppressWarnings("fallthrough")
@@ -642,7 +642,7 @@ public final class ImageUtilities extends Static {
             abs((m10 = rint(r=tr.getShearY())) - r) <= COMPARISON_THRESHOLD)
         {
             /*
-             * At this point the scale and shear coefficients can been rounded to integers.
+             * At this point the scale and shear coefficients can be rounded to integers.
              * Continue only if this rounding does not make the transform non-invertible.
              *
              * Note: we round translation terms without checking if they are close to integers

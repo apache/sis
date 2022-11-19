@@ -175,7 +175,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         assertArrayEquals("sourceDimensions", new int[] {0, 2}, s.getSourceDimensions());
         assertArrayEquals("targetDimensions", new int[] {0},    s.getTargetDimensions());
         /*
-         * Try again, but with the addition of a target dimension that TransformSeparator can not keep.
+         * Try again, but with the addition of a target dimension that TransformSeparator cannot keep.
          * It shall cause an exception to be thrown.
          */
         s.addTargetDimensions(1);
@@ -384,7 +384,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
 
     /**
      * Compares coordinate computed by a reference with coordinates computed by the transform to test.
-     * We use this method when we can not easily analyze the {@link MathTransform} created by the test
+     * We use this method when we cannot easily analyze the {@link MathTransform} created by the test
      * case, for example because it may have been rearranged in arbitrary ways for optimization purpose
      * (e.g. {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}).
      *

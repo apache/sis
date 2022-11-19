@@ -260,7 +260,7 @@ opti:   if (count > 1 && cycleLength * occurrences >= size) {
      * @param  first   index of the first value to be included in the returned view.
      * @param  step    the index increment in this vector between two consecutive values
      *                 in the returned vector. Can be positive, zero or negative.
-     * @param  length  the length of the vector to be returned. Can not be greater than
+     * @param  length  the length of the vector to be returned. Cannot be greater than
      *                 the length of this vector, except if the {@code step} is zero.
      */
     @Override

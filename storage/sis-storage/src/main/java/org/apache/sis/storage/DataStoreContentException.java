@@ -20,7 +20,7 @@ import java.util.Locale;
 
 
 /**
- * Thrown when a store can not be read because the stream contains invalid data.
+ * Thrown when a store cannot be read because the stream contains invalid data.
  * It may be for example a logical inconsistency, or a reference not found,
  * or an unsupported file format version, <i>etc.</i>
  *
@@ -70,14 +70,14 @@ public class DataStoreContentException extends DataStoreException {
     }
 
     /**
-     * Creates a localized exception with a message saying that the given store can not be read.
+     * Creates a localized exception with a message saying that the given store cannot be read.
      * Location in the file where the error occurred while be fetched from the given {@code store}
      * argument if possible. If the given store is not recognized, then it will be ignored.
      *
      * <p>Examples of messages created by this constructor:</p>
      * <ul>
-     *   <li>Can not read <var>“Foo”</var> as a file in the <var>Bar</var> format.</li>
-     *   <li>Can not read after column 10 or line 100 of <var>“Foo”</var> as part of a file in the <var>Bar</var> format.</li>
+     *   <li>Cannot read <var>“Foo”</var> as a file in the <var>Bar</var> format.</li>
+     *   <li>Cannot read after column 10 or line 100 of <var>“Foo”</var> as part of a file in the <var>Bar</var> format.</li>
      * </ul>
      *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.

@@ -113,7 +113,7 @@ public final class ObjectConverters extends Static {
      * @param  value   the value to convert, or {@code null}.
      * @param  target  the target class.
      * @return the converted value (may be {@code null}).
-     * @throws UnconvertibleObjectException if the given value can not be converted.
+     * @throws UnconvertibleObjectException if the given value cannot be converted.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <T> T convert(Object value, final Class<T> target) throws UnconvertibleObjectException {

@@ -79,7 +79,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      *
      * @param  name      the name as either a {@link String} or a {@link GenericName}.
      * @param  parent    a feature type created by {@link DefaultFeatureTypeTest#city()}, or {@code null}.
-     * @param  property  the association to an other feature.
+     * @param  property  the association to another feature.
      * @return the feature type to use for testing purpose.
      */
     private static DefaultFeatureType createType(final Object name,
@@ -138,7 +138,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
 
     /**
      * Tests {@code DefaultFeatureType.isAssignableFrom(FeatureType)} and {@code DefaultFeatureType.equals(Object)}
-     * on a feature type having a bidirectional association to an other feature. This test will fall in an infinite
+     * on a feature type having a bidirectional association to another feature. This test will fall in an infinite
      * loop if the implementation does not have proper guard against infinite recursivity.
      */
     @Test

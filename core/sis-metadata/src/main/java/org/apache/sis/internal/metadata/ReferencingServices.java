@@ -147,7 +147,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
      * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
-     * @throws TransformException if the given envelope can not be transformed.
+     * @throws TransformException if the given envelope cannot be transformed.
      */
     public DefaultGeographicBoundingBox setBounds(Envelope envelope, DefaultGeographicBoundingBox target, String findOpCaller)
             throws TransformException

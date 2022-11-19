@@ -68,7 +68,7 @@ public class DataStoreReferencingException extends DataStoreException {
     }
 
     /**
-     * Creates a localized exception with a message saying that the given store can not be read.
+     * Creates a localized exception with a message saying that the given store cannot be read.
      * Location in the file where the error occurred while be fetched from the given {@code store}
      * argument if possible. If the given store is not recognized, then it will be ignored.
      *

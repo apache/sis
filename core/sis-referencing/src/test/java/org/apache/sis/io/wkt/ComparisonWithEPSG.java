@@ -163,7 +163,7 @@ public final strictfp class ComparisonWithEPSG extends TestCase {
      * Tests formatting a coordinate operation from an EPSG code and parsing it back.
      *
      * @throws FactoryException if an error occurred while creating the coordinate operation.
-     * @throws ParseException if the WKT can not be parsed.
+     * @throws ParseException if the WKT cannot be parsed.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-512">SIS-512 on issues tracker</a>
      *

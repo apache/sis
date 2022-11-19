@@ -61,7 +61,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not add null elements.
+     * Ensures that we cannot add null elements.
      */
     @Test
     public void testAddNull() {
@@ -75,7 +75,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not add null elements.
+     * Ensures that we cannot add null elements.
      */
     @Test
     public void testAddAllNull() {
@@ -90,7 +90,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not element of the wrong type.
+     * Ensures that we cannot element of the wrong type.
      */
     @Test
     public void testAddWrongType() {
@@ -117,7 +117,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not element of the wrong type in a sublist.
+     * Ensures that we cannot element of the wrong type in a sublist.
      */
     @Test
     @DependsOnMethod("testAddWrongType")
@@ -127,7 +127,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
         assertTrue(list.add("Two"));
         assertTrue(list.add("Three"));
         testAddWrongType(list.subList(1, 3));
-        // Exception message is JDK-dependent, so we can not test it.
+        // Exception message is JDK-dependent, so we cannot test it.
     }
 
     /**

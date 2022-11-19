@@ -567,7 +567,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * Otherwise completes the initialization of the deserialized instance.
      *
      * <p>Because of its package-private access, this method is <strong>not</strong> invoked if
-     * the deserialized class is a subclass defined in an other package. This is the intended
+     * the deserialized class is a subclass defined in another package. This is the intended
      * behavior since we don't want to replace an instance of a user-defined class.</p>
      *
      * @return the unique instance.

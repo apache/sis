@@ -476,7 +476,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
                 } catch (IOException e) {
                     nextButton.setEnabled(false);
                     finalMessage.setForeground(Color.RED);
-                    finalMessage.setText(getHtmlMessage("Apache SIS setup can not be completed.", e));
+                    finalMessage.setText(getHtmlMessage("Apache SIS setup cannot be completed.", e));
                 }
                break;
             }
@@ -496,7 +496,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         final boolean isValid;
         if (failure != null) {
             isValid = false;
-            javafxPathError.setText(getHtmlMessage("Can not decompress the file.", failure));
+            javafxPathError.setText(getHtmlMessage("Cannot decompress the file.", failure));
         } else {
             isValid = setJavafxPath(destination);
         }
@@ -557,7 +557,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     /**
      * Searches recursively for the {@value #SELECT} button in the given container. This is used for
      * locating the "Open" button in {@link JFileChooser}. Caller needs to temporarily change button
-     * text to {@value #SELECT} before to invoke this method. We can not search directly for "Open"
+     * text to {@value #SELECT} before to invoke this method. We cannot search directly for "Open"
      * text because that text may be localized.
      *
      * @param  c  the container where to search for the {@value #SELECT} button.
@@ -664,7 +664,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
                 error = FXFinder.checkZip(dir);
                 isValid = (error == null);
             } catch (IOException e) {
-                error = getHtmlMessage("Can not open the file.", e);
+                error = getHtmlMessage("Cannot open the file.", e);
             } else {
                 error = "<html>Not a recognized JavaFX directory or ZIP file.</html>";
             }
@@ -696,7 +696,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
                         if (setJavafxPath(file)) break;
                     }
                 } catch (UnsupportedFlavorException | IOException e) {
-                    javafxPathError.setText(getHtmlMessage("Can not open the file.", e));
+                    javafxPathError.setText(getHtmlMessage("Cannot open the file.", e));
                 }
                 event.dropComplete(true);
                 return;
@@ -742,7 +742,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     public static boolean show(final FXFinder javafxFinder) {
         /*
          * Checks now that we can edit `setenv.sh` content in order to not show the wizard
-         * if we can not read that file (e.g. because the file was not found).
+         * if we cannot read that file (e.g. because the file was not found).
          */
         final String diagnostic = javafxFinder.diagnostic();
         if (diagnostic != null) {

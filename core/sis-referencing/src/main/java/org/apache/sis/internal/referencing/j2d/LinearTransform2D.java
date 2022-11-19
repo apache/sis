@@ -35,7 +35,7 @@ public interface LinearTransform2D extends MathTransform2D, LinearTransform {
      * Returns the inverse transform, which shall be linear and two-dimensional.
      *
      * @return the inverse transform.
-     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     * @throws NoninvertibleTransformException if the transform cannot be inverted.
      */
     @Override
     LinearTransform2D inverse() throws NoninvertibleTransformException;

@@ -97,7 +97,7 @@ public final strictfp class SampleModelFactoryTest extends TestCase {
 
     /**
      * Tests the creation and modification of a {@link MultiPixelPackedSampleModel}.
-     * We can not test band sub-setting for this kind of sample model because it can
+     * We cannot test band sub-setting for this kind of sample model because it can
      * only have a single band.
      */
     @Test

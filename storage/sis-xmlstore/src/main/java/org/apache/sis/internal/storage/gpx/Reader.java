@@ -142,7 +142,7 @@ final class Reader extends StaxStreamReader {
      * @throws JAXBException if an error occurred while parsing GPX 1.1 metadata.
      * @throws ClassCastException if an object unmarshalled by JAXB was not of the expected type.
      * @throws URISyntaxException if an error occurred while parsing URI in GPX 1.0 metadata.
-     * @throws DateTimeParseException if a text can not be parsed as a date.
+     * @throws DateTimeParseException if a text cannot be parsed as a date.
      * @throws EOFException if the file seems to be truncated.
      */
     public Version initialize(final boolean readMetadata) throws DataStoreException,
@@ -355,8 +355,8 @@ parse:  while (reader.hasNext()) {
      * @throws URISyntaxException if an error occurred while parsing GPX 1.0 URI.
      * @throws JAXBException if an error occurred while parsing GPX 1.1 link.
      * @throws ClassCastException if an object unmarshalled by JAXB was not of the expected type.
-     * @throws NumberFormatException if a text can not be parsed as an integer or a floating point number.
-     * @throws DateTimeParseException if a text can not be parsed as a date.
+     * @throws NumberFormatException if a text cannot be parsed as an integer or a floating point number.
+     * @throws DateTimeParseException if a text cannot be parsed as a date.
      * @throws EOFException if the file seems to be truncated.
      */
     @SuppressWarnings("fallthrough")

@@ -252,7 +252,7 @@ fill:   for (int i=0; ; i++) {
                 case 4: {
                     if (sections.contains(VERSIONS)) {
                         nameKey = Vocabulary.Keys.Container;
-                        value = Shutdown.getContainer();        // Sometime contains version information.
+                        value = Shutdown.getContainer();        // Sometimes contains version information.
                     }
                     break;
                 }

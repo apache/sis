@@ -185,7 +185,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
      * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
+     * except {@code REMARKS["…"]}. May also be a user supplied transliterator.
      *
      * <p>A {@code null} value means to infer this property from the {@linkplain #convention}.</p>
      */
@@ -399,7 +399,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
      *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
-     *   <li>Any other user-supplied mapping.</li>
+     *   <li>Any other user supplied mapping.</li>
      * </ul>
      *
      * @return the mapper between Java character sequences and the characters to write in WKT.
@@ -913,7 +913,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param  tree  the tree of WKT elements.
      * @return the parsed object (never {@code null}).
-     * @throws ParseException if the tree can not be parsed.
+     * @throws ParseException if the tree cannot be parsed.
      */
     final Object buildFromTree(StoredTree tree) throws ParseException {
         clear();
@@ -1013,7 +1013,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
          * If the given Appendable is not a StringBuffer, creates a temporary StringBuffer.
-         * We can not write directly in an arbitrary Appendable because Formatter needs the
+         * We cannot write directly in an arbitrary Appendable because Formatter needs the
          * ability to go backward ("append only" is not sufficient), and because it passes
          * the buffer to other java.text.Format instances which work only with StringBuffer.
          */

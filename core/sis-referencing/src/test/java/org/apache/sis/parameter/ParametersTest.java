@@ -204,7 +204,7 @@ public final strictfp class ParametersTest extends TestCase {
         assertEquals("No value, should fallback on default.", Integer.valueOf(10), group.getValue(descriptor));
         try {
             group.intValue(incomplete);
-            fail("Can not return when there is no value.");
+            fail("Cannot return when there is no value.");
         } catch (IllegalStateException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("My param"));

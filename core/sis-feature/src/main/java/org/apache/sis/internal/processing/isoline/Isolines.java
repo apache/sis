@@ -142,7 +142,7 @@ public final class Isolines {
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
      *                    Integer source coordinates are located at pixel centers.
      * @return the isolines for each band in the given image.
-     * @throws TransformException if an interpolated point can not be transformed using the given transform.
+     * @throws TransformException if an interpolated point cannot be transformed using the given transform.
      */
     public static Isolines[] generate(final RenderedImage data, final double[][] levels,
                                       final MathTransform gridToCRS) throws TransformException
@@ -153,7 +153,7 @@ public final class Isolines {
     }
 
     /**
-     * Generates isolines in background using an arbitrary amount of processors.
+     * Generates isolines in background using an arbitrary number of processors.
      * This method returns immediately (i.e. the current thread is not used for isoline computation).
      * The result will become available at a later time in the {@link Future} object.
      *

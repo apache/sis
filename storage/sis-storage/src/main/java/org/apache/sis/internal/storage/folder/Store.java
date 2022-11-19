@@ -152,7 +152,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
 
     /**
      * A structured view of this aggregate, or {@code null} if not net computed.
-     * May be {@code this} if {@link CoverageAggregator} can not do better than current resource.
+     * May be {@code this} if {@link CoverageAggregator} cannot do better than current resource.
      *
      * @see #getStructuredView()
      */
@@ -407,7 +407,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
     /**
      * Returns a more structured (if possible) view of this resource.
      *
-     * @return structured view. May be {@code this} if this method can not do better than current resource.
+     * @return structured view. May be {@code this} if this method cannot do better than current resource.
      * @throws DataStoreException if an error occurred during the attempt to create a structured view.
      */
     @Override

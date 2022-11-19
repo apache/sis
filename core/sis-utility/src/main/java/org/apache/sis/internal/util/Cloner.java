@@ -50,7 +50,7 @@ public final class Cloner {
     private Method method;
 
     /**
-     * Action to take when an object can not be cloned because no public {@code clone()} method has been found.
+     * Action to take when an object cannot be cloned because no public {@code clone()} method has been found.
      * If this field is {@code true}, then the {@link #clone(Object)} method in this class will throw a
      * {@link CloneNotSupportedException}. Otherwise the {@code clone(Object)} method will return the original object.
      */
@@ -87,7 +87,7 @@ public final class Cloner {
      * @param  array          the array to clone.
      * @param  componentType  value of {@code array.getClass().getComponentType()}.
      * @return the cloned array, potentially with recursively cloned elements.
-     * @throws CloneNotSupportedException if an array element can not be cloned.
+     * @throws CloneNotSupportedException if an array element cannot be cloned.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private Object cloneArray(final Object array, final Class<?> componentType) throws CloneNotSupportedException {
@@ -118,7 +118,7 @@ public final class Cloner {
      *
      * @param  object  the object to clone, or {@code null}.
      * @return a clone of the given object, or {@code null} if {@code object} was null.
-     * @throws CloneNotSupportedException if the given object can not be cloned.
+     * @throws CloneNotSupportedException if the given object cannot be cloned.
      */
     public Object clone(final Object object) throws CloneNotSupportedException {
         if (object == null) {
@@ -186,7 +186,7 @@ public final class Cloner {
     /**
      * Throws the given exception if it is an instance of {@code CloneNotSupportedException}
      * or an unchecked exception, or do nothing otherwise. If this method returns normally,
-     * then it is caller's responsibility to throw an other exception.
+     * then it is caller's responsibility to throw another exception.
      *
      * @param  cause  the value of {@link InvocationTargetException#getCause()}.
      */
@@ -204,7 +204,7 @@ public final class Cloner {
     }
 
     /**
-     * Returns an exception telling that the object can not be cloned because of the given error.
+     * Returns an exception telling that the object cannot be cloned because of the given error.
      *
      * @param  cause  the cause for the failure to clone an object.
      * @param  type   the type of object that we failed to clone.

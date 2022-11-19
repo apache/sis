@@ -306,7 +306,7 @@ public final class ReferencingUtilities extends Static {
      * returns {@code null}.
      *
      * <p>This method excludes geocentric CRS on intent. Some callers needs this exclusion as a way to identify
-     * which CRS in a Geographic/Geocentric conversion is the geographic one. An other point of view is to said
+     * which CRS in a Geographic/Geocentric conversion is the geographic one. Another point of view is to said
      * that if this method returns a non-null value, then the coordinates are expected to be either two-dimensional
      * or three-dimensional with an ellipsoidal height.</p>
      *

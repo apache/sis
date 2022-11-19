@@ -86,7 +86,7 @@ public final class CodeListUID {
      * This is the namespace used by default in Apache SIS.
      *
      * <h4>Historical note</h4>
-     * The XSD files can be downloaded from that URL as well, but we sometime experiment unexpected end of file.
+     * The XSD files can be downloaded from that URL as well, but we sometimes experiment unexpected end of file.
      * The same files can be downloaded from <a href="https://schemas.isotc211.org/">ISO/TC 211 repository</a>,
      * which seems more stable. The TC 211 repository is used for downloads, while the standard ISO URL is sill
      * used for namespaces.

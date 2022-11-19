@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.Numerics;
 
 /**
  * A {@link GridExtent} which remembers the {@link Canvas#getPointOfInterest(boolean)} coordinates.
- * This class contains also static help functions for the construction of {@link GridGeometry}.
+ * This class also contains static help functions for the construction of {@link GridGeometry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -121,7 +121,7 @@ final class CanvasExtent extends GridExtent {
      * Those dimensions are discovered by inspection of the derivative of the transform
      * from the given CRS to the objective CRS.  In addition, this method also adds the
      * CRS component of those supplemental dimensions in the given list. If a component
-     * can not be separated from the CRS, then current implementation excludes it from
+     * cannot be separated from the CRS, then current implementation excludes it from
      * the set of supplemental dimensions.
      *
      * @param  crs         the coordinate reference system of the Point Of Interest (POI).

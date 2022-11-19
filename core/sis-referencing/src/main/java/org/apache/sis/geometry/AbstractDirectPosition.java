@@ -318,7 +318,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      *
      * @param  wkt  the WKT to parse.
      * @return the coordinates, or {@code null} if none.
-     * @throws NumberFormatException if a number can not be parsed.
+     * @throws NumberFormatException if a number cannot be parsed.
      * @throws IllegalArgumentException if the parenthesis are not balanced.
      */
     static double[] parse(final CharSequence wkt) throws NumberFormatException, IllegalArgumentException {

@@ -20,7 +20,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 
 /**
- * Thrown when a matrix can not be inverted.
+ * Thrown when a matrix cannot be inverted.
  * This may be because the matrix is singular, or because the matrix is not square.
  *
  * <div class="note"><b>Note:</b>

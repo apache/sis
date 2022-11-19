@@ -39,8 +39,8 @@ public final strictfp class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests coordinate conversions in the polar case.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
@@ -53,8 +53,8 @@ public final strictfp class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests coordinate conversions in the cylindrical case.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod("testConversion")
@@ -68,8 +68,8 @@ public final strictfp class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative in the polar case.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod("testConversion")
@@ -83,8 +83,8 @@ public final strictfp class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative in the cylindrical case.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod("testDerivative")
@@ -98,8 +98,8 @@ public final strictfp class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative in the polar case.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod("testDerivative")
@@ -116,8 +116,8 @@ public final strictfp class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative in the cylindrical case.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod("testCylindricalDerivative")

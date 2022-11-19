@@ -385,12 +385,12 @@ public class Optimization {
 
     /**
      * Optimizes or simplifies the given filter and returns it as a list of {@code AND} operands.
-     * If such list can not be built, then this method returns the optimized filter in a singleton list.
+     * If such list cannot be built, then this method returns the optimized filter in a singleton list.
      *
      * <h4>Use case</h4>
      * This method tries to transform a filter into a {@code F₀ AND F₁ AND F₂ AND F₃ AND ...} sequence.
      * This transformation is useful when some operands can be handled by the storage engine
-     * (for example a SQL database) and other operands can not.
+     * (for example a SQL database) and other operands cannot.
      * For example when reading features from a relational database,
      * the implementation may choose to express the F₁ and F₃ operands as SQL statements
      * and apply the other operands in Java code.
@@ -413,7 +413,7 @@ public class Optimization {
 
     /**
      * Returns the given filter as a list of {@code AND} operands.
-     * If such list can not be built, then this method returns the given filter in a singleton list.
+     * If such list cannot be built, then this method returns the given filter in a singleton list.
      *
      * @param  <R>     the type of resources (e.g. {@code Feature}) used as inputs.
      * @param  filter  the filter to decompose.

@@ -295,7 +295,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     }
 
     /**
-     * Tests WKT 1 formatting of a three-dimensional CRS. Such CRS can not be represented directly in WKT 1 format.
+     * Tests WKT 1 formatting of a three-dimensional CRS. Such CRS cannot be represented directly in WKT 1 format.
      * Consequently, the formatter will need to split the three-dimensional geographic CRS into a two-dimensional
      * geographic CRS followed by an ellipsoidal height. Such construction is illegal according ISO 19111, so this
      * split shall be done on-the-fly only for formatting purpose.

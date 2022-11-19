@@ -176,7 +176,7 @@ public class DefaultCompoundCS extends AbstractCS {
     }
 
     /*
-     * Do not override createForAxes(…) and forConvention(…) because we can not create a new DefaultCompoundCS
+     * Do not override createForAxes(…) and forConvention(…) because we cannot create a new DefaultCompoundCS
      * without knownledge of the CoordinateSystem components to give to it. It would be possible to recursively
      * invoke components[i].forConvention(…), but it would be useless to perform such decomposition here because
      * DefaultCompoundCRS will need to perform its own decomposition anyway.

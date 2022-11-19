@@ -187,7 +187,7 @@ final class Writer extends StaxStreamWriter {
      * Writes a way point, which may be standalone or part of a route or a track segment.
      *
      * @param  feature  feature to write, or {@code null} if none.
-     * @param  tagName  way point tag name (can not be {@code null}).
+     * @param  tagName  way point tag name (cannot be {@code null}).
      * @throws XMLStreamException if underlying STAX writer encounter an error.
      * @throws JAXBException if underlying JAXB marshaller encounter an error.
      */

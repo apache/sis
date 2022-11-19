@@ -675,7 +675,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             assertTrue ("Projected CRS should be a subset of CRS.",  projectedCRS.size() < crs.size());
             assertFalse("Projected CRS should be a subset of CRS.",  projectedCRS.containsAll(crs));
             assertTrue ("Projected CRS should be a subset of CRS.",  crs.containsAll(projectedCRS));
-            assertTrue ("Projected CRS can not be Geographic CRS.",  Collections.disjoint(geographicCRS, projectedCRS));
+            assertTrue ("Projected CRS cannot be Geographic CRS.",  Collections.disjoint(geographicCRS, projectedCRS));
         }
 
         /*
@@ -719,7 +719,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             assertTrue ("Conversion shall be a subset of operations.",       operations .containsAll(conversions));
             assertTrue ("Transformations shall be a subset of operations.",  operations .containsAll(transformations));
 
-            assertTrue ("Conversions can not be transformations.",  Collections.disjoint(conversions, transformations));
+            assertTrue ("Conversions cannot be transformations.",  Collections.disjoint(conversions, transformations));
         }
 
         // We are cheating here since we are breaking generic type check.

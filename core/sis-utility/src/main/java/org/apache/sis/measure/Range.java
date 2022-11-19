@@ -276,7 +276,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     @Override
     public final boolean isEmpty() {
         if (minValue == null || maxValue == null) {
-            return false;                               // Unbounded: can not be empty.
+            return false;                               // Unbounded: cannot be empty.
         }
         final int c = minValue.compareTo(maxValue);
         if (c < 0) {
@@ -524,7 +524,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         /*
          * Check for infinite values.  If the given value is infinite, it can be either positive or
          * negative infinity, which we can infer from the 'position' argument. Note that 'position'
-         * can not be 0 in such case, since infinities are always exclusive in this class.
+         * cannot be 0 in such case, since infinities are always exclusive in this class.
          */
         if (minValue == null) {
             return (value == null) ? 0 : -1;

@@ -70,13 +70,13 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Creates a sub-type of the "city" type with only one additional property, an arbitrary amount of strings.
+     * Creates a sub-type of the "city" type with only one additional property, an arbitrary number of strings.
      * The feature contains the following attribute:
      *
      * <ul>
      *   <li>{@code city}         as a  {@link String}  (mandatory)</li>
      *   <li>{@code population}   as an {@link Integer} (mandatory)</li>
-     *   <li>{@code universities} as an arbitrary amount of {@link String}</li>
+     *   <li>{@code universities} as an arbitrary number of {@link String}</li>
      * </ul>
      *
      * @return the feature for an university city.
@@ -128,7 +128,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to
-     * {@link InternationalString} and an arbitrary amount of universities.
+     * {@link InternationalString} and an arbitrary number of universities.
      */
     static DefaultFeatureType worldMetropolis() {
         return worldMetropolis(metropolis(), universityCity(), CharacteristicTypeMapTest.temperature(), InternationalString.class);
@@ -292,7 +292,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not use two properties with the same name.
+     * Ensures that we cannot use two properties with the same name.
      */
     @Test
     @DependsOnMethod("testSimple")
@@ -412,7 +412,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Tests a feature type which inherit from an other feature type, but without property overriding.
+     * Tests a feature type which inherit from another feature type, but without property overriding.
      *
      * <p>Current implementation performs its tests on the {@link #capital()} feature.</p>
      */
@@ -483,7 +483,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Tests inheritance with a property that override an other property with a more specific type.
+     * Tests inheritance with a property that override another property with a more specific type.
      */
     @Test
     @DependsOnMethod({"testMultiInheritance", "testNameCollision"})
@@ -505,7 +505,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertArrayEquals("superTypes", new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
         assertFalse      ("isSparse",        worldMetropolis.isSparse());
-        assertFalse      ("isSimple",        worldMetropolis.isSimple());           // Because of the arbitrary amount of universities.
+        assertFalse      ("isSimple",        worldMetropolis.isSimple());           // Because of the arbitrary number of universities.
         assertEquals     ("instanceSize", 6, worldMetropolis.indices().size());
 
         assertPropertiesEquals(worldMetropolis, false, "region", "temperature");

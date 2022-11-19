@@ -157,7 +157,7 @@ final class CharactersView implements CharSequence {
      * @param  stopAtToken  whether to stop at the first non-white character.
      * @return whether end of line has been reached.
      * @throws EOFException if the channel has reached the end of stream.
-     * @throws IOException if an other kind of error occurred while reading.
+     * @throws IOException if another kind of error occurred while reading.
      */
     private boolean skipLine(final boolean stopAtToken) throws IOException {
         buffer.position(buffer.position() - 1);     // For checking if the space that we skipped was CR/LF.
@@ -178,7 +178,7 @@ final class CharactersView implements CharSequence {
      *
      * @return the next token, never empty and without leading or trailing white spaces.
      * @throws EOFException if the channel has reached the end of stream.
-     * @throws IOException if an other kind of error occurred while reading.
+     * @throws IOException if another kind of error occurred while reading.
      * @throws DataStoreContentException if the content does not seem to comply with ASCII Grid format.
      */
     @SuppressWarnings("empty-statement")

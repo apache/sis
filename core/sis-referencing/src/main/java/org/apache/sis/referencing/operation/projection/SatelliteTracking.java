@@ -56,7 +56,7 @@ import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
  *
  * <h2>Limitations</h2>
  * This map projection supports only circular orbits. The Earth is assumed spherical.
- * Areas close to poles can not be mapped.
+ * Areas close to poles cannot be mapped.
  *
  * <h2>References</h2>
  * John P. Snyder., 1987. <u>Map Projections - A Working Manual</u>
@@ -316,7 +316,7 @@ public class SatelliteTracking extends NormalizedProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -348,7 +348,7 @@ public class SatelliteTracking extends NormalizedProjection {
                  * change their sign. The y values lower or greater (depending of n sign) than -s0/n can
                  * not be plotted. Snyder suggests to use another projection if cosmetic output is wanted.
                  * For now, we just set the results to NaN (meaning "no result", which is not the same than
-                 * TransformException which means that a result exists but can not be computed).
+                 * TransformException which means that a result exists but cannot be computed).
                  */
                 λpm = Double.NaN;
             }
@@ -384,7 +384,7 @@ public class SatelliteTracking extends NormalizedProjection {
      * Transforms the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
      *
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

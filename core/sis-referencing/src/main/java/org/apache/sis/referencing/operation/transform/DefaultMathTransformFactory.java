@@ -896,7 +896,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * or {@link InvalidParameterValueException} to be thrown.</p>
          *
          * @param  writable  {@code true} if this method should also check that the parameters group is editable.
-         * @throws IllegalArgumentException if the copy can not be performed because a parameter has
+         * @throws IllegalArgumentException if the copy cannot be performed because a parameter has
          *         a unrecognized name or an illegal value.
          */
         private void ensureCompatibleParameters(final boolean writable) throws IllegalArgumentException {
@@ -1014,7 +1014,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     /*
                      * Parameter not found, or is not numeric, or unit of measurement is not linear.
                      * Do not touch to the parameters. We will see if createParameterizedTransform(…)
-                     * can do something about that. If it can not, createParameterizedTransform(…) is
+                     * can do something about that. If it cannot, createParameterizedTransform(…) is
                      * the right place to throw the exception.
                      */
                     if (failure == null) {
@@ -1213,7 +1213,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *     MathTransform mt = factory.createParameterizedTransform(group, null);
      * }
      *
-     * Sometime the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
+     * Sometimes the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
      * but rather inferred from the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
      * datum} of the source Coordinate Reference System. If the given {@code context} argument is non-null,
      * then this method will use those contextual information for:
@@ -1266,7 +1266,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
             /*
              * Get the MathTransformProvider of the same name or identifier than the given parameter group.
-             * We give precedence to EPSG identifier because operation method names are sometime ambiguous
+             * We give precedence to EPSG identifier because operation method names are sometimes ambiguous
              * (e.g. "Lambert Azimuthal Equal Area (Spherical)"). If we fail to find the method by its EPSG code,
              * we will try searching by method name. As a side effect, this second attempt will produce a better
              * error message if the method is really not found.
@@ -1464,7 +1464,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * handled by {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory} instead).
      *
      * <div class="note"><b>Note:</b> the {@code parameterized} transform is a black box receiving inputs in
-     * any CS and producing outputs in any CS, not necessarily of the same kind. For that reason, we can not use
+     * any CS and producing outputs in any CS, not necessarily of the same kind. For that reason, we cannot use
      * {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} between the normalized CS.
      * We have to trust that the caller know that the coordinate systems (s)he provided are correct for the work
      * done by the transform.</div>
@@ -1485,7 +1485,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
         }
         /*
-         * Creates the error message for a transform that can not be associated with given coordinate systems.
+         * Creates the error message for a transform that cannot be associated with given coordinate systems.
          */
         String name = null;
         if (parameterized instanceof Parameterized) {
@@ -1554,7 +1554,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  target     the target coordinate system.
      * @param  ellipsoid  the ellipsoid of {@code EllipsoidalCS}, or {@code null} if none.
      * @return a conversion from the given source to the given target coordinate system.
-     * @throws FactoryException if the conversion can not be created.
+     * @throws FactoryException if the conversion cannot be created.
      *
      * @since 0.8
      */
@@ -1717,13 +1717,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * <p>Note that the WKT format is not always lossless. A {@code MathTransform} recreated from WKT may be
      * non-invertible even if the original transform was invertible. For example if an "Affine" operation is
-     * defined by a non-square matrix, Apache SIS implementation sometime has "hidden" information about the
+     * defined by a non-square matrix, Apache SIS implementation sometimes has "hidden" information about the
      * inverse matrix but those information are lost at WKT formatting time. A similar "hidden" information
      * lost may also happen with {@link WraparoundTransform}, also making that transform non-invertible.</p>
      *
      * @param  text  math transform encoded in Well-Known Text format.
      * @return the math transform (never {@code null}).
-     * @throws FactoryException if the Well-Known Text can not be parsed,
+     * @throws FactoryException if the Well-Known Text cannot be parsed,
      *         or if the math transform creation failed from some other reason.
      */
     @Override

@@ -248,7 +248,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * However subclasses may choose to do otherwise.
      *
      * @return a clone of this association.
-     * @throws CloneNotSupportedException if this association can not be cloned.
+     * @throws CloneNotSupportedException if this association cannot be cloned.
      *         The default implementation never throw this exception. However subclasses may throw it.
      */
     @Override

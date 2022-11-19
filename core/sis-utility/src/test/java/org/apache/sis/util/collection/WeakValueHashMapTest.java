@@ -127,7 +127,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
                     if (weakPrevious == null) {
                         /*
                          * The element was not in the WeakValueHashMap, possibly GC collected it.
-                         * Consequently that element can not be in the HashMap neither, otherwise
+                         * Consequently that element cannot be in the HashMap neither, otherwise
                          * a strong reference would exist which should have prevented the element
                          * from being removed from the WeakValueHashMap.
                          */
@@ -137,7 +137,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
                     }
                     if (strongPrevious != null) {
                         /*
-                         * Note: If 'strongPrevious==null', 'weakPrevious' can not
+                         * Note: If 'strongPrevious==null', 'weakPrevious' cannot
                          *       be null since GC has not collected its entry yet.
                          */
                         assertSame("put:", strongPrevious, weakPrevious);

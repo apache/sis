@@ -106,7 +106,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentWithGZD_2 = 6;
 
         /**
-         * Location type “{0}” can not have itself as a children.
+         * Location type “{0}” cannot have itself as a children.
          */
         public static final short LocationTypeCycle_1 = 11;
 
@@ -121,7 +121,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MGRS = 15;
 
         /**
-         * Can not determine dimension of “{0}” because of odd number of characters.
+         * Cannot determine dimension of “{0}” because of odd number of characters.
          */
         public static final short OddGridCoordinateLength_1 = 7;
 

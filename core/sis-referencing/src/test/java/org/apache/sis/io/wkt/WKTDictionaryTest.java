@@ -278,8 +278,8 @@ public final strictfp class WKTDictionaryTest extends TestCase {
             fail("Parsing should have failed.");
         } catch (FactoryException e) {
             /*
-             * Expect a message like: Can not create a geodetic object for "E1".
-             * The exact message is locale-dependent, so we can not test fully.
+             * Expect a message like: Cannot create a geodetic object for "E1".
+             * The exact message is locale-dependent, so we cannot test fully.
              */
             final String message = e.getMessage();
             assertTrue(message, message.contains(code));
@@ -328,7 +328,7 @@ public final strictfp class WKTDictionaryTest extends TestCase {
             ex = e;
         }
         /*
-         * Except a message like: Can not read file at line 13. Cause is: missing ']' in "GeodCRS" element.
+         * Except a message like: Cannot read file at line 13. Cause is: missing ']' in "GeodCRS" element.
          * The exact message is locale-dependent, so we test for a few keywords only.
          */
         final String message = ex.getMessage();

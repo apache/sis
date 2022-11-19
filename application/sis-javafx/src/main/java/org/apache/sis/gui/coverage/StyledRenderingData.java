@@ -86,7 +86,7 @@ final class StyledRenderingData extends RenderingData {
      *
      * @param  isolines  value of {@link IsolineRenderer#prepare()}, or {@code null} if none.
      * @return result of isolines generation, or {@code null} if there are no isolines to compute.
-     * @throws TransformException if an interpolated point can not be transformed using the given transform.
+     * @throws TransformException if an interpolated point cannot be transformed using the given transform.
      */
     final Future<Isolines[]> generate(final IsolineRenderer.Snapshot[] isolines) throws TransformException {
         if (isolines == null) return null;

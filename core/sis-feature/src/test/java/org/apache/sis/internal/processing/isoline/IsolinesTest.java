@@ -61,7 +61,7 @@ public final strictfp class IsolinesTest extends TestCase {
      * Tests isolines computed in a contouring grid having only one cell.
      * The cell may have zero, one or two line segments.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     @Test
     public void testSingleCell() throws TransformException {
@@ -177,7 +177,7 @@ public final strictfp class IsolinesTest extends TestCase {
     /**
      * Tests isolines computed in a contouring grid having 2×2 cells.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     @Test
     public void testMultiCells() throws TransformException {
@@ -231,7 +231,7 @@ public final strictfp class IsolinesTest extends TestCase {
      * Tests isolines computed in a contouring grid having more than one band.
      * The same values than {@link #testSingleCell()} are used.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     @Test
     public void testSingleCellMultiBands() throws TransformException {
@@ -267,7 +267,7 @@ public final strictfp class IsolinesTest extends TestCase {
      * The same values than {@link #testMultiCells()} are used, but it tests a different
      * code path because {@link Isolines} contains a special case for one-banded image.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     @Test
     public void testMultiCellsMultiBands() throws TransformException {
@@ -286,7 +286,7 @@ public final strictfp class IsolinesTest extends TestCase {
     /**
      * Tests a cell containing a NaN value.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     @Test
     public void testNaN() throws TransformException {
@@ -304,7 +304,7 @@ public final strictfp class IsolinesTest extends TestCase {
      * Generates isolines from a 2×2 image having the given values.
      * The result is stored in {@link #isoline}; it may be {@code null}.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     private void generateFromCell(float v00, float v10, float v01, float v11) throws TransformException {
         generateFromImage(2, v00, v10, v01, v11);
@@ -314,7 +314,7 @@ public final strictfp class IsolinesTest extends TestCase {
      * Generates isolines from a size×size image having the given values.
      * The result is stored in {@link #isoline}; it may be {@code null}.
      *
-     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
     private void generateFromImage(final int size, final float... values) throws TransformException {
         final BufferedImage image = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_FLOAT, size, size, 1, 0, 0, 10);

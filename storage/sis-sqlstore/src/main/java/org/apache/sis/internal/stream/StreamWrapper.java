@@ -43,7 +43,7 @@ import java.util.stream.Collector;
  * This stream gives to subclasses an opportunity to redirect some operations to optimized implementations.
  *
  * <p><b>Note:</b>
- * It is sometime necessary to defer the creation of the source stream until a terminal operation is invoked.
+ * It is sometimes necessary to defer the creation of the source stream until a terminal operation is invoked.
  * Such deferred source creation is managed by the {@link DeferredStream} subclass.</p>
  *
  * @author  Alexis Manin (Geomatys)

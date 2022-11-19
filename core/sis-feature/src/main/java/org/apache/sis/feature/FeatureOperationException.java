@@ -21,7 +21,7 @@ import org.opengis.util.InternationalString;
 
 
 /**
- * Thrown when a property value can not be computed.
+ * Thrown when a property value cannot be computed.
  * This exception may occur during a call to {@link AbstractAttribute#getValue()} on an attribute
  * instance which computes its value dynamically instead of returning a stored value.
  * It may be for example the attributes produced by {@link FeatureOperations}.

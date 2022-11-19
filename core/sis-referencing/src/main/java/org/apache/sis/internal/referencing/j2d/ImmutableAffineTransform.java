@@ -307,7 +307,7 @@ public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Checks for {@linkplain #checkPermission() permission} before inverting this transform.
      *
-     * @throws java.awt.geom.NoninvertibleTransformException if the matrix can not be inverted.
+     * @throws java.awt.geom.NoninvertibleTransformException if the matrix cannot be inverted.
      */
     @Override
     public final void invert() throws NoninvertibleTransformException {

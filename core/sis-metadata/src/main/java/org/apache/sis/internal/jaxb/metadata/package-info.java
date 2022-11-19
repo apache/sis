@@ -18,7 +18,7 @@
 /**
  * JAXB adapters for metadata. The class defined in this package are both JAXB adapters
  * replacing GeoAPI interfaces by SIS implementation classes at marshalling time (since
- * JAXB can not marshal directly interfaces), and wrappers around the value to be marshalled.
+ * JAXB cannot marshal directly interfaces), and wrappers around the value to be marshalled.
  * ISO 19139 have the strange habit to wrap every properties in an extra level, for example:
  *
  * {@preformat xml

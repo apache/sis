@@ -42,7 +42,7 @@ import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
 
 
 /**
- * Combines an arbitrary amount of coverages into a single one.
+ * Combines an arbitrary number of coverages into a single one.
  * The combined coverages may use different coordinate systems.
  * The workflow is as below:
  *
@@ -171,7 +171,7 @@ public final class CoverageCombiner {
      * @param  sources  the coverages to write on top of destination coverage.
      * @return {@code true} on success, or {@code false} if at least one slice
      *         in the destination coverage is not writable.
-     * @throws TransformException if the coordinates of a given coverage can not be transformed
+     * @throws TransformException if the coordinates of a given coverage cannot be transformed
      *         to the coordinates of destination coverage.
      */
     public boolean apply(GridCoverage... sources) throws TransformException {

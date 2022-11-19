@@ -144,7 +144,7 @@ public class DomainDefinition {
      * Subclasses can override for modifying this behavior.</p>
      *
      * @param  evaluated  the transform for which to estimate the domain.
-     * @throws TransformException if the domain can not be estimated.
+     * @throws TransformException if the domain cannot be estimated.
      */
     public void estimate(final MathTransform evaluated) throws TransformException {
         if (evaluated instanceof AbstractMathTransform) {
@@ -171,7 +171,7 @@ public class DomainDefinition {
      * for a corner case which would still exist in addition of the above if we didn't used inverse.</div>
      *
      * @param  inverse  inverse of the transform for which to compute domain.
-     * @throws TransformException if the domain can not be estimated.
+     * @throws TransformException if the domain cannot be estimated.
      */
     final void estimateOnInverse(final MathTransform inverse) throws TransformException {
         if (inverse instanceof ConcatenatedTransform) {
@@ -199,7 +199,7 @@ public class DomainDefinition {
      *
      * @param  inverse  inverse of the transform for which to compute domain.
      * @param  tail     transform to use for transforming the domain envelope.
-     * @throws TransformException if the domain can not be estimated.
+     * @throws TransformException if the domain cannot be estimated.
      */
     final void estimateOnInverse(final MathTransform inverse, final MathTransform tail) throws TransformException {
         final ToDomain previous = stepToDomain;
@@ -240,14 +240,14 @@ public class DomainDefinition {
      * {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform.Inverse#getDomain(DomainDefinition)}.
      * When above-cited method is invoked directly by users, they should get the transformed envelope because there is
      * no other transform queued in {@link #stepToDomain}. But if above-cited method is invoked for a transform in the
-     * middle of a transforms chain, then the transformed envelope can not be returned because it would not be in the
+     * middle of a transforms chain, then the transformed envelope cannot be returned because it would not be in the
      * CRS expected by method contract. But because that situation is specific to {@link ConcatenatedTransform},
      * it should be unnoticed by users.</p>
      *
      * @param  domain  the domain to intersect with, or {@code null} if none.
      * @param  prefix  a transform to apply on the envelope before other transforms.
      * @return the transformed envelope if {@code prefix} was the only transform applied, or {@code null} otherwise.
-     * @throws TransformException if the envelope can not be transformed to the domain of the first transform step.
+     * @throws TransformException if the envelope cannot be transformed to the domain of the first transform step.
      */
     final Envelope intersectOrTransform(Envelope domain, MathTransform prefix) throws TransformException {
         if (domain != null) {

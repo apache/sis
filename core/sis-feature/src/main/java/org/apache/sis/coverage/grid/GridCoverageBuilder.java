@@ -313,7 +313,7 @@ public class GridCoverageBuilder {
      * are usually increasing up. Consequently the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
      * method may need to be invoked after this method.</p>
      *
-     * @param  data  the rendered image to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
+     * @param  data  the rendered image to be wrapped in a {@code GridCoverage}. Cannot be {@code null}.
      * @return {@code this} for method invocation chaining.
      *
      * @see BufferedImage
@@ -337,7 +337,7 @@ public class GridCoverageBuilder {
      * are usually increasing up. Consequently the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
      * method may need to be invoked after this method.</p>
      *
-     * @param  data  the raster to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
+     * @param  data  the raster to be wrapped in a {@code GridCoverage}. Cannot be {@code null}.
      * @return {@code this} for method invocation chaining.
      *
      * @see Raster#createBandedRaster(int, int, int, int, Point)
@@ -357,7 +357,7 @@ public class GridCoverageBuilder {
      * If {@linkplain #setRanges(SampleDimension...) sample dimensions are specified}, then the number of
      * bands must be equal to the number of sample dimensions.
      *
-     * @param  data  the data buffer to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
+     * @param  data  the data buffer to be wrapped in a {@code GridCoverage}. Cannot be {@code null}.
      * @param  size  the image size in pixels, or {@code null} if unspecified. If null, then the image
      *               size will be taken from the {@linkplain GridGeometry#getExtent() grid extent}.
      * @return {@code this} for method invocation chaining.
@@ -480,7 +480,7 @@ public class GridCoverageBuilder {
                 }
                 /*
                  * Create an image from the raster. We favor BufferedImage instance when possible,
-                 * and fallback on TiledImage only if the BufferedImage can not be created.
+                 * and fallback on TiledImage only if the BufferedImage cannot be created.
                  */
                 if (raster instanceof WritableRaster) {
                     final WritableRaster wr = (WritableRaster) raster;

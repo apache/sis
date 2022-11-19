@@ -61,7 +61,7 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     /**
      * Constructs a set of the specified type.
      *
-     * @param type  the element type (can not be null).
+     * @param type  the element type (cannot be null).
      */
     public CheckedHashSet(final Class<E> type) {
         super();

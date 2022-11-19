@@ -71,73 +71,73 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AzimuthAndDistanceNotSet = 87;
 
         /**
-         * Can not associate “{0}” transform to the given coordinate systems because of mismatched
+         * Cannot associate “{0}” transform to the given coordinate systems because of mismatched
          * dimensions: {1}
          */
         public static final short CanNotAssociateToCS_2 = 95;
 
         /**
-         * Can not create objects of type ‘{0}’ from combined URI.
+         * Cannot create objects of type ‘{0}’ from combined URI.
          */
         public static final short CanNotCombineUriAsType_1 = 79;
 
         /**
-         * Can not compute the coordinate operation derivative.
+         * Cannot compute the coordinate operation derivative.
          */
         public static final short CanNotComputeDerivative = 2;
 
         /**
-         * Can not concatenate transforms “{0}” and “{1}”.
+         * Cannot concatenate transforms “{0}” and “{1}”.
          */
         public static final short CanNotConcatenateTransforms_2 = 3;
 
         /**
-         * Can not convert a point {0,choice,0#from|1#to} coordinate reference system “{1}”.
+         * Cannot convert a point {0,choice,0#from|1#to} coordinate reference system “{1}”.
          */
         public static final short CanNotConvertCoordinates_2 = 89;
 
         /**
-         * Can not create an object of type “{1}” as an instance of class ‘{0}’.
+         * Cannot create an object of type “{1}” as an instance of class ‘{0}’.
          */
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
         /**
-         * Can not find a coordinate reference system common to all given envelopes.
+         * Cannot find a coordinate reference system common to all given envelopes.
          */
         public static final short CanNotFindCommonCRS = 82;
 
         /**
-         * Can not infer a grid size from the given values in {0} range.
+         * Cannot infer a grid size from the given values in {0} range.
          */
         public static final short CanNotInferGridSizeFromValues_1 = 75;
 
         /**
-         * Can not instantiate geodetic object for “{0}”.
+         * Cannot instantiate geodetic object for “{0}”.
          */
         public static final short CanNotInstantiateGeodeticObject_1 = 5;
 
         /**
-         * Can not linearize the localization grid.
+         * Cannot linearize the localization grid.
          */
         public static final short CanNotLinearizeLocalizationGrid = 100;
 
         /**
-         * Can not map an axis from the specified coordinate system to the “{0}” direction.
+         * Cannot map an axis from the specified coordinate system to the “{0}” direction.
          */
         public static final short CanNotMapAxisToDirection_1 = 6;
 
         /**
-         * Can not parse component {1} in the combined {0,choice,0#URN|1#URL}.
+         * Cannot parse component {1} in the combined {0,choice,0#URN|1#URL}.
          */
         public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
-         * Can not read Well-Known Text at line {0}. Caused by: {1}
+         * Cannot read Well-Known Text at line {0}. Caused by: {1}
          */
         public static final short CanNotParseWKT_2 = 96;
 
         /**
-         * Can not separate the “{0}” coordinate reference system into sub-components.
+         * Cannot separate the “{0}” coordinate reference system into sub-components.
          */
         public static final short CanNotSeparateCRS_1 = 84;
 
@@ -147,28 +147,28 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotSeparateTargetDimension_1 = 7;
 
         /**
-         * Can not separate the transform because result would have {2} {0,choice,0#source|1#target}
+         * Cannot separate the transform because result would have {2} {0,choice,0#source|1#target}
          * dimension{2,choice,1#|2#s} instead of {1}.
          */
         public static final short CanNotSeparateTransform_3 = 83;
 
         /**
-         * Can not transform the ({0,number}, {1,number}) coordinates.
+         * Cannot transform the ({0,number}, {1,number}) coordinates.
          */
         public static final short CanNotTransformCoordinates_2 = 85;
 
         /**
-         * Can not transform envelope to a geodetic reference system.
+         * Cannot transform envelope to a geodetic reference system.
          */
         public static final short CanNotTransformEnvelopeToGeodetic = 8;
 
         /**
-         * Can not transform the given geometry.
+         * Cannot transform the given geometry.
          */
         public static final short CanNotTransformGeometry = 86;
 
         /**
-         * Can not use the {0} geodetic parameters. Caused by: {1}
+         * Cannot use the {0} geodetic parameters. Caused by: {1}
          */
         public static final short CanNotUseGeodeticParameters_2 = 9;
 
@@ -214,7 +214,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DuplicatedParameterName_4 = 16;
 
         /**
-         * Compound coordinate reference systems can not contain two {0,choice,1#horizontal|2#vertical}
+         * Compound coordinate reference systems cannot contain two {0,choice,1#horizontal|2#vertical}
          * components.
          */
         public static final short DuplicatedSpatialComponents_1 = 76;
@@ -232,12 +232,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FallbackDefaultFactoryVersion_2 = 17;
 
         /**
-         * Can not find {0} file named “{1}”.
+         * Cannot find {0} file named “{1}”.
          */
         public static final short FileNotFound_2 = 90;
 
         /**
-         * Can not parse “{1}” as a file in the {0} format.
+         * Cannot parse “{1}” as a file in the {0} format.
          */
         public static final short FileNotReadable_2 = 91;
 
@@ -258,22 +258,22 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IgnoredServiceProvider_3 = 19;
 
         /**
-         * Coordinate system of class ‘{0}’ can not have axis in the {1} direction.
+         * Coordinate system of class ‘{0}’ cannot have axis in the {1} direction.
          */
         public static final short IllegalAxisDirection_2 = 20;
 
         /**
-         * Dimensions of “{0}” operation can not be ({1} → {2}).
+         * Dimensions of “{0}” operation cannot be ({1} → {2}).
          */
         public static final short IllegalOperationDimension_3 = 21;
 
         /**
-         * This operation can not be applied to values of class ‘{0}’.
+         * This operation cannot be applied to values of class ‘{0}’.
          */
         public static final short IllegalOperationForValueClass_1 = 22;
 
         /**
-         * Parameter “{0}” can not be of type ‘{1}’.
+         * Parameter “{0}” cannot be of type ‘{1}’.
          */
         public static final short IllegalParameterType_2 = 23;
 
@@ -284,7 +284,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalParameterValueClass_3 = 24;
 
         /**
-         * Parameter “{0}” can not take the “{1}” value.
+         * Parameter “{0}” cannot take the “{1}” value.
          */
         public static final short IllegalParameterValue_2 = 25;
 
@@ -456,7 +456,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NonInvertibleMatrix_2 = 51;
 
         /**
-         * Can not invert the “{0}” operation.
+         * Cannot invert the “{0}” operation.
          */
         public static final short NonInvertibleOperation_1 = 52;
 

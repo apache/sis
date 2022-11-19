@@ -150,7 +150,7 @@ public final class NorthPoleRotation extends AbstractProvider {
      * @param  factory     the factory to use for creating the transforms.
      * @param  parameters  the group of parameter values.
      * @return the coordinate operation created from the given parameter values.
-     * @throws FactoryException if the coordinate operation can not be created.
+     * @throws FactoryException if the coordinate operation cannot be created.
      */
     @Override
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)

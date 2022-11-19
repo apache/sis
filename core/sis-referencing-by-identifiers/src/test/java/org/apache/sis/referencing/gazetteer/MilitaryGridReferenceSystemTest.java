@@ -128,7 +128,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * The results should be the same for all other zones.
      *
      * @throws TransformException if an error occurred while projecting a geographic coordinate.
-     * @throws ReflectiveOperationException if this test method can not access the table to verify.
+     * @throws ReflectiveOperationException if this test method cannot access the table to verify.
      */
     @Test
     @DependsOnMethod("verifyInvariants")

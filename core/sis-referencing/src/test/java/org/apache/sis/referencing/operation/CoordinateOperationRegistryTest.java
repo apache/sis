@@ -164,8 +164,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     /**
      * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with source and target CRS conform to EPSG definitions.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -202,8 +202,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
      * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference
      * in axis order an units.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -233,8 +233,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     /**
      * Tests the inverse of <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation, also with different axis order.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -265,8 +265,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
      * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference in
      * number of dimensions.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -300,8 +300,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
      * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with three-dimensional source and target CRS
      * having different axis order and units than the ones declared in the EPSG dataset.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test

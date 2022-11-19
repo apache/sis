@@ -130,7 +130,7 @@ final class Localization {
             final double splitX = threshold(x, uniques);
             final double splitY = threshold(y, uniques);
             if (Double.isNaN(splitX) && Double.isNaN(splitY)) {
-                throw e;                                            // Can not do better. Report the failure.
+                throw e;                                            // Cannot do better. Report the failure.
             }
             final int[][] indices = new int[4][size];
             final int[]   lengths = new int[4];

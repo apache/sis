@@ -531,7 +531,7 @@ abstract class AuthorityFactoryProxy<T> {
         GEOCENTRIC_CRS,     // Special kind of GeodeticCRS.
         VERTICAL_CRS,
         TEMPORAL_CRS,
-        IMAGE_CRS,          // Can been seen as a special kind of EngineeringCRS (even if not shown in hierarchy).
+        IMAGE_CRS,          // Can be seen as a special kind of EngineeringCRS (even if not shown in hierarchy).
         ENGINEERING_CRS,
         DERIVED_CRS,        // DerivedCRS can be also Vertical, Temporal or Engineering CRS. Give precedence to those.
         COMPOUND_CRS,
@@ -539,7 +539,7 @@ abstract class AuthorityFactoryProxy<T> {
         GEODETIC_DATUM,
         VERTICAL_DATUM,
         TEMPORAL_DATUM,
-        IMAGE_DATUM,        // Can been seen as a special kind of EngineeringDatum (even if not shown in hierarchy).
+        IMAGE_DATUM,        // Can be seen as a special kind of EngineeringDatum (even if not shown in hierarchy).
         ENGINEERING_DATUM,
         DATUM,
         ELLIPSOID,

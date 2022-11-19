@@ -58,7 +58,7 @@ final class Linearizer {
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
      * @param  domain  domain of integer source coordinates for which to get a linear approximation.
      * @return a linear approximation of given transform for the specified domain.
-     * @throws FactoryException if the transform approximation can not be computed.
+     * @throws FactoryException if the transform approximation cannot be computed.
      */
     static MathTransform approximate(final MathTransform gridToCRS, final Envelope domain)
             throws TransformException, FactoryException
@@ -76,7 +76,7 @@ final class Linearizer {
                 /*
                  * Non-linear transform found. If it is backed by a `ResidualGrid` and the specified domain
                  * contains the full `ResidualGrid` domain, then we consider that `step` is approximated by
-                 * an identity transform. Otherwise this method can not process `gridToCRS`.
+                 * an identity transform. Otherwise this method cannot process `gridToCRS`.
                  */
                 final DatumShiftGrid<?,?> grid = ((InterpolatedTransform) step).getShiftGrid();
                 MathTransform sourceToGrid = grid.getCoordinateToGrid();

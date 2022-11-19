@@ -196,8 +196,8 @@ public strictfp class DocumentComparator {
      *
      * @param  expected  the expected XML document.
      * @param  actual    the XML document to compare.
-     * @throws IOException if the stream can not be read.
-     * @throws ParserConfigurationException if a {@link DocumentBuilder} can not be created.
+     * @throws IOException if the stream cannot be read.
+     * @throws ParserConfigurationException if a {@link DocumentBuilder} cannot be created.
      * @throws SAXException if an error occurred while parsing the XML document.
      */
     public DocumentComparator(final Object expected, final Object actual)
@@ -249,7 +249,7 @@ public strictfp class DocumentComparator {
         if (input instanceof URI)         return ((URI) input).toURL().openStream();
         if (input instanceof URL)         return ((URL) input).openStream();
         if (input instanceof String)      return new ByteArrayInputStream(input.toString().getBytes("UTF-8"));
-        throw new IOException("Can not handle input type: " + (input != null ? input.getClass() : input));
+        throw new IOException("Cannot handle input type: " + (input != null ? input.getClass() : input));
     }
 
     /**
@@ -492,7 +492,7 @@ public strictfp class DocumentComparator {
                  * or if the DocumentBuilder was not namespace-aware. In the following table, the first
                  * column shows the usual case for "http://www.w3.org/2000/xmlns/gml". The second column
                  * shows the case if the DocumentBuilder was not aware of namespaces. The last column is
-                 * a case sometime observed.
+                 * a case sometimes observed.
                  *
                  * ┌───────────────────┬─────────────────────────────────┬──────────────┬─────────────┐
                  * │ Node method       │ Namespace (NS) aware            │ Non NS-aware │ Other case  │
@@ -663,7 +663,7 @@ public strictfp class DocumentComparator {
     }
 
     /**
-     * Parses the given text as a number. If the given text is null or can not be parsed,
+     * Parses the given text as a number. If the given text is null or cannot be parsed,
      * returns {@code NaN}. This is used only if a {@linkplain #tolerance} threshold greater
      * than zero has been provided.
      */

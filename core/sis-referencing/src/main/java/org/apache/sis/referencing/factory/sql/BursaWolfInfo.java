@@ -55,7 +55,7 @@ final class BursaWolfInfo {
     // See TableInfo.EPSG for hard-coded table names, column names and GeoAPI types.
 
     /**
-     * The target CRS for which to collect Bursa-Wolf parameters. Apache SIS accepts an arbitrary amount of targets,
+     * The target CRS for which to collect Bursa-Wolf parameters. Apache SIS accepts an arbitrary number of targets,
      * but the {@code TOWGS84} element only needs the parameters toward the EPSG:4326 coordinate reference system.
      * For now we fix the number of target CRS to only 1, but we can increase that amount in a future SIS version
      * if needed. However it is better to restrict the target CRS to those that use a world-wide datum only.

@@ -297,7 +297,7 @@ public final class ServiceParameter extends Parameter {
 
     /**
      * Infers the value class from the attribute type.
-     * This method is the reason why we can not parameterize this {@code ServiceParameter} class
+     * This method is the reason why we cannot parameterize this {@code ServiceParameter} class
      * (see <cite>Note about raw-type usage</cite> in class javadoc), because there is no way we
      * can ensure that the class inferred from {@link MemberName#getAttributeType()} is really
      * for type {@code <T>}.

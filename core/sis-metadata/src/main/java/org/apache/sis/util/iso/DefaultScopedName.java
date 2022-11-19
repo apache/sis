@@ -59,7 +59,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  */
 
 /*
- * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this cannot be used here
  * since "CodeType" is used for various classes (including GenericName and LocalName).
  * (Un)marhalling of this class needs to be handled by a JAXB adapter.
  */

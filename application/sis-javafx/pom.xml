@@ -126,7 +126,7 @@
   <!-- ===========================================================
            Dependencies
            All JavaFX dependencies must be under "provided" scope.
-           We can not redistribute them since they are under GPL +
+           We cannot redistribute them since they are under GPL +
            classpath exception.
        =========================================================== -->
   <dependencies>

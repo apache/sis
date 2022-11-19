@@ -521,7 +521,7 @@ final class Tracer {
          * {@link #polylineOnLeft} and {@code polylineOnTop} will become empty after this method call.
          *
          * @param  polylineOnTop  value of {@code polylinesOnTop[x]}.
-         * @throws TransformException if the {@link Tracer#gridToCRS} transform can not be applied.
+         * @throws TransformException if the {@link Tracer#gridToCRS} transform cannot be applied.
          */
         private void closeLeftWithTop(final PolylineBuffer polylineOnTop) throws TransformException {
             interpolateMissingLeftSide();
@@ -601,7 +601,7 @@ final class Tracer {
          * Invoked after the iteration has been completed on the full area of interest.
          * This method writes all remaining polylines to {@link #partialPaths}.
          * It assumes that {@link #finishedRow()} has already been invoked.
-         * This {@link Level} instance can not be used anymore after this call.
+         * This {@link Level} instance cannot be used anymore after this call.
          */
         final void finish() throws TransformException {
             assert polylineOnLeft.isEmpty();
@@ -712,7 +712,7 @@ final class Tracer {
      * @param  polylines  the polylines to write.
      * @param  close      whether to close the polygon.
      * @return the given path builder, or a newly created builder if the argument was null.
-     * @throws TransformException if the {@link #gridToCRS} transform can not be applied.
+     * @throws TransformException if the {@link #gridToCRS} transform cannot be applied.
      */
     private Joiner writeTo(Joiner path, final PolylineBuffer[] polylines, final boolean close) throws TransformException {
         for (int pi=0; pi < polylines.length; pi++) {

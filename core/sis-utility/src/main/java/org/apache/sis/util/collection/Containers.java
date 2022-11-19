@@ -111,7 +111,7 @@ public final class Containers extends Static {
      * the list type have to be {@code <? extends E>} instead of {@code <E>}.</p>
      *
      * @param  <E>    the type of elements in the list.
-     * @param  array  the array to wrap (can not be null).
+     * @param  array  the array to wrap (cannot be null).
      * @param  lower  low endpoint (inclusive) of the sublist.
      * @param  upper  high endpoint (exclusive) of the sublist.
      * @return the given array wrapped in an unmodifiable list.
@@ -140,7 +140,7 @@ public final class Containers extends Static {
      * <p>The derived set may contain fewer elements than the original set if some elements
      * are not convertible. Non-convertible elements are <var>S</var> values for which
      * {@code converter.apply(S)} returns {@code null}. As a consequence of this sentinel
-     * value usage, the derived set can not contain {@code null} elements.</p>
+     * value usage, the derived set cannot contain {@code null} elements.</p>
      *
      * <p>The returned set can be serialized if the given set and converter are serializable.
      * The returned set is not synchronized by itself, but is nevertheless thread-safe if the
@@ -178,7 +178,7 @@ public final class Containers extends Static {
      *
      * <p>The derived map may contain fewer entries than the original map if some keys are not convertible.
      * A key <var>K</var> is non-convertible if {@code keyConverter.apply(K)} returns {@code null}.
-     * As a consequence of this sentinel key usage, the derived map can not contain {@code null} keys.
+     * As a consequence of this sentinel key usage, the derived map cannot contain {@code null} keys.
      * It may contain {@code null} values however.</p>
      *
      * <p>The returned map can be serialized if the given map and converters are serializable.
@@ -217,7 +217,7 @@ public final class Containers extends Static {
     /**
      * Returns the value mapped to the given key casted to the given type,
      * or {@code null} if the map is null or does not contain a value for the key.
-     * If the mapped value is non-null but can not be casted to the given type, then this
+     * If the mapped value is non-null but cannot be casted to the given type, then this
      * method throws an {@link IllegalArgumentException} with a message of the form
      * <cite>"Property ‘{@code key}’ does not accept instances of ‘{@code value.class}’."</cite>.
      *
@@ -228,7 +228,7 @@ public final class Containers extends Static {
      * @param  <T>         the compile-time value of the {@code type} argument.
      * @param  properties  the map of properties from which to get a value, or {@code null} if none.
      * @param  key         the key of the property value to return. Can be {@code null} if the map supports null key.
-     * @param  type        the expected type of the property value. Can not be null.
+     * @param  type        the expected type of the property value. Cannot be null.
      * @return the property value for the given key casted to the given type, or {@code null} if none.
      * @throws IllegalArgumentException if a non-null property value exists for the given key but can
      *         not be casted to the given type.
@@ -281,8 +281,8 @@ public final class Containers extends Static {
      * <p>Iterators may return null elements. Null elements are considered "after" any non-null element.</p>
      *
      * @param  <E>  the type of elements returned by the iterators.
-     * @param  it1  the first iterator (can not be null).
-     * @param  it2  the second iterator (can not be null).
+     * @param  it1  the first iterator (cannot be null).
+     * @param  it2  the second iterator (cannot be null).
      * @return -1 if the content given by the first iterator is considered "before" the content given by the second
      *         iterator, +1 if considered "after", or 0 if considered equal.
      *

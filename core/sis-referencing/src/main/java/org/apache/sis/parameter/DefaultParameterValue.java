@@ -99,7 +99,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * <h2>Instantiation</h2>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
- * Descriptors are usually pre-defined by map projection or process providers. Given a descriptor, a parameter value can
+ * Descriptors are usually predefined by map projection or process providers. Given a descriptor, a parameter value can
  * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
  * {@link ParameterDescriptor#createValue()} method. The latter is recommended since it allows descriptors to return
  * specialized implementations.
@@ -608,7 +608,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                     /*
                      * If the given value is an array, verify if array elements need to be converted
                      * for example from `float` to `double`. This is a "all or nothing" operation:
-                     * if at least one element can not be converted, then the whole array is unchanged.
+                     * if at least one element cannot be converted, then the whole array is unchanged.
                      */
                     Class<?> componentType = expectedClass.getComponentType();
 convert:            if (componentType != null) {
@@ -684,10 +684,10 @@ convert:            if (componentType != null) {
 
     /**
      * Wraps the given value in a type compatible with the expected value class, if possible.
-     * If the value can not be wrapped, then this method fallbacks on the {@link Double} class
+     * If the value cannot be wrapped, then this method fallbacks on the {@link Double} class
      * consistently with this method being invoked only by {@code setValue(double, …)} methods.
      *
-     * @throws IllegalArgumentException if the given value can not be converted to the given type.
+     * @throws IllegalArgumentException if the given value cannot be converted to the given type.
      */
     @SuppressWarnings("unchecked")
     private static Number wrap(final double value, final Class<?> valueClass) throws IllegalArgumentException {

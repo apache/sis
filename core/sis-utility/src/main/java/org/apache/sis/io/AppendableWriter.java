@@ -50,7 +50,7 @@ final class AppendableWriter extends Writer {
      * Returns the synchronization lock to use for writing to the given {@code Appendable}.
      * In particular if the final destination is a {@link StringBuffer}, we want to lock on
      * that buffer since it is already synchronized on itself (so we get only one lock, not
-     * two). If the final destination is an other writer, we would use its {@link Writer#lock}
+     * two). If the final destination is another writer, we would use its {@link Writer#lock}
      * field if it wasn't protected... As a fallback we use the writer itself, since writers
      * are often synchronized on themselves.
      */

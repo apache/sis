@@ -83,7 +83,7 @@ final class FeatureList extends ObservableListBase<AbstractFeature> {
     private int validCount;
 
     /**
-     * Expected number of elements. Can not be smaller than {@link #validCount}.
+     * Expected number of elements. Cannot be smaller than {@link #validCount}.
      * May be greater than {@link #elements} length if some elements are not yet loaded.
      */
     private int estimatedSize;
@@ -248,7 +248,7 @@ final class FeatureList extends ObservableListBase<AbstractFeature> {
     }
 
     /**
-     * If we can not load more features stop the reading process.
+     * If we cannot load more features stop the reading process.
      *
      * @todo Add some message in the widget for warning the user.
      *       Proposal: set MAXIMUM_ROWS to MAX_INTEGER - 2 and reserve the last table row for a message.

@@ -219,7 +219,7 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .addName(Citations.PROJ4,   "lat_2"));
         /*
          * The scale factor is used by LambertConformal1SP and is not formally a parameter of LambertConformal2SP.
-         * Nevertheless we declare it is as an optional parameter because it is sometime used in Well Known Text,
+         * Nevertheless we declare it is as an optional parameter because it is sometimes used in Well Known Text,
          * but we omit the EPSG name and identifier because its meaning does not fit well in this context.
          * The EPSG name is "Scale factor at natural origin" while actually the scale factor applied here
          * would rather be at the standard parallels.
