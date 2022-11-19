@@ -670,23 +670,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
-     * Returns the object for transforming coordinates in the {@linkplain #getSourceCRS() source CRS}
-     * to coordinates in the {@linkplain #getTargetCRS() target CRS}.
-     *
-     * <h4>Use with interpolation CRS</h4>
-     * If the {@linkplain #getInterpolationCRS() interpolation CRS} is non-null, then the math transform
-     * input coordinates shall by (<var>interpolation</var>, <var>source</var>) tuples: for each value
-     * to transform, the interpolation point coordinates shall be first, followed by the source coordinates.
-     *
-     * <div class="note"><b>Example:</b>
-     * in a transformation between two {@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS vertical CRS},
-     * if the {@linkplain #getSourceCRS() source} coordinates are (<var>z</var>) values but the coordinate operation
-     * additionally requires (<var>x</var>,<var>y</var>) values for {@linkplain #getInterpolationCRS() interpolation}
-     * purpose, then the math transform input coordinates shall be (<var>x</var>,<var>y</var>,<var>z</var>) tuples in
-     * that order.</div>
-     *
-     * The interpolation coordinates will {@linkplain DefaultPassThroughOperation pass through the operation}
-     * and appear in the math transform outputs, in the same order than inputs.
+     * Returns the object for transforming coordinates in the source CRS to coordinates in the target CRS.
+     * The transform may be {@code null} if this coordinate operation is a defining conversion.
      *
      * @return the transform from source to target CRS, or {@code null} if not applicable.
      */
@@ -1208,6 +1193,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
 
     /**
      * Invoked by JAXB after unmarshalling.
+     * May be overridden by subclasses.
      */
     void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         computeTransientFields();

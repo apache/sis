@@ -114,7 +114,8 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
 
     /**
      * Executes the given action for the next moving feature or for all remaining moving features.
-     * This method assumes that the 4 first columns are as documented in the code inside constructor.
+     * This method assumes that the 4 first columns are identifier, start time, end time and
+     * optional attributes in that order.
      *
      * @param  action  the action to execute as soon as the {@code mfidref} change, or {@code null} if none.
      * @param  all     {@code true} for executing the given action on all remaining features.

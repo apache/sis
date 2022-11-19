@@ -36,6 +36,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
@@ -217,8 +218,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
 
     /**
      * Constructs a new conversion with the same values than the specified one, together with the
-     * specified source and target CRS. While the source conversion can be an arbitrary one, it is
-     * typically a defining conversion.
+     * specified source and target CRS. While the source conversion can be an arbitrary one,
+     * it is typically a defining conversion.
      *
      * @param definition  the defining conversion.
      * @param source      the new source CRS.
@@ -376,13 +377,14 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * This {@code specialize(…)} method returns a conversion which implement at least the given {@code baseType}
      * interface, but may also implement a more specific GeoAPI interface if {@code specialize(…)} has been able
-     * to infer the type from this operation {@linkplain #getMethod() method}.
+     * to infer the type from the {@linkplain #getMethod() operation method}.
      *
      * @param  <T>        compile-time type of the {@code baseType} argument.
      * @param  baseType   the base GeoAPI interface to be implemented by the conversion to return.
      * @param  sourceCRS  the source CRS.
      * @param  targetCRS  the target CRS.
-     * @param  factory    the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param  factory    the factory to use for creating a transform from the parameters or for performing axis changes,
+     *                    or {@code null} for the default factory.
      * @return the conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
@@ -397,12 +399,11 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      */
     public <T extends Conversion> T specialize(final Class<T> baseType,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
-            final MathTransformFactory factory) throws FactoryException
+            MathTransformFactory factory) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("baseType",  baseType);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        ArgumentChecks.ensureNonNull("factory",   factory);
         /*
          * Conceptual consistency check: verify that the new CRS use the same datum than the previous ones,
          * since the purpose of this method is not to apply datum changes. Datum changes are the purpose of
@@ -424,6 +425,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             if (super.getTargetCRS() != null) {
                 ensureCompatibleDatum("targetCRS", sourceCRS, super.getTargetCRS());
             }
+        }
+        if (factory == null) {
+            factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         }
         return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
     }

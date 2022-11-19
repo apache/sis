@@ -38,6 +38,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 
@@ -356,9 +357,15 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             if (descriptor instanceof DefaultParameterDescriptor<?>) {
                 return ((DefaultParameterDescriptor<?>) descriptor).getValueDomain();
             }
-            final Class<?> valueClass = descriptor.getValueClass();
+            Class<?> valueClass = descriptor.getValueClass();
             final Comparable<?> minimumValue = descriptor.getMinimumValue();
             final Comparable<?> maximumValue = descriptor.getMaximumValue();
+            if (valueClass == null) {       // Should never be null, but invalid objects exist.
+                valueClass = Classes.findCommonClass(Classes.getClass(minimumValue), Classes.getClass(maximumValue));
+                if (valueClass == null) {
+                    valueClass = Object.class;
+                }
+            }
             if ((minimumValue == null || valueClass.isInstance(minimumValue)) &&
                 (maximumValue == null || valueClass.isInstance(maximumValue)))
             {

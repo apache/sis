@@ -87,10 +87,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * The class that describe the type of parameter values.
+     * This field should be considered final after construction.
+     * This is declared non-final only for GML unmarshalling.
      *
      * @see #getValueClass()
      */
-    private final Class<T> valueClass;
+    private Class<T> valueClass;
 
     /**
      * A set of valid values (usually from a {@linkplain CodeList code list})
@@ -112,9 +114,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *       <code>valueClass.{@linkplain Class#getComponentType() getComponentType()}</code>.</li>
      * </ul>
      *
+     * This field should be considered final after construction.
+     * This is declared non-final only for GML unmarshalling.
+     *
      * @see #getValueDomain()
      */
-    private final Range<?> valueDomain;
+    private Range<?> valueDomain;
 
     /**
      * The default value for the parameter, or {@code null}.
@@ -272,7 +277,6 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * @see #castOrCopy(ParameterDescriptor)
      */
-    @SuppressWarnings("unchecked")
     protected DefaultParameterDescriptor(final ParameterDescriptor<T> descriptor) {
         super(descriptor);
         valueClass   = descriptor.getValueClass();
@@ -399,6 +403,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     @SuppressWarnings("unchecked")
     public Comparable<T> getMinimumValue() {
+        final Range<?> valueDomain = this.valueDomain;
         return (valueDomain != null && valueDomain.getElementType() == valueClass)
                ? (Comparable<T>) valueDomain.getMinValue() : null;
     }
@@ -417,6 +422,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     @SuppressWarnings("unchecked")
     public Comparable<T> getMaximumValue() {
+        final Range<?> valueDomain = this.valueDomain;
         return (valueDomain != null && valueDomain.getElementType() == valueClass)
                ? (Comparable<T>) valueDomain.getMaxValue() : null;
     }
@@ -447,6 +453,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     public Unit<?> getUnit() {
+        final Range<?> valueDomain = this.valueDomain;
         return (valueDomain instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) valueDomain).unit() : null;
     }
 
@@ -517,10 +524,10 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
-                    return                    this.valueClass == that.valueClass   &&
-                           Objects.    equals(this.validValues,  that.validValues) &&
-                           Objects.    equals(this.valueDomain,  that.valueDomain) &&
-                           Objects.deepEquals(this.defaultValue, that.defaultValue);
+                    return                    valueClass == that.valueClass   &&
+                           Objects.    equals(validValues,  that.validValues) &&
+                           Objects.    equals(valueDomain,  that.valueDomain) &&
+                           Objects.deepEquals(defaultValue, that.defaultValue);
                 }
             }
         }
@@ -553,7 +560,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
+     * Constructs a new object in which attributes may be set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflection.
      *
@@ -570,16 +577,55 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
              * This unsafe cast would be forbidden if this constructor was public or used in any context where the
              * user can choose the value of <T>. But this constructor should be invoked only during unmarshalling,
              * after the creation of the ParameterValue (this is the reverse creation order than what we normally
-             * do through the public API). The 'valueClass' should be compatible with DefaultParameterValue.value,
+             * do through the public API). The `valueClass` should be compatible with DefaultParameterValue.value,
              * and the parameterized type visible to the user should be only <?>.
              */
             valueClass  = (Class) param.valueClass;
             valueDomain = param.valueDomain;
-        } else {
-            valueClass  = null;
-            valueDomain = null;
         }
         validValues  = null;
         defaultValue = null;
+    }
+
+    /**
+     * Invoked by {@link DefaultParameterValue} when the descriptor is set after the value at unmarshalling time.
+     * There is two scenarios in a valid GML document. The first scenario is when the descriptor is defined inside
+     * the parameter value element, like below. In such case, {@link #valueClass} is defined at construction time
+     * by {@link #DefaultParameterDescriptor()} because the value is before the descriptor.
+     *
+     * {@preformat xml
+     *   <gml:ParameterValue>
+     *     <gml:value uom="…">…</gml:value>
+     *     <gml:operationParameter>
+     *       <gml:OperationParameter>
+     *         …
+     *       </gml:OperationParameter>
+     *     </gml:operationParameter>
+     *   </gml:ParameterValue>
+     * }
+     *
+     * In the second scenario shows below, the descriptor was defined before the value and is referenced by a link.
+     * In that case, {@link #valueClass} is {@code null} the first time that this method is invoked. It may become
+     * non-null if the same parameter descriptor is reused for many parameter values.
+     *
+     * {@preformat xml
+     *   <gml:ParameterValue>
+     *     <gml:value uom="…">…</gml:value>
+     *     <gml:operationParameter xlink:href="#LongitudeRotation"/>
+     *   </gml:ParameterValue>
+     * }
+     *
+     * This method modifies the state of this class despite the fact that it should be immutable.
+     * It is okay because we are updating an instance created during GML unmarshalling, and that
+     * instance should not have been given to user yet.
+     *
+     * @param  param  the parameter value from which to infer the value type.
+     */
+    @SuppressWarnings("unchecked")
+    final void setValueClass(final DefaultParameterValue<?> param) {
+        valueClass = (Class) Classes.findCommonClass(valueClass, CC_OperationParameter.valueClass(param));
+        if (valueDomain == null) {
+            valueDomain = CC_OperationParameter.valueDomain(param);
+        }
     }
 }

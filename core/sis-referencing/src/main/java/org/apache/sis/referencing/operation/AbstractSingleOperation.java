@@ -49,6 +49,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -408,7 +409,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     private void setParameters(final GeneralParameterValue[] values) {
         if (parameters == null) {
             if (!(method instanceof DefaultOperationMethod)) {  // May be a non-null proxy if defined only by xlink:href.
-                throw new IllegalStateException(Identifiers.missingValueForProperty(getName(), "method"));
+                throw new GeodeticException(Identifiers.missingValueForProperty(getName(), "method"));
             }
             /*
              * The descriptors in the <gml:method> element do not know the class of parameter value
@@ -463,6 +464,12 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     @Override
     final void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         super.afterUnmarshal(unmarshaller, parent);
+        if (parameters == null && method != null) {
+            final ParameterDescriptorGroup descriptor = method.getParameters();
+            if (descriptor != null && descriptor.descriptors().isEmpty()) {
+                parameters = descriptor.createValue();
+            }
+        }
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
