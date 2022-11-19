@@ -242,7 +242,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             } else if (!step.isIdentity()) {
                 flattened.add(op);
             }
-            if (mtFactory != null && step != null) {
+            if (mtFactory != null) {
                 transform = (transform != null) ? mtFactory.createConcatenatedTransform(transform, step) : step;
             }
             /*

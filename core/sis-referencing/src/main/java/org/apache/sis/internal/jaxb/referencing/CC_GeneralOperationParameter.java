@@ -38,11 +38,15 @@ import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.xml.IdentifierSpace;
 
 
 /**
@@ -61,7 +65,7 @@ import org.apache.sis.internal.jaxb.Context;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -107,7 +111,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
-     * Constructor for the {@link #wrap} method only.
+     * Constructor for the {@link #wrap(GeneralParameterDescriptor)} method only.
      */
     private CC_GeneralOperationParameter(final GeneralParameterDescriptor parameter) {
         super(parameter);
@@ -161,9 +165,32 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     /**
      * Verifies that the given descriptor is non-null and contains at least a name.
      * This method is used after unmarshalling.
+     * We do this validation because parameter descriptors are mandatory and SIS classes need them.
+     * So we provide an error message here instead of waiting for a {@link NullPointerException}
+     * to occur in some arbitrary place.
+     *
+     * @param  descriptor  the descriptor to validate.
+     * @param  parent      the name of the element to report as the parent of {@code property}.
+     * @param  property    the name of the property to report as missing if an exception is thrown.
+     * @throws GeodeticException if the parameters are missing or invalid.
      */
-    static boolean isValid(final GeneralParameterDescriptor descriptor) {
-        return descriptor != null && descriptor.getName() != null;
+    static void validate(final GeneralParameterDescriptor descriptor, final String parent, final String property) {
+        if (descriptor == null || descriptor.getName() == null) {
+            short key = Errors.Keys.MissingComponentInElement_2;
+            String[] args = {parent, property};
+            /*
+             * The exception thrown by this method must be unchecked,
+             * otherwise JAXB just reports is without propagating it.
+             */
+            if (descriptor instanceof IdentifiedObject) {
+                final String link = ((IdentifiedObject) descriptor).getIdentifierMap().get(IdentifierSpace.XLINK);
+                if (link != null) {
+                    key = Errors.Keys.NotABackwardReference_1;
+                    args = new String[] {link};
+                }
+            }
+            throw new GeodeticException(Errors.format(key, args));
+        }
     }
 
     /**
@@ -259,8 +286,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
          * be invoked recursively for each parameter in the group.
          */
         final Map<String,Object> merged = new HashMap<>(expected);
-        merged.putAll(actual);  // May overwrite predefined properties.
-        mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(),       merged, complete.getName());
+        merged.putAll(actual);                                      // May overwrite predefined properties.
+        mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(), merged, complete.getName());
         mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, Identifier.class,  provided.getIdentifiers(), merged, null);
         if (isGroup) {
             final List<GeneralParameterDescriptor> descriptors = ((ParameterDescriptorGroup) provided).descriptors();

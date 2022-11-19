@@ -37,7 +37,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  * infer it from the actual value.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.6
  * @module
  */
@@ -119,6 +119,40 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
     }
 
     /**
+     * Returns the base class of parameter values, or {@code null} if unknown.
+     * This method assumes that the parameter value does not yet have a descriptor
+     * (which happens at GML unmarshalling time) and that the type must be derived
+     * from the actual value.
+     *
+     * @param  param  the parameter from which to get the value class.
+     * @return base class of values, or {@code null} if unknown.
+     */
+    public static Class<?> valueClass(final ParameterValue<?> param) {
+        final Object value = param.getValue();
+        return (value != null) ? value.getClass() : null;
+    }
+
+    /**
+     * Saves the unit of measurement in a boundless range. This method should be invoked only when
+     * {@link #valueClass} is {@link Double} or {@code double[]}. It is the case in a well-formed GML.
+     *
+     * @param  param  the parameter from which to get the unit of measurement.
+     * @return unit of measurement wrapped in a boundless range, or {@code null} if none.
+     */
+    public static MeasurementRange<?> valueDomain(final ParameterValue<?> param) {
+        Unit<?> unit = param.getUnit();
+        if (unit == null) {
+            return null;
+        }
+        unit = unit.getSystemUnit();
+        if (Units.RADIAN.equals(unit)) {
+            unit = Units.DEGREE;
+        }
+        return MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
+                                       Double.POSITIVE_INFINITY, false, unit);
+    }
+
+    /**
      * Invoked by JAXB during unmarshalling of the enclosing {@code <gml:OperationParameter>},
      * before the child {@link DefaultParameterDescriptor}. This method stores the class and
      * the unit of measurement of the parameter descriptor to create. Those information will
@@ -129,21 +163,9 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
      */
     private void beforeUnmarshal(final Unmarshaller unmarshaller, final Object parent) {
         if (parent instanceof ParameterValue<?>) {
-            final Object value = ((ParameterValue<?>) parent).getValue();
-            if (value != null) {
-                valueClass = value.getClass();
-                Unit<?> unit = ((ParameterValue<?>) parent).getUnit();
-                if (unit != null) {
-                    unit = unit.getSystemUnit();
-                    if (Units.RADIAN.equals(unit)) {
-                        unit = Units.DEGREE;
-                    }
-                    assert (valueClass == Double.class) || (valueClass == double[].class) : valueClass;
-                    valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
-                                                          Double.POSITIVE_INFINITY, false, unit);
-                }
-                Context.setWrapper(Context.current(), this);
-            }
+            valueClass  = valueClass ((ParameterValue<?>) parent);
+            valueDomain = valueDomain((ParameterValue<?>) parent);
+            Context.setWrapper(Context.current(), this);
         }
     }
 

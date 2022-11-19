@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.3
  *
  * @param <T>  the type of the value stored in this parameter.
  *
@@ -100,10 +100,13 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
     @Override
     public T getValue() {
         T value = super.getValue();
-        if (value instanceof Cloneable) try {
-            value = getDescriptor().getValueClass().cast(Cloner.cloneIfPublic(value));
-        } catch (CloneNotSupportedException e) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.CloneNotSupported_1, value.getClass()), e);
+        if (value instanceof Cloneable) {
+            final Class<T> type = getDescriptor().getValueClass();      // May be null after GML unmarshalling.
+            if (type != null) try {
+                value = type.cast(Cloner.cloneIfPublic(value));
+            } catch (CloneNotSupportedException e) {
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.CloneNotSupported_1, value.getClass()), e);
+            }
         }
         return value;
     }

@@ -18,8 +18,10 @@ package org.apache.sis.internal.jaxb;
 
 import java.net.URI;
 import java.util.Set;
+import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +83,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  *
  * @see org.apache.sis.xml.IdentifiedObject
  *
@@ -101,7 +103,10 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
 
     /**
      * The identifiers to wrap in a map view.
+     *
+     * @see #getIdentifiers(Class)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     public final Collection<Identifier> identifiers;
 
     /**
@@ -111,6 +116,29 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      */
     public IdentifierMapAdapter(final Collection<Identifier> identifiers) {
         this.identifiers = identifiers;
+    }
+
+    /**
+     * Returns the identifiers as a collection of the specified type.
+     * The given type is the return type of the {@code getIdentifiers()} method which is delegating to this method.
+     * The returned collection is modifiable only if {@link #identifiers} is already of the desired type.
+     * This is the case for {@link org.apache.sis.metadata.iso.ISOMetadata#getIdentifiers()},
+     * which is the API for which we want modifiable collections.
+     *
+     * @param  type  {@code Collection.class}, {@code List.class} or {@code Set.class}.
+     * @return the identifiers as a collection of the specified type.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public final Collection<Identifier> getIdentifiers(final Class<?> type) {
+        if (!type.isInstance(identifiers)) {
+            if (type.isAssignableFrom(Set.class)) {
+                return new HashSet<>(identifiers);      // TODO: use Set.copyOf in JDK10.
+            }
+            if (type.isAssignableFrom(List.class)) {
+                return new ArrayList<>(identifiers);    // TODO: use List.copyOf in JDK10.
+            }
+        }
+        return identifiers;
     }
 
     /**

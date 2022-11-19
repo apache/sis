@@ -146,13 +146,13 @@ public class Merger {
          * we are going to merge those two metadata and verify that we are not in an infinite loop.
          * We will also verify that the target metadata does not contain a source, or vice-versa.
          */
-        {   // For keeping 'sourceDone' and 'targetDone' more local.
+        {   // For keeping `sourceDone` and `targetDone` more local.
             final Boolean sourceDone = done.put(source, Boolean.FALSE);
             final Boolean targetDone = done.put(target, Boolean.TRUE);
             if (sourceDone != null || targetDone != null) {
                 if (Boolean.FALSE.equals(sourceDone) && Boolean.TRUE.equals(targetDone)) {
                     /*
-                     * At least, the 'source' and 'target' status are consistent. Pretend that we have already
+                     * At least, the `source` and `target` status are consistent. Pretend that we have already
                      * merged those metadata since actually the merge operation is probably underway by the caller.
                      */
                     return true;
@@ -265,7 +265,7 @@ distribute:                 while (it.hasNext()) {
                     if (!success) {
                         if (dryRun) break;
                         merge(target, propertyName, sourceValue, targetValue);
-                        success = true;         // If no exception has been thrown by 'merged', assume the conflict solved.
+                        success = true;         // If no exception has been thrown by `merged`, assume the conflict solved.
                     }
                 }
             }

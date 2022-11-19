@@ -480,6 +480,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
+    @org.junit.Ignore("Pending new AxisDirection code list in GeoAPI.")
     public void testEngineeringForShip() throws FactoryException {
         super.testEngineeringForShip();
         final CoordinateSystem cs = object.getCoordinateSystem();

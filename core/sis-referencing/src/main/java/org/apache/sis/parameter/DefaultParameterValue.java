@@ -118,7 +118,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.3
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -1129,14 +1129,21 @@ convert:            if (componentType != null) {
 
     /**
      * Invoked by JAXB at unmarshalling time.
-     * May also be invoked by {@link DefaultParameterValueGroup} if the descriptor as been completed
+     * May also be invoked by {@link DefaultParameterValueGroup} if the descriptor has been completed
      * with additional information provided in the {@code <gml:group>} element of a descriptor group.
      *
      * @see #getDescriptor()
      */
     final void setDescriptor(final ParameterDescriptor<T> descriptor) {
         this.descriptor = descriptor;
-        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
+        if (descriptor instanceof DefaultParameterDescriptor<?>) {
+            ((DefaultParameterDescriptor<?>) descriptor).setValueClass(this);
+        }
+        /*
+         * A previous version was doing `assert descriptor.getValueClass().isInstance(value)`
+         * where the value class was inferred by `DefaultParameterDescriptor()`. But it does
+         * not always work, and the `NullPointerException` seems to be caught by JAXB.
+         */
     }
 
     /**
