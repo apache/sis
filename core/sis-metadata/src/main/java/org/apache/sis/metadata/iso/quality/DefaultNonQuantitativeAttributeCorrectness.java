@@ -21,6 +21,11 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Correctness of non-quantitative attributes.
@@ -49,6 +54,7 @@ import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 @XmlSeeAlso({
     DefaultNonQuantitativeAttributeAccuracy.class
 })
+@UML(identifier="DQ_NonQuantitativeAttributeCorrectness", specification=UNSPECIFIED)
 public class DefaultNonQuantitativeAttributeCorrectness extends AbstractThematicAccuracy
         implements NonQuantitativeAttributeAccuracy
 {

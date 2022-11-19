@@ -32,6 +32,10 @@ import org.apache.sis.internal.metadata.ImplementationHelper;
 
 // Branch-dependent imports
 import org.opengis.metadata.quality.Scope;
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
 
 
 /**
@@ -157,6 +161,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      */
     @XmlElement(name = "resultScope")
     @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
+    @UML(identifier="resultScope", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Scope getResultScope() {
         return resultScope;
     }
@@ -181,6 +186,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      */
     @XmlElement(name = "dateTime")
     @XmlJavaTypeAdapter(GO_DateTime.Since2014.class)
+    @UML(identifier="dateTime", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Date getDateTime() {
         return ImplementationHelper.toDate(dateTime);
     }

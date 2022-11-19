@@ -19,6 +19,11 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Full inspection.
@@ -40,6 +45,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlType(name = "DQ_FullInspection_Type")
 @XmlRootElement(name = "DQ_FullInspection")
+@UML(identifier="DQ_FullInspection", specification=UNSPECIFIED)
 public class DefaultFullInspection extends AbstractDataEvaluation {
      /**
      * Serial number for inter-operability with different versions.

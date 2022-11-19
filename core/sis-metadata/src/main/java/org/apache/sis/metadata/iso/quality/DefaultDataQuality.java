@@ -30,6 +30,10 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 // Branch-dependent imports
 import org.opengis.metadata.quality.Scope;
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
 
 
 /**
@@ -223,6 +227,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @since 1.3
      */
     @XmlElement(name = "standaloneQualityReport")
+    @UML(identifier="standaloneQualityReport", obligation=OPTIONAL, specification=UNSPECIFIED)
     public DefaultStandaloneQualityReportInformation getStandaloneQualityReport() {
         return standaloneQualityReport;
     }

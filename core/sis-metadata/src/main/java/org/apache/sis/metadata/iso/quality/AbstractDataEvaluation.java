@@ -20,6 +20,11 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Data evaluation method.
@@ -46,6 +51,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
     DefaultIndirectEvaluation .class,
     DefaultSampleBasedInspection.class
 })
+@UML(identifier="DQ_DataEvaluation", specification=UNSPECIFIED)
 public class AbstractDataEvaluation extends DefaultEvaluationMethod {
     /**
      * Serial number for inter-operability with different versions.

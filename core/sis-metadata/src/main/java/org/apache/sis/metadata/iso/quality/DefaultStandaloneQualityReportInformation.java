@@ -22,6 +22,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Reference to an external standalone quality report.
@@ -51,6 +57,7 @@ import org.opengis.metadata.citation.Citation;
     "abstract"
 })
 @XmlRootElement(name = "DQ_StandaloneQualityReportInformation")
+@UML(identifier="DQ_StandaloneQualityReportInformation", specification=UNSPECIFIED)
 public class DefaultStandaloneQualityReportInformation extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -96,6 +103,7 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata {
      * @return reference of the standalone quality report.
      */
     @XmlElement(name = "reportReference", required = true)
+    @UML(identifier="reportReference", obligation=MANDATORY, specification=UNSPECIFIED)
     public Citation getReportReference() {
         return reportReference;
     }
@@ -116,6 +124,7 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata {
      * @return abstract of the standalone quality report.
      */
     @XmlElement(name = "abstract", required = true)
+    @UML(identifier="abstract", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getAbstract() {
         return summary;
     }

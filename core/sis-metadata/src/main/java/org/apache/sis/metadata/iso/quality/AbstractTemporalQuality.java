@@ -24,6 +24,11 @@ import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
 import org.opengis.metadata.quality.TemporalAccuracy;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Accuracy of the temporal attributes and temporal relationships of features.
@@ -55,6 +60,7 @@ import org.opengis.metadata.quality.TemporalAccuracy;
     DefaultTemporalConsistency.class,
     DefaultTemporalValidity.class
 })
+@UML(identifier="DQ_TemporalQuality", specification=UNSPECIFIED)
 public class AbstractTemporalQuality extends AbstractElement implements TemporalAccuracy {
     /**
      * Serial number for inter-operability with different versions.

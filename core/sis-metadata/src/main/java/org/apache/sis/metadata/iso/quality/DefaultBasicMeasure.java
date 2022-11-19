@@ -23,6 +23,13 @@ import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Data quality basic measure.
@@ -56,6 +63,7 @@ import org.apache.sis.xml.Namespaces;
     "valueType"
 })
 @XmlRootElement(name = "DQM_BasicMeasure", namespace = Namespaces.DQM)
+@UML(identifier="DQM_BasicMeasure", specification=UNSPECIFIED)
 public class DefaultBasicMeasure extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -115,6 +123,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      * @return name of the data quality basic measure.
      */
     @XmlElement(name = "name", required = true)
+    @UML(identifier="name", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getName() {
         return name;
     }
@@ -135,6 +144,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      * @return definition of the data quality basic measure.
      */
     @XmlElement(name = "definition", required = true)
+    @UML(identifier="definition", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getDefinition() {
         return definition;
     }
@@ -155,6 +165,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      * @return usage example, or {@code null} if none.
      */
     @XmlElement(name = "example")
+    @UML(identifier="example", obligation=OPTIONAL, specification=UNSPECIFIED)
     public DefaultDescription getExample() {
         return example;
     }
@@ -175,6 +186,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      * @return value type of the result for the basic measure.
      */
     @XmlElement(name = "valueType", required = true)
+    @UML(identifier="valueType", obligation=MANDATORY, specification=UNSPECIFIED)
     public TypeName getValueType() {
         return valueType;
     }

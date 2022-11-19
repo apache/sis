@@ -19,6 +19,11 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Expected or tested uniformity of the results obtained for a data quality evaluation.
@@ -45,6 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlType(name = "DQ_Homogeneity_Type")
 @XmlRootElement(name = "DQ_Homogeneity")
+@UML(identifier="DQ_Homogeneity", specification=UNSPECIFIED)
 public class DefaultHomogeneity extends AbstractMetaquality {
     /**
      * Serial number for inter-operability with different versions.

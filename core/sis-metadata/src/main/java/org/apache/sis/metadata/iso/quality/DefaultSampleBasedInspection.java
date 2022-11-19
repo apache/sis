@@ -21,6 +21,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Sample based inspection.
@@ -52,6 +58,7 @@ import org.opengis.util.InternationalString;
     "samplingRatio"
 })
 @XmlRootElement(name = "DQ_SampleBasedInspection")
+@UML(identifier="DQ_SampleBasedInspection", specification=UNSPECIFIED)
 public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
     /**
      * Serial number for inter-operability with different versions.
@@ -104,6 +111,7 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
      * @return sampling scheme and sampling procedure.
      */
     @XmlElement(name = "samplingScheme", required = true)
+    @UML(identifier="samplingScheme", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getSamplingScheme() {
         return samplingScheme;
     }
@@ -124,6 +132,7 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
      * @return information on lots.
      */
     @XmlElement(name = "lotDescription", required = true)
+    @UML(identifier="lotDescription", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getLotDescription() {
         return lotDescription;
     }
@@ -144,6 +153,7 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
      * @return average number of samples extracted for inspection.
      */
     @XmlElement(name = "samplingRatio", required = true)
+    @UML(identifier="samplingRatio", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getSamplingRatio() {
         return samplingRatio;
     }

@@ -24,6 +24,13 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Data quality measure description.
@@ -52,6 +59,7 @@ import org.apache.sis.xml.Namespaces;
     "extendedDescription"
 })
 @XmlRootElement(name = "DQM_Description", namespace = Namespaces.DQM)
+@UML(identifier="DQM_Description", specification=UNSPECIFIED)
 public class DefaultDescription extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -106,6 +114,7 @@ public class DefaultDescription extends ISOMetadata {
      * @return text description.
      */
     @XmlElement(name = "textDescription", required = true)
+    @UML(identifier="textDescription", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getTextDescription() {
         return textDescription;
     }
@@ -126,6 +135,7 @@ public class DefaultDescription extends ISOMetadata {
      * @return description illustration, or {@code null} if none.
      */
     @XmlElement(name = "extendedDescription")
+    @UML(identifier="extendedDescription", obligation=OPTIONAL, specification=UNSPECIFIED)
     public BrowseGraphic getExtendedDescription() {
         return extendedDescription;
     }

@@ -19,6 +19,11 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Aggregation or derivation method.
@@ -40,6 +45,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlType(name = "DQ_AggregationDerivation_Type")
 @XmlRootElement(name = "DQ_AggregationDerivation")
+@UML(identifier="DQ_AggregationDerivation", specification=UNSPECIFIED)
 public class DefaultAggregationDerivation extends DefaultEvaluationMethod {
     /**
      * Serial number for inter-operability with different versions.

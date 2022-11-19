@@ -26,6 +26,13 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Element;
 import org.apache.sis.internal.util.CollectionsExt;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Reference to the measure used.
@@ -51,6 +58,7 @@ import org.apache.sis.internal.util.CollectionsExt;
     "measureDescription"
 })
 @XmlRootElement(name = "DQ_MeasureReference")
+@UML(identifier="DQ_MeasureReference", specification=UNSPECIFIED)
 public class DefaultMeasureReference extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -114,6 +122,7 @@ public class DefaultMeasureReference extends ISOMetadata {
      * @return code identifying a registered measure, or {@code null} if none.
      */
     @XmlElement(name = "measureIdentification")
+    @UML(identifier="measureIdentification", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Identifier getMeasureIdentification() {
         return measureIdentification;
     }
@@ -134,6 +143,7 @@ public class DefaultMeasureReference extends ISOMetadata {
      * @return names of the test applied to the data.
      */
     @XmlElement(name = "nameOfMeasure")
+    @UML(identifier="nameOfMeasure", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public Collection<InternationalString> getNamesOfMeasure() {
         return namesOfMeasure = nonNullCollection(namesOfMeasure, InternationalString.class);
     }
@@ -153,6 +163,7 @@ public class DefaultMeasureReference extends ISOMetadata {
      * @return description of the measure, or {@code null}.
      */
     @XmlElement(name = "measureDescription")
+    @UML(identifier="measureDescription", obligation=OPTIONAL, specification=UNSPECIFIED)
     public InternationalString getMeasureDescription() {
         return measureDescription;
     }

@@ -19,6 +19,11 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Trustworthiness of a data quality result.
@@ -45,6 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlType(name = "DQ_Confidence_Type")
 @XmlRootElement(name = "DQ_Confidence")
+@UML(identifier="DQ_Confidence", specification=UNSPECIFIED)
 public class DefaultConfidence extends AbstractMetaquality {
     /**
      * Serial number for inter-operability with different versions.

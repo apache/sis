@@ -381,8 +381,6 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                          * ensure that there is no cycle.
                          */
                         for (final String ref : dep.value()) {
-                            if ("getEvaluationMethod".equals(ref)) continue;        // Because missing UML annotation.
-
                             // Verify that the dependency is a property name.
                             assertEquals(name, names.get(ref), ref);
 

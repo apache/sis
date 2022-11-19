@@ -21,6 +21,11 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.Usability;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Degree of adherence of a dataset to a specific set of requirements.
@@ -49,6 +54,7 @@ import org.opengis.metadata.quality.Usability;
 @XmlSeeAlso({
     DefaultUsability.class
 })
+@UML(identifier="DQ_UsabilityElement", specification=UNSPECIFIED)
 public class DefaultUsabilityElement extends AbstractElement implements Usability {
     /**
      * Serial number for inter-operability with different versions.

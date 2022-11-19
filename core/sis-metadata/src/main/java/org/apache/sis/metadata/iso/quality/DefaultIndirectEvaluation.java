@@ -22,6 +22,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Indirect evaluation.
@@ -49,6 +55,7 @@ import org.apache.sis.util.iso.Types;
     "deductiveSource"
 })
 @XmlRootElement(name = "DQ_IndirectEvaluation")
+@UML(identifier="DQ_IndirectEvaluation", specification=UNSPECIFIED)
 public class DefaultIndirectEvaluation extends AbstractDataEvaluation {
     /**
      * Serial number for inter-operability with different versions.
@@ -96,6 +103,7 @@ public class DefaultIndirectEvaluation extends AbstractDataEvaluation {
      * @return information on which data are used.
      */
     @XmlElement(name = "deductiveSource", required = true)
+    @UML(identifier="deductiveSource", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getDeductiveSource() {
         return deductiveSource;
     }

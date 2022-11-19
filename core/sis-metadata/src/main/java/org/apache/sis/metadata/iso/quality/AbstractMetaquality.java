@@ -20,6 +20,11 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Information about the reliability of data quality results.
@@ -51,6 +56,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
     DefaultRepresentativity.class,
     DefaultHomogeneity.class
 })
+@UML(identifier="DQ_Metaquality", specification=UNSPECIFIED)
 public class AbstractMetaquality extends AbstractElement {
     /**
      * Serial number for inter-operability with different versions.

@@ -29,6 +29,12 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Result of a data quality measure organising the measured values as a coverage.
@@ -218,6 +224,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @since 1.3
      */
 //  @XmlElement(name = "resultContent")     // Pending new ISO 19157 version.
+    @UML(identifier="resultContent", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public Collection<RangeDimension> getResultContent() {
         return resultContent = nonNullCollection(resultContent, RangeDimension.class);
     }

@@ -44,6 +44,12 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Aspect of quantitative quality information.
@@ -230,6 +236,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @XmlElement(name = "standaloneQualityReportDetails")
     @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
+    @UML(identifier="standaloneQualityReportDetails", obligation=OPTIONAL, specification=UNSPECIFIED)
     public InternationalString getStandaloneQualityReportDetails() {
         return standaloneQualityReportDetails;
     }
@@ -254,6 +261,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @since 1.3
      */
     @XmlElement(name = "measure", required = false)
+    @UML(identifier="measure", obligation=OPTIONAL, specification=UNSPECIFIED)
     public DefaultMeasureReference getMeasureReference() {
         return measureReference;
     }
@@ -390,6 +398,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @since 1.3
      */
     @XmlElement(name = "evaluationMethod", required = false)
+    @UML(identifier="evaluationMethod", obligation=OPTIONAL, specification=UNSPECIFIED)
     public DefaultEvaluationMethod getEvaluationMethod() {
         return evaluationMethod;
     }
@@ -578,6 +587,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @since 1.3
      */
     // @XmlElement at the end of this class.
+    @UML(identifier="derivedElement", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Collection<Element> getDerivedElements() {
         return derivedElements = nonNullCollection(derivedElements, Element.class);
     }

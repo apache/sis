@@ -26,6 +26,14 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.Namespaces;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Data quality measure.
@@ -67,6 +75,7 @@ import org.apache.sis.xml.Namespaces;
     "parameters"
 })
 @XmlRootElement(name = "DQM_Measure", namespace = Namespaces.DQM)
+@UML(identifier="DQM_Measure", specification=UNSPECIFIED)
 public class DefaultMeasure extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -178,6 +187,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return value uniquely identifying the measure within a namespace.
      */
     @XmlElement(name = "measureIdentifier", required = true)
+    @UML(identifier="measureIdentifier", obligation=MANDATORY, specification=UNSPECIFIED)
     public Identifier getMeasureIdentifier() {
         return measureIdentifier;
     }
@@ -198,6 +208,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return name of the data quality measure applied to the data.
      */
     @XmlElement(name = "name", required = true)
+    @UML(identifier="name", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getName() {
         return name;
     }
@@ -219,6 +230,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return others recognized names, abbreviations or short names.
      */
     @XmlElement(name = "alias")
+    @UML(identifier="alias", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Collection<InternationalString> getAliases() {
         return aliases = nonNullCollection(aliases, InternationalString.class);
     }
@@ -238,6 +250,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return names of the data quality element for which quality is reported.
      */
     @XmlElement(name = "elementName", required = true)
+    @UML(identifier="elementName", obligation=MANDATORY, specification=UNSPECIFIED)
     public Collection<TypeName> getElementNames() {
         return elementNames = nonNullCollection(elementNames, TypeName.class);
     }
@@ -257,6 +270,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return predefined basic measure on which this measure is based, or {@code null} if none.
      */
     @XmlElement(name = "basicMeasure")
+    @UML(identifier="basicMeasure", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public DefaultBasicMeasure getBasicMeasure() {
         return basicMeasure;
     }
@@ -279,6 +293,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return definition of the fundamental concept for the data quality measure.
      */
     @XmlElement(name = "definition", required = true)
+    @UML(identifier="definition", obligation=MANDATORY, specification=UNSPECIFIED)
     public InternationalString getDefinition() {
         return definition;
     }
@@ -301,6 +316,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return description of data quality measure, or {@code null} if none.
      */
     @XmlElement(name = "description")
+    @UML(identifier="description", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public DefaultDescription getDescription() {
        return description;
     }
@@ -321,6 +337,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return references to the source.
      */
     @XmlElement(name = "sourceReference")
+    @UML(identifier="sourceReference", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public Collection<DefaultSourceReference> getSourceReferences() {
         return sourceReferences = nonNullCollection(sourceReferences, DefaultSourceReference.class);
     }
@@ -340,6 +357,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return value type for reporting a data quality result.
      */
     @XmlElement(name = "valueType", required = true)
+    @UML(identifier="valueType", obligation=MANDATORY, specification=UNSPECIFIED)
     public TypeName getValueType() {
         return valueType;
     }
@@ -362,6 +380,7 @@ public class DefaultMeasure extends ISOMetadata {
      */
     @XmlElement(name = "parameter")
     @SuppressWarnings({"unchecked", "rawtypes"})
+    @UML(identifier="parameter", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public Collection<ParameterDescriptor<?>> getParameters() {
         return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
@@ -382,6 +401,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @return examples of applying the measure or the result obtained for the measure.
      */
     @XmlElement(name = "example")
+    @UML(identifier="example", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Collection<DefaultDescription> getExamples() {
         return examples = nonNullCollection(examples, DefaultDescription.class);
     }

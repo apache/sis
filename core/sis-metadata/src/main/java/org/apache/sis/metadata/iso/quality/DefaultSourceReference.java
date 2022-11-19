@@ -22,6 +22,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.Namespaces;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Reference to the source of the data quality measure.
@@ -47,6 +53,7 @@ import org.apache.sis.xml.Namespaces;
  */
 @XmlType(name = "DQM_SourceReference_Type", namespace = Namespaces.DQM)
 @XmlRootElement(name = "DQM_SourceReference", namespace = Namespaces.DQM)
+@UML(identifier="DQM_SourceReference", specification=UNSPECIFIED)
 public class DefaultSourceReference extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -85,6 +92,7 @@ public class DefaultSourceReference extends ISOMetadata {
      * @return reference to the source.
      */
     @XmlElement(name = "citation", required = true)
+    @UML(identifier="citation", obligation=MANDATORY, specification=UNSPECIFIED)
     public Citation getCitation() {
         return citation;
     }

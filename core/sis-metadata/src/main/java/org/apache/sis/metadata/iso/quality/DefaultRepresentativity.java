@@ -19,6 +19,11 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Degree to which the sample used has produced a result which is representation of the data.
@@ -45,6 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlType(name = "DQ_Representativity_Type")
 @XmlRootElement(name = "DQ_Representativity")
+@UML(identifier="DQ_Representativity", specification=UNSPECIFIED)
 public class DefaultRepresentativity extends AbstractMetaquality {
     /**
      * Serial number for inter-operability with different versions.

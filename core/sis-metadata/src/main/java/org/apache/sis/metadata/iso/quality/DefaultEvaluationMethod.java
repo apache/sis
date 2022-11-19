@@ -35,6 +35,12 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
+// Branch-dependent imports
+import org.opengis.annotation.UML;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
+
 
 /**
  * Description of the evaluation method and procedure applied.
@@ -66,6 +72,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
     AbstractDataEvaluation.class,
     DefaultAggregationDerivation.class
 })
+@UML(identifier="DQ_EvaluationMethod", specification=UNSPECIFIED)
 public class DefaultEvaluationMethod extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
@@ -289,6 +296,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
      * @return type of method used to evaluate quality, or {@code null} if none.
      */
     @XmlElement(name = "evaluationMethodType")
+    @UML(identifier="evaluationMethodType", obligation=OPTIONAL, specification=UNSPECIFIED)
     public EvaluationMethodType getEvaluationMethodType() {
         return evaluationMethodType;
     }
@@ -309,6 +317,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
      * @return description of the evaluation method, or {@code null} if none.
      */
     @XmlElement(name = "evaluationMethodDescription")
+    @UML(identifier="evaluationMethodDescription", obligation=OPTIONAL, specification=UNSPECIFIED)
     public InternationalString getEvaluationMethodDescription() {
         return evaluationMethodDescription;
     }
@@ -329,6 +338,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
      * @return reference to the procedure information, or {@code null} if none.
      */
     @XmlElement(name = "evaluationProcedure")
+    @UML(identifier="evaluationProcedure", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Citation getEvaluationProcedure() {
         return evaluationProcedure;
     }
@@ -349,6 +359,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
      * @return documents referenced in data quality evaluation method.
      */
     @XmlElement(name = "referenceDoc")
+    @UML(identifier="referenceDoc", obligation=OPTIONAL, specification=UNSPECIFIED)
     public Collection<Citation> getReferenceDocuments() {
         return referenceDocuments = nonNullCollection(referenceDocuments, Citation.class);
     }
@@ -370,6 +381,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
      * @return date or range of dates on which a data quality measure was applied.
      */
     @XmlElement(name = "dateTime")
+    @UML(identifier="dateTime", obligation=OPTIONAL, specification=UNSPECIFIED)
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Date> getDates() {
         if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
