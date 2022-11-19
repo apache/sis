@@ -49,9 +49,9 @@ final class StandardImplementation extends MetadataStandard {
 
     /**
      * The prefixes that implementation classes may have.
-     * The most common prefixes should be first, since the prefixes will be tried in that order.
+     * The most common prefixes should be first, because the prefixes will be tried in that order.
      */
-    private final String[] prefix;
+    private static final String[] IMPL_PREFIXES = {"Default", "Abstract"};
 
     /**
      * The acronyms that implementation classes may have, or {@code null} if none. If non-null,
@@ -81,16 +81,14 @@ final class StandardImplementation extends MetadataStandard {
      * @param citation               the title of the standard.
      * @param interfacePackage       the root package for metadata interfaces, with a trailing {@code '.'}.
      * @param implementationPackage  the root package for metadata implementations. with a trailing {@code '.'}.
-     * @param prefix                 the prefix of implementation class. This array is not cloned.
      * @param acronyms               an array of (full text, acronyms) pairs. This array is not cloned.
      * @param dependencies           the dependencies to other metadata standards, or {@code null} if none.
      */
     StandardImplementation(final String citation, final String interfacePackage, final String implementationPackage,
-            final String[] prefix, final String[] acronyms, final MetadataStandard... dependencies)
+            final String[] acronyms, final MetadataStandard... dependencies)
     {
         super(citation, interfacePackage, dependencies);
         this.implementationPackage = implementationPackage;
-        this.prefix                = prefix;
         this.acronyms              = acronyms;
         this.implementations       = new IdentityHashMap<>();
     }
@@ -149,7 +147,7 @@ final class StandardImplementation extends MetadataStandard {
                      */
                     final int prefixPosition = buffer.lastIndexOf(".") + 1;
                     int length = 0;
-                    for (final String p : prefix) {
+                    for (final String p : IMPL_PREFIXES) {
                         classname = buffer.replace(prefixPosition, prefixPosition + length, p).toString();
                         try {
                             candidate = Class.forName(classname);

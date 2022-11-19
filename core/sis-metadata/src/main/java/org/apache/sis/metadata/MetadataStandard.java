@@ -152,12 +152,11 @@ public class MetadataStandard implements Serializable {
      */
     public static final MetadataStandard ISO_19123;
     static {
-        final String[] prefix = {"Default", "Abstract"};
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
-        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null, (MetadataStandard[]) null);
-        ISO_19157 = new StandardImplementation("ISO 19157", "org.opengis.metadata.quality.", "org.apache.sis.metadata.iso.quality.", prefix, null, ISO_19115);
-        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms, ISO_19157, ISO_19115);
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null, (MetadataStandard[]) null);
+        ISO_19157 = new StandardImplementation("ISO 19157", "org.opengis.metadata.quality.", "org.apache.sis.metadata.iso.quality.", null, ISO_19115);
+        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms, ISO_19157, ISO_19115);
         ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.", ISO_19111);
         INSTANCES = new MetadataStandard[] {
             ISO_19157,      // Need to be declared before ISO 19115.
