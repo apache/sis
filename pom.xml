@@ -473,13 +473,13 @@
       <dependency>
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
-        <version>2.3.6</version>
+        <version>2.3.7</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.21</version>
+        <version>1.22</version>
       </dependency>
 
       <!-- Databases -->
@@ -492,7 +492,7 @@
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.7.0</version>
+        <version>2.7.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -557,7 +557,7 @@
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>1.2</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
-    <javafx.version>18.0.1</javafx.version>                         <!-- Used only if "javafx" profile is activated. -->
+    <javafx.version>19</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
   </properties>
 
