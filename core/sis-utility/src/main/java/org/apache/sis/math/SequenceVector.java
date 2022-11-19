@@ -106,7 +106,7 @@ abstract class SequenceVector extends Vector implements Serializable {
     }
 
     /**
-     * Returns {@code this} since Apache SIS can not create a more compact vector than this {@code SequenceVector}.
+     * Returns {@code this} since Apache SIS cannot create a more compact vector than this {@code SequenceVector}.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

@@ -75,7 +75,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
     public void testToStringOnCyclicMetadata() {
         final String text = MetadataStandardTest.createCyclicMetadata().toString();
         /*
-         * We can not perform a full comparison of the string since it is locale-dependent.
+         * We cannot perform a full comparison of the string since it is locale-dependent.
          * Compare only the tree structure. The full tree in English is shown in javadoc.
          */
         assertTrue(text, text.startsWith("Acquisition information"));

@@ -66,7 +66,7 @@ final class PackBits extends CompressionChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     @Override
     public void setInputRegion(final long start, final long byteCount) throws IOException {
@@ -114,7 +114,7 @@ final class PackBits extends CompressionChannel {
             }
             /*
              * Execute the instruction (literal copy or byte duplication) in the limit of space available
-             * in both buffers. If the instruction can not be executed fully, then one of `literalCount`
+             * in both buffers. If the instruction cannot be executed fully, then one of `literalCount`
              * or `duplicatedCount` fields will be non-zero.
              */
             if (literalCount != 0) {

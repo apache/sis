@@ -115,7 +115,7 @@ import java.util.Objects;
  *       (WKT) version 1. Note that WKT version 2 does not have {@code TOWGS84[…]} element anymore.</li>
  *   <li>Specified at {@code DefaultGeodeticDatum} construction time for arbitrary target datum.
  *       Apache SIS will ignore those Bursa-Wolf parameters, except as a fallback if no parameters
- *       can been found in the EPSG database for a given pair of source and target CRS.</li>
+ *       can be found in the EPSG database for a given pair of source and target CRS.</li>
  * </ol>
  *
  * <div class="note"><b>Note:</b>

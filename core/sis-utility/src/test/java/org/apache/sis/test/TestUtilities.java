@@ -308,7 +308,7 @@ public final strictfp class TestUtilities extends Static {
      * }
      *
      * This method is used for comparing two trees having string representation in different locales.
-     * In such case, we can not compare the actual text content. The best we can do is to compare
+     * In such case, we cannot compare the actual text content. The best we can do is to compare
      * the tree structure.
      *
      * @param  tree  the string representation of a tree.

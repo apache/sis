@@ -125,9 +125,9 @@ public class IdentifiedObjectFinder {
          * (unless the geodetic dataset contains duplicated entries) to justify the performance cost.</p>
          *
          * <div class="note"><b>Use case:</b>
-         * the EPSG database sometime contains two definitions for almost identical geographic CRS,
+         * the EPSG database sometimes contains two definitions for almost identical geographic CRS,
          * one with (<var>latitude</var>, <var>longitude</var>) axis order and one with reverse order
-         * (e.g. EPSG::4171 versus EPSG::7084). It is sometime useful to know all variants of a given CRS.
+         * (e.g. EPSG::4171 versus EPSG::7084). It is sometimes useful to know all variants of a given CRS.
          * The {@link #VALID_DATASET} domain may not give a complete set because the "fast lookup by identifier"
          * optimization may prevent {@link IdentifiedObjectFinder} to scan the rest of the database.
          * This {@code EXHAUSTIVE_VALID_DATASET} domain forces such scan.</div>

@@ -49,7 +49,7 @@ abstract class PixelChannel implements ReadableByteChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     public abstract void setInputRegion(long start, long byteCount) throws IOException;
 }

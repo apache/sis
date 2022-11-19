@@ -270,7 +270,7 @@ public abstract class Transliterator implements Serializable {
      * @param  csType     the type of the coordinate system, or {@code null} if unknown.
      * @param  direction  the parsed axis direction.
      * @param  name       the parsed axis abbreviation, to be eventually replaced by this method.
-     * @return the axis name to use. Can not be null.
+     * @return the axis name to use. Cannot be null.
      */
     public String toLongAxisName(final String csType, final AxisDirection direction, final String name) {
         if (csType != null) switch (csType) {
@@ -417,7 +417,7 @@ public abstract class Transliterator implements Serializable {
      * @param  csType        the type of the coordinate system, or {@code null} if unknown.
      * @param  direction     the parsed axis direction.
      * @param  abbreviation  the parsed axis abbreviation, to be eventually replaced by this method.
-     * @return the axis abbreviation to use. Can not be null.
+     * @return the axis abbreviation to use. Cannot be null.
      */
     public String toUnicodeAbbreviation(final String csType, final AxisDirection direction, String abbreviation) {
         if (abbreviation.length() == 1) {

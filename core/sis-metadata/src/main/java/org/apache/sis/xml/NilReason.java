@@ -205,7 +205,7 @@ public final class NilReason implements Serializable {
      *   <li>If the given argument is one of the {@code "inapplicable"}, {@code "missing"},
      *       {@code "template"}, {@code "unknown"}, {@code "withheld"} or {@code "other"}
      *       strings (ignoring cases and leading/trailing spaces), then the corresponding
-     *       pre-defined constant is returned.</li>
+     *       predefined constant is returned.</li>
      *   <li>Otherwise if the given argument is {@code "other:"} followed by an explanation
      *       text, then an instance for that explanation is returned. More specifically:
      *       <ul>
@@ -224,7 +224,7 @@ public final class NilReason implements Serializable {
      * @param  reason  the reason why an element is not present.
      * @return the reason as a {@code NilReason} object.
      * @throws URISyntaxException if the given string is not one of the predefined enumeration
-     *         values and can not be parsed as a URI.
+     *         values and cannot be parsed as a URI.
      */
     public static NilReason valueOf(String reason) throws URISyntaxException {
         reason = CharSequences.trimWhitespaces(reason);
@@ -383,7 +383,7 @@ public final class NilReason implements Serializable {
          * to cache those values anyway, we opportunistically extend the caching to other types too.
          *
          * Implementation note: we have two synchronizations here: one lock on 'this' because of the
-         * 'synchronized' statement in this method signature, and an other lock in WeakValueHashMap.
+         * 'synchronized' statement in this method signature, and another lock in WeakValueHashMap.
          * The second lock may seem useless since we already hold a lock on 'this'. But it is actually
          * needed because the garbage-collected entries are removed from the map in a background thread
          * (see ReferenceQueueConsumer), which is synchronized on the map itself. It is better to keep
@@ -440,7 +440,7 @@ public final class NilReason implements Serializable {
      * There is no special case for {@link Character} because Java {@code char}s are not really full Unicode characters.
      * They are parts of UTF-16 encoding instead. If there is a need to represent a single Unicode character, we should
      * probably still use a {@link String} where the string contain 1 or 2 Java characters. This may also facilitate the
-     * encoding in the XML files, since many files use an other encoding than UTF-16 anyway.</div>
+     * encoding in the XML files, since many files use another encoding than UTF-16 anyway.</div>
      *
      * @throws IllegalArgumentException if the given type is not a supported type.
      */
@@ -461,7 +461,7 @@ public final class NilReason implements Serializable {
      * Returns {@code true} if the given object may be one of the sentinel values
      * created by {@link #createNilPrimitive(Class)}. This method only checks the value.
      * If this method returns {@code true}, then the caller still needs to check the actual instance using the
-     * {@link PrimitiveTypeProperties} class. The purpose of this method is to filter the values that can not
+     * {@link PrimitiveTypeProperties} class. The purpose of this method is to filter the values that cannot
      * be sentinel values, in order to avoid the synchronization done by {@code PrimitiveTypeProperties}.
      */
     private static boolean mayBeNil(final Object object) {

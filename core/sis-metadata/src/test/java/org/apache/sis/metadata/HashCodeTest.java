@@ -73,7 +73,7 @@ public final strictfp class HashCodeTest extends TestCase {
         instance.setTitle(title);
         assertEquals("Metadata with a single value.", Integer.valueOf(baseCode + title.hashCode()), hash(instance));
 
-        final InternationalString alternateTitle = new SimpleInternationalString("An other title");
+        final InternationalString alternateTitle = new SimpleInternationalString("Another title");
         instance.setAlternateTitles(singleton(alternateTitle));
         assertEquals("Metadata with two values.",
                      Integer.valueOf(baseCode + title.hashCode() + Arrays.asList(alternateTitle).hashCode()),

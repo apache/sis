@@ -183,8 +183,8 @@ public class InfoStatements implements Localized, AutoCloseable {
      * If no match is found, then this method returns {@code null}.
      *
      * @param  array  the array from which to get the mapping of component values.
-     * @return converter to the corresponding java type, or {@code null} if this class can not find a mapping.
-     * @throws SQLException if the mapping can not be obtained.
+     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping.
+     * @throws SQLException if the mapping cannot be obtained.
      */
     public final ValueGetter<?> getComponentMapping(final Array array) throws SQLException {
         return database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName()));
@@ -224,7 +224,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @param  column       name of the geometry column without prefix. Standard value is {@code "GEOMETRY_COLUMN"}.
      * @param  otherColumn  additional columns or {@code null} if none. Standard value is {@code "GEOMETRY_TYPE"}.
      * @return the prepared statement for querying the geometry table.
-     * @throws SQLException if the statement can not be created.
+     * @throws SQLException if the statement cannot be created.
      */
     protected final PreparedStatement prepareIntrospectionStatement(final String table,
             final char prefix, final String column, final String otherColumn) throws SQLException
@@ -247,7 +247,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @param  source   the table for which to get all geometry columns.
      * @param  columns  all columns for the specified table. Keys are column names.
      * @throws DataStoreContentException if a logical error occurred in processing data.
-     * @throws ParseException if the WKT can not be parsed.
+     * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
      */
     public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
@@ -268,7 +268,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @param  columns        all columns for the specified table. Keys are column names.
      * @param  typeValueKind  {@code NUMERIC}, {@code TEXTUAL} or {@code null} if none.
      * @throws DataStoreContentException if a logical error occurred in processing data.
-     * @throws ParseException if the WKT can not be parsed.
+     * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
      *
      * @todo Follow column dependencies for columns from a view.
@@ -308,10 +308,10 @@ public class InfoStatements implements Localized, AutoCloseable {
      *
      * @param  srid  the Spatial Reference Identifier (SRID) to resolve as a CRS object.
      * @return the CRS associated to the given SRID, or {@code null} if the SRID is zero.
-     * @throws DataStoreContentException if the CRS can not be fetched. Possible reasons are:
+     * @throws DataStoreContentException if the CRS cannot be fetched. Possible reasons are:
      *         no entry found in the {@value #SPATIAL_REF_SYS} table, or more than one entry is found,
      *         or a single entry exists but has no WKT definition and its authority code is unsupported by SIS.
-     * @throws ParseException if the WKT can not be parsed.
+     * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
      */
     public final CoordinateReferenceSystem fetchCRS(final int srid) throws Exception {
@@ -476,7 +476,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         for (;;) {
             /*
              * First, iterate over the identifiers declared in the CRS object.
-             * If we can not find an identifier that we can map to a SRID, then this loop may be
+             * If we cannot find an identifier that we can map to a SRID, then this loop may be
              * executed more times with CRS from EPSG database that are equal, ignore axis order.
              */
             for (final Identifier id : candidate.getIdentifiers()) {

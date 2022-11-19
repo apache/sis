@@ -41,7 +41,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
 
 
 /**
- * A set of pre-defined constants and static methods working on {@linkplain Citation citations}.
+ * A set of predefined constants and static methods working on {@linkplain Citation citations}.
  * This class provides two kinds of {@code Citation} constants:
  *
  * <ul>
@@ -499,7 +499,7 @@ public final class Citations extends Static {
      * <ul>
      *   <li>If the given title is {@code null} or empty (ignoring spaces), then this method returns {@code null}.</li>
      *   <li>Otherwise if the given string matches an {@linkplain DefaultCitation#getIdentifiers() identifier} of one of
-     *       the pre-defined constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant is returned.</li>
+     *       the predefined constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant is returned.</li>
      *   <li>Otherwise, a new citation is created with the specified name as the title.</li>
      * </ul>
      *

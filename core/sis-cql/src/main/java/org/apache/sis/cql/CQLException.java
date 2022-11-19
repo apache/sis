@@ -18,7 +18,7 @@ package org.apache.sis.cql;
 
 
 /**
- * Thrown when a CQL statement can not be parsed.
+ * Thrown when a CQL statement cannot be parsed.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0

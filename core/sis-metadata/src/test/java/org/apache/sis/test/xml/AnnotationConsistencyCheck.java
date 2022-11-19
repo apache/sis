@@ -129,7 +129,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     protected abstract <T> Class<? extends T> getImplementation(Class<T> type);
 
     /**
-     * If the given GeoAPI type, when marshalled to XML, is wrapped into an other XML element,
+     * If the given GeoAPI type, when marshalled to XML, is wrapped into another XML element,
      * returns the class of the wrapper for that XML element. Otherwise returns {@code null}.
      * Such wrappers are unusual in XML (except for lists), but the ISO 19115-3 standard do that
      * systematically for every elements.

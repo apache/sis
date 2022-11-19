@@ -46,7 +46,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     }
 
     /**
-     * Returns {@code true} if the {@link #size()} method is cheap. This is sometime the case
+     * Returns {@code true} if the {@link #size()} method is cheap. This is sometimes the case
      * when {@code size()} has already been invoked and the subclasses cached the result.
      *
      * @return {@code true} if the {@link #size()} method is cheap.
@@ -97,7 +97,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
         /*
          * Do not invoke super.removeAll(c) even if isSizeKnown() returns 'true' because we want to unconditionally
          * iterate over the elements of the given collection. The reason is that this Set may compute the values in
-         * a dynamic way and it is sometime difficult to ensure that the values returned by this Set's iterator are
+         * a dynamic way and it is sometimes difficult to ensure that the values returned by this Set's iterator are
          * fully consistent with the values recognized by contains(Object) and remove(Object) methods.  Furthermore
          * we want the operation to fail fast in the common case where the remove(Object) method is unsupported.
          */
@@ -179,7 +179,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
         /*
          * Do not invoke super.equals(object) even if isSizeKnown() returns 'true' because we want to unconditionally
          * iterate over the elements of this Set. The reason is that this Set may compute the values dynamically and
-         * it is sometime difficult to ensure that this Set's iterator is fully consistent with the values recognized
+         * it is sometimes difficult to ensure that this Set's iterator is fully consistent with the values recognized
          * by the contains(Object) method. For example the iterator may return "EPSG:4326" while the contains(Object)
          * method may accept both "EPSG:4326" and "EPSG:4326". For this equal(Object) method, we consider the
          * contains(Object) method of the other Set as more reliable.

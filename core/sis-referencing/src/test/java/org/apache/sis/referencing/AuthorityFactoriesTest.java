@@ -93,7 +93,7 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
     /**
      * Tests {@link CRSAuthorityFactory#getDescriptionText(String)}.
      *
-     * @throws FactoryException if the EPSG:4326 name can not be obtained.
+     * @throws FactoryException if the EPSG:4326 name cannot be obtained.
      *
      * @since 0.8
      */

@@ -357,7 +357,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
                 append(sb, f, new Longitude(box.getWestBoundLongitude()),
                               new Longitude(box.getEastBoundLongitude()));
             } else {
-                sb.append('?');     // If the domain can not be expressed as a geographic bounding box.
+                sb.append('?');     // If the domain cannot be expressed as a geographic bounding box.
             };
             sb.append(']');
             if (sourceDomainExpansion != 0) {

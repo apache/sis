@@ -104,7 +104,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Conversions from source objective coordinates to target objective coordinates.
      * Computed when first needed, and recomputed when the objective CRS changes.
-     * A {@code null} value means that no change is needed or can not be done.
+     * A {@code null} value means that no change is needed or cannot be done.
      *
      * @see #findObjectiveTransform(String)
      */
@@ -363,7 +363,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                         if (before != null) try {
                             /*
                              * Converts a change from units of the source CRS to units of the target CRS.
-                             * If that change can not be computed, fallback on a change in display units.
+                             * If that change cannot be computed, fallback on a change in display units.
                              * The POI may be null, but this is okay if the transform is linear.
                              */
                             if (objectiveTransform != null) {
@@ -505,7 +505,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     }
 
     /**
-     * Invoked when the {@link #objectiveTransform} transform can not be computed,
+     * Invoked when the {@link #objectiveTransform} transform cannot be computed,
      * or when an optional information required for that transform is missing.
      * This method assumes that the public caller (possibly indirectly) is
      * {@link #propertyChange(PropertyChangeEvent)}.

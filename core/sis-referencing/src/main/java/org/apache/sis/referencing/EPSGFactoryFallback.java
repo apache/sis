@@ -237,7 +237,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
 
     /**
      * Returns a coordinate reference system for the given EPSG code. This method is invoked
-     * as a fallback when {@link CRS#forCode(String)} can not create a CRS for a given code.
+     * as a fallback when {@link CRS#forCode(String)} cannot create a CRS for a given code.
      */
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws NoSuchAuthorityCodeException {
@@ -246,7 +246,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
 
     /**
      * Returns a coordinate system for the given EPSG code. Contrarily to other kinds of objects,
-     * coordinate systems are not cached because we can not use {@link CommonCRS} as a store for
+     * coordinate systems are not cached because we cannot use {@link CommonCRS} as a store for
      * them (because all enumerated values use the same coordinate systems). The lack of caching
      * should not be an issue since standalone CS objects (without CRS) are rarely be needed.
      */

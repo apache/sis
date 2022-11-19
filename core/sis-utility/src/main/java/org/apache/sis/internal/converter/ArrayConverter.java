@@ -26,7 +26,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 
 
 /**
- * Handles conversions between arrays. This converter delegates element conversions to an other converter given at
+ * Handles conversions between arrays. This converter delegates element conversions to another converter given at
  * construction time. If the source and target types of this converter are {@code <S[]>} and {@code <T[]>}, then
  * the source and target types of the element converter shall be {@code <? super S>} and {@code <? extends T>}
  * respectively.
@@ -56,7 +56,7 @@ final class ArrayConverter<S,T> extends SystemConverter<S,T> {
 
     /**
      * The converter for array elements. The source and target types shall be compatible with the array component
-     * types of {@code <S>} and {@code <T>} (this constraint can not be expressed by JDK 7 parameterized types).
+     * types of {@code <S>} and {@code <T>} (this constraint cannot be expressed by JDK 7 parameterized types).
      */
     private final ObjectConverter<?,?> converter;
 

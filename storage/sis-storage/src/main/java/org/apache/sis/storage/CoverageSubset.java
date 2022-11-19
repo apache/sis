@@ -90,7 +90,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      *
      * @return extent of grid coordinates clipped to the query.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store,
-     *         or if the grid geometry can not be clipped to the query area.
+     *         or if the grid geometry cannot be clipped to the query area.
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
@@ -112,7 +112,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * @param  rounding  whether to clip to nearest box or an enclosing box.
      * @param  clipping  whether to clip the resulting extent to the specified {@code domain} extent.
      * @return intersection of the given grid geometry with the query domain.
-     * @throws DataStoreException if the intersection can not be computed.
+     * @throws DataStoreException if the intersection cannot be computed.
      */
     private GridGeometry clip(final GridGeometry domain, final GridRoundingMode rounding, final GridClippingMode clipping)
             throws DataStoreException

@@ -56,7 +56,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
 
     /**
      * {@code true} if the key has arguments. If {@code false}, then the {@link #arguments}
-     * field shall be ignored. We can not rely on {@code null} arguments value because null
+     * field shall be ignored. We cannot rely on {@code null} arguments value because null
      * may be a valid value.
      */
     private final boolean hasArguments;

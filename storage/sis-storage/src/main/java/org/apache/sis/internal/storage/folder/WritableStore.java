@@ -83,8 +83,8 @@ final class WritableStore extends Store implements WritableAggregate {
             }));
         }
         /*
-         * If we determined in a previous method invocation that the given provider can not write feature set,
-         * we are better to fail now instead of polluting the directory with files that we can not use.
+         * If we determined in a previous method invocation that the given provider cannot write feature set,
+         * we are better to fail now instead of polluting the directory with files that we cannot use.
          */
         if (isReadOnly) {
             throw new ReadOnlyStorageException(messages().getString(Resources.Keys.StoreIsReadOnly));
@@ -131,7 +131,7 @@ final class WritableStore extends Store implements WritableAggregate {
                     return store;
                 }
                 /*
-                 * If the data store is not a WritableFeatureSet, current implementation can not use it.
+                 * If the data store is not a WritableFeatureSet, current implementation cannot use it.
                  * Files created by this failed attempt may remain; instead of trying to delete them with
                  * uncertain consequences, we set a flag for avoiding to pollute further the directory.
                  */

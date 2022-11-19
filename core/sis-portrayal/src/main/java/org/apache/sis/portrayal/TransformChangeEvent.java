@@ -365,7 +365,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     }
 
     /**
-     * Invoked when a change can not be computed. It should never happen because "objective to display"
+     * Invoked when a change cannot be computed. It should never happen because "objective to display"
      * transforms should always be invertible. If this error nevertheless happens, consider the change
      * as a missing optional information.
      */

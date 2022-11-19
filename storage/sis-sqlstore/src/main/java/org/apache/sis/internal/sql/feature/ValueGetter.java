@@ -43,7 +43,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * <p>The {@link #getValue(InfoStatements, ResultSet, int)} method is invoked with the result set cursor placed on the
  * row of interest. The index of the column to read must be specified. It allows to reuse the same {@code ValueGetter}
- * instance for an arbitrary amount of columns.</p>
+ * instance for an arbitrary number of columns.</p>
  *
  * <h2>Multi-threading</h2>
  * {@code ValueGetter} instances shall be thread-safe.

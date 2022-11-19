@@ -183,7 +183,7 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
     }
 
     /**
-     * Reports an exception. This is used if an exception occurred in a method that can not return
+     * Reports an exception. This is used if an exception occurred in a method that cannot return
      * a {@link String} instance. This method logs the stack trace at {@link Level#WARNING}.
      *
      * @param method     the method from which an exception occurred.

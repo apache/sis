@@ -82,7 +82,7 @@ final class PackedVector extends ArrayVector<Long> {
      * @param  source  the vector to copy.
      * @param  min     the minimal value in the given vector, inclusive.
      * @param  max     the maximal value in the given vector, inclusive.
-     * @return the compressed vector, or {@code null} if the vector can not or should not be compressed.
+     * @return the compressed vector, or {@code null} if the vector cannot or should not be compressed.
      */
     static PackedVector compress(final Vector source, final long min, final long max) {
         long delta = max - min;

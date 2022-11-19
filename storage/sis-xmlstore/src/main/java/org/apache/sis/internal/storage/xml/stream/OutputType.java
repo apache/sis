@@ -155,7 +155,7 @@ enum OutputType {
     abstract XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException;
 
     /**
-     * Returns a reader for the data written by the given writer, or {@code null} if we can not read the data.
+     * Returns a reader for the data written by the given writer, or {@code null} if we cannot read the data.
      * If non-null, the value returned by this method is a snapshot of the given stream content, i.e. changes
      * in the output stream will not affect the returned input stream or reader. In particular, contrarily to
      * {@link org.apache.sis.internal.storage.io.IOUtilities#toInputStream(AutoCloseable)} this method does not

@@ -139,7 +139,7 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Tests the pre-defined {@link org.apache.sis.util.Characters.Filter} constants.
+     * Tests the predefined {@link org.apache.sis.util.Characters.Filter} constants.
      */
     @Test
     public void testPredefinedFilters() {

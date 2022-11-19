@@ -264,11 +264,11 @@ public final class GCOM_W extends Convention {
     }
 
     /**
-     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     * Returns the unit of measurement to use as a fallback if it cannot be determined in a standard way.
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol can not be parsed.
+     * @throws ParserException if the unit symbol cannot be parsed.
      */
     @Override
     public Unit<?> getUnitFallback(final Variable data) throws ParserException {

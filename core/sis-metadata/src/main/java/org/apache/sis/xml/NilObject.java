@@ -25,7 +25,7 @@ package org.apache.sis.xml;
  * The information may be absent for various reasons, including the attribute being inapplicable in the metadata context
  * ({@link NilReason#INAPPLICABLE}), the information probably exists but is unknown to the data provider
  * ({@link NilReason#UNKNOWN UNKNOW}), the information may not exist at all ({@link NilReason#MISSING
- * MISSING}) or can not be divulged ({@link NilReason#WITHHELD WITHHELD}).
+ * MISSING}) or cannot be divulged ({@link NilReason#WITHHELD WITHHELD}).
  *
  * <p>Nil objects appear most frequently in XML documents because if a mandatory ISO 19115-1 attribute
  * is absent, then the ISO 19115-3 standard requires us to said why it is absent. The following example

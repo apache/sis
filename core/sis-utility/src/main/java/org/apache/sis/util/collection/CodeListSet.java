@@ -94,7 +94,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      *
      * <div class="note"><b>Implementation note:</b>
      * The standard {@link java.util.EnumSet} class uses different implementations depending on whether
-     * the enumeration contains more or less than 64 elements. We can not apply the same strategy for
+     * the enumeration contains more or less than 64 elements. We cannot apply the same strategy for
      * {@code CodeListSet}, because new code list elements can be created at runtime. Consequently this
      * implementation needs to be able to growth its capacity.</div>
      */
@@ -385,7 +385,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
-     * Returns the bitmask to use for a bulk operation with an other set of code lists.
+     * Returns the bitmask to use for a bulk operation with another set of code lists.
      */
     private long mask(final CodeListSet<?> other) {
         return (elementType == other.elementType) ? other.values : 0;

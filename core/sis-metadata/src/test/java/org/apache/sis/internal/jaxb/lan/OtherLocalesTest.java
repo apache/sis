@@ -85,7 +85,7 @@ public final strictfp class OtherLocalesTest extends TestCase {
         assertArrayEquals(new Locale[] {ENGLISH}, languages.keySet().toArray());
         /*
          * The first 'add' operation on an empty 'languages' list generates a default locale.
-         * Note that we can not test the first element of 'languages', since it is system-dependent.
+         * Note that we cannot test the first element of 'languages', since it is system-dependent.
          */
         languages.clear();
         assertTrue(otherLocales.add(new PT_Locale(FRENCH)));

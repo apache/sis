@@ -218,7 +218,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * return in WKT 1 format. Note that for the WKT 1 format, we need to replace the coordinate system by
          * an instance conform to the legacy conventions.
          *
-         * We can not delegate the work below to subclasses,  because XML unmarshalling of a geodetic CRS will
+         * We cannot delegate the work below to subclasses,  because XML unmarshalling of a geodetic CRS will
          * NOT create an instance of a subclass (because the distinction between geographic and geocentric CRS
          * is not anymore in ISO 19111:2007).
          */
@@ -254,7 +254,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         }
         /*
          * For WKT 1, the keyword depends on the subclass: "GeogCS" for GeographicCRS or "GeocCS" for GeocentricCRS.
-         * However we can not rely on the subclass for choosing the keyword, because after XML unmarhaling we only
+         * However we cannot rely on the subclass for choosing the keyword, because after XML unmarhaling we only
          * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
          */
         if (isWKT1) {
@@ -282,7 +282,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     DefaultGeodeticCRS() {
         /*

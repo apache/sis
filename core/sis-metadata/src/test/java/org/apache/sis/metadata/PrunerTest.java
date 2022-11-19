@@ -55,7 +55,7 @@ public final strictfp class PrunerTest extends TestCase {
     private final DefaultDataIdentification identification;
 
     /**
-     * A child of an other child metadata object being tested.
+     * A child of another child metadata object being tested.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-194">SIS-194</a>
      *

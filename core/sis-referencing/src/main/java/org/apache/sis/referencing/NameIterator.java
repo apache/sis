@@ -73,7 +73,7 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
     }
 
     /**
-     * Returns {@code true} if there is an other name or alias to return.
+     * Returns {@code true} if there is another name or alias to return.
      */
     @Override
     public boolean hasNext() {

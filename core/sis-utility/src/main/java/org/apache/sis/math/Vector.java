@@ -371,7 +371,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      *
      * @see #doubleValues()
      */
@@ -388,7 +388,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      *
      * @see #floatValues()
      * @see #isSinglePrecision()
@@ -409,7 +409,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code long} type.
      */
     public long longValue(final int index) {
@@ -433,7 +433,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code int} type.
      */
     public int intValue(final int index) {
@@ -456,7 +456,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code short} type.
      */
     public short shortValue(final int index) {
@@ -479,7 +479,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code byte} type.
      */
     public byte byteValue(final int index) {
@@ -521,7 +521,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * if {@link #getElementType()} returns {@code Byte.class} but {@link #isUnsigned()} returns {@code true},
      * then this method will rather return instances of {@link Short} because that type is the smallest Java
      * primitive type capable to hold byte values in the [0 … 255] range. But the elements are still stored
-     * internally as {@code byte}, and the vector can not accept values outside the [0 … 255] range even if
+     * internally as {@code byte}, and the vector cannot accept values outside the [0 … 255] range even if
      * they are valid {@link Short} values.</div>
      *
      * The class of returned objects should be stable. For example this method should not use different types
@@ -531,7 +531,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index (may be {@code null}).
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the value is stored as a {@code String} and cannot be parsed.
      */
     @Override
     public abstract Number get(int index);
@@ -546,7 +546,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value previously stored at the given index.
      * @throws UnsupportedOperationException if this vector is read-only.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     * @throws NumberFormatException if the previous value was stored as a {@code String} and can not be parsed.
+     * @throws NumberFormatException if the previous value was stored as a {@code String} and cannot be parsed.
      * @throws IllegalArgumentException if this vector uses some {@linkplain #compress(double) compression} technic
      *         and the given value is out of range for that compression.
      */
@@ -629,7 +629,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * }</div>
      *
      * <p>This method is useful for analyzing the localization grid provided by some files (for example in netCDF format).
-     * Those grids sometime have constant longitude for the same column index, or constant latitude for the same row index.
+     * Those grids sometimes have constant longitude for the same column index, or constant latitude for the same row index.
      * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.</p>
      *
      * @param  candidates  probable values, or {@code null} or an empty array if unknown. If non-empty, those values will be used
@@ -774,7 +774,7 @@ search:     for (;;) {
             final int type = Numbers.getEnumConstant(getElementType());
             /*
              * For integer types, verify if the increment is constant. We do not use the "first + inc*i"
-             * formula because some 'long' values can not be represented accurately as 'double' values.
+             * formula because some 'long' values cannot be represented accurately as 'double' values.
              * The result will be converted to the same type than the vector element type if possible,
              * or the next wider type if the increment is an unsigned value too big for the element type.
              */
@@ -902,7 +902,7 @@ search:     for (;;) {
      * @param  first   index of the first value in this vector to be included in the returned view.
      * @param  step    the index increment between values in this vector to be included in the returned view.
      *                 Can be positive, zero or negative.
-     * @param  length  the length of the view to be returned. Can not be greater than
+     * @param  length  the length of the view to be returned. Cannot be greater than
      *                 the length of this vector, except if the {@code step} is zero.
      * @return a view of this vector containing values in the given index range.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first + step*(length-1)}
@@ -1060,7 +1060,7 @@ search:     for (;;) {
         }
 
         /**
-         * If the vector can not be compressed, copies data in a new vector in order to have a smaller vector
+         * If the vector cannot be compressed, copies data in a new vector in order to have a smaller vector
          * than the one backing this view. This is advantageous only on the assumption that user do not keep
          * a reference to the original vector after {@link Vector#compress(double)} call.
          */
@@ -1158,7 +1158,7 @@ search:     for (;;) {
     }
 
     /**
-     * A view over an other vector at pre-selected indexes.
+     * A view over another vector at pre-selected indexes.
      */
     private final class Pick extends Vector implements Serializable {
         /** For cross-version compatibility. */
@@ -1262,7 +1262,7 @@ search:     for (;;) {
         }
 
         /**
-         * If the vector can not be compressed, copies data in a new vector in order to have a smaller vector
+         * If the vector cannot be compressed, copies data in a new vector in order to have a smaller vector
          * than the one backing this view. This is advantageous only on the assumption that user do not keep
          * a reference to the original vector after {@link Vector#compress(double)} call.
          */
@@ -1391,7 +1391,7 @@ search:     for (;;) {
 
     /**
      * Returns a vector with the same data than this vector but encoded in a more compact way,
-     * or {@code this} if this method can not do better than current {@code Vector} instance.
+     * or {@code this} if this method cannot do better than current {@code Vector} instance.
      * Examples:
      *
      * <ul>

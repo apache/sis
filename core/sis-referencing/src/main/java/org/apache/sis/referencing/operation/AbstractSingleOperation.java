@@ -63,7 +63,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * <p><b>Note:</b> this class is not strictly equivalent to {@code <gml:AbstractSingleOperationType>}
  * because the GML schema does not define the method and parameters in this base class. Instead, they
  * repeat those two elements in the {@code <gml:Conversion>} and {@code <gml:Transformation>} subtypes.
- * An other difference is that SIS does not use {@code AbstractSingleOperation} as the base class of
+ * Another difference is that SIS does not use {@code AbstractSingleOperation} as the base class of
  * {@link DefaultPassThroughOperation}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -128,7 +128,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         this.method = method;
         /*
          * Undocumented property, because SIS usually infers the parameters from the MathTransform.
-         * However there is a few cases, for example the Molodenski transform, where we can not infer the
+         * However there is a few cases, for example the Molodenski transform, where we cannot infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
         setParameterValues(Containers.property(properties, CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class), null);
@@ -216,7 +216,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * </ul>
      *
      * @return the parameter values.
-     * @throws UnsupportedOperationException if the parameter values can not be determined
+     * @throws UnsupportedOperationException if the parameter values cannot be determined
      *         for the current math transform implementation.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
@@ -315,14 +315,14 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * but their values should have been taken in account for the MathTransform creation, compared above.
          *
          * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
-         * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometime provided as explicit parameters,
-         * and sometime inferred from the geodetic datum. The two cases would be different set of parameters from the
+         * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometimes provided as explicit parameters,
+         * and sometimes inferred from the geodetic datum. The two cases would be different set of parameters from the
          * OperationMethod's point of view, but still result in the creation of identical MathTransforms.
          *
-         * An other rational for treating OperationMethod as metadata is that SIS's MathTransform providers extend
+         * Another rational for treating OperationMethod as metadata is that SIS's MathTransform providers extend
          * DefaultOperationMethod. Consequently there is a wide range of subclasses, which make the comparisons more
          * difficult. For example Mercator1SP and Mercator2SP providers are two different ways to describe the same
-         * projection. The SQL-backed EPSG factory uses yet an other implementation.
+         * projection. The SQL-backed EPSG factory uses yet another implementation.
          *
          * NOTE: A previous implementation made this final check:
          *
@@ -352,7 +352,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractSingleOperation() {
         /*
@@ -423,7 +423,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                     Parameters.getDescriptors(values),
                     replacements);
             /*
-             * Sometime Apache SIS recognizes the OperationMethod as one of its build-in methods and use the
+             * Sometimes Apache SIS recognizes the OperationMethod as one of its build-in methods and use the
              * build-in parameters. In such cases the unmarshalled ParameterDescriptorGroup can be used as-in.
              * But if the above `merge` method has changed any parameter descriptor, then we will need to create
              * a new ParameterDescriptorGroup with the new descriptors.
@@ -436,7 +436,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                 }
             }
             /*
-             * Sometime the descriptors associated to ParameterValues need to be updated, for example because
+             * Sometimes the descriptors associated to ParameterValues need to be updated, for example because
              * the descriptors in OperationMethod contain more information (remarks, etc.). Those updates, if
              * needed, are applied on-the-fly by the copy operation below, using the information provided by
              * the `replacements` map.

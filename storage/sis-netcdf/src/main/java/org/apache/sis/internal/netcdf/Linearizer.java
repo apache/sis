@@ -211,7 +211,7 @@ public final class Linearizer {
      * @param  xdim  index of longitude dimension in the grid control points.
      * @param  ydim  index of latitude dimension in the grid control points.
      * @return a two-dimensional transform expecting source coordinates in (longitude, latitude) order.
-     * @throws TransformException if grid coordinates can not be obtained. Actually this exception
+     * @throws TransformException if grid coordinates cannot be obtained. Actually this exception
      *         should never happen because the {@code MathTransform} used is a linear transform.
      */
     private MathTransform gridToTargetCRS(final LocalizationGridBuilder grid, final int xdim, final int ydim)
@@ -290,7 +290,7 @@ public final class Linearizer {
      * @param  sourceAxes   coordinate system axes in CRS order.
      * @param  linearizers  the linearizers to apply.
      * @param  grid         the grid on which to add non-linear transform candidates.
-     * @throws TransformException if grid coordinates can not be obtained. Actually this exception should never
+     * @throws TransformException if grid coordinates cannot be obtained. Actually this exception should never
      *         happen because the {@code MathTransform} used is a linear transform. We propagate this exception
      *         because it is more convenient to have it handled by the caller together with other exceptions.
      */
@@ -344,7 +344,7 @@ search: for (final GridCacheValue replacement : replacements) {
                  * In the most typical cases, the source CRS is geographic and the target CRS is projected.
                  * We can generally associate a source axis to a target axis by looking at their directions.
                  * For example the "Longitude" source axis is approximately colinear with the "Easting" target axis.
-                 * However there is a use case where target axis directions can not be matched directly to source:
+                 * However there is a use case where target axis directions cannot be matched directly to source:
                  * if the projection is a polar projection with target axis directions such as "South along 90°E",
                  * then `AxisDirections.indexOfColinear(CoordinateSystem, CoordinateSystem)} will not find a match.
                  * We need the more flexible `indicesOfLenientMapping(…)` method.
@@ -372,7 +372,7 @@ search: for (final GridCacheValue replacement : replacements) {
                 firstDimension += sourceCRS.getCoordinateSystem().getDimension();
             }
             /*
-             * If a replacement can not be applied, fail CRS construction.
+             * If a replacement cannot be applied, fail CRS construction.
              * May be relaxed in a future version if we have a use case.
              */
             throw new DataStoreReferencingException(Resources.format(

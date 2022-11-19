@@ -62,7 +62,7 @@ public class MathTransformsOrFactory {
      *
      * @param  matrix  the matrix used to define the linear transform.
      * @return the linear (usually affine) transform.
-     * @throws FactoryException if a factory is wrapped and can not perform the operation.
+     * @throws FactoryException if a factory is wrapped and cannot perform the operation.
      */
     public MathTransform linear(final Matrix matrix) throws FactoryException {
         return MathTransforms.linear(matrix);
@@ -75,7 +75,7 @@ public class MathTransformsOrFactory {
      * @param  subTransform             the sub-transform to apply on modified coordinates.
      * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, potentially as a {@link PassThroughTransform} instance but not necessarily.
-     * @throws FactoryException if a factory is wrapped and can not perform the operation.
+     * @throws FactoryException if a factory is wrapped and cannot perform the operation.
      */
     public MathTransform passThrough(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates) throws FactoryException {
         return MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
@@ -87,7 +87,7 @@ public class MathTransformsOrFactory {
      * @param  tr1  the first math transform.
      * @param  tr2  the second math transform.
      * @return the concatenated transform.
-     * @throws FactoryException if a factory is wrapped and can not perform the operation.
+     * @throws FactoryException if a factory is wrapped and cannot perform the operation.
      */
     public MathTransform concatenate(MathTransform tr1, MathTransform tr2) throws FactoryException {
         return MathTransforms.concatenate(tr1, tr2);
@@ -100,7 +100,7 @@ public class MathTransformsOrFactory {
      * @param  other            the second math transform.
      * @param  applyOtherFirst  whether {@code other} should be first in the concatenation chain.
      * @return the concatenated transform.
-     * @throws FactoryException if a factory is wrapped and can not perform the operation.
+     * @throws FactoryException if a factory is wrapped and cannot perform the operation.
      */
     public final MathTransform concatenate(boolean applyOtherFirst, MathTransform tr, MathTransform other) throws FactoryException {
         if (applyOtherFirst) {

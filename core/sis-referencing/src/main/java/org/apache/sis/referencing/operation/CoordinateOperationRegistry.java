@@ -286,7 +286,7 @@ class CoordinateOperationRegistry {
 
     /**
      * If the authority defines an object equal, ignoring metadata, to the given object, returns that authority object.
-     * Otherwise returns the given object unchanged. We do not invoke this method for user-supplied CRS, but only for
+     * Otherwise returns the given object unchanged. We do not invoke this method for user supplied CRS, but only for
      * CRS or other objects created by {@code CoordinateOperationRegistry} as intermediate step.
      */
     final <T extends IdentifiedObject> T toAuthorityDefinition(final Class<T> type, final T object) throws FactoryException {
@@ -782,7 +782,7 @@ class CoordinateOperationRegistry {
      * @return a coordinate operation for the given source and target CRS.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     private CoordinateOperation complete(final CoordinateOperation       operation,
                                          final CoordinateReferenceSystem sourceCRS,
@@ -843,8 +843,8 @@ class CoordinateOperationRegistry {
      * @param  targetCRS  the target CRS to give to the new operation.
      * @param  mtFactory  the math transform factory to use.
      * @return a new operation, or {@code operation} if {@code prepend} and {@code append} were nulls or identity transforms.
-     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
-     * @throws FactoryException if the operation can not be constructed.
+     * @throws IllegalArgumentException if the operation method cannot have the desired number of dimensions.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     private CoordinateOperation transform(final CoordinateReferenceSystem sourceCRS,
                                           final MathTransform             prepend,
@@ -858,7 +858,7 @@ class CoordinateOperationRegistry {
             return operation;
         }
         /*
-         * In the particular case of concatenated operations, we can not prepend or append a math transform to
+         * In the particular case of concatenated operations, we cannot prepend or append a math transform to
          * the operation as a whole (the math transform for a concatenated operation is computed automatically
          * as the concatenation of the transforms from every single operations, and we need to stay consistent
          * with that). Instead, prepend to the first single operation and append to the last single operation.
@@ -900,7 +900,7 @@ class CoordinateOperationRegistry {
      * @param  transform  the math transform to use in replacement to the one in {@code operation}.
      * @param  method     the operation method, or {@code null} for attempting an automatic detection.
      * @return a new operation from the given source CRS to target CRS using the given transform.
-     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
+     * @throws IllegalArgumentException if the operation method cannot have the desired number of dimensions.
      * @throws FactoryException if an error occurred while creating the new operation.
      */
     private CoordinateOperation recreate(final CoordinateOperation       operation,
@@ -1016,7 +1016,7 @@ class CoordinateOperationRegistry {
      *         If {@code decompose.target} is {@code true}, ellipsoidal height will be added to target coordinates.
      * @return a coordinate operation with the source and/or target coordinates made 3D,
      *         or {@code null} if this method does not know how to create the operation.
-     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
+     * @throws IllegalArgumentException if the operation method cannot have the desired number of dimensions.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
      */
     private CoordinateOperation propagateVertical(final CoordinateReferenceSystem sourceCRS,
@@ -1055,7 +1055,7 @@ class CoordinateOperationRegistry {
      * @param  forward     {@code true} for adding the vertical axis at the beginning, or
      *                     {@code false} for adding the vertical axis at the end.
      * @return {@code true} on success.
-     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
+     * @throws IllegalArgumentException if the operation method cannot have the desired number of dimensions.
      */
     private boolean propagateVertical(final CoordinateReferenceSystem source3D,
                                       final CoordinateReferenceSystem target3D,
@@ -1136,7 +1136,7 @@ class CoordinateOperationRegistry {
                 operations.remove();
             } else {
                 /*
-                 * If we can not just remove the operation, build a new one with the expected number of dimensions.
+                 * If we cannot just remove the operation, build a new one with the expected number of dimensions.
                  * The new operation will inherit the same properties except the identifiers, since it is no longer
                  * conform to the definition provided by the authority.
                  */
@@ -1181,7 +1181,7 @@ class CoordinateOperationRegistry {
     /**
      * Returns the properties of the given object, excluding the identifiers.
      * This is used for new objects derived from an object specified by the authority.
-     * Since the new object is not strictly as defined by the authority, we can not keep its identifier code.
+     * Since the new object is not strictly as defined by the authority, we cannot keep its identifier code.
      */
     private static Map<String,?> derivedFrom(final IdentifiedObject object) {
         return IdentifiedObjects.getProperties(object, CoordinateOperation.IDENTIFIERS_KEY);
@@ -1222,7 +1222,7 @@ class CoordinateOperationRegistry {
      *       returned as-is.
      *
      *       <div class="note"><b>Note:</b> we do not have many objects that are both a {@code CoordinateOperation}
-     *       and a {@code MathTransform}, but that combination is not forbidden. Since such practice is sometime
+     *       and a {@code MathTransform}, but that combination is not forbidden. Since such practice is sometimes
      *       convenient for the implementer, Apache SIS allows that.</div></li>
      *
      *   <li>If the given {@code type} is null, then this method infers the type from whether the given properties
@@ -1246,7 +1246,7 @@ class CoordinateOperationRegistry {
      * @param  parameters  the operations parameters, or {@code null} for automatic detection (not always reliable).
      * @param  type        {@code Conversion.class}, {@code Transformation.class}, or {@code null} if unknown.
      * @return a coordinate operation using the specified math transform.
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      */
     final CoordinateOperation createFromMathTransform(final Map<String,Object>        properties,
                                                       final CoordinateReferenceSystem sourceCRS,

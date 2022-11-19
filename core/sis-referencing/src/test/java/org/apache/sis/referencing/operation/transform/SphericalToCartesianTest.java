@@ -85,8 +85,8 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     /**
      * Tests coordinate conversions.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
@@ -99,8 +99,8 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     public void testDerivative() throws FactoryException, TransformException {
@@ -113,8 +113,8 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative.
      *
-     * @throws FactoryException if the transform can not be created.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod({"testConversion", "testDerivative"})

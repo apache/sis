@@ -62,7 +62,7 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
 
     /**
      * Tests {@link GeneralMatrix#getNumber(int, int)} and {@link GeneralMatrix#getInteger(int, int)}
-     * using a value which can not be stored accurately in a {@code double} type.
+     * using a value which cannot be stored accurately in a {@code double} type.
      */
     @Test
     public void testExtendedPrecision() {

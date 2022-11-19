@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 
 /**
- * Thrown when an operation can not complete because a given name is unrecognized.
+ * Thrown when an operation cannot complete because a given name is unrecognized.
  * The unrecognized name may be a {@link org.opengis.util.GenericName}, an
  * {@link org.opengis.metadata.Identifier}, a {@link String} used as a name or identifier,
  * or any other objects with similar purpose.

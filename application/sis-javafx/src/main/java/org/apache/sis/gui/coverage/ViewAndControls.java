@@ -133,7 +133,7 @@ abstract class ViewAndControls {
     /**
      * Creates a new view-control pair.
      *
-     * @param  owner  the widget which creates this view. Can not be null.
+     * @param  owner  the widget which creates this view. Cannot be null.
      */
     protected ViewAndControls(final CoverageExplorer owner) {
         this.owner = owner;

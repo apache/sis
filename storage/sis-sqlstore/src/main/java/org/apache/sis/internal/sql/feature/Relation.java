@@ -38,7 +38,7 @@ import org.apache.sis.util.Debug;
 
 /**
  * Description of a relation between two tables, as defined by foreigner keys.
- * Each {@link Table} may contain an arbitrary amount of relations.
+ * Each {@link Table} may contain an arbitrary number of relations.
  * Relations are defined in two directions:
  *
  * <ul>

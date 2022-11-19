@@ -39,7 +39,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * </table>
  *
  * Because the number of bits varies, leading zeros are significant. For example "11" is not equivalent to "011",
- * which is not equivalent to "0011" neither. Consequently we can not parse directly the bits as integer values.
+ * which is not equivalent to "0011" neither. Consequently we cannot parse directly the bits as integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -134,7 +134,7 @@ final class CCITTRLE extends CompressionChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     @Override
     public void setInputRegion(final long start, final long byteCount) throws IOException {

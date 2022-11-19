@@ -142,7 +142,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
      *
      * @param  table  the table to clone.
-     * @throws CloneNotSupportedException if the table can not be cloned.
+     * @throws CloneNotSupportedException if the table cannot be cloned.
      */
     @TestStep
     public static void testClone(final DefaultTreeTable table) throws CloneNotSupportedException {

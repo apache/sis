@@ -608,7 +608,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *
          * <p>Note that a MGRS reference is normally written as an entity without spaces, parentheses, dashes,
          * or decimal points. Invoking this method with a non-empty separator produces non-conform MGRS, but
-         * is sometime convenient for readability or for use in file systems (with the {@code '/'} separator).</p>
+         * is sometimes convenient for readability or for use in file systems (with the {@code '/'} separator).</p>
          *
          * @param  separator  the separator to insert between each component of the MGRS identifier.
          */
@@ -661,7 +661,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             if (crs == null) {
                 throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
-            // We can not use encoders.computeIfAbsent(crs, ...) because of checked exceptions.
+            // We cannot use encoders.computeIfAbsent(crs, ...) because of checked exceptions.
             Encoder encoder = encoders.get(crs);
             if (encoder == null) {
                 encoder = new Encoder(avoidDatumChange ? null : datum, crs);
@@ -1139,7 +1139,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             /*
              * Compute the geographic bounds of the UPS or UTM zone of validity, together with a representative point
              * (φ,λ₀). We will need to clip the area of interest to those bounds before to project that area, because
-             * the UPS and UTM projections can not cover the whole world.
+             * the UPS and UTM projections cannot cover the whole world.
              */
             double λmin, λmax, φmin, φmax;
             final int zone = Math.abs(encoder.crsZone);
@@ -1222,7 +1222,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             } else {
                 downward = yEnd <= PolarStereographicA.UPS_SHIFT;  // Downward only if AOI is fully in the lower half.
                 /*
-                 * In the polar case, we can not apply the shortcut documented in 'optimize' if there is a hole
+                 * In the polar case, we cannot apply the shortcut documented in 'optimize' if there is a hole
                  * in the UPS projection center. There is a hole if the latitude of the area of interest does not
                  * reach the pole, or if the longitude range does not make a full circle around the Earth.
                  */
@@ -2312,7 +2312,7 @@ parse:                  switch (part) {
          * @param  errorKey   {@link Resources.Keys} value to use in case of error.
          *                    The error message string shall accept exactly one argument.
          * @return the parsed integer.
-         * @throws GazetteerException if the string can not be parsed as an integer.
+         * @throws GazetteerException if the string cannot be parsed as an integer.
          */
         private static int parseInt(final CharSequence reference, final int start, final int end, final short errorKey)
                 throws GazetteerException
@@ -2341,7 +2341,7 @@ parse:                  switch (part) {
          * @param  end        index after the last character to parse as a grid coordinate.
          * @param  scale      value of {@code MathFunctions.pow10(METRE_PRECISION_DIGITS - (end - start))}.
          * @return the parsed grid coordinate (also referred to as rectangular coordinates).
-         * @throws GazetteerException if the string can not be parsed as a grid coordinate.
+         * @throws GazetteerException if the string cannot be parsed as a grid coordinate.
          */
         private static double parseCoordinate(final CharSequence reference,
                 final int start, final int end, final double scale) throws GazetteerException

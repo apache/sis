@@ -400,9 +400,9 @@ public final class Numbers extends Static {
      *
      * <ul>
      *   <li>If the given value is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given value can not be casted from {@code double} to another type
+     *   <li>Otherwise if the given value cannot be casted from {@code double} to another type
      *       without precision lost, return {@code Double.class}.</li>
-     *   <li>Otherwise if the given value can not be casted from {@code float} to another type
+     *   <li>Otherwise if the given value cannot be casted from {@code float} to another type
      *       without precision lost, return {@code Float.class}.</li>
      *   <li>Otherwise if the given value is between {@value java.lang.Byte#MIN_VALUE} and
      *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
@@ -511,7 +511,7 @@ public final class Numbers extends Static {
      *
      * @param  value  the value to be wrapped in a {@link Number}.
      * @return the narrowest type capable to hold the given value.
-     * @throws NumberFormatException if the given value can not be parsed as a number.
+     * @throws NumberFormatException if the given value cannot be parsed as a number.
      *
      * @see #narrowestNumber(Number)
      */
@@ -556,7 +556,7 @@ public final class Numbers extends Static {
      * @param  type    the destination type.
      * @return the number casted to the given type, or {@code null} if the given value was null.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
-     *         or the number can not be converted to the specified type (e.g. {@link Double#NaN} can not
+     *         or the number cannot be converted to the specified type (e.g. {@link Double#NaN} cannot
      *         be converted to {@link BigDecimal}).
      */
     @SuppressWarnings("unchecked")
@@ -621,7 +621,7 @@ public final class Numbers extends Static {
      * @param  type   the desired wrapper class.
      * @return the value wrapped in an object of the given class.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
-     *         or if the given value can not be wrapped in an instance of the given class without precision lost.
+     *         or if the given value cannot be wrapped in an instance of the given class without precision lost.
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N wrap(final double value, final Class<N> type) throws IllegalArgumentException {
@@ -656,7 +656,7 @@ public final class Numbers extends Static {
      * @param  type   the desired wrapper class.
      * @return the value wrapped in an object of the given class.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
-     *         or if the given value can not be wrapped in an instance of the given class without precision lost.
+     *         or if the given value cannot be wrapped in an instance of the given class without precision lost.
      *
      * @since 0.8
      */

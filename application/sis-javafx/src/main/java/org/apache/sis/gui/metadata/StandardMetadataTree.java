@@ -121,7 +121,7 @@ public class StandardMetadataTree extends MetadataTree {
         private final MenuItem copyAsXML, copyAsLegacy, copyAsWKT;
 
         /**
-         * The group of menu items for copying in various formats, to be disabled if we can not do this export.
+         * The group of menu items for copying in various formats, to be disabled if we cannot do this export.
          */
         private final Menu copyAs;
 

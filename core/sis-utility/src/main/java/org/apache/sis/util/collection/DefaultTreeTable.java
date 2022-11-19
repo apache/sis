@@ -136,7 +136,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * Creates a new tree table initialized to the given root.
      * The {@linkplain #getColumns() list of columns} is inferred from the given node.
      *
-     * @param  root  the tree table root (can not be null).
+     * @param  root  the tree table root (cannot be null).
      */
     public DefaultTreeTable(final Node root) {
         ArgumentChecks.ensureNonNull("root", root);
@@ -217,7 +217,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * Sets the root to the given node. If a root already existed prior this method call,
      * then the previous root node will be discarded.
      *
-     * @param  root  the new root node (can not be null).
+     * @param  root  the new root node (cannot be null).
      * @throws IllegalArgumentException if the table columns in the given node are inconsistent
      *         with the table columns in this {@code DefaultTreeTable}.
      */
@@ -252,7 +252,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *
      * @return a clone of this table.
      * @throws CloneNotSupportedException if this table, the root node or one of its children
-     *         can not be cloned.
+     *         cannot be cloned.
      *
      * @see Node#clone()
      */
@@ -318,7 +318,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
 
     /**
-     * A {@link TreeTable.Node} implementation which can store values for a pre-defined list of columns.
+     * A {@link TreeTable.Node} implementation which can store values for a predefined list of columns.
      * The list of columns is specified by a {@link TreeTable}, or inherited from a parent node.
      *
      * <h2>Note on the parent node</h2>
@@ -516,12 +516,12 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Returns {@code true} if this node can not have any children. The default implementation
+         * Returns {@code true} if this node cannot have any children. The default implementation
          * unconditionally returns {@code false} even if the list of children is empty, because the
          * list is allowed to grow at any time.
          *
          * <p>Subclasses can override this method if they can determine which nodes are leaves.
-         * In the current implementation, the return value shall be stable (i.e. a node can not
+         * In the current implementation, the return value shall be stable (i.e. a node cannot
          * alternate between leaf and non-leaf state). However this restriction may be relaxed
          * in a future SIS version.</p>
          */
@@ -650,7 +650,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * The parent of the cloned node is set to {@code null}.
          *
          * @return a clone of this node without parent.
-         * @throws CloneNotSupportedException if this node or one of its children can not be cloned.
+         * @throws CloneNotSupportedException if this node or one of its children cannot be cloned.
          */
         @Override
         public Node clone() throws CloneNotSupportedException {
@@ -665,7 +665,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
                     /*
                      * Implementation note: we could have used the Cloner for cloning arbitrary
                      * node implementations, but children.add(...) would fail anyway because it
-                     * can not set the parent of unknown implementation.
+                     * cannot set the parent of unknown implementation.
                      */
                     if (!(child instanceof Node)) {
                         throw new CloneNotSupportedException(Errors.format(
@@ -686,7 +686,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * <div class="note"><b>Implementation note:</b> This method ignores the parent because:
          * <ul>
          *   <li>When comparing the children recursively, comparing the parents would cause infinite recursivity.</li>
-         *   <li>For consistency with the {@link #clone()} method, which can not clone the parent.</li>
+         *   <li>For consistency with the {@link #clone()} method, which cannot clone the parent.</li>
          *   <li>For making possible to compare branches instead of only whole trees.</li>
          * </ul></div>
          *

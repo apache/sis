@@ -56,13 +56,13 @@ public abstract strictfp class DatumShiftTestCase extends TestCase {
         if (file == null) {
             fail("Test file \"" + name + "\" not found.");
         } else {
-            assumeFalse("Can not read grid data in a JAR file.", "jar".equals(file.getProtocol()));
+            assumeFalse("Cannot read grid data in a JAR file.", "jar".equals(file.getProtocol()));
         }
         return file;
     }
 
     /**
-     * Finds resource of the given name as a path. If the resource can not be obtained because
+     * Finds resource of the given name as a path. If the resource cannot be obtained because
      * the grid file is inside a JAR file, declares the test as ignored instead of failed.
      *
      * @param  name  name of the resource to get.
@@ -75,7 +75,7 @@ public abstract strictfp class DatumShiftTestCase extends TestCase {
         } else try {
             return Paths.get(file.toURI());
         } catch (FileSystemNotFoundException e) {
-            assumeFalse("Can not read grid data in a JAR file.", "jar".equals(file.getProtocol()));
+            assumeFalse("Cannot read grid data in a JAR file.", "jar".equals(file.getProtocol()));
             throw e;
         }
         return null;

@@ -179,7 +179,7 @@ public final strictfp class NormalizerTest extends TestCase {
     }
 
     /**
-     * Asserts that a collection of pre-defined axes is not modified by the given {@link AxesConvention}.
+     * Asserts that a collection of predefined axes is not modified by the given {@link AxesConvention}.
      */
     private static void assertSameAfterNormalization(final AxisFilter changes) {
         assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE, changes));

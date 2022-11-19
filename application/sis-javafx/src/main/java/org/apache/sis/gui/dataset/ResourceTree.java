@@ -258,7 +258,7 @@ public class ResourceTree extends TreeView<Resource> {
      * This method is invoked from JavaFX thread.
      *
      * @param  store   the data store which has been loaded.
-     * @param  source  the user-supplied object which was the input of the store.
+     * @param  source  the user supplied object which was the input of the store.
      */
     private void addLoadedResource(final DataStore store, final Object source) {
         final boolean added = addResource(store);
@@ -341,7 +341,7 @@ public class ResourceTree extends TreeView<Resource> {
      * <p>Only the "root" resources (such as the resources given to {@link #setResource(Resource)} or
      * {@link #addResource(Resource)} methods) can be removed.
      * Children of {@link Aggregate} resource are not scanned.
-     * If the given resource can not be removed, then this method does nothing.</p>
+     * If the given resource cannot be removed, then this method does nothing.</p>
      *
      * <h4>Notifications</h4>
      * If {@link #onResourceClosed} has a non-null value, the {@link EventHandler} will be notified.

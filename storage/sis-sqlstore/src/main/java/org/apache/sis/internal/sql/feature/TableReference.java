@@ -50,7 +50,7 @@ public class TableReference {
      *   <li>A null value means that the catalog (or schema) name should be ignored.</li>
      * </ul>
      *
-     * Names are stored here as they were given by JDBC because those names are sometime
+     * Names are stored here as they were given by JDBC because those names are sometimes
      * compared with other JDBC metadata or used for fetching more table metadata.
      */
     public final String catalog, schema, table;

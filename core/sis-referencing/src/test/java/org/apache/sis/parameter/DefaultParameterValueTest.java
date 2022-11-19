@@ -597,7 +597,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
 
     /**
      * Tests WKT formatting of a parameter with sexagesimal units.
-     * Since those units can not be formatted in a {@code UNIT["name", scale]} element,
+     * Since those units cannot be formatted in a {@code UNIT["name", scale]} element,
      * the formatter should convert them to a formattable unit like degrees.
      *
      * @since 0.6
@@ -612,7 +612,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3]", p);   // Value in same unit than descriptor.
 
         p = create("Angle", 0, Units.DEGREE);
-        p.setValue(10.3, degreesAndMinutes);  // Can not be formatted in WKT1.
+        p.setValue(10.3, degreesAndMinutes);  // Cannot be formatted in WKT1.
         assertWktEquals(Convention.WKT2,     "PARAMETER[“Angle”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", p);
         assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3, Unit[“D.M”, 0.017453292519943295, Id[“EPSG”, 9111]]]", p);
     }

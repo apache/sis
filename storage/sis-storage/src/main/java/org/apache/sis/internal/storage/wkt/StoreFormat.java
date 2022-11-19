@@ -153,8 +153,8 @@ public final class StoreFormat extends WKTFormat {
     }
 
     /**
-     * Reports a warning for a WKT that can not be read. This method should be invoked only when the CRS
-     * can not be created at all; it should not be invoked if the CRS has been created with some warnings.
+     * Reports a warning for a WKT that cannot be read. This method should be invoked only when the CRS
+     * cannot be created at all; it should not be invoked if the CRS has been created with some warnings.
      */
     private void log(final Exception e) {
         listeners.warning(Resources.forLocale(listeners.getLocale())

@@ -95,7 +95,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * same {@linkplain #source} image in order to avoid computing the same property many times if an
      * {@code AnnotatedImage} wrapper is recreated many times for the same operation on the same image.
      *
-     * <p>Note that {@code null} is a valid result. Since {@link Cache} can not store null values,
+     * <p>Note that {@code null} is a valid result. Since {@link Cache} cannot store null values,
      * those results are replaced by {@link #NULL}.</p>
      *
      * <p>Keys are {@link String} instances containing directly the property name when {@link #areaOfInterest}
@@ -424,7 +424,7 @@ abstract class AnnotatedImage extends ImageAdapter {
     }
 
     /**
-     * Invoked when the property needs to be computed. If the property can not be computed,
+     * Invoked when the property needs to be computed. If the property cannot be computed,
      * then the result will be {@code null} and the exception thrown by this method will be
      * wrapped in a property of the same name with the {@value #WARNINGS_SUFFIX} suffix.
      *
@@ -459,7 +459,7 @@ abstract class AnnotatedImage extends ImageAdapter {
 
     /**
      * Invoked when the property needs to be computed sequentially (all computations in current thread).
-     * If the property can not be computed, then the result will be {@code null} and the exception thrown
+     * If the property cannot be computed, then the result will be {@code null} and the exception thrown
      * by this method will be wrapped in a property of the same name with the {@value #WARNINGS_SUFFIX} suffix.
      *
      * <p>This method is invoked when this class does not support parallel execution ({@link #collector()}

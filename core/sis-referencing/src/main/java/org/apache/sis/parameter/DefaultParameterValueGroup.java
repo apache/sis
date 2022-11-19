@@ -84,7 +84,7 @@ import org.apache.sis.util.Utilities;
  * </div>
  *
  * Alternatively, if all parameters were created elsewhere and the user wants to copy them in a new
- * parameter group, the {@link List#addAll(Collection)} method can been invoked on the values list.
+ * parameter group, the {@link List#addAll(Collection)} method can be invoked on the values list.
  *
  * <div class="note"><b>Example:</b>
  * {@preformat java

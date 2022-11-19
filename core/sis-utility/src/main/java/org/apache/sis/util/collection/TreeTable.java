@@ -91,7 +91,7 @@ public interface TreeTable {
     /**
      * A node in a tree combined with a row in a table. A {@code TreeTable.Node} can be seen as a
      * tree node associated to a single {@linkplain #getUserObject() user object} (like ordinary trees),
-     * augmented with the capability to describe some aspects of the user object in pre-defined columns.
+     * augmented with the capability to describe some aspects of the user object in predefined columns.
      * The list of allowed columns is given by the {@link TreeTable#getColumns()} method.
      *
      * <p>The following table summarizes the tree-related and table-related methods:</p>
@@ -137,14 +137,14 @@ public interface TreeTable {
         Node getParent();
 
         /**
-         * Returns {@code true} if this node can not have any children. The {@linkplain #getChildren() children
+         * Returns {@code true} if this node cannot have any children. The {@linkplain #getChildren() children
          * collection} of a leaf node can only be empty, and adding {@linkplain #newChild() new child}
          * is an unsupported operation.
          *
          * <p>This value is provided as a tip for graphical user interfaces, in order to determine if
          * a node is expandable (even if empty). {@link TreeTableFormat} does not use this value.</p>
          *
-         * @return {@code true} if this node can not have any children.
+         * @return {@code true} if this node cannot have any children.
          */
         boolean isLeaf();
 
@@ -175,7 +175,7 @@ public interface TreeTable {
          * at whatever position they see fit.
          *
          * @return the new child.
-         * @throws UnsupportedOperationException if this node can not add new children.
+         * @throws UnsupportedOperationException if this node cannot add new children.
          */
         Node newChild() throws UnsupportedOperationException;
 
@@ -200,7 +200,7 @@ public interface TreeTable {
          * @param  column  identifier of the column into which to set the value.
          * @param  value   the value to set.
          * @throws IllegalArgumentException if the given column is not a legal column for this node.
-         * @throws UnsupportedOperationException if values in the given column can not be modified.
+         * @throws UnsupportedOperationException if values in the given column cannot be modified.
          *
          * @see TreeTable#getColumns()
          * @see #isEditable(TableColumn)

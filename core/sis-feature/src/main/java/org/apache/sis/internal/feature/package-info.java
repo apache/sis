@@ -17,7 +17,7 @@
 
 /**
  * A set of helper classes for the SIS implementation.
- * contains also classes that may move to the public API someday,
+ * also contains classes that may move to the public API someday,
  * but are considered not yet ready.
  *
  * <p><strong>Do not use!</strong></p>

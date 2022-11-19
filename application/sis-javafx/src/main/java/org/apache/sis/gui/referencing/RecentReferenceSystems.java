@@ -153,7 +153,7 @@ public class RecentReferenceSystems {
 
     /**
      * Values of controls created by this {@code RecentReferenceSystems} instance. We retain those properties
-     * because modifying the {@link #referenceSystems} list sometime causes controls to clear their selection
+     * because modifying the {@link #referenceSystems} list sometimes causes controls to clear their selection
      * if we removed the selected item from the list. We use {@code controlValues} for saving currently selected
      * values before to modify the item list, and restore selections after we finished to modify the list.
      */
@@ -225,7 +225,7 @@ public class RecentReferenceSystems {
     /**
      * A view of {@link #referenceSystems} with only items that are instances of {@link CoordinateReferenceSystem}.
      * This list includes also {@link #OTHER} as its last item. This list is used for menus shown in contexts where
-     * identifiers can not be used, for example for selecting the CRS to use for displaying a map.
+     * identifiers cannot be used, for example for selecting the CRS to use for displaying a map.
      *
      * <p>This list is lazily created when first needed,
      * because it depends on {@link #referenceSystems} which is itself lazily created.</p>
@@ -513,7 +513,7 @@ public class RecentReferenceSystems {
 
     /**
      * Filters the {@link #systemsOrCodes} list by making sure that it contains only {@link ReferenceSystem} instances.
-     * Authority codes are resolved if possible or removed if they can not be resolved. Unverified CRSs are compared
+     * Authority codes are resolved if possible or removed if they cannot be resolved. Unverified CRSs are compared
      * with authoritative definitions and replaced when a match is found. Duplications are removed.
      * Finally reference systems with a domain of validity outside the {@link #geographicAOI} are omitted
      * from the returned list (but not removed from the original {@link #systemsOrCodes} list).
@@ -561,7 +561,7 @@ public class RecentReferenceSystems {
                          * The current list element is a `ReferenceSystem` instance but maybe not
                          * conform to authoritative definition, for example regarding axis order.
                          * If we can find an authoritative definition, do the replacement.
-                         * If this operation can not be done, accept the reference system as-is.
+                         * If this operation cannot be done, accept the reference system as-is.
                          */
                         if (!searchedFinder) {
                             searchedFinder = true;          // Set now in case an exception is thrown.

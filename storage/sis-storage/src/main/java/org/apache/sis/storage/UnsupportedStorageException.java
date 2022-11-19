@@ -30,7 +30,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 /**
  * Thrown when no {@link DataStoreProvider} is found for a given storage object.
  * May also be thrown if a {@code DataStore} is instantiated directly but the data store
- * can not handle the given input or output object.
+ * cannot handle the given input or output object.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

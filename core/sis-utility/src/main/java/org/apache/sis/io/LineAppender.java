@@ -439,7 +439,7 @@ public class LineAppender extends Appender implements Flushable {
          * First, search for the hyphen character, if any. If we find one and if it is preceeded
          * by a letter, split there. The "letter before" condition is a way to avoid to split at
          * the minus sign of negative numbers like "-99", assuming that the minus sign is preceeded
-         * by a space. We can not look at the character after since we may not know it yet.
+         * by a space. We cannot look at the character after since we may not know it yet.
          */
         if (++codePointCount > maximalLineLength) {
 searchHyp:  for (int i=buffer.length(); i>0;) {

@@ -123,7 +123,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     @Override
     public final void setInputRegion(final long start, final long byteCount) throws IOException {
@@ -154,7 +154,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
             position += Math.min(pixelStride - column, (limit - position) & truncationMask);
         }
         /*
-         * For the first pixel in the buffer, we can not combine with previous values from the buffer
+         * For the first pixel in the buffer, we cannot combine with previous values from the buffer
          * because the buffer does not contain those values anymore.  We have to use the values saved
          * at the end of the last invocation of this method. Note that this will perform no operation
          * if the block above skipped fully the pixel in the first column.

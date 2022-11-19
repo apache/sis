@@ -123,7 +123,7 @@ public class MetadataStandard implements Serializable {
      * <p>The current implementation does not yet contains the user-defined instances.
      * However it may be something that we will need to do in the future.</p>
      */
-    private static final MetadataStandard[] INSTANCES;
+    static final MetadataStandard[] INSTANCES;
 
     /**
      * An instance working on ISO 19115 standard as defined by GeoAPI interfaces
@@ -153,7 +153,6 @@ public class MetadataStandard implements Serializable {
     static {
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
-        // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
         ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null, (MetadataStandard[]) null);
         ISO_19157 = new StandardImplementation("ISO 19157", "org.opengis.metadata.quality.", "org.apache.sis.metadata.iso.quality.", null, ISO_19115);
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms, ISO_19157, ISO_19115);
@@ -240,7 +239,7 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the
-     * specified package. This constructor is used only for the pre-defined constants.
+     * specified package. This constructor is used only for the predefined constants.
      *
      * @param  citation          bibliographical reference to the international standard.
      * @param  interfacePackage  the root package for metadata interfaces.
@@ -365,7 +364,7 @@ public class MetadataStandard implements Serializable {
         } else if (key.isValid()) {
             /*
              * Nothing was computed, we need to start from scratch. The first step is to find
-             * the interface implemented by the given class. If we can not find an interface,
+             * the interface implemented by the given class. If we cannot find an interface,
              * we will delegate to the dependencies and store the result for avoiding redoing
              * this search next time.
              */
@@ -910,7 +909,7 @@ public class MetadataStandard implements Serializable {
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.
+     *       for the first element and another node with index 1 for the second element.
      *
      *       <div class="note"><b>Note:</b>
      *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
@@ -1077,7 +1076,7 @@ public class MetadataStandard implements Serializable {
             /*
              * 'hash' may be null if a cycle has been found. Example: A depends on B which depends on A,
              * in which case the null value is returned for the second occurrence of A (not the first one).
-             * We can not compute a hash code value here, but it should be okay since that metadata is part
+             * We cannot compute a hash code value here, but it should be okay since that metadata is part
              * of a bigger metadata object, and that enclosing object should have other properties for computing
              * its hash code.
              */

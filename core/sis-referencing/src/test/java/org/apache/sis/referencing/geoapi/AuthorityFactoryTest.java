@@ -27,7 +27,7 @@ import org.junit.Ignore;
  * Runs the suite of transformation tests provided in the GeoAPI project.
  * The test suite uses the authority factory instance registered in {@link CRS}.
  * Some (not all) of those tests require the EPSG geodetic database to be installed.
- * If that database is not available, tests that can not be executed will be automatically skipped.
+ * If that database is not available, tests that cannot be executed will be automatically skipped.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

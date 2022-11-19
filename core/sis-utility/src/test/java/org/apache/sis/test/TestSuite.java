@@ -121,7 +121,7 @@ public abstract strictfp class TestSuite {
         final File root = dir.classesRootDirectory.resolve("org").toFile();
         removeExistingTests(loader, root, new StringBuilder(120).append(root.getName()), tests);
         if (!tests.isEmpty()) {
-            fail("Classes not found. Are they defined in an other module? " + tests);
+            fail("Classes not found. Are they defined in another module? " + tests);
         }
     }
 

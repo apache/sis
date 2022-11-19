@@ -282,7 +282,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *
      * @param  text  the string representation of the object to parse.
      * @param  pos   the position where to start the parsing.
-     * @return the parsed object, or {@code null} if the given string can not be parsed.
+     * @return the parsed object, or {@code null} if the given string cannot be parsed.
      */
     @Override
     public T parseObject(final String text, final ParsePosition pos) {

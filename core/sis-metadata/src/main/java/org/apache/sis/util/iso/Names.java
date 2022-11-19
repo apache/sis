@@ -380,11 +380,11 @@ public final class Names extends Static {
      *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
      *           then the corresponding class is returned.</li>
      *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
-     *           could be anything; this method can not be sure that the given name was wrong.</li>
+     *           could be anything; this method cannot be sure that the given name was wrong.</li>
      *     </ul>
      *   </li>
      *   <li>Otherwise {@code null} is returned,
-     *       because this method can not check the validity of names in other namespaces.</li>
+     *       because this method cannot check the validity of names in other namespaces.</li>
      * </ul>
      *
      * @param  type  the type name from which to infer a Java class.

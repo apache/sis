@@ -20,14 +20,14 @@ import org.opengis.referencing.AuthorityFactory;
 
 
 /**
- * Thrown when a whole factory can not be created because a resource is missing.
+ * Thrown when a whole factory cannot be created because a resource is missing.
  * The most common case is when the {@link org.apache.sis.referencing.factory.sql.EPSGFactory}
  * has no connection to an EPSG database.
  *
  * <h2>Relationship with other exceptions</h2>
  * This exception means that the whole factory is unusable.
  * By contrast, {@link MissingFactoryResourceException} means that at least one particular object
- * can not be created, but other objects may be okay.
+ * cannot be created, but other objects may be okay.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
@@ -44,7 +44,7 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
     private static final long serialVersionUID = -661925454228937249L;
 
     /**
-     * The factory that can not perform its work, or {@code null} if unknown.
+     * The factory that cannot perform its work, or {@code null} if unknown.
      */
     private AuthorityFactory factory;
 

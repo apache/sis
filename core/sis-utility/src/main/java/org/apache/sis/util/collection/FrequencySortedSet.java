@@ -155,7 +155,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
             sorted = null;
             occurrence ^= order;
             return count.merge(element, occurrence, (old, n) -> Math.addExact(old, n) - order) == occurrence;
-            // Note: the subtraction by `order` can not overflow.
+            // Note: the subtraction by `order` cannot overflow.
         }
         return false;
     }
@@ -309,7 +309,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
 
         /**
          * Whether the set should take in account {@link #fromElement} or {@link #toElement}.
-         * We have to use those booleans (we can not use {@code null} sentinel value instead)
+         * We have to use those booleans (we cannot use {@code null} sentinel value instead)
          * because {@code null} is a legal value for {@code from/toElement}.
          */
         private final boolean hasFrom, hasTo;

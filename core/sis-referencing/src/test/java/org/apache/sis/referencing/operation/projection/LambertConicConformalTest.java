@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
 
 /**
  * Tests the {@link LambertConicConformal} class. We test using various values of the latitude of origin.
- * We do not test with various values of standard parallels, because it is just an other way to set
+ * We do not test with various values of standard parallels, because it is just another way to set
  * the value of the <var>n</var> field in {@code LambertConicConformal}. As long as we make this value varying,
  * the latitude of origin is the simplest approach.
  *

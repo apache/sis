@@ -20,7 +20,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Thrown when an operation can not use arbitrary implementation of an interface,
+ * Thrown when an operation cannot use arbitrary implementation of an interface,
  * and a given instance does not met the requirement. For example this exception
  * may be thrown when an operation requires an Apache SIS implementation of a
  * <a href="http://www.geoapi.org">GeoAPI</a> interface.

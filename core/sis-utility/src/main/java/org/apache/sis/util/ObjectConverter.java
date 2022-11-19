@@ -57,13 +57,13 @@ import org.apache.sis.math.FunctionProperty;
  * For example if the converter reverses the value ordering (e.g. reverses the sign of numerical values), then the
  * minimum and maximum values in each {@code Range} instance need to be interchanged. If the ordering is not preserved
  * at all (neither directly or reversed), as for example in the conversion from {@link Number} to {@link String}, then
- * we can not convert ranges at all.</div>
+ * we cannot convert ranges at all.</div>
  *
  * Below are some guidelines about the function properties that a converter can declare:
  *
  * <ul>
  *   <li>If {@code apply(S)} returns {@code null} for unconvertible objects, then this {@code ObjectConverter}
- *       can not be declared injective because more than one <var>S</var> value can produce the same
+ *       cannot be declared injective because more than one <var>S</var> value can produce the same
  *       <var>T</var> value (namely {@code null}).</li>
  *   <li>If {@code apply(S)} throws an exception for unconvertible objects, then this {@code ObjectConverter}
  *       can be declared as an injective function if the other values met the criteria.
@@ -102,7 +102,7 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      * </ul>
      *
      * Note that if the {@link #apply(Object)} method returns {@code null} for unconvertible source values,
-     * then this properties set can not contain {@link FunctionProperty#INJECTIVE} because more than one
+     * then this properties set cannot contain {@link FunctionProperty#INJECTIVE} because more than one
      * source value could be converted to the same {@code null} target value.
      *
      * @return the manners in which source values are mapped to target values.
@@ -126,7 +126,7 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
 
     /**
      * Converts the given object from the source type <var>S</var> to the target type <var>T</var>.
-     * If the given object can not be converted, then this method may either returns {@code null} or throws an exception,
+     * If the given object cannot be converted, then this method may either returns {@code null} or throws an exception,
      * at implementation choice (except for {@linkplain FunctionProperty#INJECTIVE injective} functions, which must throw
      * an exception - see the class Javadoc for more discussion about function {@linkplain #properties() properties}).
      *

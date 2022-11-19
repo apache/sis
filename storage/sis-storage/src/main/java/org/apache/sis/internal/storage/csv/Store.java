@@ -815,7 +815,7 @@ final class Store extends URIDataStore implements FeatureSet {
     }
 
     /**
-     * Returns the error message for a file that can not be parsed.
+     * Returns the error message for a file that cannot be parsed.
      * The error message will contain the line number if available.
      */
     final String canNotParseFile() {

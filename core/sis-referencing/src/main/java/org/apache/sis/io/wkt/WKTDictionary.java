@@ -465,7 +465,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * An example is <a href="./doc-files/ESRI.txt">available here</a>.
      *
      * @param  source  the source of WKT definitions.
-     * @throws FactoryException if the definition file can not be read.
+     * @throws FactoryException if the definition file cannot be read.
      */
     public void load(final BufferedReader source) throws FactoryException {
         ArgumentChecks.ensureNonNull("source", source);
@@ -533,7 +533,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         }
 
         /**
-         * Returns an error message saying "Can not read WKT at line X". The message is followed
+         * Returns an error message saying "Cannot read WKT at line X". The message is followed
          * by a "Caused by" phrase specified either as a string or an exception. At least one of
          * {@code cause} and {@code e} shall be non-null.
          */
@@ -691,14 +691,14 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Adds definitions of CRS (or other geodetic objects) from Well-Known Texts. Blank strings are ignored.
      * Each non-blank {@link String} shall contain the complete definition of exactly one geodetic object.
-     * A geodetic object can not have its definition splitted in two or more {@link String}s.
+     * A geodetic object cannot have its definition splitted in two or more {@link String}s.
      *
      * <p>The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
      * which is typically the last element of a WKT string and is mandatory. WKT strings can contain line
      * separators for human readability.</p>
      *
      * @param  objects  CRS (or other geodetic objects) definitions as WKT strings.
-     * @throws FactoryException if a WKT can not be parsed, or does not contain an {@code ID[…]} or
+     * @throws FactoryException if a WKT cannot be parsed, or does not contain an {@code ID[…]} or
      *         {@code AUTHORITY[…]} element, or if the same {@code codespace:version:code} tuple is
      *         used for two objects.
      */

@@ -63,50 +63,50 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousAxisDirection_4 = 9;
 
         /**
-         * Can not compute data location for “{1}” variable in the “{0}” netCDF file.
+         * Cannot compute data location for “{1}” variable in the “{0}” netCDF file.
          */
         public static final short CanNotComputeVariablePosition_2 = 6;
 
         /**
-         * Can not create the Coordinate Reference System for “{1}” in the “{0}” netCDF file. The
-         * reason is: {2}
+         * Cannot create the Coordinate Reference System for “{1}” in the “{0}” netCDF file. The reason
+         * is: {2}
          */
         public static final short CanNotCreateCRS_3 = 11;
 
         /**
-         * Can not create the grid geometry “{1}” in the “{0}” netCDF file. The reason is: {2}
+         * Cannot create the grid geometry “{1}” in the “{0}” netCDF file. The reason is: {2}
          */
         public static final short CanNotCreateGridGeometry_3 = 12;
 
         /**
-         * Can not inject component “{0}” in the reference system.
+         * Cannot inject component “{0}” in the reference system.
          */
         public static final short CanNotInjectComponent_1 = 26;
 
         /**
-         * Can not relate dimension “{2}” of variable “{1}” to a coordinate system dimension in netCDF
+         * Cannot relate dimension “{2}” of variable “{1}” to a coordinate system dimension in netCDF
          * file “{0}”.
          */
         public static final short CanNotRelateVariableDimension_3 = 15;
 
         /**
-         * Can not render an image for “{0}”. The reason is: {1}
+         * Cannot render an image for “{0}”. The reason is: {1}
          */
         public static final short CanNotRender_2 = 14;
 
         /**
-         * Can not set map projection parameter “{1}​:{2}” = {3} in the “{0}” netCDF file. The reason
+         * Cannot set map projection parameter “{1}​:{2}” = {3} in the “{0}” netCDF file. The reason
          * is: {4}
          */
         public static final short CanNotSetProjectionParameter_5 = 20;
 
         /**
-         * Can not use axis “{0}” in a grid geometry.
+         * Cannot use axis “{0}” in a grid geometry.
          */
         public static final short CanNotUseAxis_1 = 18;
 
         /**
-         * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
+         * Cannot use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;
 
@@ -169,8 +169,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ResamplingIntervalNotFound_2 = 17;
 
         /**
-         * Reference system of type ‘{1}’ can not have {2} axes. The axes found in the “{0}” netCDF
-         * file are: {3}.
+         * Reference system of type ‘{1}’ cannot have {2} axes. The axes found in the “{0}” netCDF file
+         * are: {3}.
          */
         public static final short UnexpectedAxisCount_4 = 10;
 
@@ -221,7 +221,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);

@@ -31,7 +31,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * A transform composed of an arbitrary amount of juxtaposed transforms.
+ * A transform composed of an arbitrary number of juxtaposed transforms.
  *
  * This implementation is sufficient for {@code sis-feature} purposes, but incomplete for {@code sis-referencing}
  * purposes. See <a href="https://issues.apache.org/jira/browse/SIS-498">SIS-498</a>.
@@ -145,7 +145,7 @@ public abstract class CompoundTransform extends AbstractMathTransform {
      * Returns the inverse transform of this transform.
      *
      * @return the inverse of this transform.
-     * @throws NoninvertibleTransformException if at least one component transform can not be inverted.
+     * @throws NoninvertibleTransformException if at least one component transform cannot be inverted.
      */
     @Override
     public final synchronized MathTransform inverse() throws NoninvertibleTransformException {

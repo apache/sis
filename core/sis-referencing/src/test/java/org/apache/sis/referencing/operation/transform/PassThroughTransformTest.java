@@ -274,7 +274,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
         final List<MathTransform> steps = MathTransforms.getSteps(c);
         assertEquals("Number of steps", 3, steps.size());
         /*
-         * We need to remove source dimensions 0, 2, 3 and 4. We can not remove dimensions 2 and 3 before
+         * We need to remove source dimensions 0, 2, 3 and 4. We cannot remove dimensions 2 and 3 before
          * pass-through because they are used by the sub-transform. It leaves us dimensions 0 and 4 which
          * can be removed here.
          */

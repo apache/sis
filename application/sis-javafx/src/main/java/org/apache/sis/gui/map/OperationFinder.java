@@ -54,7 +54,7 @@ abstract class OperationFinder extends Task<MathTransform> {
      * The grid geometry of data, or {@code null} if none or unknown. This is used for getting the operation between
      * two CRSs when one of the source or target CRS is {@link org.apache.sis.referencing.CommonCRS.Engineering#GRID}.
      * Because the relationship from {@code GRID} CRS to a geospatial CRS is unknown to {@code CRS.findOperation(…)},
-     * the operation can not be found without the help of this {@code dataGeometry} field.
+     * the operation cannot be found without the help of this {@code dataGeometry} field.
      *
      * Actually this information is rarely needed. It is needed only if there is no known affine transform from grid
      * coordinates to some geospatial coordinates that we can use as a starting point (before to apply map projection

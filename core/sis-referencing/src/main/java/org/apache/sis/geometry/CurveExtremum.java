@@ -31,7 +31,7 @@ import static java.lang.Math.*;
  * <blockquote>B + 2C<var>x</var> + 3D<var>x</var>² = 0</blockquote>
  *
  * A cubic curve can have two extremum, which are stored in this object in no particular order.
- * The distance separating the two extremum is sometime a useful information for determining if
+ * The distance separating the two extremum is sometimes a useful information for determining if
  * a quadratic equation would be a sufficient approximation.
  *
  * <p>The points stored in this object may contains {@linkplain Double#NaN NaN} values if the

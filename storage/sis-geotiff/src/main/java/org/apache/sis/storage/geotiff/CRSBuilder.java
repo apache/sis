@@ -182,7 +182,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
 
     /**
      * {@code true} when an exception has been thrown but this {@code CRSBuilder} already reported a warning,
-     * so there is no need for the caller to report a warning again. {@code CRSBuilder} sometime reports warnings
+     * so there is no need for the caller to report a warning again. {@code CRSBuilder} sometimes reports warnings
      * itself when it can provide a better warning message than what the caller can do.
      */
     boolean alreadyReported;
@@ -283,7 +283,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @param  key  the GeoTIFF key for which to get a value.
      * @return the integer value for the given key, or {@link GeoCodes#undefined} if the key was not found.
-     * @throws NumberFormatException if the value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if the value was stored as a string and cannot be parsed.
      */
     private int getAsInteger(final short key) {
         final Object value = getSingleton(key);
@@ -307,7 +307,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @param  key  the GeoTIFF key for which to get a value.
      * @return the floating point value for the given key, or {@link Double#NaN} if the key was not found.
-     * @throws NumberFormatException if the value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if the value was stored as a string and cannot be parsed.
      */
     private double getAsDouble(final short key) {
         final Object value = getSingleton(key);
@@ -351,7 +351,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  key  the GeoTIFF key for which to get a value.
      * @return the floating point value for the given key.
      * @throws NoSuchElementException if no value has been found.
-     * @throws NumberFormatException if the value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if the value was stored as a string and cannot be parsed.
      */
     private double getMandatoryDouble(final short key) {
         final double value = getAsDouble(key);
@@ -463,7 +463,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @return the coordinate reference system created from the given GeoTIFF keys, or {@code null} if undefined.
      *
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
@@ -598,7 +598,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @return the unit of measurement associated to the given {@link GeoKeys}, or the default value.
      *
      * @throws NoSuchElementException if {@code keyEPSG} value is {@link GeoCodes#userDefined} and no value is associated to {@code keyUser}.
-     * @throws NumberFormatException  if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException  if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException     if the unit of measurement identified by the EPSG code is not of the expected quantity.
      */
     private <Q extends Quantity<Q>> Unit<Q> createUnit(final short codeKey, final short scaleKey,
@@ -660,7 +660,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  names  the component names to use if the prime meridian is user-defined.
      * @param  unit   the angular unit of the longitude value relative to Greenwich.
      * @return a prime meridian created from the given {@link Unit} and the above-cited GeoTIFF keys.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
     private PrimeMeridian createPrimeMeridian(final String[] names, final Unit<Angle> unit) throws FactoryException {
@@ -730,7 +730,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  unit   the linear unit of the semi-axis lengths.
      * @return an ellipsoid created from the given {@link Unit} and the above-cited GeoTIFF keys.
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
     private Ellipsoid createEllipsoid(final String[] names, final Unit<Length> unit) throws FactoryException {
@@ -807,7 +807,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  angularUnit  the angular unit of the longitude value relative to Greenwich.
      * @param  linearUnit   the linear unit of the ellipsoid semi-axis lengths.
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
@@ -988,7 +988,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  rightHanded  whether to force longitude before latitude axis.
      * @param  angularUnit  the angular unit of the latitude and longitude values.
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
@@ -1058,7 +1058,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * The GeoTIFF values used by this method are the same than the ones used by {@code createGeographicCRS(…)}.
      *
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
@@ -1153,7 +1153,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      *   <li>The {@code "CT_LambertConfConic_2SP"} projection uses a {@code "FalseOriginLong"} parameter.</li>
      * </ul>
      *
-     * but we sometime see {@code "NatOriginLong"} parameter used for the {@code "CT_LambertConfConic_2SP"} projection.
+     * but we sometimes see {@code "NatOriginLong"} parameter used for the {@code "CT_LambertConfConic_2SP"} projection.
      * Semantically those two parameters are for two different things but mathematically they are used in the same way.
      * Those "synonymous" will be invisible to the user; the map projection that (s)he will get uses the names defined
      * in the descriptor (not in the GeoTIFF file).
@@ -1190,7 +1190,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * </ul>
      *
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
@@ -1264,7 +1264,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  angularUnit  the angular unit of the latitude and longitude values.
      * @param  linearUnit   the linear unit of easting and northing values.
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ParameterNotFoundException if the GeoTIFF file defines an unexpected map projection parameter.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
@@ -1310,7 +1310,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                     }
                 }
                 /*
-                 * At this point we finished to set all known map projection parameters. Sometime GeoTIFF files
+                 * At this point we finished to set all known map projection parameters. Sometimes GeoTIFF files
                  * set the same parameter many times using different names as a safety for GeoTIFF readers that
                  * expect wrong parameters. If this is the case, verify that the parameter values are consistent.
                  * It is also possible that we found new parameters (actually parameters using the wrong names).
@@ -1441,7 +1441,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * </ul>
      *
      * @throws NoSuchElementException if a mandatory value is missing.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */

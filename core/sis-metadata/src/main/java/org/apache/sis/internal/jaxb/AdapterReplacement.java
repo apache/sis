@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 /**
  * An interface for {@link XmlAdapter} to be used in replacement of the instance created by JAXB.
  * This interface provides a way to replace <cite>default</cite> adapters by <cite>configured</cite>
- * ones. It does not allow the addition of new adapters (i.e. it can not be used in replacement of
+ * ones. It does not allow the addition of new adapters (i.e. it cannot be used in replacement of
  * the {@link javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter} annotation).
  *
  * <p>This interface is mostly for handling extensions to metadata profile provided as extension,
@@ -55,7 +55,7 @@ public interface AdapterReplacement {
      * }
      *
      * @param  marshaller The marshaller to be configured.
-     * @throws JAXBException if the given marshaller can not be configured.
+     * @throws JAXBException if the given marshaller cannot be configured.
      */
     void register(Marshaller marshaller) throws JAXBException;
 
@@ -68,7 +68,7 @@ public interface AdapterReplacement {
      * }
      *
      * @param  unmarshaller The unmarshaller to be configured.
-     * @throws JAXBException if the given unmarshaller can not be configured.
+     * @throws JAXBException if the given unmarshaller cannot be configured.
      */
     void register(Unmarshaller unmarshaller) throws JAXBException;
 }

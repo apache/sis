@@ -301,7 +301,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     private void setUUID(final String id) {
         /*
          * IdentifierMapAdapter will take care of converting the String to UUID if possible, or
-         * will store the value as a plain String if it can not be converted. In the latter case,
+         * will store the value as a plain String if it cannot be converted. In the latter case,
          * a warning will be emitted (logged or processed by listeners).
          */
         getIdentifierMap().put(IdentifierSpace.UUID, id);

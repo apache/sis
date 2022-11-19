@@ -122,7 +122,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * stream or channel opened for that path.
      *
      * <p>We keep this reference as long as possible in order to use {@link #mark()} and {@link #reset()}
-     * instead of creating new streams for re-reading the data.  If we can not reset the stream but can
+     * instead of creating new streams for re-reading the data.  If we cannot reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
      * done only in last resort, when there is no way to reuse the existing stream. This is because the
      * streams created by {@link ChannelFactory#inputStream(String, StoreListeners)} are not of the same
@@ -170,7 +170,7 @@ public abstract class StaxDataStore extends URIDataStore {
 
     /**
      * Object to use for creating new input streams if we need to read the same data more than once.
-     * This field is {@code null} if we can not re-open new input streams.
+     * This field is {@code null} if we cannot re-open new input streams.
      */
     private final ChannelFactory channelFactory;
 
@@ -262,7 +262,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * Resets the stream position to the mark created at construction time,
      * then marks again the stream for allowing future resets.
      *
-     * @return {@code true} of success, or {@code false} if the stream can not be reset.
+     * @return {@code true} of success, or {@code false} if the stream cannot be reset.
      * @throws IOException if an error occurred while resetting the stream.
      */
     private boolean reset() throws IOException {
@@ -430,7 +430,7 @@ public abstract class StaxDataStore extends URIDataStore {
         /*
          * If the stream has already been used by a previous read operation, then we need to rewind
          * it to the start position determined at construction time. It the stream does not support
-         * mark, then we can not re-read the data unless we know how to create new input streams.
+         * mark, then we cannot re-read the data unless we know how to create new input streams.
          */
         switch (state) {
             default:       throw new AssertionError(state);
@@ -585,7 +585,7 @@ public abstract class StaxDataStore extends URIDataStore {
 
     /**
      * Closes the input or output stream and releases any resources used by this XML data store.
-     * This data store can not be used anymore after this method has been invoked.
+     * This data store cannot be used anymore after this method has been invoked.
      *
      * <h4>Note for implementers</h4>
      * Implementations should invoke {@code listeners.close()} on their first line

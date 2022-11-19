@@ -88,7 +88,7 @@ enum XPointer {
         if (f >= 0) {
             /*
              * The fragment should typically be of the form "xpointer(//*[@gml:id='m'])".
-             * However sometime we found no "xpointer", but directly the unit instead.
+             * However sometimes we found no "xpointer", but directly the unit instead.
              */
             int i = url.indexOf('(', f);
             if (i >= 0 && regionMatches("xpointer", url, f, i)) {

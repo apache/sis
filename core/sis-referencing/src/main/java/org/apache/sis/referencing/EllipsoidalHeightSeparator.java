@@ -96,7 +96,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
      *
      * @param  crs  the coordinate reference system from which to extract the horizontal or vertical component.
      * @return the requested component.
-     * @throws IllegalArgumentException if the specified coordinate system can not be filtered.
+     * @throws IllegalArgumentException if the specified coordinate system cannot be filtered.
      *         It may be because the coordinate system would contain an illegal number of axes,
      *         or because an axis would have an unexpected direction or unexpected unit of measurement.
      * @throws ClassCastException if a coordinate system is not of the expected type.
@@ -111,8 +111,8 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
             return component;
         }
         /*
-         * Horizontal CRS requested. If geographic, try to use one of the pre-defined instances if suitable.
-         * If no pre-defined instance match, create a new CRS.
+         * Horizontal CRS requested. If geographic, try to use one of the predefined instances if suitable.
+         * If no predefined instance match, create a new CRS.
          */
         if (crs instanceof GeodeticCRS) {
             if (!(cs instanceof EllipsoidalCS)) {
@@ -142,7 +142,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
             /*
              * The conversion object of the given CRS has a base (source) CRS and a target CRS that are not
              * the ones of the new `ProjectedCRS` to create. In addition it has a `MathTransform` expecting
-             * three-dimensional coordinates, while we need 2 dimensions. We can not use that transform even
+             * three-dimensional coordinates, while we need 2 dimensions. We cannot use that transform even
              * after reducing its number of dimensions (with `TransformSeparator`) because the `ProjectedCRS`
              * constructor expects a normalized transform, while the `projection.getMathTransform()` may not
              * be normalized. So we are better to let constructor recreate the transform from the parameters.

@@ -74,7 +74,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * </ol>
  *
  * Builders are not thread-safe. Builders can be used only once;
- * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
+ * points cannot be added or modified after {@link #create(MathTransformFactory)} has been invoked.
  *
  * <h2>Linearizers</h2>
  * If the localization grid is not close enough to a linear transform, {@link InterpolatedTransform} may not converge.
@@ -174,7 +174,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @param  sourceX  all possible <var>x</var> inputs before conversion to grid coordinates.
      * @param  sourceY  all possible <var>y</var> inputs before conversion to grid coordinates.
-     * @throws ArithmeticException if this constructor can not infer a reasonable grid size from the given vectors.
+     * @throws ArithmeticException if this constructor cannot infer a reasonable grid size from the given vectors.
      */
     public LocalizationGridBuilder(final Vector sourceX, final Vector sourceY) {
         final Matrix fromGrid = new Matrix3();
@@ -210,7 +210,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * of {@code localizations}.
      *
      * @param  localizations  the provider of control points for which to create a localization grid.
-     * @throws ArithmeticException if this constructor can not infer a reasonable grid size from the given localizations.
+     * @throws ArithmeticException if this constructor cannot infer a reasonable grid size from the given localizations.
      *
      * @since 1.0
      */
@@ -293,7 +293,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Throws {@link IllegalStateException} if this builder can not be modified anymore.
+     * Throws {@link IllegalStateException} if this builder cannot be modified anymore.
      */
     private void ensureModifiable() throws IllegalStateException {
         if (!linearBuilder.isModifiable()) {
@@ -421,7 +421,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead of only their centers.
      * @return the envelope of grid points, from lower corner to upper corner.
      * @throws IllegalStateException if the grid points are not yet known.
-     * @throws TransformException if the envelope can not be calculated.
+     * @throws TransformException if the envelope cannot be calculated.
      *
      * @see LinearTransformBuilder#getSourceEnvelope()
      *
@@ -636,7 +636,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *                  The {@link MathTransformFactory#createAffineTransform(Matrix)} method of that factory
      *                  shall return {@link LinearTransform} instances.
      * @return the transform from source to target points.
-     * @throws FactoryException if the transform can not be created,
+     * @throws FactoryException if the transform cannot be created,
      *         for example because the target points have not be specified.
      */
     @Override

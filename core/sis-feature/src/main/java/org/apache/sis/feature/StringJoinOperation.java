@@ -385,11 +385,11 @@ final class StringJoinOperation extends AbstractOperation {
 
         /**
          * Given a concatenated string as produced by {@link #getValue()}, separates the components around
-         * the separator and forward the values to the original attributes. If one of the values can not be
+         * the separator and forward the values to the original attributes. If one of the values cannot be
          * parsed, then this method does not store any property value ("all or nothing" behavior).
          *
          * @param  value  the concatenated string.
-         * @throws InvalidPropertyValueException if one of the attribute values can not be parsed to the expected type.
+         * @throws InvalidPropertyValueException if one of the attribute values cannot be parsed to the expected type.
          */
         @Override
         public void setValue(final String value) throws InvalidPropertyValueException {

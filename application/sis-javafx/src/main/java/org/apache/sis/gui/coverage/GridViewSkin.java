@@ -49,7 +49,7 @@ import org.apache.sis.internal.gui.Styles;
  * <ul>
  *   <li>This is created by {@link GridView#createDefaultSkin()}.</li>
  *   <li>The {@link GridView} which own this skin is given by {@link #getSkinnable()}.</li>
- *   <li>This {@code GridViewSkin} contains an arbitrary amount of {@link GridRow} children.
+ *   <li>This {@code GridViewSkin} contains an arbitrary number of {@link GridRow} children.
  *       It should be limited to the number of children that are visible at the same time,
  *       not the total number of rows in the image.</li>
  * </ul>
@@ -532,7 +532,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         super.layoutChildren(x, y, width, height);
         final GridView view = getSkinnable();
         double cellSpacing  = Math.min(view.cellSpacing.get(), cellWidth);
-        if (!(cellSpacing  >= 0)) cellSpacing = 0;          // Use ! for catching NaN (can not use Math.max).
+        if (!(cellSpacing  >= 0)) cellSpacing = 0;          // Use ! for catching NaN (cannot use Math.max).
         /*
          * Do layout of the flow first because it may cause scroll bars to appear or disappear,
          * which may change the size calculations done after that. The flow is located below the

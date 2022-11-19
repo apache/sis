@@ -111,7 +111,7 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
     public void testToString() {                // NO throws IOException
         /*
          * First, ensure that TableAppender.toString() does not
-         * mess with the content of user-supplied Appendable.
+         * mess with the content of user supplied Appendable.
          */
         testToString(table, "");
         /*

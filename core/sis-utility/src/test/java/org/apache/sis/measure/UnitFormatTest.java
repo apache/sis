@@ -198,7 +198,7 @@ public final strictfp class UnitFormatTest extends TestCase {
             assertTrue(message, message.contains("mFoo"));
         }
         /*
-         * Verify that we can not specify invalid unit label.
+         * Verify that we cannot specify invalid unit label.
          */
         try {
             f.label(Units.METRE, "m¹");

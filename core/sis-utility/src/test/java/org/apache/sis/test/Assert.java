@@ -217,7 +217,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
             count.merge(expected.next(), ONE, (old, one) -> old + 1);
         }
         /*
-         * Following may be parallelized in an arbitrary amount of threads.
+         * Following may be parallelized in an arbitrary number of threads.
          */
         actual.forEach((value) -> {
             if (count.computeIfPresent(value, (key, old) -> old - 1) == null) {

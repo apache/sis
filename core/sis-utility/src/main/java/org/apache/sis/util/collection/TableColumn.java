@@ -188,7 +188,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     CharSequence header;
 
     /**
-     * Implementation of {@link TableColumn} for the pre-defined constants.
+     * Implementation of {@link TableColumn} for the predefined constants.
      * This implementation differs resource bundle loading until first needed,
      * and resolves deserialized instances to the singleton instances.
      *
@@ -239,7 +239,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
          * Invoked on deserialization for resolving this instance to one of the predefined constants.
          *
          * @return one of the predefined constants.
-         * @throws InvalidObjectException if this instance can not be resolved.
+         * @throws InvalidObjectException if this instance cannot be resolved.
          */
         private Object readResolve() throws ObjectStreamException {
             try {

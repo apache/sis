@@ -264,7 +264,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      *
      * @param  components  the list of builder where to dispatch the axis. May be modified by this method.
      * @param  axis        the axis to add to a builder in the given list.
-     * @throws DataStoreContentException if the given axis can not be added in a builder.
+     * @throws DataStoreContentException if the given axis cannot be added in a builder.
      */
     @SuppressWarnings("fallthrough")
     private static void dispatch(final List<CRSBuilder<?,?>> components, final Axis axis) throws DataStoreContentException {
@@ -329,7 +329,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * but this method nevertheless stores those extraneous axis references for building an error message later.
      *
      * @param  axis  the axis to add.
-     * @throws DataStoreContentException if the given axis can not be added in this builder.
+     * @throws DataStoreContentException if the given axis cannot be added in this builder.
      */
     private void add(final Axis axis) throws DataStoreContentException {
         if (dimension > MAXDIM) {
@@ -394,7 +394,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
         decoder.datumCache[datumIndex] = datum;
         /*
-         * We can not go further if the number of dimensions is not valid for the coordinate system to build.
+         * We cannot go further if the number of dimensions is not valid for the coordinate system to build.
          * This error may happen for example when the CRS type is geographic, but only the latitude axis has
          * been declared (without longitude axis). It may happen for example with a (latitude, time) system.
          * In such case, we can build an engineering CRS has a replacement.
@@ -409,9 +409,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
             return eng.referenceSystem;
         }
         /*
-         * Verify if a pre-defined coordinate system can be used. This is often the case, for example
+         * Verify if a predefined coordinate system can be used. This is often the case, for example
          * the EPSG::6424 coordinate system can be used for (longitude, latitude) axes in degrees.
-         * Using a pre-defined CS allows us to get more complete definitions (minimum and maximum values, etc.).
+         * Using a predefined CS allows us to get more complete definitions (minimum and maximum values, etc.).
          */
         if (coordinateSystem != null) {
             for (int i=dimension; --i >= 0;) {
@@ -979,7 +979,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
-         * It should be a temporal CRS. But if the temporal datum can not be created because epoch was unknown,
+         * It should be a temporal CRS. But if the temporal datum cannot be created because epoch was unknown,
          * this method fallbacks on an engineering CRS.
          */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {

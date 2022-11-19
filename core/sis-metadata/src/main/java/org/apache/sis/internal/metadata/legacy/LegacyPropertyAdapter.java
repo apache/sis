@@ -29,7 +29,7 @@ import org.apache.sis.util.Emptiable;
 
 
 /**
- * An adapter for collections of a legacy type replaced by an other collection.
+ * An adapter for collections of a legacy type replaced by another collection.
  * This adapter is used for implementation of deprecated methods in the {@link org.apache.sis.metadata.iso}
  * sub-packages, usually when the deprecation is the result of upgrading from an older to a newer ISO standard.
  *
@@ -302,7 +302,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      *
      * <p><b>Rational:</b> {@link Collection#equals(Object)} contract explicitly forbids comparisons with
      * {@code List} and {@code Set}. The rational explained in {@code Collection} javadoc applies also to
-     * other kind of {@code Collection} implementations: we can not enforce {@code Collection.equals(Object)}
+     * other kind of {@code Collection} implementations: we cannot enforce {@code Collection.equals(Object)}
      * to be symmetric in such cases.</p>
      *
      * @param  other  the other object to compare with this collection, or {@code null}.

@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.quality.Description;
-import org.opengis.metadata.quality.ValueStructure;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -38,6 +36,8 @@ import org.apache.sis.xml.Namespaces;
 // Branch-dependent imports
 import org.opengis.coverage.Coverage;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.quality.Description;
+import org.opengis.metadata.quality.ValueStructure;
 
 
 /**
@@ -189,7 +189,7 @@ public final class QualityParameter extends Parameter {
 
     /**
      * Infers the value class from the type name.
-     * This method is the reason why we can not parameterize this {@code QualityParameter} class
+     * This method is the reason why we cannot parameterize this {@code QualityParameter} class
      * (see <cite>Note about raw-type usage</cite> in class javadoc), because there is no way we
      * can ensure that the class inferred from {@link #valueType} is really for type {@code <T>}.
      *

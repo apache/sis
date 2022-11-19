@@ -171,7 +171,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the name of the location type.
-     * This name is specified at construction time and can not be changed.
+     * This name is specified at construction time and cannot be changed.
      *
      * <div class="note"><b>Examples:</b>
      * “administrative area”, “town”, “locality”, “street”, “property”.</div>

@@ -40,7 +40,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
- * Creates a grid coverage resource from an aggregation of an arbitrary amount of other resources.
+ * Creates a grid coverage resource from an aggregation of an arbitrary number of other resources.
  *
  * <div class="note"><b>Example:</b>
  * a collection of {@link GridCoverage} instances may represent the same phenomenon
@@ -141,7 +141,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * It delegates to {@link #add(GridCoverageResource)} for each element in the stream.
      *
      * @param  resources  resources to add.
-     * @throws DataStoreException if a resource can not be used.
+     * @throws DataStoreException if a resource cannot be used.
      */
     public void addAll(final Stream<? extends GridCoverageResource> resources) throws DataStoreException {
         try {
@@ -162,7 +162,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * This method does <em>not</em> recursively decomposes an {@link Aggregate} into its component.
      *
      * @param  resource  resource to add.
-     * @throws DataStoreException if the resource can not be used.
+     * @throws DataStoreException if the resource cannot be used.
      */
     public void add(final GridCoverageResource resource) throws DataStoreException {
         final GroupBySample bySample = GroupBySample.getOrAdd(members, resource.getSampleDimensions());
@@ -185,7 +185,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Components that are themselves instance of {@link Aggregate} are decomposed recursively.
      *
      * @param  resource  resource to add.
-     * @throws DataStoreException if a component of the resource can not be used.
+     * @throws DataStoreException if a component of the resource cannot be used.
      *
      * @todo Instead of ignoring non-coverage instances, we should put them in a separated aggregate.
      */
@@ -216,12 +216,12 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
-     * If an user-supplied aggregate exists for all the given components, returns that aggregate.
+     * If a user supplied aggregate exists for all the given components, returns that aggregate.
      * The returned aggregate is removed from the pool; aggregates are not returned twice.
      * This method is thread-safe.
      *
-     * @param  components  the components for which to get user-supplied aggregate.
-     * @return user-supplied aggregate if it exists. The returned aggregate is removed from the pool.
+     * @param  components  the components for which to get user supplied aggregate.
+     * @return user supplied aggregate if it exists. The returned aggregate is removed from the pool.
      */
     final Optional<Aggregate> existingAggregate(final Resource[] components) {
         final Set<Resource> key = Collections.newSetFromMap(new IdentityHashMap<>());

@@ -468,7 +468,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * Prepares the information to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
          * later in two collections: simple parameters are stored as (descriptor,value) pairs, while groups are
-         * stored in an other collection for deferred formatting after the simple parameters.
+         * stored in another collection for deferred formatting after the simple parameters.
          */
         int codespaceWidth = 0;
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
@@ -553,7 +553,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                     }
                 }
                 /*
-                 * Singleton array conversion. Because it may be an array of primitive types, we can not just
+                 * Singleton array conversion. Because it may be an array of primitive types, we cannot just
                  * cast to Object[]. Then formats the units, with a space before the unit if the symbol is a
                  * letter or digit (i.e. we do not put a space in front of ° symbol for instance).
                  */
@@ -830,7 +830,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * also need to iterate over all rows in order to know the number of columns.
          *
          * The first column is reserved for the identifier. We put null as a sentinel key for
-         * that column name, to be replaced later by "Identifier" in user locale. We can not
+         * that column name, to be replaced later by "Identifier" in user locale. We cannot
          * put the localized strings in the map right now because they could conflict with
          * the scope of some alias to be processed below.
          */

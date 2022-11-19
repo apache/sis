@@ -238,7 +238,7 @@ public abstract class Variable extends Node {
             }
             /*
              * Copy (numbers, labels) entries in an HashMap with keys converted to 32-bits signed integer.
-             * If a key can not be converted, we will log a warning after all errors have been collected
+             * If a key cannot be converted, we will log a warning after all errors have been collected
              * in order to produce only one log message. We put a limit on the amount of reported errors
              * for avoiding to flood the logger.
              */
@@ -334,7 +334,7 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the unit of measurement as a string, or {@code null} if none.
-     * The empty string can not be used for meaning "dimensionless unit"; some text is required.
+     * The empty string cannot be used for meaning "dimensionless unit"; some text is required.
      *
      * <p>Note: the UCAR library has its own API for handling units (e.g. {@link ucar.nc2.units.SimpleUnit}).
      * However as of November 2018, this API does not allow us to identify the quantity type except for some
@@ -353,7 +353,7 @@ public abstract class Variable extends Node {
      *
      * @param  symbols  the unit symbol to parse.
      * @return the parsed unit.
-     * @throws Exception if the unit can not be parsed. This wide exception type is used by the UCAR library.
+     * @throws Exception if the unit cannot be parsed. This wide exception type is used by the UCAR library.
      *
      * @see #getUnit()
      */
@@ -561,7 +561,7 @@ public abstract class Variable extends Node {
      *     but rather the value of some {@code "dim"} attribute. If this method can map all dimensions of this variable to
      *     dimensions of a grid, then that grid is returned.</li>
      *
-     *   <li>If a mapping can not be established for all dimensions, this method returns {@code null}.</li>
+     *   <li>If a mapping cannot be established for all dimensions, this method returns {@code null}.</li>
      * </ol>
      *
      * Subclasses should override this class with a more direct implementation and invoke this implementation only as a fallback.
@@ -702,7 +702,7 @@ public abstract class Variable extends Node {
             if (info != null) {
                 /*
                  * This variable may have more dimensions than the grid. We need to reduce the list to the same
-                 * dimensions than the ones in the grid.  We can not take Grid.getDimensions() directly because
+                 * dimensions than the ones in the grid.  We cannot take Grid.getDimensions() directly because
                  * those dimensions may not have the same length (this mismatch is handled in the next block).
                  */
                 List<Dimension> dimensions = getGridDimensions();                       // In netCDF order.
@@ -1219,7 +1219,7 @@ public abstract class Variable extends Node {
      *
      * @param  j  the slowest varying (left-most) index.
      * @param  i  the fastest varying (right-most) index.
-     * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
+     * @return the coordinate at the given index, or {@link Double#NaN} if it cannot be computed.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -1271,9 +1271,9 @@ public abstract class Variable extends Node {
     }
 
     /**
-     * Constructs the exception to thrown when the variable position can not be computed.
+     * Constructs the exception to thrown when the variable position cannot be computed.
      *
-     * @param  cause  the reason why we can not compute the position, or {@code null}.
+     * @param  cause  the reason why we cannot compute the position, or {@code null}.
      * @return the exception to thrown.
      */
     protected final DataStoreContentException canNotComputePosition(final ArithmeticException cause) {

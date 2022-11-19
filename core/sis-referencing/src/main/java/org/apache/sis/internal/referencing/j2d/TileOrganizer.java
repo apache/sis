@@ -206,7 +206,7 @@ public class TileOrganizer {
                 /*
                  * Compute the transformed bounds. If we fail to obtain it, there is probably something wrong
                  * with the tile but this is not fatal to this method. In such case we will transform only the
-                 * location instead of the full box, which sometime implies a lost of accuracy but not always.
+                 * location instead of the full box, which sometimes implies a lost of accuracy but not always.
                  */
                 Rectangle bounds;
                 synchronized (tile) {
@@ -509,7 +509,7 @@ public class TileOrganizer {
      * </ul>
      *
      * @param  ratio  the ratio between affine transform coefficients.
-     * @return the pixel size (actually subsampling) relative to the smallest pixel, or 0 if it can not be computed.
+     * @return the pixel size (actually subsampling) relative to the smallest pixel, or 0 if it cannot be computed.
      *         If the ratio is between 0 and 1, then this method returns a negative number.
      */
     private static int level(double ratio) {

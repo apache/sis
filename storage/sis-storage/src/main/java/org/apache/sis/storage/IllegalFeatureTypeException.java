@@ -22,7 +22,7 @@ import org.opengis.util.GenericName;
 
 
 /**
- * Thrown when a store can not write the given feature because its type is not one of the supported types.
+ * Thrown when a store cannot write the given feature because its type is not one of the supported types.
  * The {@link org.opengis.feature.FeatureType} is given by {@link org.opengis.feature.Feature#getType()},
  * and the type expected by the data store is given by {@link FeatureSet#getType()}. Those two values must
  * match, except when the type of the feature set is {@linkplain WritableFeatureSet#updateType updated}.
@@ -71,7 +71,7 @@ public class IllegalFeatureTypeException extends DataStoreException {
      *
      * @param locale     the message locale.
      * @param format     short name of the format that do not accept the given feature type.
-     * @param dataType   name of the feature type that can not be accepted by the data store.
+     * @param dataType   name of the feature type that cannot be accepted by the data store.
      */
     public IllegalFeatureTypeException(final Locale locale, final String format, final GenericName dataType) {
         super(locale, Resources.Keys.IllegalFeatureType_2, format, dataType);

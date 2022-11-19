@@ -96,7 +96,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
      *
      * @param  target  two-dimensional grid geometry of the target image.
      * @return clip in pixel coordinates of given grid.
-     * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
+     * @throws TransformException if ROI coordinates cannot be transformed to grid coordinates.
      */
     public Shape toShape2D(final GridGeometry target) throws TransformException {
         final MathTransform2D crsToGrid;

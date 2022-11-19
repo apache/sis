@@ -31,7 +31,7 @@ package org.apache.sis.util;
  * Some classes may implement both the {@code Disposeable} and {@link java.io.Closeable} interfaces.
  * While very similar, those two interfaces serve slightly different purposes. The {@code Closeable}
  * interface closes a stream or a connection, but some classes allow the object to be reused with a
- * different stream. However once an object has been disposed, it can not be used anymore.
+ * different stream. However once an object has been disposed, it cannot be used anymore.
  *
  * <div class="note"><b>Example:</b>
  * {@link javax.imageio.ImageReader} and {@link javax.imageio.ImageWriter} allow to reuse the same instance

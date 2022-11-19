@@ -49,7 +49,7 @@ import java.lang.annotation.RetentionPolicy;
  *     }
  * }
  *
- * It is sometime convenient to convert {@code ValueRange} to {@link NumberRange} instances
+ * It is sometimes convenient to convert {@code ValueRange} to {@link NumberRange} instances
  * in order to leverage the various {@code NumberRange} operations. The following example
  * uses a convenience constructor for this purpose. Note that the {@code Double} type could
  * by inferred from {@link java.lang.reflect.Method#getReturnType()}.

@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.Strings;
  * a collection of {@link GridCoverage} instances may represent the same phenomenon
  * (for example Sea Surface Temperature) over the same geographic area but at different dates and times.
  * {@link CoverageAggregator} can be used for building a single data cube with a time axis.
- * But if two coverages have overlapping time ranges, and if an user request data in the overlapping region,
+ * But if two coverages have overlapping time ranges, and if a user request data in the overlapping region,
  * then the aggregated coverages have more than one source coverages capable to provide the requested data.
  * This enumeration specify how to handle this multiplicity.</div>
  *

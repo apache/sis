@@ -164,7 +164,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
         assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
         assertEquals("The x dimension should be affine.",   1, grid.numXTiles);
-        assertEquals("The y dimension can not be affine.", 16, grid.numYTiles);     // Empirical value.
+        assertEquals("The y dimension cannot be affine.", 16, grid.numYTiles);     // Empirical value.
     }
 
     /**
@@ -201,8 +201,8 @@ public final strictfp class ResamplingGridTest extends TestCase {
         final MathTransform2D tr = compare("Lambert", projection, domain);
         assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
-        assertEquals("The x dimension can not be affine.", 32, grid.numXTiles);     // Empirical value.
-        assertEquals("The y dimension can not be affine.", 16, grid.numYTiles);     // Empirical value.
+        assertEquals("The x dimension cannot be affine.", 32, grid.numXTiles);     // Empirical value.
+        assertEquals("The y dimension cannot be affine.", 16, grid.numYTiles);     // Empirical value.
     }
 
     /**

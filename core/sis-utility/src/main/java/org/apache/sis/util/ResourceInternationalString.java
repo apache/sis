@@ -92,13 +92,13 @@ public class ResourceInternationalString extends AbstractInternationalString imp
 
     /**
      * The name of the resource bundle, as a fully qualified class name.
-     * This value is given at construction time and can not be {@code null}.
+     * This value is given at construction time and cannot be {@code null}.
      */
     protected final String resources;
 
     /**
      * The key for the resource to fetch.
-     * This value is given at construction time and can not be {@code null}.
+     * This value is given at construction time and cannot be {@code null}.
      */
     protected final String key;
 
@@ -120,7 +120,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     /**
      * Returns the resource bundle for the given locale. The default implementation fetches the
      * bundle from the name given at {@linkplain #ResourceInternationalString construction time}.
-     * Subclasses can override this method if they need to fetch the bundle in an other way.
+     * Subclasses can override this method if they need to fetch the bundle in another way.
      *
      * <h4>Class loaders</h4>
      * By default, this method loads the resources using the caller's class loader.
@@ -148,7 +148,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
 
     /**
      * Returns a string in the specified locale. If there is no string for the specified
-     * {@code locale}, then this method searches for a string in an other locale as
+     * {@code locale}, then this method searches for a string in another locale as
      * specified in the {@link ResourceBundle} class description.
      *
      * <h4>Handling of <code>null</code> argument value</h4>

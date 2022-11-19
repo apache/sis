@@ -92,7 +92,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * be done by the more costly {@link Objects#deepEquals(Object, Object)} method instead.
      *
      * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitly asks for this mode
-     * at construction time. This mode is provided because reference-equality semantic is sometime required, and
+     * at construction time. This mode is provided because reference-equality semantic is sometimes required, and
      * hard to simulate if not supported natively by the hash map. See {@link java.util.IdentityHashMap} javadoc
      * for some examples of cases where reference-equality semantic is useful.</p>
      *
@@ -207,7 +207,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Whether keys shall be compared by reference-equality ({@link #IDENTITY}), by shallow object-equality
      * ({@link #EQUALS}) or by deep object-equality ({@link #DEEP_EQUALS}). The {@code DEEP_EQUALS} mode is
-     * selected only if the keys in this map may be arrays. If the keys can not be arrays, then we select the
+     * selected only if the keys in this map may be arrays. If the keys cannot be arrays, then we select the
      * {@code EQUALS} mode for avoiding calls to the costly {@link Objects#deepEquals(Object, Object)} method.
      *
      * @see #keyEquals(Object, Object)
@@ -315,7 +315,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Returns the hash code value for the given key.
      *
-     * @param  key  the key (can not be null).
+     * @param  key  the key (cannot be null).
      */
     final int keyHashCode(final Object key) {
         switch (comparisonMode) {
@@ -329,7 +329,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Returns {@code true} if the two given keys are equal.
      *
-     * @param  k1  the first key (can not be null).
+     * @param  k1  the first key (cannot be null).
      * @paral  k2  the second key.
      */
     final boolean keyEquals(final Object k1, final Object k2) {
@@ -482,7 +482,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
 
     /**
      * Associates the specified value with the specified key in this map if no value were previously associated.
-     * If an other value is already associated to the given key, then the map is left unchanged and the current
+     * If another value is already associated to the given key, then the map is left unchanged and the current
      * value is returned. Otherwise the specified value is associated to the key using a {@link WeakReference}
      * and {@code null} is returned.
      *

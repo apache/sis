@@ -205,9 +205,9 @@ public abstract class BandedCoverage {
          *         Callers should not assume that the array content stay valid for a long time.
          * @throws PointOutsideCoverageException if the evaluation failed because the input point
          *         has invalid coordinates and the {@link #isNullIfOutside()} flag is {@code false}.
-         * @throws CannotEvaluateException if the values can not be computed at the specified coordinates
+         * @throws CannotEvaluateException if the values cannot be computed at the specified coordinates
          *         for another reason. For example this exception may be thrown if the coverage data type
-         *         can not be converted to {@code double} by an identity or widening conversion.
+         *         cannot be converted to {@code double} by an identity or widening conversion.
          */
         @Override
         double[] apply(DirectPosition point) throws CannotEvaluateException;

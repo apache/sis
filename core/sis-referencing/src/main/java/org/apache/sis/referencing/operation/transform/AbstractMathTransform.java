@@ -178,7 +178,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @param  criteria  controls the definition of transform domain.
      * @return estimation of a domain where this transform is considered numerically applicable.
-     * @throws TransformException if the domain can not be estimated.
+     * @throws TransformException if the domain cannot be estimated.
      *
      * @see MathTransforms#getDomain(MathTransform)
      * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
@@ -298,7 +298,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @return the coordinate tuple after transforming {@code ptSrc} and storing the result in {@code ptDst},
      *         or a newly created point if {@code ptDst} was null.
      * @throws MismatchedDimensionException if {@code ptSrc} or {@code ptDst} doesn't have the expected dimension.
-     * @throws TransformException if the point can not be transformed.
+     * @throws TransformException if the point cannot be transformed.
      */
     @Override
     public DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
@@ -377,7 +377,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The source and destination may overlap. Consequently, implementers must read all source
      * coordinate values before to start writing the transformed coordinates in the destination array.
      *
-     * @param  srcPts    the array containing the source coordinates (can not be {@code null}).
+     * @param  srcPts    the array containing the source coordinates (cannot be {@code null}).
      * @param  srcOff    the offset to the point to be transformed in the source array.
      * @param  dstPts    the array into which the transformed coordinates is returned. May be the same than {@code srcPts}.
      *                   May be {@code null} if only the derivative matrix is desired.
@@ -385,7 +385,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException if the point can not be transformed or
+     * @throws TransformException if the point cannot be transformed or
      *         if a problem occurred while calculating the derivative.
      *
      * @see #derivative(DirectPosition)
@@ -416,7 +416,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *                 May be the same than {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
-     * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
+     * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Double#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the latter case should set the
      *         {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
@@ -557,7 +557,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * We need to check if writing the transformed coordinates in the same array than the source
          * coordinates will cause an overlapping problem. However we can consider the whole buffer as
          * if it was a single coordinate tuple with a very large dimension. Doing so increase the chances
-         * that IterationStrategy.suggest(...) doesn't require us an other buffer  (hint: the -1 in
+         * that IterationStrategy.suggest(...) doesn't require us another buffer  (hint: the -1 in
          * suggest(...) mathematic matter and reflect the contract saying that the input coordinates
          * must be fully read before the output coordinates is written - which is the behavior we get
          * with our buffer).
@@ -591,7 +591,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * Computes the offset of the first source coordinates in the buffer. The offset of the
          * first destination coordinates will always be zero.   We compute the source offset in
          * such a way that the default transform(double[],int,double[],int,int) implementation
-         * should never needs to copy the source coordinates in yet an other temporary buffer.
+         * should never needs to copy the source coordinates in yet another temporary buffer.
          * We will verify that with an assert statement inside the do loop.
          */
         final int bufferedSrcOff = (dimSource >= dimTarget) ? 0 : dstStop - srcStop;
@@ -621,7 +621,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             } catch (TransformException exception) {
                 /*
                  * If an exception occurred but the transform nevertheless declares having been
-                 * able to process all coordinate tuples (setting to NaN those that can not be
+                 * able to process all coordinate tuples (setting to NaN those that cannot be
                  * transformed), we will keep the first exception (to be propagated at the end
                  * of this method) and continue. Otherwise we will stop immediately.
                  */
@@ -654,7 +654,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  dstPts  the array into which the transformed point coordinates are returned.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
-     * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
+     * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Float#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the latter case should set the
      *         {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
@@ -718,7 +718,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  dstPts  the array into which the transformed point coordinates are returned.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
-     * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
+     * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Double#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the latter case should set the
      *         {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
@@ -798,7 +798,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @return the derivative at the specified point (never {@code null}).
      * @throws NullPointerException if the derivative depends on coordinates and {@code point} is {@code null}.
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -1045,7 +1045,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@code Param_MT} is defined in the WKT 1 specification only.
      * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
      * then this method silently uses the WKT 1 convention without raising an error
-     * (unless this {@code MathTransform} can not be formatted as valid WKT 1 neither).</div>
+     * (unless this {@code MathTransform} cannot be formatted as valid WKT 1 neither).</div>
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "Param_MT"} in the default implementation.
@@ -1119,7 +1119,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          *
          * @param  criteria  controls the definition of transform domain.
          * @return estimation of a domain where this transform is considered numerically applicable.
-         * @throws TransformException if the domain can not be estimated.
+         * @throws TransformException if the domain cannot be estimated.
          *
          * @since 1.3
          */
@@ -1141,7 +1141,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * @return {@inheritDoc}
          * @throws NullPointerException if the derivative depends on coordinates and {@code point} is {@code null}.
          * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
-         * @throws TransformException if the derivative can not be evaluated at the specified point.
+         * @throws TransformException if the derivative cannot be evaluated at the specified point.
          */
         @Override
         public Matrix derivative(DirectPosition point) throws TransformException {

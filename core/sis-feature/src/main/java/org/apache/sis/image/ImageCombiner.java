@@ -35,7 +35,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * Combines an arbitrary amount of images into a single one.
+ * Combines an arbitrary number of images into a single one.
  * The combined images may use different coordinate systems if a resampling operation is specified.
  * The workflow is as below:
  *
@@ -240,7 +240,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * </ul>
      *
      * Contrarily to {@link ImageProcessor}, this method does not use {@linkplain ImageProcessor#getFillValues() fill values}.
-     * Destination pixels that can not be mapped to source pixels are left unchanged.
+     * Destination pixels that cannot be mapped to source pixels are left unchanged.
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates in the destination image, or {@code null} for the whole image.

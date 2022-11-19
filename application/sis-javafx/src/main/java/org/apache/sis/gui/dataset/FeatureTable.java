@@ -211,7 +211,7 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
-     * Sets the features to show in this table. This method loads an arbitrary amount of
+     * Sets the features to show in this table. This method loads an arbitrary number of
      * features in a background thread. It does not load all features if the feature set
      * is large, unless the user scroll down.
      *
@@ -479,7 +479,7 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
-     * Reports an exception that we can not display in this widget, for example because it applies
+     * Reports an exception that we cannot display in this widget, for example because it applies
      * to different data than the one currently viewed. The {@code method} argument should be the
      * public API (if possible) invoking the method where the exception is caught.
      */

@@ -106,13 +106,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     @DependsOnMethod("testConstructorWithStringValues")
     public void testConstructorWithCitation() {
         final Map<String,Object> properties = properties();
-        assertNotNull(properties.put(AUTHORITY_KEY, new DefaultCitation("An other authority")));
+        assertNotNull(properties.put(AUTHORITY_KEY, new DefaultCitation("Another authority")));
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
         assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY,       "An other authority",     identifier.getAuthority());
+        assertTitleEquals(AUTHORITY_KEY,       "Another authority",      identifier.getAuthority());
         assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
         assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
         assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
@@ -120,7 +120,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     }
 
     /**
-     * Tests the constructor with the {@code "authority"} attribute as one of the pre-defined constants.
+     * Tests the constructor with the {@code "authority"} attribute as one of the predefined constants.
      *
      * @see Citations#fromName(String)
      */

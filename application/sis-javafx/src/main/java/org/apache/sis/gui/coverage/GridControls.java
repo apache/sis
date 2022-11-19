@@ -54,7 +54,7 @@ final class GridControls extends ViewAndControls {
     /**
      * Creates a new set of grid controls.
      *
-     * @param  owner  the widget which creates this view. Can not be null.
+     * @param  owner  the widget which creates this view. Cannot be null.
      */
     GridControls(final CoverageExplorer owner) {
         super(owner);

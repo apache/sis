@@ -188,7 +188,7 @@ public final class Features extends Static {
      * For {@linkplain FeatureAssociationRole feature associations}, the value type is {@link Feature}.
      * For {@linkplain Operation operations}, the value type is determined recursively from the
      * {@linkplain Operation#getResult() operation result}.
-     * If the value type can not be determined, then this method returns {@code null}.
+     * If the value type cannot be determined, then this method returns {@code null}.
      *
      * @param  type  the property for which to get the type of values, or {@code null}.
      * @return the type of values provided by the given property, or {@code null} if unknown.

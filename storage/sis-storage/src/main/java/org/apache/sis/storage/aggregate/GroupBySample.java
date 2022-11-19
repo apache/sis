@@ -26,9 +26,9 @@ import org.apache.sis.coverage.SampleDimension;
  * A container for a list of elements grouped by their sample dimensions.
  *
  * <h2>Usage for coverage aggregation</h2>
- * {@code GroupBySample} contains an arbitrary amount of {@link GroupByCRS} instances,
- * which in turn contain an arbitrary amount of {@link GroupByTransform} instances,
- * which in turn contain an arbitrary amount of {@link GridSlice} instances.
+ * {@code GroupBySample} contains an arbitrary number of {@link GroupByCRS} instances,
+ * which in turn contain an arbitrary number of {@link GroupByTransform} instances,
+ * which in turn contain an arbitrary number of {@link GridSlice} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

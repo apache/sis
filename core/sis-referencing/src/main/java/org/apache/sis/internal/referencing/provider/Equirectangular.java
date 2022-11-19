@@ -237,7 +237,7 @@ public final class Equirectangular extends AbstractProvider {
          * "Latitude of natural origin" is not formally parameters of the "Equidistant Cylindrical (Spherical)"
          * projection according EPSG:1029.  But we declare it anyway (as an optional parameter) because it was
          * part of the now deprecated EPSG:9823 definition (and also EPSG:9842, the ellipsoidal case),  and we
-         * still see it in use sometime. However, taking inspiration from the practice done in "Mercator (1SP)"
+         * still see it in use sometimes. However, taking inspiration from the practice done in "Mercator (1SP)"
          * projection, we require that the parameter value must be zero.
          */
         LATITUDE_OF_ORIGIN = createZeroConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).

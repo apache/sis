@@ -27,10 +27,12 @@ import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.metadata.quality.DescriptiveResult;
-import org.opengis.metadata.maintenance.Scope;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.gco.GO_DateTime;
 import org.apache.sis.internal.metadata.ImplementationHelper;
+
+// Branch-dependent imports
+import org.opengis.metadata.maintenance.Scope;
 
 
 /**

@@ -329,7 +329,7 @@ public final class Matrices extends Static {
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
-     * points before the date line, since the wrap around operation can not be represented by an affine transform.
+     * points before the date line, since the wrap around operation cannot be represented by an affine transform.
      *
      * <h4>Example</h4>
      * Given a source envelope of size 100 × 200 (the units do not matter for this method) and a destination
@@ -377,7 +377,7 @@ public final class Matrices extends Static {
              * Note on envelope crossing the anti-meridian: the GeoAPI javadoc does not mandate the
              * precise behavior of getSpan(int) in such situation. In the particular case of Apache SIS
              * implementations, the envelope will compute the span correctly (taking in account the wrap
-             * around behavior). For non-SIS implementations, we can not know.
+             * around behavior). For non-SIS implementations, we cannot know.
              *
              * For the translation term, we really need the lower corner, NOT envelope.getMinimum(i),
              * because we need the starting point, which is not the minimal value when crossing the
@@ -399,9 +399,9 @@ public final class Matrices extends Static {
      * direction, or to an opposite {@code srcAxis} direction.
      *
      * <ul>
-     *   <li>If some {@code srcAxes} directions can not be mapped to {@code dstAxes} directions, then the transform
+     *   <li>If some {@code srcAxes} directions cannot be mapped to {@code dstAxes} directions, then the transform
      *       will silently drops the coordinates associated to those extra source axis directions.</li>
-     *   <li>If some {@code dstAxes} directions can not be mapped to {@code srcAxes} directions,
+     *   <li>If some {@code dstAxes} directions cannot be mapped to {@code srcAxes} directions,
      *       then an exception will be thrown.</li>
      * </ul>
      *
@@ -471,7 +471,7 @@ public final class Matrices extends Static {
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
      * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
-     * operation can not be represented by an affine transform.
+     * operation cannot be represented by an affine transform.
      *
      * <div class="note"><b>Example:</b>
      * combining the examples documented in the above {@code createTransform(…)} methods, the following method call:

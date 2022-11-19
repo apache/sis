@@ -572,7 +572,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * @throws IllegalArgumentException if this list does not have a property for the node identifier.
      * @throws IllegalStateException if a value already exists and no more value can be added for the node identifier.
      * @throws UnmodifiableMetadataException if the property for the node identifier is read-only.
-     * @throws ClassCastException if the node value can not be converted to the expected type.
+     * @throws ClassCastException if the node value cannot be converted to the expected type.
      * @throws BackingStoreException if the metadata implementation threw a checked exception.
      */
     @Override

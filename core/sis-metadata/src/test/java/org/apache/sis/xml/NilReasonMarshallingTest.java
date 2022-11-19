@@ -169,7 +169,7 @@ public final strictfp class NilReasonMarshallingTest extends TestCase {
     }
 
     /**
-     * Tests a case where the nil reason is specified by an other reason.
+     * Tests a case where the nil reason is specified by another reason.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */

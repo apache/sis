@@ -207,7 +207,7 @@ final strictfp class PackageVerifier {
                             final Type type = c.getGenericSuperclass();
                             if (type == null) {
                                 throw new SchemaException(String.format(
-                                        "Can not infer type for %s adapter.", adapter.value().getName()));
+                                        "Cannot infer type for %s adapter.", adapter.value().getName()));
                             }
                             if (type instanceof ParameterizedType) {
                                 final Type[] p = ((ParameterizedType) type).getActualTypeArguments();

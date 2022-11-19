@@ -162,7 +162,7 @@ final class EnvelopeOperation extends AbstractOperation {
                 CoordinateReferenceSystem attributeCRS = null;
                 /*
                  * Set `characterizedByCRS` to true if we find at least one attribute which may have the
-                 * "CRS" characteristic. Note that we can not rely on `attributeCRS` being non-null
+                 * "CRS" characteristic. Note that we cannot rely on `attributeCRS` being non-null
                  * because an attribute may be characterized by a CRS without providing default CRS.
                  */
                 final AttributeType<?> ct = at.get().characteristics().get(AttributeConvention.CRS);
@@ -295,7 +295,7 @@ final class EnvelopeOperation extends AbstractOperation {
          *
          * @return the union of envelopes of all geometries in the attribute specified to the constructor,
          *         or {@code null} if none.
-         * @throws FeatureOperationException if the envelope can not be computed.
+         * @throws FeatureOperationException if the envelope cannot be computed.
          */
         @Override
         public Envelope getValue() throws FeatureOperationException {

@@ -108,7 +108,7 @@ public class MetadataSummary extends Widget {
     public final ObjectProperty<Metadata> metadataProperty;
 
     /**
-     * If the metadata or the grid geometry can not be obtained, the reason.
+     * If the metadata or the grid geometry cannot be obtained, the reason.
      * This is created only when first needed.
      */
     private ExceptionReporter error;

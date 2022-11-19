@@ -308,11 +308,12 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * This method performs the following checks:
      *
      * <ul>
-     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
-     *       returns that primary name.</li>
+     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName}
+     *       (for example a {@link org.apache.sis.referencing.NamedIdentifier} subclass), returns that primary name.</li>
      *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
-     *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
-     *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
+     *       which is an instance of {@code MemberName} (a subtype of aliases type).
+     *       If found, that alias is returned.</li>
+     *   <li>If no alias is found, then this method tries to build a {@code MemberName} from the primary name and the
      *       {@linkplain DefaultParameterDescriptor#getValueClass() value class}, using the mapping defined in
      *       {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.</li>
      * </ul>
@@ -537,7 +538,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @return the requested parameter value if it exists, or the {@linkplain DefaultParameterDescriptor#getDefaultValue()
      *         default value} otherwise (which may be {@code null}).
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
-     * @throws UnconvertibleObjectException if the parameter value can not be converted to the expected type.
+     * @throws UnconvertibleObjectException if the parameter value cannot be converted to the expected type.
      *
      * @see #getMandatoryValue(ParameterDescriptor)
      * @see #getOrCreate(ParameterDescriptor)

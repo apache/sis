@@ -311,7 +311,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
 
     /**
      * Creates a new features containing an association to the two given features.
-     * The {@code main} feature can not be null (this is not verified).
+     * The {@code main} feature cannot be null (this is not verified).
      */
     private Feature join(Feature main, Feature filtered) {
         if (swapSides) {
@@ -375,7 +375,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
 
         /**
          * Creates a new iterator. We do not use parallelized {@code mainStream} here because the {@code accept(…)}
-         * methods used by this {@code Iterator} can not be invoked concurrently by different threads. It does not
+         * methods used by this {@code Iterator} cannot be invoked concurrently by different threads. It does not
          * present parallelization at a different level since this {@code Iterator} supports {@link #trySplit()},
          * so the {@link Stream} wrapping it can use parallelization.
          */
@@ -395,7 +395,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
         /**
          * If this iterator can be partitioned, returns a spliterator covering a prefix of the feature set.
          * Upon return from this method, this iterator will cover a suffix of the feature set.
-         * Returns {@code null} if this iterator can not be partitioned.
+         * Returns {@code null} if this iterator cannot be partitioned.
          */
         @Override
         public Spliterator<Feature> trySplit() {

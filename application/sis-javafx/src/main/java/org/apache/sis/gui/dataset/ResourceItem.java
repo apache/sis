@@ -81,7 +81,7 @@ final class ResourceItem extends TreeItem<Resource> {
 
     /**
      * Whether the resource is a leaf. A resource is a leaf if it is not an
-     * instance of {@link Aggregate}, in which case it can not have children.
+     * instance of {@link Aggregate}, in which case it cannot have children.
      * This information is cached because requested often.
      */
     private final boolean isLeaf;
@@ -164,7 +164,7 @@ final class ResourceItem extends TreeItem<Resource> {
     }
 
     /**
-     * Returns whether the resource can not have children.
+     * Returns whether the resource cannot have children.
      */
     @Override
     public boolean isLeaf() {
@@ -234,7 +234,7 @@ final class ResourceItem extends TreeItem<Resource> {
         }
 
         /**
-         * Invoked in JavaFX thread if children can not be loaded.
+         * Invoked in JavaFX thread if children cannot be loaded.
          * This method replaces all children (which are unknown) by
          * a single node which represents a failure to load the data.
          */

@@ -199,7 +199,7 @@ public abstract class AbstractResource implements Resource {
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to notify about events.
-     * @param  eventType  type of {@link StoreEvent}s to listen (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent}s to listen (cannot be {@code null}).
      */
     @Override
     public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
@@ -212,7 +212,7 @@ public abstract class AbstractResource implements Resource {
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to stop notifying about events.
-     * @param  eventType  type of {@link StoreEvent}s which were listened (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent}s which were listened (cannot be {@code null}).
      */
     @Override
     public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
@@ -220,11 +220,11 @@ public abstract class AbstractResource implements Resource {
     }
 
     /**
-     * Creates an exception message for a resource that can not be read.
+     * Creates an exception message for a resource that cannot be read.
      * If the error is potentially created by a request out of bounds,
      * this method tries to build a message with the problematic coordinates.
      *
-     * @param  filename  some identification (typically a file name) of the data that can not be read.
+     * @param  filename  some identification (typically a file name) of the data that cannot be read.
      * @param  request   the requested domain, or {@code null} if the problem is not a request out of bounds.
      * @return the message to provide in an exception.
      */

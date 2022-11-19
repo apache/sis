@@ -177,7 +177,7 @@ public class WraparoundAdjustment {
      * @param  source  the source CRS of the desired coordinate operation.
      * @param  target  the target CRS of the desired coordinate operation.
      * @return operation from {@code source} to {@code target}.
-     * @throws TransformException if the operation can not be computed.
+     * @throws TransformException if the operation cannot be computed.
      */
     private CoordinateOperation findOperation(final CoordinateReferenceSystem source,
                                               final CoordinateReferenceSystem target)
@@ -450,7 +450,7 @@ public class WraparoundAdjustment {
                              *   └────────────────────┘                                └─────
                              *    ↖……………………………………………………………period……………………………………………………………↗︎
                              *
-                             * The user may be requesting two extremums of the domain of validity. We can not express
+                             * The user may be requesting two extremums of the domain of validity. We cannot express
                              * that with a single envelope. Instead, we will expand the Area Of Interest to encompass
                              * the full domain of validity.
                              */

@@ -110,7 +110,7 @@ public final class WritableResourceSupport implements Localized {
      *
      * @param  input  the input from which to get the writable channel.
      * @return the writable channel.
-     * @throws IOException if the stream position can not be reset.
+     * @throws IOException if the stream position cannot be reset.
      * @throws DataStoreException if the channel is read-only.
      */
     public final ChannelDataOutput channel(final ChannelDataInput input) throws IOException, DataStoreException {
@@ -196,7 +196,7 @@ public final class WritableResourceSupport implements Localized {
      * @param  extent     the extent of the grid coverage to write.
      * @param  gridToCRS  the "grid to CRS" transform of the coverage to write.
      * @return the given "grid to CRS" as a two-dimensional affine transform.
-     * @throws DataStoreException if the affine transform can not be extracted from the given "grid to CRS" transform.
+     * @throws DataStoreException if the affine transform cannot be extracted from the given "grid to CRS" transform.
      */
     public final AffineTransform getAffineTransform2D(final GridExtent extent, final MathTransform gridToCRS)
             throws DataStoreException
@@ -213,9 +213,9 @@ public final class WritableResourceSupport implements Localized {
     }
 
     /**
-     * Returns the message for an exception saying that we can not write the resource.
+     * Returns the message for an exception saying that we cannot write the resource.
      *
-     * @return a localized "Can not write resource" message.
+     * @return a localized "Cannot write resource" message.
      * @throws DataStoreException if an error occurred while preparing the error message.
      */
     public final String canNotWrite() throws DataStoreException {

@@ -320,7 +320,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     /**
      * Creates the inverse transform of this object.
      *
-     * @throws NoninvertibleTransformException if this transform can not be inverted.
+     * @throws NoninvertibleTransformException if this transform cannot be inverted.
      */
     @Override
     public final AffineTransform2D inverse() throws NoninvertibleTransformException {

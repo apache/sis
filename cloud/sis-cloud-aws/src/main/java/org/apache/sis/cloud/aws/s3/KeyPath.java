@@ -675,7 +675,7 @@ search:     if (key != null) {
      * yields a path that locates the same file as the given path.
      * The two paths must either has no root or the same root.
      *
-     * @throws IllegalArgumentException if the other path can not be relativized against this path.
+     * @throws IllegalArgumentException if the other path cannot be relativized against this path.
      */
     @Override
     public Path relativize(final Path other) {
@@ -695,7 +695,7 @@ search:     if (key != null) {
      * Returns an URI with the {@value #SCHEME} scheme if the path is absolute, or a relative URI otherwise.
      *
      * <p>Note: {@link Path#toUri()} specification mandate an absolute URI.
-     * But we can not provide an absolute URI if this path is not already absolute.</p>
+     * But we cannot provide an absolute URI if this path is not already absolute.</p>
      *
      * @see #toString()
      */
@@ -741,7 +741,7 @@ search:     if (key != null) {
 
     /**
      * Returns this path if it is already absolute.
-     * Current implementation can not change a relative path to an absolute path.
+     * Current implementation cannot change a relative path to an absolute path.
      */
     @Override
     public Path toAbsolutePath() {
@@ -751,7 +751,7 @@ search:     if (key != null) {
 
     /**
      * Returns this path as an absolute path if possible.
-     * Current implementation can not change a relative path to an absolute path,
+     * Current implementation cannot change a relative path to an absolute path,
      * and does not verify if an object exists in the S3 bucket for the {@linkplain #key}.
      */
     @Override

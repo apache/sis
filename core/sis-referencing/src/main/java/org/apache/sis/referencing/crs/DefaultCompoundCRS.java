@@ -620,7 +620,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Constructs a new object in which every attributes are set to a null or empty value.
      * <strong>This is not a valid object.</strong> This constructor is strictly reserved
-     * to JAXB, which will assign values to the fields using reflexion.
+     * to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultCompoundCRS() {
         components = Collections.emptyList();

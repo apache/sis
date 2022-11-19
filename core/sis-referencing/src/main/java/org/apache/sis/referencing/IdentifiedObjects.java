@@ -606,7 +606,7 @@ public final class IdentifiedObjects extends Static {
      *         or {@code null} for searching among the objects created by all authorities.
      * @return a finder to use for looking up unidentified objects.
      * @throws NoSuchAuthorityFactoryException if the given authority is not found.
-     * @throws FactoryException if the finder can not be created for another reason.
+     * @throws FactoryException if the finder cannot be created for another reason.
      *
      * @see #lookupEPSG(IdentifiedObject)
      * @see #lookupURN(IdentifiedObject, Citation)
@@ -647,7 +647,7 @@ public final class IdentifiedObjects extends Static {
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
-     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of an other
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another
      *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
      *       projection or parameter name.</li>
      * </ul>
@@ -689,7 +689,7 @@ public final class IdentifiedObjects extends Static {
      * The recognized namespaces are listed in the following table
      * (note that the list of authorities that can be used in the {@code "urn:ogc:def"} namespace
      * is specified by the <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>).
-     * If this method can not determine a namespace for the given identifier, it returns {@code null}.</p>
+     * If this method cannot determine a namespace for the given identifier, it returns {@code null}.</p>
      *
      * <table class="sis">
      *   <caption>Valid values for the authority component in URN</caption>
@@ -731,7 +731,7 @@ public final class IdentifiedObjects extends Static {
      * @param  type  a type assignable to one of the types listed in above table.
      * @param  identifier  the identifier for which to format a URN, or {@code null}.
      * @return the URN for the given identifier, or {@code null} if the given identifier was null
-     *         or can not be formatted by this method.
+     *         or cannot be formatted by this method.
      *
      * @see #lookupURN(IdentifiedObject, Citation)
      *

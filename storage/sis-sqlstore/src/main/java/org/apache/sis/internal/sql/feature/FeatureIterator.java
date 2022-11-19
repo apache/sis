@@ -77,7 +77,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     /**
      * The result of executing the SQL query for a {@link Table}. If {@link #statement} is null, then
      * a single {@code ResultSet} is used for all the lifetime of this {@code FeatureIterator} instance.
-     * Otherwise an arbitrary amount of {@code ResultSet}s may be created from the statement.
+     * Otherwise an arbitrary number of {@code ResultSet}s may be created from the statement.
      */
     private ResultSet result;
 
@@ -150,7 +150,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
         if (filter == null) {
             estimatedSize = Math.min(table.countRows(connection.getMetaData(), distinct, true), offset + count) - offset;
         } else {
-            estimatedSize = 0;              // Can not estimate the size if there is filtering conditions.
+            estimatedSize = 0;              // Cannot estimate the size if there is filtering conditions.
         }
     }
 
@@ -263,7 +263,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
                      * We do not cache dependencies for `Relation.Direction.EXPORT`
                      * (when another table references this table) because that direction can return
                      * a lot of instances, contrarily to `IMPORT` which returns only one instance.
-                     * Furthermore instances fetched from `Direction.EXPORT` can not be
+                     * Furthermore instances fetched from `Direction.EXPORT` cannot be
                      * shared by feature instances, so caching would be useless here.
                      */
                     key = adapter.getCacheKey(result, i);

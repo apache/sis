@@ -221,7 +221,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * constructor for more information.
      *
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws IllegalArgumentException if the given string cannot be parsed.
      */
     public ArrayEnvelope(final CharSequence wkt) throws IllegalArgumentException {
         ensureNonNull("wkt", wkt);

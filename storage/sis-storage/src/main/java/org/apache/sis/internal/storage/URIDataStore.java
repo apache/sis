@@ -154,7 +154,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * a {@link Path} or {@link File}, or converts the URI to a {@link Path} otherwise.
      *
      * @return the URI as a path, or an empty array if unknown.
-     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
@@ -185,7 +185,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * Creates parameter value group for the current location, if non-null.
      * This convenience method is used for {@link DataStore#getOpenParameters()} implementations in public
-     * {@code DataStore} that can not extend {@code URIDataStore} directly, because this class is internal.
+     * {@code DataStore} that cannot extend {@code URIDataStore} directly, because this class is internal.
      *
      * @param  provider  the provider of the data store for which to get open parameters.
      * @param  location  file opened by the data store.
@@ -279,7 +279,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
 
         /**
          * Convenience method creating a parameter descriptor containing only {@link #LOCATION_PARAM}.
-         * This convenience method is used for public providers that can not extend this {@code Provider}
+         * This convenience method is used for public providers that cannot extend this {@code Provider}
          * class because it is internal.
          *
          * @param  name  short name of the data store format.
@@ -325,7 +325,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
          *
          * @param  connector  the connector to use for opening a file.
          * @return whether the specified connector should open a writable data store.
-         * @throws DataStoreException if the storage object has already been used and can not be reused.
+         * @throws DataStoreException if the storage object has already been used and cannot be reused.
          */
         public static boolean isWritable(final StorageConnector connector) throws DataStoreException {
             final Object storage = connector.getStorage();

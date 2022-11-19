@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a write operation can not be performed because the resource to write
+ * Thrown when a write operation cannot be performed because the resource to write
  * is incompatible with the data store.
  *
  * @author  Martin Desruisseaux (Geomatys)

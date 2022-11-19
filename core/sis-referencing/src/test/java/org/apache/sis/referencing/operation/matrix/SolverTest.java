@@ -154,7 +154,7 @@ public final strictfp class SolverTest extends TestCase {
         matrix = Matrices.create(5, 5, new double[] {
             20,  0,   0,   0, -3000,
             0, -20,   0,   0,  4000,
-            0,   0,   0, NaN,    20,  // Translation is 20: can not be converted.
+            0,   0,   0, NaN,    20,  // Translation is 20: cannot be converted.
             0,   0, 400,   0,  2000,
             0,   0,   0,   0,     1
         });

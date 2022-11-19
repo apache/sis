@@ -181,7 +181,7 @@ class SexagesimalConverter extends AbstractConverter {
     /**
      * Considers this converter as non-derivable. Actually it would be possible to provide a derivative value
      * for input values other than the discontinuities points, but for now we presume that it is less dangerous
-     * to return NaN every time, so the user can not miss that this function is not derivable everywhere.
+     * to return NaN every time, so the user cannot miss that this function is not derivable everywhere.
      */
     @Override
     public final double derivative(double value) {
@@ -257,7 +257,7 @@ class SexagesimalConverter extends AbstractConverter {
         /**
          * Performs a conversion from sexagesimal degrees to fractional degrees.
          *
-         * @throws IllegalArgumentException If the given angle can not be converted.
+         * @throws IllegalArgumentException If the given angle cannot be converted.
          */
         @Override
         public double convert(final double angle) throws IllegalArgumentException {
@@ -296,7 +296,7 @@ class SexagesimalConverter extends AbstractConverter {
         /**
          * Creates an exception for an illegal field.
          *
-         * @param  value  the user-supplied angle value.
+         * @param  value  the user supplied angle value.
          * @param  field  the value of the illegal field.
          * @param  unit   0 for minutes or 1 for seconds.
          * @return the exception to throw.

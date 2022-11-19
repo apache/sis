@@ -317,7 +317,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
 
     /**
      * Closes the output stream and releases any resources used by this XML writer.
-     * This writer can not be used anymore after this method has been invoked.
+     * This writer cannot be used anymore after this method has been invoked.
      *
      * @throws XMLStreamException if an error occurred while releasing XML writer resources.
      * @throws IOException if an error occurred while closing the output stream.

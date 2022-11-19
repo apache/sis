@@ -48,7 +48,7 @@ public interface WritableAggregate extends Aggregate {
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.
-     * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate}.
+     * @throws DataStoreException if the given resource cannot be stored in this {@code Aggregate}.
      */
     Resource add(Resource resource) throws DataStoreException;
 

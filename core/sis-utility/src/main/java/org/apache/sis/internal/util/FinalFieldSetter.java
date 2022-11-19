@@ -73,7 +73,7 @@ public final class FinalFieldSetter {
      * @param  instance  the instance on which to set the value.
      * @param  value     the value to set.
      * @throws NoSuchFieldException if the given field has not been found.
-     * @throws IllegalAccessException if the value can not be set.
+     * @throws IllegalAccessException if the value cannot be set.
      */
     public static <T> void set(final Class<T> classe, final String field, final T instance,
             final Object value) throws NoSuchFieldException, IllegalAccessException
@@ -95,7 +95,7 @@ public final class FinalFieldSetter {
      * @param  value     the value of the first field to set.
      * @param  more      the value of the second field to set.
      * @throws NoSuchFieldException if a given field has not been found.
-     * @throws IllegalAccessException if a value can not be set.
+     * @throws IllegalAccessException if a value cannot be set.
      */
     public static <T> void set(final Class<T> classe, final String field, final String second, final T instance,
             final Object value, final Object more) throws NoSuchFieldException, IllegalAccessException

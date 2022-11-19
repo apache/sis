@@ -56,7 +56,7 @@ abstract class CommandRunner {
     /**
      * The instance, used by {@link ResourcesDownloader} only.
      * We use this static field as a workaround for the fact that {@code ResourcesDownloader} is not
-     * instantiated by us, so we can not pass the {@code CommandRunner} instance to its constructor.
+     * instantiated by us, so we cannot pass the {@code CommandRunner} instance to its constructor.
      */
     static CommandRunner instance;
 
@@ -136,7 +136,7 @@ abstract class CommandRunner {
 
     /**
      * Copies the configuration of the given sub-command. This constructor is used
-     * only when a command needs to delegates part of its work to an other command.
+     * only when a command needs to delegates part of its work to another command.
      */
     CommandRunner(final CommandRunner parent) {
         this.commandName  = parent.commandName;
@@ -306,9 +306,9 @@ abstract class CommandRunner {
     }
 
     /**
-     * Prints the <cite>"Can not open …"</cite> error message followed by the message in the given exception.
+     * Prints the <cite>"Cannot open …"</cite> error message followed by the message in the given exception.
      *
-     * @param fileIndex  index in the {@link #files} list of the file that can not be opened.
+     * @param fileIndex  index in the {@link #files} list of the file that cannot be opened.
      * @param e          the exception which occurred.
      */
     final void canNotOpen(final int fileIndex, final Exception e) {

@@ -129,7 +129,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
      * Any mismatch in pixel values will cause immediate test failure.
      *
      * @param  tested  the resource to test.
-     * @throws DataStoreException if the full coverage can not be read.
+     * @throws DataStoreException if the full coverage cannot be read.
      */
     public CoverageReadConsistency(final GridCoverageResource tested) throws DataStoreException {
         resource       = tested;
@@ -457,7 +457,7 @@ nextSlice:  for (;;) {
     /**
      * Creates a pixel iterator for a sub-region in a slice of the specified coverage.
      * All coordinates given to this method are in the coordinate space of subsampled coverage subset.
-     * This method returns {@code null} if the arguments are valid but the image can not be created
+     * This method returns {@code null} if the arguments are valid but the image cannot be created
      * because of a restriction in {@code PixelInterleavedSampleModel} constructor.
      *
      * @param  coverage     the coverage from which to get the iterator, or {@code null} if unavailable.
@@ -497,7 +497,7 @@ nextSlice:  for (;;) {
          * The subsampling offsets were included in the extent given to above `render` method call, so in principle
          * they should not be given again to `SubsampledImage` constructor.  However the `render` method is free to
          * return an image with a larger extent, which may result in different offsets. The result can be "too much"
-         * offset. We want to compensate by subtracting the surplus. But because we can not have negative offsets,
+         * offset. We want to compensate by subtracting the surplus. But because we cannot have negative offsets,
          * we shift the whole `sliceAOI` (which is equivalent to subtracting `subX|Y` in full resolution coordinates)
          * and set the offset to the complement.
          */

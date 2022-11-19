@@ -90,7 +90,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
     }
 
     /**
-     * Tests the concatenation of two affine transforms than can not be represented as a
+     * Tests the concatenation of two affine transforms than cannot be represented as a
      * {@link ConcatenatedTransformDirect}. The slower {@link ConcatenatedTransform} shall be used.
      *
      * @throws FactoryException if an error occurred while creating the math transform to test.
@@ -148,7 +148,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
         assertEquals("Target dimensions", 4, transform.getTargetDimensions());
         /*
          * Put scale or offset factors is a passthrough dimension. Now, the affine transform
-         * can not anymore be concatenated with the sub-transform.
+         * cannot anymore be concatenated with the sub-transform.
          */
         matrix.m22 = 4;
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
@@ -160,11 +160,11 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
 
     /**
      * Tests concatenation of transforms built from non-square matrices. The transforms are invertible
-     * when taken separately, but the transform resulting from concatenation can not be inverted unless
+     * when taken separately, but the transform resulting from concatenation cannot be inverted unless
      * {@link ConcatenatedTransform#tryOptimized(MathTransform, MathTransform, MathTransformFactory)}
      * prepares in advance the inverse transform using the inverse of original transforms.
      *
-     * @throws NoninvertibleTransformException if a transform can not be inverted.
+     * @throws NoninvertibleTransformException if a transform cannot be inverted.
      */
     @Test
     public void testNonSquares() throws NoninvertibleTransformException {

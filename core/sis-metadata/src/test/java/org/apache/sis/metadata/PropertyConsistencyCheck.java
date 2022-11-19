@@ -109,7 +109,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
      * {@link CharSequence}, {@link Number}, {@link Date}, {@link Locale}, {@link CodeList},
      * {@link Enum} and types in the {@link #types} list.
      *
-     * <p>The returned value may be of an other type than the given one if the
+     * <p>The returned value may be of another type than the given one if the
      * {@code PropertyAccessor} converter method know how to convert that type.</p>
      *
      * @param  property  the name of the property for which to create a value.
@@ -245,7 +245,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
             assertNotNull(testingMethod, elementType);
             final boolean isMap        =        Map.class.isAssignableFrom(propertyType);
             final boolean isCollection = Collection.class.isAssignableFrom(propertyType);
-            assertFalse("Element type can not be Collection.", Collection.class.isAssignableFrom(elementType));
+            assertFalse("Element type cannot be Collection.", Collection.class.isAssignableFrom(elementType));
             assertEquals("Property and element types shall be the same if and only if not a collection.",
                          !(isMap | isCollection), propertyType == elementType);
             /*
@@ -337,7 +337,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                     final int index = accessor.indexOf(name, false);
                     assertTrue(message, index >= 0);
 
-                    // Property can not be a metadata.
+                    // Property cannot be a metadata.
                     final Class<?> elementType = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
                     assertFalse(message, standard.isMetadata(elementType));
 

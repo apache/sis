@@ -95,7 +95,7 @@ public final class DoubleDouble extends Number {
 
     /**
      * The split constant used as part of multiplication algorithms. The split algorithm is as below
-     * (we have to inline it in multiplication methods because Java can not return multi-values):
+     * (we have to inline it in multiplication methods because Java cannot return multi-values):
      *
      * {@preformat java
      *     private void split(double a) {
@@ -118,7 +118,7 @@ public final class DoubleDouble extends Number {
 
     /**
      * Pre-defined constants frequently used in SIS, sorted in increasing order. This table contains only
-     * constants that can not be inferred by {@link DecimalFunctions#deltaForDoubleToDecimal(double)},
+     * constants that cannot be inferred by {@link DecimalFunctions#deltaForDoubleToDecimal(double)},
      * for example some transcendental values.
      *
      * <p>Elements in this array shall be sorted in strictly increasing order.
@@ -368,7 +368,7 @@ public final class DoubleDouble extends Number {
      *
      * <h4>Rational</h4>
      * SIS often creates matrices for unit conversions, and most conversion factors are defined precisely in base 10.
-     * For example the conversion from feet to metres is defined by a factor of exactly 0.3048, which can not be
+     * For example the conversion from feet to metres is defined by a factor of exactly 0.3048, which cannot be
      * represented precisely as a {@code double}. Consequently if a value of 0.3048 is given, we can assume that
      * the intent was to provide the "feet to metres" conversion factor and complete the double-double instance
      * accordingly.
@@ -548,7 +548,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Adds an other double-double value to this {@code DoubleDouble}.
+     * Adds another double-double value to this {@code DoubleDouble}.
      * This is a convenience method for:
      *
      * {@preformat java
@@ -621,7 +621,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Adds an other double-double value to this {@code DoubleDouble}.
+     * Adds another double-double value to this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
      * <h4>Implementation</h4>
@@ -672,7 +672,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Adds an other double-double value to this {@code DoubleDouble}, reading the values from an array.
+     * Adds another double-double value to this {@code DoubleDouble}, reading the values from an array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
      * {@preformat java
@@ -688,7 +688,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Subtracts an other double-double value from this {@code DoubleDouble}.
+     * Subtracts another double-double value from this {@code DoubleDouble}.
      * This is a convenience method for:
      *
      * {@preformat java
@@ -749,7 +749,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Subtracts an other double-double value from this {@code DoubleDouble}.
+     * Subtracts another double-double value from this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
      * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
@@ -760,7 +760,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Subtracts an other double-double value from this {@code DoubleDouble}, reading the values from an array.
+     * Subtracts another double-double value from this {@code DoubleDouble}, reading the values from an array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
      * {@preformat java
@@ -776,7 +776,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Multiplies this {@code DoubleDouble} by an other double-double value.
+     * Multiplies this {@code DoubleDouble} by another double-double value.
      * This is a convenience method for:
      *
      * {@preformat java
@@ -837,7 +837,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Multiplies this {@code DoubleDouble} by an other double-double value.
+     * Multiplies this {@code DoubleDouble} by another double-double value.
      * The result is stored in this instance.
      *
      * <h4>Implementation</h4>
@@ -877,7 +877,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Multiplies this {@code DoubleDouble} by an other double-double value stored in the given array.
+     * Multiplies this {@code DoubleDouble} by another double-double value stored in the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
      * {@preformat java
@@ -893,7 +893,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Divides this {@code DoubleDouble} by an other double-double value.
+     * Divides this {@code DoubleDouble} by another double-double value.
      * This is a convenience method for:
      *
      * {@preformat java
@@ -954,7 +954,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Divides this {@code DoubleDouble} by an other double-double value.
+     * Divides this {@code DoubleDouble} by another double-double value.
      * The result is stored in this instance.
      *
      * @param  denominatorValue  the other value by which to divide this {@code DoubleDouble}.
@@ -974,7 +974,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Divides this {@code DoubleDouble} by an other double-double value stored in the given array.
+     * Divides this {@code DoubleDouble} by another double-double value stored in the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
      * {@preformat java

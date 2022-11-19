@@ -71,7 +71,7 @@ final class OutputFactory extends Static {
      * @param  out       where to write to.
      * @param  encoding  the document encoding (usually {@code "UTF-8"}).
      * @return the writer.
-     * @throws XMLStreamException if the writer can not be created.
+     * @throws XMLStreamException if the writer cannot be created.
      */
     public static XMLEventWriter createXMLEventWriter(OutputStream out, String encoding) throws XMLStreamException {
         return FACTORY.createXMLEventWriter(out, encoding);
@@ -84,7 +84,7 @@ final class OutputFactory extends Static {
      *
      * @param  out  where to write to.
      * @return the writer.
-     * @throws XMLStreamException if the writer can not be created.
+     * @throws XMLStreamException if the writer cannot be created.
      */
     public static XMLEventWriter createXMLEventWriter(final Writer out) throws XMLStreamException {
         return FACTORY.createXMLEventWriter(out);
@@ -96,7 +96,7 @@ final class OutputFactory extends Static {
      *
      * @param  out  where to write to.
      * @return the writer.
-     * @throws XMLStreamException if the writer can not be created.
+     * @throws XMLStreamException if the writer cannot be created.
      */
     public static XMLEventWriter createXMLEventWriter(final ContentHandler out) throws XMLStreamException {
         return FACTORY.createXMLEventWriter(new SAXResult(out));
@@ -108,7 +108,7 @@ final class OutputFactory extends Static {
      *
      * @param  out  where to write to.
      * @return the writer.
-     * @throws XMLStreamException if the writer can not be created.
+     * @throws XMLStreamException if the writer cannot be created.
      */
     public static XMLEventWriter createXMLEventWriter(final Node out) throws XMLStreamException {
         return FACTORY.createXMLEventWriter(new DOMResult(out));
@@ -120,7 +120,7 @@ final class OutputFactory extends Static {
      *
      * @param  out  where to write to.
      * @return the writer.
-     * @throws XMLStreamException if the writer can not be created.
+     * @throws XMLStreamException if the writer cannot be created.
      */
     public static XMLEventWriter createXMLEventWriter(final Result out) throws XMLStreamException {
         return FACTORY.createXMLEventWriter(out);
@@ -134,7 +134,7 @@ final class OutputFactory extends Static {
      *
      * @param  out  where to write to.
      * @return the writer.
-     * @throws XMLStreamException if the writer can not be created.
+     * @throws XMLStreamException if the writer cannot be created.
      */
     public static XMLEventWriter createXMLEventWriter(final XMLStreamWriter out) throws XMLStreamException {
         return FACTORY.createXMLEventWriter(new StAXResult(new StreamWriterDelegate(out) {

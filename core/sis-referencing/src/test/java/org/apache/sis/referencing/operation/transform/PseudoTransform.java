@@ -42,7 +42,7 @@ import static java.lang.StrictMath.*;
  *     3003.3
  * }
  *
- * This inverse transform is not effective and this transform can not compute {@linkplain #derivative derivative}.
+ * This inverse transform is not effective and this transform cannot compute {@linkplain #derivative derivative}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -122,7 +122,7 @@ strictfp class PseudoTransform extends AbstractMathTransform {
     }
 
     /**
-     * Returns a dummy inverse transform. That transform can not apply any operation.
+     * Returns a dummy inverse transform. That transform cannot apply any operation.
      */
     @Override
     public MathTransform inverse() {

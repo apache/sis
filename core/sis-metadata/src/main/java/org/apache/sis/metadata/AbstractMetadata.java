@@ -65,7 +65,7 @@ import org.apache.sis.util.collection.TreeTable;
  * <h2>Thread safety</h2>
  * Instances of this class are <strong>not</strong> synchronized for multi-threading.
  * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
- * are not necessarily the metadata instances. For example an other common approach is to
+ * are not necessarily the metadata instances. For example another common approach is to
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -118,7 +118,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *   <li>An empty {@linkplain CharSequence character sequences}.</li>
      *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
      *   <li>A collection or array containing only {@code null}, nil or empty elements.</li>
-     *   <li>An other metadata object containing only {@code null}, nil or empty properties.</li>
+     *   <li>Another metadata object containing only {@code null}, nil or empty properties.</li>
      * </ul>
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()} method.
@@ -208,7 +208,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.
+     *       for the first element and another node with index 1 for the second element.
      *
      *       <div class="note"><b>Note:</b>
      *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node

@@ -59,7 +59,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * and {@link CollectionElement#indexInList} fields may not be stable.
  * The former may be invalid if the node is serialized and deserialized by two different versions of Apache SIS
  * having properties in different order. The second may be invalid if the collection is not guaranteed to preserve
- * order on serialization (e.g. {@code CodeListSet} with user-supplied elements, in which case the elements order
+ * order on serialization (e.g. {@code CodeListSet} with user supplied elements, in which case the elements order
  * depends on the instantiation order).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -105,7 +105,7 @@ class TreeNode implements Node {
      *   <li>For {@link Element} (a metadata property which is not a collection),
      *       the value is {@code accessor.get(indexInData, metadata)}.</li>
      *   <li>For {@link CollectionElement} (an element in a collection),
-     *       an other index is used for fetching the element in that collection.</li>
+     *       another index is used for fetching the element in that collection.</li>
      * </ul>
      *
      * This field shall never be null.
@@ -131,7 +131,7 @@ class TreeNode implements Node {
 
     /**
      * The children of this node, or {@code null} if not yet computed. If and only if the node
-     * can not have children (i.e. {@linkplain #isLeaf() is a leaf}), then this field is set to
+     * cannot have children (i.e. {@linkplain #isLeaf() is a leaf}), then this field is set to
      * {@link #LEAF}.
      *
      * @see #getChildren()
@@ -158,7 +158,7 @@ class TreeNode implements Node {
      * Creates the root node of a new metadata tree table.
      *
      * @param  table     the table which is creating this root node.
-     * @param  metadata  the root metadata object (can not be null).
+     * @param  metadata  the root metadata object (cannot be null).
      * @param  baseType  the return type of the getter method that provides the value encapsulated by this node.
      */
     TreeNode(final TreeTableView table, final Object metadata, final Class<?> baseType) {
@@ -600,7 +600,7 @@ class TreeNode implements Node {
         void setUserObject(Object value) {
             final Collection<?> values = (Collection<?>) super.getUserObject();
             if (!(values instanceof List<?>)) {
-                // 'setValue' is the public method which invoked this one.
+                // `setValue(…)` is the public method which invoked this one.
                 throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "setValue"));
             }
             final Class<?> targetType;
@@ -676,7 +676,7 @@ class TreeNode implements Node {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Collection<Node> getChildren() {
         /*
-         * 'children' is set to LEAF if an only if the node *can not* have children,
+         * `children` is set to LEAF if an only if the node *cannot* have children,
          * in which case we do not need to check for changes in the underlying metadata.
          */
         if (!isLeaf()) {
@@ -685,7 +685,7 @@ class TreeNode implements Node {
                 value = getUserObject();
                 if (value == null) {
                     /*
-                     * If there is no value, returns an empty set but *do not* set 'children'
+                     * If there is no value, returns an empty set but *do not* set `children`
                      * to that set, in order to allow this method to check again the next time
                      * that this method is invoked.
                      */
@@ -698,7 +698,7 @@ class TreeNode implements Node {
              * If there is a value, check if the cached collection is still applicable.
              * We verify that the collection is a wrapper for the same metadata object.
              * If we need to create a new collection, we know that the property accessor
-             * exists otherwise the call to 'isLeaf()' above would have returned 'true'.
+             * exists otherwise the call to `isLeaf()` above would have returned 'true'.
              */
             if (children == null || ((TreeNodeChildren) children).metadata != value) {
                 PropertyAccessor accessor = table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true);
@@ -781,7 +781,7 @@ class TreeNode implements Node {
             if (delegate == null) {
                 /*
                  * For the given identifier, get the index in the property accessor.
-                 * This can be done only before the 'delegate' is found - after that
+                 * This can be done only before the `delegate` is found - after that
                  * point, the identifier will become unmodifiable.
                  */
                 if (column == TableColumn.IDENTIFIER) {
@@ -791,7 +791,7 @@ class TreeNode implements Node {
                 }
                 /*
                  * Set the value for the property specified by the above identifier,
-                 * then get the 'delegate' on the assumption that the new value will
+                 * then get the `delegate` on the assumption that the new value will
                  * be added at the end of collection (if the property is a collection).
                  */
                 if (column == TableColumn.VALUE) {
@@ -812,7 +812,7 @@ class TreeNode implements Node {
                     }
                     delegate = siblings.childAt(indexInData, indexInList);
                     /*
-                     * Do not set 'delegate.cachedValue = value', since 'value' may
+                     * Do not set 'delegate.cachedValue = value', since `value` may
                      * have been converted by the setter method to another value.
                      */
                     return;

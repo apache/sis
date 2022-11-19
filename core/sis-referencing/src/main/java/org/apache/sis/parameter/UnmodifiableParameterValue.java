@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A parameter value which can not be modified. This implementation shall be used only with:
+ * A parameter value which cannot be modified. This implementation shall be used only with:
  *
  * <ul>
  *   <li>immutable {@linkplain #getDescriptor() descriptor},</li>

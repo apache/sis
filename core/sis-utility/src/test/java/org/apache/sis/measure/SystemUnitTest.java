@@ -301,14 +301,14 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertSame(Units.METRE,  Units.METRE .asType(Length.class));
         assertSame(Units.SECOND, Units.SECOND.asType(Time.class));
         /*
-         * Test with units outside the pre-defined constants in the Units class.
+         * Test with units outside the predefined constants in the Units class.
          */
         final Unit<Length> anonymous = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), null,  UnitRegistry.OTHER, (short) 0, null);
         final Unit<Length> otherName = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), "Foo", UnitRegistry.OTHER, (short) 0, null);
         assertSame(Units.METRE, anonymous.asType(Length.class));
         assertSame(otherName,   otherName.asType(Length.class));
         /*
-         * Verify that the unit can not be casted to an incompatible units.
+         * Verify that the unit cannot be casted to an incompatible units.
          */
         for (final Unit<Length> unit : Arrays.asList(Units.METRE, anonymous, otherName)) {
             try {
@@ -330,7 +330,7 @@ public final strictfp class SystemUnitTest extends TestCase {
     public void testAsTypeForNewQuantity() {
         /*
          * Tests with a new quantity type unknown to Apache SIS.
-         * SIS can not prove that the type is wrong, so it should accept it.
+         * SIS cannot prove that the type is wrong, so it should accept it.
          */
         final Unit<Strange> strange = Units.METRE.asType(Strange.class);
         final Unit<Strange> named   = strange.alternate("strange");

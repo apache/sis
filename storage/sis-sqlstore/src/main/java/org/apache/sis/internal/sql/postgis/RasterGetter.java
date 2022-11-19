@@ -42,7 +42,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
  */
 final class RasterGetter extends ValueGetter<GridCoverage> {
     /**
-     * The Coordinate Reference System if {@link InfoStatements} can not map the SRID.
+     * The Coordinate Reference System if {@link InfoStatements} cannot map the SRID.
      * This is {@code null} if there is no default.
      */
     private final CoordinateReferenceSystem defaultCRS;

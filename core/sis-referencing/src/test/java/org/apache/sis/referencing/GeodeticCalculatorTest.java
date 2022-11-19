@@ -307,7 +307,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         assertPointEquals(-238.2,  31.4, ShapeUtilitiesExt.pointOnBezier(singleCurve, 1),   0.05);      // λ₂ = 121.8° - 360°
         assertPointEquals(-159.2,  -6.9, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0.5), 0.25);
         /*
-         * The more accurate curve can not be simplified to a Java2D primitive.
+         * The more accurate curve cannot be simplified to a Java2D primitive.
          */
         assertInstanceOf("Multicurves", Path2D.class, multiCurves);
         if (VisualCheck.SHOW_WIDGET) {
@@ -594,7 +594,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         ITERATION_REACHED_PRECISION_LIMIT,
 
         /**
-         * Iteration failed with a "no convergence error". It sometime happens during distance calculation between
+         * Iteration failed with a "no convergence error". It sometimes happens during distance calculation between
          * antipodal points.
          */
         NO_CONVERGENCE_ON_ANTIPODAL_POINTS;

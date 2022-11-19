@@ -63,7 +63,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 /**
  * The pane where to show the values of {@link Identification} objects.
- * The same pane can be used for an arbitrary amount of identifications.
+ * The same pane can be used for an arbitrary number of identifications.
  * Each instance is identified by its title.
  * The content is:
  *

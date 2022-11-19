@@ -54,7 +54,7 @@ import org.apache.sis.setup.OptionKey;
  * <h2>Type of output objects</h2>
  * The {@link StorageConnector} output should be an instance of the following types:
  * {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}.
- * Other types such as {@link ImageOutputStream} are also accepted but in those cases the auxiliary files can not be written.
+ * Other types such as {@link ImageOutputStream} are also accepted but in those cases the auxiliary files cannot be written.
  * For any output of unknown type, this data store first checks if an {@link ImageWriter} accepts the output type directly.
  * If none is found, this data store tries to {@linkplain ImageIO#createImageOutputStream(Object) create an output stream}
  * from the output object.
@@ -66,7 +66,7 @@ import org.apache.sis.setup.OptionKey;
  * and its output closed (if {@link AutoCloseable}) when this data store is {@linkplain #close() closed}.</p>
  *
  * <h2>Handling of multi-image files</h2>
- * Because some image formats can store an arbitrary amount of images,
+ * Because some image formats can store an arbitrary number of images,
  * this data store is considered as an aggregate with one resource per image.
  * All image should have the same size and all resources will share the same {@link GridGeometry}.
  * However this base class does not implement the {@link WritableAggregate} interface directly in order
@@ -287,7 +287,7 @@ writeCoeffs:    for (int i=0;; i++) {
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource.
-     * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate}.
+     * @throws DataStoreException if the given resource cannot be stored in this {@code Aggregate}.
      */
     public synchronized Resource add(final Resource resource) throws DataStoreException {
         Exception cause = null;

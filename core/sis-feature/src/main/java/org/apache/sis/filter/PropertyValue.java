@@ -164,7 +164,7 @@ split:  if (path != null) {
 
     /**
      * Returns the default value of {@link #expectedType(FeatureType, FeatureTypeBuilder)}
-     * when it can not be inferred by the analysis of the given {@code FeatureType}.
+     * when it cannot be inferred by the analysis of the given {@code FeatureType}.
      */
     final PropertyTypeBuilder expectedType(final FeatureTypeBuilder addTo) {
         return addTo.addAttribute(getValueClass()).setName(name).setMinimumOccurs(0);
@@ -358,8 +358,8 @@ split:  if (path != null) {
      *
      * @param  valueType  the type of features to be evaluated by the given expression.
      * @param  addTo      where to add the type of properties evaluated by the given expression.
-     * @return builder of the added property, or {@code null} if this method can not add a property.
-     * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
+     * @return builder of the added property, or {@code null} if this method cannot add a property.
+     * @throws IllegalArgumentException if this method cannot determine the property type for the given feature type.
      */
     @Override
     public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {

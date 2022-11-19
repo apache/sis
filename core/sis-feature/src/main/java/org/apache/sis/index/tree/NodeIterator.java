@@ -120,7 +120,7 @@ class NodeIterator<E> implements Spliterator<E>, Cloneable {
     }
 
     /**
-     * Invoked after {@link #clone()} for copying the fields that can not be shared between two
+     * Invoked after {@link #clone()} for copying the fields that cannot be shared between two
      * {@link NodeIterator} instances. This is used for {@link #trySplit()} implementation.
      *
      * @param  quadrants  the value to assign to {@link Cursor#quadrants}.
@@ -251,7 +251,7 @@ class NodeIterator<E> implements Spliterator<E>, Cloneable {
         /**
          * Creates a new {@code Cursor} for getting element arrays in the {@linkplain #node} quadrant/octant,
          * without changing the state of this {@code Cursor}. This method is invoked when there is a need to
-         * iterate in two more more children, in which case we can not yet discard the information contained
+         * iterate in two more more children, in which case we cannot yet discard the information contained
          * in this {@code Cursor} instance.
          *
          * <p>Caller is responsible to update the {@link #node} field after this method call

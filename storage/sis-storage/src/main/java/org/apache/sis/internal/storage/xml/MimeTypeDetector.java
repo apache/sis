@@ -28,10 +28,10 @@ import org.apache.sis.storage.ProbeResult;
  * Detects the MIME type of a XML document from the namespace of the root element.
  * This class does not support encoding: it will search only for US-ASCII characters.
  * It does not prevent usage with encodings like ISO-LATIN-1 or UTF-8, provided that
- * the characters in the [32 … 122] range (from space to 'z') are the same and can not
+ * the characters in the [32 … 122] range (from space to 'z') are the same and cannot
  * be used as part of a multi-byte character.
  *
- * <p>This class tries to implement a lightweight detection mechanism. We can not for instance
+ * <p>This class tries to implement a lightweight detection mechanism. We cannot for instance
  * unmarshal the whole document with JAXB and look at the class of unmarshalled object, since
  * it would be way too heavy.</p>
  *

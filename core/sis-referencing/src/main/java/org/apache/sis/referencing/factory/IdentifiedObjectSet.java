@@ -52,7 +52,7 @@ import org.apache.sis.util.Classes;
  *
  * <p>Elements can be added to this collection with calls to {@link #addAuthorityCode(String)} for deferred
  * {@linkplain #createObject(String) object creation}, or to {@link #add(IdentifiedObject)} for objects
- * that are already instantiated. This collection can not contain two {@code IdentifiedObject} instances
+ * that are already instantiated. This collection cannot contain two {@code IdentifiedObject} instances
  * having the same identifier. However the identifiers used by this class can be controlled by overriding
  * {@link #getAuthorityCode(IdentifiedObject)}.</p>
  *

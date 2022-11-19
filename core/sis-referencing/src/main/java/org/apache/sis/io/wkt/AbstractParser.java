@@ -211,7 +211,7 @@ abstract class AbstractParser implements Parser {
 
     /**
      * Logs the given record for a warning that occurred during parsing.
-     * This is used when we can not use the {@link #warning warning methods},
+     * This is used when we cannot use the {@link #warning warning methods},
      * or when the information is not worth to report as a warning.
      */
     final void log(final LogRecord record) {
@@ -274,7 +274,7 @@ abstract class AbstractParser implements Parser {
      * @param  text       the Well-Known Text (WKT) to parse.
      * @param  position   index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object.
-     * @throws ParseException if the string can not be parsed.
+     * @throws ParseException if the string cannot be parsed.
      */
     Object createFromWKT(final String text, final ParsePosition position) throws ParseException {
         warnings = null;
@@ -308,7 +308,7 @@ abstract class AbstractParser implements Parser {
      * @param  position  before parsing, provides index of the first character to parse in the {@code wkt} string.
      *                   After parsing completion, provides index after the last character parsed.
      * @return the parsed object as a tree of {@link Element}s.
-     * @throws ParseException if the string can not be parsed.
+     * @throws ParseException if the string cannot be parsed.
      *
      * @see WKTFormat#textToTree(String, ParsePosition, String)
      */
@@ -345,7 +345,7 @@ abstract class AbstractParser implements Parser {
      *
      * @param  element  the element to be parsed.
      * @return the parsed object.
-     * @throws ParseException if the element can not be parsed.
+     * @throws ParseException if the element cannot be parsed.
      */
     abstract Object buildFromTree(Element element) throws ParseException;
 
@@ -404,7 +404,7 @@ abstract class AbstractParser implements Parser {
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
      * @param  parent   the parent element, or {@code null} if unknown.
-     * @param  element  the element that we can not parse, or {@code null} if unknown.
+     * @param  element  the element that we cannot parse, or {@code null} if unknown.
      * @param  message  the message. Can be {@code null} only if {@code ex} is non-null.
      * @param  ex       the non-fatal exception that occurred while parsing the element, or {@code null}.
      */
@@ -416,7 +416,7 @@ abstract class AbstractParser implements Parser {
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
      * @param  parent   the parent element, or {@code null} if unknown.
-     * @param  element  the name of the element that we can not parse, or {@code null} if unknown.
+     * @param  element  the name of the element that we cannot parse, or {@code null} if unknown.
      * @param  message  the message. Can be {@code null} only if {@code ex} is non-null.
      * @param  ex       the non-fatal exception that occurred while parsing the element, or {@code null}.
      */

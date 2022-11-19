@@ -91,7 +91,7 @@ public interface IdentifierSpace<T> extends Citation {
     IdentifierSpace<UUID> UUID = new NonMarshalledAuthority<>("gco:uuid", NonMarshalledAuthority.UUID);
 
     /**
-     * An optional attribute for URN to an external resources, or to an other part of a XML
+     * An optional attribute for URN to an external resources, or to another part of a XML
      * document, or an identifier. This is one of the many attributes available in the
      * {@link #XLINK} identifier space, but is provided as a special constant because
      * {@code href} is the most frequently used {@code xlink} attribute.

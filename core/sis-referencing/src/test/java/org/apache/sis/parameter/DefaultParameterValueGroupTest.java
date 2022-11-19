@@ -62,7 +62,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      *   <li>One optional  parameter (multiplicity [0…2]) — invalid according ISO 19111, but supported by SIS.</li>
      * </ul>
      *
-     * Some test methods may replace the default descriptor by an other one.
+     * Some test methods may replace the default descriptor by another one.
      */
     private ParameterDescriptorGroup descriptor = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2;
 

@@ -42,11 +42,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <ul class="verbose">
  *   <li><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
  *   each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
- *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
+ *   addName(…)} methods. Parameters can optionally have an arbitrary number of aliases, which are also specified
  *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</li>
  *
  *   <li><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b>
- *   parameters can also have an arbitrary amount of identifiers, which are specified by any of the
+ *   parameters can also have an arbitrary number of identifiers, which are specified by any of the
  *   {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier can be
  *   added by invoking the method many time.</li>
  *
@@ -73,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   // Constructs the list of parameters.
  *   ParameterDescriptor<?>[] parameters = {
  *       builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
- *              .createBounded( -80,  +84, 0, Units.DEGREE),        // Latitude of Mercator projection can not go to the poles.
+ *              .createBounded( -80,  +84, 0, Units.DEGREE),        // Latitude of Mercator projection cannot go to the poles.
  *
  *       builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
  *              .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
@@ -148,7 +148,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * this property is kept unchanged until this {@code setRequired(…)} method is invoked again.</p>
      *
      * <div class="note"><b>API note:</b> the {@link DefaultParameterDescriptor#getMaximumOccurs()
-     * maximum number of occurrences} is fixed to 1 and can not be changed with this builder
+     * maximum number of occurrences} is fixed to 1 and cannot be changed with this builder
      * (except for {@linkplain #createGroup(int, int, GeneralParameterDescriptor...) parameters group})
      * because {@link DefaultParameterValueGroup#parameter(String)} can return only one value.
      * Allowing to return more than one value would complicate the API for an uncommon case.

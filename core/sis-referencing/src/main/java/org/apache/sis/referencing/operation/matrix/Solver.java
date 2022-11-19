@@ -216,7 +216,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                             if (k != j && LU[k*size + i] != 0) {
                                 /*
                                  * Found a non-zero element in the current column.
-                                 * We can not proceed - cancel everything.
+                                 * We cannot proceed - cancel everything.
                                  */
                                 indexOfNaN = null;
                                 indexCount = 0;

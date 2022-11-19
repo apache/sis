@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a {@code DataStore} can not perform a write operation.
+ * Thrown when a {@code DataStore} cannot perform a write operation.
  * If a data store does not support any write operation, then it should not implement
  * {@link WritableAggregate} or {@link WritableFeatureSet} interface.
  * But in some situations, a data store may implement a {@code Writable*} interface

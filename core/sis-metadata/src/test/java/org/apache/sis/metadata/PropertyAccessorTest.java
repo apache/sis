@@ -230,7 +230,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the constructor with a method which override an other method with covariant return type.
+     * Tests the constructor with a method which override another method with covariant return type.
      * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS} interface.
      */
     @Test
@@ -466,8 +466,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * {@preformat text
      *   DefaultCitation
      *     ├─Title……………………………………………………… Ignored title
-     *     ├─Alternate title (1 of 2)…… An other title
-     *     └─Alternate title (2 of 2)…… Yet an other title
+     *     ├─Alternate title (1 of 2)…… Another title
+     *     └─Alternate title (2 of 2)…… Yet another title
      * }
      */
     @Test
@@ -484,8 +484,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * {@preformat text
      *   DefaultCitation
      *     ├─Title……………………………………………………… Ignored title
-     *     ├─Alternate title (1 of 2)…… An other title
-     *     └─Alternate title (2 of 2)…… Yet an other title
+     *     ├─Alternate title (1 of 2)…… Another title
+     *     └─Alternate title (2 of 2)…… Yet another title
      * }
      */
     @Test
@@ -499,8 +499,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * when adding elements in a collection, with or without conversion of type.
      */
     private static void testSetIntoCollection(final boolean conversion) {
-        final String              text1    = "An other title";
-        final String              text2    = "Yet an other title";
+        final String              text1    = "Another title";
+        final String              text2    = "Yet another title";
         final InternationalString title1   = new SimpleInternationalString(text1);
         final InternationalString title2   = new SimpleInternationalString(text2);
         final DefaultCitation     instance = new DefaultCitation("Ignored title");

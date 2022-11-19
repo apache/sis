@@ -169,7 +169,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -191,7 +191,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
             /*
              * The `c` factor is 0 when projecting the antipodal point of origin.
              * The antipodal point is actually all points on a circle of radius 2.
-             * We can not return a single point, so NaN seems a safer value.
+             * We cannot return a single point, so NaN seems a safer value.
              */
             double B = sqrt(2 / c);
             if (B == Double.POSITIVE_INFINITY) {
@@ -249,7 +249,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
     /**
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the (λ,φ) result in {@code dstPts}.
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

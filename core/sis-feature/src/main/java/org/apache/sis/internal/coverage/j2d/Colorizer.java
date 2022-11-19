@@ -289,7 +289,7 @@ public final class Colorizer {
      * and indices in the [1 … 255] will be mapped to the given range.
      *
      * <p>This method is typically used as a last resort fallback when all other {@code initialize(…)}
-     * methods failed or can not be applied. This method assumes that no {@link Category} information
+     * methods failed or cannot be applied. This method assumes that no {@link Category} information
      * is available.</p>
      *
      * @param  minimum  minimum value, inclusive.
@@ -421,7 +421,7 @@ reuse:  if (source != null) {
             }
         }
         /*
-         * If we reach this point, `source` sample dimensions were not specified or can not be used for
+         * If we reach this point, `source` sample dimensions were not specified or cannot be used for
          * getting a transfer function to the [0 … 255] range of values. We will need to create our own.
          * First, sort the entries for having transparent colors first.
          */
@@ -502,7 +502,7 @@ reuse:  if (source != null) {
         this.entries = entries = ArraysExt.resize(entries, count);      // Should be a no-op most of the times.
         /*
          * Above loop mapped all NaN values. Now map the real values. Usually, there is exactly one entry taking
-         * all remaining values in the [0 … 255] range, but code below is tolerant to arbitrary amount of ranges.
+         * all remaining values in the [0 … 255] range, but code below is tolerant to arbitrary number of ranges.
          */
         final int base = lower;
         final double toIndexRange = (MAX_VALUE + 1 - base) / span;
@@ -581,7 +581,7 @@ reuse:  if (source != null) {
      * Returns the conversion from sample values in the source image to sample values in the recolored image.
      *
      * @return conversion to sample values in recolored image.
-     * @throws NoninvertibleTransformException if the conversion can not be created.
+     * @throws NoninvertibleTransformException if the conversion cannot be created.
      */
     public MathTransform1D getSampleToIndexValues() throws NoninvertibleTransformException {
         checkInitializationStatus(true);

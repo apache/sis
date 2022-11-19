@@ -60,7 +60,7 @@ final class ProbeInputStream extends FilterInputStream {
     /**
      * Does nothing since marks are not supported on this input stream.
      * Note that doing nothing is the behavior of the default {@link InputStream#mark(int)} implementation.
-     * In particular, we can not declare the checked {@link IOException} here.
+     * In particular, we cannot declare the checked {@link IOException} here.
      */
     @Override
     public void mark(int readlimit) {

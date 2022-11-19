@@ -447,11 +447,11 @@ public final class ColorModelFactory {
 
     /**
      * Returns {@code true} if the given range of values is the standard range for the given data type.
-     * In such case it may be possible to use a Java standard color model, which sometime benefit from
+     * In such case it may be possible to use a Java standard color model, which sometimes benefit from
      * acceleration in Java2D rendering pipe.
      *
      * <p>This method does not clamp the given values to the maximum range supported by the given type.
-     * For example even if {@code TYPE_BYTE} can not represent values outside the [0 … 255] range,
+     * For example even if {@code TYPE_BYTE} cannot represent values outside the [0 … 255] range,
      * we do not clamp the minimum and maximum values to that range because it would change the visual
      * appearance (because of different color scale).</p>
      *
@@ -650,7 +650,7 @@ public final class ColorModelFactory {
      * @return a unique (shared) instance of the given color model.
      */
     private static <T extends ColorModel> T unique(T cm) {
-        // `CACHE` is null-safe and it is sometime okay to return a null color model.
+        // `CACHE` is null-safe and it is sometimes okay to return a null color model.
         // ColorModelPatch is not null-safe, but it will be removed in a future version.
         ColorModelPatch<T> c = new ColorModelPatch<>(cm);
         c = CACHE.unique(c);

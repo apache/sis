@@ -75,7 +75,7 @@ public final strictfp class DefaultPolarCSTest extends TestCase {
         normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
-                AxisDirection.SOUTH,                            // Not modified to North because radius can not be negative.
+                AxisDirection.SOUTH,                            // Not modified to North because radius cannot be negative.
                 AxisDirections.COUNTER_CLOCKWISE);
     }
 }

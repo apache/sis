@@ -29,7 +29,7 @@ import org.opengis.feature.MultiValuedPropertyException;
 
 
 /**
- * An instance of an {@linkplain DefaultAttributeType attribute type} containing an arbitrary amount of values.
+ * An instance of an {@linkplain DefaultAttributeType attribute type} containing an arbitrary number of values.
  *
  * <div class="note"><b>Note:</b> in the common case where the {@linkplain DefaultAttributeType attribute type}
  * restricts the cardinality to [0 … 1], the {@link SingletonAttribute} implementation consumes less memory.</div>
@@ -166,7 +166,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
      * the attribute {@linkplain #getValues() values} are <strong>not</strong> cloned.
      *
      * @return a clone of this attribute.
-     * @throws CloneNotSupportedException if this attribute can not be cloned.
+     * @throws CloneNotSupportedException if this attribute cannot be cloned.
      */
     @Override
     @SuppressWarnings("unchecked")

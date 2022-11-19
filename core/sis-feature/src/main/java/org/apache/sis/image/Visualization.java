@@ -126,7 +126,7 @@ final class Visualization extends ResampledImage {
         /** The colors to use for given categories of sample values, or {@code null} is unspecified. */
         Function<Category,Color[]> categoryColors;
 
-        /** Values to use for pixels in this image that can not be mapped to pixels in source image. */
+        /** Values to use for pixels in this image that cannot be mapped to pixels in source image. */
         Number[] fillValues;
 
         /** Values of {@value #POSITIONAL_ACCURACY_KEY} property, or {@code null} if none. */
@@ -193,7 +193,7 @@ final class Visualization extends ResampledImage {
          * @param  processor  the processor invoking this constructor.
          * @return resampled and recolored image for visualization purposes only.
          * @throws NoninvertibleTransformException if sample values in source image
-         *         can not be converted to sample values in the recolored image.
+         *         cannot be converted to sample values in the recolored image.
          */
         RenderedImage create(final ImageProcessor processor) throws NoninvertibleTransformException {
             final int visibleBand = ImageUtilities.getVisibleBand(source);
@@ -430,7 +430,7 @@ final class Visualization extends ResampledImage {
     }
 
     /**
-     * Returns {@code true} if this image can not have mask.
+     * Returns {@code true} if this image cannot have mask.
      */
     @Override
     final boolean hasNoMask() {

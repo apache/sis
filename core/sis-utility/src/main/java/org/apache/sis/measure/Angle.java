@@ -48,7 +48,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  *   <li>{@linkplain Longitude} is an angle measured east-west from a prime meridian (usually Greenwich, but not necessarily).</li>
  *   <li><cite>Azimuth</cite> is a direction given by an angle between 0° and 360° measured clockwise from North.</li>
  *   <li><cite>Bearing</cite> is a direction given by an angle between 0° and 90° in a quadrant defined by a cardinal direction.</li>
- *   <li><cite>Bearing</cite> is also sometime used in navigation for an angle relative to the vessel forward direction.</li>
+ *   <li><cite>Bearing</cite> is also sometimes used in navigation for an angle relative to the vessel forward direction.</li>
  *   <li><cite>Deflection angle</cite> is the angle between a line and the prolongation of a preceding line.</li>
  *   <li><cite>Interior angle</cite> is an angle measured between two lines of sight.</li>
  *   <li>{@linkplain ElevationAngle Elevation angle} is the angular height from the horizontal plane to an object above the horizon.</li>

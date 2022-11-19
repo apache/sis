@@ -52,7 +52,7 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
      * Creates the metadata object to be tested.
      *
      * @param  legacy  {@code true} for using the legacy {@code ResponsibleParty} instead of {@code Responsibility}.
-     *                 This is sometime needed for comparison purpose with unmarshalled metadata.
+     *                 This is sometimes needed for comparison purpose with unmarshalled metadata.
      */
     @SuppressWarnings("deprecation")
     private static DefaultMetadata createMetadata(final boolean legacy) {

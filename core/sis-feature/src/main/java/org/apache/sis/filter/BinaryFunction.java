@@ -117,8 +117,8 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * If no {@code applyAs(…)} implementations can return null values,
      * this this method never return {@code null}.
      *
-     * @param  left   the left operand. Can not be null.
-     * @param  right  the right operand. Can not be null.
+     * @param  left   the left operand. Cannot be null.
+     * @param  right  the right operand. Cannot be null.
      * @return result of this function applied on the two given operands.
      *         May be {@code null} only if an {@code applyAs(…)} implementation returned a null value.
      */
@@ -161,7 +161,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * Calculates this function using given operands of {@code long} primitive type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Long}, except for division which may produce other types.
-     * This method may return {@code null} if the operation can not apply on numbers.
+     * This method may return {@code null} if the operation cannot apply on numbers.
      *
      * @throws ArithmeticException if the operation overflows or if there is a division by zero.
      */
@@ -173,7 +173,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * Calculates this function using given operands of {@code double} primitive type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Double}.
-     * This method may return {@code null} if the operation can not apply on numbers.
+     * This method may return {@code null} if the operation cannot apply on numbers.
      */
     protected Number applyAsDouble(double left, double right) {
         return null;
@@ -183,7 +183,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * Calculates this function using given operands of {@code Fraction} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Fraction}.
-     * This method may return {@code null} if the operation can not apply on numbers.
+     * This method may return {@code null} if the operation cannot apply on numbers.
      *
      * @throws ArithmeticException if the operation overflows or if there is a division by zero.
      */
@@ -195,7 +195,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * Calculates this function using given operands of {@code BigInteger} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link BigInteger}, except for division which may produce other types.
-     * This method may return {@code null} if the operation can not apply on numbers.
+     * This method may return {@code null} if the operation cannot apply on numbers.
      *
      * @throws ArithmeticException if there is a division by zero.
      */
@@ -207,7 +207,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * Calculates this function using given operands of {@code BigDecimal} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link BigDecimal}.
-     * This method may return {@code null} if the operation can not apply on numbers.
+     * This method may return {@code null} if the operation cannot apply on numbers.
      *
      * @throws ArithmeticException if a division does not have a terminating decimal expansion.
      */

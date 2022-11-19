@@ -131,7 +131,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      * If the failure is caused by an envelope outside the resource domain,
      * then that envelope will be inferred from the {@code request} argument.
      *
-     * @param  filename  some identification (typically a file name) of the data that can not be read.
+     * @param  filename  some identification (typically a file name) of the data that cannot be read.
      * @param  request   the requested domain, or {@code null} if unspecified.
      * @param  cause     the cause of the failure, or {@code null} if none.
      * @return the exception to throw.

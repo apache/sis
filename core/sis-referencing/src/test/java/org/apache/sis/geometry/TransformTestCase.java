@@ -64,7 +64,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
 
     /**
      * Transforms an envelope or rectangle using the given math transform.
-     * This transformation can not handle poles.
+     * This transformation cannot handle poles.
      */
     abstract G transform(CoordinateReferenceSystem targetCRS, MathTransform2D transform, G envelope) throws TransformException;
 

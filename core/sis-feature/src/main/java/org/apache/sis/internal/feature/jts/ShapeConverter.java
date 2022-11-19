@@ -105,7 +105,7 @@ abstract class ShapeConverter {
      * Coordinates are copies; this is not a view.
      *
      * @param  factory   factory to use for creating the geometry, or {@code null} for the default.
-     * @param  shape     the Java2D shape to convert. Can not be {@code null}.
+     * @param  shape     the Java2D shape to convert. Cannot be {@code null}.
      * @param  flatness  the maximum distance that line segments are allowed to deviate from curves.
      * @return JTS geometry with shape coordinates. Never null but can be empty.
      */

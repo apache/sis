@@ -1915,7 +1915,7 @@ public enum CommonCRS {
 
         /**
          * A single-dimensional coordinate system for time in seconds since an unknown epoch.
-         * This definition can be used as a fallback when {@link Temporal} enumeration can not be used,
+         * This definition can be used as a fallback when {@link Temporal} enumeration cannot be used,
          * for example because the temporal datum epoch is unknown.
          *
          * <blockquote><table class="compact">

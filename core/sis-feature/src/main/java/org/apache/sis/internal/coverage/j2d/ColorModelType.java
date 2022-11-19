@@ -37,7 +37,7 @@ public enum ColorModelType {
     /**
      * Color model uses directly RGB colors.
      * This model is efficient and should not be changed.
-     * Color palette can not be changed.
+     * Color palette cannot be changed.
      */
     DIRECT(false, false),
 

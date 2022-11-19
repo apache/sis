@@ -510,7 +510,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         isPrecisionApplied  = false;
         /*
          * If no CRS were specified, we will format everything as numbers. Working with null CRS
-         * is sometime useful because null CRS are allowed in DirectPosition according ISO 19107.
+         * is sometimes useful because null CRS are allowed in DirectPosition according ISO 19107.
          * Note that the caller may have replaced `crs` by `defaultCRS` if the CRS was null.
          */
         if (crs == null) {
@@ -577,7 +577,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     continue;
                 }
                 types[i] = TIME;
-                // Fallthrough: format as number (can not compute epoch because no TemporalCRS found).
+                // Fallthrough: format as number (cannot compute epoch because no TemporalCRS found).
             } else if (AxisDirections.isGrid(direction) && (unit == null || Units.PIXEL.isCompatible(unit))) {
                 /*
                  * CASE 3: Formatter for grid cell indices. Target unit is unity of pixels.
@@ -716,7 +716,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Returns the precisions at which coordinate values are formatted in each dimension.
      * For example if coordinates in dimension <var>i</var> are formatted with two fraction digits,
-     * then the precision reported in {@code precisions[i]} will be 0.01. If the precision can not
+     * then the precision reported in {@code precisions[i]} will be 0.01. If the precision cannot
      * be determined for some dimensions, the corresponding values in the returned array will be 0.
      *
      * <p>The values returned by this method are not necessarily equal to the values specified in the last
@@ -831,7 +831,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 int digits = DecimalFunctions.fractionDigitsForDelta(precision, false);
                 if (unitSymbols != null) {
                     /*
-                     * The `units` array can not be null if `unitSymbols` is non-null since unit symbols
+                     * The `units` array cannot be null if `unitSymbols` is non-null since unit symbols
                      * are inferred from Unit instances. For now we scale only a small set of known units,
                      * but more general scaling may be added in a future version.
                      */
@@ -1271,7 +1271,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
     /**
      * Returns the pattern for number, angle or date fields. The given {@code valueType} should be
      * {@code Number.class}, {@code Angle.class}, {@code Date.class} or a sub-type of the above.
-     * This method may return {@code null} if the underlying format can not provide a pattern.
+     * This method may return {@code null} if the underlying format cannot provide a pattern.
      *
      * <table class="sis">
      *   <caption>Pattern availability for type of value</caption>
@@ -1692,7 +1692,7 @@ parseUnit:  if (units != null && (target = units[i]) != null) {
                 /*
                  * Skip whitespaces using Character.isSpaceChar(…), not Character.isWhitespace(…),
                  * because we need to skip also the non-breaking space (Characters.NO_BREAK_SPACE).
-                 * If we can not parse the unit after those spaces, we will revert to the original
+                 * If we cannot parse the unit after those spaces, we will revert to the original
                  * position + spaces skipped (absence of unit will not be considered an error).
                  */
                 int c;

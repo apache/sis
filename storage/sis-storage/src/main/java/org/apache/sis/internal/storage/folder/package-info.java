@@ -16,7 +16,7 @@
  */
 
 /**
- * {@link org.apache.sis.storage.DataStore} implementation for a folder containing an arbitrary amount of data files.
+ * {@link org.apache.sis.storage.DataStore} implementation for a folder containing an arbitrary number of data files.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.3

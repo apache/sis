@@ -133,7 +133,7 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
      * The stream returned by the public methods should be used instead.</p>
      *
      * @return an iterator over the elements.
-     * @throws Exception if the iterator can not be created.
+     * @throws Exception if the iterator cannot be created.
      */
     protected abstract Spliterator<T> createSourceIterator() throws Exception;
 

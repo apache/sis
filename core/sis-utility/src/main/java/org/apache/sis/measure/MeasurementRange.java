@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  *       nature of physical measurements.</li>
  *   <li>{@link #unit()} for getting the unit of measurement associated to this range.</li>
  *   <li>{@link #convertTo(Unit)} for converting the unit of measurement.</li>
- *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ *   <li>{@link #castTo(Class)} for casting the range values to another type.</li>
  * </ul>
  *
  * <h2>Null unit of measurement</h2>
@@ -79,7 +79,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Constructs a range of {@code float} values.
-     * The minimum and maximum values can not be NaN but can be infinite.
+     * The minimum and maximum values cannot be NaN but can be infinite.
      * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
@@ -102,7 +102,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Constructs a range of {@code double} values.
-     * The minimum and maximum values can not be NaN but can be infinite.
+     * The minimum and maximum values cannot be NaN but can be infinite.
      * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
@@ -263,7 +263,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * {@linkplain org.opengis.metadata.content.SampleDimension#getUnits() unit} property is mandatory if the
      * {@linkplain org.opengis.metadata.content.SampleDimension#getMinValue() minimum value} or
      * {@linkplain org.opengis.metadata.content.SampleDimension#getMaxValue() maximum value} are provided.
-     * Nevertheless it happens sometime that this information is missing in metadata.</div>
+     * Nevertheless it happens sometimes that this information is missing in metadata.</div>
      *
      * @return the unit of measurement, or {@code null}.
      */

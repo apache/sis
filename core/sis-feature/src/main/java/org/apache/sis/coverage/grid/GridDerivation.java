@@ -120,7 +120,7 @@ public class GridDerivation {
     /**
      * If the grid is divided in tiles or chunks, the size of the chunks.
      * This is used for snapping grid size to multiple values of chunk size.
-     * If non-null, can not be empty. Trailing 1 values are omitted.
+     * If non-null, cannot be empty. Trailing 1 values are omitted.
      *
      * @see #chunkSize(int...)
      */
@@ -208,7 +208,7 @@ public class GridDerivation {
     /**
      * Intersection between the grid envelope and the area of interest, computed when only envelopes are available.
      * Normally we do not compute this envelope directly; instead we compute the grid extent and the "grid to CRS"
-     * transform. This envelope is computed only if it can not be computed from other grid geometry properties.
+     * transform. This envelope is computed only if it cannot be computed from other grid geometry properties.
      *
      * @see #subgrid(Envelope, double...)
      */
@@ -381,7 +381,7 @@ public class GridDerivation {
      * Returns {@code null} if all values are trimmed. This method verifies that values are valid.
      *
      * @param  property  argument name to use in error message in case of errors.
-     * @param  values    user-supplied values.
+     * @param  values    user supplied values.
      * @return values to save in {@link GridDerivation}.
      */
     private static int[] validateCellCounts(final String property, final int[] values, final int defaultValue) {
@@ -453,7 +453,7 @@ public class GridDerivation {
      * <p>Notes:</p>
      * <ul>
      *   <li>This method can be invoked only once.</li>
-     *   <li>This method can not be used together with another {@code subgrid(…)} method.</li>
+     *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
      *   <li>{@linkplain #rounding(GridRoundingMode) Rounding mode}, {@linkplain #clipping(GridClippingMode) clipping mode},
      *       {@linkplain #margin(int...) margin} and {@linkplain #chunkSize(int...) chunk size},
      *       if different than default values, should be set before to invoke this method.</li>
@@ -559,7 +559,7 @@ public class GridDerivation {
      * <p>Notes:</p>
      * <ul>
      *   <li>This method can be invoked only once.</li>
-     *   <li>This method can not be used together with another {@code subgrid(…)} method.</li>
+     *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
      *   <li>{@linkplain #rounding(GridRoundingMode) Rounding mode}, {@linkplain #clipping(GridClippingMode) clipping mode},
      *       {@linkplain #margin(int...) margin} and {@linkplain #chunkSize(int...) chunk size},
      *       if different than default values, should be set before to invoke this method.</li>
@@ -729,9 +729,9 @@ public class GridDerivation {
     }
 
     /**
-     * Returns the transform from the CRS of the {@linkplain #base} grid to the CRS of user-supplied argument.
+     * Returns the transform from the CRS of the {@linkplain #base} grid to the CRS of user supplied argument.
      *
-     * @param  target  the CRS of the user-supplied argument (envelope ou position).
+     * @param  target  the CRS of the user supplied argument (envelope ou position).
      * @return transform from {@linkplain #base} grid to user argument.
      */
     private MathTransform findBaseToAOI(final CoordinateReferenceSystem target) throws FactoryException {
@@ -745,7 +745,7 @@ public class GridDerivation {
      * @param  baseToAOI  the transform computed by {@link #findBaseToAOI(CoordinateReferenceSystem)},
      *                    or {@code null} if same as the CRS of the {@linkplain #base} grid geometry.
      * @param  gridToCRS  the transform computed by {@link #dropUnusedDimensions(MathTransform, int)}
-     *                    (the transform from grid coordinates to the CRS of user-supplied AOI/POI).
+     *                    (the transform from grid coordinates to the CRS of user supplied AOI/POI).
      */
     private WraparoundAdjustment wraparound(MathTransform baseToAOI, MathTransform gridToCRS) throws TransformException {
         return new WraparoundAdjustment(base.envelope, baseToAOI, gridToCRS.inverse());
@@ -842,7 +842,7 @@ public class GridDerivation {
      * <p>Notes:</p>
      * <ul>
      *   <li>This method can be invoked only once.</li>
-     *   <li>This method can not be used together with another {@code subgrid(…)} method.</li>
+     *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
      *   <li>{@linkplain #rounding(GridRoundingMode) Rounding mode}, {@linkplain #clipping(GridClippingMode) clipping mode},
      *       {@linkplain #margin(int...) margin} and {@linkplain #chunkSize(int...) chunk size},
      *       if different than default values, should be set before to invoke this method.</li>
@@ -1096,7 +1096,7 @@ public class GridDerivation {
      * Builds a grid geometry with the configuration specified by the other methods in this {@code GridDerivation} class.
      *
      * @return the modified grid geometry. May be the {@link #base} grid geometry if no change apply.
-     * @throws IllegalGridGeometryException if the grid geometry can not be computed
+     * @throws IllegalGridGeometryException if the grid geometry cannot be computed
      *         because of arguments given to a {@code subgrid(…)} or other methods.
      *
      * @see #getIntersection()
@@ -1314,7 +1314,7 @@ public class GridDerivation {
                 final int i = ~Arrays.binarySearch(divisors, r);
                 /*
                  * `binarySearch(…)` should never find an exact match, otherwise (size % r) would have been zero.
-                 * Furthermore `i` should never be 0 because divisors[0] = 1, which can not be selected if r > 1.
+                 * Furthermore `i` should never be 0 because divisors[0] = 1, which cannot be selected if r > 1.
                  * We do not check `if (i > 0)` "as a safety" because client code such as `TiledGridCoverage`
                  * will behave erratically if this method does not fulfill its contract (i.e. find a divisor).
                  * It is better to know now if there is any problem here.

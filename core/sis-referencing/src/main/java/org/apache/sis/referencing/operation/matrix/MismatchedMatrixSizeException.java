@@ -20,7 +20,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**
- * Thrown when two matrices can not be added or multiplied because the sizes do not match.
+ * Thrown when two matrices cannot be added or multiplied because the sizes do not match.
  *
  * <div class="note"><b>Note:</b>
  * This exception extends {@code MismatchedDimensionException} because the matrices in this package

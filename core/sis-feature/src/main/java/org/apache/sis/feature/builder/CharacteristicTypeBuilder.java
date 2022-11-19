@@ -56,7 +56,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     private AttributeTypeBuilder<?> owner;
 
     /**
-     * The class of characteristic values. Can not be changed after construction
+     * The class of characteristic values. Cannot be changed after construction
      * because this value determines the parameterized type {@code <V>}.
      */
     private final Class<V> valueClass;
@@ -76,7 +76,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      * Creates a new builder initialized to the values of the given builder but a different type.
      * This constructor is for {@link #setValueClass(Class)} implementation only.
      *
-     * @throws UnconvertibleObjectException if the default value can not be converted to the given class.
+     * @throws UnconvertibleObjectException if the default value cannot be converted to the given class.
      */
     private CharacteristicTypeBuilder(final CharacteristicTypeBuilder<?> builder, final Class<V> valueClass)
             throws UnconvertibleObjectException
@@ -228,7 +228,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      * @param  type  the new class of characteristic values.
      * @return the characteristic builder — <em>not necessarily this instance.</em>
      * @throws UnconvertibleObjectException if the {@linkplain #getDefaultValue() default value}
-     *         can not be converted to the given {@code <N>} class.
+     *         cannot be converted to the given {@code <N>} class.
      *
      * @see #getValueClass()
      */

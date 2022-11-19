@@ -255,7 +255,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
     /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
      * This method searches for a grid previously computed by {@link DecoderWrapper#getGridCandidates()},
-     * keeping in mind that the UCAR library sometime builds {@link CoordinateSystem} instances with axes
+     * keeping in mind that the UCAR library sometimes builds {@link CoordinateSystem} instances with axes
      * in different order than what we would expect. This method delegates to the super-class method only
      * if the grid requires a different analysis than the one performed by UCAR library.
      *
@@ -436,7 +436,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
      * Returns the minimum and maximum values as determined by UCAR library, or inferred from the integer type otherwise.
      * This method is invoked only as a fallback; we give precedence to the range computed by Apache SIS instead of the
      * range provided by UCAR because we need the range of packed values instead of the range of converted values. Only
-     * if Apache SIS can not determine that range, that method is invoked.
+     * if Apache SIS cannot determine that range, that method is invoked.
      */
     @Override
     protected NumberRange<?> getRangeFallback() {
@@ -620,7 +620,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
                     return true;
                 }
                 /*
-                 * The UCAR library sometime left those information uninitialized.
+                 * The UCAR library sometimes left those information uninitialized.
                  * If it seems to be the case, fallback on our own code.
                  */
             }

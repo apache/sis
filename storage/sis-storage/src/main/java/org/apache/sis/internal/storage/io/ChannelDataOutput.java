@@ -175,7 +175,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                 bits &= Numerics.bitmask(numBits) - 1;                  // Make sure that high-order bits are zero.
                 final int r = numBits - (Byte.SIZE - bitOffset);
                 /*
-                 * `r` is the number of bits than we can not store in the current byte. This value may be negative,
+                 * `r` is the number of bits than we cannot store in the current byte. This value may be negative,
                  * which means that the current byte has space for more bits than what we have, in which case some
                  * room will still exist after this method call (i.e. the `bitOffset` will still non-zero).
                  */
@@ -447,7 +447,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
 
         /**
          * Transfers the data from the array of primitive Java type known by the subclass into buffer
-         * created by {@link #createView()}. This method may be invoked an arbitrary amount of time.
+         * created by {@link #createView()}. This method may be invoked an arbitrary number of times.
          */
         abstract void transfer(int offset, int length);
 
@@ -604,7 +604,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * previous stream length and the given position are unspecified. The limit is unchanged.
      *
      * @param  position  the position where to move.
-     * @throws IOException if the stream can not be moved to the given position.
+     * @throws IOException if the stream cannot be moved to the given position.
      */
     @Override
     public final void seek(final long position) throws IOException {
@@ -626,7 +626,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         } else if (p >= 0) {
             /*
              * Requested position is after the current buffer limit and
-             * we can not seek, so we have to pad with some zero values.
+             * we cannot seek, so we have to pad with some zero values.
              */
             p -= buffer.limit();
             flush();                      // Also set the position to 0.
@@ -648,7 +648,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                 buffer.limit((int) p).position((int) p);
             }
         } else {
-            // We can not move position beyond the buffered part.
+            // We cannot move position beyond the buffered part.
             throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
     }

@@ -30,7 +30,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 /**
  * The pane where to show the values of {@link SpatialRepresentation} objects.
- * The same pane can be used for an arbitrary amount of spatial representations.
+ * The same pane can be used for an arbitrary number of spatial representations.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)

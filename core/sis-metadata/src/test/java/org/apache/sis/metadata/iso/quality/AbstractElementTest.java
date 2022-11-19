@@ -88,7 +88,7 @@ public final strictfp class AbstractElementTest extends TestCase {
     }
 
     /**
-     * Asserts that we can not get a date at the given index in the given list.
+     * Asserts that we cannot get a date at the given index in the given list.
      */
     private static void assertCanNotGet(final List<Date> dates, final int index) {
         try {
@@ -100,7 +100,7 @@ public final strictfp class AbstractElementTest extends TestCase {
     }
 
     /**
-     * Asserts that we can not get add a date at the given index in the given list.
+     * Asserts that we cannot get add a date at the given index in the given list.
      */
     private static void assertCanNotAdd(final List<Date> dates, final int index, final Date date) {
         try {

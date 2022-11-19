@@ -264,7 +264,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * and optionally returns the derivative at that location.
      *
      * @return {@inheritDoc}
-     * @throws TransformException if the point can not be transformed or
+     * @throws TransformException if the point cannot be transformed or
      *         if a problem occurred while calculating the derivative.
      */
     @Override
@@ -281,7 +281,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * This method performs the same transformation than {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
      *
-     * @throws TransformException if a point can not be transformed.
+     * @throws TransformException if a point cannot be transformed.
      */
     @Override
     public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {

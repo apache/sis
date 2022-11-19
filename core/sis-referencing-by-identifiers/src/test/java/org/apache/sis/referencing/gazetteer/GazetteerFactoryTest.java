@@ -34,7 +34,7 @@ public final strictfp class GazetteerFactoryTest extends TestCase {
     /**
      * Tests {@link ReferencingByIdentifiers#getInstance(String)}.
      *
-     * @throws GazetteerException if a reference system can not be created.
+     * @throws GazetteerException if a reference system cannot be created.
      */
     @Test
     public void testGetInstance() throws GazetteerException {

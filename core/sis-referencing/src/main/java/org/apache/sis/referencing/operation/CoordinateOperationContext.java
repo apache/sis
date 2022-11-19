@@ -226,7 +226,7 @@ public class CoordinateOperationContext implements Serializable {
     }
 
     /**
-     * Invoked when some coordinates in the target CRS can not be computed from coordinates in the source CRS.
+     * Invoked when some coordinates in the target CRS cannot be computed from coordinates in the source CRS.
      * For example if the source CRS has (<var>x</var>, <var>y</var>) axes and the target CRS has (<var>x</var>,
      * <var>y</var>, <var>t</var>) axes, then this method is invoked for determining which value to assign to the
      * <var>t</var> coordinate. In some cases the user can tell that the coordinate should be set to a constant value.
@@ -238,7 +238,7 @@ public class CoordinateOperationContext implements Serializable {
      * All other coordinate values will be ignored.
      *
      * @return coordinate values to take as constants for the specified target component, or {@code null} if none.
-     * @throws TransformException if the coordinates can not be computed. This exception may occur when the constant
+     * @throws TransformException if the coordinates cannot be computed. This exception may occur when the constant
      *         coordinate values are the results of performing a coordinate operation in advance.
      *
      * @todo Non-public API for now, pending more feedback from experience. A public method would be non-static.

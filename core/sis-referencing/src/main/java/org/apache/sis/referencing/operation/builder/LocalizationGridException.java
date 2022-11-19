@@ -21,13 +21,13 @@ import org.apache.sis.referencing.factory.FactoryDataException;
 
 
 /**
- * Thrown when a localization grid can not be computed, presumably because of a problem with grid data.
+ * Thrown when a localization grid cannot be computed, presumably because of a problem with grid data.
  * It may be because some grid coordinates are out of CRS domain of validity, causing either
  * {@link org.opengis.referencing.operation.MathTransform} to be thrown or {@link Double#NaN}
  * coordinate values to be computed.
  *
  * <h2>Additional information on exception cause</h2>
- * It is sometime difficult to determine the root cause of this exception.
+ * It is sometimes difficult to determine the root cause of this exception.
  * For example grid points slightly outside the CRS domain of validity will not necessarily cause a failure.
  * A strategy can be to try to build the grid anyway, and in case of failure declare that the grid was maybe
  * too far from CRS domain of validity. Because the potential causes are better known by the code that wants

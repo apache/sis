@@ -225,7 +225,7 @@ final class NativeMetadata extends GeoKeysLoader {
                 imageNumber++;
             }
         } catch (ArithmeticException e) {
-            throw new IOException(e);           // Can not seek that far.
+            throw new IOException(e);           // Cannot seek that far.
         } finally {
             input.reset();
         }

@@ -50,7 +50,7 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  */
 final class ObjectReference {
     /**
-     * A unique identifier to an external resources, or to an other part of a XML document.
+     * A unique identifier to an external resources, or to another part of a XML document.
      * The {@code uuidref} attribute is used to refer to an XML element that has a corresponding
      * {@code uuid} attribute.
      *

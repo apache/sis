@@ -202,7 +202,7 @@ loop:   for (int p=0; ; p++) {
             if (!Strings.appendUnicodeIdentifier(buffer.append(DefinitionURI.SEPARATOR), '\u0000', part, ".-", false)) {
                 /*
                  * Only the version (p = 2) is optional. All other fields are mandatory.
-                 * If no character has been added for a mandatory field, we can not build a URN.
+                 * If no character has been added for a mandatory field, we cannot build a URN.
                  */
                 if (p != 2) {
                     return null;

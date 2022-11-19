@@ -61,7 +61,7 @@ public final class Quantities extends Static {
      * @param  value  the quantity magnitude.
      * @param  unit   symbol of the unit of measurement associated to the given value.
      * @return a quantity of the given type for the given value and unit of measurement.
-     * @throws ParserException if the given symbol can not be parsed.
+     * @throws ParserException if the given symbol cannot be parsed.
      */
     public static Quantity<?> create(final double value, final String unit) {
         return create(value, Units.valueOf(unit));
@@ -104,7 +104,7 @@ public final class Quantities extends Static {
                     } else {
                         /*
                          * This cast should be safe because `type` should be null only in contexts where the user
-                         * can not expect a more specific type. For example it may be the result of an arithmetic
+                         * cannot expect a more specific type. For example it may be the result of an arithmetic
                          * operation, in which case the return value in method signature is `Quantity<?>`.
                          */
                         @SuppressWarnings("unchecked")

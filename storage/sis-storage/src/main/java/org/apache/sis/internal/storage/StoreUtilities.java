@@ -72,7 +72,7 @@ public final class StoreUtilities extends Static {
      * This is a costly operation because it requires loading all data, so any code enabled by this
      * flag should be executed in last resort only.
      *
-     * <p>This flag can be set to {@code true} for exploring data that we can not visualize otherwise.
+     * <p>This flag can be set to {@code true} for exploring data that we cannot visualize otherwise.
      * But it should generally stay to {@code false}, because otherwise browsing resource metadata can
      * become as costly (slow and high memory usage) as visualizing the full raster.</p>
      *
@@ -80,7 +80,7 @@ public final class StoreUtilities extends Static {
      * {@link org.apache.sis.storage.aggregate.CoverageAggregator} to group coverages that should be together.
      * This is because using statistics may cause {@link org.apache.sis.coverage.SampleDimension} instances to
      * have different sample value ranges for each coverage, which cause {@code CoverageAggregator} to consider
-     * that that can not be aggregated together.</p>
+     * that that cannot be aggregated together.</p>
      */
     public static final boolean ALLOW_LAST_RESORT_STATISTICS = false;
 
@@ -236,7 +236,7 @@ public final class StoreUtilities extends Static {
      * If the file suffixes are unknown, returns an empty array.
      *
      * @param  provider  class of the provider for which to determine if it has write capability, or {@code null}.
-     * @return the file suffixes, or an empty array if none or if the suffixes can not be determined.
+     * @return the file suffixes, or an empty array if none or if the suffixes cannot be determined.
      *
      * @see StoreMetadata#fileSuffixes()
      */
@@ -253,7 +253,7 @@ public final class StoreUtilities extends Static {
      * In case of doubt, this method returns {@code null}.
      *
      * @param  provider  class of the provider for which to determine if it has write capability, or {@code null}.
-     * @return whether the data store has write capability, or {@code null} if it can not be determined.
+     * @return whether the data store has write capability, or {@code null} if it cannot be determined.
      *
      * @see StoreMetadata#capabilities()
      */

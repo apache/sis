@@ -1,4 +1,4 @@
-The "org.apache.sis.non-free" group contains artifacts that can not be
+The "org.apache.sis.non-free" group contains artifacts that cannot be
 redistributed under Apache 2 license.  For this reason those artifacts
 are available in a separated Subversion directory:
 

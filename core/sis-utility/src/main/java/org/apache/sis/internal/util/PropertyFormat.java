@@ -177,7 +177,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
      * @return the text to append.
      */
     protected String freeText(final String text) {
-        // Really want `trim()` because there is sometime control characters to remove.
+        // Really want `trim()` because there is sometimes control characters to remove.
         return (text != null) ? text.trim() : MISSING;
     }
 

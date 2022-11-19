@@ -59,12 +59,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short AlreadyRegistered_2 = 1;
 
         /**
-         * Can not create the {0} schema in database.
+         * Cannot create the {0} schema in database.
          */
         public static final short CanNotCreateSchema_1 = 2;
 
         /**
-         * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
+         * Cannot instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
          */
         public static final short CanNotInstantiateForIdentifier_3 = 3;
 
@@ -136,7 +136,7 @@ public final class Messages extends IndexedResourceBundle {
         public static final short DataDirectoryNotSpecified_1 = 16;
 
         /**
-         * Apache SIS can not write in the “{1}” directory given by the {0} environment variable.
+         * Apache SIS cannot write in the “{1}” directory given by the {0} environment variable.
          */
         public static final short DataDirectoryNotWritable_2 = 17;
 
@@ -227,7 +227,7 @@ public final class Messages extends IndexedResourceBundle {
         public static final short UnknownKeywordInRecord_2 = 30;
 
         /**
-         * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
+         * Cannot parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
          * will be ignored by some processing.
          */
         public static final short UnparsableValueStoredAsText_2 = 31;

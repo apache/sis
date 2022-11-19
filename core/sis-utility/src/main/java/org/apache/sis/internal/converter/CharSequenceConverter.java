@@ -25,7 +25,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 
 /**
  * Handles conversions from {@link CharSequence} to {@link String}, then forward
- * to an other converter from {@link String} to various objects. Instance of this
+ * to another converter from {@link String} to various objects. Instance of this
  * converter are not registered in {@link ConverterRegistry} like other converters
  * because we avoid registering converter expecting interfaces as their source.
  *

@@ -66,7 +66,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
      */
 
     /**
-     * Characteristics of an other attribute type (the {@code source} attribute given to the constructor).
+     * Characteristics of another attribute type (the {@code source} attribute given to the constructor).
      * This array shall not be modified.
      */
     final AttributeType<?>[] characterizedBy;

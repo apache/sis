@@ -209,7 +209,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  name   the type name as a string or an international string.
      * @return the type name for the given scope and character sequence.
      * @throws UnknownNameException if a mapping from the name to a Java class was expected to exist
-     *         (because the specified scope is "OGC" or "class") but the associated Java class can not be found.
+     *         (because the specified scope is "OGC" or "class") but the associated Java class cannot be found.
      *
      * @see #toTypeName(Class)
      * @see DefaultTypeName#DefaultTypeName(NameSpace, CharSequence)

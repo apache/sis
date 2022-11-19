@@ -136,7 +136,7 @@ final class AboutCommand extends CommandRunner {
                 }
                 /*
                  * Logs a message telling how long it took to receive the reply.
-                 * Sometime the delay gives a hint about the server charge.
+                 * Sometimes the delay gives a hint about the server charge.
                  */
                 double delay = (System.nanoTime() - time) / (double) StandardDateFormat.NANOS_PER_SECOND;   // In seconds.
                 if (delay >= 0.1) {

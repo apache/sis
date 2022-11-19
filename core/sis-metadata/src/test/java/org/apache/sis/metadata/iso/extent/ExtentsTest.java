@@ -189,7 +189,7 @@ public final strictfp class ExtentsTest extends TestCase {
     /**
      * Tests the {@link Extents#centroid(GeographicBoundingBox)} method. This method is defined here but executed from
      * the {@link org.apache.sis.internal.referencing.ServicesForMetadataTest} class in {@code sis-referencing} module.
-     * This method can not be executed in the {@code sis-metadata} module because it has a dependency to a referencing
+     * This method cannot be executed in the {@code sis-metadata} module because it has a dependency to a referencing
      * implementation class.
      *
      * @since 0.8

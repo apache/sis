@@ -190,8 +190,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
         final Map<String,?> properties = Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name);
         if (method != null) {
             /*
-             * Verify that the pre-defined operation method contains at least all the parameters specified by
-             * the `descriptors` array. If this is the case, then the pre-defined parameters will be used in
+             * Verify that the predefined operation method contains at least all the parameters specified by
+             * the `descriptors` array. If this is the case, then the predefined parameters will be used in
              * replacement of the given ones.
              */
             final ParameterDescriptorGroup parameters = method.getParameters();

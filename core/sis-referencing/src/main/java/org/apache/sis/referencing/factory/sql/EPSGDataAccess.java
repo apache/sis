@@ -258,7 +258,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * method as a cache for returning the set created in a previous call. We do not want this map to exist for
      * a long time anyway.
      *
-     * <p>Note that this {@code EPSGDataAccess} instance can not be closed as long as this map is not empty, since
+     * <p>Note that this {@code EPSGDataAccess} instance cannot be closed as long as this map is not empty, since
      * {@link AuthorityCodes} caches some SQL statements and consequently require the {@linkplain #connection}
      * to be open. This is why we use weak references rather than hard ones, in order to know when no
      * {@link AuthorityCodes} are still in use.</p>
@@ -1216,7 +1216,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             final String domainCode, String scope, final String remarks, final boolean deprecated)
             throws SQLException, FactoryException
     {
-        if ("?".equals(scope)) {                // EPSG sometime uses this value for unspecified scope.
+        if ("?".equals(scope)) {                // EPSG sometimes uses this value for unspecified scope.
             scope = null;
         }
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
@@ -1323,7 +1323,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 case 6:  return createCoordinateOperation      (code);
                 case 7:  return createOperationMethod          (code);
                 case 8:  return createParameterDescriptor      (code);
-                case 9:  break; // Can not cast Unit to IdentifiedObject
+                case 9:  break; // Cannot cast Unit to IdentifiedObject
                 default: throw new AssertionError(found);                   // Should not happen
             }
         }
@@ -1399,7 +1399,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     /* ----------------------------------------------------------------------
                      *   GEOGRAPHIC CRS
                      *
-                     *   NOTE: `createProperties` MUST be invoked after any call to an other
+                     *   NOTE: `createProperties` MUST be invoked after any call to another
                      *         `createFoo` method. Consequently, do not factor out.
                      * ---------------------------------------------------------------------- */
                     case "geographic 2d":
@@ -1431,7 +1431,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   PROJECTED CRS
                      *
                      *   NOTE: This method invokes itself indirectly, through createGeographicCRS.
-                     *         Consequently we can not use `result` anymore after this block.
+                     *         Consequently we cannot use `result` anymore after this block.
                      * ---------------------------------------------------------------------- */
                     case "projected": {
                         final String csCode  = getString(code, result,  8);
@@ -1458,7 +1458,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                 /*
                                  * If the ProjectedCRS is deprecated, one reason among others may be that it uses one of
                                  * the deprecated coordinate systems. Those deprecated CS used non-linear units like DMS.
-                                 * Apache SIS can not instantiate a ProjectedCRS when the baseCRS uses such units, so we
+                                 * Apache SIS cannot instantiate a ProjectedCRS when the baseCRS uses such units, so we
                                  * set a flag asking to replace the deprecated CS by a supported one. Since that baseCRS
                                  * would not be exactly as defined by EPSG, we must not cache it because we do not want
                                  * `owner.createGeographicCRS(geoCode)` to return that modified CRS. Since the same CRS
@@ -1539,7 +1539,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   COMPOUND CRS
                      *
                      *   NOTE: This method invokes itself recursively.
-                     *         Consequently, we can not use `result` anymore.
+                     *         Consequently, we cannot use `result` anymore.
                      * ---------------------------------------------------------------------- */
                     case "compound": {
                         final String code1 = getString(code, result, 12);
@@ -2996,7 +2996,7 @@ next:                   while (r.next()) {
                          *
                          * The first special case may be removed in a future SIS version if the missing method is added
                          * to GeoAPI. Actually GeoAPI has a method doing part of the job, but incomplete (e.g. the pure
-                         * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
+                         * GeoAPI method cannot handle Molodensky transform because it does not give the target datum).
                          */
                         opProperties = new HashMap<>(opProperties);             // Because this class uses a shared map.
                         final MathTransformFactory mtFactory = owner.mtFactory;
@@ -3136,7 +3136,7 @@ next:                   while (r.next()) {
      * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
      *
      * @return a finder to use for looking up unidentified objects.
-     * @throws FactoryException if the finder can not be created.
+     * @throws FactoryException if the finder cannot be created.
      */
     @Override
     public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
@@ -3362,7 +3362,7 @@ next:                   while (r.next()) {
                     it.remove();
                 } else {
                     /*
-                     * A set of authority codes is still in use. We can not close this factory.
+                     * A set of authority codes is still in use. We cannot close this factory.
                      * But we continue the iteration anyway in order to cleanup weak references.
                      */
                     can = false;

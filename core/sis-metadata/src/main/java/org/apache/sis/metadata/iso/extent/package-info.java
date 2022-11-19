@@ -79,11 +79,11 @@
  *
  *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.metadata.extent.GeographicBoundingBox)
  *       setBounds(GeographicBoundingBox)}
- *       for setting the extent from an other bounding box.</li>
+ *       for setting the extent from another bounding box.</li>
  *
  *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add
  *       add(GeographicBoundingBox)}
- *       for expanding this extent to include an other bounding box.</li>
+ *       for expanding this extent to include another bounding box.</li>
  *
  *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect
  *       intersect(GeographicBoundingBox)}
@@ -119,7 +119,7 @@
  *
  * <h2>Null values, nil objects and collections</h2>
  * All constructors and setter methods accept {@code null} arguments.
- * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
+ * A null argument value means that the metadata element cannot be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
  *

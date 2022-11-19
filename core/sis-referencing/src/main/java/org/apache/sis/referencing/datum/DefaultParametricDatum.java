@@ -208,7 +208,7 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
     /**
      * Constructs a new datum in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultParametricDatum() {
     }

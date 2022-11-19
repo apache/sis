@@ -1323,7 +1323,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This method sets the linkage of the first online resource in the citation of the first identification info.
      *
      * @param  newValue  the new data set URI.
-     * @throws URISyntaxException if the given value can not be parsed as a URI.
+     * @throws URISyntaxException if the given value cannot be parsed as a URI.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getIdentificationInfo()}
      *    followed by {@link DefaultDataIdentification#getCitation()}

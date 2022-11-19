@@ -151,7 +151,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * However this constructor is lenient to other types like {@code POINT ZM}.
      *
      * @param  wkt  the {@code POINT} or other kind of element to parse.
-     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws IllegalArgumentException if the given string cannot be parsed.
      *
      * @see #toString()
      * @see CoordinateFormat

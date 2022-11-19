@@ -55,7 +55,7 @@ import static java.lang.Double.doubleToRawLongBits;
  * Some image mixes both qualitative and quantitative categories. For example, images of <cite>Sea Surface Temperature</cite>
  * (SST) may have a quantitative category for temperature with values ranging from -2 to 35°C, and three qualitative categories
  * for cloud, land and ice. There is usually at most one quantitative category per sample dimension, but Apache SIS accepts an
- * arbitrary amount of them.
+ * arbitrary number of them.
  *
  * <p>All categories must have a human readable name. In addition, quantitative categories
  * may define a conversion from sample values <var>s</var> to real values <var>x</var>.
@@ -218,7 +218,7 @@ public class Category implements Serializable {
      *                  The input is a real number in the {@code samples} range and the output shall be a unique value between
      *                  {@value MathFunctions#MIN_NAN_ORDINAL} and {@value MathFunctions#MAX_NAN_ORDINAL} inclusive.
      * @throws IllegalSampleDimensionException if the {@code samples} range of values is empty
-     *         or the transfer function can not be used.
+     *         or the transfer function cannot be used.
      */
     protected Category(final CharSequence name, NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
              final DoubleToIntFunction toNaN)
@@ -371,7 +371,7 @@ public class Category implements Serializable {
      * Returns {@code true} if this category is quantitative. A quantitative category has a
      * {@linkplain #getTransferFunction() transfer function} mapping sample values to values
      * in some units of measurement. By contrast, a qualitative category maps sample values
-     * to a label, for example “2 = forest”. That later mapping can not be represented by a
+     * to a label, for example “2 = forest”. That later mapping cannot be represented by a
      * transfer function.
      *
      * @return {@code true} if this category is quantitative, or

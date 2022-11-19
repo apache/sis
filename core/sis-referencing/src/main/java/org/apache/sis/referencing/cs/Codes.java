@@ -70,7 +70,7 @@ final class Codes {
     /**
      * Packs the given axis directions in a single integer.
      *
-     * @return the packed directions, or 0 if the given directions can not be packed.
+     * @return the packed directions, or 0 if the given directions cannot be packed.
      */
     private static int pack(final AxisDirection[] directions) {
         int packed = 0;

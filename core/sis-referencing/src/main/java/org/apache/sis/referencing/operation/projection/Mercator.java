@@ -257,7 +257,7 @@ public class Mercator extends ConformalProjection {
          *
          * According EPSG documentation, the only exception to the above paragraph is "Mercator variant C", where
          * the parameter is named "Latitude of false origin" and can have any value. While strictly speaking the
-         * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
+         * "Latitude of origin" cannot have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
         final double φ0 = toRadians(initializer.getAndStore((variant == Variant.REGIONAL)
@@ -266,7 +266,7 @@ public class Mercator extends ConformalProjection {
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
          * are mutually exclusive. The former is for projections of category "2SP" (namely variant B and C) while
          * the latter is for projections "1SP" (namely variant A and spherical). However we let users specify both
-         * if they really want, since we sometime see such CRS definitions.
+         * if they really want, since we sometimes see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
         final Number k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
@@ -397,7 +397,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -442,7 +442,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      * Converts a list of coordinate tuples. This method performs the same calculation than above
      * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
-     * @throws TransformException if a point can not be converted.
+     * @throws TransformException if a point cannot be converted.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -484,7 +484,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

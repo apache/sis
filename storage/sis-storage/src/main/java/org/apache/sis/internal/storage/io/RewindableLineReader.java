@@ -48,10 +48,10 @@ public final class RewindableLineReader extends LineNumberReader {
     public static final int BUFFER_SIZE = 8192;
 
     /**
-     * The input stream, or {@code null} if this reader can not rewind anymore.
+     * The input stream, or {@code null} if this reader cannot rewind anymore.
      *
      * <div class="note"><b>Note:</b> we do not use the more generic {@link java.io.InputStream} class
-     * because this whole {@code RewindableLineReader} class is useless if we can not seek in this stream.</div>
+     * because this whole {@code RewindableLineReader} class is useless if we cannot seek in this stream.</div>
      */
     private InputStreamAdapter input;
 
@@ -142,7 +142,7 @@ public final class RewindableLineReader extends LineNumberReader {
      * Marks current stream position and blocks all subsequent calls to {@link #mark(int)},
      * {@link #reset()} and {@link #close()} until {@link #protectedReset()} is invoked.
      *
-     * @throws IOException if the stream can not be marked.
+     * @throws IOException if the stream cannot be marked.
      */
     public final void protectedMark() throws IOException {
         synchronized (lock) {
@@ -154,7 +154,7 @@ public final class RewindableLineReader extends LineNumberReader {
     /**
      * Stops the protection given by {@link #protectedMark()} and reset the stream to its marked position.
      *
-     * @throws IOException if the stream can not be reset.
+     * @throws IOException if the stream cannot be reset.
      */
     public final void protectedReset() throws IOException {
         synchronized (lock) {
@@ -182,7 +182,7 @@ public final class RewindableLineReader extends LineNumberReader {
      * If {@link #isMarkProtected} is {@code true}, then this method throws an exception.
      *
      * @param  readlimit  limit on the number of characters that may be read.
-     * @throws IOException if the stream can not be marked.
+     * @throws IOException if the stream cannot be marked.
      */
     @Override
     public void mark(final int readlimit) throws IOException {
@@ -198,7 +198,7 @@ public final class RewindableLineReader extends LineNumberReader {
      * Resets the stream if allowed to do so.
      * If {@link #isMarkProtected} is {@code true}, then this method throws an exception.
      *
-     * @throws IOException if the stream can not be reset.
+     * @throws IOException if the stream cannot be reset.
      */
     @Override
     public void reset() throws IOException {

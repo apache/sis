@@ -76,7 +76,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <p>Choice 1 in the following list is the easiest but most restrictive way to get an ellipsoid.
  * The other choices provide more freedom. Each choice delegates its work to the subsequent items
- * (in the default configuration), so this list can been seen as <cite>top to bottom</cite> API.</p>
+ * (in the default configuration), so this list can be seen as <cite>top to bottom</cite> API.</p>
  *
  * <ol>
  *   <li>Create an {@code Ellipsoid} from one of the static convenience shortcuts listed in
@@ -700,13 +700,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultEllipsoid() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
         /*
          * We need to let the DefaultEllipsoid fields unitialized because afterUnmarshal(…)
-         * will check for zero values. We can not thrown an exception from 'afterUnmarshal'
+         * will check for zero values. We cannot thrown an exception from 'afterUnmarshal'
          * because it would cause the whole unmarshalling to fail. But the CD_Ellipsoid
          * adapter does some verifications.
          */

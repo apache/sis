@@ -366,7 +366,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * The {@code Range} object combines the {@linkplain #getValueClass() value class},
      * {@linkplain #getMinimumValue() minimum value}, {@linkplain #getMaximumValue() maximum value}
      * and whether these values are inclusive or inclusive. If the range is an instance of
-     * {@link MeasurementRange}, then it contains also the {@linkplain #getUnit() unit of measurement}.
+     * {@link MeasurementRange}, then it also contains the {@linkplain #getUnit() unit of measurement}.
      *
      * <div class="note"><b>API note:</b> If this method returns a non-null value, then its type is either exactly
      * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the {@linkplain Class#getComponentType() component
@@ -377,8 +377,8 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * @see Parameters#getValueDomain(ParameterDescriptor)
      */
     /* Implementation note: this method is final because the constructor performs various checks on range validity,
-     * and we can not express those rules in the method signature. The 'Verifier.ensureValidValue(…)' method needs
-     * some guarantees about range validity, so we can not let users override this method with a range that may
+     * and we cannot express those rules in the method signature. The 'Verifier.ensureValidValue(…)' method needs
+     * some guarantees about range validity, so we cannot let users override this method with a range that may
      * break them.
      */
     public final Range<?> getValueDomain() {
@@ -555,7 +555,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      *
      * <p>This constructor fetches the value class and the unit of measurement from the enclosing
      * {@link DefaultParameterValue}, if presents, because those information are not presents in GML.

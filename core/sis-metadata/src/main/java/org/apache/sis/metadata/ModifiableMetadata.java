@@ -174,7 +174,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
 
         /**
          * The metadata is unmodifiable.
-         * When a metadata is final, it can not be moved back to an editable state
+         * When a metadata is final, it cannot be moved back to an editable state
          * (but it is still possible to create a modifiable copy with {@link MetadataCopier}).
          * Invoking any setter method on an unmodifiable metadata cause an
          * {@link UnmodifiableMetadataException} to be thrown.
@@ -209,7 +209,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         }
 
         /**
-         * Whether this enumeration represents a state where data can not be modified anymore.
+         * Whether this enumeration represents a state where data cannot be modified anymore.
          */
         final boolean isUnmodifiable() {
             return code >= ModifiableMetadata.FINAL;
@@ -711,7 +711,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Returns {@code true} if empty collection should be returned as {@code null} value.
      * This is usually not a behavior that we allow in public API. However this behavior
-     * is sometime desired internally, for example when marshalling with JAXB or when
+     * is sometimes desired internally, for example when marshalling with JAXB or when
      * performing a {@code equals}, {@code isEmpty} or {@code prune} operation
      * (for avoiding creating unnecessary collections).
      */
@@ -867,7 +867,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return new CodeListSet(elementType);
         }
         /*
-         * If we can not compute an initial capacity from the size of an existing source, use an arbitrary
+         * If we cannot compute an initial capacity from the size of an existing source, use an arbitrary
          * small value (currently 4). We use a small value because collections will typically contain few
          * elements (often just a singleton).
          */

@@ -28,8 +28,8 @@ import org.apache.sis.util.Utilities;
  * A container for a list of elements grouped by their CRS. The CRS comparisons ignore metadata.
  *
  * <h2>Usage for coverage aggregation</h2>
- * {@code GroupByCRS} contains an arbitrary amount of {@link GroupByTransform} instances,
- * which in turn contain an arbitrary amount of {@link GridSlice} instances.
+ * {@code GroupByCRS} contains an arbitrary number of {@link GroupByTransform} instances,
+ * which in turn contain an arbitrary number of {@link GridSlice} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

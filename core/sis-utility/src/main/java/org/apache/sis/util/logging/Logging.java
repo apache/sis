@@ -232,7 +232,7 @@ public final class Logging extends Static {
      *   <li>Automatic inference is not 100% reliable, since the Java Virtual Machine
      *       is free to omit stack frame in optimized code.</li>
      *   <li>When an exception occurred in a private method used internally by a public
-     *       method, we sometime want to log the warning for the public method instead,
+     *       method, we sometimes want to log the warning for the public method instead,
      *       since the user is not expected to know anything about the existence of the
      *       private method. If a developer really want to know about the private method,
      *       the stack trace is still available anyway.</li>

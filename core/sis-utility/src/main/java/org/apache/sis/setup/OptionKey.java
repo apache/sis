@@ -210,7 +210,7 @@ public class OptionKey<T> implements Serializable {
     public static final OptionKey<Integer> INDENTATION = new OptionKey<>("INDENTATION", Integer.class);
 
     /*
-     * Note: we do not provide a LINE_SEPARATOR option for now because we can not control the line separator
+     * Note: we do not provide a LINE_SEPARATOR option for now because we cannot control the line separator
      * in JDK's JAXB implementation, and Apache SIS provides an org.apache.sis.io.LineAppender alternative.
      */
 

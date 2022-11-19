@@ -113,7 +113,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
      *       Note that the third row and the third column have all their value set to 0 if the
      *       space model (or the coordinate reference system) should be two-dimensional.</li>
      *   <li>By building a non-linear transformation from all {@link #modelTiePoints}.
-     *       Such transformation can not be stored in a matrix, so will leave this field {@code null}.</li>
+     *       Such transformation cannot be stored in a matrix, so will leave this field {@code null}.</li>
      * </ul>
      *
      * By convention, the translation column is set to NaN values if it needs to be computed from the tie point.
@@ -351,7 +351,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
      *
      * @param  gridGeometry  the grid geometry computed by {@link #build(Reader, long, long)}.
      * @param  metadata      the helper class where to write metadata values.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      */
     public void completeMetadata(final GridGeometry gridGeometry, final MetadataBuilder metadata) {
         if (metadata.addSpatialRepresentation(description, gridGeometry, true)) {
@@ -377,7 +377,7 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     }
 
     /**
-     * Logs a warning telling that we can not create a grid geometry for the given reason.
+     * Logs a warning telling that we cannot create a grid geometry for the given reason.
      */
     private static void canNotCreate(final Reader reader, final Exception e) {
         reader.store.listeners().warning(reader.resources().getString(

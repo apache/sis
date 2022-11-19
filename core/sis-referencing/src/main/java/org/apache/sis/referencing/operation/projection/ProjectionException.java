@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.TransformException;
  * Apache SIS implementations of map projections return a {@linkplain Double#isFinite(double) finite} number
  * under normal conditions, but may also return an {@linkplain Double#isInfinite(double) infinite} number or
  * {@linkplain Double#isNaN(double) NaN} value, or throw this exception.
- * The behavior depends on the reason why the projection can not return a finite number:
+ * The behavior depends on the reason why the projection cannot return a finite number:
  *
  * <ul>
  *   <li>If the expected mathematical value is infinite (for example the Mercator projection at ±90° of latitude),

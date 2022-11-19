@@ -112,7 +112,7 @@ final class Inflater implements Runnable {
                 final File file = new File(destination, entry.getName());
                 if (entry.isDirectory()) {
                     if (!file.isDirectory() && !file.mkdir()) {
-                        throw new IOException("Directory can not be created: " + file);
+                        throw new IOException("Directory cannot be created: " + file);
                     }
                     if (subdir == null && entry.getName().startsWith(FXFinder.JAVAFX_DIRECTORY_PREFIX)) {
                         subdir = file;

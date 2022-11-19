@@ -65,7 +65,7 @@ import org.apache.sis.util.ArgumentChecks;
  *     └─lib
  * }
  * </td></tr></table>
- * There is no pre-defined method for this task because there is too many parameters that
+ * There is no predefined method for this task because there is too many parameters that
  * developers may want to customize (columns to merge, conditions for accepting the merge,
  * kind of objects to merge, name separator, <i>etc.</i>). In the following code snippet,
  * the content of the {@code NAME} columns are concatenated only if the {@code VALUE} column
@@ -275,7 +275,7 @@ public final class TreeTables extends Static {
 
     /**
      * Parses the given string as tree.
-     * This helper method is sometime useful for quick tests or debugging purposes.
+     * This helper method is sometimes useful for quick tests or debugging purposes.
      * For more extensive use, consider using {@link TreeTableFormat} instead.
      *
      * @param  tree          the string representation of the tree to parse.

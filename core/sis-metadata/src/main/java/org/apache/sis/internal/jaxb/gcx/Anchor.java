@@ -30,7 +30,7 @@ import org.apache.sis.xml.XLink;
  * The {@code Anchor} element, which is included in {@code CharacterString} elements.
  * In XML documents,  anchors are values with {@code XLink} attributes used in places
  * where we would normally expect a character sequence. Since Java properties of type
- * {@code CharSequence} can not return {@code XLink},  we workaround that restriction
+ * {@code CharSequence} cannot return {@code XLink},  we workaround that restriction
  * by providing this {@code Anchor} class as a {@code XLink} subtype implementing the
  * {@link InternationalString} interface, so it can be used with the above-cited Java
  * properties.

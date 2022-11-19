@@ -316,7 +316,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      * @param  tZ          the {@link #tZ} field value (or a slightly different value during geocentric interpolation).
      * @param  offset      an array of length 3 if this method should use the interpolation grid, or {@code null} otherwise.
      * @param  derivate    {@code true} for computing the derivative, or {@code false} if not needed.
-     * @throws TransformException if a point can not be transformed.
+     * @throws TransformException if a point cannot be transformed.
      */
     final Matrix transform(final double λ, final double φ, final double h, final double[] dstPts, int dstOff,
                            double tX, double tY, double tZ, double[] offset, final boolean derivate)

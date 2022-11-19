@@ -111,7 +111,7 @@ final class EPSGInstaller extends ScriptRunner {
      * <p>This method should be invoked only once. It does nothing if the database does not supports schema.</p>
      *
      * @param  schema  the schema (usually {@code "epsg"}).
-     * @throws SQLException if the schema can not be created.
+     * @throws SQLException if the schema cannot be created.
      * @throws IOException if an I/O operation was required and failed.
      */
     public void setSchema(final String schema) throws SQLException, IOException {

@@ -71,7 +71,7 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  *   <li>
  *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
  *   </li><li>
- *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that can not be computed.
+ *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that cannot be computed.
  *   </li><li>
  *     {@linkplain #setCategoryColors(Function) Category colors} for mapping sample values
  *     (identified by their range, name or unit of measurement) to colors.
@@ -173,7 +173,7 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Whether {@code ImageProcessor} can produce an image of different size compared to requested size.
-     * An image may be resized if the requested size can not be subdivided into tiles of reasonable size.
+     * An image may be resized if the requested size cannot be subdivided into tiles of reasonable size.
      * For example if the image width is a prime number, there is no way to divide the image horizontally with
      * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
      *
@@ -207,7 +207,7 @@ public class ImageProcessor implements Cloneable {
     private Interpolation interpolation;
 
     /**
-     * The values to use for pixels that can not be computed.
+     * The values to use for pixels that cannot be computed.
      * This array may be {@code null} or may contain {@code null} elements.
      * This is a "copy on write" array (elements are not modified).
      *
@@ -338,23 +338,23 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the values to use for pixels that can not be computed.
+     * Returns the values to use for pixels that cannot be computed.
      * This method returns a copy of the array set by the last call to {@link #setFillValues(Number...)}.
      *
-     * @return fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     * @return fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
      */
     public synchronized Number[] getFillValues() {
         return (fillValues != null) ? fillValues.clone() : null;
     }
 
     /**
-     * Sets the values to use for pixels that can not be computed. The given array may be {@code null} or may contain
+     * Sets the values to use for pixels that cannot be computed. The given array may be {@code null} or may contain
      * {@code null} elements for default values. Those defaults are zero for images storing sample values as integers,
      * or {@link Float#NaN} or {@link Double#NaN} for images storing sample values as floating point numbers. If the
      * given array contains less elements than the number of bands in an image, missing elements will be assumed null.
      * If the given array contains more elements than the number of bands, extraneous elements will be ignored.
      *
-     * @param  values  fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     * @param  values  fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
      */
     public synchronized void setFillValues(final Number... values) {
         fillValues = (values != null) ? values.clone() : null;
@@ -778,13 +778,13 @@ public class ImageProcessor implements Cloneable {
      *
      * <h4>Limitation</h4>
      * Current implementation can stretch only gray scale images (a future version may extend support to images
-     * using {@linkplain java.awt.image.IndexColorModel index color models}). If this method can not stretch the
+     * using {@linkplain java.awt.image.IndexColorModel index color models}). If this method cannot stretch the
      * color ramp, for example because the given image is an RGB image, then the image is returned unchanged.
      *
      * @param  source     the image to recolor.
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
      * @return the image with color ramp stretched between the specified or calculated bounds,
-     *         or {@code image} unchanged if the operation can not be applied on the given image.
+     *         or {@code image} unchanged if the operation cannot be applied on the given image.
      * @throws IllegalArgumentException if the value associated to one of about keys is not of expected type.
      */
     public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,?> modifiers) {

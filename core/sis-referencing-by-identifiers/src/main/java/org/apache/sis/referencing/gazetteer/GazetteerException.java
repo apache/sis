@@ -20,7 +20,7 @@ import org.opengis.referencing.operation.TransformException;
 
 
 /**
- * Thrown when a coordinate can not be converted to a geographic identifier, or conversely.
+ * Thrown when a coordinate cannot be converted to a geographic identifier, or conversely.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

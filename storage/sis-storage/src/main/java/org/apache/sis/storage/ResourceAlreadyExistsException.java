@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a write operation can not be performed because it would cause the replacement of an existing resource.
+ * Thrown when a write operation cannot be performed because it would cause the replacement of an existing resource.
  * Replacements can be performed only if an option such as {@link WritableGridCoverageResource.CommonOption#REPLACE}
  * has been specified.
  *

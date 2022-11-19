@@ -71,7 +71,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
 
 /**
  * Definitions of referencing objects identified by the {@link CommonCRS} enumeration values.
- * This class is used only as a fallback if the objects can not be fetched from the EPSG database.
+ * This class is used only as a fallback if the objects cannot be fetched from the EPSG database.
  * This class should not be loaded when a connection to an EPSG geodetic dataset is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -245,7 +245,7 @@ final class StandardDefinitions {
 
     /**
      * Creates the Greenwich prime meridian. This is the only prime meridian supported by SIS convenience shortcuts.
-     * If an other prime meridian is desired, the EPSG database shall be used.
+     * If another prime meridian is desired, the EPSG database shall be used.
      */
     static PrimeMeridian primeMeridian() {
         final Map<String,Object> properties = new HashMap<>(4);

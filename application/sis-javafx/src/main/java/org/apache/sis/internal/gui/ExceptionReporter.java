@@ -171,7 +171,7 @@ public final class ExceptionReporter extends Widget {
      * This method does nothing if the exception is null.
      *
      * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
-     * @param  resource   the resource that can not be read.
+     * @param  resource   the resource that cannot be read.
      * @param  exception  the error that occurred.
      */
     public static void canNotReadFile(final Node owner, Resource resource, final Throwable exception) {
@@ -195,7 +195,7 @@ public final class ExceptionReporter extends Widget {
      * This method does nothing if the exception is null.
      *
      * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
-     * @param  file       the file that can not be read.
+     * @param  file       the file that cannot be read.
      * @param  exception  the error that occurred.
      */
     public static void canNotReadFile(final Node owner, final String file, final Throwable exception) {
@@ -208,7 +208,7 @@ public final class ExceptionReporter extends Widget {
      * This method does nothing if the exception is null.
      *
      * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
-     * @param  file       the file that can not be closed.
+     * @param  file       the file that cannot be closed.
      * @param  exception  the error that occurred.
      */
     public static void canNotCloseFile(final Node owner, final String file, final Throwable exception) {
@@ -221,7 +221,7 @@ public final class ExceptionReporter extends Widget {
      * This method does nothing if the exception is null.
      *
      * @param  owner      the owner window of the dialog, or {@code null} if none.
-     * @param  code       code of the CRS that can not be created.
+     * @param  code       code of the CRS that cannot be created.
      * @param  exception  the error that occurred.
      */
     public static void canNotCreateCRS(final Window owner, final String code, final Throwable exception) {

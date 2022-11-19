@@ -150,7 +150,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
                     scope.equalsIgnoreCase(Artifact.SCOPE_RUNTIME)))
                 {
                     final File file = artifact.getFile();
-                    if (file != null) { // I'm not sure why the file is sometime null...
+                    if (file != null) {                     // I'm not sure why the file is sometimes null.
                         copy = new File(collect, getFinalName(file, artifact));
                         if (!copy.exists()) {
                             /*
@@ -244,7 +244,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
              */
         }
         /*
-         * If we can not use hard links, creates or updates a "target/other_dependencies.txt" file instead.
+         * If we cannot use hard links, creates or updates a "target/other_dependencies.txt" file instead.
          * This file will contains the list of all dependencies, without duplicated values.
          */
         final File dependenciesFile = new File(copy.getParentFile(), OTHER_DEPENDENCIES_FILE);

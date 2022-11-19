@@ -29,7 +29,7 @@ import org.apache.sis.internal.book.CodeColorizer;
  *
  * <p>This taglet will automatically replace {@code &}, {@code <} and {@code >} by their HTML entities.
  * The only exception is {@code &#64;}, which is converted to the original {@code @} character because
- * we can not use that character directly inside this taglet.</p>
+ * we cannot use that character directly inside this taglet.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

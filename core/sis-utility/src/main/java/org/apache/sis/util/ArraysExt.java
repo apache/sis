@@ -40,7 +40,7 @@ import java.lang.reflect.Array;
  *
  * <h2>Handling of null values</h2>
  * Many (but not all) methods in this class are tolerant to null parameter values,
- * sometime under certain conditions. See the method javadoc for details.
+ * sometimes under certain conditions. See the method javadoc for details.
  *
  * <p>All methods in this class are tolerant to null elements in arrays.
  * Null and {@linkplain Double#NaN NaN} elements are ignored.</p>
@@ -892,7 +892,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -932,7 +932,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -959,7 +959,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -985,7 +985,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -1011,7 +1011,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -1037,7 +1037,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -1063,7 +1063,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -1089,7 +1089,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -1115,7 +1115,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *
@@ -1141,7 +1141,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns an array containing the same elements than the given array,
-     * with the content of an other array inserted at the given index.
+     * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
      *

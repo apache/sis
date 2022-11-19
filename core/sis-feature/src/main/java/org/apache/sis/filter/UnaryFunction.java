@@ -130,7 +130,7 @@ class UnaryFunction<R,V> extends Node {
     /**
      * Filter operator that checks if an expression's value is nil.
      * The difference with {@link IsNull} is that a value should exist but
-     * can not be provided for the reason given by {@link #getNilReason()}.
+     * cannot be provided for the reason given by {@link #getNilReason()}.
      */
     static final class IsNil<R> extends UnaryFunction<R,Object>
             implements NilOperator<R>, Optimization.OnFilter<R>

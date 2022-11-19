@@ -553,7 +553,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @param  tileX     the column index of the tile to compute.
      * @param  tileY     the row index of the tile to compute.
      * @param  previous  if the tile already exists but needs to be updated, the tile to update. Otherwise {@code null}.
-     * @return computed tile for the given indices. May be the {@code previous} tile after update but can not be null.
+     * @return computed tile for the given indices. May be the {@code previous} tile after update but cannot be null.
      * @throws Exception if an error occurred while computing the tile.
      */
     protected abstract Raster computeTile(int tileX, int tileY, WritableRaster previous) throws Exception;
@@ -564,7 +564,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      *
      * @param  tileX  the column index of the tile to create.
      * @param  tileY  the row index of the tile to create.
-     * @return initially empty tile for the given indices (can not be null).
+     * @return initially empty tile for the given indices (cannot be null).
      */
     protected WritableRaster createTile(final int tileX, final int tileY) {
         // A temporary `int` overflow may occur before the final addition.

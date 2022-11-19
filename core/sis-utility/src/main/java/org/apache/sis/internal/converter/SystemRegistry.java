@@ -132,7 +132,7 @@ public final class SystemRegistry extends ConverterRegistry {
      *
      * <p>Some (not all) special cases are:</p>
      * <ul>
-     *   <li>If the source class is {@link CharSequence}, tries to delegate to an other
+     *   <li>If the source class is {@link CharSequence}, tries to delegate to another
      *       converter accepting {@link String} sources.</li>
      *   <li>If the source and target types are numbers, generates a {@link NumberConverter}
      *       on the fly.</li>

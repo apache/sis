@@ -36,7 +36,7 @@ public interface UnstructuredAggregate extends Aggregate {
     /**
      * Returns a more structured (if possible) view of this resource.
      *
-     * @return structured view. May be {@code this} if this method can not do better than current resource.
+     * @return structured view. May be {@code this} if this method cannot do better than current resource.
      * @throws DataStoreException if an error occurred during the attempt to create a structured view.
      */
     Resource getStructuredView() throws DataStoreException;

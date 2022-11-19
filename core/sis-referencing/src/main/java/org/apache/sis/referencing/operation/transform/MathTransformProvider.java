@@ -117,7 +117,7 @@ public interface MathTransformProvider {
      * @throws InvalidParameterNameException if the given parameter group contains an unknown parameter.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws InvalidParameterValueException if a parameter has an invalid value.
-     * @throws FactoryException if the math transform can not be created for some other reason
+     * @throws FactoryException if the math transform cannot be created for some other reason
      *         (for example a required file was not found).
      */
     MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters)

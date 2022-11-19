@@ -53,8 +53,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * The specification often has an abbreviation (for example "PNG") which can be stored as an
  * {@linkplain DefaultCitation#getAlternateTitles() alternate title}.
  *
- * <p>Apache SIS provides pre-defined metadata structures for some commonly-used formats.
- * A pre-defined format can be obtained by a call to
+ * <p>Apache SIS provides predefined metadata structures for some commonly-used formats.
+ * A predefined format can be obtained by a call to
  * <code>{@linkplain org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String) lookup}(Format.class,
  * <var>abbreviation</var>)</code> where <var>abbreviation</var> can be one of the values listed below:</p>
  *

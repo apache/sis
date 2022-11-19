@@ -115,7 +115,7 @@ public final strictfp class WritableStoreTest extends TestCase {
     /**
      * Tests writing an ASCII Grid in a temporary file.
      *
-     * @throws IOException if the temporary file can not be created.
+     * @throws IOException if the temporary file cannot be created.
      * @throws DataStoreException if an error occurred while writing the file.
      */
     @Test
@@ -158,7 +158,7 @@ public final strictfp class WritableStoreTest extends TestCase {
     }
 
     /**
-     * Tests writing an ASCII Grid in an in-memory buffer. The PRJ files can not be created in this test,
+     * Tests writing an ASCII Grid in an in-memory buffer. The PRJ files cannot be created in this test,
      * which force us to use a null CRS for avoiding {@link java.net.UnknownServiceException} to be thrown.
      *
      * @throws DataStoreException if an error occurred while writing the file.

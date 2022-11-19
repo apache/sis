@@ -62,7 +62,7 @@ class FormatField extends Format.Field {
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
      * @return one of the predefined constants.
-     * @throws InvalidObjectException if this instance can not be resolved.
+     * @throws InvalidObjectException if this instance cannot be resolved.
      */
     @Override
     protected final Object readResolve() throws InvalidObjectException {

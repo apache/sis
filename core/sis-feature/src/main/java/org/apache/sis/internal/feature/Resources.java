@@ -65,27 +65,27 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AbstractFeatureType_1 = 1;
 
         /**
-         * Can not assign characteristics to the “{0}” property.
+         * Cannot assign characteristics to the “{0}” property.
          */
         public static final short CanNotAssignCharacteristics_1 = 2;
 
         /**
-         * Can not build the grid coverage.
+         * Cannot build the grid coverage.
          */
         public static final short CanNotBuildGridCoverage = 3;
 
         /**
-         * Can not compute tile ({0}, {1}).
+         * Cannot compute tile ({0}, {1}).
          */
         public static final short CanNotComputeTile_2 = 4;
 
         /**
-         * Can not create a two-dimensional reference system from the “{0}” system.
+         * Cannot create a two-dimensional reference system from the “{0}” system.
          */
         public static final short CanNotCreateTwoDimensionalCRS_1 = 5;
 
         /**
-         * Can not enumerate values in the {0} range.
+         * Cannot enumerate values in the {0} range.
          */
         public static final short CanNotEnumerateValuesInRange_1 = 6;
 
@@ -95,22 +95,22 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotInstantiateProperty_1 = 7;
 
         /**
-         * Some envelope dimensions can not be mapped to grid dimensions.
+         * Some envelope dimensions cannot be mapped to grid dimensions.
          */
         public static final short CanNotMapToGridDimensions = 8;
 
         /**
-         * Can not process tile ({0}, {1}).
+         * Cannot process tile ({0}, {1}).
          */
         public static final short CanNotProcessTile_2 = 9;
 
         /**
-         * Can not set a value of type ‘{1}’ to characteristic “{0}”.
+         * Cannot set a value of type ‘{1}’ to characteristic “{0}”.
          */
         public static final short CanNotSetCharacteristics_2 = 10;
 
         /**
-         * Can not set this derived grid property after a call to “{0}” method.
+         * Cannot set this derived grid property after a call to “{0}” method.
          */
         public static final short CanNotSetDerivedGridProperty_1 = 11;
 
@@ -120,17 +120,17 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotSetPropertyValue_1 = 12;
 
         /**
-         * Can not simplify transfer function of sample dimension “{0}”.
+         * Cannot simplify transfer function of sample dimension “{0}”.
          */
         public static final short CanNotSimplifyTransferFunction_1 = 13;
 
         /**
-         * Can not update tile ({0}, {1}).
+         * Cannot update tile ({0}, {1}).
          */
         public static final short CanNotUpdateTile_2 = 14;
 
         /**
-         * Can not visit a “{1}” {0,choice,0#filter|1#expression}.
+         * Cannot visit a “{1}” {0,choice,0#filter|1#expression}.
          */
         public static final short CanNotVisit_2 = 77;
 
@@ -208,12 +208,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalGridEnvelope_3 = 27;
 
         /**
-         * Can not create a grid geometry with the given “{0}” component.
+         * Cannot create a grid geometry with the given “{0}” component.
          */
         public static final short IllegalGridGeometryComponent_1 = 28;
 
         /**
-         * Type or result of “{0}” property can not be ‘{1}’ for this operation.
+         * Type or result of “{0}” property cannot be ‘{1}’ for this operation.
          */
         public static final short IllegalPropertyType_2 = 29;
 
@@ -318,7 +318,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoCategoryForValue_1 = 49;
 
         /**
-         * Can not infer a {0}-dimensional slice from the grid envelope. Dimension {1} has {2,number}
+         * Cannot infer a {0}-dimensional slice from the grid envelope. Dimension {1} has {2,number}
          * cells.
          */
         public static final short NoNDimensionalSlice_3 = 50;
@@ -400,12 +400,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnavailableGeometryLibrary_1 = 64;
 
         /**
-         * Can not convert grid coordinate {1} to type ‘{0}’.
+         * Cannot convert grid coordinate {1} to type ‘{0}’.
          */
         public static final short UnconvertibleGridCoordinate_2 = 65;
 
         /**
-         * Can not convert sample values.
+         * Cannot convert sample values.
          */
         public static final short UnconvertibleSampleValues = 66;
 
@@ -461,7 +461,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnsupportedGeometryObject_1 = 76;
 
         /**
-         * Sample type with a size of {0} bits can not have ‘{1}’ = “{2}” characteristic.
+         * Sample type with a size of {0} bits cannot have ‘{1}’ = “{2}” characteristic.
          */
         public static final short UnsupportedSampleType_3 = 78;
     }
@@ -491,7 +491,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);

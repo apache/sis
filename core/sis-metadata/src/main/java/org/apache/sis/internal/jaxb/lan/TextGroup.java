@@ -97,7 +97,7 @@ final class TextGroup {
     /**
      * Constructs a {@linkplain TextGroup text group} for a single locale. This constructor
      * puts exactly one string in the {@code TextGroup}, as required by ISO 19139:2007.
-     * However it would be possible to declare an other constructor allowing the more compact form
+     * However it would be possible to declare another constructor allowing the more compact form
      * (the smaller) if there is a need for that in the future.
      *
      * @param  locale  the string language.

@@ -369,7 +369,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * </ul>
      *
      * <h4>Legal constraint</h4>
-     * The EPSG dataset can not be distributed with Apache SIS at this time for licensing reasons.
+     * The EPSG dataset cannot be distributed with Apache SIS at this time for licensing reasons.
      * Users need to either install the dataset manually (for example with the help of this method),
      * or add on the classpath to a separated bundle like {@code org.apache.sis:non-free:sis-epsg.jar}.
      * See <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.
@@ -423,7 +423,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         }
         if (failure != null) {
             /*
-             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             UnavailableFactoryException exception = new UnavailableFactoryException(message, Exceptions.unwrap(failure));
@@ -490,7 +490,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 throw (FactoryException) e;
             }
             /*
-             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             exception = new UnavailableFactoryException(canNotUse(e), Exceptions.unwrap(e));

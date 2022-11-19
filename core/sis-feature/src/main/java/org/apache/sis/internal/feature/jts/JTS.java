@@ -121,7 +121,7 @@ public final class JTS extends Static {
      *
      * @param  source  the geometry from which to get the CRS, or {@code null}.
      * @return the coordinate reference system, or {@code null} if none.
-     * @throws FactoryException if the CRS can not be created from the SRID code.
+     * @throws FactoryException if the CRS cannot be created from the SRID code.
      */
     public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Geometry source) throws FactoryException {
         if (source != null) {
@@ -200,7 +200,7 @@ public final class JTS extends Static {
      * @param  targetCRS       the CRS of target coordinates.
      * @param  areaOfInterest  the area of interest.
      * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      */
     private static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
                                                      final CoordinateReferenceSystem targetCRS,
@@ -238,8 +238,8 @@ public final class JTS extends Static {
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws FactoryException if transformation to the target CRS can not be constructed.
-     * @throws TransformException if the given geometry can not be transformed.
+     * @throws FactoryException if transformation to the target CRS cannot be constructed.
+     * @throws TransformException if the given geometry cannot be transformed.
      */
     public static Geometry transform(Geometry geometry, final CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
@@ -267,8 +267,8 @@ public final class JTS extends Static {
      * @param  operation  the coordinate operation to apply, or {@code null}.
      * @param  validate   whether to validate the operation source CRS.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws FactoryException if transformation to the target CRS can not be found.
-     * @throws TransformException if the given geometry can not be transformed.
+     * @throws FactoryException if transformation to the target CRS cannot be found.
+     * @throws TransformException if the given geometry cannot be transformed.
      */
     public static Geometry transform(Geometry geometry, CoordinateOperation operation, final boolean validate)
             throws FactoryException, TransformException
@@ -296,7 +296,7 @@ public final class JTS extends Static {
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  transform  the transform to apply, or {@code null}.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws TransformException if the given geometry can not be transformed.
+     * @throws TransformException if the given geometry cannot be transformed.
      */
     public static Geometry transform(Geometry geometry, final MathTransform transform) throws TransformException {
         if (geometry != null && transform != null && !transform.isIdentity()) {
@@ -323,7 +323,7 @@ public final class JTS extends Static {
      * shape coordinates.
      *
      * @param  factory   factory to use for creating the geometry, or {@code null} for the default.
-     * @param  shape     the Java2D shape to convert. Can not be {@code null}.
+     * @param  shape     the Java2D shape to convert. Cannot be {@code null}.
      * @param  flatness  the maximum distance that line segments are allowed to deviate from curves.
      * @return JTS geometry with shape coordinates. Never null but can be empty.
      */

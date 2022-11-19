@@ -91,7 +91,7 @@ public final strictfp class PointTreeNodeTest extends TestCase {
     /**
      * Verifies {@link org.apache.sis.index.tree.NodeIterator.Cursor#CLEAR_MASKS}.
      *
-     * @throws ReflectiveOperationException if this test can not access to private field that we want to verify.
+     * @throws ReflectiveOperationException if this test cannot access to private field that we want to verify.
      */
     @Test
     public void verifyClearMasks() throws ReflectiveOperationException {

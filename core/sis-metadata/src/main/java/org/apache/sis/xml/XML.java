@@ -239,7 +239,7 @@ public final class XML extends Static {
      * supports only the schema versions documented in this {@linkplain XML class javadoc}, for example
      * the ISO 19115-3:2016 version of metadata schema.  For unmarshalling a document encoded according
      * an older metadata schema (e.g. ISO 19139:2007), a transformation is applied on-the-fly.  However
-     * this transformation may sometime produce undesirable results or make debugging more difficult.
+     * this transformation may sometimes produce undesirable results or make debugging more difficult.
      * For this reason {@link MarshallerPool} applies the transformation only if explicitly requested,
      * either by setting a {@link #METADATA_VERSION} or {@link #GML_VERSION} explicitly, or by setting
      * this {@code LENIENT_UNMARSHAL} property to {@code true} if the version to unmarshal is not known
@@ -262,7 +262,7 @@ public final class XML extends Static {
      *   <li>Otherwise an empty element containing only the values of the above-cited attributes is created.</li>
      * </ul>
      *
-     * Applications can sometime do better by using some domain-specific knowledge, for example by searching in a
+     * Applications can sometimes do better by using some domain-specific knowledge, for example by searching in a
      * database. Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
      * a unmarshaller as below:
      *
@@ -279,10 +279,10 @@ public final class XML extends Static {
     public static final String RESOLVER = "org.apache.sis.xml.resolver";
 
     /**
-     * Controls the behaviors of the (un)marshalling process when an element can not be processed,
+     * Controls the behaviors of the (un)marshalling process when an element cannot be processed,
      * or alter the element values. The value for this property shall be an instance of {@link ValueConverter}.
      *
-     * <p>If an element in a XML document can not be parsed (for example if a {@linkplain java.net.URL}
+     * <p>If an element in a XML document cannot be parsed (for example if a {@linkplain java.net.URL}
      * string is not valid), the default behavior is to throw an exception which cause the
      * (un)marshalling of the entire document to fail. This default behavior can be customized by
      * invoking {@link Marshaller#setProperty(String, Object)} with this {@code CONVERTER} property

@@ -61,7 +61,7 @@ public class DefaultAggregationDerivation extends DefaultEvaluationMethod implem
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      *
-     * @see #castOrCopy(DefaultAggregationDerivation)
+     * @see #castOrCopy(AggregationDerivation)
      */
     public DefaultAggregationDerivation(final AggregationDerivation object) {
         super(object);

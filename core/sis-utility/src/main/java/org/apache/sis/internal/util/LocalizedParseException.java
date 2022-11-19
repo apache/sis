@@ -53,7 +53,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     /**
      * The resources key as one of the {@link Errors.Keys} constant, or 0 if none.
      *
-     * <p>This field is not serialized because key values sometime change between different SIS versions.
+     * <p>This field is not serialized because key values sometimes change between different SIS versions.
      * The deserialized value will be 0, which will cause this {@code LocalizedParseException} to fallback
      * on {@code super.getMessage()}.</p>
      */
@@ -81,7 +81,7 @@ public final class LocalizedParseException extends ParseException implements Loc
 
     /**
      * Creates a {@link ParseException} with a localized message built from the given parsing information.
-     * This convenience constructor creates a message of the kind <cite>"Can not parse string "text" as an
+     * This convenience constructor creates a message of the kind <cite>"Cannot parse string "text" as an
      * object of type 'type'"</cite>.
      *
      * @param  locale  the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
@@ -178,7 +178,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * If this exception is capable to return the message in various locales, returns that message.
      * Otherwise returns {@code null}.
      *
-     * @return the exception message, or {@code null} if this exception can not produce international message.
+     * @return the exception message, or {@code null} if this exception cannot produce international message.
      */
     @Override
     public InternationalString getInternationalMessage() {

@@ -55,7 +55,7 @@ import org.opengis.referencing.operation.TransformException;
  * <p>Other methods defined in this class:</p>
  * <ul>
  *   <li>Convenience {@code create(…)} static methods for every numeric primitive types.</li>
- *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ *   <li>{@link #castTo(Class)} for casting the range values to another type.</li>
  *   <li>{@link #transform(MathTransform1D)} for applying an arbitrary conversion.</li>
  * </ul>
  *
@@ -247,7 +247,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code float} values.
-     * The minimum and maximum values can not be NaN but can be infinite.
+     * The minimum and maximum values cannot be NaN but can be infinite.
      * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
@@ -280,7 +280,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code double} values.
-     * The minimum and maximum values can not be NaN but can be infinite.
+     * The minimum and maximum values cannot be NaN but can be infinite.
      * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
@@ -732,7 +732,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  value  the value to check for inclusion in this range.
      * @return {@code true} if the given value is included in this range.
-     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion.
      */
     public boolean containsAny(Number value) throws IllegalArgumentException {
@@ -765,7 +765,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  range  the range to check for inclusion in this range.
      * @return {@code true} if the given range is included in this range.
-     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -786,7 +786,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  range  the range to check for intersection with this range.
      * @return {@code true} if the given range intersects this range.
-     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -802,7 +802,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  range  the range to add to this range.
      * @return the intersection of this range with the given range.
-     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -827,7 +827,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  range  the range to add to this range.
      * @return the union of this range with the given range.
-     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -843,7 +843,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  range  the range to subtract.
      * @return this range without the given range, as an array of length 0, 1 or 2.
-     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */
     @SuppressWarnings({"unchecked","rawtypes"})

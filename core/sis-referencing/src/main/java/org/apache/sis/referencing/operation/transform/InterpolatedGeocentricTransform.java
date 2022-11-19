@@ -359,7 +359,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * and optionally returns the derivative at that location.
      *
      * @return {@inheritDoc}
-     * @throws TransformException if the point can not be transformed or
+     * @throws TransformException if the point cannot be transformed or
      *         if a problem occurred while calculating the derivative.
      */
     @Override
@@ -421,7 +421,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      */
     final Matrix concatenate(final Matrix m1, final Matrix m2) {
         for (int i = m1.getNumCol(); --i >= 0;) {   // Number of columns can be 2 or 3.
-            for (int j = 3; --j >= 0;) {            // Number of rows can not be anything else than 3.
+            for (int j = 3; --j >= 0;) {            // Number of rows cannot be anything else than 3.
                 m1.setElement(j, i, m1.getElement(j, i) * scale);
             }
         }
@@ -489,7 +489,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
          * and optionally returns the derivative at that location.
          *
          * @return {@inheritDoc}
-         * @throws TransformException if the point can not be transformed or
+         * @throws TransformException if the point cannot be transformed or
          *         if a problem occurred while calculating the derivative.
          */
         @Override

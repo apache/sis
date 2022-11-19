@@ -202,9 +202,9 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
         if (!isNaN(φ)) {
             /*
              * Opportunistically verify that the longitude is still zero. However the longitude value is meaningless
-             * at poles. We can not always use coordinate[0] for testing if we are at a pole because its calculation
+             * at poles. We cannot always use coordinate[0] for testing if we are at a pole because its calculation
              * is not finished (the denormalization matrix has not yet been applied).  In the particular case of SIS
-             * implementation, we observe sometime a ±180° rotation, which we ignore below. Such empirical hack is
+             * implementation, we observe sometimes a ±180° rotation, which we ignore below. Such empirical hack is
              * not rigorous, but it is not the purpose of this test to check the longitude value - we are doing only
              * an opportunist check, other test methods will test longitude more accurately.
              */

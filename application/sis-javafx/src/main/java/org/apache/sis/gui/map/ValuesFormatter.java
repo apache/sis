@@ -272,7 +272,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      * {@link ValuesUnderCursor} is providing data for a new coverage.
      *
      * <p>We use {@link ValuesFromCoverage#needsBandRefresh} as a flag meaning that this method needs to be invoked.
-     * This method invocation sometime needs to be delayed because calculation of text width may be wrong
+     * This method invocation sometimes needs to be delayed because calculation of text width may be wrong
      * (produce 0 values) if invoked before {@link StatusBar#sampleValues} label is added in the scene graph.</p>
      *
      * <p>This method uses the same synchronization lock than {@link #evaluate(DirectPosition)}.

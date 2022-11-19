@@ -219,7 +219,7 @@ public final class CoordinateSystems extends Static {
      * @param  target  the target axis direction.
      * @return the arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
      *         the source direction in order to make it point toward the target direction, or
-     *         {@code null} if this value can not be computed.
+     *         {@code null} if this value cannot be computed.
      */
     public static Angle angle(final AxisDirection source, final AxisDirection target) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -471,7 +471,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * @param  filter  the modifications to apply on coordinate system axes.
      * @return the modified coordinate system as a new instance,
      *         or {@code cs} if the given coordinate system was null or does not need any change.
-     * @throws IllegalArgumentException if the specified coordinate system can not be filtered.
+     * @throws IllegalArgumentException if the specified coordinate system cannot be filtered.
      *         It may be because the coordinate system would contain an illegal number of axes,
      *         or because an axis would have an unexpected direction or unexpected unit of measurement.
      *

@@ -188,8 +188,8 @@ walk:   if (specifiedType != null) try {
      *
      * @param  valueType  the type of features to be evaluated by the given expression.
      * @param  addTo      where to add the type of properties evaluated by the given expression.
-     * @return builder of the added property, or {@code null} if this method can not add a property.
-     * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
+     * @return builder of the added property, or {@code null} if this method cannot add a property.
+     * @throws IllegalArgumentException if this method cannot determine the property type for the given feature type.
      */
     @Override
     public PropertyTypeBuilder expectedType(FeatureType valueType, final FeatureTypeBuilder addTo) {

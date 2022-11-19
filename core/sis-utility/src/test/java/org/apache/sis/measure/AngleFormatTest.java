@@ -188,7 +188,7 @@ public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests the example provided in the {@link AngleFormat} javadoc.
      *
-     * @throws ParseException if a string can not be parsed.
+     * @throws ParseException if a string cannot be parsed.
      */
     @Test
     @DependsOnMethod("testOptionalFields")

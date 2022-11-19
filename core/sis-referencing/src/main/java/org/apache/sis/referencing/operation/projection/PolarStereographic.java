@@ -323,7 +323,7 @@ public class PolarStereographic extends ConformalProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -367,7 +367,7 @@ public class PolarStereographic extends ConformalProjection {
     /**
      * Converts the specified (x,y) coordinates and stores the result in {@code dstPts} (angles in radians).
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

@@ -22,7 +22,7 @@
  *
  * <p>The most commonly used kinds of Reference Systems in Apache SIS are the <cite>Coordinate Reference Systems</cite>
  * (CRS), which handle coordinates of arbitrary dimensions. The SIS implementations can handle 2D and 3D coordinates,
- * as well as 4D, 5D, <i>etc</i>. An other less-frequently used kind of Reference System uses labels instead, as in
+ * as well as 4D, 5D, <i>etc</i>. Another less-frequently used kind of Reference System uses labels instead, as in
  * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.
  * The two kinds of referencing system are implemented in the following packages:</p>
  * <ul>

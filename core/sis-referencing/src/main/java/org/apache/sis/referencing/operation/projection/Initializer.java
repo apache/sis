@@ -70,7 +70,7 @@ final class Initializer {
     final ContextualParameters context;
 
     /**
-     * The user-supplied parameters, stored temporarily while we transfer the information to {@link #context}.
+     * The user supplied parameters, stored temporarily while we transfer the information to {@link #context}.
      */
     final Parameters parameters;
 
@@ -80,7 +80,7 @@ final class Initializer {
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      *
-     * <p>This is stored as a double-double value because this parameter is sometime used for computing back
+     * <p>This is stored as a double-double value because this parameter is sometimes used for computing back
      * the semi-minor axis length or the inverse flattening factor. In such case we wish to find the original
      * {@code double} parameter value without rounding errors. This wish usually do not apply to other internal
      * {@link NormalizedProjection} parameters.</p>
@@ -242,7 +242,7 @@ final class Initializer {
         }
         /*
          * Get the parameter value, or its default value if the parameter was not set. That default value
-         * (which is specified by the descriptor of the user-supplied parameters) is not necessarily the
+         * (which is specified by the descriptor of the user supplied parameters) is not necessarily the
          * same than the default value of the map projection implementation (which is specified by the
          * descriptor given in argument to this method).
          */

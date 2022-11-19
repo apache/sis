@@ -53,7 +53,7 @@ public final strictfp class FreeTextMarshallingTest extends TestCase {
      * The free text is wrapped inside a citation for marshalling
      * purpose, but only the free text is actually tested.
      *
-     * @throws JAXBException if the XML in this test can not be parsed by JAXB.
+     * @throws JAXBException if the XML in this test cannot be parsed by JAXB.
      */
     @Test
     public void testLegacy() throws JAXBException {
@@ -88,7 +88,7 @@ public final strictfp class FreeTextMarshallingTest extends TestCase {
      * The free text is wrapped inside a citation for marshalling
      * purpose, but only the free text is actually tested.
      *
-     * @throws JAXBException if the XML in this test can not be parsed by JAXB.
+     * @throws JAXBException if the XML in this test cannot be parsed by JAXB.
      */
     @Test
     public void testStandard() throws JAXBException {
@@ -125,7 +125,7 @@ public final strictfp class FreeTextMarshallingTest extends TestCase {
      * also because it is more compact and closer to what we would expect
      * inside a {@code <textGroup>} node.
      *
-     * @throws JAXBException if the XML in this test can not be parsed by JAXB.
+     * @throws JAXBException if the XML in this test cannot be parsed by JAXB.
      */
     @Test
     public void testNonStandard() throws JAXBException {

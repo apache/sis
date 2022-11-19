@@ -140,7 +140,7 @@ final class SubsampledImage extends PlanarImage {
 
     /**
      * Returns an image as a subsampling of the given image.
-     * This method returns {@code null} if the arguments are valid but the image can not be
+     * This method returns {@code null} if the arguments are valid but the image cannot be
      * created because of a restriction in {@link PixelInterleavedSampleModel} constructor.
      *
      * @param  source  the image at full resolution.
@@ -276,7 +276,7 @@ final class SubsampledImage extends PlanarImage {
         int ty = tile.getMinY() - tile.getSampleModelTranslateY();
         if ((tx % subX) != 0 || (ty % subY) != 0) {
             /*
-             * We can not create a view over the existing raster if `tx` and `ty` are not a divisor
+             * We cannot create a view over the existing raster if `tx` and `ty` are not a divisor
              * of `subX` and `subY` respectively. In such case, as a workaround we create a copy.
              * Note that this is rarely needed because `tx` and `ty` are usually zero.
              */
@@ -330,7 +330,7 @@ final class SubsampledImage extends PlanarImage {
     }
 
     /**
-     * Invoked when we can not create a subsampled tile as a view of the original tile.
+     * Invoked when we cannot create a subsampled tile as a view of the original tile.
      * This method rewrites fully the tile by copying sample values in a new data buffer.
      *
      * @param  tile    the tile to rewrite.

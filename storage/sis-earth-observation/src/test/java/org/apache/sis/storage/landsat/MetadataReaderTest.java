@@ -72,7 +72,7 @@ public class MetadataReaderTest extends TestCase {
      * <a href="./doc-files/MetadataMapping.html">./doc-files/MetadataMapping.html</a> accordingly.</p>
      *
      * @throws IOException if an error occurred while reading the test file.
-     * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     * @throws DataStoreException if a property value cannot be parsed as a number or a date.
      * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     @Test

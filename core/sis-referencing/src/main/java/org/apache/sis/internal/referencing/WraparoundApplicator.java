@@ -88,7 +88,7 @@ public final class WraparoundApplicator {
      *
      * @param  op  the coordinate operation for which to get the math transform.
      * @return the math transform for the given coordinate operation.
-     * @throws TransformException if a coordinate can not be computed.
+     * @throws TransformException if a coordinate cannot be computed.
      */
     public static MathTransform forTargetCRS(final CoordinateOperation op) throws TransformException {
         final WraparoundApplicator ap = new WraparoundApplicator(null, null, op.getTargetCRS().getCoordinateSystem());
@@ -115,7 +115,7 @@ public final class WraparoundApplicator {
      *
      * @param  tr  the transform to augment with "wrap around" behavior.
      * @return the math transform with wraparound if needed.
-     * @throws TransformException if a coordinate can not be computed.
+     * @throws TransformException if a coordinate cannot be computed.
      */
     public MathTransform forDomainOfUse(MathTransform tr) throws TransformException {
         final int dimension = targetCS.getDimension();
@@ -134,7 +134,7 @@ public final class WraparoundApplicator {
      * @param  tr                   the transform to concatenate with a wraparound transform.
      * @param  wraparoundDimension  the dimension where "wrap around" behavior may apply.
      * @return the math transform with "wrap around" behavior in the specified dimension.
-     * @throws TransformException if a coordinate can not be computed.
+     * @throws TransformException if a coordinate cannot be computed.
      */
     private MathTransform concatenate(final MathTransform tr, final int wraparoundDimension) throws TransformException {
         final double period = range(targetCS, wraparoundDimension);

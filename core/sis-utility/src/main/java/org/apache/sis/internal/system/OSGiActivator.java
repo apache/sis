@@ -67,7 +67,7 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
     }
 
     /**
-     * Invoked when an other module has been installed or un-installed.
+     * Invoked when another module has been installed or un-installed.
      * This method notifies the Apache SIS library that the classpath may have changed.
      *
      * @param  event  the event that describe the life-cycle change.

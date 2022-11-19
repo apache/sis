@@ -124,7 +124,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * for creating a concatenated operation.
  *
  * <h2>Multiple versions for the same authority</h2>
- * {@code MultiAuthoritiesFactory} accepts an arbitrary amount of factories for the same authority, provided that
+ * {@code MultiAuthoritiesFactory} accepts an arbitrary number of factories for the same authority, provided that
  * those factories have different version numbers. If a {@code createFoo(String)} method is invoked with a URN
  * containing a version number different than zero, then {@code MultiAuthoritiesFactory} will search for a factory
  * with that exact version, or throw a {@link NoSuchAuthorityFactoryException} if no suitable factory is found.
@@ -1271,7 +1271,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
-     * Creates a 2- or 3-dimensional coordinate system for geodetic latitude and longitude, sometime with ellipsoidal height.
+     * Creates a 2- or 3-dimensional coordinate system for geodetic latitude and longitude, sometimes with ellipsoidal height.
      * The given code can use any of the following patterns, where <var>version</var> is optional:
      * <ul>
      *   <li><var>authority</var>{@code :}<var>code</var></li>
@@ -1733,7 +1733,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * The default implementation delegates the lookups to the underlying factories.
      *
      * @return a finder to use for looking up unidentified objects.
-     * @throws FactoryException if the finder can not be created.
+     * @throws FactoryException if the finder cannot be created.
      */
     @Override
     public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {

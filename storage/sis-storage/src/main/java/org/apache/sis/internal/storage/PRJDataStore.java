@@ -153,7 +153,7 @@ public abstract class PRJDataStore extends URIDataStore {
             crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
             if (crs != null) {
                 /*
-                 * Some characters may exist after the WKT definition. For example we sometime see the CRS
+                 * Some characters may exist after the WKT definition. For example we sometimes see the CRS
                  * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
                  * Current Apache SIS implementation ignores the characters after WKT.
                  */
@@ -186,7 +186,7 @@ public abstract class PRJDataStore extends URIDataStore {
     protected final AuxiliaryContent readAuxiliaryFile(final String extension) throws IOException, DataStoreException {
         /*
          * Try to open the stream using the storage type (Path or URL) closest to the type
-         * given at construction time. We do that because those two types can not open the
+         * given at construction time. We do that because those two types cannot open the
          * same streams. For example Path does not open HTTP or FTP connections by default,
          * and URL does not open S3 files in current implementation.
          */
@@ -341,7 +341,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * @param  extension  the filename extension of the auxiliary file to write.
      * @return a stream opened on the specified file.
      * @throws UnknownServiceException if no {@link Path} or {@link java.net.URI} is available.
-     * @throws DataStoreException if the auxiliary file can not be created.
+     * @throws DataStoreException if the auxiliary file cannot be created.
      * @throws IOException if another error occurred while opening the stream.
      */
     protected final BufferedWriter writeAuxiliaryFile(final String extension)
@@ -381,7 +381,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * file with {@code ".prj"} extension if it exists.
      *
      * @return the main file and auxiliary files as paths, or an empty array if unknown.
-     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
@@ -398,7 +398,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * @param  auxiliaries  filename extension (without leading dot) of all auxiliary files.
      *         Null elements are silently ignored.
      * @return the URI as a path, followed by all auxiliary files that exist.
-     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     protected final Path[] listComponentFiles(final String... auxiliaries) throws DataStoreException {
         Path[] paths = super.getComponentFiles();

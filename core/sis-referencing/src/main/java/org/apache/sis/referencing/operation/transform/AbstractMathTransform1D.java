@@ -84,7 +84,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      *
      * @param  value  the value to transform.
      * @return the transformed value.
-     * @throws TransformException if the value can not be transformed.
+     * @throws TransformException if the value cannot be transformed.
      */
     @Override
     public abstract double transform(double value) throws TransformException;
@@ -115,7 +115,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      *
      * @param  value  the value where to evaluate the derivative.
      * @return the derivative at the specified point.
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public abstract double derivative(double value) throws TransformException;
@@ -127,7 +127,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * @param  point  the position where to evaluate the derivative, or {@code null}.
      * @return the derivative at the specified point (never {@code null}).
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -207,7 +207,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
          * @param  point  the position where to evaluate the derivative, or {@code null}.
          * @return the derivative at the specified point (never {@code null}).
          * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
-         * @throws TransformException if the derivative can not be evaluated at the specified point.
+         * @throws TransformException if the derivative cannot be evaluated at the specified point.
          */
         @Override
         public Matrix derivative(final DirectPosition point) throws TransformException {

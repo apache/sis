@@ -162,7 +162,7 @@ final class GridSliceLocator {
         final long high = sliceExtent.getHigh(searchDimension);
         int upper = Arrays.binarySearch(sliceLows, fromIndex, toIndex, high);
         if (upper < 0) {
-            upper = ~upper;         // Index of first slice that can not intersect, because slice.low > high.
+            upper = ~upper;         // Index of first slice that cannot intersect, because slice.low > high.
         } else {
             do upper++;
             while (upper < toIndex && sliceLows[upper] <= high);

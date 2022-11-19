@@ -49,7 +49,7 @@ public class TilePlaceholder {
      * Identifies workaround for two JDK bugs.
      *
      * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8166038">JDK-8166038</a>:
-     * If {@link BufferedImage} can not be used, fallback on {@link ReshapedImage} at the cost of an image
+     * If {@link BufferedImage} cannot be used, fallback on {@link ReshapedImage} at the cost of an image
      * larger than necessary. In such case, the tests need to specify the sub-region of pixels to verify.</p>
      *
      * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>:
@@ -174,7 +174,7 @@ public class TilePlaceholder {
     }
 
     /**
-     * Creates a tile to use as a placeholder when a tile can not be computed.
+     * Creates a tile to use as a placeholder when a tile cannot be computed.
      *
      * @param  location  minimum x and y coordinates of the tile raster.
      * @return placeholder for a tile at the given location.

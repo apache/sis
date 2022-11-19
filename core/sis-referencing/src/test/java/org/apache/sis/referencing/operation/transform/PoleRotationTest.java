@@ -83,7 +83,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
      * been used as a reference implementation for computing expected values.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -109,7 +109,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has been
      * used as a reference implementation for computing expected values.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -136,7 +136,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
      * been used as a reference implementation for computing expected values.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -163,7 +163,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * The {@link ucar.unidata.geoloc.projection.RotatedLatLon} class has
      * been used as a reference implementation for computing expected values.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -190,7 +190,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * The {@link ucar.unidata.geoloc.projection.RotatedPole} class
      * has been used as a reference implementation for expected values.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -216,7 +216,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * The {@link ucar.unidata.geoloc.projection.RotatedPole} class has been used
      * as a reference implementation for computing expected values.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -251,7 +251,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      *
      * Note that a 180° offset must be added to the {@code +lon_0} parameter.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -276,7 +276,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     /**
      * Tries rotating a pole to opposite hemisphere.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
@@ -300,7 +300,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     /**
      * Tests derivative for a south pole rotation.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while computing a derivative.
      */
     @Test
@@ -315,7 +315,7 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
     /**
      * Tests derivative for a north pole rotation.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if an error occurred while computing a derivative.
      */
     @Test

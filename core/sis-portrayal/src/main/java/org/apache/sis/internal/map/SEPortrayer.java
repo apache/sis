@@ -315,7 +315,7 @@ public final class SEPortrayer {
                     }
                 }
                 if (Double.isNaN(symbolsMargin) || Double.isInfinite(symbolsMargin)) {
-                    // Symbol margin can not be pre calculated, expect a max of 300pixels.
+                    // Symbol margin cannot be pre calculated, expect a max of 300pixels.
                     symbolsMargin = 300f;
                 }
                 if (symbolsMargin > 0) {
@@ -385,7 +385,7 @@ public final class SEPortrayer {
         /*
          * Check if some used properties are not part of the type.
          * This means the FeatureSet may contain sub types.
-         * We can not optimize the query.
+         * We cannot optimize the query.
          */
         if (requiredProperties != null) {
             for (String pn : requiredProperties) {
@@ -449,12 +449,12 @@ public final class SEPortrayer {
             final List<Filter<Feature>> rulefilters = new ArrayList<>();
             for (final Rule rule : rules) {
                 if (rule.isElseFilter()) {
-                    // We can not append styling filters, an else rule match all features.
+                    // We cannot append styling filters, an else rule match all features.
                     break ruleOpti;
                 } else {
                     final Filter<Feature> rf = rule.getFilter();
                     if (rf == null || rf == Filter.<Feature>include()) {
-                        // We can not append styling filters, this rule matchs all features.
+                        // We cannot append styling filters, this rule matchs all features.
                         break ruleOpti;
                     }
                     rulefilters.add(rf);
@@ -598,9 +598,9 @@ public final class SEPortrayer {
                             break;
                         }
                     } else if (semantic == SemanticType.RASTER) {
-                        // Can not test this on feature datas.
+                        // Cannot test this on feature datas.
                     } else if (semantic == SemanticType.TEXT) {
-                        // Can not define a `text` type with current API.
+                        // Cannot define a `text` type with current API.
                     }
                 }
                 if (!valid) return Collections.emptyList();

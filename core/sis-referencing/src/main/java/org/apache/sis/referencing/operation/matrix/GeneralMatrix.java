@@ -520,7 +520,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * {@inheritDoc}
      *
      * <p>This method does not check the error terms, because those terms are not visible to the user
-     * (they can not appear in the value returned by {@link #getElement(int, int)}, and are not shown
+     * (they cannot appear in the value returned by {@link #getElement(int, int)}, and are not shown
      * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like affine
      * would be confusing for the user. Furthermore, the errors can be non-zero only in the very last
      * element and that value always smaller than 2.3E-16.</p>
@@ -557,13 +557,13 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * {@inheritDoc}
      *
      * <p>This method does not check the error terms, because those terms are not visible to the user
-     * (they can not appear in the value returned by {@link #getElement(int, int)}, and are not shown
+     * (they cannot appear in the value returned by {@link #getElement(int, int)}, and are not shown
      * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like identity
      * would be confusing for the user. Furthermore, the errors can be non-zero only on the diagonal,
      * and those values always smaller than 2.3E-16.</p>
      *
-     * <p>An other argument is that the extended precision is for reducing rounding errors during
-     * matrix arithmetics. But since the user provided the original data as {@code double} values,
+     * <p>Another argument is that the extended precision is for reducing rounding errors during
+     * matrix arithmetic. But since the user provided the original data as {@code double} values,
      * the extra precision usually have no "real" meaning.</p>
      */
     @Override

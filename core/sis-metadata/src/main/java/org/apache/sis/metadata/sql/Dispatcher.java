@@ -207,7 +207,7 @@ final class Dispatcher implements InvocationHandler {
      * @return the property value, or {@code null} if none.
      * @throws ReflectiveOperationException if an error occurred while querying the {@link #cache}.
      * @throws SQLException if an error occurred while querying the database.
-     * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
+     * @throws MetadataStoreException if a value was not found or cannot be converted to the expected type.
      */
     private Object fetchValue(final LookupInfo info, final Method method)
             throws ReflectiveOperationException, SQLException, MetadataStoreException

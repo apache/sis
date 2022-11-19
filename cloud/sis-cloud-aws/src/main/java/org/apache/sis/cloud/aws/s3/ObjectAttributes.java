@@ -137,7 +137,7 @@ final class ObjectAttributes implements BasicFileAttributeView {
         /**
          * Creates a new set of attributes with the values available at the time this constructor is invoked.
          *
-         * @param  bucket  metadata about the root. Can not be null.
+         * @param  bucket  metadata about the root. Cannot be null.
          */
         Snapshot(final Bucket bucket) {
             creationTime     = orDefault(bucket.creationDate());
@@ -149,7 +149,7 @@ final class ObjectAttributes implements BasicFileAttributeView {
          * Creates a new set of attributes with the values available at the time this constructor is invoked.
          *
          * @param  bucket  metadata about the root, or {@code null} if none.
-         * @param  object  metadata about the object. Can not be null.
+         * @param  object  metadata about the object. Cannot be null.
          */
         Snapshot(final Bucket bucket, final S3Object object) {
             Instant t;
