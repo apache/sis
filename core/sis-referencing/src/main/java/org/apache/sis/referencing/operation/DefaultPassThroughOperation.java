@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -44,7 +45,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-import org.opengis.referencing.operation.Conversion;
 
 // Branch-dependent imports
 import org.opengis.referencing.operation.OperationMethod;
